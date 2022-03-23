@@ -1,12 +1,12 @@
 import numpy as np
-from mo.front.common.replacement import FrontReplacementOp
-from mo.graph.graph import Graph, Node
-from mo.ops.const import Const
-from mo.ops.strided_slice import StridedSlice
-from mo.front.common.partial_infer.utils import int64_array
-from extensions.ops.elementwise import FloorMod, Div
-from extensions.ops.Cast import Cast
-from extensions.ops.pack import PackOp
+from openvino.tools.mo.front.common.replacement import FrontReplacementOp
+from openvino.tools.mo.graph.graph import Graph, Node
+from openvino.tools.mo.ops.const import Const
+from openvino.tools.mo.ops.strided_slice import StridedSlice
+from openvino.tools.mo.front.common.partial_infer.utils import int64_array
+from openvino.tools.mo.ops.elementwise import FloorMod, Div
+from openvino.tools.mo.ops.Cast import Cast
+from openvino.tools.mo.ops.pack import PackOp
 
 
 class UnravelIndex(FrontReplacementOp):

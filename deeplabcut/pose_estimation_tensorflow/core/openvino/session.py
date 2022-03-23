@@ -1,15 +1,14 @@
 import os
-import sys
 import subprocess
 
 import numpy as np
 from tqdm import tqdm
 import cv2
-from openvino.inference_engine import IECore, StatusCode
+from openvino.runtime import Core, AsyncInferQueue
 
 class OpenVINOSession:
     def __init__(self, cfg, device):
-        self.ie = IECore()
+        self.core = Core()
         self.xml_path = cfg["init_weights"] + ".xml"
         self.device = device
 
@@ -17,8 +16,6 @@ class OpenVINOSession:
         if not os.path.exists(self.xml_path):
             subprocess.run(
                 [
-                    sys.executable,
-                    "-m",
                     "mo",
                     "--output_dir",
                     os.path.dirname(cfg["init_weights"]),
@@ -35,74 +32,48 @@ class OpenVINOSession:
             )
 
         # Read network into memory
-        self.net = self.ie.read_network(self.xml_path)
-        self.input_name = next(iter(self.net.input_info.keys()))
-        self.output_name = next(iter(self.net.outputs.keys()))
-        self.net.input_info[self.input_name].precision = "U8"
-        self.exec_net = None
-
-    def _get_idle_infer_request(self):
-        infer_request_id = self.exec_net.get_idle_request_id()
-        if infer_request_id < 0:
-            status = self.exec_net.wait(num_requests=1)
-            if status != StatusCode.OK:
-                raise Exception("Wait for idle request failed!")
-            infer_request_id = self.exec_net.get_idle_request_id()
-            if infer_request_id < 0:
-                raise Exception("Invalid request id!")
-        return infer_request_id
+        self.net = self.core.read_model(self.xml_path)
+        self.input_name = self.net.inputs[0].get_any_name()
+        self.output_name = self.net.outputs[0].get_any_name()
+        self.infer_queue = None
 
 
     def _init_model(self, inp_h, inp_w):
         # For better efficiency, model is initialized for batch_size 1 and every sample processed independently
-        inp_shape = [1, 3, inp_h, inp_w]
+        inp_shape = [1, inp_h, inp_w, 3]
         self.net.reshape({self.input_name: inp_shape})
 
         # Load network to device
-        config = {}
         if "CPU" in self.device:
-            config["CPU_THROUGHPUT_STREAMS"] = "CPU_THROUGHPUT_AUTO"
+            self.core.set_property("CPU", {"CPU_THROUGHPUT_STREAMS": "CPU_THROUGHPUT_AUTO", "CPU_BIND_THREAD": "YES"})
         if "GPU" in self.device:
-            config["GPU_THROUGHPUT_STREAMS"] = "GPU_THROUGHPUT_AUTO"
-        self.exec_net = self.ie.load_network(self.net, self.device, config, num_requests=0)
+            self.core.set_property("GPU", {"GPU_THROUGHPUT_STREAMS": "GPU_THROUGHPUT_AUTO"})
+
+        compiled_model = self.core.compile_model(self.net, self.device)
+        num_requests = compiled_model.get_property("OPTIMAL_NUMBER_OF_INFER_REQUESTS")
+        print(f"OpenVINO uses {num_requests} inference requests")
+        self.infer_queue = AsyncInferQueue(compiled_model, num_requests)
 
 
     def run(self, out_name, feed_dict):
         inp_name, inp = next(iter(feed_dict.items()))
 
-        if self.exec_net is None:
+        if self.infer_queue is None:
             self._init_model(inp.shape[1], inp.shape[2])
 
         batch_size = inp.shape[0]
         batch_output = np.zeros([batch_size] + self.net.outputs[out_name].shape, dtype=np.float32)
 
-        # List that maps infer requests to index of processed sample from batch.
-        # -1 means that request has not been started yet.
-        infer_request_input_id = [-1] * len(self.exec_net.requests)
+        def completion_callback(request, inp_id):
+            output = next(iter(request.results.values()))
+            batch_output[out_id] = output
+
+        self.infer_queue.set_callback(completion_callback)
 
         for inp_id in range(batch_size):
-            infer_request_id = self._get_idle_infer_request()
-            out_id = infer_request_input_id[infer_request_id]
-            request = self.exec_net.requests[infer_request_id]
+            self.infer_queue.start_async({inp_name: inp[inp_id:inp_id + 1]}, inp_id)
 
-            # Copy output prediction
-            if out_id != -1:
-                batch_output[out_id] = request.output_blobs[out_name].buffer
-
-            # Start this request on new data
-            infer_request_input_id[infer_request_id] = inp_id
-            request.async_infer({inp_name: inp[inp_id].transpose(2, 0, 1)})
-
-        # Wait for the rest of requests
-        status = self.exec_net.wait()
-        if status != StatusCode.OK:
-            raise Exception("Wait for idle request failed!")
-
-        for infer_request_id, out_id in enumerate(infer_request_input_id):
-            if out_id == -1:
-                continue
-            request = self.exec_net.requests[infer_request_id]
-            batch_output[out_id] = request.output_blobs[out_name].buffer
+        self.infer_queue.wait_all()
 
         return batch_output.reshape(-1, 3)
 
@@ -119,7 +90,20 @@ def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
-    inds = [-1] * len(sess.exec_net.requests)  # Keep indices of frames which are currently in processing
+
+    def completion_callback(request, inp_id):
+        pose = next(iter(request.results.values()))
+
+        pose[:, [0, 1, 2]] = pose[
+            :, [1, 0, 2]
+        ]  # change order to have x,y,confidence
+        pose = np.reshape(
+            pose, (1, -1)
+        )  # bring into batchsize times x,y,conf etc.
+        PredictedData[inp_id] = pose
+
+    sess.infer_queue.set_callback(completion_callback)
+
     while cap.isOpened():
         if counter % step == 0:
             pbar.update(step)
@@ -132,39 +116,11 @@ def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         if cfg["cropping"]:
             frame = frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
 
-        # Get idle iference request. If there is processed data - copy to output list
-        infer_request_id = sess._get_idle_infer_request()
-        out_id = inds[infer_request_id]
-        request = sess.exec_net.requests[infer_request_id]
-
-        # Copy output prediction
-        if out_id != -1:
-            pose = request.output_blobs[sess.output_name].buffer
-            pose[:, [0, 1, 2]] = pose[
-                :, [1, 0, 2]
-            ]  # change order to have x,y,confidence
-            pose = np.reshape(
-                pose, (1, -1)
-            )  # bring into batchsize times x,y,conf etc.
-            PredictedData[out_id] = pose
-
-        # Start this request on new data
-        inds[infer_request_id] = counter
-        request.async_infer({sess.input_name: frame.transpose(2, 0, 1)})
+        sess.infer_queue.start_async({sess.input_name: np.expand_dims(frame, axis=0)}, counter)
 
         counter += 1
 
-    # Wait for the rest of requests
-    status = sess.exec_net.wait()
-    if status != StatusCode.OK:
-        raise Exception("Wait for idle request failed!")
-
-    for infer_request_id, out_id in enumerate(inds):
-        if out_id == -1:
-            continue
-        request = sess.exec_net.requests[infer_request_id]
-        pose = request.output_blobs[sess.output_name].buffer
-        PredictedData[out_id] = pose[:, [1, 0, 2]].reshape(1, -1)
+    sess.infer_queue.wait_all()
 
     pbar.close()
     return PredictedData, nframes
