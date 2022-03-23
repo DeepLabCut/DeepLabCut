@@ -33,13 +33,18 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
         print("Batch Size is %d" % self.batch_size)
+        self._default_size = np.array(self.cfg.get("crop_size", (400, 400)))
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
 
     @property
-    def default_crop_size(self):
-        return np.array(self.cfg.get("crop_size", (400, 400)))  # width, height
+    def default_size(self):
+        return self._default_size  # width, height
+
+    @default_size.setter
+    def default_size(self, size):
+        self._default_size = np.array(size)
 
     def load_dataset(self):
         cfg = self.cfg
@@ -90,18 +95,19 @@ class MAImgaugPoseDataset(BasePoseDataset):
         pipeline = iaa.Sequential(random_order=False)
 
         pre_resize = cfg.get("pre_resize")
+        crop_sampling = cfg.get("crop_sampling", "hybrid")
         if pre_resize:
             width, height = pre_resize
             pipeline.add(iaa.Resize({"height": height, "width": width}))
+            if crop_sampling == "none":
+                self.default_size = width, height
 
-        crop_sampling = cfg.get("crop_sampling", "hybrid")
         if crop_sampling != "none":
             # Add smart, keypoint-aware image cropping
-            w, h = self.default_crop_size
-            pipeline.add(iaa.PadToFixedSize(w, h))
+            pipeline.add(iaa.PadToFixedSize(*self.default_size))
             pipeline.add(
                 augmentation.KeypointAwareCropToFixedSize(
-                    w, h, cfg.get("max_shift", 0.4), crop_sampling,
+                    *self.default_size, cfg.get("max_shift", 0.4), crop_sampling,
                 )
             )
 
@@ -309,10 +315,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
         }
 
     def calc_target_and_scoremap_sizes(self):
-        target_size = self.default_crop_size * self.sample_scale()
+        target_size = self.default_size * self.sample_scale()
         target_size = np.ceil(target_size).astype(int)
         if not self.is_valid_size(target_size):
-            target_size = self.default_crop_size
+            target_size = self.default_size
         stride = self.cfg["stride"]
         sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
             int
@@ -333,7 +339,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
-            scale = np.mean(target_size / self.default_crop_size)
+            scale = np.mean(target_size / self.default_size)
             augmentation.update_crop_size(self.pipeline, *target_size)
             batch_images, batch_joints = self.pipeline(
                 images=batch_images, keypoints=batch_joints
