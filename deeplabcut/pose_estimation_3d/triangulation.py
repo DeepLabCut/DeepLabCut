@@ -146,7 +146,7 @@ def triangulate(
                 track_method = auxfun_multianimal.get_track_method(
                     cfg, track_method=track_method
                 )
-                if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
+                if len(cfg.get("multianimalbodyparts", [])) == 1 and track_method != "box":
                     warnings.warn(
                         "Switching to `box` tracker for single point tracking..."
                     )
@@ -379,7 +379,7 @@ def triangulate(
             dataFrame_camera1_undistort[:] = data_cam1_tmp
             dataFrame_camera2_undistort[:] = data_cam2_tmp
 
-            if cfg["multianimalproject"]:
+            if cfg.get("multianimalproject", None):
                 # Check individuals are the same in both views
                 individuals_view1 = (
                     dataFrame_camera1_undistort.columns.get_level_values("individuals")
@@ -444,7 +444,7 @@ def triangulate(
 
             # Create 3D DataFrame column and row indices
             axis_labels = ("x", "y", "z")
-            if cfg["multianimalproject"]:
+            if cfg.get("multianimalproject", None):
                 columns = pd.MultiIndex.from_product(
                     [[scorer_3d], individuals, bodyparts, axis_labels],
                     names=["scorer", "individuals", "bodyparts", "coords"],

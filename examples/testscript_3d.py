@@ -164,6 +164,7 @@ if __name__ == "__main__":
 
     print("TRIANGULATING")
     video_dir = os.path.join(os.path.dirname(basepath), folder)
+    deeplabcut.auxiliaryfunctions.edit_config(path_config_file, edits={"pcutoff": 0.1}) #otherwise get all-nan slices
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
 
