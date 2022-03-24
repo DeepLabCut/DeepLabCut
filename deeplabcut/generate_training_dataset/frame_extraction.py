@@ -253,6 +253,7 @@ def extract_frames(
                 if not nframes:
                     print("Video could not be opened. Skipping...")
                     continue
+                numframes2pick = max(cfg["numframes2pick"], nframes)
 
                 indexlength = int(np.ceil(np.log10(nframes)))
 
