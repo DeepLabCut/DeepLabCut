@@ -297,9 +297,13 @@ class ImgaugPoseDataset(BasePoseDataset):
                 break
             n_tries -= 1
         if not found_valid:
+            if size[1] * size[2] > self.max_input_sizesquare:
+                s = "large", "increasing `max_input_size`", "decreasing"
+            else:
+                s = "small", "decreasing `min_input_size`", "increasing"
             raise ValueError(
-                f"Image size {size[1:3]} may be too large. "
-                "Consider increasing `max_input_size` and/or decreasing `global_scale` "
+                f"Image size {size[1:3]} may be too {s[0]}. "
+                f"Consider {s[1]} and/or {s[2]} `global_scale` "
                 "in the train/pose_cfg.yaml."
             )
 
