@@ -565,29 +565,29 @@ class MainFrame(BaseFrame):
         """
         Show the DirDialog and ask the user to change the directory where machine labels are stored
         """
-        self.statusbar.SetStatusText("Looking for a folder to start labeling...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
-        dlg = wx.DirDialog(
-            self,
-            "Choose the directory where your extracted frames are saved:",
-            cwd,
-            style=wx.DD_DEFAULT_STYLE,
-        )
-        if dlg.ShowModal() == wx.ID_OK:
-            if self.jump_unlabeled:
-                self.dir = str(auxiliaryfunctions.find_next_unlabeled_folder(
-                    self.config_file
-                ))
-            else:
-                self.dir = dlg.GetPath()
-            self.load.Enable(False)
-            self.next.Enable(True)
-            self.save.Enable(True)
+        if self.jump_unlabeled:
+            self.dir = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                self.config_file
+            ))
         else:
+            self.statusbar.SetStatusText("Looking for a folder to start labeling...")
+            cwd = os.path.join(os.getcwd(), "labeled-data")
+            dlg = wx.DirDialog(
+                self,
+                "Choose the directory where your extracted frames are saved:",
+                cwd,
+                style=wx.DD_DEFAULT_STYLE,
+            )
+            if dlg.ShowModal() != wx.ID_OK:
+                dlg.Destroy()
+                self.Close(True)
+                return
+            self.dir = dlg.GetPath()
             dlg.Destroy()
-            self.Close(True)
-            return
-        dlg.Destroy()
+
+        self.load.Enable(False)
+        self.next.Enable(True)
+        self.save.Enable(True)
 
         # Enabling the zoom, pan and home buttons
         self.zoom.Enable(True)
