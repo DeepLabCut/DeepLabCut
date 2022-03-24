@@ -53,7 +53,7 @@ While some arguments are similar to the rest of the DeepLabCut API, `train_epoch
 
 The default values were found to work good in [our paper]((TODO:AddLinkHere!)), however this heavily depends on having good detections beforehand. You should run `deeplabcut.create_video_with_all_detections()` and inspect that the detection performance is sufficient. Another good tool for more advanced users to inspect the quality of assembled animals is `deeplabcut.plot_edge_affinity_distributions()`.
 
-If you find that the detection and assembly performance in a video are sufficient, but the `transformer_reID()` results in poor tracking, you can consider training the number of training epochs for the transformer, or the number of triplets (which you can think of as the dataset size that the transformer is training on).
+If you find that the detection and assembly performance in a video are sufficient, but the `transformer_reID()` results in poor tracking, you can consider increasing the number of training epochs for the transformer, or the number of triplets (which you can think of as the dataset size that the transformer is training on).
 
 
 
