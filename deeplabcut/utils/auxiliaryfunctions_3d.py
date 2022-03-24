@@ -302,7 +302,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
     # Initialize costs matrix
     costs = np.zeros([len(tracklets1), len(tracklets2)])
 
-    for i, t1 in tqdm(enumerate(tracklets1)):
+    for i, t1 in enumerate(tracklets1):
         for j, t2 in enumerate(tracklets2):
             # get common bodypart detections in track pair
             _t1 = t1.xy[np.isin(t1.inds, t2.inds)]
