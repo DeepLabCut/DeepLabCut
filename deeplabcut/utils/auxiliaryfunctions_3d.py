@@ -267,3 +267,76 @@ def LoadMetadata3d(metadatafilename):
     with open(metadatafilename, "rb") as f:
         metadata = pickle.load(f)
         return metadata
+
+def _reconstruct_tracks_as_tracklets(df):
+    """
+    Parameters:
+    -----------
+    df: DataFrame 
+        loaded from an .h5 tracks file (obtained from `stitch_tracklets()`)
+    """
+    from deeplabcut.refine_training_dataset.stitch import Tracklet
+
+    tracklets = []
+    for _, group in df.groupby("individuals", axis=1):
+        temp = group.dropna()
+        inds = temp.index.to_numpy()
+        track = Tracklet(temp.to_numpy().reshape((len(temp), -1, 3)), inds)
+        track = track.interpolate(max_gap=len(group))
+        tracklets.append(track)
+    return tracklets
+
+
+def _associate_paired_view_tracks(tracklets1, tracklets2, F):
+    """
+    Computes the optimal matching between tracks in two cameras 
+    using the xFx'=0 epipolar constraint equation.
+
+    Parameters:
+    -----------
+    tracklets1/2: Tracklet() object (defined in stitch.py)
+    F: nd.array
+        Fundamental matrix between cam1 and cam2
+    """
+    from scipy.optimize import linear_sum_assignment
+    # Initialize costs matrix
+    costs = np.zeros([len(tracklets1), len(tracklets2)])
+
+    for i, t1 in tqdm(enumerate(tracklets1)):
+        for j, t2 in enumerate(tracklets2):
+            # get common bodypart detections in track pair
+            _t1 = t1.xy[np.isin(t1.inds, t2.inds)]
+            _t2 = t2.xy[np.isin(t2.inds, t1.inds)]
+
+            # add 3rd dim to the points
+            _t1 = np.c_[_t1, np.ones((*_t1.shape[:2], 1))]
+            _t2 = np.c_[_t2, np.ones((*_t2.shape[:2], 1))]
+
+            # cost for any point in time of t1 being the same
+            # any point in time of t2
+            cost = np.abs(np.sum(np.matmul(_t1, F) * _t2, axis=2))
+            
+            # Get average cost of the entire track
+            cost = cost.mean()
+            costs[i, j] = cost
+
+    match_inds = linear_sum_assignment(np.abs(costs))
+    voting = dict(zip(*match_inds))
+
+    return costs, voting
+
+
+def cross_view_match_dataframes(df1, df2, F):
+    """
+    Computes the costs and matched voting for tracks between
+    a camera pair
+
+    df: Data read from .h5 track file
+    F: fundamental matrix from OpenCV
+    """
+
+    tracks1 = _reconstruct_tracks_as_tracklets(df1)
+    tracks2 = _reconstruct_tracks_as_tracklets(df2)
+    costs, voting = _associate_paired_view_tracks(tracks1, tracks2, F)
+
+    return costs, voting

@@ -243,7 +243,10 @@ def create_labeled_video_3d(
                 )
 
             df_3d = pd.read_hdf(triangulate_file)
-            plt.rcParams.update({"figure.max_open_warning": 0})
+            try: 
+                num_animals = df_3d.columns.get_level_values("individuals").unique().size
+            except KeyError:
+                num_animals = 1
 
             if end is None:
                 end = len(df_3d)  # All the frames
@@ -255,10 +258,10 @@ def create_labeled_video_3d(
 
             # Format data
             mask2d = df_cam1.columns.get_level_values('bodyparts').isin(bodyparts2plot)
-            xy1 = df_cam1.loc[mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            xy1 = df_cam1.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
             visible1 = xy1[..., 2] >= pcutoff
             xy1[~visible1] = np.nan
-            xy2 = df_cam2.loc[mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            xy2 = df_cam2.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
             visible2 = xy2[..., 2] >= pcutoff
             xy2[~visible2] = np.nan
             mask = df_3d.columns.get_level_values('bodyparts').isin(bodyparts2plot)
@@ -315,7 +318,7 @@ def create_labeled_video_3d(
                     coords3d = xyz[sl]
                     coords1 = xy1[sl, :, :2]
                     coords2 = xy2[sl, :, :2]
-                    colors_ = np.tile(colors, (coords3d.shape[0], 1))
+                    colors_ = np.tile(colors, (num_animals, 1))
                     points_3d._offsets3d = coords3d.reshape((-1, 3)).T
                     points_3d.set_color(colors_)
                     points_2d1.set_offsets(coords1.reshape((-1, 2)))
