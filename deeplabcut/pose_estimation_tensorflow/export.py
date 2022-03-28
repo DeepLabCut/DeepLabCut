@@ -177,10 +177,10 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
     # load network
     if TFGPUinference:
-        sess, _, _ = predict.setup_GPUpose_prediction(dlc_cfg)
+        pose_setup = predict.setup_GPUpose_prediction(dlc_cfg)
         output = ["concat_1"]
     else:
-        sess, _, _ = predict.setup_pose_prediction(dlc_cfg)
+        pose_setup = predict.setup_pose_prediction(dlc_cfg)
         if dlc_cfg["location_refinement"]:
             output = ["Sigmoid", "pose/locref_pred/block4/BiasAdd"]
         else:
@@ -188,7 +188,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
     input = tf.compat.v1.get_default_graph().get_operations()[0].name
 
-    return sess, input, output, dlc_cfg
+    return pose_setup.session, input, output, dlc_cfg
 
 
 def tf_to_pb(sess, checkpoint, output, output_dir=None):
