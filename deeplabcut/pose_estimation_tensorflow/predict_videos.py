@@ -446,7 +446,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     step = max(10, int(nframes / 100))
     inds = []
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
         if ret:
@@ -491,7 +491,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -530,7 +530,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -582,7 +582,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     step = max(10, int(nframes / 100))
     inds = []
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
         if ret:
@@ -648,7 +648,7 @@ def GetPoseDynamic(
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -896,7 +896,7 @@ def GetPosesofFrames(
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
 
-            if counter % step == 0:
+            if counter != 0 and counter % step == 0:
                 pbar.update(step)
 
             if cfg["cropping"]:
@@ -915,7 +915,7 @@ def GetPosesofFrames(
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
 
-            if counter % step == 0:
+            if counter != 0 and counter % step == 0:
                 pbar.update(step)
 
             if cfg["cropping"]:
