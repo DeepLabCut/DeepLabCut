@@ -799,17 +799,3 @@ def load_detection_data(video, scorer, track_method):
             f"scorer {scorer}, and tracker {track_method}"
         )
     return read_pickle(filepath)
-
-
-def _map(strings, substrings):
-    lookup = dict()
-    strings_ = strings.copy()
-    substrings_ = substrings.copy()
-    while strings_:
-        string = strings_.pop()
-        for s in substrings_:
-            if string.endswith(s):
-                lookup[string] = s
-                substrings_.remove(s)
-                break
-    return lookup

@@ -30,7 +30,7 @@ def test_net(visualise, cache_scoremaps):
     dataset.set_shuffle(False)
     dataset.set_test_mode(True)
 
-    pose_setup = setup_pose_prediction(cfg)
+    sess, inputs, outputs = setup_pose_prediction(cfg)
 
     if cache_scoremaps:
         out_dir = cfg["scoremap_dir"]
@@ -45,10 +45,7 @@ def test_net(visualise, cache_scoremaps):
 
         batch = dataset.next_batch()
 
-        outputs_np = pose_setup.session.run(
-            pose_setup.outputs,
-            feed_dict={pose_setup.inputs: batch[Batch.inputs]}
-        )
+        outputs_np = sess.run(outputs, feed_dict={inputs: batch[Batch.inputs]})
 
         scmap, locref = extract_cnn_output(outputs_np, cfg)
 
@@ -77,7 +74,7 @@ def test_net(visualise, cache_scoremaps):
 
     scipy.io.savemat("predictions.mat", mdict={"joints": predictions})
 
-    pose_setup.session.close()
+    sess.close()
 
 
 if __name__ == "__main__":

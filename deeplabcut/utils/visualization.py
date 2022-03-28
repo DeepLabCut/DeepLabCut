@@ -14,12 +14,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
-from scipy.optimize import linear_sum_assignment
 from skimage import io, color
-from tqdm import trange, tqdm
+from tqdm import trange
 
-from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 
 
 def get_cmap(n, name="hsv"):
@@ -181,14 +179,10 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
     path = Path(image_path)
     imagename = path.parts[-1]
     imfoldername = path.parts[-2]
-    if belongs_to_train is None:
-        dest = "-".join((imfoldername, imagename))
+    if belongs_to_train:
+        dest = "-".join(("Training", imfoldername, imagename))
     else:
-        if belongs_to_train:
-            prefix = "Training"
-        else:
-            prefix = "Test"
-        dest = "-".join((prefix, imfoldername, imagename))
+        dest = "-".join(("Test", imfoldername, imagename))
     full_path = os.path.join(dest_folder, dest)
 
     # Windows throws error if file path is > 260 characters, can fix with prefix.
@@ -307,7 +301,7 @@ def make_labeled_images_from_dataframe(
     if not destfolder:
         destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"
-    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+    attempttomakefolder(tmpfolder)
     ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]
@@ -371,102 +365,3 @@ def make_labeled_images_from_dataframe(
                 dpi=dpi,
             )
             plt.close(fig)
-
-
-def visualize_predictions(
-    preds,
-    gt,
-    pcutoff=0.6,
-    dotsize=8,
-    alpha=1,
-    cmap="cool",
-    labels=["+", ".", "x"],
-    dpi=100,
-    destfolder="",
-):
-    if destfolder:
-        Path(destfolder).mkdir(parents=True, exist_ok=True)
-
-    is_assembler = isinstance(preds, inferenceutils.Assembler)
-    has_unique = "single" in gt["metadata"]["animals"]
-    if is_assembler:
-        n_colors = len(gt["metadata"]["animals"])
-        image_paths = preds.metadata["imnames"]
-    else:
-        n_colors = len(gt["metadata"]["keypoints"])
-        image_paths = list(preds["predictions"])
-
-    colors = plt.cm.get_cmap(cmap, n_colors)
-    annot = gt["annotations"]
-    map_images = auxiliaryfunctions._map(image_paths, list(annot))
-    fig, ax = create_minimal_figure(dpi=dpi)
-    for n, image_path in enumerate(tqdm(image_paths)):
-        xy_gt = annot[map_images[image_path]]
-
-        if is_assembler:
-            assemblies = preds.assemblies[n]
-            xy_pred = []
-            xy_pred += [ass.xy for ass in assemblies]
-            conf_pred = []
-            conf_pred += [ass.data[:, 2:3] for ass in assemblies]
-
-            xy_gt_multi, xy_gt_unique = np.array_split(
-                xy_gt, [len(xy_gt) - int(has_unique)],
-            )
-            while len(xy_pred) < len(xy_gt_multi):
-                xy_pred.append(np.full((1, 2), np.nan))
-                conf_pred.append(np.full((1, 2), np.nan))
-
-            # Reorder GT to match assemblies
-            n_preds = len(xy_pred)
-            n_gts = len(xy_gt_multi)
-            dists = np.zeros((n_preds, n_gts))
-            for i in range(n_preds):
-                for j in range(n_gts):
-                    d = np.linalg.norm(xy_pred[i] - xy_gt_multi[j, :len(xy_pred[i])])
-                    dists[i, j] = d
-            dists[np.isnan(dists)] = 1e4
-            _, cols = linear_sum_assignment(dists)
-            xy_gt = [xy_gt_multi[ind] for ind in cols]
-            xy_gt.append(xy_gt_unique)
-
-            if preds.unique:
-                unique = preds.unique.get(n, None)
-                if unique is not None:
-                    xy_pred.append(unique[:, :2])
-                    conf_pred.append(unique[:, 2:3])
-        else:
-            xy_gt = xy_gt.swapaxes(0, 1)
-            preds_ = preds["predictions"][image_path]
-            if preds_:
-                xy_pred = preds_["coordinates"][0]
-                conf_pred = preds_["confidence"]
-            else:
-                xy_pred = np.full_like(xy_gt, np.nan)
-                conf_pred = np.full(xy_gt.shape[:2] + (1,), np.nan)
-
-        frame = auxfun_videos.imread(image_path, mode="skimage")
-        h, w, _ = np.shape(frame)
-        fig.set_size_inches(w / dpi, h / dpi)
-        ax.set_xlim(0, w)
-        ax.set_ylim(0, h)
-        ax.invert_yaxis()
-        ax = make_multianimal_labeled_image(
-            frame,
-            xy_gt,
-            xy_pred,
-            conf_pred,
-            colors,
-            dotsize,
-            alpha,
-            pcutoff,
-            labels,
-            ax,
-        )
-        save_labeled_frame(
-            fig,
-            image_path,
-            destfolder,
-            belongs_to_train=None,
-        )
-        erase_artists(ax)

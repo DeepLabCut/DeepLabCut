@@ -305,11 +305,11 @@ def analyze_videos(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        pose_setup = predict.setup_GPUpose_prediction(
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(
             dlc_cfg, allow_growth=allow_growth
         )
     else:
-        pose_setup = predict.setup_pose_prediction(
+        sess, inputs, outputs = predict.setup_pose_prediction(
             dlc_cfg, allow_growth=allow_growth
         )
 
@@ -335,9 +335,9 @@ def analyze_videos(
                     trainFraction,
                     cfg,
                     dlc_cfg,
-                    pose_setup.session,
-                    pose_setup.inputs,
-                    pose_setup.outputs,
+                    sess,
+                    inputs,
+                    outputs,
                     destfolder,
                     robust_nframes=robust_nframes,
                     use_shelve=use_shelve,
@@ -373,9 +373,9 @@ def analyze_videos(
                     trainFraction,
                     cfg,
                     dlc_cfg,
-                    pose_setup.session,
-                    pose_setup.inputs,
-                    pose_setup.outputs,
+                    sess,
+                    inputs,
+                    outputs,
                     pdindex,
                     save_as_csv,
                     destfolder,
@@ -1080,7 +1080,7 @@ def analyze_time_lapse_frames(
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
     )
-    pose_setup = predict.setup_pose_prediction(dlc_cfg)
+    sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
     # update number of outputs and adjust pandas indices
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", 1)
@@ -1121,9 +1121,9 @@ def analyze_time_lapse_frames(
                 PredictedData, nframes, nx, ny = GetPosesofFrames(
                     cfg,
                     dlc_cfg,
-                    pose_setup.session,
-                    pose_setup.inputs,
-                    pose_setup.outputs,
+                    sess,
+                    inputs,
+                    outputs,
                     directory,
                     framelist,
                     nframes,

@@ -11,23 +11,16 @@ Licensed under GNU Lesser General Public License v3.0
 import imgaug.augmenters as iaa
 import os
 import pickle
-from collections import defaultdict
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.core import (
-    predict,
-    predict_multianimal as predictma,
-)
-from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils, inferenceutils
-from deeplabcut.utils import visualization, auxfun_videos
-from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
+from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
+from deeplabcut.utils import visualization
 
 
 def _percentile(n):
@@ -150,14 +143,14 @@ def evaluate_multianimal_full(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    path_gt_data = os.path.join(
-        cfg["project_path"],
-        str(trainingsetfolder),
-        "CollectedData_" + cfg["scorer"] + ".h5",
+    Data = pd.read_hdf(
+        os.path.join(
+            cfg["project_path"],
+            str(trainingsetfolder),
+            "CollectedData_" + cfg["scorer"] + ".h5",
+        )
     )
-    gt_data = _format_gt_data(path_gt_data)
-    gt_df = pd.read_hdf(path_gt_data)
-    gt_columns = gt_df.columns
+    conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
@@ -303,35 +296,44 @@ def evaluate_multianimal_full(
                     )
 
                     data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
-                    foldername = os.path.join(
-                        str(evaluationfolder),
-                        "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
-                    )
+                    if plotting:
+                        foldername = os.path.join(
+                            str(evaluationfolder),
+                            "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
+                        )
+                        auxiliaryfunctions.attempttomakefolder(foldername)
+                        if plotting == "bodypart":
+                            fig, ax = visualization.create_minimal_figure()
+
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-                        images = [
-                            os.path.join(cfg["project_path"], img)
-                            for img in gt_data['annotations']
-                        ]
-                        preds = _eval_images(
-                            images,
-                            path_test_config,
-                            dlc_cfg["init_weights"],
-                        )
-                        tf.compat.v1.reset_default_graph()
+                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
-                        for imageindex, image in enumerate(images):
-                            imagename = tuple(
-                                os.path.relpath(image, cfg["project_path"]).split(os.sep)
+                        dist = np.full((len(Data), len(all_bpts)), np.nan)
+                        conf = np.full_like(dist, np.nan)
+                        print("Network Evaluation underway...")
+                        for imageindex, imagename in tqdm(enumerate(Data.index)):
+                            image_path = os.path.join(cfg["project_path"], *imagename)
+                            frame = auxfun_videos.imread(image_path, mode="skimage")
+
+                            GT = Data.iloc[imageindex]
+                            if not GT.any():
+                                continue
+
+                            # Pass the image and the keypoints through the resizer;
+                            # this has no effect if no augmenters were added to it.
+                            keypoints = [GT.to_numpy().reshape((-1, 2)).astype(float)]
+                            frame_, keypoints = pipeline(
+                                images=[frame], keypoints=keypoints
                             )
-                            df = (
-                                gt_df
-                                .iloc[imageindex]
-                                .unstack("coords")
-                                .reindex(joints, level="bodyparts")
-                            )
+                            frame = frame_[0]
+                            GT[:] = keypoints[0].flatten()
+
+                            df = GT.unstack("coords").reindex(joints, level="bodyparts")
+
+                            # FIXME Is having an empty array vs nan really that necessary?!
                             groundtruthidentity = list(
                                 df.index.get_level_values("individuals")
                                 .to_numpy()
@@ -344,103 +346,123 @@ def evaluate_multianimal_full(
                                         (0, 2), dtype=float
                                     )
                                     groundtruthidentity[i] = np.array([], dtype=str)
+
+                            # Form 2D array of shape (n_rows, 4) where the last dimension
+                            # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
+                            temp = df.reset_index(level="bodyparts").dropna()
+                            temp["bodyparts"].replace(
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
+                            )
+                            temp["sample"] = 0
+                            peaks_gt = temp.loc[
+                                :, ["sample", "y", "x", "bodyparts"]
+                            ].to_numpy()
+                            peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
+                            pred = predictma.predict_batched_peaks_and_costs(
+                                dlc_cfg,
+                                np.expand_dims(frame, axis=0),
+                                sess,
+                                inputs,
+                                outputs,
+                                peaks_gt.astype(int),
+                            )
+                            if not pred:
+                                continue
+                            else:
+                                pred = pred[0]
+
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
-                            PredicteData[imagename]["prediction"] = preds["predictions"][image]
+                            PredicteData[imagename]["prediction"] = pred
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
                                 groundtruthcoordinates,
-                                gt_df.iloc[imageindex],
+                                GT,
                             ]
 
-                        PredicteData["metadata"] = {
-                            "nms radius": dlc_cfg["nmsradius"],
-                            "minimal confidence": dlc_cfg["minconfidence"],
-                            "sigma": dlc_cfg.get("sigma", 1),
-                            "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-                            "PAFinds": np.arange(
-                                len(dlc_cfg["partaffinityfield_graph"])
-                            ),
-                            "all_joints": [
-                                [i] for i in range(len(dlc_cfg["all_joints"]))
-                            ],
-                            "all_joints_names": [
-                                dlc_cfg["all_joints_names"][i]
-                                for i in range(len(dlc_cfg["all_joints"]))
-                            ],
-                            "stride": dlc_cfg.get("stride", 8),
-                        }
-                        dictionary = {
-                            "Scorer": DLCscorer,
-                            "DLC-model-config file": dlc_cfg,
-                            "trainIndices": trainIndices,
-                            "testIndices": testIndices,
-                            "trainFraction": trainFraction,
-                        }
-                        metadata = {"data": dictionary}
-                        _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                            PredicteData, metadata, resultsfilename
-                        )
-                        print(
-                            "Done and results stored for snapshot: ",
-                            Snapshots[snapindex],
-                        )
+                            coords_pred = pred["coordinates"][0]
+                            probs_pred = pred["confidence"]
+                            for bpt, xy_gt in df.groupby(level="bodyparts"):
+                                inds_gt = np.flatnonzero(
+                                    np.all(~np.isnan(xy_gt), axis=1)
+                                )
+                                n_joint = joints.index(bpt)
+                                xy = coords_pred[n_joint]
+                                if inds_gt.size and xy.size:
+                                    # Pick the predictions closest to ground truth,
+                                    # rather than the ones the model has most confident in
+                                    xy_gt_values = xy_gt.iloc[inds_gt].values
+                                    neighbors = _find_closest_neighbors(
+                                        xy_gt_values, xy, k=3
+                                    )
+                                    found = neighbors != -1
+                                    min_dists = np.linalg.norm(
+                                        xy_gt_values[found] - xy[neighbors[found]],
+                                        axis=1,
+                                    )
+                                    inds = np.flatnonzero(all_bpts == bpt)
+                                    sl = imageindex, inds[inds_gt[found]]
+                                    dist[sl] = min_dists
+                                    conf[sl] = probs_pred[n_joint][
+                                        neighbors[found]
+                                    ].squeeze()
 
-                        if plotting == "bodypart":
-                            preds_train = {
-                                "metadata": preds["metadata"],
-                                "predictions": {
-                                    images[i]: preds["predictions"][images[i]]
-                                    for i in trainIndices
-                                }
-                            }
-                            preds_test = {
-                                "metadata": preds["metadata"],
-                                "predictions": {
-                                    images[i]: preds["predictions"][images[i]]
-                                    for i in testIndices
-                                }
-                            }
-                            visualization.visualize_predictions(
-                                preds_train,
-                                gt_data,
-                                cfg["pcutoff"],
-                                cfg["dotsize"],
-                                cfg["alphavalue"],
-                                cfg["colormap"],
-                                destfolder=os.path.join(foldername, 'train'),
-                            )
-                            visualization.visualize_predictions(
-                                preds_test,
-                                gt_data,
-                                cfg["pcutoff"],
-                                cfg["dotsize"],
-                                cfg["alphavalue"],
-                                cfg["colormap"],
-                                destfolder=os.path.join(foldername, 'test'),
-                            )
+                            if plotting == "bodypart":
+                                temp_xy = GT.unstack("bodyparts")[joints].values
+                                gt = temp_xy.reshape(
+                                    (-1, 2, temp_xy.shape[1])
+                                ).T.swapaxes(1, 2)
+                                h, w, _ = np.shape(frame)
+                                fig.set_size_inches(w / 100, h / 100)
+                                ax.set_xlim(0, w)
+                                ax.set_ylim(0, h)
+                                ax.invert_yaxis()
+                                ax = visualization.make_multianimal_labeled_image(
+                                    frame,
+                                    gt,
+                                    coords_pred,
+                                    probs_pred,
+                                    colors,
+                                    cfg["dotsize"],
+                                    cfg["alphavalue"],
+                                    cfg["pcutoff"],
+                                    ax=ax,
+                                )
+                                visualization.save_labeled_frame(
+                                    fig,
+                                    image_path,
+                                    foldername,
+                                    imageindex in trainIndices,
+                                )
+                                visualization.erase_artists(ax)
 
-                        # Compute and format prediction errors
-                        errors = calc_prediction_errors(preds, gt_data)
-                        cols = (
-                            gt_columns
-                            .set_levels(["rmse", "conf"], level="coords")
-                            .set_names(list(gt_columns.names)[:-1] + ["metrics"])
+                        sess.close()  # closes the current tf session
+
+                        # Compute all distance statistics
+                        df_dist = pd.DataFrame(dist, columns=df.index)
+                        df_conf = pd.DataFrame(conf, columns=df.index)
+                        df_joint = pd.concat(
+                            [df_dist, df_conf],
+                            keys=["rmse", "conf"],
+                            names=["metrics"],
+                            axis=1,
                         )
-                        n_unique = gt_data["metadata"]["n_unique"]
-                        if n_unique == 0:
-                            temp = errors.reshape((errors.shape[0], -1))
-                        else:
-                            temp = np.c_[
-                                errors[:, :-1, :-n_unique].reshape((errors.shape[0], -1)),
-                                errors[:, -1, -n_unique:].reshape((errors.shape[0], -1)),
-                            ]
-                        df_joint = pd.DataFrame(temp, columns=cols)
-                        df_joint.to_csv(
-                            os.path.join(
-                                evaluationfolder, f"dist_{trainingsiterations}.csv"
-                            )
+                        df_joint = df_joint.reorder_levels(
+                            list(np.roll(df_joint.columns.names, -1)), axis=1
                         )
+                        df_joint.sort_index(
+                            axis=1,
+                            level=["individuals", "bodyparts"],
+                            ascending=[True, True],
+                            inplace=True,
+                        )
+                        write_path = os.path.join(
+                            evaluationfolder, f"dist_{trainingsiterations}.csv"
+                        )
+                        df_joint.to_csv(write_path)
+
+                        # Calculate overall prediction error
                         error = df_joint.xs("rmse", level="metrics", axis=1)
                         mask = (
                             df_joint.xs("conf", level="metrics", axis=1)
@@ -494,6 +516,42 @@ def evaluate_multianimal_full(
                                 .to_string()
                             )
 
+                        PredicteData["metadata"] = {
+                            "nms radius": dlc_cfg["nmsradius"],
+                            "minimal confidence": dlc_cfg["minconfidence"],
+                            "sigma": dlc_cfg.get("sigma", 1),
+                            "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+                            "PAFinds": np.arange(
+                                len(dlc_cfg["partaffinityfield_graph"])
+                            ),
+                            "all_joints": [
+                                [i] for i in range(len(dlc_cfg["all_joints"]))
+                            ],
+                            "all_joints_names": [
+                                dlc_cfg["all_joints_names"][i]
+                                for i in range(len(dlc_cfg["all_joints"]))
+                            ],
+                            "stride": dlc_cfg.get("stride", 8),
+                        }
+                        print(
+                            "Done and results stored for snapshot: ",
+                            Snapshots[snapindex],
+                        )
+
+                        dictionary = {
+                            "Scorer": DLCscorer,
+                            "DLC-model-config file": dlc_cfg,
+                            "trainIndices": trainIndices,
+                            "testIndices": testIndices,
+                            "trainFraction": trainFraction,
+                        }
+                        metadata = {"data": dictionary}
+                        _ = auxfun_multianimal.SaveFullMultiAnimalData(
+                            PredicteData, metadata, resultsfilename
+                        )
+
+                        tf.compat.v1.reset_default_graph()
+
                     n_multibpts = len(cfg["multianimalbodyparts"])
                     if n_multibpts == 1:
                         continue
@@ -512,7 +570,7 @@ def evaluate_multianimal_full(
                     (
                         results,
                         paf_scores,
-                        best_assembler,
+                        best_assemblies,
                     ) = crossvalutils.cross_validate_paf_graphs(
                         config,
                         str(path_test_config).replace("pose_", "inference_"),
@@ -524,6 +582,59 @@ def evaluate_multianimal_full(
                         margin=dlc_cfg.get("bbox_margin", 0),
                         symmetric_kpts=dlc_cfg.get("symmetric_kpts"),
                     )
+                    if plotting == "individual":
+                        assemblies, assemblies_unique, image_paths = best_assemblies
+                        fig, ax = visualization.create_minimal_figure()
+                        n_animals = len(cfg["individuals"])
+                        if cfg["uniquebodyparts"]:
+                            n_animals += 1
+                        colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
+                        for k, v in tqdm(assemblies.items()):
+                            imname = image_paths[k]
+                            image_path = os.path.join(cfg["project_path"], *imname)
+                            frame = auxfun_videos.imread(image_path, mode="skimage")
+
+                            h, w, _ = np.shape(frame)
+                            fig.set_size_inches(w / 100, h / 100)
+                            ax.set_xlim(0, w)
+                            ax.set_ylim(0, h)
+                            ax.invert_yaxis()
+
+                            gt = [
+                                s.to_numpy().reshape((-1, 2))
+                                for _, s in Data.loc[imname].groupby("individuals")
+                            ]
+                            coords_pred = []
+                            coords_pred += [ass.xy for ass in v]
+                            probs_pred = []
+                            probs_pred += [ass.data[:, 2:3] for ass in v]
+                            if assemblies_unique is not None:
+                                unique = assemblies_unique.get(k, None)
+                                if unique is not None:
+                                    coords_pred.append(unique[:, :2])
+                                    probs_pred.append(unique[:, 2:3])
+                            while len(coords_pred) < len(gt):
+                                coords_pred.append(np.full((1, 2), np.nan))
+                                probs_pred.append(np.full((1, 2), np.nan))
+                            ax = visualization.make_multianimal_labeled_image(
+                                frame,
+                                gt,
+                                coords_pred,
+                                probs_pred,
+                                colors,
+                                cfg["dotsize"],
+                                cfg["alphavalue"],
+                                cfg["pcutoff"],
+                                ax=ax,
+                            )
+                            visualization.save_labeled_frame(
+                                fig,
+                                image_path,
+                                foldername,
+                                k in trainIndices,
+                            )
+                            visualization.erase_artists(ax)
+
                     df = results[1].copy()
                     df.loc(axis=0)[("mAP_train", "mean")] = [
                         d[0]["mAP"] for d in results[2]
@@ -540,198 +651,7 @@ def evaluate_multianimal_full(
                     with open(data_path.replace("_full.", "_map."), "wb") as file:
                         pickle.dump((df, paf_scores), file)
 
-                    if plotting == "individual":
-                        visualization.visualize_predictions(
-                            best_assembler,
-                            gt_data,
-                            cfg["pcutoff"],
-                            cfg["dotsize"],
-                            cfg["alphavalue"],
-                            cfg["colormap"],
-                            destfolder=foldername,
-                        )
-
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
     os.chdir(str(start_path))
-
-
-def _eval_single_image(
-    image_path,
-    test_cfg,
-    pose_setup=None,
-    to_coco=False,
-):
-    if pose_setup is None:
-        pose_setup = predict.setup_pose_prediction(test_cfg)
-    frame = auxfun_videos.imread(image_path, mode="skimage")
-    preds = predictma.predict_batched_peaks_and_costs(
-        test_cfg,
-        np.expand_dims(frame, axis=0),
-        pose_setup.session,
-        pose_setup.inputs,
-        pose_setup.outputs,
-    )
-    if not preds:
-        return []
-    preds = preds[0]
-    if to_coco:
-        # TODO
-        ...
-    return preds
-
-
-def _eval_images(
-    image_paths,
-    test_pose_config,
-    snapshot_path="",
-    to_coco=False,
-):
-    test_cfg = load_config(test_pose_config)
-    test_cfg["batch_size"] = 1
-    if snapshot_path:
-        test_cfg["init_weights"] = snapshot_path.split(".")[0]
-    pose_setup = predict.setup_pose_prediction(test_cfg)
-    data = defaultdict(dict)
-    print("Network evaluation underway...")
-    for image_path in tqdm(image_paths):
-        preds = _eval_single_image(
-            image_path, test_cfg, pose_setup, to_coco,
-        )
-        data["predictions"][image_path] = preds
-    data["metadata"] = {"keypoints": test_cfg["all_joints_names"]}
-    pose_setup.session.close()
-    return data
-
-
-def _format_gt_data(h5file):
-    df = pd.read_hdf(h5file)
-
-    def _get_unique_level_values(header, level):
-        return header.get_level_values(level).unique().to_list()
-
-    animals = _get_unique_level_values(df.columns, "individuals")
-    kpts = _get_unique_level_values(df.columns, "bodyparts")
-    try:
-        n_unique = len(_get_unique_level_values(
-            df.xs("single", level="individuals", axis=1).columns, "bodyparts")
-        )
-    except KeyError:
-        n_unique = 0
-    guarantee_multiindex_rows(df)
-    file_paths = [os.path.join(*row) for row in df.index.to_list()]
-    temp = (df
-            .stack("individuals", dropna=False)
-            .reindex(animals, level="individuals")
-            .reindex(kpts, level="bodyparts", axis=1))
-    data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
-    meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
-    return {
-        "annotations": dict(zip(file_paths, data)),
-        "metadata": meta,
-    }
-
-
-def calc_prediction_errors(preds, gt):
-    kpts_gt = gt["metadata"]["keypoints"]
-    kpts_pred = preds["metadata"]["keypoints"]
-    map_ = {kpts_gt.index(kpt): i for i, kpt in enumerate(kpts_pred)}
-    annot = gt["annotations"]
-
-    # Map image paths from predicted data to GT as the first are typically
-    # absolute whereas the latter are relative to the project path.
-    map_images = auxiliaryfunctions._map(list(preds["predictions"]), list(annot))
-
-    errors = np.full(
-        (
-            len(preds["predictions"]),
-            len(gt["metadata"]["animals"]),
-            len(kpts_gt),
-            2,  # Hold distance to GT and confidence
-        ),
-        np.nan,
-    )
-    for n, (path, preds_) in enumerate(preds["predictions"].items()):
-        if not preds_:
-            continue
-        xy_gt = annot[map_images[path]].swapaxes(0, 1)
-        xy_pred = preds_["coordinates"][0]
-        conf_pred = preds_["confidence"]
-        for i, xy_gt_ in enumerate(xy_gt):
-            visible = np.flatnonzero(np.all(~np.isnan(xy_gt_), axis=1))
-            xy_pred_ = xy_pred[map_[i]]
-            if visible.size and xy_pred_.size:
-                # Pick the predictions closest to ground truth,
-                # rather than the ones the model has most confident in.
-                neighbors = _find_closest_neighbors(
-                    xy_gt_[visible], xy_pred_, k=3
-                )
-                found = neighbors != -1
-                if ~np.any(found):
-                    continue
-                min_dists = np.linalg.norm(
-                    xy_gt_[visible][found] - xy_pred_[neighbors[found]],
-                    axis=1,
-                )
-                conf_pred_ = conf_pred[map_[i]]
-                errors[n, visible[found], i, 0] = min_dists
-                errors[n, visible[found], i, 1] = conf_pred_[neighbors[found], 0]
-    return errors
-
-
-def calc_mAP(
-    preds,
-    gt,
-    paf_graph,
-    paf_inds,
-    oks_sigma=0.1,
-    pcutoff=0.1,
-    min_affinity=0.1,
-    margin=0,
-    symmetric_kpts=None,
-    greedy_matching=False,
-    add_discarded=True,
-    identity_only=False,
-):
-    kpts = gt["metadata"]["keypoints"]
-    n_multi = len(kpts) - gt["metadata"]["n_unique"]
-    metadata = {
-        "all_joints_names": kpts,
-        "PAFgraph": paf_graph,
-    }
-    data = {"metadata": metadata}
-    data.update(preds["predictions"])
-    ass = inferenceutils.Assembler(
-        data,
-        max_n_individuals=len(gt["metadata"]["animals"]),
-        n_multibodyparts=n_multi,
-        paf_inds=paf_inds,
-        pcutoff=pcutoff,
-        min_affinity=min_affinity,
-        add_discarded=add_discarded,
-        identity_only=identity_only,
-    )
-    ass.assemble()
-
-    gt_images = list(gt["annotations"])
-    map_images = auxiliaryfunctions._map(list(preds["predictions"]), gt_images)
-    inds_images = [
-        gt_images.index(map_images[n]) for n in ass.metadata["imnames"]
-    ]
-    inds_non_single = [
-        i for i, n in enumerate(gt["metadata"]["animals"]) if n != "single"
-    ]
-    temp = np.stack(list(gt["annotations"].values()))
-    ass_true_dict = inferenceutils._parse_ground_truth_data(
-        temp[np.ix_(inds_images, inds_non_single, np.arange(n_multi))],
-    )
-    oks = inferenceutils.evaluate_assembly(
-        ass.assemblies,
-        ass_true_dict,
-        oks_sigma,
-        margin=margin,
-        symmetric_kpts=symmetric_kpts,
-        greedy_matching=greedy_matching,
-    )
-    return oks["mAP"], ass

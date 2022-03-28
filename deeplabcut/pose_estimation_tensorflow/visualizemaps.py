@@ -213,7 +213,7 @@ def extract_maps(
             # if notanalyzed: #this only applies to ask if h5 exists...
 
             # Specifying state of model (snapshot / training state)
-            pose_setup = predict.setup_pose_prediction(dlc_cfg)
+            sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
             Numimages = len(Data.index)
             PredicteData = np.zeros((Numimages, 3 * len(dlc_cfg["all_joints_names"])))
             print("Analyzing data...")
@@ -235,10 +235,7 @@ def extract_maps(
                 image_batch = data_to_input(image)
 
                 # Compute prediction with the CNN
-                outputs_np = pose_setup.session.run(
-                    pose_setup.outputs,
-                    feed_dict={pose_setup.inputs: image_batch}
-                )
+                outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
                 if cfg.get("multianimalproject", False):
                     scmap, locref, paf = predictma.extract_cnn_output(

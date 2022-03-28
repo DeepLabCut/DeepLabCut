@@ -240,12 +240,12 @@ def _benchmark_paf_graphs(
     n_graphs = len(paf_inds)
     all_scores = []
     all_metrics = []
-    all_assemblers = []
+    all_assemblies = []
     for j, paf in enumerate(paf_inds, start=1):
         print(f"Graph {j}|{n_graphs}")
         ass.paf_inds = paf
         ass.assemble()
-        all_assemblers.append(deepcopy(ass))
+        all_assemblies.append((ass.assemblies, ass.unique, ass.metadata["imnames"]))
         if split_inds is not None:
             oks = []
             for inds in split_inds:
@@ -307,7 +307,7 @@ def _benchmark_paf_graphs(
         dfs.append(df)
     big_df = pd.concat(dfs)
     group = big_df.groupby("ngraph")
-    return (all_scores, group.agg(["mean", "std"]).T, all_metrics, all_assemblers)
+    return (all_scores, group.agg(["mean", "std"]).T, all_metrics, all_assemblies)
 
 
 def _get_n_best_paf_graphs(

@@ -781,7 +781,7 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        pose_setup = predict.setup_pose_prediction(dlc_cfg)
+                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
                         Numimages = len(Data.index)
                         PredicteData = np.zeros(
                             (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
@@ -797,9 +797,8 @@ def evaluate_network(
 
                             image_batch = data_to_input(image)
                             # Compute prediction with the CNN
-                            outputs_np = pose_setup.session.run(
-                                pose_setup.outputs,
-                                feed_dict={pose_setup.inputs: image_batch}
+                            outputs_np = sess.run(
+                                outputs, feed_dict={inputs: image_batch}
                             )
                             scmap, locref = predict.extract_cnn_output(
                                 outputs_np, dlc_cfg
@@ -815,7 +814,7 @@ def evaluate_network(
                                 pose.flatten()
                             )  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
 
-                        pose_setup.session.close()  # closes the current tf session
+                        sess.close()  # closes the current tf session
 
                         index = pd.MultiIndex.from_product(
                             [
