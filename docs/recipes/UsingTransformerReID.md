@@ -51,7 +51,8 @@ def transformer_reID(
 
 While some arguments are similar to the rest of the DeepLabCut API, `train_epochs` and `n_triplets` are specific to `transformer_reID()`. 
 
-The default values were found to work good in [our paper]((TODO:AddLinkHere!)), however this heavily depends on having good detections beforehand. You should run `deeplabcut.create_video_with_all_detections()` and inspect that the detection performance is sufficient. Another good tool for more advanced users to inspect the quality of assembled animals is `deeplabcut.plot_edge_affinity_distributions()`.
+The default values were found to work good in [our paper]((TODO:AddLinkHere!)), however this heavily depends on having good detections and assemblies beforehand. You should run `deeplabcut.create_video_with_all_detections()` and inspect that the detection performance is sufficient. To inspect the quality of assembled animals you can use `deeplabcut.plot_edge_affinity_distributions()`.
+<!-- Note: add link to multi animal guide here to show good / bad detections and assemblies -->
 
 If you find that the detection and assembly performance in a video are sufficient, but the `transformer_reID()` results in poor tracking, you can consider increasing the number of training epochs for the transformer, or the number of triplets (which you can think of as the dataset size that the transformer is training on).
 
