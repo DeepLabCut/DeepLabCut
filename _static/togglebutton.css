@@ -64,14 +64,24 @@ button.toggle-button {
     stroke: currentColor;  /* So that we inherit the color of other text */
 }
 
-details.toggle-details .tb-icon {
-    height: 1.3em;
-    width: 1.3em;
+/* Rotate icon with admonitions so that it points down */
+.admonition.toggle .tb-icon {
+    transform: rotate(-90deg);
 }
 
-.toggle-button-hidden .tb-icon {
-    transform: rotate(90deg);
+/* When the admonition is hidden, icon should flip upwards but retain rotation */
+/* We scaleX, in order to flip along Y, because it is rotated */
+.admonition.toggle .toggle-button-hidden .tb-icon {
+    transform: rotate(-90deg) scaleX(-1);
 }
+
+/* With details toggles, we don't rotate the icon so it points right */
+details.toggle-details .tb-icon {
+    height: 1.4em;
+    width: 1.4em;
+    margin-top: 0.1em;  /* To center the button vertically */
+}
+
 
 /**
  * Details-based toggles.
@@ -92,8 +102,12 @@ details.toggle-details summary {
     border-radius: .4em;
     border: 1px solid #ccc;
     background: #f8f8f8;
-    padding: 0.4em 1em 0.4em 0.5em; /* Less padding on left because the SVG has left margin */
-    font-size: .9em;
+    padding: 0.2em 0.7em 0.3em 0.5em; /* Less padding on left because the SVG has left margin */
+    font-size: 0.8em;
+}
+
+.toggle-details__summary-text {
+    margin-left: 0.2em;
 }
 
 details.toggle-details summary:hover {
