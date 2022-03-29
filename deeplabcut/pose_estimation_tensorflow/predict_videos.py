@@ -1159,7 +1159,7 @@ def analyze_time_lapse_frames(
                 )
                 print("The folder was analyzed. Now your research can truly start!")
                 print(
-                    "If the tracking is not satisfactory for some from, consider expanding the training set."
+                    "If the tracking is not satisfactory for some frame, consider expanding the training set."
                 )
             else:
                 print(
