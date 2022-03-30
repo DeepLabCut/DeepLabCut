@@ -522,6 +522,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
+    # TODO note to Jeff. How can we get the likelihood space for across the image dimensions? Is it accessible here
     pose_tensor = predict.extract_GPUprediction(
         outputs, dlc_cfg
     )  # extract_output_tensor(outputs, dlc_cfg)
@@ -549,11 +550,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             )
             pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
             # pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
-            PredictedData[
-                counter, :
-            ] = (
-                pose.flatten()
-            )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
+            PredictedData[counter, :] = (pose.flatten())  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
         elif counter >= nframes:
             break
         counter += 1

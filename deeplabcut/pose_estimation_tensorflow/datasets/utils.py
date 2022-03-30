@@ -25,6 +25,8 @@ def mirror_joints_map(all_joints, num_joints):
     res = np.arange(num_joints)
     symmetric_joints = [p for p in all_joints if len(p) == 2]
     for pair in symmetric_joints:
+        print(f"Res: {res}")
+        print(f"pair: {pair}")
         res[pair[0]] = pair[1]
         res[pair[1]] = pair[0]
     return res

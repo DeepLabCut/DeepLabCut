@@ -101,6 +101,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         joints[:, 1] = image_width - joints[:, 1] - 1
         return joints
 
+    # TODO interesting this infact seems to swap symmetric joint IDs so we don't need to do it ourselves! If we use this.
     def mirror_joints(self, joints, symmetric_joints, image_width):
         # joint ids are 0 indexed
         res = np.copy(joints)
@@ -194,13 +195,14 @@ class DeterministicPoseDataset(BasePoseDataset):
 
         if self.has_gt:
             stride = self.cfg["stride"]
+
+            # TODO This is the only place where mirror joints is used.
             if mirror:
-                joints = [
-                    self.mirror_joints(
-                        person_joints, self.symmetric_joints, image.shape[1]
-                    )
-                    for person_joints in joints
-                ]
+                joints = []
+                for person_joints in joints:
+                    joints.append(self.mirror_joints(person_joints, self.symmetric_joints, image.shape[1]))
+                # joints = [self.mirror_joints(person_joints, self.symmetric_joints, image.shape[1]) for person_joints in joints]
+
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
             joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
