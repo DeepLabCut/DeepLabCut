@@ -998,10 +998,6 @@ def analyze_time_lapse_frames(
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
 
-    If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
-    --------
-
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
@@ -1163,7 +1159,7 @@ def analyze_time_lapse_frames(
                 )
                 print("The folder was analyzed. Now your research can truly start!")
                 print(
-                    "If the tracking is not satisfactory for some from, consider expanding the training set."
+                    "If the tracking is not satisfactory for some frame, consider expanding the training set."
                 )
             else:
                 print(
