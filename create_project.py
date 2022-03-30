@@ -11,7 +11,6 @@ class CreateProject(QtWidgets.QDialog):
         super(CreateProject, self).__init__(parent)
 
         self.setWindowTitle("New Project")
-        self.setMinimumSize(900, 500)
 
         self.name_default = "-".join(("{}", "{}", "newProject"))
         self.proj_default = ""

@@ -31,6 +31,7 @@ class MainWindow(QMainWindow):
         desktop = QtWidgets.QDesktopWidget().screenGeometry(0)
         self.screen_width = desktop.width()
         self.screen_height = desktop.height()
+
         self.config = None
         self.cfg = dict()
         self.loaded = False
@@ -51,7 +52,6 @@ class MainWindow(QMainWindow):
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
-        self.setMinimumSize(1500, 750)
         self.statusbar = self.statusBar()
         self.statusbar.showMessage("www.deeplabcut.org")
 

@@ -306,7 +306,6 @@ class MainFrame(QMainWindow):
         super(MainFrame, self).__init__(parent)
 
         self.setWindowTitle("DeepLabCut2.0 - Labeling ToolBox")
-        self.setMinimumSize(1600, 750)
         size = self.size()
         self.imtypes = imtypes
 
@@ -620,8 +619,9 @@ class MainFrame(QMainWindow):
             print("No images found!!")
 
         self.index = np.sort(imlist)
+        video_name = os.path.split(str(self.dir))[-1]
         self.statusBar.showMessage(
-            "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
+            "Working on folder: {}".format(video_name)
         )
         self.relativeimagenames = [
             "labeled" + n.split("labeled")[1] for n in self.index
