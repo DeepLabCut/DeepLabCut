@@ -29,10 +29,10 @@ class AnalyzeVideos(QWidget):
         self.filter = False
         self.showfigs = True
 
-        # if self.cfg.get("multianimalproject", False):
-        #     self.bodyparts = self.cfg["multianimalbodyparts"]
-        # else:
-        #     self.bodyparts = self.cfg["bodyparts"]
+        if self.cfg.get("multianimalproject", False):
+            self.bodyparts = self.cfg["multianimalbodyparts"]
+        else:
+            self.bodyparts = self.cfg["bodyparts"]
 
         self.inLayout = QtWidgets.QVBoxLayout(self)
         self.inLayout.setAlignment(Qt.AlignTop)
@@ -116,6 +116,28 @@ class AnalyzeVideos(QWidget):
 
         self.layout_attributes.addLayout(self.layout_specify)
 
+        self.layout_save_filter = QtWidgets.QHBoxLayout()
+        self.layout_save_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        self.layout_save_filter.setSpacing(200)
+        self.layout_save_filter.setContentsMargins(20, 0, 50, 20)
+
+        self._layout_save()
+        self._layout_filter()
+        self._layout_plot()
+        self.layout_attributes.addLayout(self.layout_save_filter)
+
+
+        self.layout_crop_plot = QtWidgets.QHBoxLayout()
+        self.layout_crop_plot.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        self.layout_crop_plot.setSpacing(170)
+        self.layout_crop_plot.setContentsMargins(20, 0, 50, 20)
+
+        self._layout_trajectories()
+        self.layout_attributes.addLayout(self.layout_crop_plot)
+
+
         if self.cfg.get("multianimalproject", False):
             print("multianimalproject")
             # TODO: finish multianimal part:
@@ -194,27 +216,10 @@ class AnalyzeVideos(QWidget):
             #             winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
             #             self.hbox4.Add(winsize_sizer, 1, 1)
         else:
-            self.layout_save_filter = QtWidgets.QHBoxLayout()
-            self.layout_save_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-            self.layout_save_filter.setSpacing(200)
-            self.layout_save_filter.setContentsMargins(20, 0, 50, 20)
-
-            self._layout_save()
-            self._layout_filter()
-            self._layout_plot()
-            self.layout_attributes.addLayout(self.layout_save_filter)
-
-            self.layout_crop_plot = QtWidgets.QHBoxLayout()
-            self.layout_crop_plot.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-            self.layout_crop_plot.setSpacing(170)
-            self.layout_crop_plot.setContentsMargins(20, 0, 50, 20)
-
+            # Dynamically crop bdpts only in single animal
             self._layout_crop()
-            self._layout_trajectories()
 
-            self.layout_attributes.addLayout(self.layout_crop_plot)
+
 
         self.analye_videos_btn = QtWidgets.QPushButton("Analyze Videos")
         self.analye_videos_btn.setContentsMargins(0, 40, 40, 40)
@@ -364,20 +369,17 @@ class AnalyzeVideos(QWidget):
         l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         l_opt.setSpacing(20)
 
-        # TODO: add CheckListBox:
-
-        #   self.trajectory_to_plot = wx.CheckListBox(
-        #       self, choices=bodyparts, style=0, name="Select the bodyparts"
-        #   )
-        #   self.trajectory_to_plot.Bind(wx.EVT_CHECKLISTBOX, self.getbp)
-        #   self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
-        #   self.trajectory_to_plot.Hide()
+        self.bdpt_list_widget = QtWidgets.QListWidget()
+        self.bdpt_list_widget.addItems(self.bodyparts)
+        self.bdpt_list_widget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        self.bdpt_list_widget.setEnabled(False)
 
         self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
         self.plot_trajectories.setCheckState(Qt.Unchecked)
         self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
 
         l_opt.addWidget(self.plot_trajectories)
+        l_opt.addWidget(self.bdpt_list_widget)
         self.layout_crop_plot.addLayout(l_opt)
 
     def update_csv_choice(self, s):
@@ -407,22 +409,23 @@ class AnalyzeVideos(QWidget):
     def update_crop_choice(self, s):
         if s == Qt.Checked:
             self.dynamic = True
-            self.logger.info("Bodyparts will be cropped dynamically.")
+            self.logger.info("Dynamic bodypart cropping ENABLED.")
         else:
             self.dynamic = False
-            self.logger.info("Bodyparts will not be cropped.")
+            self.logger.info("Dynamic bodypart cropping DISABLED.")
 
 
     def update_plot_trajectory_choice(self, s):
         if s == Qt.Checked:
             self.trajectory = True
-            # TODO: finish functionality
-            # self.trajectory_to_plot.Show()
-            # self.getbp()
+            self.bdpt_list_widget.setEnabled(True)
+            self.logger.info("Plot trajectories ENABLED.")
+
         else:
             self.trajectory = False
-            # self.trajectory_to_plot.Hide()
-            # self.bodyparts = []
+            self.bdpt_list_widget.setEnabled(False)
+            self.logger.info("Plot trajectories DISABLED.")
+
 
     def edit_config_file(self):
         
@@ -430,9 +433,6 @@ class AnalyzeVideos(QWidget):
             return
         editor = ConfigEditor(self.config)
         editor.show()
-
-    def getbp(self, event):
-        self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())
 
     def analyze_videos(self):
         shuffle = self.shuffle.value()
@@ -481,11 +481,13 @@ class AnalyzeVideos(QWidget):
                 )
 
             if self.trajectory:
+                bdpts = self.bdpt_list_widget.selectedItems()
+                self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
                 showfig = self.showfigs
                 deeplabcut.plot_trajectories(
                     self.config,
                     self.filelist,
-                    displayedbodyparts=self.bodyparts,
+                    displayedbodyparts=bdpts,
                     videotype=self.videotype.currentText(),
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
