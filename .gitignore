@@ -10,6 +10,9 @@
 .DS_Store
 examples/.DS_Store
 
+# PyCharm Utilities (added manually by Jeff 01/03/22)
+.idea
+
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*
