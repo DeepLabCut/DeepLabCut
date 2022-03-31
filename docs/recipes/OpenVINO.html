@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to write a DLC Methods Section &#8212; DeepLabCut</title>
+    <title>Intel OpenVINO backend &#8212; DeepLabCut</title>
     
   <link href="../../_static/css/theme.css" rel="stylesheet">
   <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -53,8 +53,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Intel OpenVINO backend" href="OpenVINO.html" />
-    <link rel="prev" title="Technical (Hardware) Considerations" href="TechHardware.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="How to write a DLC Methods Section" href="DLCMethods.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -203,13 +203,13 @@ const thebe_selector_output = ".output, .cell_output"
    Technical (Hardware) Considerations
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="DLCMethods.html">
    How to write a DLC Methods Section
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="OpenVINO.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Intel OpenVINO backend
   </a>
  </li>
@@ -272,7 +272,7 @@ const thebe_selector_output = ".output, .cell_output"
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/docs/recipes/DLCMethods.md"><button type="button"
+        <a class="dropdown-buttons" href="../../_sources/docs/recipes/OpenVINO.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -292,7 +292,7 @@ const thebe_selector_output = ".output, .cell_output"
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/DLCMethods.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/OpenVINO.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -320,7 +320,7 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>How to write a DLC Methods Section</h1>
+                <h1>Intel OpenVINO backend</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -331,56 +331,25 @@ const thebe_selector_output = ".output, .cell_output"
             
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="how-to-write-a-dlc-methods-section">
-<h1>How to write a DLC Methods Section<a class="headerlink" href="#how-to-write-a-dlc-methods-section" title="Permalink to this headline">¶</a></h1>
-<p><strong>Pose estimation using DeepLabCut</strong></p>
-<p>For body part tracking we used DeepLabCut (version 2.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, etc.)*** with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.</p>
-<p>*If any defaults were changed in <em><code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code></em>, mention them.</p>
-<p>i.e. common things one might change:</p>
+  <div class="tex2jax_ignore mathjax_ignore section" id="intel-openvino-backend">
+<h1>Intel OpenVINO backend<a class="headerlink" href="#intel-openvino-backend" title="Permalink to this headline">¶</a></h1>
+<p>DeepLabCut provides an option to run deep learning model with <a class="reference external" href="https://github.com/openvinotoolkit/openvino">OpenVINO</a> backend.
+To enable OpenVINO in your pipeline, use <code class="docutils literal notranslate"><span class="pre">use_openvino</span></code> flag of <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> method with one of string values indicating device:</p>
 <ul class="simple">
-<li><p>the loader (options are <code class="docutils literal notranslate"><span class="pre">default</span></code>, <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>, <code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>, <code class="docutils literal notranslate"><span class="pre">deterministic</span></code>).</p></li>
-<li><p>the <code class="docutils literal notranslate"><span class="pre">post_dist_threshold</span></code> (default is 17 and determines training resolution).</p></li>
-<li><p>optimizer: do you use the default <code class="docutils literal notranslate"><span class="pre">SGD</span></code> or <code class="docutils literal notranslate"><span class="pre">ADAM</span></code>?</p></li>
+<li><p>“CPU” - Use CPU. This is a default value.</p></li>
+<li><p>“GPU” - Use iGPU (requires OpenCL to be installed). First launch might take some time for kernels initialization.</p></li>
+<li><p>“MULTI:CPU,GPU” - Use CPU and GPU simultaniously. In most cases this option provides the best efficiency.</p></li>
 </ul>
-<p>*** here, you could add additional citations.
-If you use ResNets, consider citing Insafutdinov et al 2016 &amp; He et al 2016. If you use the MobileNetV2s consider citing Mathis et al 2021, and Sandler et al, 2018. If you use DLCRNet, please cite Lauer et al, 2021.</p>
-<blockquote>
-<div><p>Mathis, A. et al. Deeplabcut: markerless pose estimation
-of user-defined body parts with deep learning. Nature
-Neuroscience 21, 1281–1289 (2018).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Nath, T. et al. Using deeplabcut for 3d markerless pose
-estimation across species and behaviors. Nature Protocols
-14, 2152–2176 (2019).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Mathis, A. Biasi, T. et al. Pretraining boosts out-of-domain robustness for pose estimation. WACV (2021).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Lauer et al. Multi-animal pose estimation and tracking with DeepLabCut. BioRxiv (2021).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Insafutdinov, E., Pishchulin, L., Andres, B., Andriluka,
-M. &amp; Schiele, B. DeeperCut: A deeper, stronger, and
-faster multi-person pose estimation model. In European
-Conference on Computer Vision, 34–50 (Springer, 2016).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Sandler, M., Howard, A., Zhu, M., Zhmoginov, A. &amp;
-Chen, L.-C. Mobilenetv2: Inverted residuals and linear
-bottlenecks. In Proceedings of the IEEE Conference
-on Computer Vision and Pattern Recognition, 4510–4520
-(2018).</p>
-</div></blockquote>
-<blockquote>
-<div><p>He, K., Zhang, X., Ren, S. &amp; Sun, J. Deep residual
-learning for image recognition. In Proceedings of the
-IEEE conference on computer vision and pattern recognition,
-770–778 (2016). URL <a class="reference external" href="https://arxiv.org/abs/">https://arxiv.org/abs/</a>
-1512.03385.</p>
-</div></blockquote>
-<p>We also have the network graphic freely available on <a class="reference external" href="http://SciDraw.io">SciDraw.io</a> if you’d like to use it! <a class="reference external" href="https://scidraw.io/drawing/290">https://scidraw.io/drawing/290</a>. If you use our DLC logo, please include the TM symbol, thank you!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">analyze_videos</span><span class="p">(</span>
+    <span class="o">...</span>
+    <span class="n">use_openvino</span><span class="o">=</span><span class="s2">&quot;MULTI:CPU,GPU&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>OpenVINO is an optional dependency. You can install it with DeepLabCut bu the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install deeplabcut<span class="o">[</span>openvino<span class="o">]</span>
+</pre></div>
+</div>
 </div>
 
     <script type="text/x-thebe-config">
@@ -408,17 +377,17 @@ IEEE conference on computer vision and pattern recognition,
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="TechHardware.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="DLCMethods.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Technical (Hardware) Considerations</p>
+            <p class="prev-next-title">How to write a DLC Methods Section</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="OpenVINO.html" title="next page">
+    <a class='right-next' id="next-link" href="../MISSION_AND_VALUES.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Intel OpenVINO backend</p>
+        <p class="prev-next-title">Mission and Values of DeepLabCut</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
