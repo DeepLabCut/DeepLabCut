@@ -67,7 +67,7 @@ from deeplabcut.generate_training_dataset import (
     dropimagesduetolackofannotation,
     adddatasetstovideolistandviceversa,
     dropduplicatesinannotatinfiles,
-    drop_unlabeled_frames
+    dropunlabeledframes
 )
 from deeplabcut.utils import (
     create_labeled_video,
