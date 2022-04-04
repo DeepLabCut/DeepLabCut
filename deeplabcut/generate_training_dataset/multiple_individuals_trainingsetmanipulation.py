@@ -27,8 +27,11 @@ from deeplabcut.generate_training_dataset import (
     MakeInference_yaml,
     pad_train_test_indices,
 )
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models, auxfun_multianimal
-
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_models,
+    auxfun_multianimal,
+)
 
 def format_multianimal_training_data(
     df,
@@ -102,6 +105,8 @@ def create_multianimaltraining_dataset(
     paf_graph=None,
     trainIndices=None,
     testIndices=None,
+    n_edges_threshold=105,
+    paf_graph_degree=6,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -141,10 +146,12 @@ def create_multianimaltraining_dataset(
         or "hybrid" (alternating randomly between "uniform" and "density").
         Default is "hybrid".
 
-    paf_graph: list of lists, optional (default=None)
+    paf_graph: list of lists, or "config" optional (default=None)
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
         the data-driven selection procedure upon model evaluation will be skipped.
+
+        "config" will use the skeleton defined in the config file.
 
     trainIndices: list of lists, optional (default=None)
         List of one or multiple lists containing train indexes.
@@ -153,6 +160,12 @@ def create_multianimaltraining_dataset(
     testIndices: list of lists, optional (default=None)
         List of one or multiple lists containing test indexes.
 
+    n_edges_threshold: int, optional (default=105)
+        Number of edges above which the graph is automatically pruned.
+
+    paf_graph_degree: int, optional (default=6)
+        Degree of paf_graph when automatically pruning it (before training).
+        
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -215,10 +228,32 @@ def create_multianimaltraining_dataset(
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
     if paf_graph is None:  # Automatically form a complete PAF graph
+        n_bpts = len(multianimalbodyparts)
         partaffinityfield_graph = [
-            list(edge) for edge in combinations(range(len(multianimalbodyparts)), 2)
+            list(edge) for edge in combinations(range(n_bpts), 2)
         ]
+        n_edges_orig = len(partaffinityfield_graph)
+        # If the graph is unnecessarily large (with 15+ keypoints by default),
+        # we randomly prune it to a size guaranteeing an average node degree of 6;
+        # see Suppl. Fig S9c in Lauer et al., 2022.
+        if n_edges_orig >= n_edges_threshold:
+            partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
+                partaffinityfield_graph, average_degree=paf_graph_degree,
+            )
     else:
+        if paf_graph == "config":
+            # Use the skeleton defined in the config file
+            skeleton = cfg["skeleton"]
+            paf_graph = [
+                sorted(
+                    (multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))
+                )
+                for bpt1, bpt2 in skeleton
+            ]
+            print(
+                "Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed."
+            )
+
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
         to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, paf_graph)

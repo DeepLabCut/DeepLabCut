@@ -8,12 +8,15 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import math
 import os
 import pickle
+import random
 import shelve
 from itertools import combinations
 from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 
@@ -80,6 +83,33 @@ def validate_paf_graph(cfg, paf_graph):
             f"For multi-animal projects, all multianimalbodyparts should be connected. "
             f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
         )
+
+
+def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
+    if not (desired_n_edges or average_degree):
+        raise ValueError(
+            "Either `desired_n_edges` or `average_degree` must be specified."
+        )
+
+    G = nx.Graph(list_of_edges)
+    n_edges = len(G.edges)
+    n_nodes = len(G.nodes)
+    if average_degree is not None:
+        # (average_degree / 2) as many edges as there are nodes is required
+        # for undirected graphs to reach the target degree.
+        desired_n_edges = math.ceil(n_nodes * average_degree / 2)
+    if not n_nodes - 1 <= desired_n_edges < n_edges:
+        raise ValueError(
+            f"""`desired_n_edges` should be greater than or equal to {n_nodes - 1},
+            but smaller than {n_edges}."""
+        )
+
+    while True:
+        g = nx.Graph(random.sample(G.edges, desired_n_edges))
+        if len(g.nodes) == n_nodes and nx.is_connected(g):
+            print("Valid subgraph found...")
+            break
+    return [sorted(edge) for edge in g.edges]
 
 
 def getpafgraph(cfg, printnames=True):
@@ -171,7 +201,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     """
     Converts single animal annotation file into a multianimal annotation file,
     by introducing an individuals column with either the first individual
-    in individuals list in config.yaml or whatever is passsed via "forceindividual".
+    in individuals list in config.yaml or whatever is passed via "forceindividual".
 
     ----------
     config : string
@@ -266,7 +296,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             if len(uniquebodyparts) == 0:
                 dataFrame = None
 
-            # -> adding (indivdual,bpt) for multianimalbodyparts
+            # -> adding (individual,bpt) for multianimalbodyparts
             for j, bpt in enumerate(multianimalbodyparts):
                 index = pd.MultiIndex.from_arrays(
                     np.array(

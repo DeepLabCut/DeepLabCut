@@ -29,7 +29,7 @@ class Analyze_videos(wx.Panel):
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
-        # variable initilization
+        # variable initialization
         self.filelist = []
         self.picklelist = []
         self.bodyparts = []
@@ -174,6 +174,15 @@ class Analyze_videos(wx.Panel):
             )
             self.csv.SetSelection(1)
 
+            self.nwb = wx.RadioBox(
+                self,
+                label="Want to save result(s) as nwb?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.nwb.SetSelection(1)
+
             self.filter = wx.RadioBox(
                 self,
                 label="Want to filter the predictions? (+ csv file)",
@@ -202,6 +211,7 @@ class Analyze_videos(wx.Panel):
             self.trajectory.SetSelection(1)
 
             self.hbox3.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox3.Add(self.nwb, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
@@ -225,6 +235,15 @@ class Analyze_videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
             self.csv.SetSelection(1)
+
+            self.nwb = wx.RadioBox(
+                self,
+                label="Want to save result(s) as nwb?",
+                choices=["Yes", "No"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+            self.nwb.SetSelection(1)
 
             self.filter = wx.RadioBox(
                 self,
@@ -254,6 +273,7 @@ class Analyze_videos(wx.Panel):
             self.trajectory.SetSelection(0)
 
             self.hbox1.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
+            self.hbox1.Add(self.nwb, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox1.Add(self.filter, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.showfigs, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox3.Add(self.trajectory, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
@@ -481,6 +501,13 @@ class Analyze_videos(wx.Panel):
             if self.csv.GetStringSelection() == "Yes":
                 deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
 
+            if self.nwb.GetStringSelection() == "Yes":
+                deeplabcut.analyze_videos_converth5_to_nwb(
+                    self.config,
+                    self.filelist,
+                    listofvideos=True,
+                )
+
             if self.trajectory.GetStringSelection() == "Yes":
                 if self.showfigs.GetStringSelection() == "No":
                     showfig = False
@@ -529,6 +556,7 @@ class Analyze_videos(wx.Panel):
             self.create_video_with_all_detections.SetSelection(1)
         else:
             self.csv.SetSelection(1)
+            self.nwb.SetSelection(1)
             self.filter.SetSelection(1)
             self.trajectory.SetSelection(0)
             self.dynamic.SetSelection(1)

@@ -236,7 +236,6 @@ def dropimagesduetolackofannotation(config):
             len(imagelist),
         )
 
-
 def check_labels(
     config,
     Labels=["+", ".", "x"],
@@ -423,6 +422,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         )
         try:
             data = pd.read_hdf(file_path)
+            conversioncode.guarantee_multiindex_rows(data)
             AnnotationData.append(data)
         except FileNotFoundError:
             print(file_path, " not found (perhaps not annotated).")
@@ -452,7 +452,6 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
-    conversioncode.guarantee_multiindex_rows(AnnotationData)
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
@@ -493,6 +492,7 @@ def SplitTrials(
                 test_indices,
                 train_fraction,
             )
+
         return train_indices, test_indices
 
 
@@ -528,7 +528,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     Importantly, this allows one to freeze a split.
 
     One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split
-    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Parameter
     ----------
@@ -666,6 +666,7 @@ def create_training_dataset(
     testIndices=None,
     net_type=None,
     augmenter_type=None,
+    posecfg_template=None,
 ):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -702,6 +703,10 @@ def create_training_dataset(
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
+        
+    posecfg_template: string (optional, default=None)
+        Path to a pose_cfg.yaml file to use as a template for generating the new one for the current iteration. Useful if you
+        would like to start with the same parameters a previous training iteration. None uses the default pose_cfg.yaml.
 
     Example
     --------
@@ -721,6 +726,16 @@ def create_training_dataset(
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+    if posecfg_template:
+        if not posecfg_template.endswith("pose_cfg.yaml"):
+            raise ValueError(
+                "posecfg_template argument must contain path to a pose_cfg.yaml file"
+            )
+        else:
+            print("Reloading pose_cfg parameters from " + posecfg_template +'\n')
+            from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
+
+            prior_cfg = read_plainconfig(posecfg_template)
     if cfg.get("multianimalproject", False):
         from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
             create_multianimaltraining_dataset,
@@ -775,10 +790,23 @@ def create_training_dataset(
             "deterministic",
         ]:
             raise ValueError("Invalid augmenter type:", augmenter_type)
-
+        
+        if posecfg_template:
+            if net_type != prior_cfg["net_type"]:
+                print(
+                    "WARNING: Specified net_type does not match net_type from posecfg_template path entered. Proceed with caution."
+                )
+            if augmenter_type != prior_cfg["dataset_type"]:
+                print(
+                    "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
+                )
+                
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-        defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+        if not posecfg_template:
+            defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+        elif posecfg_template:
+            defaultconfigfile = posecfg_template
         model_path, num_shuffles = auxfun_models.Check4weights(
             net_type, Path(dlcparent_path), num_shuffles
         )
@@ -931,6 +959,9 @@ def create_training_dataset(
                     # these values are dropped as scalecrop
                     # doesn't have rotation implemented
                     items2drop = {"rotation": 0, "rotratio": 0.0}
+                # Also drop maDLC smart cropping augmentation parameters
+                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
+                    items2drop[key] = None
 
                 trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile, items2drop
@@ -951,6 +982,7 @@ def create_training_dataset(
                 print(
                     "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
                 )
+
         return splits
 
 

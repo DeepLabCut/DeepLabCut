@@ -127,7 +127,7 @@ project_name = '{pn}-{exp}-{date}-{triangulate}'.format(pn=task, exp=scorer, dat
 project_name = path_config_file.split(os.sep)[-2]
 
 os.chdir(os.path.join(basepath, project_name, "calibration_images"))
-# Dowloading the calibration images
+# Downloading the calibration images
 url = "http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/stereo_example.zip"
 file_name = "stereo_example.zip"
 with urllib.request.urlopen(url) as response, open(file_name, "wb") as out_file:
@@ -138,7 +138,7 @@ file_name = os.path.join(
 with zipfile.ZipFile(file_name) as zf:
     zf.extractall()
 
-# Deleting unneccesary images; the ones whose corners are not detected and .mat files
+# Deleting unnecessary images; the ones whose corners are not detected and .mat files
 cwd = os.getcwd()
 [os.remove(file) for file in os.listdir(cwd) if not file.endswith(".jpg")]
 

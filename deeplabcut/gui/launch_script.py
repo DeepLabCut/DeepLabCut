@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import os
 import wx
+import matplotlib as mpl
 
 from deeplabcut.gui.create_new_project import Create_new_project
 from deeplabcut.gui.welcome import Welcome
@@ -41,6 +42,8 @@ class MainFrame(BaseFrame):
 
 
 def launch_dlc():
+    mpl.use("WxAgg")
+
     app = wx.App()
     app.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
     frame = MainFrame().Show()

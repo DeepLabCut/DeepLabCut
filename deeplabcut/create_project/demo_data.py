@@ -57,7 +57,7 @@ def transform_data(config):
     elif "openfield" in project_path:
         video_file = os.path.join(project_path, "videos", "m4s1.mp4")
     else:
-        print("This is not an offical demo dataset.")
+        print("This is not an official demo dataset.")
 
     if "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE" in cfg["video_sets"].keys():
         cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop(

@@ -210,7 +210,7 @@ def build_model(
     fine_tuning=False,
     features_only=False,
 ):
-    """A helper functiion to creates a model and returns predicted logits.
+    """A helper function to creates a model and returns predicted logits.
     Args:
       images: input images tensor.
       model_name: string, the predefined model name.
@@ -256,7 +256,7 @@ def build_model(
 def build_model_base(
     images, model_name, use_batch_norm=False, drop_out=False, override_params=None
 ):
-    """A helper functiion to create a base model and return global_pool.
+    """A helper function to create a base model and return global_pool.
     Args:
       images: input images tensor.
       model_name: string, the predefined model name.

@@ -8,7 +8,7 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
+import imgaug.augmenters as iaa
 import os
 import pickle
 from pathlib import Path
@@ -200,6 +200,12 @@ def evaluate_multianimal_full(
                     % (shuffle, trainFraction)
                 )
 
+            pipeline = iaa.Sequential(random_order=False)
+            pre_resize = dlc_cfg.get("pre_resize")
+            if pre_resize:
+                width, height = pre_resize
+                pipeline.add(iaa.Resize({"height": height, "width": width}))
+
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
 
@@ -315,6 +321,16 @@ def evaluate_multianimal_full(
                             GT = Data.iloc[imageindex]
                             if not GT.any():
                                 continue
+
+                            # Pass the image and the keypoints through the resizer;
+                            # this has no effect if no augmenters were added to it.
+                            keypoints = [GT.to_numpy().reshape((-1, 2)).astype(float)]
+                            frame_, keypoints = pipeline(
+                                images=[frame], keypoints=keypoints
+                            )
+                            frame = frame_[0]
+                            GT[:] = keypoints[0].flatten()
+
                             df = GT.unstack("coords").reindex(joints, level="bodyparts")
 
                             # FIXME Is having an empty array vs nan really that necessary?!
@@ -480,19 +496,21 @@ def evaluate_multianimal_full(
 
                             print("##########################################")
                             print(
-                                "Average Euclidean distance to GT per individual (in pixels)"
+                                "Average Euclidean distance to GT per individual (in pixels; test-only)"
                             )
                             print(
-                                error_masked.groupby("individuals", axis=1)
+                                error_masked.iloc[testIndices]
+                                .groupby("individuals", axis=1)
                                 .mean()
                                 .mean()
                                 .to_string()
                             )
                             print(
-                                "Average Euclidean distance to GT per bodypart (in pixels)"
+                                "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
                             )
                             print(
-                                error_masked.groupby("bodyparts", axis=1)
+                                error_masked.iloc[testIndices]
+                                .groupby("bodyparts", axis=1)
                                 .mean()
                                 .mean()
                                 .to_string()
