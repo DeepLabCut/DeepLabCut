@@ -285,12 +285,27 @@ class ImgaugPoseDataset(BasePoseDataset):
         data_items = []
         # Scale is sampled only once to transform all of the images of a batch into same size.
         scale = self.sample_scale()
-        while True:
+
+        found_valid = False
+        n_tries = 10 
+        while n_tries > 1:
             idx = np.random.choice(self.num_images)
             size = self.data[idx].im_size
             target_size = np.ceil(size[1:3] * scale).astype(int)
             if self.is_valid_size(target_size[1] * target_size[0]):
+                found_valid = True
                 break
+            n_tries -= 1
+        if not found_valid:
+            if size[1] * size[2] > self.max_input_sizesquare:
+                s = "large", "increasing `max_input_size`", "decreasing"
+            else:
+                s = "small", "decreasing `min_input_size`", "increasing"
+            raise ValueError(
+                f"Image size {size[1:3]} may be too {s[0]}. "
+                f"Consider {s[1]} and/or {s[2]} `global_scale` "
+                "in the train/pose_cfg.yaml."
+            )
 
         stride = self.cfg["stride"]
         for i in range(self.batch_size):

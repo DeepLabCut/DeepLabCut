@@ -261,16 +261,17 @@ def train(
     print("Training parameter:")
     print(cfg)
     print("Starting training....")
+    max_iter += start_iter  # max_iter is relative to start_iter
     for it in range(start_iter, max_iter + 1):
         if "efficientnet" in net_type:
-            dict = {tstep: it}
-            current_lr = sess.run(learning_rate, feed_dict=dict)
+            lr_dict = {tstep: it - start_iter}
+            current_lr = sess.run(learning_rate, feed_dict=lr_dict)
         else:
-            current_lr = lr_gen.get_lr(it)
-            dict = {learning_rate: current_lr}
+            current_lr = lr_gen.get_lr(it - start_iter)
+            lr_dict = {learning_rate: current_lr}
 
         [_, loss_val, summary] = sess.run(
-            [train_op, total_loss, merged_summaries], feed_dict=dict
+            [train_op, total_loss, merged_summaries], feed_dict=lr_dict
         )
         cum_loss += loss_val
         train_writer.add_summary(summary, it)

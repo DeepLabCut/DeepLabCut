@@ -51,7 +51,7 @@ class BaseFrame(wx.Frame):
     """Contains the main GUI and button boxes"""
 
     def __init__(self, frame_title="", parent=None, imtypes=None):
-        # Settting the GUI size and panels design
+        # Setting the GUI size and panels design
         displays = (
             wx.Display(i) for i in range(wx.Display.GetCount())
         )  # Gets the number of displays

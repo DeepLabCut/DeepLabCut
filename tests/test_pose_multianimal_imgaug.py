@@ -69,7 +69,7 @@ def test_get_targetmaps(ma_dataset, num_idchannel):
     ma_dataset.cfg["num_idchannel"] = num_idchannel
     batch = ma_dataset.get_batch()[1:]
     target_size, sm_size = ma_dataset.calc_target_and_scoremap_sizes()
-    scale = np.mean(target_size / ma_dataset.default_crop_size)
+    scale = np.mean(target_size / ma_dataset.default_size)
     maps = ma_dataset.get_targetmaps_update(*batch, sm_size, scale)
     assert all(len(map_) == ma_dataset.batch_size for map_ in maps.values())
     assert (

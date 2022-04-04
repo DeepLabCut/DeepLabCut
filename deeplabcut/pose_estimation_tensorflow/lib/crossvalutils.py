@@ -249,14 +249,15 @@ def _benchmark_paf_graphs(
         if split_inds is not None:
             oks = []
             for inds in split_inds:
-                assemblies = {k: v for k, v in ass.assemblies.items() if k in inds}
+                ass_gt = {k: v for k, v in ass_true_dict.items() if k in inds}
                 oks.append(
                     evaluate_assembly(
-                        assemblies,
-                        ass_true_dict,
+                        ass.assemblies,
+                        ass_gt,
                         oks_sigma,
                         margin=margin,
                         symmetric_kpts=symmetric_kpts,
+                        greedy_matching=inference_cfg.get("greedy_oks", False),
                     )
                 )
         else:
@@ -266,6 +267,7 @@ def _benchmark_paf_graphs(
                 oks_sigma,
                 margin=margin,
                 symmetric_kpts=symmetric_kpts,
+                greedy_matching=inference_cfg.get("greedy_oks", False),
             )
         all_metrics.append(oks)
         scores = np.full((len(image_paths), 2), np.nan)

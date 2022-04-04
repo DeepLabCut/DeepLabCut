@@ -94,7 +94,7 @@ def filterpredictions(
         Full path of the video to extract the frame from. Make sure that this video is already analyzed.
 
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
+        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
         the corresponding shuffle of training dataset. Default is set to 1
 
     trainingsetindex: int, optional
@@ -117,7 +117,7 @@ def filterpredictions(
         see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     MAdegree: int
-        For filtertype 'arima' Moving Avarage degree of Sarimax model degree.
+        For filtertype 'arima' Moving Average degree of Sarimax model degree.
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     alpha: float

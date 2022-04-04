@@ -1,6 +1,6 @@
 # Interactive Project Manager GUI
 
-As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut. As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionally is now available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.
+As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut. As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is now available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.
 
 ## Get Started:
 
