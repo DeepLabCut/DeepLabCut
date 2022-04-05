@@ -196,12 +196,15 @@ if __name__ == "__main__":
         snapshotfolder,
     ) = deeplabcut.return_train_network_path(
         config_path, shuffle=1, modelprefix=modelprefix, trainingsetindex=0
-    )    
-    
-    deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(config_path,
-                                                                  [new_video_path],
-                                                                  TESTTRACKER)
-    
+    )
+
+    deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
+        config_path,
+        [new_video_path],
+        TESTTRACKER,
+        videotype='mp4',
+    )
+
     train_epochs = 10
     train_frac = 0.8
 
@@ -228,7 +231,7 @@ if __name__ == "__main__":
         transformer_checkpoint=transformer_checkpoint
     )
 
-    
+
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
         config_path,
@@ -332,7 +335,7 @@ if __name__ == "__main__":
     n_tracks = 3
 
     print ('Testing the unified API for transformer')
-    
+
     deeplabcut.transformer_reID(
         config_path,
         scorer,
