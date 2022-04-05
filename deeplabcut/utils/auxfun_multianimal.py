@@ -19,7 +19,6 @@ from pathlib import Path
 import networkx as nx
 import numpy as np
 import pandas as pd
-from mmappickle import mmapdict
 
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
@@ -161,8 +160,8 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
-            
-    
+
+
     with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
     with open(metadata_path, "wb") as f:

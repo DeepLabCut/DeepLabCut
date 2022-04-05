@@ -6,11 +6,11 @@ import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
+import shelve
 import warnings
 from collections import defaultdict
 
 from deeplabcut.pose_tracking_pytorch import inference
-import glob
 import deeplabcut
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
@@ -23,7 +23,6 @@ from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
 from tqdm import trange
-from mmappickle import mmapdict
 
 
 class Tracklet:
@@ -1133,13 +1132,13 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.mmdpickle")
+        feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.pickle")
         # should only exist one
 
         if not os.path.exists(feature_dict_path) and transformer_checkpoint:
             raise FileNotFoundError(f'{feature_dict_path} does not exist. Did you run transformer_reID()?')
         elif transformer_checkpoint and os.path.exists(feature_dict_path):
-            feature_dict = mmapdict(feature_dict_path, True)
+            feature_dict = shelve.open(feature_dict_path, protocol=pickle.DEFAULT_PROTOCOL)
 
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 

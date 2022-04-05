@@ -25,8 +25,6 @@ from deeplabcut.pose_tracking_pytorch import (
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
-from deeplabcut import utils
-from mmappickle import mmapdict
 import pickle
 
 
@@ -39,12 +37,11 @@ def extract_bpt_feature_from_video(
     sess,
     inputs,
     outputs,
-    extra_dict,        
+    extra_dict,
     destfolder=None,
     robust_nframes=False,
 
 ):
-
     print("Starting to analyze % ", video)
     vname = Path(video).stem
     videofolder = str(Path(video).parents[0])
@@ -54,8 +51,11 @@ def extract_bpt_feature_from_video(
     dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
     assemble_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
-    
-    feature_dict = mmapdict(dataname.split(".h5")[0] + "_bpt_features.mmdpickle")
+
+    feature_dict = shelve.open(
+        dataname.split(".h5")[0] + "_bpt_features.pickle",
+        protocol=pickle.DEFAULT_PROTOCOL,
+    )
 
     with open(assemble_filename, "rb") as f:
         assemblies = pickle.load(f)
@@ -262,9 +262,6 @@ def GetPoseandCostsF_from_assemblies(
     counter = 0
     inds = []
 
-
-
-
     PredicteData = {}
 
     while cap.video.isOpened():
@@ -320,6 +317,9 @@ def GetPoseandCostsF_from_assemblies(
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     fname = "frame" + str(ind).zfill(strwidth)
+                    # Avoid overwriting data already on the shelf
+                    if fname in feature_dict:
+                        continue
 
                     raw_coords = assemblies[ind]
                     coords_img_space = np.array(
@@ -341,6 +341,7 @@ def GetPoseandCostsF_from_assemblies(
 
     cap.close()
     pbar.close()
+    feature_dict.close()
     PredicteData["metadata"] = {
         "nms radius": dlc_cfg["nmsradius"],
         "minimal confidence": dlc_cfg["minconfidence"],
