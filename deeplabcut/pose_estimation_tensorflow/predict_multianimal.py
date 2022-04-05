@@ -59,11 +59,6 @@ def extract_bpt_feature_from_video(
 
     with open(assemble_filename, "rb") as f:
         assemblies = pickle.load(f)
-        # assemblies has keys [1...  n_frame-1]
-        # at each key, there are a list of n_animals
-        # for each animal, there are arrays of keypoints
-        # only the first two are used
-
         print("Loading ", video)
         vid = VideoWriter(video)
         if robust_nframes:
@@ -233,6 +228,21 @@ def AnalyzeMultiAnimalVideo(
             )
 
 
+def _get_features_dict(raw_coords, features, stride):
+    coords_img_space = np.array(
+        [coord[:, :2] for coord in raw_coords]
+    )  # only first two columns are useful
+
+    coords_feature_space = convert_coord_from_img_space_to_feature_space(
+        coords_img_space, stride,
+    )
+
+    bpt_features = load_features_from_coord(
+        features.astype(np.float16), coords_feature_space
+    )
+    return {"features": bpt_features, "coordinates": coords_img_space}
+
+
 def GetPoseandCostsF_from_assemblies(
     cfg,
     dlc_cfg,
@@ -266,9 +276,18 @@ def GetPoseandCostsF_from_assemblies(
 
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
+        key = "frame" + str(counter).zfill(strwidth)
         if frame is not None:
-            frames[batch_ind] = img_as_ubyte(frame)
+            # Avoid overwriting data already on the shelf
+            if key in feature_dict:
+                continue
+
+            frame = img_as_ubyte(frame)
+            if frame.shape[-1] == 4:
+                frame = rgba2rgb(frame)
+            frames[batch_ind] = frame
             inds.append(counter)
+
             if batch_ind == batchsize - 1:
 
                 (
@@ -280,24 +299,13 @@ def GetPoseandCostsF_from_assemblies(
 
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    raw_coords = assemblies.get(ind)
+                    if raw_coords is None:
+                        continue
                     fname = "frame" + str(ind).zfill(strwidth)
-
-                    raw_coords = assemblies[ind]
-                    coords_img_space = np.array(
-                        [coord[:, :2] for coord in raw_coords]
-                    )  # only first two columns are useful
-
-                    coords_feature_space = (
-                        convert_coord_from_img_space_to_feature_space(coords_img_space, dlc_cfg['stride'])
+                    feature_dict[fname] = _get_features_dict(
+                        raw_coords, features[i], dlc_cfg['stride'],
                     )
-
-                    bpt_features = load_features_from_coord(
-                        features[i].astype(np.float16), coords_feature_space
-                    )
-                    ## load features from coordinates
-                    ## handle multiple animals
-                    temp = {"features": bpt_features, "coordinates": coords_img_space}
-                    feature_dict[fname] = temp
 
                 batch_ind = 0
                 inds.clear()
@@ -316,24 +324,13 @@ def GetPoseandCostsF_from_assemblies(
 
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
-                    fname = "frame" + str(ind).zfill(strwidth)
-                    # Avoid overwriting data already on the shelf
-                    if fname in feature_dict:
+                    raw_coords = assemblies.get(ind)
+                    if raw_coords is None:
                         continue
-
-                    raw_coords = assemblies[ind]
-                    coords_img_space = np.array(
-                        [coord[:, :2] for coord in raw_coords]
-                    )  # only first two columns are useful
-
-                    coords_feature_space = (
-                        convert_coord_from_img_space_to_feature_space(coords_img_space, dlc_cfg['stride'])
+                    fname = "frame" + str(ind).zfill(strwidth)
+                    feature_dict[fname] = _get_features_dict(
+                        raw_coords, features[i], dlc_cfg['stride'],
                     )
-                    bpt_features = load_features_from_coord(
-                        features[i].astype(np.float16), coords_feature_space
-                    )
-                    temp = {"features": bpt_features, "coordinates": coords_img_space}
-                    feature_dict[fname] = temp
 
             break
         counter += 1
