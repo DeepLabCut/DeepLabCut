@@ -1134,11 +1134,14 @@ def stitch_tracklets(
 
         feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.pickle")
         # should only exist one
-
-        if not os.path.exists(feature_dict_path) and transformer_checkpoint:
-            raise FileNotFoundError(f'{feature_dict_path} does not exist. Did you run transformer_reID()?')
-        elif transformer_checkpoint and os.path.exists(feature_dict_path):
-            feature_dict = shelve.open(feature_dict_path, protocol=pickle.DEFAULT_PROTOCOL)
+        if transformer_checkpoint:
+            import dbm
+            try:
+                feature_dict = shelve.open(feature_dict_path, flag='r')
+            except dbm.error:
+                raise FileNotFoundError(
+                    f'{feature_dict_path} does not exist. Did you run transformer_reID()?'
+                )
 
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 
