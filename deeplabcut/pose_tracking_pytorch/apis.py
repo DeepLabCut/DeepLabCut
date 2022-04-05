@@ -27,7 +27,7 @@ def transformer_reID(
     able to perform reID. The transformer is then used as a stitching loss when tracklets are
     stitched during tracking.
 
-    Outputs: The tracklet file is saved as _track_trans.h5 in the same folder where the non transformer tracklet file is stored.
+    Outputs: The tracklet file is saved in the same folder where the non transformer tracklet file is stored.
 
     Parameters
     ----------
