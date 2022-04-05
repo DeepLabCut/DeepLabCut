@@ -273,7 +273,7 @@ def _benchmark_paf_graphs(
         scores = np.full((len(image_paths), 2), np.nan)
         for i, imname in enumerate(tqdm(image_paths)):
             gt = ground_truth[i]
-            gt = gt[~pd.isnull(gt).any(axis=1)]
+            gt = gt[~np.isnan(gt).any(axis=1)]
             if len(np.unique(gt[:, 2])) < 2:  # Only consider frames with 2+ animals
                 continue
 
