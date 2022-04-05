@@ -1,10 +1,11 @@
 import numpy as np
 import os
+import pickle
+import shelve
 from deeplabcut.refine_training_dataset.stitch import (
     TrackletStitcher,
 )
 from pathlib import Path
-from mmappickle import mmapdict
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
 
 np.random.seed(0)
@@ -20,7 +21,7 @@ def generate_train_triplets_from_pickle(path_to_track, n_triplets=1000):
 def save_train_triplets(feature_fname, triplets, out_name):
     ret_vecs = []
 
-    feature_dict = mmapdict(feature_fname, True)
+    feature_dict = shelve.open(feature_fname, protocol=pickle.DEFAULT_PROTOCOL)
 
     nframes = len(feature_dict.keys())
 
@@ -29,7 +30,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
     for triplet in triplets:
 
         anchor, pos, neg = triplet[0], triplet[1], triplet[2]
-        
+
         anchor_coord, anchor_frame = anchor
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
@@ -50,7 +51,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
         neg_vec = query_feature_by_coord_in_img_space(
             feature_dict, neg_frame, neg_coord
         )
-        
+
         ret_vecs.append([anchor_vec, pos_vec, neg_vec])
 
     ret_vecs = np.array(ret_vecs)
@@ -75,16 +76,16 @@ def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000):
         vname = Path(video).stem
         videofolder = str(Path(video).parents[0])
         feature_fname = os.path.join(
-            videofolder, vname + dlcscorer + "_bpt_features.mmdpickle"
+            videofolder, vname + dlcscorer + "_bpt_features.pickle"
         )
-        
+
         if track_method == 'ellipse':
             method = 'el'
         elif track_method == 'box':
             method = 'bx'
         else:
             raise ValueError (f'{track_method} is not supported here')
-        
+
         track_file = os.path.join(videofolder, vname + dlcscorer + f"_{method}.pickle")
         out_fname = os.path.join(videofolder, vname + dlcscorer + "_triplet_vector.npy")
         create_train_using_pickle(
