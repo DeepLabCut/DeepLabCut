@@ -18,6 +18,7 @@ def transformer_reID(
     track_method="ellipse",
     train_epochs=100,
     n_triplets=1000,
+    videotype="mp4",
     shuffle=1,
 ):
 
@@ -56,6 +57,8 @@ def transformer_reID(
 
         number of triplets to be mined from the videos
 
+    videotype: (optional) str
+        extension for the video file
 
     """
 
@@ -73,7 +76,7 @@ def transformer_reID(
     )
     
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        path_config_file, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets
+        path_config_file, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets, videotype = videotype
     )
 
     (
@@ -108,6 +111,7 @@ def transformer_reID(
         track_method=track_method,
         modelprefix=modelprefix,
         n_tracks=n_tracks,
+        videotype = videotype,
         transformer_checkpoint=transformer_checkpoint,
     )
 

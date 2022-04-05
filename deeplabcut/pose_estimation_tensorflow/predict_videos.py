@@ -207,7 +207,6 @@ def create_tracking_dataset(
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
-
             for video in Videos:
                 extract_bpt_feature_from_video(
                     video,
