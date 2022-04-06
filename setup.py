@@ -46,7 +46,10 @@ setuptools.setup(
         "pyyaml",
         "Pillow>=7.1",
     ],
-    extras_require={"gui": ["wxpython<4.1"]},
+    extras_require={
+        "gui": ["wxpython<4.1"],
+        "openvino": ["openvino-dev==2022.1.0"],
+    },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
     data_files=[

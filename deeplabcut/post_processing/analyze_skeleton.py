@@ -190,7 +190,7 @@ def analyzeskeleton(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
+        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
         the corresponding shuffle of training dataset. Default is set to 1
 
     trainingsetindex: int, optional

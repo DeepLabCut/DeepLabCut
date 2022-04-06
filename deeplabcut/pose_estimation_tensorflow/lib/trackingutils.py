@@ -24,6 +24,8 @@ from tqdm import tqdm
 
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
+TRACK_METHODS = "box", "skeleton", "ellipse"
+
 
 def calc_iou(bbox1, bbox2):
     x1 = max(bbox1[0], bbox2[0])
@@ -578,7 +580,7 @@ class SORTSkeleton(SORTBase):
         return mat
 
     def track(self, poses):
-        self.frame_count += 1
+        self.n_frames += 1
 
         if not len(self.trackers):
             for pose in poses:
@@ -795,7 +797,7 @@ def reconstruct_all_ellipses(data, sd):
 def _track_individuals(
     individuals, min_hits=1, max_age=5, similarity_threshold=0.6, track_method="ellipse"
 ):
-    if track_method not in ("box", "skeleton", "ellipse"):
+    if track_method not in TRACK_METHODS:
         raise ValueError(f"Unknown {track_method} tracker.")
 
     if track_method == "ellipse":

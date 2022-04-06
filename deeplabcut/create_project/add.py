@@ -9,7 +9,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 
-def add_new_videos(config, videos, copy_videos=False, coords=None):
+def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -19,22 +19,27 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
         String containing the full path of the config file in the project.
 
     videos : list
-        A list of string containing the full paths of the videos to include in the project.
+        A list of strings containing the full paths of the videos to include in the project.
 
     copy_videos : bool, optional
         If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
+
     coords: list, optional
-      A list containing the list of cropping coordinates of the video. The default is set to None.
+        A list containing the list of cropping coordinates of the video. The default is set to None.
+
+    extract_frames: bool, optional
+        if this is set to True extract_frames will be run on the new videos
+
     Examples
     --------
-    Video will be added, with cropping dimenions according to the frame dimensinos of mouse5.avi
+    Video will be added, with cropping dimensions according to the frame dimensions of mouse5.avi
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'])
 
-    Video will be added, with cropping dimenions [0,100,0,200]
+    Video will be added, with cropping dimensions [0,100,0,200]
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]])
 
-    Two videos will be added, with cropping dimenions [0,100,0,200] and [0,100,0,250], respectively.
+    Two videos will be added, with cropping dimensions [0,100,0,200] and [0,100,0,250], respectively.
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
 
     """
@@ -44,6 +49,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
 
     from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.utils.auxfun_videos import VideoReader
+    from deeplabcut.generate_training_dataset import frame_extraction
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -99,8 +105,14 @@ def add_new_videos(config, videos, copy_videos=False, coords=None):
             cfg["video_sets"].update(params)
         else:
             cfg["video_sets_original"].update(params)
-
+    videos_str = [str(video) for video in videos]
+    if extract_frames:
+        frame_extraction.extract_frames(config, userfeedback=False, videos=videos_str)
+        print(
+            "New videos were added to the project and frames have been extracted for labeling!"
+        )
+    else:
+        print(
+            "New videos were added to the project! Use the function 'extract_frames' to select frames for labeling."
+        )
     auxiliaryfunctions.write_config(config, cfg)
-    print(
-        "New video was added to the project! Use the function 'extract_frames' to select frames for labeling."
-    )
