@@ -328,16 +328,15 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
 
     *_labeled.videotype
     *_full.videotype
-
+    
     Args:
-        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory,
+        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory, 
             finds all videos whose extension matches  ``videotype`` in the directory
         videotype (None, str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
             but raises a ``ValueError`` if not provided if ``videos`` is a directory.
     """
     if isinstance(videos, str):
         videos = [videos]
-
 
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
@@ -612,17 +611,7 @@ def GetScorerName(
     )
     # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from dlc_cfg!
     # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
-    scorer_legacy = (
-        "DeepCut_"
-        + netname
-        + "_"
-        + Task
-        + str(date)
-        + "shuffle"
-        + str(shuffle)
-        + "_"
-        + str(trainingsiterations)
-    )
+    scorer_legacy = scorer.replace("DLC", "DeepCut")
     return scorer, scorer_legacy
 
 

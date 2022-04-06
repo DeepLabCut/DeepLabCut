@@ -9,7 +9,7 @@
 .local
 .DS_Store
 examples/.DS_Store
-
+*~
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*

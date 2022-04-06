@@ -28,12 +28,13 @@ from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
 from .openvino.session import OpenVINOSession
 
 
-def setup_pose_prediction(cfg, allow_growth=False):
+def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
     tf.compat.v1.reset_default_graph()
     inputs = tf.compat.v1.placeholder(
         tf.float32, shape=[cfg["batch_size"], None, None, 3]
     )
     net_heads = PoseNetFactory.create(cfg).test(inputs)
+    extra_dict = {}
     outputs = [net_heads["part_prob"]]
     if cfg["location_refinement"]:
         outputs.append(net_heads["locref"])
@@ -43,6 +44,9 @@ def setup_pose_prediction(cfg, allow_growth=False):
         outputs.append(net_heads["pairwise_pred"])
 
     outputs.append(net_heads["peak_inds"])
+
+    if collect_extra:
+        extra_dict["features"] = net_heads["features"]
 
     restorer = tf.compat.v1.train.Saver()
 
@@ -58,7 +62,10 @@ def setup_pose_prediction(cfg, allow_growth=False):
     # Restore variables from disk.
     restorer.restore(sess, cfg["init_weights"])
 
-    return sess, inputs, outputs
+    if collect_extra:
+        return sess, inputs, outputs, extra_dict
+    else:
+        return sess, inputs, outputs
 
 
 def extract_cnn_output(outputs_np, cfg):

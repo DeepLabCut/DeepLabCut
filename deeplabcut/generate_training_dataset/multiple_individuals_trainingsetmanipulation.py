@@ -34,7 +34,10 @@ from deeplabcut.utils import (
 )
 
 def format_multianimal_training_data(
-    df, train_inds, project_path, n_decimals=2,
+    df,
+    train_inds,
+    project_path,
+    n_decimals=2,
 ):
     train_data = []
     nrows = df.shape[0]
@@ -318,7 +321,10 @@ def create_multianimaltraining_dataset(
 
         # Make training file!
         data = format_multianimal_training_data(
-            Data, trainIndices, cfg["project_path"], numdigits,
+            Data,
+            trainIndices,
+            cfg["project_path"],
+            numdigits,
         )
 
         if len(trainIndices) > 0:
@@ -374,7 +380,10 @@ def create_multianimaltraining_dataset(
             )
             path_test_config = str(
                 os.path.join(
-                    cfg["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml",
+                    cfg["project_path"],
+                    Path(modelfoldername),
+                    "test",
+                    "pose_cfg.yaml",
                 )
             )
             path_inference_config = str(
@@ -475,7 +484,10 @@ def create_multianimaltraining_dataset(
 
 
 def convert_cropped_to_standard_dataset(
-    config_path, recreate_datasets=True, delete_crops=True, back_up=True,
+    config_path,
+    recreate_datasets=True,
+    delete_crops=True,
+    back_up=True,
 ):
     import pandas as pd
     import pickle
@@ -514,7 +526,8 @@ def convert_cropped_to_standard_dataset(
         return
 
     datasets_folder = os.path.join(
-        project_path, auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        project_path,
+        auxiliaryfunctions.GetTrainingSetFolder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),

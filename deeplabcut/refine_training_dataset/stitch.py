@@ -6,8 +6,14 @@ import pandas as pd
 import pickle
 import re
 import scipy.linalg.interpolative as sli
+import shelve
 import warnings
 from collections import defaultdict
+
+from deeplabcut.pose_tracking_pytorch import inference
+import deeplabcut
+from deeplabcut.utils.auxfun_videos import VideoWriter
+from functools import partial
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import calc_iou
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from itertools import combinations, cycle
@@ -597,11 +603,7 @@ class TrackletStitcher:
             neg = overlapping_tracklet.get_data_at(ind_anchor)[:, :2].astype(int)
             ind_pos = np.random.choice(tracklet.inds[tracklet.inds != ind_anchor])
             pos = tracklet.get_data_at(ind_pos)[:, :2].astype(int)
-            triplet = (
-                (anchor, ind_anchor),
-                (pos, ind_pos),
-                (neg, ind_anchor)
-            )
+            triplet = ((anchor, ind_anchor), (pos, ind_pos), (neg, ind_anchor))
             triplets.append(triplet)
         return triplets
 
@@ -883,10 +885,12 @@ class TrackletStitcher:
             df = df.join(df2, how="outer")
         return df
 
-    def write_tracks(self, output_name="", animal_names=None):
+    def write_tracks(self, output_name="", suffix="", animal_names=None):
         df = self.format_df(animal_names)
         if not output_name:
-            output_name = self.filename.replace("pickle", "h5")
+            if suffix:
+                suffix = "_" + suffix
+            output_name = self.filename.replace(".pickle", f"{suffix}.h5")
         df.to_hdf(output_name, "tracks", format="table", mode="w")
 
     @staticmethod
@@ -994,6 +998,7 @@ def stitch_tracklets(
     modelprefix="",
     track_method="",
     output_name="",
+    transformer_checkpoint="",
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1075,7 +1080,7 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    vids = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    vids = deeplabcut.utils.auxiliaryfunctions.Getlistofvideos(videos, videotype)
     if not vids:
         print("No video(s) found. Please check your path!")
         return
@@ -1083,25 +1088,61 @@ def stitch_tracklets(
     cfg = auxiliaryfunctions.read_config(config_path)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
-
     animal_names = cfg["individuals"]
     if n_tracks is None:
         n_tracks = len(animal_names)
 
-    DLCscorer, _ = auxiliaryfunctions.GetScorerName(
+    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
         cfg,
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
 
+    if transformer_checkpoint:
+        dlctrans = inference.DLCTrans(checkpoint=transformer_checkpoint)
+
+    def trans_weight_func(tracklet1, tracklet2, nframe, feature_dict):
+        zfill_width = int(np.ceil(np.log10(nframe)))
+        if tracklet1 < tracklet2:
+            ind_img1 = tracklet1.inds[-1]
+            coord1 = tracklet1.data[-1][:, :2]
+            ind_img2 = tracklet2.inds[0]
+            coord2 = tracklet2.data[0][:, :2]
+        else:
+            ind_img2 = tracklet2.inds[-1]
+            ind_img1 = tracklet1.inds[0]
+            coord2 = tracklet2.data[-1][:, :2]
+            coord1 = tracklet1.data[0][:, :2]
+        t1 = (coord1, ind_img1)
+        t2 = (coord2, ind_img2)
+
+        dist = dlctrans(t1, t2, zfill_width, feature_dict)
+        dist = (dist + 1) / 2
+
+        return -dist
+
     for video in vids:
         print("Processing... ", video)
+        nframe = len(VideoWriter(video))
         videofolder = str(Path(video).parents[0])
         dest = destfolder or videofolder
-        auxiliaryfunctions.attempttomakefolder(dest)
+        deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
         vname = Path(video).stem
+
+        feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.pickle")
+        # should only exist one
+        if transformer_checkpoint:
+            import dbm
+            try:
+                feature_dict = shelve.open(feature_dict_path, flag='r')
+            except dbm.error:
+                raise FileNotFoundError(
+                    f'{feature_dict_path} does not exist. Did you run transformer_reID()?'
+                )
+
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
+
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":
@@ -1120,8 +1161,19 @@ def stitch_tracklets(
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
 
-            stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+            if transformer_checkpoint:
+                stitcher.build_graph(
+                    max_gap=max_gap,
+                    weight_func=partial(
+                        trans_weight_func, nframe=nframe, feature_dict=feature_dict
+                    ),
+                )
+            else:
+                stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+
             stitcher.stitch()
-            stitcher.write_tracks(output_name, animal_names)
+            stitcher.write_tracks(
+                output_name=output_name, animal_names=animal_names,
+            )
         except FileNotFoundError as e:
             print(e, "\nSkipping...")

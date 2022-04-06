@@ -243,6 +243,7 @@ def dropimagesduetolackofannotation(config):
             len(imagelist),
         )
 
+
 def dropunlabeledframes(config):
     """
     Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files 
@@ -279,6 +280,7 @@ def dropunlabeledframes(config):
             print("Dropped ", dropped, "entries in ",folder)
     
     print("Done.")
+
 
 def check_labels(
     config,

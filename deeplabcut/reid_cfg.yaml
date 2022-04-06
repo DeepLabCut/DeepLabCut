@@ -1,0 +1,54 @@
+########## Model ##########
+
+# Using cuda or cpu for training
+device: cuda
+
+# If train with arcface loss, options: 'True', 'False'
+cos_layer: false
+
+# If train with multi-gpu ddp mode, options: 'True', 'False'
+dist_train: false
+
+# Transformer settings
+drop_path: 0.1
+drop_out: 0.0
+att_drop_rate: 0.0
+
+# SIE parameters
+sie_coe: 3.0
+
+
+########## Solver ##########
+
+optimizer_name: Adam
+
+max_epochs: 100
+
+# Base learning rate
+base_lr: 3e-4
+
+# Whether using larger learning rate for fc layer
+large_fc_lr: false
+
+# Factor of learning bias
+bias_lr_factor: 1
+
+momentum: 0.9
+
+# Settings of weight decay
+weight_decay: 0.0005
+weight_decay_bias: 0.0005
+
+# Warm up epochs
+warmup_epochs: 5
+
+# Epoch number of saving checkpoints
+checkpoint_period: 10
+
+# Iteration of display training log
+log_period: 100
+
+########## Test ##########
+
+# Whether feature is normalized before test, if yes, it is equivalent to cosine distance
+feat_norm: yes

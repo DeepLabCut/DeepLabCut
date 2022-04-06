@@ -117,6 +117,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                     "pairwise_pred",
                     self.cfg["num_limbs"] * 2,
                 )
+        out['features'] = features
         return out
 
     def inference(self, inputs):
@@ -221,6 +222,10 @@ class BasePoseNet(metaclass=abc.ABCMeta):
 
         if self.cfg["pairwise_predict"] or self.cfg["partaffinityfield_predict"]:
             outputs["pairwise_pred"] = heads["pairwise_pred"]
+
+        if "features" in heads:
+            outputs["features"] = heads["features"]
+
         return outputs
 
     def center_inputs(self, inputs):
