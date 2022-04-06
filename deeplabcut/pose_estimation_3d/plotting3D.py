@@ -288,9 +288,7 @@ def create_labeled_video_3d(
             elif color_by == "individual":
                 color = plt.cm.get_cmap(cmap, num_animals)
                 colors_ = color(range(num_animals))
-                colors = np.repeat(colors_, len(bodyparts2plot)).reshape(
-                    (-1, colors_.shape[1])
-                )
+                colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 
             # Set up the matplotlib figure beforehand
             # Trick to force equal aspect ratio of 3D plots
