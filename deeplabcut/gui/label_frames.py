@@ -27,6 +27,7 @@ def label_frames(
     imtypes=["*.png"],
     config3d=None,
     sourceCam=None,
+    jump_unlabeled=False,
 ):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
@@ -73,11 +74,11 @@ def label_frames(
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
         from deeplabcut.gui import multiple_individuals_labeling_toolbox
 
-        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
+        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam, jump_unlabeled)
     else:
         from deeplabcut.gui import labeling_toolbox
 
-        labeling_toolbox.show(config, config3d, sourceCam, imtypes=imtypes)
+        labeling_toolbox.show(config, config3d, sourceCam, imtypes, jump_unlabeled)
 
     os.chdir(startpath)
 
