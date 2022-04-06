@@ -290,24 +290,24 @@ def create_labeled_video_3d(
                 colors_ = color(range(num_animals))
                 colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 
-            # Set up the matplotlib figure beforehand
             # Trick to force equal aspect ratio of 3D plots
             minmax = np.c_[
-                np.nanmin(xyz, axis=(0, 1)),
-                np.nanmax(xyz, axis=(0, 1)),
+                np.nanmin(xyz[frames], axis=(0, 1)),
+                np.nanmax(xyz[frames], axis=(0, 1)),
             ]
             minmax *= 1.1
             minmax_range = (minmax[:, 1] - minmax[:, 0]).max() / 2
-            mid_x = np.mean(minmax[0])
-            mid_y = np.mean(minmax[1])
-            mid_z = np.mean(minmax[2])
             if xlim is None:
+                mid_x = np.mean(minmax[0])
                 xlim = mid_x - minmax_range, mid_x + minmax_range
             if ylim is None:
+                mid_y = np.mean(minmax[1])
                 ylim = mid_y - minmax_range, mid_y + minmax_range
             if zlim is None:
+                mid_z = np.mean(minmax[2])
                 zlim = mid_z - minmax_range, mid_z + minmax_range
 
+            # Set up the matplotlib figure beforehand
             fig, axes1, axes2, axes3 = set_up_grid(figsize, xlim, ylim, zlim, view)
             points_2d1 = axes1.scatter(
                 *np.zeros((2, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
