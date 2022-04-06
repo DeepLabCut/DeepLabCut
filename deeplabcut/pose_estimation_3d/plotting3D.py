@@ -41,6 +41,7 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
     axes3.set_xlim3d(xlim)
     axes3.set_ylim3d(ylim)
     axes3.set_zlim3d(zlim)
+    axes3.set_box_aspect((1, 1, 1))
     axes3.set_xticklabels([])
     axes3.set_yticklabels([])
     axes3.set_zticklabels([])
@@ -292,14 +293,22 @@ def create_labeled_video_3d(
                 )
 
             # Set up the matplotlib figure beforehand
-            lo = np.nanmin(xyz, axis=(0, 1))
-            up = np.nanmax(xyz, axis=(0, 1))
+            # Trick to force equal aspect ratio of 3D plots
+            minmax = np.c_[
+                np.nanmin(xyz, axis=(0, 1)),
+                np.nanmax(xyz, axis=(0, 1)),
+            ]
+            minmax *= 1.1
+            minmax_range = (minmax[:, 1] - minmax[:, 0]).max() / 2
+            mid_x = np.mean(minmax[0])
+            mid_y = np.mean(minmax[1])
+            mid_z = np.mean(minmax[2])
             if xlim is None:
-                xlim = lo[0], up[0]
+                xlim = mid_x - minmax_range, mid_x + minmax_range
             if ylim is None:
-                ylim = lo[1], up[1]
+                ylim = mid_y - minmax_range, mid_y + minmax_range
             if zlim is None:
-                zlim = lo[2], up[2]
+                zlim = mid_z - minmax_range, mid_z + minmax_range
 
             fig, axes1, axes2, axes3 = set_up_grid(figsize, xlim, ylim, zlim, view)
             points_2d1 = axes1.scatter(
