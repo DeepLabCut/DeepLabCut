@@ -176,7 +176,11 @@ def dropannotationfileentriesduetodeletedimages(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn)
+        try:
+            DC = pd.read_hdf(fn)
+        except FileNotFoundError:
+            print("Attention:", folder, "does not appear to have labeled data!")
+            continue
         dropped = False
         for imagename in DC.index:
             if os.path.isfile(os.path.join(cfg["project_path"], *imagename)):
@@ -208,10 +212,13 @@ def dropimagesduetolackofannotation(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn)
-        dropped = False
-        annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
+        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        try:
+            DC = pd.read_hdf(h5file)
+        except FileNotFoundError:
+            print("Attention:", folder, "does not appear to have labeled data!")
+            continue
+        annotatedimages = [fn[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
         print("Annotated images: ", len(annotatedimages), " In folder:", len(imagelist))
         for imagename in imagelist:
@@ -225,7 +232,7 @@ def dropimagesduetolackofannotation(config):
                     print("Deleting", fullpath)
                     os.remove(fullpath)
 
-        annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
+        annotatedimages = [fn[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
         print(
             "PROCESSED:",
@@ -235,6 +242,43 @@ def dropimagesduetolackofannotation(config):
             " in folder:",
             len(imagelist),
         )
+
+def dropunlabeledframes(config):
+    """
+    Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files 
+    Will be carried out iteratively for all *folders* in labeled-data.
+    
+    Parameter
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+    
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg["video_sets"].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+
+    for folder in folders:
+        h5file =  os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        try:
+            DC = pd.read_hdf(h5file)
+        except FileNotFoundError:
+            print("Skipping ",folder,"...")
+            continue
+        before_len = len(DC.index)
+        DC = DC.dropna(how='all') # drop rows where all values are missing(NaN)
+        after_len = len(DC.index)
+        dropped = before_len - after_len
+        if dropped:
+            DC.to_hdf(h5file, key="df_with_missing", mode="w")
+            DC.to_csv(
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
+            )
+            
+            print("Dropped ", dropped, "entries in ",folder)
+    
+    print("Done.")
 
 def check_labels(
     config,
