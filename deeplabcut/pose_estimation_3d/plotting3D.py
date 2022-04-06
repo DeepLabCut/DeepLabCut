@@ -291,10 +291,7 @@ def create_labeled_video_3d(
                 colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 
             # Trick to force equal aspect ratio of 3D plots
-            minmax = np.c_[
-                np.nanmin(xyz[frames], axis=(0, 1)),
-                np.nanmax(xyz[frames], axis=(0, 1)),
-            ]
+            minmax = np.nanpercentile(xyz[frames], q=[25, 75], axis=(0, 1)).T
             minmax *= 1.1
             minmax_range = (minmax[:, 1] - minmax[:, 0]).max() / 2
             if xlim is None:
