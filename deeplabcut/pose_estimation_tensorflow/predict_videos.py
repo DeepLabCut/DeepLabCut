@@ -1179,9 +1179,9 @@ def _convert_detections_to_tracklets(
     calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
-    if track_method not in ("box", "skeleton", "ellipse"):
+    if track_method not in trackingutils.TRACK_METHODS:
         raise ValueError(
-            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+            f"Invalid tracking method. Only {', '.join(trackingutils.TRACK_METHODS)} are currently supported."
         )
 
     joints = data["metadata"]["all_joints_names"]
@@ -1352,14 +1352,11 @@ def convert_detections2tracklets(
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
-    if track_method not in ("box", "skeleton", "ellipse"):
-        raise ValueError(
-            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
-        )
-
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
         track_method = "box"
+        cfg["default_track_method"] = track_method
+        auxiliaryfunctions.write_config(config, cfg)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
