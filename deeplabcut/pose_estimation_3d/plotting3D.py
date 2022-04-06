@@ -61,6 +61,7 @@ def create_labeled_video_3d(
     ylim=None,
     zlim=None,
     draw_skeleton=True,
+    color_by="bodypart",
     figsize=(20, 8),
     fps=30,
     dpi=300,
@@ -106,6 +107,10 @@ def create_labeled_video_3d(
     draw_skeleton: bool
         If ``True`` adds a line connecting the body parts making a skeleton on on each frame. The body parts to be connected and the color of these connecting lines are specified in the config file. By default: ``True``
 
+    color_by : string, optional (default='bodypart')
+        Coloring rule. By default, each bodypart is colored differently.
+        If set to 'individual', points belonging to a single individual are colored the same.
+
     Example
     -------
     Linux/MacOs
@@ -140,8 +145,10 @@ def create_labeled_video_3d(
         for bp1, bp2 in bodyparts2connect
     ]
     ind_links = tuple(zip(*links))
-    color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
-    colors = color(range(len(bodyparts2plot)))
+
+    if color_by not in ("bodypart", "individual"):
+        raise ValueError(f"Invalid color_by={color_by}")
+
     file_list = auxiliaryfunctions_3d.Get_list_of_triangulated_and_videoFiles(
         path, videotype, scorer_3d, cam_names, videofolder
     )
@@ -243,10 +250,21 @@ def create_labeled_video_3d(
                 )
 
             df_3d = pd.read_hdf(triangulate_file)
-            try: 
+            try:
                 num_animals = df_3d.columns.get_level_values("individuals").unique().size
             except KeyError:
                 num_animals = 1
+
+            if color_by == "bodypart":
+                color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
+                colors_ = color(range(len(bodyparts2plot)))
+                colors = np.tile(colors_, (num_animals, 1))
+            elif color_by == "individual":
+                color = plt.cm.get_cmap(cmap, num_animals)
+                colors_ = color(range(num_animals))
+                colors = np.repeat(colors_, len(bodyparts2plot)).reshape(
+                    (-1, colors_.shape[1])
+                )
 
             if end is None:
                 end = len(df_3d)  # All the frames
@@ -318,13 +336,12 @@ def create_labeled_video_3d(
                     coords3d = xyz[sl]
                     coords1 = xy1[sl, :, :2]
                     coords2 = xy2[sl, :, :2]
-                    colors_ = np.tile(colors, (num_animals, 1))
                     points_3d._offsets3d = coords3d.reshape((-1, 3)).T
-                    points_3d.set_color(colors_)
+                    points_3d.set_color(colors)
                     points_2d1.set_offsets(coords1.reshape((-1, 2)))
-                    points_2d1.set_color(colors_)
+                    points_2d1.set_color(colors)
                     points_2d2.set_offsets(coords2.reshape((-1, 2)))
-                    points_2d2.set_color(colors_)
+                    points_2d2.set_color(colors)
                     if draw_skeleton:
                         segs3d = xyz[k][tuple([ind_links])].swapaxes(0, 1)
                         coll_3d.set_segments(segs3d)
@@ -333,6 +350,4 @@ def create_labeled_video_3d(
                         segs2 = xy2[k, :, :2][tuple([ind_links])].swapaxes(0, 1)
                         coll2.set_segments(segs2)
 
-                    img_name = str(output_folder / f"img{str(k).zfill(4)}.png")
-                    fig.savefig(img_name)
                     writer.grab_frame()
