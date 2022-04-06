@@ -17,7 +17,11 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
-from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxiliaryfunctions_3d,
+    make_labeled_video,
+)
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 matplotlib_axes_logger.setLevel("ERROR")
@@ -136,16 +140,6 @@ def create_labeled_video_3d(
     skeleton_color = cfg_3d["skeleton_color"]
     scorer_3d = cfg_3d["scorername_3d"]
 
-    # Flatten the list of bodyparts to connect
-    bodyparts2plot = list(
-        np.unique([val for sublist in bodyparts2connect for val in sublist])
-    )
-    links = [
-        (bodyparts2plot.index(bp1), bodyparts2plot.index(bp2))
-        for bp1, bp2 in bodyparts2connect
-    ]
-    ind_links = tuple(zip(*links))
-
     if color_by not in ("bodypart", "individual"):
         raise ValueError(f"Invalid color_by={color_by}")
 
@@ -164,7 +158,7 @@ def create_labeled_video_3d(
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         # name for output video
         file_name = str(Path(triangulate_file).stem)
-        videooutname = os.path.join(path_h5_file, file_name + ".mpg")
+        videooutname = os.path.join(path_h5_file, file_name + ".mp4")
         if os.path.isfile(videooutname):
             print("Video already created...")
         else:
@@ -255,17 +249,6 @@ def create_labeled_video_3d(
             except KeyError:
                 num_animals = 1
 
-            if color_by == "bodypart":
-                color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
-                colors_ = color(range(len(bodyparts2plot)))
-                colors = np.tile(colors_, (num_animals, 1))
-            elif color_by == "individual":
-                color = plt.cm.get_cmap(cmap, num_animals)
-                colors_ = color(range(num_animals))
-                colors = np.repeat(colors_, len(bodyparts2plot)).reshape(
-                    (-1, colors_.shape[1])
-                )
-
             if end is None:
                 end = len(df_3d)  # All the frames
             end = min(end, min(len(vid_cam1), len(vid_cam2)))
@@ -273,6 +256,11 @@ def create_labeled_video_3d(
 
             output_folder = Path(os.path.join(path_h5_file, "temp_" + file_name))
             output_folder.mkdir(parents=True, exist_ok=True)
+
+            # Flatten the list of bodyparts to connect
+            bodyparts2plot = list(
+                np.unique([val for sublist in bodyparts2connect for val in sublist])
+            )
 
             # Format data
             mask2d = df_cam1.columns.get_level_values('bodyparts').isin(bodyparts2plot)
@@ -285,6 +273,23 @@ def create_labeled_video_3d(
             mask = df_3d.columns.get_level_values('bodyparts').isin(bodyparts2plot)
             xyz = df_3d.loc[:, mask].to_numpy().reshape((len(df_3d), -1, 3))
             xyz[~(visible1 & visible2)] = np.nan
+
+            bpts = df_3d.columns.get_level_values('bodyparts')[mask][::3]
+            links = make_labeled_video.get_segment_indices(
+                bodyparts2connect, bpts,
+            )
+            ind_links = tuple(zip(*links))
+
+            if color_by == "bodypart":
+                color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
+                colors_ = color(range(len(bodyparts2plot)))
+                colors = np.tile(colors_, (num_animals, 1))
+            elif color_by == "individual":
+                color = plt.cm.get_cmap(cmap, num_animals)
+                colors_ = color(range(num_animals))
+                colors = np.repeat(colors_, len(bodyparts2plot)).reshape(
+                    (-1, colors_.shape[1])
+                )
 
             # Set up the matplotlib figure beforehand
             lo = np.nanmin(xyz, axis=(0, 1))
