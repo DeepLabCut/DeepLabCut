@@ -542,7 +542,7 @@ def evaluate_network(
 
     Examples
     --------
-    If you do not want to plot, just evalute shuffle 1.
+    If you do not want to plot, just evaluate shuffle 1.
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
     If you want to plot and evaluate shuffle 0 and 1.
@@ -960,7 +960,7 @@ def evaluate_network(
                         "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
-    # returning to intial folder
+    # returning to initial folder
     os.chdir(str(start_path))
 
 

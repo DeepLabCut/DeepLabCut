@@ -26,6 +26,7 @@ import numpy as np
 import tensorflow as tf
 from collections import namedtuple
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
+from .openvino.session import OpenVINOSession
 
 
 PoseSetup = namedtuple('PoseSetup', 'session inputs outputs')
@@ -238,3 +239,8 @@ def setup_GPUpose_prediction(cfg, allow_growth=False):
 
 def extract_GPUprediction(outputs, cfg):
     return outputs[0]
+
+
+def setup_openvino_pose_prediction(cfg, device):
+    sess = OpenVINOSession(cfg, device)
+    return PoseSetup(sess, sess.input_name, [sess.output_name])
