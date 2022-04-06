@@ -13,6 +13,7 @@ import os
 import pickle
 import random
 import shelve
+import warnings
 from itertools import combinations
 from pathlib import Path
 
@@ -22,6 +23,7 @@ import pandas as pd
 
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
 
 
 def extractindividualsandbodyparts(cfg):
@@ -35,18 +37,23 @@ def get_track_method(cfg, track_method=""):
     if cfg.get("multianimalproject", False):
         if track_method != "":
             # check if it exists:
-            if track_method not in ("box", "skeleton", "ellipse"):
+            if track_method not in TRACK_METHODS:
                 raise ValueError(
-                    "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are currently supported."
                 )
             return track_method
         else: # default
-            if cfg.get("default_track_method", "") is None: #check if empty default
-                print("Empty def. tracker in config file found, overwritten by ellipse tracker.")
-                cfg["default_track_method"] = "ellipse"
-                auxiliaryfunctions.write_config(config, cfg)
-
-            return cfg.get("default_track_method", "ellipse")
+            track_method = cfg.get("default_track_method", "")
+            if not track_method:
+                warnings.warn(
+                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`."
+                )
+                track_method = "ellipse"
+                cfg["default_track_method"] = track_method
+                auxiliaryfunctions.write_config(
+                    str(Path(cfg["project_path"]) / "config.yaml"), cfg
+                )
+            return track_method
 
     else:  # no tracker for single-animal projects
         return ""

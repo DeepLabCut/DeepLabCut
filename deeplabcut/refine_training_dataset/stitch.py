@@ -595,9 +595,7 @@ class TrackletStitcher:
             if not overlapping_tracklets:
                 continue
             # Pick the closest (spatially) overlapping tracklet
-            ind_min = np.argmin(
-                [tracklet.distance_to(t) for t in overlapping_tracklets]
-            )
+            ind_min = np.argmin([tracklet.distance_to(t) for t in overlapping_tracklets])
             overlapping_tracklet = overlapping_tracklets[ind_min]
             common_inds = set(tracklet.inds).intersection(overlapping_tracklet.inds)
             ind_anchor = np.random.choice(list(common_inds))

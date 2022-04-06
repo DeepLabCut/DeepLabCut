@@ -557,6 +557,7 @@ def analyze_videos(
                     robust_nframes=robust_nframes,
                     use_shelve=use_shelve,
                 )
+
                 if auto_track:  # tracker type is taken from default in cfg
                     convert_detections2tracklets(
                         config,
@@ -662,7 +663,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     step = max(10, int(nframes / 100))
     inds = []
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
         if ret:
@@ -707,7 +708,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -746,7 +747,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -798,7 +799,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     step = max(10, int(nframes / 100))
     inds = []
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
         ret, frame = cap.read()
         if ret:
@@ -864,7 +865,7 @@ def GetPoseDynamic(
     counter = 0
     step = max(10, int(nframes / 100))
     while cap.isOpened():
-        if counter % step == 0:
+        if counter != 0 and counter % step == 0:
             pbar.update(step)
 
         ret, frame = cap.read()
@@ -1105,7 +1106,7 @@ def GetPosesofFrames(
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
 
-            if counter % step == 0:
+            if counter != 0 and counter % step == 0:
                 pbar.update(step)
 
             if cfg["cropping"]:
@@ -1124,7 +1125,7 @@ def GetPosesofFrames(
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
 
-            if counter % step == 0:
+            if counter != 0 and counter % step == 0:
                 pbar.update(step)
 
             if cfg["cropping"]:
@@ -1388,9 +1389,9 @@ def _convert_detections_to_tracklets(
     calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
-    if track_method not in ("box", "skeleton", "ellipse"):
+    if track_method not in trackingutils.TRACK_METHODS:
         raise ValueError(
-            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+            f"Invalid tracking method. Only {', '.join(trackingutils.TRACK_METHODS)} are currently supported."
         )
 
     joints = data["metadata"]["all_joints_names"]
@@ -1561,7 +1562,6 @@ def convert_detections2tracklets(
     """
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
-
     if track_method not in ("box", "skeleton", "ellipse"):
         raise ValueError(
             "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
@@ -1570,6 +1570,8 @@ def convert_detections2tracklets(
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
         track_method = "box"
+        cfg["default_track_method"] = track_method
+        auxiliaryfunctions.write_config(config, cfg)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
