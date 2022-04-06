@@ -84,7 +84,7 @@ class Link:
 class Assembly:
     def __init__(self, size):
         self.data = np.full((size, 4), np.nan)
-        self.confidence = 0  # 0 by default, overwritten otherwise with `add_joint`
+        self.confidence = 0  # 0 by defaut, overwritten otherwise with `add_joint`
         self._affinity = 0
         self._links = []
         self._visible = set()
@@ -616,6 +616,9 @@ class Assembler:
         return assemblies, assembled
 
     def _assemble(self, data_dict, ind_frame):
+        if not data_dict:
+            return None, None
+
         joints = list(self._flatten_detections(data_dict))
         if not joints:
             return None, None
@@ -663,10 +666,7 @@ class Assembler:
             get_attr = operator.attrgetter("confidence")
             ass = Assembly(self.n_multibodyparts)
             for ind in range(self.n_multibodyparts):
-                joints = bag[ind]
-                if not joints:
-                    continue
-                ass.add_joint(max(joints, key=get_attr))
+                ass.add_joint(max(bag[ind], key=get_attr))
             return [ass], unique
 
         if self.identity_only:

@@ -24,8 +24,11 @@ https://arxiv.org/abs/1909.11229
 
 import numpy as np
 import tensorflow as tf
+from collections import namedtuple
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
-from .openvino.session import OpenVINOSession
+
+
+PoseSetup = namedtuple('PoseSetup', 'session inputs outputs')
 
 
 def setup_pose_prediction(cfg, allow_growth=False):
@@ -58,7 +61,7 @@ def setup_pose_prediction(cfg, allow_growth=False):
     # Restore variables from disk.
     restorer.restore(sess, cfg["init_weights"])
 
-    return sess, inputs, outputs
+    return PoseSetup(sess, inputs, outputs)
 
 
 def extract_cnn_output(outputs_np, cfg):
@@ -230,13 +233,8 @@ def setup_GPUpose_prediction(cfg, allow_growth=False):
     # Restore variables from disk.
     restorer.restore(sess, cfg["init_weights"])
 
-    return sess, inputs, outputs
+    return PoseSetup(sess, inputs, outputs)
 
 
 def extract_GPUprediction(outputs, cfg):
     return outputs[0]
-
-
-def setup_openvino_pose_prediction(cfg, device):
-    sess = OpenVINOSession(cfg, device)
-    return sess, sess.input_name, [sess.output_name]

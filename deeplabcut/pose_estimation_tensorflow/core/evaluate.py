@@ -542,7 +542,7 @@ def evaluate_network(
 
     Examples
     --------
-    If you do not want to plot, just evaluate shuffle 1.
+    If you do not want to plot, just evalute shuffle 1.
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
     --------
     If you want to plot and evaluate shuffle 0 and 1.
@@ -781,7 +781,7 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+                        pose_setup = predict.setup_pose_prediction(dlc_cfg)
                         Numimages = len(Data.index)
                         PredicteData = np.zeros(
                             (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
@@ -797,8 +797,9 @@ def evaluate_network(
 
                             image_batch = data_to_input(image)
                             # Compute prediction with the CNN
-                            outputs_np = sess.run(
-                                outputs, feed_dict={inputs: image_batch}
+                            outputs_np = pose_setup.session.run(
+                                pose_setup.outputs,
+                                feed_dict={pose_setup.inputs: image_batch}
                             )
                             scmap, locref = predict.extract_cnn_output(
                                 outputs_np, dlc_cfg
@@ -814,7 +815,7 @@ def evaluate_network(
                                 pose.flatten()
                             )  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
 
-                        sess.close()  # closes the current tf session
+                        pose_setup.session.close()  # closes the current tf session
 
                         index = pd.MultiIndex.from_product(
                             [
@@ -959,7 +960,7 @@ def evaluate_network(
                         "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
-    # returning to initial folder
+    # returning to intial folder
     os.chdir(str(start_path))
 
 
