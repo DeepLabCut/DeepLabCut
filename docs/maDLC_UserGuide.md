@@ -257,6 +257,13 @@ we leave manually-defining a skeleton as an option for the advanced user:
 my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
 deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph=my_better_graph)
 ```
+
+Alternatively, the `skeleton` defined in the `config.yaml` file can also be used:
+
+```python
+deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph='config')
+```
+
 Importantly, a user-defined graph is still required to cover all multianimalbodyparts at least once.
 
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug` (which is default now!). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
@@ -322,7 +329,7 @@ trainingsetindex: int, optional
 gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
 See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving interation a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
+max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
 See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
 
 autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
@@ -409,7 +416,7 @@ you can drop "Indices" to run this on all training/testing images (this is very 
 ### -------------------- DECISION / BREAK POINT -------------------
 
 #### ATTENTION!
-**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, plese test the "raw" pose estimation performance on a video to validate performance:
+**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, please test the "raw" pose estimation performance on a video to validate performance:
 
 Please run:
 
@@ -417,7 +424,9 @@ Please run:
 scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
 deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
 ```
-Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`. IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images), then go forward!!!
+Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`.
+Another sanity check may be to examine the distributions of edge affinity costs using `deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions indicate that the model has learned strong links to group keypoints into distinct individuals — likely a necessary feature for the assembly stage (note that the amount of overlap will also depend on the amount of interactions between your animals in the daset).
+IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images, and affinity distributions are far apart for most edges), then go forward!!!
 
 If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.
 

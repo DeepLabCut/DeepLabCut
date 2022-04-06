@@ -176,7 +176,11 @@ def dropannotationfileentriesduetodeletedimages(config):
 
     for folder in folders:
         fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn)
+        try:
+            DC = pd.read_hdf(fn)
+        except FileNotFoundError:
+            print("Attention:", folder, "does not appear to have labeled data!")
+            continue
         dropped = False
         for imagename in DC.index:
             if os.path.isfile(os.path.join(cfg["project_path"], *imagename)):
@@ -208,10 +212,13 @@ def dropimagesduetolackofannotation(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-        DC = pd.read_hdf(fn)
-        dropped = False
-        annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
+        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        try:
+            DC = pd.read_hdf(h5file)
+        except FileNotFoundError:
+            print("Attention:", folder, "does not appear to have labeled data!")
+            continue
+        annotatedimages = [fn[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
         print("Annotated images: ", len(annotatedimages), " In folder:", len(imagelist))
         for imagename in imagelist:
@@ -225,7 +232,7 @@ def dropimagesduetolackofannotation(config):
                     print("Deleting", fullpath)
                     os.remove(fullpath)
 
-        annotatedimages = [fn.split(os.sep)[-1] for fn in DC.index]
+        annotatedimages = [fn[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
         print(
             "PROCESSED:",
@@ -236,6 +243,42 @@ def dropimagesduetolackofannotation(config):
             len(imagelist),
         )
 
+def dropunlabeledframes(config):
+    """
+    Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files 
+    Will be carried out iteratively for all *folders* in labeled-data.
+    
+    Parameter
+    ----------
+    config : string
+        String containing the full path of the config file in the project.
+    
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    videos = cfg["video_sets"].keys()
+    video_names = [Path(i).stem for i in videos]
+    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+
+    for folder in folders:
+        h5file =  os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        try:
+            DC = pd.read_hdf(h5file)
+        except FileNotFoundError:
+            print("Skipping ",folder,"...")
+            continue
+        before_len = len(DC.index)
+        DC = DC.dropna(how='all') # drop rows where all values are missing(NaN)
+        after_len = len(DC.index)
+        dropped = before_len - after_len
+        if dropped:
+            DC.to_hdf(h5file, key="df_with_missing", mode="w")
+            DC.to_csv(
+                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
+            )
+            
+            print("Dropped ", dropped, "entries in ",folder)
+    
+    print("Done.")
 
 def check_labels(
     config,
@@ -493,6 +536,7 @@ def SplitTrials(
                 test_indices,
                 train_fraction,
             )
+
         return train_indices, test_indices
 
 
@@ -528,7 +572,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     Importantly, this allows one to freeze a split.
 
     One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split
-    by passing the index of the corrensponding video from the config.yaml file as variable trainindex.
+    by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Parameter
     ----------
@@ -666,6 +710,7 @@ def create_training_dataset(
     testIndices=None,
     net_type=None,
     augmenter_type=None,
+    posecfg_template=None,
 ):
     """
     Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -702,6 +747,10 @@ def create_training_dataset(
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
+        
+    posecfg_template: string (optional, default=None)
+        Path to a pose_cfg.yaml file to use as a template for generating the new one for the current iteration. Useful if you
+        would like to start with the same parameters a previous training iteration. None uses the default pose_cfg.yaml.
 
     Example
     --------
@@ -721,6 +770,16 @@ def create_training_dataset(
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+    if posecfg_template:
+        if not posecfg_template.endswith("pose_cfg.yaml"):
+            raise ValueError(
+                "posecfg_template argument must contain path to a pose_cfg.yaml file"
+            )
+        else:
+            print("Reloading pose_cfg parameters from " + posecfg_template +'\n')
+            from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
+
+            prior_cfg = read_plainconfig(posecfg_template)
     if cfg.get("multianimalproject", False):
         from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
             create_multianimaltraining_dataset,
@@ -775,10 +834,23 @@ def create_training_dataset(
             "deterministic",
         ]:
             raise ValueError("Invalid augmenter type:", augmenter_type)
-
+        
+        if posecfg_template:
+            if net_type != prior_cfg["net_type"]:
+                print(
+                    "WARNING: Specified net_type does not match net_type from posecfg_template path entered. Proceed with caution."
+                )
+            if augmenter_type != prior_cfg["dataset_type"]:
+                print(
+                    "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
+                )
+                
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-        defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+        if not posecfg_template:
+            defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+        elif posecfg_template:
+            defaultconfigfile = posecfg_template
         model_path, num_shuffles = auxfun_models.Check4weights(
             net_type, Path(dlcparent_path), num_shuffles
         )
@@ -931,6 +1003,9 @@ def create_training_dataset(
                     # these values are dropped as scalecrop
                     # doesn't have rotation implemented
                     items2drop = {"rotation": 0, "rotratio": 0.0}
+                # Also drop maDLC smart cropping augmentation parameters
+                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
+                    items2drop[key] = None
 
                 trainingdata = MakeTrain_pose_yaml(
                     items2change, path_train_config, defaultconfigfile, items2drop
@@ -951,6 +1026,7 @@ def create_training_dataset(
                 print(
                     "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
                 )
+
         return splits
 
 

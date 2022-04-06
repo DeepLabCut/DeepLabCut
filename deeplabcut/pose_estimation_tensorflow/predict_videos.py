@@ -34,6 +34,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV, is_openvino_available
 
 
 ####################################################
@@ -62,6 +63,7 @@ def analyze_videos(
     n_tracks=None,
     calibrate=False,
     identity_only=False,
+    use_openvino="CPU" if is_openvino_available else None,
 ):
     """
     Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
@@ -232,7 +234,7 @@ def analyze_videos(
         )
     except FileNotFoundError:
         raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intented iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
+            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intended iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
             % (shuffle, shuffle)
         )
 
@@ -304,7 +306,11 @@ def analyze_videos(
     else:
         xyz_labs = ["x", "y", "likelihood"]
 
-    if TFGPUinference:
+    if use_openvino:
+        sess, inputs, outputs = predict.setup_openvino_pose_prediction(
+            dlc_cfg, device=use_openvino
+        )
+    elif TFGPUinference:
         sess, inputs, outputs = predict.setup_GPUpose_prediction(
             dlc_cfg, allow_growth=allow_growth
         )
@@ -381,6 +387,7 @@ def analyze_videos(
                     destfolder,
                     TFGPUinference,
                     dynamic,
+                    use_openvino,
                 )
 
         os.chdir(str(start_path))
@@ -717,6 +724,7 @@ def AnalyzeVideo(
     destfolder=None,
     TFGPUinference=True,
     dynamic=(False, 0.5, 10),
+    use_openvino="CPU" if is_openvino_available else None,
 ):
     """Helper function for analyzing a video."""
     print("Starting to analyze % ", video)
@@ -775,28 +783,20 @@ def AnalyzeVideo(
             # GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
             if int(dlc_cfg["batch_size"]) > 1:
-                if TFGPUinference:
-                    PredictedData, nframes = GetPoseF_GTF(
-                        cfg,
+                args = (cfg,
                         dlc_cfg,
                         sess,
                         inputs,
                         outputs,
                         cap,
                         nframes,
-                        int(dlc_cfg["batch_size"]),
-                    )
+                        int(dlc_cfg["batch_size"]))
+                if use_openvino:
+                    PredictedData, nframes = GetPoseF_OV(*args)
+                elif TFGPUinference:
+                    PredictedData, nframes = GetPoseF_GTF(*args)
                 else:
-                    PredictedData, nframes = GetPoseF(
-                        cfg,
-                        dlc_cfg,
-                        sess,
-                        inputs,
-                        outputs,
-                        cap,
-                        nframes,
-                        int(dlc_cfg["batch_size"]),
-                    )
+                    PredictedData, nframes = GetPoseF(*args)
             else:
                 if TFGPUinference:
                     PredictedData, nframes = GetPoseS_GTF(
@@ -998,10 +998,6 @@ def analyze_time_lapse_frames(
     >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
     --------
 
-    If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
-    --------
-
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
@@ -1163,7 +1159,7 @@ def analyze_time_lapse_frames(
                 )
                 print("The folder was analyzed. Now your research can truly start!")
                 print(
-                    "If the tracking is not satisfactory for some frome, consider expanding the training set."
+                    "If the tracking is not satisfactory for some frame, consider expanding the training set."
                 )
             else:
                 print(
@@ -1183,9 +1179,9 @@ def _convert_detections_to_tracklets(
     calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
-    if track_method not in ("box", "skeleton", "ellipse"):
+    if track_method not in trackingutils.TRACK_METHODS:
         raise ValueError(
-            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
+            f"Invalid tracking method. Only {', '.join(trackingutils.TRACK_METHODS)} are currently supported."
         )
 
     joints = data["metadata"]["all_joints_names"]
@@ -1317,8 +1313,8 @@ def convert_detections2tracklets(
         By default, all the body parts are used.
 
     inferencecfg: Default is None.
-        Configuaration file for inference (assembly of individuals). Ideally
-        should be optained from cross validation (during evaluation). By default
+        Configuration file for inference (assembly of individuals). Ideally
+        should be obtained from cross validation (during evaluation). By default
         the parameters are loaded from inference_cfg.yaml, but these get_level_values
         can be overwritten.
 
@@ -1356,19 +1352,16 @@ def convert_detections2tracklets(
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
-    if track_method not in ("box", "skeleton", "ellipse"):
-        raise ValueError(
-            "Invalid tracking method. Only `box`, `skeleton` and `ellipse` are currently supported."
-        )
-
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
         track_method = "box"
+        cfg["default_track_method"] = track_method
+        auxiliaryfunctions.write_config(config, cfg)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
-    # TODO: addd cropping as in video analysis!
+    # TODO: add cropping as in video analysis!
     # if cropping is not None:
     #    cfg['cropping']=True
     #    cfg['x1'],cfg['x2'],cfg['y1'],cfg['y2']=cropping

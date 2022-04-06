@@ -40,7 +40,7 @@ class Create_new_project(wx.Panel):
         h = gui_size[0]
         w = gui_size[1]
         wx.Panel.__init__(self, parent, -1, style=wx.SUNKEN_BORDER, size=(h, w))
-        # variable initilization
+        # variable initialization
         self.filelist = []
         self.filelistnew = []
         self.dir = None

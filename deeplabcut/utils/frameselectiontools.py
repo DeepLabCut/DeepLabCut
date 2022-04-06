@@ -226,7 +226,7 @@ def KmeansbasedFrameselectioncv2(
 
     Note: this method can return fewer images than numframes2pick.
 
-    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetetive."""
+    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetitive."""
     nframes = len(cap)
     nx, ny = cap.dimensions
     ratio = resizewidth * 1.0 / nx

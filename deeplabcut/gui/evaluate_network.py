@@ -30,7 +30,7 @@ class Evaluate_network(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.config = cfg
         self.bodyparts = []
         # design the panel

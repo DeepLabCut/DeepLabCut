@@ -283,11 +283,11 @@ class ScrollPanel(SP.ScrolledPanel):
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent, config, config3d, sourceCam):
+    def __init__(self, parent, config, config3d, sourceCam, jump_unlabeled):
         super(MainFrame, self).__init__(
             "DeepLabCut 2.2 - Multiple Individuals Labeling", parent
         )
-
+        self.jump_unlabeled = jump_unlabeled
         self.statusbar.SetStatusText(
             "Looking for a folder to start labeling. Click 'Load frames' to begin."
         )
@@ -295,7 +295,7 @@ class MainFrame(BaseFrame):
 
         ###################################################################################################################################################
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
@@ -548,7 +548,7 @@ class MainFrame(BaseFrame):
         """
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deletd point by going to a previous/next image then returning to the current iamge. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. For maDLC, you do this for each individual. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
+            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deleted point by going to a previous/next image then returning to the current image. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. For maDLC, you do this for each individual. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
             "User instructions",
             wx.OK | wx.ICON_INFORMATION,
         )
@@ -714,24 +714,29 @@ class MainFrame(BaseFrame):
         """
         Show the DirDialog and ask the user to change the directory where machine labels are stored
         """
-        self.statusbar.SetStatusText("Looking for a folder to start labeling...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
-        dlg = wx.DirDialog(
-            self,
-            "Choose the directory where your extracted frames are saved:",
-            cwd,
-            style=wx.DD_DEFAULT_STYLE,
-        )
-        if dlg.ShowModal() == wx.ID_OK:
-            self.dir = dlg.GetPath()
-            self.load.Enable(False)
-            self.next.Enable(True)
-            self.save.Enable(True)
+        if self.jump_unlabeled:
+            self.dir = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                self.config_file
+            ))
         else:
+            self.statusbar.SetStatusText("Looking for a folder to start labeling...")
+            cwd = os.path.join(os.getcwd(), "labeled-data")
+            dlg = wx.DirDialog(
+                self,
+                "Choose the directory where your extracted frames are saved:",
+                cwd,
+                style=wx.DD_DEFAULT_STYLE,
+            )
+            if dlg.ShowModal() != wx.ID_OK:
+                dlg.Destroy()
+                self.Close(True)
+                return
+            self.dir = dlg.GetPath()
             dlg.Destroy()
-            self.Close(True)
-            return
-        dlg.Destroy()
+
+        self.load.Enable(False)
+        self.next.Enable(True)
+        self.save.Enable(True)
 
         # Enabling the zoom, pan and home buttons
         self.zoom.Enable(True)
@@ -971,7 +976,7 @@ class MainFrame(BaseFrame):
                 self.img, self.image_axis, self.iter, self.multibodyparts, self.colormap
             )
         self.individualrdb.Bind(wx.EVT_RADIOBOX, self.select_individual)
-        # check if single is slected when radio buttons are changed
+        # check if single is selected when radio buttons are changed
         if self.individualrdb.GetStringSelection() == "single":
             self.norm, self.colorIndex = self.image_panel.getColorIndices(
                 self.img, self.uniquebodyparts
@@ -1331,9 +1336,9 @@ class MainFrame(BaseFrame):
             self.change_marker_size.Enable(False)
 
 
-def show(config, config3d, sourceCam):
+def show(config, config3d, sourceCam, jump_unlabeled=False):
     app = wx.App()
-    frame = MainFrame(None, config, config3d, sourceCam).Show()
+    frame = MainFrame(None, config, config3d, sourceCam, jump_unlabeled).Show()
     app.MainLoop()
 
 

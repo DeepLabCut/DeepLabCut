@@ -29,7 +29,7 @@ class Extract_outlier_frames(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.config = cfg
         self.cfg = utils.read_config(cfg)
         self.filelist = []

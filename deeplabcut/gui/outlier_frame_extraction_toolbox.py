@@ -87,7 +87,7 @@ class MainFrame(BaseFrame):
         )
 
         ###################################################################################################################################################
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
         # topSplitter = wx.SplitterWindow(self)
         #
         # self.image_panel = ImagePanel(topSplitter, config,video,shuffle,Dataframe,self.gui_size)
@@ -99,7 +99,7 @@ class MainFrame(BaseFrame):
         # sizer.Add(topSplitter, 1, wx.EXPAND)
         # self.SetSizer(sizer)
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
