@@ -279,7 +279,7 @@ def _reconstruct_tracks_as_tracklets(df):
 
     tracklets = []
     for _, group in df.groupby("individuals", axis=1):
-        temp = group.dropna()
+        temp = group.dropna(how="all")
         inds = temp.index.to_numpy()
         track = Tracklet(temp.to_numpy().reshape((len(temp), -1, 3)), inds)
         track = track.interpolate(max_gap=len(group))
@@ -314,7 +314,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
 
             # cost for any point in time of t1 being the same
             # any point in time of t2
-            cost = np.abs(np.sum(np.matmul(_t1, F) * _t2, axis=2))
+            cost = np.abs(np.nansum(np.matmul(_t1, F) * _t2, axis=2))
             
             # Get average cost of the entire track
             cost = cost.mean()
