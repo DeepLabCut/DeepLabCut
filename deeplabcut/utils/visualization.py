@@ -383,6 +383,7 @@ def visualize_predictions(
     labels=["+", ".", "x"],
     dpi=100,
     destfolder="",
+    aug_pipeline=None,
 ):
     if destfolder:
         Path(destfolder).mkdir(parents=True, exist_ok=True)
@@ -446,6 +447,8 @@ def visualize_predictions(
                 conf_pred = np.full(xy_gt.shape[:2] + (1,), np.nan)
 
         frame = auxfun_videos.imread(image_path, mode="skimage")
+        if aug_pipeline is not None:
+            frame = aug_pipeline(images=[frame])[0]
         h, w, _ = np.shape(frame)
         fig.set_size_inches(w / dpi, h / dpi)
         ax.set_xlim(0, w)

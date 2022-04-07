@@ -8,7 +8,7 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
+import imgaug.augmenters as iaa
 import os
 import pickle
 from collections import defaultdict
@@ -23,11 +23,13 @@ from deeplabcut.pose_estimation_tensorflow.core import (
     predict_multianimal as predictma,
 )
 from deeplabcut import auxiliaryfunctions
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import read_image_shape_fast
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils, inferenceutils
 from deeplabcut.utils import visualization, auxfun_videos
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
+from imgaug import Keypoint, KeypointsOnImage
 
 
 def _percentile(n):
@@ -148,7 +150,7 @@ def evaluate_multianimal_full(
     else:
         TrainingFractions = [cfg["TrainingFraction"][trainingsetindex]]
 
-    # Loading human annotatated data
+    # Loading human annotated data
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     path_gt_data = os.path.join(
         cfg["project_path"],
@@ -156,6 +158,12 @@ def evaluate_multianimal_full(
         "CollectedData_" + cfg["scorer"] + ".h5",
     )
     gt_data = _format_gt_data(path_gt_data)
+    images = [
+        os.path.join(cfg["project_path"], img)
+        for img in gt_data['annotations']
+    ]
+    image_shapes = [read_image_shape_fast(im)[1:] for im in images]
+
     gt_df = pd.read_hdf(path_gt_data)
     gt_columns = gt_df.columns
 
@@ -206,6 +214,33 @@ def evaluate_multianimal_full(
                     "It seems the model for shuffle %s and trainFraction %s does not exist."
                     % (shuffle, trainFraction)
                 )
+
+            pipeline = iaa.Sequential(random_order=False)
+            pre_resize = dlc_cfg.get("pre_resize")
+            if pre_resize:
+                width, height = pre_resize
+                pipeline.add(iaa.Resize({"height": height, "width": width}))
+
+                # Augment GT data
+                for i, (k, v) in enumerate(gt_data["annotations"].items()):
+                    shape_ = v.shape
+                    arr = np.concatenate(v)
+                    kpts = KeypointsOnImage(
+                        [Keypoint(xy[0], xy[1]) for xy in arr],
+                        shape=image_shapes[i],
+                    )
+                    kpts = pipeline(keypoints=kpts)
+                    v = np.concatenate([kpt.xy for kpt in kpts]).reshape(shape_)
+                    gt_data["annotations"][k] = v
+
+                for i in range(len(gt_df)):
+                    arr = gt_df.iloc[i].to_numpy().reshape((-1, 2)).astype(float)
+                    kpts = KeypointsOnImage(
+                        [Keypoint(xy[0], xy[1]) for xy in arr],
+                        shape=image_shapes[i],
+                    )
+                    kpts = pipeline(keypoints=kpts)
+                    gt_df.iloc[i][:] = np.concatenate([kpt.xy for kpt in kpts]).flatten()
 
             # TODO: IMPLEMENT for different batch sizes?
             dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
@@ -304,13 +339,10 @@ def evaluate_multianimal_full(
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-                        images = [
-                            os.path.join(cfg["project_path"], img)
-                            for img in gt_data['annotations']
-                        ]
                         preds = _eval_images(
                             images,
                             dlc_cfg,
+                            aug_pipeline=pipeline,
                         )
                         tf.compat.v1.reset_default_graph()
 
@@ -344,6 +376,7 @@ def evaluate_multianimal_full(
                             PredicteData[imagename] = {}
                             PredicteData[imagename]["index"] = imageindex
                             PredicteData[imagename]["prediction"] = pred
+                            # TODO Get rid of ground truth data stored in the _full.pickle
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
                                 groundtruthcoordinates,
@@ -406,6 +439,7 @@ def evaluate_multianimal_full(
                                 cfg["alphavalue"],
                                 cfg["colormap"],
                                 destfolder=os.path.join(foldername, 'train'),
+                                aug_pipeline=pipeline,
                             )
                             visualization.visualize_predictions(
                                 preds_test,
@@ -415,6 +449,7 @@ def evaluate_multianimal_full(
                                 cfg["alphavalue"],
                                 cfg["colormap"],
                                 destfolder=os.path.join(foldername, 'test'),
+                                aug_pipeline=pipeline,
                             )
 
                         # Compute and format prediction errors
@@ -548,6 +583,7 @@ def evaluate_multianimal_full(
                             cfg["alphavalue"],
                             cfg["colormap"],
                             destfolder=foldername,
+                            aug_pipeline=pipeline,
                         )
 
                 if len(final_result) > 0:  # Only append if results were calculated
@@ -560,11 +596,14 @@ def _eval_single_image(
     image_path,
     test_cfg,
     pose_setup=None,
+    aug_pipeline=None,
     to_coco=False,
 ):
     if pose_setup is None:
         pose_setup = predict.setup_pose_prediction(test_cfg)
     frame = auxfun_videos.imread(image_path, mode="skimage")
+    if aug_pipeline is not None:
+        frame = aug_pipeline(images=[frame])[0]
     preds = predictma.predict_batched_peaks_and_costs(
         test_cfg,
         np.expand_dims(frame, axis=0),
@@ -585,6 +624,7 @@ def _eval_images(
     image_paths,
     test_cfg,
     snapshot_path="",
+    aug_pipeline=None,
     to_coco=False,
 ):
     test_cfg["batch_size"] = 1
@@ -595,7 +635,7 @@ def _eval_images(
     print("Network evaluation underway...")
     for image_path in tqdm(image_paths):
         preds = _eval_single_image(
-            image_path, test_cfg, pose_setup, to_coco,
+            image_path, test_cfg, pose_setup, aug_pipeline, to_coco,
         )
         data["predictions"][image_path] = preds
     data["metadata"] = {"keypoints": test_cfg["all_joints_names"]}
