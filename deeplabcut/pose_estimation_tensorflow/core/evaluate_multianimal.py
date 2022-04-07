@@ -416,42 +416,6 @@ def evaluate_multianimal_full(
                             Snapshots[snapindex],
                         )
 
-                        if plotting == "bodypart":
-                            preds_train = {
-                                "metadata": preds["metadata"],
-                                "predictions": {
-                                    images[i]: preds["predictions"][images[i]]
-                                    for i in trainIndices
-                                }
-                            }
-                            preds_test = {
-                                "metadata": preds["metadata"],
-                                "predictions": {
-                                    images[i]: preds["predictions"][images[i]]
-                                    for i in testIndices
-                                }
-                            }
-                            visualization.visualize_predictions(
-                                preds_train,
-                                gt_data,
-                                cfg["pcutoff"],
-                                cfg["dotsize"],
-                                cfg["alphavalue"],
-                                cfg["colormap"],
-                                destfolder=os.path.join(foldername, 'train'),
-                                aug_pipeline=pipeline,
-                            )
-                            visualization.visualize_predictions(
-                                preds_test,
-                                gt_data,
-                                cfg["pcutoff"],
-                                cfg["dotsize"],
-                                cfg["alphavalue"],
-                                cfg["colormap"],
-                                destfolder=os.path.join(foldername, 'test'),
-                                aug_pipeline=pipeline,
-                            )
-
                         # Compute and format prediction errors
                         errors = calc_prediction_errors(preds, gt_data)
                         cols = (
@@ -526,6 +490,42 @@ def evaluate_multianimal_full(
                                 .mean()
                                 .reindex(cfg["multianimalbodyparts"] + cfg["uniquebodyparts"])
                                 .to_string()
+                            )
+
+                        if plotting == "bodypart":
+                            preds_train = {
+                                "metadata": preds["metadata"],
+                                "predictions": {
+                                    images[i]: preds["predictions"][images[i]]
+                                    for i in trainIndices
+                                }
+                            }
+                            preds_test = {
+                                "metadata": preds["metadata"],
+                                "predictions": {
+                                    images[i]: preds["predictions"][images[i]]
+                                    for i in testIndices
+                                }
+                            }
+                            visualization.visualize_predictions(
+                                preds_train,
+                                gt_data,
+                                cfg["pcutoff"],
+                                cfg["dotsize"],
+                                cfg["alphavalue"],
+                                cfg["colormap"],
+                                destfolder=os.path.join(foldername, 'train'),
+                                aug_pipeline=pipeline,
+                            )
+                            visualization.visualize_predictions(
+                                preds_test,
+                                gt_data,
+                                cfg["pcutoff"],
+                                cfg["dotsize"],
+                                cfg["alphavalue"],
+                                cfg["colormap"],
+                                destfolder=os.path.join(foldername, 'test'),
+                                aug_pipeline=pipeline,
                             )
 
                     n_multibpts = len(cfg["multianimalbodyparts"])
