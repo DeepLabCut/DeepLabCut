@@ -42,6 +42,7 @@ setuptools.setup(
         "tensorflow>=2.0",
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
+        "torch",
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
