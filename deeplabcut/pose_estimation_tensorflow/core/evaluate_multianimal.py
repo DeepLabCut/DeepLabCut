@@ -27,31 +27,9 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import read_im
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils, inferenceutils
-from deeplabcut.utils import visualization, auxfun_videos
+from deeplabcut.utils import visualization, auxfun_videos, auxfun_multianimal
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 from imgaug import Keypoint, KeypointsOnImage
-
-
-def _percentile(n):
-    def percentile_(x):
-        return x.quantile(n)
-
-    percentile_.__name__ = f"percentile_{100 * n:.0f}"
-    return percentile_
-
-
-def _compute_stats(df):
-    return df.agg(
-        [
-            "min",
-            "max",
-            "mean",
-            np.std,
-            _percentile(0.25),
-            _percentile(0.50),
-            _percentile(0.75),
-        ]
-    ).stack(level=1)
 
 
 def _find_closest_neighbors(xy_true, xy_pred, k=5):
@@ -72,39 +50,6 @@ def _find_closest_neighbors(xy_true, xy_pred, k=5):
     return neighbors
 
 
-def _calc_prediction_error(data):
-    _ = data.pop("metadata", None)
-    dists = []
-    for n, dict_ in enumerate(tqdm(data.values())):
-        gt = np.concatenate(dict_["groundtruth"][1])
-        xy = np.concatenate(dict_["prediction"]["coordinates"][0])
-        p = np.concatenate(dict_["prediction"]["confidence"])
-        neighbors = _find_closest_neighbors(gt, xy)
-        found = neighbors != -1
-        gt2 = gt[found]
-        xy2 = xy[neighbors[found]]
-        dists.append(np.c_[np.linalg.norm(gt2 - xy2, axis=1), p[neighbors[found]]])
-    return dists
-
-
-def _calc_train_test_error(data, metadata, pcutoff=0.3):
-    train_inds = set(metadata["data"]["trainIndices"])
-    dists = _calc_prediction_error(data)
-    dists_train, dists_test = [], []
-    for n, dist in enumerate(dists):
-        if n in train_inds:
-            dists_train.append(dist)
-        else:
-            dists_test.append(dist)
-    dists_train = np.concatenate(dists_train)
-    dists_test = np.concatenate(dists_test)
-    error_train = np.nanmean(dists_train[:, 0])
-    error_train_cut = np.nanmean(dists_train[dists_train[:, 1] >= pcutoff, 0])
-    error_test = np.nanmean(dists_test[:, 0])
-    error_test_cut = np.nanmean(dists_test[dists_test[:, 1] >= pcutoff, 0])
-    return error_train, error_test, error_train_cut, error_test_cut
-
-
 def evaluate_multianimal_full(
     config,
     Shuffles=[1],
@@ -115,17 +60,6 @@ def evaluate_multianimal_full(
     gputouse=None,
     modelprefix="",
 ):
-    from deeplabcut.pose_estimation_tensorflow.core import (
-        predict,
-        predict_multianimal as predictma,
-    )
-    from deeplabcut.utils import (
-        auxiliaryfunctions,
-        auxfun_multianimal,
-        auxfun_videos,
-        conversioncode,
-    )
-
     import tensorflow as tf
 
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
