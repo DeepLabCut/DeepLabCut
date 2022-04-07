@@ -271,6 +271,7 @@ def triangulate(
                         scorer_name[cam_names[j]] = DLCscorer
                         is_video_analyzed = False
                         run_triangulate = True
+                        suffix = tr_method_suffix
                         if filterpredictions:
                             filtering.filterpredictions(
                                 config_2d,
@@ -281,10 +282,11 @@ def triangulate(
                                 filtertype=filtertype,
                                 destfolder=destfolder,
                             )
+                            suffix += "_filtered"
 
                         dataname.append(
                             os.path.join(
-                                destfolder, vname + DLCscorer + tr_method_suffix + ".h5"
+                                destfolder, vname + DLCscorer + suffix + ".h5"
                             )
                         )
 
@@ -313,7 +315,7 @@ def triangulate(
                         )
                         dataname.append(
                             os.path.join(
-                                destfolder, vname + DLCscorer + tr_method_suffix + ".h5"
+                                destfolder, vname + DLCscorer + tr_method_suffix + "_filtered.h5"
                             )
                         )
 
@@ -379,7 +381,7 @@ def triangulate(
             dataFrame_camera1_undistort[:] = data_cam1_tmp
             dataFrame_camera2_undistort[:] = data_cam2_tmp
 
-            if cfg.get("multianimalproject", None):
+            if cfg.get("multianimalproject"):
                 # Check individuals are the same in both views
                 individuals_view1 = (
                     dataFrame_camera1_undistort.columns.get_level_values("individuals")
@@ -444,7 +446,7 @@ def triangulate(
 
             # Create 3D DataFrame column and row indices
             axis_labels = ("x", "y", "z")
-            if cfg.get("multianimalproject", None):
+            if cfg.get("multianimalproject"):
                 columns = pd.MultiIndex.from_product(
                     [[scorer_3d], individuals, bodyparts, axis_labels],
                     names=["scorer", "individuals", "bodyparts", "coords"],
@@ -470,6 +472,14 @@ def triangulate(
                 format="table",
                 mode="w",
             )
+
+            # Reorder 2D dataframe in view 2 to match order of view 1
+            if cfg.get("multianimalproject"):
+                df_2d_view2 = pd.read_hdf(dataname[1])
+                individuals_order = [individuals[i] for i in list(voting.values())]
+                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(df_2d_view2, individuals_order)
+                df_2d_view2.to_hdf(dataname[1], "tracks", format="table", mode="w",)
+
             auxiliaryfunctions_3d.SaveMetadata3d(
                 str(output_filename + "_meta.pickle"), metadata
             )

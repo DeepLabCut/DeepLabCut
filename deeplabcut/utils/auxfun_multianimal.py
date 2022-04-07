@@ -25,6 +25,29 @@ from deeplabcut.utils import auxiliaryfunctions, conversioncode
 from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
 
+def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
+    """
+    Reorders data of df to match the order given in a list 
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        Data from tracked .h5 file
+    order: list of str
+        Desired order of individuals 
+
+    Return:
+    -------
+        df: pd.DataFrame
+            Reordered DataFrame
+    """
+    columns = df.columns
+    inds = df.index
+
+    data = df.loc(axis=1)[:, order].to_numpy()
+    df = pd.DataFrame(data, columns=columns, index=inds)
+
+    return df
 
 def extractindividualsandbodyparts(cfg):
     individuals = cfg["individuals"].copy()
