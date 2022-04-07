@@ -32,18 +32,17 @@ def test_reorder_individuals_in_df():
     df = pd.read_hdf("tests/data/montblanc_tracks.h5")
     individuals = df.columns.get_level_values("individuals").unique().to_list()
 
-    # Generate a random permutation and reorder data
-    permutation_indices = random.sample(
-        range(len(individuals)), 
-        k=len(individuals)
-    )
+    # Generate a random permutation and reorder data. Ignore the unique bodypart
+    permutation_indices = random.sample(range(len(individuals[:-1])), k=len(individuals[:-1]))
     permutation = [individuals[i] for i in permutation_indices]
+    permutation.append("single")
     df_reordered = auxfun_multianimal.reorder_individuals_in_df(df, permutation)
 
     # Get inverse permutation and reorder the modified data to get back
     # to the original
     inverse_permutation_indices = np.argsort(permutation_indices).tolist()
     inverse_permutation = [individuals[i] for i in inverse_permutation_indices]
+    inverse_permutation.append("single")
     df_inverse_reordering = auxfun_multianimal.reorder_individuals_in_df(
         df_reordered, inverse_permutation
     )
