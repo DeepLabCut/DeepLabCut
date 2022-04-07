@@ -348,6 +348,10 @@ def evaluate_multianimal_full(
 
                         PredicteData = {}
                         for imageindex, image in enumerate(images):
+                            row_gt = gt_df.iloc[imageindex]
+                            if not row_gt.any():
+                                continue
+
                             pred = preds["predictions"][image]
                             if not pred:
                                 continue
@@ -356,8 +360,7 @@ def evaluate_multianimal_full(
                                 os.path.relpath(image, cfg["project_path"]).split(os.sep)
                             )
                             df = (
-                                gt_df
-                                .iloc[imageindex]
+                                row_gt
                                 .unstack("coords")
                                 .reindex(joints, level="bodyparts")
                             )
@@ -380,7 +383,7 @@ def evaluate_multianimal_full(
                             PredicteData[imagename]["groundtruth"] = [
                                 groundtruthidentity,
                                 groundtruthcoordinates,
-                                gt_df.iloc[imageindex],
+                                row_gt,
                             ]
 
                         PredicteData["metadata"] = {
