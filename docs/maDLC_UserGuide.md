@@ -413,7 +413,7 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
-### -------------------- DECISION / BREAK POINT -------------------
+### -------------------- DECISION POINT -------------------
 
 #### ATTENTION!
 **Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, please test the "raw" pose estimation performance on a video to validate performance:
@@ -449,17 +449,15 @@ After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a 
 - Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
-deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4')
+deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
-*NEW* in 2.2.0.3: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the .h5 file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
+## IF auto_track = True:
 
-Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (`default_track_method` in the main config.yaml file), and we recommend testing which one works best on your data (but typically we find ellipse is best).
+- *NEW* in 2.2.0.3+: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the `.h5` file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
 
-```python
-deeplabcut.convert_detections2tracklets(config_path, ['videofile_path'], videotype='mp4',
-                                        shuffle=1, trainingsetindex=0)
-```
-You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
+## IF auto_track = False:
+
+   -  You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
 
 ```python
 # Tracking:
@@ -473,20 +471,16 @@ max_age: 100
 min_hits: 3
 ```
 
-**IMPORTANT POINT**
+  - **IMPORTANT POINT FOR SUPERVISED IDENTITY TRACKING**
 
-If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training)
-this information can be leveraged both during: (i) animal assembly, where body parts
-are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints
-is no longer considered in that case); and (ii) animal tracking, where identity only can be
-utilized in place of motion trackers to form tracklets.
+    If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training) this information can be leveraged both during: (i) animal assembly, where body parts are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints is no longer considered in that case); and (ii) animal tracking, where identity only can be utilized in place of motion trackers to form tracklets.
 
 To use this ID information, simply pass:
 ```python
 deeplabcut.convert_detections2tracklets(..., identity_only=True)
 ```
 
-**Note:** If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.
+- **Note:** If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.
 
 
 **Animal assembly and tracking quality** can be assessed via `deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks`. This function provides an additional diagnostic tool before moving on to refining tracklets.
@@ -516,6 +510,14 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 ```
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
+## Using Unsupervised Identity Tracking:
+
+In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:
+
+```python
+deeplabcut.transformer_reID(config, videos_to_analyze, n_tracks=None, videotype="mp4")
+```
+Note you should pass the n_tracks (number of animals) you expect to see in the video.
 
 ### Refine Tracklets:
 
