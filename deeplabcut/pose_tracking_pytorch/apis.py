@@ -4,7 +4,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 def transformer_reID(
-    path_config_file,
+    config,
     videos,
     n_tracks=None,
     train_frac = 0.8,
@@ -23,7 +23,7 @@ def transformer_reID(
 
     Parameters
     ----------
-    path_config_file: string
+    config: string
         Full path of the config.yaml file as a string.
 
     dlcscorer: string
@@ -53,7 +53,7 @@ def transformer_reID(
 
     # should take number of triplets to mine
 
-    cfg = auxiliaryfunctions.read_config(path_config_file)
+    cfg = auxiliaryfunctions.read_config(config)
 
     DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
         cfg,
@@ -63,7 +63,7 @@ def transformer_reID(
     )
 
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        path_config_file, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets, videotype = videotype
+        config, videos, track_method, modelprefix=modelprefix, n_triplets=n_triplets, videotype = videotype
     )
 
     (
@@ -71,12 +71,12 @@ def transformer_reID(
         testposeconfigfile,
         snapshotfolder,
     ) = deeplabcut.return_train_network_path(
-        path_config_file, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
+        config, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
     )
 
     # modelprefix impacts where the model is loaded
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
-        path_config_file,
+        config,
         DLCscorer,
         videos,
         train_frac = train_frac,
@@ -93,7 +93,7 @@ def transformer_reID(
         raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")
 
     deeplabcut.stitch_tracklets(
-        path_config_file,
+        config,
         videos,
         track_method=track_method,
         modelprefix=modelprefix,
