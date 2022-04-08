@@ -30,6 +30,7 @@ from deeplabcut.gui.refine_labels import Refine_labels
 from deeplabcut.gui.refine_tracklets import Refine_tracklets
 from deeplabcut.gui.train_network import Train_network
 from deeplabcut.gui.video_editing import Video_Editing
+from deeplabcut.gui.transformerID import TransformerID
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -426,6 +427,9 @@ class Create_new_project(wx.Panel):
                 if cfg.get("multianimalproject", False):
                     page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
                     self.parent.AddPage(page, "OPT: Refine tracklets")
+
+                    page = TransformerID(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page, "OPT: Unsupervised ID")
 
     def add_videos(self, event):
         print("adding new videos to be able to label ...")
