@@ -61,9 +61,6 @@ class AnalyzeVideos(QWidget):
         else:
             self.all_bodyparts = self.cfg["bodyparts"]
 
-        # NOTE: Several functions can support selected bodyparts instead of all.
-        #       Do I expose these? They're not exposed in the current GUI as far
-        #       as I can see. (only plot_trajectories)
         self.backend_variables = {
             "save_as_csv": False,
             "dynamic_cropping": False,
@@ -509,13 +506,6 @@ class AnalyzeVideos(QWidget):
 
         if self.backend_variables["dynamic_cropping"]:
             dynamic_cropping_params = (True, 0.5, 10)
-
-        # TODO
-        # plug
-        # tracker_method -> convert decections + stitch tracklets
-        # bodyparts_to_use -> plot_trajectories only?
-        # calibrate_assembly -> detections 2 tracklets
-        # assemble_with_ID_only -> detections 2 tracklets
 
         scorername = deeplabcut.analyze_videos(
             self.config,
