@@ -1175,8 +1175,13 @@ def stitch_tracklets(
                 stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
 
             stitcher.stitch()
-            stitcher.write_tracks(
-                output_name=output_name, animal_names=animal_names,
-            )
+            if transformer_checkpoint:
+                stitcher.write_tracks(
+                    output_name=output_name, animal_names=animal_names, suffix="trans"
+                )
+            else:
+                stitcher.write_tracks(
+                    output_name=output_name, animal_names=animal_names, suffix=""
+                )
         except FileNotFoundError as e:
             print(e, "\nSkipping...")

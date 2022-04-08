@@ -18,7 +18,8 @@ def transformer_reID(
 ):
 
     """Performs tracking with transformer for unsupervised reID of animals. This code mines triplets from videos and these triplets are later used to train a transformer that's
-        able to perform reID. The transformer is then used as a stitching loss when tracklets are stitched during tracking. Outputs: The tracklet file is saved in the same folder where the non-transformer tracklet file is stored.
+        able to perform reID. The transformer is then used as a stitching loss when tracklets are stitched during tracking.
+        Outputs: The tracklet file is saved with the `_trans.h5` suffix in the same folder where the non-transformer tracklet file is stored.
 
     Parameters
     ----------
