@@ -485,6 +485,7 @@ class AnalyzeVideos(QWidget):
         shuffle = self.shuffle.value()
         trainingsetindex = self.trainingset.value()
 
+        videos = list(self.filelist)
         save_as_csv = self.backend_variables["save_as_csv"]
         filter_data = self.backend_variables["filter_data"]
         videotype = self.backend_variables["input_video_type"]
@@ -509,7 +510,7 @@ class AnalyzeVideos(QWidget):
 
         scorername = deeplabcut.analyze_videos(
             self.config,
-            self.filelist,
+            videos=videos,
             videotype=videotype,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
@@ -527,7 +528,7 @@ class AnalyzeVideos(QWidget):
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
                 config=self.config, 
-                videos=self.filelist,
+                videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
@@ -536,7 +537,7 @@ class AnalyzeVideos(QWidget):
         if self.cfg["multianimalproject"]:
             deeplabcut.convert_detections2tracklets(
                 self.config,
-                self.filelist,
+                videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
@@ -548,7 +549,7 @@ class AnalyzeVideos(QWidget):
 
             deeplabcut.stitch_tracklets(
                 config_path=self.config,
-                videos=self.filelist,
+                videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
@@ -559,7 +560,7 @@ class AnalyzeVideos(QWidget):
         if filter_data:
             deeplabcut.filterpredictions(
                 self.config,
-                self.filelist,
+                videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
@@ -574,7 +575,7 @@ class AnalyzeVideos(QWidget):
             showfig = self.backend_variables["show_figures"]
             deeplabcut.plot_trajectories(
                 self.config,
-                self.filelist,
+                videos=videos,
                 displayedbodyparts=bdpts,
                 videotype=videotype,
                 shuffle=shuffle,
