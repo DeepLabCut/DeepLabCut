@@ -109,6 +109,7 @@ class TransformerID(wx.Panel):
 
         hbox1.Add(videotype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox1.Add(ntracks_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.sizer.Add(
