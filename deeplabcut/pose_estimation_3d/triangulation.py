@@ -17,7 +17,7 @@ import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from tqdm import tqdm
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
 
 matplotlib_axes_logger.setLevel("ERROR")
@@ -32,6 +32,7 @@ def triangulate(
     gputouse=None,
     destfolder=None,
     save_as_csv=False,
+    track_method="",
 ):
     """
     This function triangulates the detected DLC-keypoints from the two camera views
@@ -140,6 +141,26 @@ def triangulate(
 
                 config_2d = snapshots[cam_names[j]]
                 cfg = auxiliaryfunctions.read_config(config_2d)
+
+                # Get track_method and do related checks
+                track_method = auxfun_multianimal.get_track_method(
+                    cfg, track_method=track_method
+                )
+                if len(cfg.get("multianimalbodyparts", [])) == 1 and track_method != "box":
+                    warnings.warn(
+                        "Switching to `box` tracker for single point tracking..."
+                    )
+                    track_method = "box"
+
+                # Get track method suffix
+                method_to_suffix = {
+                    "ellipse": "_el",
+                    "box": "_bx",
+                    "skeleton": "_sk",
+                    "": "",
+                }
+                tr_method_suffix = method_to_suffix[track_method]
+
                 shuffle = cfg_3d[str("shuffle_" + cam_names[j])]
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -203,7 +224,7 @@ def triangulate(
                     )
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
-                    if_video_analyzed = False  # variable to keep track if the video was already analyzed
+                    is_video_analyzed = False  # variable to keep track if the video was already analyzed
                     # Check for the camera matrix
                     for k in metadata_["stereo_matrix"].keys():
                         if np.all(
@@ -221,17 +242,19 @@ def triangulate(
                     if (
                         metadata_["scorer_name"][cam_names[j]] == DLCscorer
                     ):  # TODO: CHECK FOR BOTH?
-                        if_video_analyzed = True
+                        is_video_analyzed = True
                     elif metadata_["scorer_name"][cam_names[j]] == DLCscorerlegacy:
-                        if_video_analyzed = True
+                        is_video_analyzed = True
                     else:
-                        if_video_analyzed = False
+                        is_video_analyzed = False
                         run_triangulate = True
 
-                    if if_video_analyzed:
+                    if is_video_analyzed:
                         print("This file is already analyzed!")
                         dataname.append(
-                            os.path.join(destfolder, vname + DLCscorer + ".h5")
+                            os.path.join(
+                                destfolder, vname + DLCscorer + tr_method_suffix + ".h5"
+                            )
                         )
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
@@ -246,8 +269,9 @@ def triangulate(
                             destfolder=destfolder,
                         )
                         scorer_name[cam_names[j]] = DLCscorer
-                        if_video_analyzed = False
+                        is_video_analyzed = False
                         run_triangulate = True
+                        suffix = tr_method_suffix
                         if filterpredictions:
                             filtering.filterpredictions(
                                 config_2d,
@@ -258,9 +282,12 @@ def triangulate(
                                 filtertype=filtertype,
                                 destfolder=destfolder,
                             )
+                            suffix += "_filtered"
 
                         dataname.append(
-                            os.path.join(destfolder, vname + DLCscorer + ".h5")
+                            os.path.join(
+                                destfolder, vname + DLCscorer + suffix + ".h5"
+                            )
                         )
 
                 else:  # need to do the whole jam.
@@ -287,7 +314,9 @@ def triangulate(
                             destfolder=destfolder,
                         )
                         dataname.append(
-                            os.path.join(destfolder, vname + DLCscorer + ".h5")
+                            os.path.join(
+                                destfolder, vname + DLCscorer + tr_method_suffix + "_filtered.h5"
+                            )
                         )
 
         if run_triangulate:
@@ -317,67 +346,95 @@ def triangulate(
                         : len(dataFrame_camera1_undistort)
                     ]
             #                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
-            X_final = []
-            triangulate = []
             scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
             scorer_cam2 = dataFrame_camera2_undistort.columns.get_level_values(0)[0]
-            df_3d, scorer_3d, bodyparts = auxiliaryfunctions_3d.create_empty_df(
-                dataFrame_camera1_undistort, scorer_3d, flag="3d"
-            )
+
+            scorer_3d = scorer_cam1
+            bodyparts = dataFrame_camera1_undistort.columns.get_level_values(
+                "bodyparts"
+            ).unique()
+
             P1 = stereomatrix["P1"]
             P2 = stereomatrix["P2"]
+            F = stereomatrix["F"]
 
             print("Computing the triangulation...")
-            for bpindex, bp in enumerate(bodyparts):
-                # Extract the indices of frames where the likelihood of a bodypart for both cameras are less than pvalue
-                likelihoods = np.array(
-                    [
-                        dataFrame_camera1_undistort[scorer_cam1][bp][
-                            "likelihood"
-                        ].values[:],
-                        dataFrame_camera2_undistort[scorer_cam2][bp][
-                            "likelihood"
-                        ].values[:],
-                    ]
+
+            num_frames = dataFrame_camera1_undistort.shape[0]
+            ### Assign nan to [X,Y] of low likelihood predictions ###
+            # Convert the data to a np array to easily mask out the low likelyhood predictions
+            data_cam1_tmp = dataFrame_camera1_undistort.to_numpy().reshape(
+                (num_frames, -1, 3)
+            )
+            data_cam2_tmp = dataFrame_camera2_undistort.to_numpy().reshape(
+                (num_frames, -1, 3)
+            )
+            # Assign [X,Y] = nan to low likelihood predictions
+            data_cam1_tmp[data_cam1_tmp[..., 2] < pcutoff, :2] = np.nan
+            data_cam2_tmp[data_cam2_tmp[..., 2] < pcutoff, :2] = np.nan
+
+            # Reshape data back to original shape
+            data_cam1_tmp = data_cam1_tmp.reshape(num_frames, -1)
+            data_cam2_tmp = data_cam2_tmp.reshape(num_frames, -1)
+
+            # put data back to the dataframes
+            dataFrame_camera1_undistort[:] = data_cam1_tmp
+            dataFrame_camera2_undistort[:] = data_cam2_tmp
+
+            if cfg.get("multianimalproject"):
+                # Check individuals are the same in both views
+                individuals_view1 = (
+                    dataFrame_camera1_undistort.columns.get_level_values("individuals")
+                    .unique()
+                    .to_list()
                 )
-                likelihoods = likelihoods.T
-
-                # Extract frames where likelihood for both the views is less than the pcutoff
-                low_likelihood_frames = np.any(likelihoods < pcutoff, axis=1)
-                # low_likelihood_frames = np.all(likelihoods < pcutoff, axis=1)
-
-                low_likelihood_frames = np.where(low_likelihood_frames == True)[0]
-                points_cam1_undistort = np.array(
-                    [
-                        dataFrame_camera1_undistort[scorer_cam1][bp]["x"].values[:],
-                        dataFrame_camera1_undistort[scorer_cam1][bp]["y"].values[:],
-                    ]
+                individuals_view2 = (
+                    dataFrame_camera2_undistort.columns.get_level_values("individuals")
+                    .unique()
+                    .to_list()
                 )
-                points_cam1_undistort = points_cam1_undistort.T
+                if individuals_view1 != individuals_view2:
+                    raise ValueError(
+                        "The individuals do not match between the two DataFrames"
+                    )
 
-                # For cam1 camera: Assign nans to x and y values of a bodypart where the likelihood for is less than pvalue
-                points_cam1_undistort[low_likelihood_frames] = np.nan, np.nan
-                points_cam1_undistort = np.expand_dims(points_cam1_undistort, axis=1)
-
-                points_cam2_undistort = np.array(
-                    [
-                        dataFrame_camera2_undistort[scorer_cam2][bp]["x"].values[:],
-                        dataFrame_camera2_undistort[scorer_cam2][bp]["y"].values[:],
-                    ]
+                # Cross-view match individuals
+                _, voting = auxiliaryfunctions_3d.cross_view_match_dataframes(
+                    dataFrame_camera1_undistort, dataFrame_camera2_undistort, F
                 )
-                points_cam2_undistort = points_cam2_undistort.T
+            else:
+                # Create a dummy variables for single-animal
+                individuals_view1 = ["indie"]
+                voting = {0: 0}
 
-                # For cam2 camera: Assign nans to x and y values of a bodypart where the likelihood is less than pvalue
-                points_cam2_undistort[low_likelihood_frames] = np.nan, np.nan
-                points_cam2_undistort = np.expand_dims(points_cam2_undistort, axis=1)
+            # Cleaner variable (since inds view1 == inds view2)
+            individuals = individuals_view1
 
-                X_l = auxiliaryfunctions_3d.triangulatePoints(
-                    P1, P2, points_cam1_undistort, points_cam2_undistort
+            # Reshape: (num_framex, num_individuals, num_bodyparts , 2)
+            all_points_cam1 = dataFrame_camera1_undistort.to_numpy().reshape(
+                (num_frames, len(individuals), -1, 3)
+            )[..., :2]
+            all_points_cam2 = dataFrame_camera2_undistort.to_numpy().reshape(
+                (num_frames, len(individuals), -1, 3)
+            )[..., :2]
+
+            # Triangulate data
+            triangulate = []
+            for i, _ in enumerate(individuals):
+                # i is individual in view 1
+                # voting[i] is the matched individual in view 2
+
+                pts_indv_cam1 = all_points_cam1[:, i].reshape((-1, 2)).T
+                pts_indv_cam2 = all_points_cam2[:, voting[i]].reshape((-1, 2)).T
+
+                indv_points_3d = auxiliaryfunctions_3d.triangulatePoints(
+                    P1, P2, pts_indv_cam1, pts_indv_cam2
                 )
 
-                # ToDo: speed up func. below by saving in numpy.array
-                X_final.append(X_l)
-            triangulate.append(X_final)
+                indv_points_3d = indv_points_3d[:3].T.reshape((num_frames, -1, 3))
+
+                triangulate.append(indv_points_3d)
+
             triangulate = np.asanyarray(triangulate)
             metadata = {}
             metadata["stereo_matrix"] = stereomatrix
@@ -387,11 +444,27 @@ def triangulate(
                 cam_names[1]: scorer_name[cam_names[1]],
             }
 
-            # Create an empty dataframe to store x,y,z of 3d data
-            for bpindex, bp in enumerate(bodyparts):
-                df_3d.iloc[:][scorer_3d, bp, "x"] = triangulate[0, bpindex, 0, :]
-                df_3d.iloc[:][scorer_3d, bp, "y"] = triangulate[0, bpindex, 1, :]
-                df_3d.iloc[:][scorer_3d, bp, "z"] = triangulate[0, bpindex, 2, :]
+            # Create 3D DataFrame column and row indices
+            axis_labels = ("x", "y", "z")
+            if cfg.get("multianimalproject"):
+                columns = pd.MultiIndex.from_product(
+                    [[scorer_3d], individuals, bodyparts, axis_labels],
+                    names=["scorer", "individuals", "bodyparts", "coords"],
+                )
+
+            else:
+                columns = pd.MultiIndex.from_product(
+                    [[scorer_3d], bodyparts, axis_labels],
+                    names=["scorer", "bodyparts", "coords"],
+                )
+
+            inds = range(num_frames)
+
+            # Swap num_animals with num_frames axes to ensure well-behaving reshape
+            triangulate = triangulate.swapaxes(0, 1).reshape((num_frames, -1))
+
+            # Fill up 3D dataframe
+            df_3d = pd.DataFrame(triangulate, columns=columns, index=inds)
 
             df_3d.to_hdf(
                 str(output_filename + ".h5"),
@@ -399,6 +472,14 @@ def triangulate(
                 format="table",
                 mode="w",
             )
+
+            # Reorder 2D dataframe in view 2 to match order of view 1
+            if cfg.get("multianimalproject"):
+                df_2d_view2 = pd.read_hdf(dataname[1])
+                individuals_order = [individuals[i] for i in list(voting.values())]
+                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(df_2d_view2, individuals_order)
+                df_2d_view2.to_hdf(dataname[1], "tracks", format="table", mode="w",)
+
             auxiliaryfunctions_3d.SaveMetadata3d(
                 str(output_filename + "_meta.pickle"), metadata
             )
@@ -417,24 +498,41 @@ def triangulate(
         print("Now you can create 3D video(s) using deeplabcut.create_labeled_video_3d")
 
 
-"""
-ToDo: speed up func. below and check only for one cam individually
-PredicteData = np.zeros((nframes, 3 * len(dlc_cfg['all_joints_names'])))
-PredicteData[batch_num*batchsize:batch_num*batchsize+batch_ind, :] = pose[:batch_ind,:]
-pdindex = pd.MultiIndex.from_product([[DLCscorer], dlc_cfg['all_joints_names'], ['x', 'y', 'likelihood']],names=['scorer', 'bodyparts', 'coords'])
-auxiliaryfunctions.SaveData(PredicteData[:nframes,:], metadata, dataname, pdindex, framelist,save_as_csv)
-"""
+def _undistort_points(points, mat, coeffs, p, r):
+    pts = points.reshape((-1, 3))
+    pts_undist = cv2.undistortPoints(
+        src=pts[:, :2].astype(np.float32),
+        cameraMatrix=mat,
+        distCoeffs=coeffs,
+        P=p,
+        R=r,
+    )
+    pts[:, :2] = pts_undist.squeeze()
+    return pts.reshape((points.shape[0], -1))
+
+
+def _undistort_views(df_view_pairs, stereo_params):
+    df_views_undist = []
+    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params):
+        params = stereo_params[camera_pair]
+        dfs = []
+        for i, df_view in enumerate(df_view_pair, start=1):
+            pts_undist = _undistort_points(
+                df_view.to_numpy(),
+                params[f"cameraMatrix{i}"],
+                params[f"distCoeffs{i}"],
+                params[f"P{i}"],
+                params[f"R{i}"],
+            )
+            df = pd.DataFrame(pts_undist, df_view.index, df_view.columns)
+            dfs.append(df)
+        df_views_undist.append(dfs)
+    return df_views_undist
 
 
 def undistort_points(config, dataframe, camera_pair):
     cfg_3d = auxiliaryfunctions.read_config(config)
-    (
-        img_path,
-        path_corners,
-        path_camera_matrix,
-        path_undistort,
-        _,
-    ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
+    path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
     """
     path_undistort = destfolder
     filename_cam1 = Path(dataframe[0]).stem
@@ -448,81 +546,14 @@ def undistort_points(config, dataframe, camera_pair):
         dataFrame_cam2_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam2 + '_undistort.h5'))
     else:
     """
-    if True:
-        # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
-        dataframe_cam1 = pd.read_hdf(dataframe[0])
-        dataframe_cam2 = pd.read_hdf(dataframe[1])
-        scorer_cam1 = dataframe_cam1.columns.get_level_values(0)[0]
-        scorer_cam2 = dataframe_cam2.columns.get_level_values(0)[0]
-        path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
-        stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
-        mtx_l = stereo_file[camera_pair]["cameraMatrix1"]
-        dist_l = stereo_file[camera_pair]["distCoeffs1"]
-
-        mtx_r = stereo_file[camera_pair]["cameraMatrix2"]
-        dist_r = stereo_file[camera_pair]["distCoeffs2"]
-
-        R1 = stereo_file[camera_pair]["R1"]
-        P1 = stereo_file[camera_pair]["P1"]
-
-        R2 = stereo_file[camera_pair]["R2"]
-        P2 = stereo_file[camera_pair]["P2"]
-
-        # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
-        (
-            dataFrame_cam1_undistort,
-            scorer_cam1,
-            bodyparts,
-        ) = auxiliaryfunctions_3d.create_empty_df(
-            dataframe_cam1, scorer_cam1, flag="2d"
-        )
-        (
-            dataFrame_cam2_undistort,
-            scorer_cam2,
-            bodyparts,
-        ) = auxiliaryfunctions_3d.create_empty_df(
-            dataframe_cam2, scorer_cam2, flag="2d"
-        )
-
-        for bpindex, bp in tqdm(enumerate(bodyparts)):
-            points_cam1 = dataframe_cam1.xs(bp, level="bodyparts", axis=1).values[:, :2]
-            points_cam1_remapped = cv2.undistortPoints(
-                src=points_cam1.astype(np.float32),
-                cameraMatrix=mtx_l,
-                distCoeffs=dist_l,
-                P=P1,
-                R=R1,
-            )
-            dataFrame_cam1_undistort.loc(axis=1)[
-                scorer_cam1, bp, ["x", "y"]
-            ] = points_cam1_remapped.squeeze()
-            dataFrame_cam1_undistort.loc(axis=1)[
-                scorer_cam1, bp, "likelihood"
-            ] = dataframe_cam1.xs(
-                [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
-            ).values
-
-            # Undistorting the points from cam2 camera
-            points_cam2 = dataframe_cam2.xs(bp, level="bodyparts", axis=1).values[:, :2]
-            points_cam2_remapped = cv2.undistortPoints(
-                src=points_cam2.astype(np.float32),
-                cameraMatrix=mtx_r,
-                distCoeffs=dist_r,
-                P=P2,
-                R=R2,
-            )
-            dataFrame_cam2_undistort.loc(axis=1)[
-                scorer_cam2, bp, ["x", "y"]
-            ] = points_cam2_remapped.squeeze()
-            dataFrame_cam2_undistort.loc(axis=1)[
-                scorer_cam2, bp, "likelihood"
-            ] = dataframe_cam2.xs(
-                [bp, "likelihood"], level=["bodyparts", "coords"], axis=1
-            ).values
-
-        # Save the undistorted files
-        dataFrame_cam1_undistort.sort_index(inplace=True)
-        dataFrame_cam2_undistort.sort_index(inplace=True)
+    # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
+    dataframe_cam1 = pd.read_hdf(dataframe[0])
+    dataframe_cam2 = pd.read_hdf(dataframe[1])
+    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+    stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
+    dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
+        [(dataframe_cam1, dataframe_cam2)], stereo_file,
+    )[0]
 
     return (
         dataFrame_cam1_undistort,

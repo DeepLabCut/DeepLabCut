@@ -10,7 +10,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 import glob
 import os
-import subprocess
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -18,12 +17,40 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
-from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxiliaryfunctions_3d,
+    make_labeled_video,
+)
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 matplotlib_axes_logger.setLevel("ERROR")
 from matplotlib import gridspec
+from matplotlib.animation import FFMpegWriter
+from matplotlib.collections import LineCollection
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
+
+
+def set_up_grid(figsize, xlim, ylim, zlim, view):
+    gs = gridspec.GridSpec(1, 3, width_ratios=[1, 1, 1])
+    fig = plt.figure(figsize=figsize)
+    axes1 = fig.add_subplot(gs[0, 0])
+    axes2 = fig.add_subplot(gs[0, 1])
+    axes3 = fig.add_subplot(gs[0, 2], projection="3d")
+    axes3.set_xlim3d(xlim)
+    axes3.set_ylim3d(ylim)
+    axes3.set_zlim3d(zlim)
+    axes3.set_box_aspect((1, 1, 1))
+    axes3.set_xticklabels([])
+    axes3.set_yticklabels([])
+    axes3.set_zticklabels([])
+    axes3.xaxis.grid(False)
+    axes3.view_init(view[0], view[1])
+    axes3.set_xlabel("X", fontsize=10)
+    axes3.set_ylabel("Y", fontsize=10)
+    axes3.set_zlabel("Z", fontsize=10)
+    return fig, axes1, axes2, axes3
 
 
 def create_labeled_video_3d(
@@ -34,11 +61,15 @@ def create_labeled_video_3d(
     end=None,
     trailpoints=0,
     videotype="avi",
-    view=[-113, -270],
-    xlim=[None, None],
-    ylim=[None, None],
-    zlim=[None, None],
+    view=(-113, -270),
+    xlim=None,
+    ylim=None,
+    zlim=None,
     draw_skeleton=True,
+    color_by="bodypart",
+    figsize=(20, 8),
+    fps=30,
+    dpi=300,
 ):
     """
     Creates a video with views from the two cameras and the 3d reconstruction for a selected number of frames.
@@ -81,6 +112,10 @@ def create_labeled_video_3d(
     draw_skeleton: bool
         If ``True`` adds a line connecting the body parts making a skeleton on on each frame. The body parts to be connected and the color of these connecting lines are specified in the config file. By default: ``True``
 
+    color_by : string, optional (default='bodypart')
+        Coloring rule. By default, each bodypart is colored differently.
+        If set to 'individual', points belonging to a single individual are colored the same.
+
     Example
     -------
     Linux/MacOs
@@ -106,11 +141,9 @@ def create_labeled_video_3d(
     skeleton_color = cfg_3d["skeleton_color"]
     scorer_3d = cfg_3d["scorername_3d"]
 
-    # Flatten the list of bodyparts to connect
-    bodyparts2plot = list(
-        np.unique([val for sublist in bodyparts2connect for val in sublist])
-    )
-    color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
+    if color_by not in ("bodypart", "individual"):
+        raise ValueError(f"Invalid color_by={color_by}")
+
     file_list = auxiliaryfunctions_3d.Get_list_of_triangulated_and_videoFiles(
         path, videotype, scorer_3d, cam_names, videofolder
     )
@@ -126,7 +159,8 @@ def create_labeled_video_3d(
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         # name for output video
         file_name = str(Path(triangulate_file).stem)
-        if os.path.isfile(os.path.join(path_h5_file, file_name + ".mpg")):
+        videooutname = os.path.join(path_h5_file, file_name + ".mp4")
+        if os.path.isfile(videooutname):
             print("Video already created...")
         else:
             string_to_remove = str(Path(triangulate_file).suffix)
@@ -211,314 +245,118 @@ def create_labeled_video_3d(
                 )
 
             df_3d = pd.read_hdf(triangulate_file)
-            plt.rcParams.update({"figure.max_open_warning": 0})
+            try:
+                num_animals = df_3d.columns.get_level_values("individuals").unique().size
+            except KeyError:
+                num_animals = 1
 
-            if end == None:
+            if end is None:
                 end = len(df_3d)  # All the frames
-            frames = list(range(start, end, 1))
+            end = min(end, min(len(vid_cam1), len(vid_cam2)))
+            frames = list(range(start, end))
 
-            # Start plotting for every frame
-            for k in tqdm(frames):
-                output_folder, num_frames = plot2D(
-                    cfg_3d,
-                    k,
-                    bodyparts2plot,
-                    vid_cam1,
-                    vid_cam2,
-                    bodyparts2connect,
-                    df_cam1,
-                    df_cam2,
-                    df_3d,
-                    pcutoff,
-                    markerSize,
-                    alphaValue,
-                    color,
-                    path_h5_file,
-                    file_name,
-                    skeleton_color,
-                    view,
-                    draw_skeleton,
-                    trailpoints,
-                    xlim,
-                    ylim,
-                    zlim,
-                )
+            output_folder = Path(os.path.join(path_h5_file, "temp_" + file_name))
+            output_folder.mkdir(parents=True, exist_ok=True)
 
-            # Once all the frames are saved, then make a movie using ffmpeg.
-            cwd = os.getcwd()
-            os.chdir(str(output_folder))
-            subprocess.call(
-                [
-                    "ffmpeg",
-                    "-start_number",
-                    str(start),
-                    "-framerate",
-                    str(30),
-                    "-i",
-                    str("img%0" + str(num_frames) + "d.png"),
-                    "-r",
-                    str(30),
-                    "-vb",
-                    "20M",
-                    os.path.join(output_folder, str("../" + file_name + ".mpg")),
-                ]
+            # Flatten the list of bodyparts to connect
+            bodyparts2plot = list(
+                np.unique([val for sublist in bodyparts2connect for val in sublist])
             )
-            os.chdir(cwd)
 
-    os.chdir(start_path)
+            # Format data
+            mask2d = df_cam1.columns.get_level_values('bodyparts').isin(bodyparts2plot)
+            xy1 = df_cam1.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            visible1 = xy1[..., 2] >= pcutoff
+            xy1[~visible1] = np.nan
+            xy2 = df_cam2.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            visible2 = xy2[..., 2] >= pcutoff
+            xy2[~visible2] = np.nan
+            mask = df_3d.columns.get_level_values('bodyparts').isin(bodyparts2plot)
+            xyz = df_3d.loc[:, mask].to_numpy().reshape((len(df_3d), -1, 3))
+            xyz[~(visible1 & visible2)] = np.nan
 
+            bpts = df_3d.columns.get_level_values('bodyparts')[mask][::3]
+            links = make_labeled_video.get_segment_indices(
+                bodyparts2connect, bpts,
+            )
+            ind_links = tuple(zip(*links))
 
-def plot2D(
-    cfg_3d,
-    k,
-    bodyparts2plot,
-    vid_cam1,
-    vid_cam2,
-    bodyparts2connect,
-    df_cam1_view,
-    df_cam2_view,
-    xyz_pts,
-    pcutoff,
-    markerSize,
-    alphaValue,
-    color,
-    path_h5_file,
-    file_name,
-    skeleton_color,
-    view,
-    draw_skeleton,
-    trailpoints,
-    xlim,
-    ylim,
-    zlim,
-):
-    """
-    Creates 2D gif for a selected number of frames
-    """
-    # Create the fig and define the axes
-    gs = gridspec.GridSpec(1, 3, width_ratios=[1, 1, 1])
-    fig = plt.figure(figsize=(20, 8))
-    axes1 = fig.add_subplot(gs[0, 0])  # row 0, col 0
-    axes2 = fig.add_subplot(gs[0, 1])  # row 0, col 1
-    axes3 = fig.add_subplot(gs[0, 2], projection="3d")  # row 1, span all columns
-    fig.tight_layout()
+            if color_by == "bodypart":
+                color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
+                colors_ = color(range(len(bodyparts2plot)))
+                colors = np.tile(colors_, (num_animals, 1))
+            elif color_by == "individual":
+                color = plt.cm.get_cmap(cmap, num_animals)
+                colors_ = color(range(num_animals))
+                colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 
-    # Clear plot and initialize the variables
-    plt.cla()
-    axes1.cla()
-    axes2.cla()
-    axes3.cla()
+            # Trick to force equal aspect ratio of 3D plots
+            minmax = np.nanpercentile(xyz[frames], q=[25, 75], axis=(0, 1)).T
+            minmax *= 1.1
+            minmax_range = (minmax[:, 1] - minmax[:, 0]).max() / 2
+            if xlim is None:
+                mid_x = np.mean(minmax[0])
+                xlim = mid_x - minmax_range, mid_x + minmax_range
+            if ylim is None:
+                mid_y = np.mean(minmax[1])
+                ylim = mid_y - minmax_range, mid_y + minmax_range
+            if zlim is None:
+                mid_z = np.mean(minmax[2])
+                zlim = mid_z - minmax_range, mid_z + minmax_range
 
-    # Initialize arrays for appending the 3d data for actual plotting the points
-    xdata_3d = []
-    ydata_3d = []
-    zdata_3d = []
+            # Set up the matplotlib figure beforehand
+            fig, axes1, axes2, axes3 = set_up_grid(figsize, xlim, ylim, zlim, view)
+            points_2d1 = axes1.scatter(
+                *np.zeros((2, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+            )
+            im1 = axes1.imshow(np.zeros((vid_cam1.height, vid_cam1.width)))
+            points_2d2 = axes2.scatter(
+                *np.zeros((2, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+            )
+            im2 = axes2.imshow(np.zeros((vid_cam2.height, vid_cam2.width)))
+            points_3d = axes3.scatter(
+                *np.zeros((3, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+            )
+            if draw_skeleton:
+                # Set up skeleton LineCollections
+                segs = np.zeros((2, len(ind_links), 2))
+                coll1 = LineCollection(segs, colors=skeleton_color)
+                coll2 = LineCollection(segs, colors=skeleton_color)
+                axes1.add_collection(coll1)
+                axes2.add_collection(coll2)
+                segs = np.zeros((2, len(ind_links), 3))
+                coll_3d = Line3DCollection(segs, colors=skeleton_color)
+                axes3.add_collection(coll_3d)
 
-    # Initialize arrays for appending the 3d data for drawing the lines
-    xlines_3d = []
-    ylines_3d = []
-    zlines_3d = []
+            writer = FFMpegWriter(fps=fps)
+            with writer.saving(fig, videooutname, dpi=dpi):
+                for k in tqdm(frames):
+                    vid_cam1.set_to_frame(k)
+                    vid_cam2.set_to_frame(k)
+                    frame_cam1 = vid_cam1.read_frame()
+                    frame_cam2 = vid_cam2.read_frame()
+                    if frame_cam1 is None or frame_cam2 is None:
+                        raise IOError("A video frame is empty.")
 
-    # Initialize arrays for appending the 2d data from cam1 for actual plotting the points
-    xdata_cam1 = []
-    ydata_cam1 = []
+                    im1.set_data(frame_cam1)
+                    im2.set_data(frame_cam2)
 
-    # Initialize arrays for appending the 2d data from cam2 for actual plotting the points
-    xdata_cam2 = []
-    ydata_cam2 = []
+                    sl = slice(max(0, k - trailpoints), k + 1)
+                    coords3d = xyz[sl]
+                    coords1 = xy1[sl, :, :2]
+                    coords2 = xy2[sl, :, :2]
+                    points_3d._offsets3d = coords3d.reshape((-1, 3)).T
+                    points_3d.set_color(colors)
+                    points_2d1.set_offsets(coords1.reshape((-1, 2)))
+                    points_2d1.set_color(colors)
+                    points_2d2.set_offsets(coords2.reshape((-1, 2)))
+                    points_2d2.set_color(colors)
+                    if draw_skeleton:
+                        segs3d = xyz[k][tuple([ind_links])].swapaxes(0, 1)
+                        coll_3d.set_segments(segs3d)
+                        segs1 = xy1[k, :, :2][tuple([ind_links])].swapaxes(0, 1)
+                        coll1.set_segments(segs1)
+                        segs2 = xy2[k, :, :2][tuple([ind_links])].swapaxes(0, 1)
+                        coll2.set_segments(segs2)
 
-    # Initialize arrays for appending the 2d data from cam1 for drawing the lines
-    xcam1 = []
-    ycam1 = []
-
-    # Initialize arrays for appending the 2d data from cam2 for drawing the lines
-    xcam2 = []
-    ycam2 = []
-
-    # Get the scorer names from the dataframe
-    scorer_cam1 = df_cam1_view.columns.get_level_values(0)[0]
-    scorer_cam2 = df_cam2_view.columns.get_level_values(0)[0]
-    scorer_3d = xyz_pts.columns.get_level_values(0)[0]
-
-    # Set the x,y, and z limits for the 3d view
-
-    numberFrames = min(len(vid_cam1), len(vid_cam2))
-    df_x = np.empty((len(bodyparts2plot), numberFrames))
-    df_y = np.empty((len(bodyparts2plot), numberFrames))
-    df_z = np.empty((len(bodyparts2plot), numberFrames))
-    for bpindex, bp in enumerate(bodyparts2plot):
-        df_x[bpindex, :] = xyz_pts[scorer_3d][bp]["x"].values
-        df_y[bpindex, :] = xyz_pts[scorer_3d][bp]["y"].values
-        df_z[bpindex, :] = xyz_pts[scorer_3d][bp]["z"].values
-    if xlim == [None, None]:
-        axes3.set_xlim3d([np.nanmin(df_x), np.nanmax(df_x)])
-    else:
-        axes3.set_xlim3d(xlim)
-    if ylim == [None, None]:
-        axes3.set_ylim3d([np.nanmin(df_y), np.nanmax(df_y)])
-    else:
-        axes3.set_ylim3d(ylim)
-    if zlim == [None, None]:
-        axes3.set_zlim3d([np.nanmin(df_z), np.nanmax(df_z)])
-    else:
-        axes3.set_zlim3d(zlim)
-
-    axes3.set_xticklabels([])
-    axes3.set_yticklabels([])
-    axes3.set_zticklabels([])
-    axes3.xaxis.grid(False)
-    axes3.view_init(view[0], view[1])
-    axes3.set_xlabel("X", fontsize=10)
-    axes3.set_ylabel("Y", fontsize=10)
-    axes3.set_zlabel("Z", fontsize=10)
-
-    # Set the frame number to read#max(0,index-trailpoints):index
-    vid_cam1.set_to_frame(k)
-    vid_cam2.set_to_frame(k)
-    frame_cam1 = vid_cam1.read_frame()
-    frame_cam2 = vid_cam2.read_frame()
-    if frame_cam1 is None or frame_cam2 is None:
-        raise IOError("A video frame is empty.")
-
-    # Plot the labels for each body part
-    for bpindex, bp in enumerate(bodyparts2plot):
-        axes1.imshow(frame_cam1)
-        axes2.imshow(frame_cam2)
-        if (df_cam1_view[scorer_cam1][bp]["likelihood"].values[k]) > pcutoff and (
-            df_cam2_view[scorer_cam2][bp]["likelihood"].values[k]
-        ) > pcutoff:
-            if trailpoints > 0:
-                xdata_cam1.append(
-                    df_cam1_view.iloc[max(0, k - trailpoints) : k][scorer_cam1][bp]["x"]
-                )
-                ydata_cam1.append(
-                    df_cam1_view.iloc[max(0, k - trailpoints) : k][scorer_cam1][bp]["y"]
-                )
-                xdata_cam2.append(
-                    df_cam2_view.iloc[max(0, k - trailpoints) : k][scorer_cam2][bp]["x"]
-                )
-                ydata_cam2.append(
-                    df_cam2_view.iloc[max(0, k - trailpoints) : k][scorer_cam2][bp]["y"]
-                )
-                xdata_3d.append(
-                    xyz_pts.iloc[max(0, k - trailpoints) : k][scorer_3d][bp]["x"]
-                )
-                ydata_3d.append(
-                    xyz_pts.iloc[max(0, k - trailpoints) : k][scorer_3d][bp]["y"]
-                )
-                zdata_3d.append(
-                    xyz_pts.iloc[max(0, k - trailpoints) : k][scorer_3d][bp]["z"]
-                )
-            else:
-                xdata_cam1.append(df_cam1_view.iloc[k][scorer_cam1][bp]["x"])
-                ydata_cam1.append(df_cam1_view.iloc[k][scorer_cam1][bp]["y"])
-                xdata_cam2.append(df_cam2_view.iloc[k][scorer_cam2][bp]["x"])
-                ydata_cam2.append(df_cam2_view.iloc[k][scorer_cam2][bp]["y"])
-                xdata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]["x"])
-                ydata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]["y"])
-                zdata_3d.append(xyz_pts.iloc[k][scorer_3d][bp]["z"])
-        else:
-            xdata_cam1.append(np.nan)
-            ydata_cam1.append(np.nan)
-            xdata_cam2.append(np.nan)
-            ydata_cam2.append(np.nan)
-            xdata_3d.append(np.nan)
-            ydata_3d.append(np.nan)
-            zdata_3d.append(np.nan)
-        p = axes1.scatter(
-            xdata_cam1[bpindex],
-            ydata_cam1[bpindex],
-            s=markerSize,
-            c=color(bodyparts2plot.index(bp)),
-        )
-        p = axes2.scatter(
-            xdata_cam2[bpindex],
-            ydata_cam2[bpindex],
-            s=markerSize,
-            c=color(bodyparts2plot.index(bp)),
-        )
-        p = axes3.scatter(
-            xdata_3d[bpindex],
-            ydata_3d[bpindex],
-            zdata_3d[bpindex],
-            c=color(bodyparts2plot.index(bp)),
-        )
-
-    # Connecting the bodyparts specified in the config file.3d file is created based on the likelihoods of cam1 and cam2. Using 3d file and check if the body part is nan then dont plot skeleton
-    if draw_skeleton:
-        for i in range(len(bodyparts2connect)):
-            bool_above_pcutoff = [
-                np.isnan(xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][0]]["x"])
-                or (np.isnan(xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][1]]["x"]))
-            ]
-            if not bool_above_pcutoff[0]:
-                xcam1.append(
-                    df_cam1_view.iloc[k][scorer_cam1][bodyparts2connect[i][0]]["x"]
-                )
-                ycam1.append(
-                    df_cam1_view.iloc[k][scorer_cam1][bodyparts2connect[i][0]]["y"]
-                )
-                xcam1.append(
-                    df_cam1_view.iloc[k][scorer_cam1][bodyparts2connect[i][1]]["x"]
-                )
-                ycam1.append(
-                    df_cam1_view.iloc[k][scorer_cam1][bodyparts2connect[i][1]]["y"]
-                )
-
-                xcam2.append(
-                    df_cam2_view.iloc[k][scorer_cam2][bodyparts2connect[i][0]]["x"]
-                )
-                ycam2.append(
-                    df_cam2_view.iloc[k][scorer_cam2][bodyparts2connect[i][0]]["y"]
-                )
-                xcam2.append(
-                    df_cam2_view.iloc[k][scorer_cam2][bodyparts2connect[i][1]]["x"]
-                )
-                ycam2.append(
-                    df_cam2_view.iloc[k][scorer_cam2][bodyparts2connect[i][1]]["y"]
-                )
-
-                xlines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][0]]["x"]
-                )
-                ylines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][0]]["y"]
-                )
-                zlines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][0]]["z"]
-                )
-                xlines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][1]]["x"]
-                )
-                ylines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][1]]["y"]
-                )
-                zlines_3d.append(
-                    xyz_pts.iloc[k][scorer_3d][bodyparts2connect[i][1]]["z"]
-                )
-
-                axes1.plot(xcam1, ycam1, color=skeleton_color, alpha=alphaValue)
-                axes2.plot(xcam2, ycam2, color=skeleton_color, alpha=alphaValue)
-                axes3.plot(
-                    xlines_3d,
-                    ylines_3d,
-                    zlines_3d,
-                    color=skeleton_color,
-                    alpha=alphaValue,
-                )
-
-                xcam1 = []
-                ycam1 = []
-                xcam2 = []
-                ycam2 = []
-                xlines_3d = []
-                ylines_3d = []
-                zlines_3d = []
-    # Saving the frames
-    output_folder = Path(os.path.join(path_h5_file, "temp_" + file_name))
-    output_folder.mkdir(parents=True, exist_ok=True)
-    num_frames = int(np.ceil(np.log10(numberFrames)))
-    img_name = str(output_folder) + "/img" + str(k).zfill(num_frames) + ".png"
-    plt.savefig(img_name)
-    plt.close("all")
-    return (output_folder, num_frames)
+                    writer.grab_frame()
