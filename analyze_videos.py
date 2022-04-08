@@ -200,6 +200,7 @@ class AnalyzeVideos(QWidget):
         self.bdpt_list_widget.setSelectionMode(
             QtWidgets.QAbstractItemView.MultiSelection
         )
+        self.bdpt_list_widget.selectAll()
         self.bdpt_list_widget.setEnabled(False)
         self.bdpt_list_widget.itemSelectionChanged.connect(
             self.update_selected_bodyparts
