@@ -554,20 +554,21 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 
 ### Plotting Results:
 
-- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to 0 to "see" the filled in parts.
+- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to `0` to "see" the filled in parts.
 
 
 - You can also determine a good `pcutoff` value by looking at the likelihood plot created during `plot_trajectories`:
 
 Plot the outputs:
 ```python
-deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
+  deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
 ```
 
 Create videos:
+```python
+  deeplabcut.create_labeled_video(config_path, [videos], videotype='avi', shuffle=1, trainingsetindex=0, filtered=False, fastmode=True, save_frames=False, keypoints_only=False, Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v', outputframerate=None, destfolder=None, draw_skeleton=False, trailpoints=0, displaycropped=False, color_by='bodypart', track_method='')
 ```
-deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi','/fullpath/project/videos/reachingvideo2.avi'],filtered = True)
-```
+- **NOTE :bulb::mega::** You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
