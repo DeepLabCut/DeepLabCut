@@ -9,6 +9,31 @@ from PySide2.QtCore import Qt
 
 from widgets import ConfigEditor
 
+def _add_label_widget(
+    text: str, 
+    layout: QtWidgets.QLayout, 
+    margins: tuple =(20, 50, 0, 0)
+    ) -> None:
+
+    label = QtWidgets.QLabel(text)
+    label.setContentsMargins(*margins)
+    label.setStyleSheet("font:bold")
+
+    layout.addWidget(label)
+
+def _create_horizontal_layout(
+    alignment=None, 
+    spacing: int =20, 
+    margins: tuple =(20, 0, 0, 0) 
+    ) -> QtWidgets.QHBoxLayout() :
+
+    layout = QtWidgets.QHBoxLayout()
+    layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+    layout.setSpacing(spacing)
+    layout.setContentsMargins(*margins)
+
+    return layout
+
 
 class AnalyzeVideos(QWidget):
     def __init__(self, parent, cfg):
@@ -16,56 +41,131 @@ class AnalyzeVideos(QWidget):
 
         self.logger = logging.getLogger("GUI")
 
-        self.filelist = []
-        self.picklelist = []
-        self.bodyparts = []
+        self.filelist = set()
+        self.all_bodyparts = []
         self.config = cfg
         self.cfg = auxiliaryfunctions.read_config(self.config)
-        self.draw = False
-
-        self.csv = False
-        self.dynamic = False
-        self.trajectory = False
-        self.filter = False
-        self.showfigs = True
 
         if self.cfg.get("multianimalproject", False):
-            self.bodyparts = self.cfg["multianimalbodyparts"]
+            self.all_bodyparts = self.cfg["multianimalbodyparts"]
+            self.tracker_method = self.cfg.get("default_track_method", "ellipse")
         else:
-            self.bodyparts = self.cfg["bodyparts"]
+            self.all_bodyparts = self.cfg["bodyparts"]
 
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
+
+        # NOTE: Several functions can support selected bodyparts instead of all.
+        #       Do I expose these? They're not exposed in the current GUI as far
+        #       as I can see. (only plot_trajectories)
+        self.backend_variables = {
+            # General variables
+            "save_as_csv": False,
+            "dynamic_cropping": False,
+            "input_video_type": "avi", #TODO: plug
+            "show_figures": True,
+
+            # Analyze videos
+            "calibrate_assembly": False,
+            "assemble_with_ID_only": False,
+
+            # Tracking variables
+            # "tracklet_window_size": 0, #NOTE: Do we want to expose this in the GUI
+
+            # Additional function calls
+            "filter_data": False,
+            "plot_trajectories": False,
+            "plot_trajectories": False,
+
+            # Video creation / Plotting Variables
+            "bodyparts_to_use": self.all_bodyparts, 
+        }
+
+        self.outer_layout = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.outer_layout)
 
         self.set_page()
 
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
+        workflow_title = QtWidgets.QLabel("DeepLabCut - Step 7. Analyze Videos ....")
+        workflow_title.setStyleSheet("font:bold large")
+        workflow_title.setContentsMargins(20, 20, 0, 10)
 
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
+        self.outer_layout.addWidget(workflow_title)
 
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 7. Analyze Videos ....")
-        l1_step1.setContentsMargins(20, 0, 0, 10)
+        layout_config = _create_horizontal_layout()
+        self._generate_config_layout(layout_config)
+        self.outer_layout.addLayout(layout_config)
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        _add_label_widget("Video Selection", self.outer_layout)
+        self.layout_video_analysis = _create_horizontal_layout()
+        self._generate_layout_video_analysis(self.layout_video_analysis)
+        self.outer_layout.addLayout(self.layout_video_analysis)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
+
+        _add_label_widget("Analysis Attributes", self.outer_layout)
+        self.layout_attributes = _create_horizontal_layout()
+        self._generate_layout_attributes(self.layout_attributes)
+        self.outer_layout.addLayout(self.layout_attributes)
+
+
+
+        # Single / Multi animal Only Layouts
+        self.layout_single_animal = _create_horizontal_layout()
+
+        self.layout_multi_animal = _create_horizontal_layout()
+
+        if self.cfg.get("multianimalproject", False):
+            # multianimal only:
+            #   "Use ffprobe to read video metadata (slow but robust)",
+            #   "Create video for checking detections",
+            #   "Specify the Tracker Method (you can try each)"
+            #   "Overwrite tracking files (set to yes if you edit inference parameters)",
+            #   "Calibrate animal assembly?",
+            #   "Assemble with identity only?",
+            #   "Prioritize past connections over a window of size:")
+            _add_label_widget("Multi-animal settings", self.outer_layout)
+            self._generate_layout_multianimal_only_options(self.layout_multi_animal)
+            self.outer_layout.addLayout(self.layout_multi_animal)
+        else:
+            # Single animal only
+            #   dynamically crop bdpts
+            _add_label_widget("Single-animal settings", self.outer_layout)
+            self._generate_layout_single_animal(self.layout_single_animal)
+            self.outer_layout.addLayout(self.layout_single_animal)
+
+
+
+        _add_label_widget("Data Processing", self.outer_layout)
+        self.layout_data_processing = _create_horizontal_layout()
+        self._generate_layout_data_processing(self.layout_data_processing)
+        self.outer_layout.addLayout(self.layout_data_processing)
+
+
+        _add_label_widget("Visualization", self.outer_layout)
+        self.layout_visualization = _create_horizontal_layout()
+        self._generate_layout_visualization(self.layout_visualization)
+        self.outer_layout.addLayout(self.layout_visualization)
+
+        
+
+        self.analyze_videos_btn = QtWidgets.QPushButton("Analyze Videos")
+        self.analyze_videos_btn.clicked.connect(self.analyze_videos)
+
+        self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
+        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
+
+        self.outer_layout.addWidget(
+            self.analyze_videos_btn, alignment=Qt.AlignRight
+        )
+        self.outer_layout.addWidget(
+            self.edit_config_file_btn, alignment=Qt.AlignRight
+        )
+
+
+    def _generate_config_layout(self, layout):
+        cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
+        self.cfg_line.setMaximumWidth(1000)
         self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
@@ -74,163 +174,231 @@ class AnalyzeVideos(QWidget):
         browse_button.setMaximumWidth(100)
         browse_button.clicked.connect(self.browse_dir)
 
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
+        layout.addWidget(cfg_text)
+        layout.addWidget(self.cfg_line)
+        layout.addWidget(browse_button)
 
-        layout_choose_video = QtWidgets.QHBoxLayout()
-        layout_choose_video.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_choose_video.setSpacing(70)
-        layout_choose_video.setContentsMargins(20, 10, 300, 0)
-        choose_video_text = QtWidgets.QLabel("Choose the videos")
-        choose_video_text.setContentsMargins(0, 0, 52, 0)
 
-        self.select_video_button = QtWidgets.QPushButton("Select videos to analyze")
-        self.select_video_button.setMaximumWidth(350)
+    def _generate_layout_single_animal(self, layout):
+        # Dynamic bodypart cropping
+        self.crop_bodyparts = QtWidgets.QCheckBox("Dynamically crop bodyparts")
+        self.crop_bodyparts.setCheckState(Qt.Unchecked)
+        self.crop_bodyparts.stateChanged.connect(self.update_crop_choice)
+
+        layout.addWidget(self.crop_bodyparts)
+
+        
+    def _generate_layout_visualization(self, layout):
+
+        tmp_layout = QtWidgets.QVBoxLayout()
+
+        # Plot Trajectories 
+        self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
+        self.plot_trajectories.setCheckState(Qt.Unchecked)
+        self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
+
+        tmp_layout.addWidget(self.plot_trajectories)
+
+
+        # Show trajectory plots
+        self.show_trajectory_plots = QtWidgets.QCheckBox("Show trajectory plots")
+        self.show_trajectory_plots.setCheckState(Qt.Unchecked)
+        self.show_trajectory_plots.setEnabled(False)
+        self.show_trajectory_plots.stateChanged.connect(self.update_showfigs_choice)
+
+        tmp_layout.addWidget(self.show_trajectory_plots)
+
+        layout.addLayout(tmp_layout)
+
+
+        # Bodypart list
+        self.bdpt_list_widget = QtWidgets.QListWidget()
+        # self.bdpt_list_widget.setMaximumWidth(400)
+        self.bdpt_list_widget.addItems(self.all_bodyparts)
+        self.bdpt_list_widget.setSelectionMode(
+            QtWidgets.QAbstractItemView.MultiSelection
+        )
+        self.bdpt_list_widget.setEnabled(False)
+        self.bdpt_list_widget.itemSelectionChanged.connect(
+            self.update_selected_bodyparts
+        )
+        tmp_layout = QtWidgets.QVBoxLayout()
+        tmp_layout.addWidget(self.bdpt_list_widget)
+        layout.addLayout(tmp_layout)
+
+        
+
+    def _generate_layout_data_processing(self, layout):
+        # Save results as csv
+        self.save_as_csv = QtWidgets.QCheckBox("Save result(s) as csv")
+        self.save_as_csv.setCheckState(Qt.Unchecked)
+        self.save_as_csv.stateChanged.connect(self.update_csv_choice)
+
+        layout.addWidget(self.save_as_csv)
+
+
+        # Filter predictions
+        self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
+        self.filter_predictions.setCheckState(Qt.Unchecked)
+        self.filter_predictions.stateChanged.connect(self.update_filter_choice)
+
+        layout.addWidget(self.filter_predictions)
+
+     
+    def _generate_layout_video_analysis(self, layout):
+
+        self.videotype_widget = QComboBox()
+        self.videotype_widget.setMaximumWidth(100)
+        self.videotype_widget.setMinimumHeight(30)
+
+        options = ["avi", "mp4", "mov"]
+        self.videotype_widget.addItems(options)
+        self.videotype_widget.setCurrentText(self.backend_variables["input_video_type"])
+        self.videotype_widget.currentTextChanged.connect(self.update_videotype)
+
+        layout.addWidget(self.videotype_widget)
+
+
+        self.select_video_button = QtWidgets.QPushButton("Select videos")
+        self.select_video_button.setMaximumWidth(200)
         self.select_video_button.clicked.connect(self.select_video)
 
-        layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(self.select_video_button)
+        layout.addWidget(self.select_video_button)
 
-        self.inLayout.addLayout(layout_cfg)
-        self.inLayout.addLayout(layout_choose_video)
+        self.selected_videos_text = QtWidgets.QLabel("")
+        layout.addWidget(self.selected_videos_text)
 
-        self.layout_attributes = QtWidgets.QVBoxLayout()
-        self.layout_attributes.setAlignment(Qt.AlignTop)
-        self.layout_attributes.setSpacing(20)
-        self.layout_attributes.setContentsMargins(0, 0, 40, 0)
+    def _generate_layout_attributes(self, layout):
+        # Shuffle 
+        opt_text = QtWidgets.QLabel("Shuffle")
+        self.shuffle = QSpinBox()
+        self.shuffle.setMaximum(100)
+        self.shuffle.setValue(1)
+        # self.shuffle.setMinimumWidth(200)
+        # self.shuffle.setMinimumHeight(30)
 
-        label = QtWidgets.QLabel("Attributes")
-        label.setContentsMargins(20, 20, 0, 10)
-        self.layout_attributes.addWidget(label)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.shuffle)
 
-        self.layout_specify = QtWidgets.QHBoxLayout()
-        self.layout_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        # Trainingset index
+        opt_text = QtWidgets.QLabel("Trainingset index")
+        self.trainingset = QSpinBox()
+        self.trainingset.setMaximum(100)
+        self.trainingset.setValue(0)
+        # self.trainingset.setMinimumWidth(200)
+        # self.trainingset.setMinimumHeight(30)
 
-        self.layout_specify.setSpacing(30)
-        self.layout_specify.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_videotype()
-        self._layout_shuffle()
-        self._layout_trainingset()
-
-        self.layout_attributes.addLayout(self.layout_specify)
-
-        self.layout_save_filter = QtWidgets.QHBoxLayout()
-        self.layout_save_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_save_filter.setSpacing(200)
-        self.layout_save_filter.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_save()
-        self._layout_filter()
-        self._layout_plot()
-        self.layout_attributes.addLayout(self.layout_save_filter)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.trainingset)
 
 
-        self.layout_crop_plot = QtWidgets.QHBoxLayout()
-        self.layout_crop_plot.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+    def _generate_layout_multianimal_only_options(self, layout):
+        # - [ ] ffprobe for metadata?
+        # - [ ] video for checking detections
+        # - [x] tracker type
+        # - [ ] calibrate assembly
+        # - [ ] assembly with ID Only
+        # - [ ] prioritize past connections in assembly
+        self.tracker_type_selector = QComboBox()
+        self.tracker_type_selector.addItems(["skeleton", "box", "ellipse"])
+        self.tracker_type_selector.setCurrentText(self.tracker_method)
+        self.tracker_type_selector.currentTextChanged.connect(self.update_tracker_type)
 
-        self.layout_crop_plot.setSpacing(170)
-        self.layout_crop_plot.setContentsMargins(20, 0, 50, 20)
+        self.calibrate_assembly_checkbox = QtWidgets.QCheckBox("Calibrate assembly")
+        self.calibrate_assembly_checkbox.setCheckState(Qt.Unchecked)
+        self.calibrate_assembly_checkbox.stateChanged.connect(self.update_calibrate_assembly)
 
-        self._layout_trajectories()
-        self.layout_attributes.addLayout(self.layout_crop_plot)
+        self.assemble_with_ID_only_checkbox = QtWidgets.QCheckBox("Assemble with ID only")
+        self.assemble_with_ID_only_checkbox.setCheckState(Qt.Unchecked)
+        self.assemble_with_ID_only_checkbox.stateChanged.connect(self.update_assemble_with_ID_only)
 
+        layout.addWidget(self.tracker_type_selector)
+        layout.addWidget(self.calibrate_assembly_checkbox)
+        layout.addWidget(self.assemble_with_ID_only_checkbox)
+        
 
-        if self.cfg.get("multianimalproject", False):
-            print("multianimalproject")
-            # TODO: finish multianimal part:
-            # self.robust = wx.RadioBox(
-            #                 self,
-            #                 label="Use ffprobe to read video metadata (slow but robust)",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.robust.SetSelection(1)
-            #             self.hbox2.Add(self.robust, 1, 1)
-            #
-            #             self.create_video_with_all_detections = wx.RadioBox(
-            #                 self,
-            #                 label="Create video for checking detections",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.create_video_with_all_detections.SetSelection(1)
-            #             self.hbox2.Add(
-            #                 self.create_video_with_all_detections,
-            #                 1,
-            #                 wx.EXPAND | wx.TOP | wx.BOTTOM,
-            #                 1,
-            #             )
-            #
-            #             tracker_text = wx.StaticBox(
-            #                 self, label="Specify the Tracker Method (you can try each)"
-            #             )
-            #             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            #             trackertypes = ["skeleton", "box", "ellipse"]
-            #             self.trackertypes = wx.ComboBox(
-            #                 self, choices=trackertypes, style=wx.CB_READONLY
-            #             )
-            #             self.trackertypes.SetValue("ellipse")
-            #             tracker_text_boxsizer.Add(
-            #                 self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
-            #             )
-            #             self.hbox3.Add(tracker_text_boxsizer, 1,  1)
-            #
-            #             self.overwrite = wx.RadioBox(
-            #                 self,
-            #                 label="Overwrite tracking files (set to yes if you edit inference parameters)",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.overwrite.SetSelection(1)
-            #             self.hbox3.Add(self.overwrite, 1, 1)
-            #
-            #             self.calibrate = wx.RadioBox(
-            #                 self,
-            #                 label="Calibrate animal assembly?",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.calibrate.SetSelection(1)
-            #             self.hbox4.Add(self.calibrate, 1, 1)
-            #
-            #             self.identity_toggle = wx.RadioBox(
-            #                 self,
-            #                 label="Assemble with identity only?",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.identity_toggle.SetSelection(1)
-            #             self.hbox4.Add(self.identity_toggle, 1, 1)
-            #
-            #             winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
-            #             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
-            #             self.winsize = wx.SpinCtrl(self, value="0")
-            #             winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
-            #             self.hbox4.Add(winsize_sizer, 1, 1)
+    def update_assemble_with_ID_only(self, state):
+        if state == Qt.Checked:
+            self.backend_variables["assemble_with_ID_only"] = True
+            self.logger.info("Assembly with ID only ENABLED")
         else:
-            # Dynamically crop bdpts only in single animal
-            self._layout_crop()
+            self.backend_variables["assemble_with_ID_only"] = False
+            self.logger.info("Assembly with ID only DISABLED")
+
+    def update_calibrate_assembly(self, state):
+        if state == Qt.Checked:
+            self.backend_variables["calibrate_assembly"] = True
+            self.logger.info("Assembly calibration ENABLED")
+        else:
+            self.backend_variables["calibrate_assembly"] = False
+            self.logger.info("Assembly calibration DISABLED")
 
 
+    def update_videotype(self, vtype):
+        self.logger.info(f"Looking for .{vtype} videos")
+        self.backend_variables["input_video_type"] = vtype
+        self.filelist.clear()
+        self.selected_videos_text.setText("")
+        self.select_video_button.setText("Select videos")
 
-        self.analye_videos_btn = QtWidgets.QPushButton("Analyze Videos")
-        self.analye_videos_btn.setContentsMargins(0, 40, 40, 40)
-        self.analye_videos_btn.clicked.connect(self.analyze_videos)
+    def update_selected_bodyparts(self):
+        selected_bodyparts = [
+            item.text() for item in self.bdpt_list_widget.selectedItems()
+        ]
+        self.logger.info(
+            f"Selected bodyparts for trajecories plotting:\n\t{selected_bodyparts}"
+        )
+        self.backend_variables["bodyparts_to_use"] = selected_bodyparts
 
-        self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
-        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
+    def update_tracker_type(self, method):
+        self.logger.info(f"Using {method} tracker")
+        self.tracker_method = method
 
-        self.layout_attributes.addWidget(self.analye_videos_btn, alignment=Qt.AlignRight)
-        self.layout_attributes.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
-        self.inLayout.addLayout(self.layout_attributes)
+    def update_csv_choice(self, s):
+        if s == Qt.Checked:
+            self.backend_variables["save_as_csv"] = True
+            self.logger.info("Save results as CSV ENABLED")
+        else:
+            self.backend_variables["save_as_csv"] = False
+            self.logger.info("Save results as CSV DISABLED")
+
+    def update_filter_choice(self, s):
+        if s == Qt.Checked:
+            self.backend_variables["filter_data"] = True
+            self.logger.info("Filtering predictions ENABLED")
+        else:
+            self.backend_variables["filter_data"] = False
+            self.logger.info("Filtering predictions DISABLED")
+
+    def update_showfigs_choice(self, s):
+        if s == Qt.Checked:
+            self.backend_variables["show_figures"] = True
+            self.logger.info("Plots will show as pop ups.")
+        else:
+            self.backend_variables["show_figures"] = False
+            self.logger.info("Plots will not show up.")
+
+    def update_crop_choice(self, s):
+        if s == Qt.Checked:
+            self.backend_variables["dynamic_cropping"] = True
+            self.logger.info("Dynamic bodypart cropping ENABLED.")
+        else:
+            self.backend_variables["dynamic_cropping"] = False
+            self.logger.info("Dynamic bodypart cropping DISABLED.")
+
+    def update_plot_trajectory_choice(self, s):
+        if s == Qt.Checked:
+            self.backend_variables["plot_trajectories"] = True
+            self.bdpt_list_widget.setEnabled(True)
+            self.show_trajectory_plots.setEnabled(True)
+            self.logger.info("Plot trajectories ENABLED.")
+
+        else:
+            self.backend_variables["plot_trajectories"] = False
+            self.bdpt_list_widget.setEnabled(False)
+            self.show_trajectory_plots.setEnabled(False)
+            self.show_trajectory_plots.setCheckState(Qt.Unchecked)
+            self.logger.info("Plot trajectories DISABLED.")
 
     def update_cfg(self):
         text = self.proj_line.text()
@@ -249,186 +417,27 @@ class AnalyzeVideos(QWidget):
     def select_video(self):
         cwd = self.config.split("/")[0:-1]
         cwd = "\\".join(cwd)
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video to modify", cwd, "", "*.*"
+        filenames = QtWidgets.QFileDialog.getOpenFileNames(
+            self, 
+            "Select video(s) to analyze", 
+            cwd, 
+            f"Video files (*.{self.videotype_widget.currentText()})",
         )
-        if videos_file[0]:
-            self.vids = videos_file[0]
-            self.filelist.append(self.vids)
+
+        if filenames:
+            self.filelist.update(filenames[0]) #Qt returns a tuple ( list of files, filetype )
+            self.selected_videos_text.setText(
+                "%s videos selected" % len(self.filelist)
+            )
             self.select_video_button.setText(
-                "Total %s Videos selected" % len(self.filelist)
+                "Add more videos"
             )
             self.select_video_button.adjustSize()
-
-    def _layout_videotype(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Videotype")
-        self.videotype = QComboBox()
-        self.videotype.setMinimumWidth(350)
-        self.videotype.setMinimumHeight(30)
-        options = [".avi", ".mp4", ".mov"]
-        self.videotype.addItems(options)
-        self.videotype.setCurrentText(".avi")
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.videotype)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_shuffle(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(0, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(1)
-        self.shuffle.setMinimumWidth(400)
-        self.shuffle.setMinimumHeight(30)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.shuffle)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_trainingset(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = QSpinBox()
-        self.trainingset.setMaximum(100)
-        self.trainingset.setValue(0)
-        self.trainingset.setMinimumWidth(400)
-        self.trainingset.setMinimumHeight(30)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trainingset)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_save(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        self.save_as_csv = QtWidgets.QCheckBox("Save result(s) as csv")
-        self.save_as_csv.setCheckState(Qt.Unchecked)
-        self.save_as_csv.stateChanged.connect(self.update_csv_choice)
-
-        l_opt.addWidget(self.save_as_csv)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_filter(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
-        self.filter_predictions.setCheckState(Qt.Unchecked)
-        self.filter_predictions.stateChanged.connect(self.update_filter_choice)
-
-        l_opt.addWidget(self.filter_predictions)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_plot(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        self.show_plots = QtWidgets.QCheckBox("Show plots")
-        self.show_plots.setCheckState(Qt.Checked)
-        self.show_plots.stateChanged.connect(self.update_showfigs_choice)
-
-        l_opt.addWidget(self.show_plots)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_crop(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        self.crop_bodyparts = QtWidgets.QCheckBox("Dynamically crop bodyparts")
-        self.crop_bodyparts.setCheckState(Qt.Unchecked)
-        self.crop_bodyparts.stateChanged.connect(self.update_crop_choice)
-
-        l_opt.addWidget(self.crop_bodyparts)
-        self.layout_crop_plot.addLayout(l_opt)
-
-    def _layout_trajectories(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-
-        self.bdpt_list_widget = QtWidgets.QListWidget()
-        self.bdpt_list_widget.addItems(self.bodyparts)
-        self.bdpt_list_widget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        self.bdpt_list_widget.setEnabled(False)
-
-        self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
-        self.plot_trajectories.setCheckState(Qt.Unchecked)
-        self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
-
-        l_opt.addWidget(self.plot_trajectories)
-        l_opt.addWidget(self.bdpt_list_widget)
-        self.layout_crop_plot.addLayout(l_opt)
-
-    def update_csv_choice(self, s):
-        if s == Qt.Checked:
-            self.csv = True
-            self.logger.info("Save results as CSV ENABLED")
-        else:
-            self.csv = False
-            self.logger.info("Save results as CSV DISABLED")
-
-    def update_filter_choice(self, s):
-        if s == Qt.Checked:
-            self.filter = True
-            self.logger.info("Filtering predictions ENABLED")
-        else:
-            self.filter = False
-            self.logger.info("Filtering predictions DISABLED")
-
-    def update_showfigs_choice(self, s):
-        if s == Qt.Checked:
-            self.showfigs = True
-            self.logger.info("Plots will show as pop ups.")
-        else:
-            self.showfigs = False
-            self.logger.info("Plots will not show up.")
-
-    def update_crop_choice(self, s):
-        if s == Qt.Checked:
-            self.dynamic = True
-            self.logger.info("Dynamic bodypart cropping ENABLED.")
-        else:
-            self.dynamic = False
-            self.logger.info("Dynamic bodypart cropping DISABLED.")
-
-
-    def update_plot_trajectory_choice(self, s):
-        if s == Qt.Checked:
-            self.trajectory = True
-            self.bdpt_list_widget.setEnabled(True)
-            self.logger.info("Plot trajectories ENABLED.")
-
-        else:
-            self.trajectory = False
-            self.bdpt_list_widget.setEnabled(False)
-            self.logger.info("Plot trajectories DISABLED.")
-
+            self.selected_videos_text.adjustSize()
+            self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
 
     def edit_config_file(self):
-        
+
         if not self.config:
             return
         editor = ConfigEditor(self.config)
@@ -438,59 +447,65 @@ class AnalyzeVideos(QWidget):
         shuffle = self.shuffle.value()
         trainingsetindex = self.trainingset.value()
 
-        if self.cfg.get("multianimalproject", False):
-            print("Analyzing ... ")
-        else:
-            save_as_csv = self.csv
-            if self.dynamic:
-                dynamic = (True, 0.5, 10)
-            else:
-                dynamic = (False, 0.5, 10)
-
-            _filter = self.filter
+        save_as_csv = self.backend_variables["save_as_csv"]
+        filter_data = self.backend_variables["filter_data"]
+        videotype = self.backend_variables["input_video_type"]
+        calibrate_assembly = self.backend_variables["calibrate_assembly"]
+        assemble_with_ID_only = self.backend_variables["assemble_with_ID_only"]
+        cropping = None
+        dynamic_cropping_params = (False, 0.5, 10)
 
         if self.cfg["cropping"] == "True":
-            crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
-        else:
-            crop = None
+            cropping = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
+
+        if self.backend_variables["dynamic_cropping"]:
+            dynamic_cropping_params = (True, 0.5, 10)
+            
+            
         if self.cfg.get("multianimalproject", False):
-            print("multianimalproject")
+            # TODO
+            # plug
+            # tracker_method -> convert decections + stitch tracklets
+            # bodyparts_to_use -> plot_trajectories only?
+            # calibrate_assembly -> detections 2 tracklets
+            # assemble_with_ID_only -> detections 2 tracklets
+            pass
         else:
 
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
-                videotype=self.videotype.currentText(),
+                videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
                 gputouse=None,
                 save_as_csv=save_as_csv,
-                cropping=crop,
-                dynamic=dynamic,
+                cropping=cropping,
+                dynamic=dynamic_cropping_params,
             )
-            if _filter:
-                deeplabcut.filterpredictions(
-                    self.config,
-                    self.filelist,
-                    videotype=self.videotype.currentText(),
-                    shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
-                    filtertype="median",
-                    windowlength=5,
-                    save_as_csv=save_as_csv,
-                )
+        if filter_data:
+            deeplabcut.filterpredictions(
+                self.config,
+                self.filelist,
+                videotype=videotype,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                filtertype="median",
+                windowlength=5,
+                save_as_csv=save_as_csv,
+            )
 
-            if self.trajectory:
-                bdpts = self.bdpt_list_widget.selectedItems()
-                self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
-                showfig = self.showfigs
-                deeplabcut.plot_trajectories(
-                    self.config,
-                    self.filelist,
-                    displayedbodyparts=bdpts,
-                    videotype=self.videotype.currentText(),
-                    shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
-                    filtered=_filter,
-                    showfigures=showfig,
-                )
+        if self.backend_variables["plot_trajectories"]:
+            bdpts = self.bdpt_list_widget.selectedItems()
+            self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
+            showfig = self.backend_variables["show_figures"]
+            deeplabcut.plot_trajectories(
+                self.config,
+                self.filelist,
+                displayedbodyparts=bdpts,
+                videotype=videotype,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                filtered=filter_data,
+                showfigures=showfig,
+            )
