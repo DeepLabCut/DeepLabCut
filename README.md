@@ -9,11 +9,12 @@ python main.py
 - [ ] Video analysis (multi-animal options)
   - [ ] ffprobe to read video metadata
   - [ ] create video for checking detections
-  - [ ] choose tracker type
+  - [x] choose tracker type
   - [ ] overwrite tracking files
-  - [ ] calibrate assembly
-  - [ ] assemble with ID only
+  - [x] calibrate assembly
+  - [x] assemble with ID only
   - [ ] prioritize past connections in assembly
+  - [ ] plug everything in 
 - [ ] Create training dataset
   - [ ] Model comparison
 - [ ] Create labeled videos
