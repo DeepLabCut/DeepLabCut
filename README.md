@@ -1,5 +1,11 @@
 # PyQT-Based DLC GUI
 
+Additional dependencies:
+```bash
+pip install PySide2
+pip install qdarkstyle #will get rid of this
+```
+
 To run:
 ```bash
 python main.py
