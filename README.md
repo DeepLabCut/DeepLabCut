@@ -7,14 +7,14 @@ python main.py
 
 ## ToDO:
 - [ ] Video analysis (multi-animal options)
-  - [ ] ffprobe to read video metadata
-  - [ ] create video for checking detections
+  - [x] ffprobe to read video metadata
+  - [x] create video for checking detections
   - [x] choose tracker type
-  - [ ] overwrite tracking files
+  - [x] overwrite tracking files
   - [x] calibrate assembly
   - [x] assemble with ID only
   - [ ] prioritize past connections in assembly
-  - [ ] plug everything in 
+  - [x] plug everything in 
 - [ ] Create training dataset
   - [ ] Model comparison
 - [ ] Create labeled videos
