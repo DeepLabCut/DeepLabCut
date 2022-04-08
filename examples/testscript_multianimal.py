@@ -247,14 +247,14 @@ if __name__ == "__main__":
     print("RELABELING")
     DF = pd.read_hdf(file, "df_with_missing")
     DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
-    DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
+    DF.columns.set_levels([scorer.replace(DLCscorer, SCORER)], level=0, inplace=True)
     DF = DF.drop("likelihood", axis=1, level=3)
     DF.to_csv(
         os.path.join(
             cfg["project_path"],
             "labeled-data",
             vname,
-            "CollectedData_" + scorer + ".csv",
+            "CollectedData_" + SCORER + ".csv",
         )
     )
     DF.to_hdf(
@@ -262,11 +262,9 @@ if __name__ == "__main__":
             cfg["project_path"],
             "labeled-data",
             vname,
-            "CollectedData_" + scorer + ".h5",
+            "CollectedData_" + SCORER + ".h5",
         ),
         "df_with_missing",
-        format="table",
-        mode="w",
     )
 
     print("MERGING")

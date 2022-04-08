@@ -17,6 +17,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 import wx
 import wx.lib.scrolledpanel as SP
 from matplotlib.figure import Figure
@@ -357,24 +358,25 @@ class MainFrame(BaseFrame):
         frame = img_as_ubyte(self.vid.read_frame(crop=self.cropping))
         fname = Path(self.filename)
         output_path = self.config_path.parents[0] / "labeled-data" / fname.stem
-
-        self.machinefile = os.path.join(
-            str(output_path), "machinelabels-iter" + str(self.iterationindex) + ".h5"
-        )
-        name = str(fname.stem)
-        DF = self.Dataframe.iloc[[self.currFrame]]
-        DF.index = [
-            os.path.join(
-                "labeled-data", name, "img" + str(index).zfill(self.strwidth) + ".png"
-            )
-            for index in DF.index
-        ]
         img_name = (
             str(output_path)
             + "/img"
             + str(self.currFrame).zfill(int(np.ceil(np.log10(self.numberFrames))))
             + ".png"
         )
+        if os.path.exists(img_name):
+            warnings.warn("The selected frame has already been extracted; please select another one.")
+            return
+
+        self.machinefile = os.path.join(
+            str(output_path), "machinelabels-iter" + str(self.iterationindex) + ".h5"
+        )
+        name = str(fname.stem)
+        DF = self.Dataframe.iloc[[self.currFrame]]
+        DF.index = pd.MultiIndex.from_tuples([
+            ("labeled-data", name, "img" + str(index).zfill(self.strwidth) + ".png")
+            for index in DF.index
+        ])
         labeled_img_name = (
             str(output_path)
             + "/img"
@@ -398,7 +400,6 @@ class MainFrame(BaseFrame):
             if self.savelabeled:
                 self.figure.savefig(labeled_img_name, bbox_inches="tight")
             io.imsave(img_name, frame)
-            #            cv2.imwrite(img_name, frame)
             DF.to_hdf(self.machinefile, key="df_with_missing", mode="w")
             DF.to_csv(os.path.join(str(output_path), "machinelabels.csv"))
         else:

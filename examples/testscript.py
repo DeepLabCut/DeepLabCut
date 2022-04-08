@@ -265,8 +265,6 @@ if __name__ == "__main__":
             "CollectedData_" + scorer + ".h5",
         ),
         "df_with_missing",
-        format="table",
-        mode="w",
     )
 
     print("MERGING")

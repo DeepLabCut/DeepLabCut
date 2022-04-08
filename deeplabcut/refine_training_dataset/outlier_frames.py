@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils import (
     auxiliaryfunctions,
     auxfun_multianimal,
+    conversioncode,
     visualization,
     frameselectiontools,
 )
@@ -692,23 +693,15 @@ def ExtractFramesbasedonPreselection(
             )
             if isinstance(data, pd.DataFrame):
                 df = data.loc[frames2pick]
-                df.index = [
-                    os.path.join(
-                        "labeled-data",
-                        vname,
-                        "img" + str(index).zfill(strwidth) + ".png",
-                    )
+                df.index = pd.MultiIndex.from_tuples([
+                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
                     for index in df.index
-                ]  # exchange index number by file names.
+                ])  # exchange index number by file names.
             elif isinstance(data, dict):
-                idx = [
-                    os.path.join(
-                        "labeled-data",
-                        vname,
-                        "img" + str(index).zfill(strwidth) + ".png",
-                    )
+                idx = pd.MultiIndex.from_tuples([
+                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
                     for index in frames2pick
-                ]
+                ])
                 filename = os.path.join(
                     str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
                 )
@@ -753,6 +746,7 @@ def ExtractFramesbasedonPreselection(
                 return
             if Path(machinefile).is_file():
                 Data = pd.read_hdf(machinefile, "df_with_missing")
+                conversioncode.guarantee_multiindex_rows(Data)
                 DataCombined = pd.concat([Data, df])
                 # drop duplicate labels:
                 DataCombined = DataCombined[
