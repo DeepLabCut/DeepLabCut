@@ -24,7 +24,12 @@ from tqdm import tqdm
 
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
-TRACK_METHODS = "box", "skeleton", "ellipse"
+TRACK_METHODS = {
+    "box": "_bx",
+    "skeleton": "_sk",
+    "ellipse": "_el",
+    "transformer": "_tr",
+}
 
 
 def calc_iou(bbox1, bbox2):
