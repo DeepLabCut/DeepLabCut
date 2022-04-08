@@ -245,14 +245,14 @@ def dropimagesduetolackofannotation(config):
 
 def dropunlabeledframes(config):
     """
-    Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files 
+    Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files
     Will be carried out iteratively for all *folders* in labeled-data.
-    
+
     Parameter
     ----------
     config : string
         String containing the full path of the config file in the project.
-    
+
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -275,9 +275,9 @@ def dropunlabeledframes(config):
             DC.to_csv(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
             )
-            
+
             print("Dropped ", dropped, "entries in ",folder)
-    
+
     print("Done.")
 
 def check_labels(
@@ -747,7 +747,7 @@ def create_training_dataset(
 
     augmenter_type: string
         Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
-        
+
     posecfg_template: string (optional, default=None)
         Path to a pose_cfg.yaml file to use as a template for generating the new one for the current iteration. Useful if you
         would like to start with the same parameters a previous training iteration. None uses the default pose_cfg.yaml.
@@ -834,7 +834,7 @@ def create_training_dataset(
             "deterministic",
         ]:
             raise ValueError("Invalid augmenter type:", augmenter_type)
-        
+
         if posecfg_template:
             if net_type != prior_cfg["net_type"]:
                 print(
@@ -844,7 +844,7 @@ def create_training_dataset(
                 print(
                     "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
                 )
-                
+
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         if not posecfg_template:

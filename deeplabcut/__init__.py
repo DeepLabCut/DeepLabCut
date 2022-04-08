@@ -85,6 +85,7 @@ from deeplabcut.pose_estimation_tensorflow import (
     evaluate_network,
     return_evaluate_network_data,
     analyze_videos,
+    create_tracking_dataset,
     analyze_time_lapse_frames,
     convert_detections2tracklets,
     extract_maps,
@@ -94,6 +95,7 @@ from deeplabcut.pose_estimation_tensorflow import (
     extract_save_all_maps,
     export_model,
 )
+
 
 from deeplabcut.pose_estimation_3d import (
     calibrate_cameras,
@@ -109,6 +111,8 @@ from deeplabcut.refine_training_dataset import (
     find_outliers_in_raw_data,
 )
 from deeplabcut.post_processing import filterpredictions, analyzeskeleton
+
+
 
 
 from deeplabcut.version import __version__, VERSION

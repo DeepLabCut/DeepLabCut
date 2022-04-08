@@ -296,6 +296,7 @@ def evaluate_multianimal_full(
                     )
 
                     data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+
                     if plotting:
                         foldername = os.path.join(
                             str(evaluationfolder),
@@ -308,7 +309,12 @@ def evaluate_multianimal_full(
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+
+                        (
+                            sess,
+                            inputs,
+                            outputs,
+                        ) = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -359,6 +365,7 @@ def evaluate_multianimal_full(
                                 :, ["sample", "y", "x", "bodyparts"]
                             ].to_numpy()
                             peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
+
                             pred = predictma.predict_batched_peaks_and_costs(
                                 dlc_cfg,
                                 np.expand_dims(frame, axis=0),
@@ -367,6 +374,7 @@ def evaluate_multianimal_full(
                                 outputs,
                                 peaks_gt.astype(int),
                             )
+                            
                             if not pred:
                                 continue
                             else:
