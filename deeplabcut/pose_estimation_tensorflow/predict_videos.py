@@ -244,9 +244,6 @@ def create_tracking_dataset(
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
-                "The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
-            )
-            print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         else:
