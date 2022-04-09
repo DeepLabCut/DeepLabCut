@@ -507,6 +507,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.create_video_with_all_detections(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     shuffle=shuffle,
                 )
             if self.filter.GetStringSelection() == "Yes":
@@ -531,7 +532,7 @@ class Analyze_videos(wx.Panel):
                     showfig = False
                 else:
                     showfig = True
-                deeplabcut.plot_trajectories(self.config,self.filelist,showfigures=showfig)
+                deeplabcut.plot_trajectories(self.config,self.filelist,self.videotype.GetValue(),showfigures=showfig)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
@@ -547,6 +548,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     shuffle=shuffle,
                     filtertype="median",
                     windowlength=5,
@@ -561,6 +563,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.plot_trajectories(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     displayedbodyparts=self.bodyparts,
                     shuffle=shuffle,
                     filtered=_filter,
