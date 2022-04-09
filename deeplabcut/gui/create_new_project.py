@@ -408,28 +408,30 @@ class Create_new_project(wx.Panel):
                 page8 = Analyze_videos(self.parent, self.gui_size, self.cfg)
                 self.parent.AddPage(page8, "Analyze videos")
 
-                page9 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page9, "Create videos")
+                if cfg.get("multianimalproject", False):
+                    page9 = TransformerID(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page9, "OPT: Unsupervised ID")
 
-                page11 = Video_Editing(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page11, "OPT: Video editor")
 
-                page12 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page12, "OPT: Extract/Refine Outliers")
+                page10 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page10, "Create videos")
+
+                page11 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page11, "OPT: Extract/Refine Outliers")
+
+                page12 = Video_Editing(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page12, "OPT: Video editor")
 
                 #page10 = Refine_labels(self.parent, self.gui_size, self.cfg, page5)
                 #self.parent.AddPage(page10, "OPT: Refine Labels")
 
                 self.edit_config_file.Enable(True)
 
-
-
                 if cfg.get("multianimalproject", False):
-                    page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
-                    self.parent.AddPage(page, "OPT: Refine tracklets")
+                    page13 = Refine_tracklets(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page13, "OPT: Refine tracklets")
 
-                    page = TransformerID(self.parent, self.gui_size, self.cfg)
-                    self.parent.AddPage(page, "OPT: Unsupervised ID")
+
 
     def add_videos(self, event):
         print("adding new videos to be able to label ...")
