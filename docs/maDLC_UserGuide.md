@@ -1,7 +1,7 @@
 # DeepLabCut for Multi-Animal Projects
 
 This document should serve as the user guide for maDLC,
-and it is here to support the scientific advances presented in Lauer et al. 2021.
+and it is here to support the scientific advances presented in [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0).
 
 
 Note, we strongly encourage you to use the [Project Manager GUI](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!
@@ -248,7 +248,7 @@ are listed in Box 2.
 
 **OPTIONAL POINTS:**
 
-With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
+With the data-driven skeleton selection introduced in 2.2rc1+, DLC networks are trained by default
 on complete skeletons (i.e., they learn all possible redundant connections), before being optimally pruned
 at model evaluation. Although this procedure is by far superior to manually defining a graph,
 we leave manually-defining a skeleton as an option for the advanced user:
@@ -264,7 +264,7 @@ Alternatively, the `skeleton` defined in the `config.yaml` file can also be used
 deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph='config')
 ```
 
-Importantly, a user-defined graph is still required to cover all multianimalbodyparts at least once.
+Importantly, if a user-defined graph is used it still is required to cover all multianimalbodyparts at least once.
 
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug` (which is default now!). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
 
