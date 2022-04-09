@@ -61,7 +61,7 @@ class AnalyzeVideos(QWidget):
     def set_page(self):
         self.main_layout.addWidget(
             _create_label_widget(
-                "DeepLabCut - Step 7. Analyze Videos ....",
+                "DeepLabCut - Step 7. Analyze Videos",
                 "font:bold; font-size:18px;",
                 (20, 20, 0, 10),
             )
@@ -72,9 +72,9 @@ class AnalyzeVideos(QWidget):
         self.main_layout.addLayout(layout_config)
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.layout_video_analysis = _create_horizontal_layout()
-        self._generate_layout_video_analysis(self.layout_video_analysis)
-        self.main_layout.addLayout(self.layout_video_analysis)
+        self.layout_video_selection = _create_horizontal_layout()
+        self._generate_layout_video_analysis(self.layout_video_selection)
+        self.main_layout.addLayout(self.layout_video_selection)
 
         self.main_layout.addWidget(
             _create_label_widget("Analysis Attributes", "font:bold")
@@ -95,8 +95,6 @@ class AnalyzeVideos(QWidget):
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
             self.main_layout.addLayout(self.layout_multi_animal)
         else:
-            # Single animal only
-            #   dynamically crop bdpts
             self.main_layout.addWidget(
                 _create_label_widget("Single-animal settings", "font:bold")
             )
@@ -126,7 +124,6 @@ class AnalyzeVideos(QWidget):
         cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
-        # self.cfg_line.setMaximumWidth(1000)
         self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
@@ -216,7 +213,7 @@ class AnalyzeVideos(QWidget):
         self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(200)
         self.select_video_button.setMinimumHeight(30)
-        self.select_video_button.clicked.connect(self.select_video)
+        self.select_video_button.clicked.connect(self.select_videos)
 
         layout.addWidget(self.select_video_button)
 
@@ -446,7 +443,7 @@ class AnalyzeVideos(QWidget):
         self.config = config[0]
         self.cfg_line.setText(self.config)
 
-    def select_video(self):
+    def select_videos(self):
         cwd = self.config.split("/")[0:-1]
         cwd = "\\".join(cwd)
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
@@ -541,8 +538,10 @@ class AnalyzeVideos(QWidget):
             )
 
             if use_transformer_tracking:
-                raise NotImplementedError("Transformer has not been integrated to GUI yet")
-                # TODO: Plug in code, when codebase stable. 
+                raise NotImplementedError(
+                    "Transformer has not been integrated to GUI yet"
+                )
+                # TODO: Plug in code, when codebase stable.
             else:
                 deeplabcut.stitch_tracklets(
                     config_path=self.config,
