@@ -12,6 +12,7 @@ import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
 from widgets import ConfigEditor
+from components import EditYamlButton
 
 
 class TrainNetwork(QWidget):
@@ -173,8 +174,19 @@ class TrainNetwork(QWidget):
         l_opt.setSpacing(20)
         l_opt.setContentsMargins(20, 0, 0, 0)
 
-        self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
-        self.edit_posecfg_btn.clicked.connect(self.open_posecfg)
+        cfg = auxiliaryfunctions.read_config(self.config)
+        self.pose_cfg_path = os.path.join(
+            cfg["project_path"],
+            auxiliaryfunctions.GetModelFolder(
+                cfg["TrainingFraction"][int(self.trainingindex.value())],
+                int(self.shuffles.value()),
+                cfg,
+            ),
+            "train",
+            "pose_cfg.yaml",
+        )
+        self.edit_posecfg_btn = EditYamlButton(
+            "Edit pose_cfg.yaml", self.pose_cfg_path, parent=self)
 
         l_opt.addWidget(self.edit_posecfg_btn)
         self.layout_specify_edit.addLayout(l_opt)
@@ -255,24 +267,6 @@ class TrainNetwork(QWidget):
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.snapshots)
         self.layout_display.addLayout(l_opt)
-
-    def open_posecfg(self):
-        # Excavate path to pose_cfg file
-        cfg = auxiliaryfunctions.read_config(self.config)
-        self.pose_cfg_path = os.path.join(
-            cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
-                cfg["TrainingFraction"][int(self.trainingindex.value())],
-                int(self.shuffles.value()),
-                cfg,
-            ),
-            "train",
-            "pose_cfg.yaml",
-        )
-        if not self.pose_cfg_path:
-            return
-        editor = ConfigEditor(self.pose_cfg_path)
-        editor.show()
 
     def train_network(self):
         #### children?
