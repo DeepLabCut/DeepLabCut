@@ -1,3 +1,12 @@
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
 import random
 import torch
 import numpy as np
@@ -61,16 +70,14 @@ def train_tracking_transformer(
     for video in videos:
         videofolder = str(Path(video).parents[0])
         video_name = Path(video).stem
-        #video_name = '.'.join(video.split("/")[-1].split(".")[:-1])
+        # video_name = '.'.join(video.split("/")[-1].split(".")[:-1])
         files = glob.glob(os.path.join(videofolder, video_name + dlcscorer + "*.npy"))
         # assuming there is only one match
         npy_list.append(files[0])
 
     train_list, test_list = split_train_test(npy_list, train_frac)
 
-    train_loader, val_loader = make_dlc_dataloader(
-        train_list, test_list, batch_size,
-    )
+    train_loader, val_loader = make_dlc_dataloader(train_list, test_list, batch_size,)
 
     # make my own model factory
     num_kpts = train_list.shape[2]

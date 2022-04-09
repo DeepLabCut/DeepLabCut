@@ -90,7 +90,6 @@ def do_dlc_train(
             pos = pos.to(device)
             neg = neg.to(device)
 
-
             anchor_feat = model(anchor)
             pos_feat = model(pos)
             neg_feat = model(neg)
@@ -137,7 +136,11 @@ def do_dlc_train(
         if epoch % checkpoint_period == 0:
 
             torch.save(
-                {"state_dict": model.state_dict(), "num_kpts": num_kpts, 'feature_dim': feature_dim},
+                {
+                    "state_dict": model.state_dict(),
+                    "num_kpts": num_kpts,
+                    "feature_dim": feature_dim,
+                },
                 os.path.join(ckpt_folder, model_name + "_{}.pth".format(epoch)),
             )
 
