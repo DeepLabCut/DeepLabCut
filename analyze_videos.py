@@ -52,13 +52,13 @@ class AnalyzeVideos(QWidget):
             "robustnframes": False,  # Use ffprobe
         }
 
-        self.outer_layout = QtWidgets.QVBoxLayout(self)
-        self.setLayout(self.outer_layout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.main_layout)
 
         self.set_page()
 
     def set_page(self):
-        self.outer_layout.addWidget(
+        self.main_layout.addWidget(
             _create_label_widget(
                 "DeepLabCut - Step 7. Analyze Videos ....",
                 "font:bold; font-size:18px;",
@@ -68,21 +68,21 @@ class AnalyzeVideos(QWidget):
 
         layout_config = _create_horizontal_layout()
         self._generate_config_layout(layout_config)
-        self.outer_layout.addLayout(layout_config)
+        self.main_layout.addLayout(layout_config)
 
-        self.outer_layout.addWidget(
+        self.main_layout.addWidget(
             _create_label_widget("Video Selection", "font:bold")
         )
         self.layout_video_analysis = _create_horizontal_layout()
         self._generate_layout_video_analysis(self.layout_video_analysis)
-        self.outer_layout.addLayout(self.layout_video_analysis)
+        self.main_layout.addLayout(self.layout_video_analysis)
 
-        self.outer_layout.addWidget(
+        self.main_layout.addWidget(
             _create_label_widget("Analysis Attributes", "font:bold")
         )
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
-        self.outer_layout.addLayout(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
 
         # Single / Multi animal Only Layouts
         self.layout_single_animal = _create_horizontal_layout()
@@ -90,39 +90,31 @@ class AnalyzeVideos(QWidget):
         self.layout_multi_animal = _create_vertical_layout()
 
         if self.cfg["multianimalproject"]:
-            # multianimal only:
-            #   "Use ffprobe to read video metadata (slow but robust)",
-            #   "Create video for checking detections",
-            #   "Specify the Tracker Method (you can try each)"
-            #   "Overwrite tracking files (set to yes if you edit inference parameters)",
-            #   "Calibrate animal assembly?",
-            #   "Assemble with identity only?",
-            #   "Prioritize past connections over a window of size:")
-            self.outer_layout.addWidget(
+            self.main_layout.addWidget(
                 _create_label_widget("Multi-animal settings", "font:bold")
             )
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
-            self.outer_layout.addLayout(self.layout_multi_animal)
+            self.main_layout.addLayout(self.layout_multi_animal)
         else:
             # Single animal only
             #   dynamically crop bdpts
-            self.outer_layout.addWidget(
+            self.main_layout.addWidget(
                 _create_label_widget("Single-animal settings", "font:bold")
             )
             self._generate_layout_single_animal(self.layout_single_animal)
-            self.outer_layout.addLayout(self.layout_single_animal)
+            self.main_layout.addLayout(self.layout_single_animal)
 
-        self.outer_layout.addWidget(
+        self.main_layout.addWidget(
             _create_label_widget("Data Processing", "font:bold")
         )
         self.layout_data_processing = _create_horizontal_layout()
         self._generate_layout_data_processing(self.layout_data_processing)
-        self.outer_layout.addLayout(self.layout_data_processing)
+        self.main_layout.addLayout(self.layout_data_processing)
 
-        self.outer_layout.addWidget(_create_label_widget("Visualization", "font:bold"))
+        self.main_layout.addWidget(_create_label_widget("Visualization", "font:bold"))
         self.layout_visualization = _create_horizontal_layout()
         self._generate_layout_visualization(self.layout_visualization)
-        self.outer_layout.addLayout(self.layout_visualization)
+        self.main_layout.addLayout(self.layout_visualization)
 
         self.analyze_videos_btn = QtWidgets.QPushButton("Analyze Videos")
         self.analyze_videos_btn.clicked.connect(self.analyze_videos)
@@ -130,8 +122,8 @@ class AnalyzeVideos(QWidget):
         self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
         self.edit_config_file_btn.clicked.connect(self.edit_config_file)
 
-        self.outer_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
-        self.outer_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
 
     def _generate_config_layout(self, layout):
         cfg_text = QtWidgets.QLabel("Active config file:")

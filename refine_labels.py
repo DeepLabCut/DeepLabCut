@@ -56,11 +56,11 @@ class RefineLabels(QWidget):
         self.method = "automatic"
         self.config = cfg
 
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 40, 20)
-        self.setLayout(self.inLayout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 40, 20)
+        self.setLayout(self.main_layout)
 
         self.set_page()
 
@@ -75,8 +75,8 @@ class RefineLabels(QWidget):
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 9. Refine labels")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -100,7 +100,7 @@ class RefineLabels(QWidget):
         layout_cfg.addWidget(self.cfg_line)
         layout_cfg.addWidget(browse_button)
 
-        self.inLayout.addLayout(layout_cfg)
+        self.main_layout.addLayout(layout_cfg)
 
         self.launch_button = QtWidgets.QPushButton("LAUNCH")
         self.launch_button.setContentsMargins(0, 140, 100, 40)
@@ -110,8 +110,8 @@ class RefineLabels(QWidget):
         self.merge_button.clicked.connect(self.merge_dataset)
         self.merge_button.setEnabled(False)
 
-        self.inLayout.addWidget(self.merge_button, alignment=Qt.AlignRight)
-        self.inLayout.addWidget(self.launch_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.merge_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.launch_button, alignment=Qt.AlignRight)
 
     def update_cfg(self):
         text = self.proj_line.text()

@@ -15,11 +15,11 @@ class ExtractOutlierFrames(QWidget):
         self.cfg = utils.read_config(cfg)
         self.filelist = []
 
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 0, 20)
+        self.setLayout(self.main_layout)
 
         self.set_page()
 
@@ -34,8 +34,8 @@ class ExtractOutlierFrames(QWidget):
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 8. Extract outlier frame")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -73,8 +73,8 @@ class ExtractOutlierFrames(QWidget):
         layout_choose_video.addWidget(choose_video_text)
         layout_choose_video.addWidget(self.select_video_button)
 
-        self.inLayout.addLayout(layout_cfg)
-        self.inLayout.addLayout(layout_choose_video)
+        self.main_layout.addLayout(layout_cfg)
+        self.main_layout.addLayout(layout_choose_video)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
@@ -109,7 +109,7 @@ class ExtractOutlierFrames(QWidget):
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-        self.inLayout.addLayout(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
         text = self.proj_line.text()

@@ -23,11 +23,11 @@ class EvaluateNetwork(QWidget):
         self.cfg = auxiliaryfunctions.read_config(self.config)
         self.bodyparts = []
 
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 0, 20)
+        self.setLayout(self.main_layout)
 
         self.set_page()
 
@@ -42,8 +42,8 @@ class EvaluateNetwork(QWidget):
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 6. Evaluate Network")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -67,7 +67,7 @@ class EvaluateNetwork(QWidget):
         layout_cfg.addWidget(self.cfg_line)
         layout_cfg.addWidget(browse_button)
 
-        self.inLayout.addLayout(layout_cfg)
+        self.main_layout.addLayout(layout_cfg)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
@@ -113,7 +113,7 @@ class EvaluateNetwork(QWidget):
         self.layout_attributes.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.layout_attributes.addWidget(self.opt_button, alignment=Qt.AlignRight)
 
-        self.inLayout.addLayout(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
         # TODO: finish multianimal part:
         # if config_file.get("multianimalproject", False):
         #     self.inf_cfg_text = wx.Button(self, label="Edit the inference_config.yaml")

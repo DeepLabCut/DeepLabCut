@@ -24,17 +24,17 @@ class CreateTrainingDataset(QWidget):
         separatorLine.setLineWidth(0)
         separatorLine.setMidLineWidth(1)
 
-        inLayout = QtWidgets.QVBoxLayout(self)
-        inLayout.setAlignment(Qt.AlignTop)
-        inLayout.setSpacing(20)
-        inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(inLayout)
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setAlignment(Qt.AlignTop)
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(0, 20, 0, 20)
+        self.setLayout(main_layout)
 
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 4. Create training dataset")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        inLayout.addWidget(l1_step1)
-        inLayout.addWidget(separatorLine)
+        main_layout.addWidget(l1_step1)
+        main_layout.addWidget(separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -58,7 +58,7 @@ class CreateTrainingDataset(QWidget):
         layout_cfg.addWidget(self.cfg_line)
         layout_cfg.addWidget(browse_button)
 
-        inLayout.addLayout(layout_cfg)
+        main_layout.addLayout(layout_cfg)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
@@ -104,7 +104,7 @@ class CreateTrainingDataset(QWidget):
 
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-        inLayout.addLayout(self.layout_attributes)
+        main_layout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
         text = self.proj_line.text()

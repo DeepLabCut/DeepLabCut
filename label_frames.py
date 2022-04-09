@@ -88,17 +88,17 @@ class LabelFrames(QWidget):
         self.separatorLine.setLineWidth(0)
         self.separatorLine.setMidLineWidth(1)
 
-        inLayout = QtWidgets.QVBoxLayout(self)
-        inLayout.setAlignment(Qt.AlignTop)
-        inLayout.setSpacing(20)
-        inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(inLayout)
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setAlignment(Qt.AlignTop)
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(0, 20, 0, 20)
+        self.setLayout(main_layout)
 
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 3. Label Frames")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        inLayout.addWidget(l1_step1)
-        inLayout.addWidget(self.separatorLine)
+        main_layout.addWidget(l1_step1)
+        main_layout.addWidget(self.separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -122,7 +122,7 @@ class LabelFrames(QWidget):
         layout_cfg.addWidget(self.cfg_line)
         layout_cfg.addWidget(browse_button)
 
-        inLayout.addLayout(layout_cfg)
+        main_layout.addLayout(layout_cfg)
 
         layout_label_btns = QtWidgets.QVBoxLayout()
         layout_label_btns.setAlignment(Qt.AlignTop)
@@ -139,7 +139,7 @@ class LabelFrames(QWidget):
         layout_label_btns.addWidget(self.label_frames_btn, alignment=Qt.AlignRight)
         layout_label_btns.addWidget(self.check_labels_btn, alignment=Qt.AlignRight)
         #
-        inLayout.addLayout(layout_label_btns)
+        main_layout.addLayout(layout_label_btns)
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
