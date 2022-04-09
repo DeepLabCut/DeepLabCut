@@ -50,6 +50,7 @@ class AnalyzeVideos(QWidget):
             "bodyparts_to_use": self.all_bodyparts,
             "create_video_all_detections": False,
             "robustnframes": False,  # Use ffprobe
+            "use_transformer_tracking": False,
         }
 
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -70,9 +71,7 @@ class AnalyzeVideos(QWidget):
         self._generate_config_layout(layout_config)
         self.main_layout.addLayout(layout_config)
 
-        self.main_layout.addWidget(
-            _create_label_widget("Video Selection", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.layout_video_analysis = _create_horizontal_layout()
         self._generate_layout_video_analysis(self.layout_video_analysis)
         self.main_layout.addLayout(self.layout_video_analysis)
@@ -104,9 +103,7 @@ class AnalyzeVideos(QWidget):
             self._generate_layout_single_animal(self.layout_single_animal)
             self.main_layout.addLayout(self.layout_single_animal)
 
-        self.main_layout.addWidget(
-            _create_label_widget("Data Processing", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Data Processing", "font:bold"))
         self.layout_data_processing = _create_horizontal_layout()
         self._generate_layout_data_processing(self.layout_data_processing)
         self.main_layout.addLayout(self.layout_data_processing)
@@ -252,6 +249,8 @@ class AnalyzeVideos(QWidget):
         self.overwrite_tracks.setCheckState(Qt.Unchecked)
         self.overwrite_tracks.stateChanged.connect(self.update_overwrite_tracks)
 
+        layout.addWidget(self.overwrite_tracks)
+
     def _generate_layout_multianimal_only_options(self, layout):
 
         tmp_layout = QtWidgets.QHBoxLayout()
@@ -293,6 +292,15 @@ class AnalyzeVideos(QWidget):
         )
         tmp_layout.addWidget(self.assemble_with_ID_only_checkbox)
 
+        self.use_transformer_tracking_checkbox = QtWidgets.QCheckBox(
+            "Use tranformer tracking"
+        )
+        self.use_transformer_tracking_checkbox.setCheckState(Qt.Unchecked)
+        self.use_transformer_tracking_checkbox.stateChanged.connect(
+            self.update_use_transformer_tracking
+        )
+        tmp_layout.addWidget(self.use_transformer_tracking_checkbox)
+
         self.create_detections_video_checkbox = QtWidgets.QCheckBox(
             "Create video with all detections"
         )
@@ -309,6 +317,14 @@ class AnalyzeVideos(QWidget):
         tmp_layout.addWidget(self.use_robustnframes)
 
         layout.addLayout(tmp_layout)
+
+    def update_use_transformer_tracking(self, state):
+        if state == Qt.Checked:
+            self.logger.info("Transformer tracking ENABLED")
+            self.backend_variables["use_transformer_tracking"] = True
+        else:
+            self.logger.info("Transformer tracking DISABLED")
+            self.backend_variables["use_transformer_tracking"] = False
 
     def update_robustnframes(self, state):
         if state == Qt.Checked:
@@ -472,6 +488,7 @@ class AnalyzeVideos(QWidget):
             "create_video_all_detections"
         ]
         robustnframes = self.backend_variables["robustnframes"]
+        use_transformer_tracking = self.backend_variables["use_transformer_tracking"]
         track_method = self.tracker_method
         num_animals_in_videos = self.num_animals_in_videos.value()
 
@@ -523,15 +540,19 @@ class AnalyzeVideos(QWidget):
                 track_method=track_method,
             )
 
-            deeplabcut.stitch_tracklets(
-                config_path=self.config,
-                videos=videos,
-                videotype=videotype,
-                shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
-                n_tracks=num_animals_in_videos,
-                track_method=track_method,
-            )
+            if use_transformer_tracking:
+                raise NotImplementedError("Transformer has not been integrated to GUI yet")
+                # TODO: Plug in code, when codebase stable. 
+            else:
+                deeplabcut.stitch_tracklets(
+                    config_path=self.config,
+                    videos=videos,
+                    videotype=videotype,
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
+                    n_tracks=num_animals_in_videos,
+                    track_method=track_method,
+                )
 
         if filter_data:
             deeplabcut.filterpredictions(
