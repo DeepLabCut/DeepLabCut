@@ -106,14 +106,9 @@ class Create_Labeled_Videos(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
-        trainingset = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingset_boxsizer = wx.StaticBoxSizer(trainingset, wx.VERTICAL)
-        self.trainingset = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingset_boxsizer.Add(self.trainingset, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         hbox1.Add(videotype_text_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffle_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(trainingset_boxsizer, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         self.sizer.Add(
             boxsizer,
@@ -211,7 +206,16 @@ class Create_Labeled_Videos(wx.Panel):
                 style=wx.RA_SPECIFY_COLS,
             )
 
+            self.trackerType = wx.RadioBox(
+                self,
+                label="Which tracker to use?",
+                choices=["Default", "Transformer"],
+                majorDimension=1,
+                style=wx.RA_SPECIFY_COLS,
+            )
+
             hbox4.Add(self.trajectory, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+            hbox4.Add(self.trackerType, 5, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox3, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox4, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -295,7 +299,6 @@ class Create_Labeled_Videos(wx.Panel):
     def create_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
-        trainingsetindex = self.trainingset.GetValue()
         # self.filelist = self.filelist + self.vids
 
         if self.filter.GetStringSelection() == "No":
@@ -328,7 +331,6 @@ class Create_Labeled_Videos(wx.Panel):
                 self.filelist,
                 self.videotype.GetValue(),
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 save_frames=self.slow,
                 draw_skeleton=self.draw,
                 displayedbodyparts=self.bodyparts,
@@ -344,7 +346,6 @@ class Create_Labeled_Videos(wx.Panel):
                     displayedbodyparts=self.bodyparts,
                     videotype=self.videotype.GetValue(),
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
                     filtered=filtered,
                     showfigures=False,
                 )
@@ -354,7 +355,6 @@ class Create_Labeled_Videos(wx.Panel):
                 self.filelist,
                 self.videotype.GetValue(),
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 save_frames=self.slow,
                 draw_skeleton=self.draw,
                 displayedbodyparts=self.bodyparts,
@@ -386,7 +386,6 @@ class Create_Labeled_Videos(wx.Panel):
         self.sel_vids.SetLabel("Select videos")
         self.filelist = []
         self.shuffle.SetValue(1)
-        self.trainingset.SetValue(0)
         if self.draw_skeleton.IsShown():
             self.draw_skeleton.SetSelection(1)
             # self.SetSizer(self.sizer)
