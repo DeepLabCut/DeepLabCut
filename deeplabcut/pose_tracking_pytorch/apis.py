@@ -12,7 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 def transformer_reID(
     config,
     videos,
-    videotype="mp4",
+    videotype=".mp4",
     shuffle=1,
     trainingsetindex=0,
     track_method="ellipse",
@@ -67,7 +67,7 @@ def transformer_reID(
 
     train_frac: (optional), fraction
         fraction of triplets used for training/testing of the transformer
-        
+
     Examples
     --------
 
