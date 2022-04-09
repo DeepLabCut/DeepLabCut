@@ -35,7 +35,10 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingut
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV, is_openvino_available
+from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
+    GetPoseF_OV,
+    is_openvino_available,
+)
 
 
 ####################################################
@@ -73,7 +76,7 @@ def create_tracking_dataset(
     )
 
     # allow_growth must be true here because tensorflow does not automatically free gpu memory and setting it as false occupies all gpu memory so that pytorch cannot kick in
-    allow_growth=True
+    allow_growth = True
 
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -231,7 +234,9 @@ def create_tracking_dataset(
             # should close tensorflow session here in order to free gpu
             sess.close()
             tf.keras.backend.clear_session()
-            create_triplets_dataset(Videos, DLCscorer, track_method,  n_triplets=n_triplets)
+            create_triplets_dataset(
+                Videos, DLCscorer, track_method, n_triplets=n_triplets
+            )
 
         else:
             raise NotImplementedError("not implmented")
@@ -998,14 +1003,16 @@ def AnalyzeVideo(
             # GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
             if int(dlc_cfg["batch_size"]) > 1:
-                args = (cfg,
-                        dlc_cfg,
-                        sess,
-                        inputs,
-                        outputs,
-                        cap,
-                        nframes,
-                        int(dlc_cfg["batch_size"]))
+                args = (
+                    cfg,
+                    dlc_cfg,
+                    sess,
+                    inputs,
+                    outputs,
+                    cap,
+                    nframes,
+                    int(dlc_cfg["batch_size"]),
+                )
                 if use_openvino:
                     PredictedData, nframes = GetPoseF_OV(*args)
                 elif TFGPUinference:
@@ -1385,13 +1392,7 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg,
-    inference_cfg,
-    data,
-    metadata,
-    output_path,
-    greedy=False,
-    calibrate=False,
+    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in trackingutils.TRACK_METHODS:
@@ -1477,7 +1478,6 @@ def _convert_detections_to_tracklets(
     tracklets["header"] = pdindex
     with open(output_path, "wb") as f:
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
-
 
 
 def convert_detections2tracklets(
