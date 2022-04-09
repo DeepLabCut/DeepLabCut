@@ -1,65 +1,82 @@
-import deeplabcut
-import os
-from deeplabcut.utils import auxiliaryfunctions
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
 
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
 
 def transformer_reID(
     path_config_file,
     videos,
-    n_tracks=None,
-    train_frac = 0.8,
-    trainingsetindex=0, # this is only used to get DLC scorer, might need further tweaking to work
-    modelprefix="",
-    track_method="ellipse",
-    train_epochs=100,
-    n_triplets=1000,
     videotype="mp4",
     shuffle=1,
+    trainingsetindex=0,
+    track_method="ellipse",
+    n_tracks=None,
+    n_triplets=1000,
+    train_epochs=100,
+    modelprefix="",
 ):
 
     """
-
-    Performs tracking with transformer.
+    Enables tracking with transformer.
 
     Substeps include:
 
-    Mines triplets from videos and these triplets are later used to tran a transformer that's
-    able to perform reID. The transformer is then used as a stitching loss when tracklets are
+    - Mines triplets from tracklets in videos (from another tracker)
+    - These triplets are later used to tran a transformer with triplet loss
+    - The transformer derived appearance similiarity is then used as a stitching loss when tracklets are
     stitched during tracking.
 
-    Outputs: The tracklet file is saved in the same folder where the non transformer tracklet file is stored.
+    Outputs: The tracklet file is saved in the same folder where the non-transformer tracklet file is stored.
 
     Parameters
     ----------
     path_config_file: string
         Full path of the config.yaml file as a string.
 
-    dlcscorer: string
-        dlcscorer that kepps track of the model it uses
-
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
-
-    n_tracks: int
-
-        number of tracks to be formed in the videos. (TODO) handling videos with different number of tracks
-
-    train_epochs: (optional), int
-
-        number of epochs to train the transformer
-
-    n_triplets: (optional) int
-
-        number of triplets to be mined from the videos
 
     videotype: (optional) str
         extension for the video file
 
+    shuffle : int, optional
+        which shuffle to use
+
+    trainingsetindex : int. optional
+        which training fraction to use, identified by its index
+
+    track_method: str, optional
+        track method from which tracklets are sampled
+
+    n_tracks: int
+        number of tracks to be formed in the videos.
+        (TODO) handling videos with different number of tracks
+
+    n_triplets: (optional) int
+        number of triplets to be mined from the videos
+
+    train_epochs: (optional), int
+        number of epochs to train the transformer
+
+    Examples
+    --------
+
+    Training model for one video based on ellipse-tracker derived tracklets 
+    >>> deeplabcut.transformer_reID(path_config_file,[''/home/alex/video.mp4'],track_method="ellipse")
+
+    --------
+
     """
+    import deeplabcut
+    import os
+    from deeplabcut.utils import auxiliaryfunctions
 
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
-
-    # should take number of triplets to mine
 
     cfg = auxiliaryfunctions.read_config(path_config_file)
 
@@ -79,7 +96,7 @@ def transformer_reID(
         testposeconfigfile,
         snapshotfolder,
     ) = deeplabcut.return_train_network_path(
-        path_config_file, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
+        path_config_file, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=trainingsetindex
     )
 
     # modelprefix impacts where the model is loaded
