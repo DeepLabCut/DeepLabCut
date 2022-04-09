@@ -3,45 +3,20 @@ import logging
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (
+    QWidget,
+    QComboBox,
+    QSpinBox,
+)
 
 from widgets import ConfigEditor
-
-
-def _add_label_widget(
-    text: str, layout: QtWidgets.QLayout, margins: tuple = (20, 50, 0, 0)
-) -> None:
-
-    label = QtWidgets.QLabel(text)
-    label.setContentsMargins(*margins)
-    label.setStyleSheet("font:bold")
-
-    layout.addWidget(label)
-
-
-def _create_horizontal_layout(
-    alignment=None, spacing: int = 20, margins: tuple = (20, 0, 0, 0)
-) -> QtWidgets.QHBoxLayout():
-
-    layout = QtWidgets.QHBoxLayout()
-    layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    layout.setSpacing(spacing)
-    layout.setContentsMargins(*margins)
-
-    return layout
-
-def _create_vertical_layout(
-    alignment=None, spacing: int = 20, margins: tuple = (20, 0, 0, 0)
-) -> QtWidgets.QHBoxLayout():
-
-    layout = QtWidgets.QVBoxLayout()
-    layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    layout.setSpacing(spacing)
-    layout.setContentsMargins(*margins)
-
-    return layout
+from components import (
+    _create_label_widget,
+    _create_horizontal_layout,
+    _create_vertical_layout,
+)
 
 
 class AnalyzeVideos(QWidget):
@@ -74,7 +49,7 @@ class AnalyzeVideos(QWidget):
             "plot_trajectories": False,
             "bodyparts_to_use": self.all_bodyparts,
             "create_video_all_detections": False,
-            "robustnframes": False, #Use ffprobe
+            "robustnframes": False,  # Use ffprobe
         }
 
         self.outer_layout = QtWidgets.QVBoxLayout(self)
@@ -83,22 +58,28 @@ class AnalyzeVideos(QWidget):
         self.set_page()
 
     def set_page(self):
-        workflow_title = QtWidgets.QLabel("DeepLabCut - Step 7. Analyze Videos ....")
-        workflow_title.setStyleSheet("font:bold; font-size:18px;")
-        workflow_title.setContentsMargins(20, 20, 0, 10)
-
-        self.outer_layout.addWidget(workflow_title)
+        self.outer_layout.addWidget(
+            _create_label_widget(
+                "DeepLabCut - Step 7. Analyze Videos ....",
+                "font:bold; font-size:18px;",
+                (20, 20, 0, 10),
+            )
+        )
 
         layout_config = _create_horizontal_layout()
         self._generate_config_layout(layout_config)
         self.outer_layout.addLayout(layout_config)
 
-        _add_label_widget("Video Selection", self.outer_layout)
+        self.outer_layout.addWidget(
+            _create_label_widget("Video Selection", "font:bold")
+        )
         self.layout_video_analysis = _create_horizontal_layout()
         self._generate_layout_video_analysis(self.layout_video_analysis)
         self.outer_layout.addLayout(self.layout_video_analysis)
 
-        _add_label_widget("Analysis Attributes", self.outer_layout)
+        self.outer_layout.addWidget(
+            _create_label_widget("Analysis Attributes", "font:bold")
+        )
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
         self.outer_layout.addLayout(self.layout_attributes)
@@ -117,22 +98,28 @@ class AnalyzeVideos(QWidget):
             #   "Calibrate animal assembly?",
             #   "Assemble with identity only?",
             #   "Prioritize past connections over a window of size:")
-            _add_label_widget("Multi-animal settings", self.outer_layout)
+            self.outer_layout.addWidget(
+                _create_label_widget("Multi-animal settings", "font:bold")
+            )
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
             self.outer_layout.addLayout(self.layout_multi_animal)
         else:
             # Single animal only
             #   dynamically crop bdpts
-            _add_label_widget("Single-animal settings", self.outer_layout)
+            self.outer_layout.addWidget(
+                _create_label_widget("Single-animal settings", "font:bold")
+            )
             self._generate_layout_single_animal(self.layout_single_animal)
             self.outer_layout.addLayout(self.layout_single_animal)
 
-        _add_label_widget("Data Processing", self.outer_layout)
+        self.outer_layout.addWidget(
+            _create_label_widget("Data Processing", "font:bold")
+        )
         self.layout_data_processing = _create_horizontal_layout()
         self._generate_layout_data_processing(self.layout_data_processing)
         self.outer_layout.addLayout(self.layout_data_processing)
 
-        _add_label_widget("Visualization", self.outer_layout)
+        self.outer_layout.addWidget(_create_label_widget("Visualization", "font:bold"))
         self.layout_visualization = _create_horizontal_layout()
         self._generate_layout_visualization(self.layout_visualization)
         self.outer_layout.addLayout(self.layout_visualization)
@@ -296,7 +283,6 @@ class AnalyzeVideos(QWidget):
 
         layout.addLayout(tmp_layout)
 
-
         tmp_layout = QtWidgets.QHBoxLayout()
 
         self.calibrate_assembly_checkbox = QtWidgets.QCheckBox("Calibrate assembly")
@@ -306,7 +292,6 @@ class AnalyzeVideos(QWidget):
         )
         tmp_layout.addWidget(self.calibrate_assembly_checkbox)
 
-
         self.assemble_with_ID_only_checkbox = QtWidgets.QCheckBox(
             "Assemble with ID only"
         )
@@ -315,7 +300,6 @@ class AnalyzeVideos(QWidget):
             self.update_assemble_with_ID_only
         )
         tmp_layout.addWidget(self.assemble_with_ID_only_checkbox)
-
 
         self.create_detections_video_checkbox = QtWidgets.QCheckBox(
             "Create video with all detections"
@@ -341,7 +325,6 @@ class AnalyzeVideos(QWidget):
         else:
             self.logger.info("Robust frame reading - use ffprobe DISABLED")
             self.backend_variables["robustnframes"] = False
-            
 
     def update_create_video_detections(self, state):
         if state == Qt.Checked:
@@ -528,7 +511,7 @@ class AnalyzeVideos(QWidget):
 
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
-                config=self.config, 
+                config=self.config,
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
