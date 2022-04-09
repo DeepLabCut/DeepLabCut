@@ -27,7 +27,7 @@ def _create_horizontal_layout(
 
 def _create_vertical_layout(
     alignment=None, spacing: int = 20, margins: tuple = (20, 0, 0, 0)
-) -> QtWidgets.QHBoxLayout():
+) -> QtWidgets.QVBoxLayout():
 
     layout = QtWidgets.QVBoxLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
