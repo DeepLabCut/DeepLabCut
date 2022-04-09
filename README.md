@@ -23,9 +23,9 @@ python main.py
   - [x] plug everything in 
 - [ ] Create training dataset
   - [ ] Model comparison
-- [ ] Create labeled videos
-  - [ ] color by ID / bodypart
-  - [ ] plug in multi-animal values in function call
+- [x] Create labeled videos
+  - [x] color by ID / bodypart
+  - [x] plug in multi-animal values in function call
 - [ ] Model evaluation
   - [ ] Edit inference config file option
   - [ ] Use specific bodyparts option
