@@ -3,6 +3,10 @@ rm -r multi_mouse*
 rm -r 3D*
 rm -r OUT
 
+
+#git log --all --graph --decorate --oneline
+#codespell -q 3 -L ro,sur -w
+
 cd ..
 pip uninstall deeplabcut
 pythonw setup.py sdist bdist_wheel
