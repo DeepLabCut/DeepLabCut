@@ -510,7 +510,11 @@ class Analyze_videos(wx.Panel):
                     shuffle=shuffle,
                 )
             if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist)
+                deeplabcut.filterpredictions(
+                    self.config,
+                    self.filelist,
+                    self.videotype.GetValue(),
+                    )
 
             if self.csv.GetStringSelection() == "Yes":
                 deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
