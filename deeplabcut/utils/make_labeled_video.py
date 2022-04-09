@@ -488,7 +488,6 @@ def create_labeled_video(
     Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
 
     if not Videos:
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return
 
     func = partial(
@@ -885,7 +884,6 @@ def create_video_with_all_detections(
 
     videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
     if not videos:
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
         return
 
     for video in videos:
