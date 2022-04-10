@@ -18,7 +18,7 @@ import wx
 import deeplabcut
 
 from deeplabcut.gui import LOGO_PATH
-from deeplabcut.utils import auxiliaryfunctions, skeleton
+from deeplabcut.utils import auxiliaryfunctions, skeleton, auxfun_multianimal
 
 
 class Create_Labeled_Videos(wx.Panel):
@@ -322,7 +322,7 @@ class Create_Labeled_Videos(wx.Panel):
                 + " tracker method!"
             )
             if self.trackerType.GetStringSelection() == "Default":
-                track_method = "ellipse"
+                track_method = auxfun_multianimal.get_track_method(config_file, track_method="")
             else:
                 track_method = "transformer"
 
