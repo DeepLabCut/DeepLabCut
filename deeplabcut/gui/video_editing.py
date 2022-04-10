@@ -18,9 +18,9 @@ import wx
 import wx.lib.agw.floatspin as FS
 
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 
-media_path = os.path.join(deeplabcut.__path__[0], "gui", "media")
-logo = os.path.join(media_path, "logo.png")
+from deeplabcut.gui import LOGO_PATH
 
 
 # DownSampleVideo(vname,width=-1,height=200,outsuffix='downsampled',outpath=None,rotatecw=False):
@@ -43,9 +43,9 @@ class Video_Editing(wx.Panel):
         text = wx.StaticText(self, label="DeepLabCut - Optional Video Editor")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
-        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(logo))
+        icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
         self.sizer.Add(
-            icon, pos=(0, 5), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
+            icon, pos=(0, 4), flag=wx.TOP | wx.RIGHT | wx.ALIGN_RIGHT, border=5
         )
 
         line1 = wx.StaticLine(self)
