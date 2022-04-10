@@ -18,6 +18,7 @@ pip install ~/Downloads/tensorflow-2.4.1-py3-none-any.whl --no-dependencies --fo
 
 cd examples
 
-pythonw testscript.py
-pythonw testscript_3d.py #does not work in container
-pythonw testscript_multianimal.py
+#pythonw testscript.py
+#pythonw testscript_3d.py #does not work in container
+#pythonw testscript_multianimal.py
+pythonw testscript_transreid.py

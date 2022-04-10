@@ -44,6 +44,11 @@ def calc_cos_correct(vec1, gt1, vec2, gt2, threshold=0.5):
     n_correct = torch.sum(torch.eq(pred_mask, gt_mask))
     return n_correct
 
+#maybe find a better spot for this.
+def default_device(device = "cuda"): #setting CPU, if no GPU available
+    #dev =  device if torch.cuda.is_available() else "cpu"
+    dev = torch.device(device) if torch.cuda.is_available() else torch.device("cpu")
+    return dev
 
 def do_dlc_train(
     cfg,
@@ -64,13 +69,15 @@ def do_dlc_train(
     checkpoint_period = cfg["checkpoint_period"]
     eval_period = 10
 
-    device = cfg["device"]
+    device = default_device(cfg["device"])
 
     logger = logging.getLogger("transreid.train")
     logger.info("start training")
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(device)
+
+
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
 
@@ -114,7 +121,9 @@ def do_dlc_train(
 
             loss_meter.update(loss.item())  # , img.shape[0])
 
-            torch.cuda.synchronize()
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
             if (n_iter + 1) % log_period == 0:
                 logger.info(
                     "Epoch[{}] Iteration[{}/{}] Loss: {:.3f}, , Base Lr: {:.2e}".format(
@@ -179,7 +188,10 @@ def do_dlc_train(
             test_acc_list.append(test_acc.item())
             print(f"Epoch {epoch}, train acc: {train_acc:.2f}")
             print(f"Epoch {epoch}, test acc {test_acc:.2f}")
-            torch.cuda.empty_cache()
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
     plot_dict["train_acc"] = train_acc_list
     plot_dict["test_acc"] = test_acc_list
     plot_dict["epochs"] = epoch_list
@@ -189,7 +201,8 @@ def do_dlc_train(
 
 
 def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
-    device = "cuda"
+
+    device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
 
@@ -250,7 +263,7 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
 
 def do_dlc_pair_inference(cfg, model, val_loader, num_query):
 
-    device = "cuda"
+    device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
 
@@ -258,7 +271,7 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
 
     evaluator.reset()
 
-    if device:
+    if device and torch.cuda.is_available():
         if torch.cuda.device_count() > 1:
             print("Using {} GPUs for inference".format(torch.cuda.device_count()))
             model = nn.DataParallel(model)

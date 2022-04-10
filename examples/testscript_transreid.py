@@ -198,6 +198,8 @@ if __name__ == "__main__":
         config_path, shuffle=1, modelprefix=modelprefix, trainingsetindex=0
     )
 
+    print("Creating triplet dataset")
+
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
         config_path,
         [new_video_path],
@@ -207,6 +209,8 @@ if __name__ == "__main__":
 
     train_epochs = 10
     train_frac = 0.8
+
+    print("Training transfomer")
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         config_path,
@@ -221,6 +225,8 @@ if __name__ == "__main__":
     transformer_checkpoint = os.path.join(
         snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
     )
+
+    print("Stitching tracklets based on transformer")
 
     deeplabcut.stitch_tracklets(
         config_path,
@@ -343,7 +349,7 @@ if __name__ == "__main__":
         n_tracks,
         track_method=TESTTRACKER,
         train_epochs=10,
-        n_triplets=100,
+        n_triplets=10,
     )
 
     print("ALL DONE!!! - default multianimal cases are functional.")

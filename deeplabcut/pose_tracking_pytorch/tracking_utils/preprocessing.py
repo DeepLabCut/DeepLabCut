@@ -2,7 +2,7 @@ import numpy as np
 
 
 def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
-    # locate the right spot from the features
+    # extract the deep feature at the location of the keypoint (x,y)
     if valid_mask_for_fish:
 
         mask = np.array([1, 2, 6])

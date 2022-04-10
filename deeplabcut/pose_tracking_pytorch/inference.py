@@ -17,6 +17,7 @@ from deeplabcut.pose_tracking_pytorch.tracking_utils import (
     query_feature_by_coord_in_img_space,
 )
 
+from deeplabcut.pose_tracking_pytorch.processor import default_device
 
 inference_factory = {"dlc_transreid": dlc_base_kpt_TransReID}
 
@@ -58,7 +59,7 @@ class DLCTrans:
 
     def __call__(self, inp_a, inp_b, zfill_width, feature_dict, return_features=False):
         # tracklets
-        device = "cuda"
+        device = default_device('cuda')
 
         _tuple = self._get_vec(inp_a, inp_b, zfill_width, feature_dict)
         if _tuple is None:
