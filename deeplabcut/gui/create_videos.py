@@ -318,9 +318,14 @@ class Create_Labeled_Videos(wx.Panel):
         if config_file.get("multianimalproject", False):
             print(
                 "Creating a video with the "
-                + config_file.get("default_track_method", "ellipse")
+                + self.trackerType.GetStringSelection()
                 + " tracker method!"
             )
+            if self.trackerType.GetStringSelection() == "Default":
+                track_method = "ellipse"
+            else:
+                track_method = "transformer"
+
             if self.plot_idv.GetStringSelection() == "Yes":
                 color_by = "individual"
             else:
@@ -337,6 +342,7 @@ class Create_Labeled_Videos(wx.Panel):
                 trailpoints=self.trail_points.GetValue(),
                 filtered=filtered,
                 color_by=color_by,
+                track_method=track_method,
             )
 
             if self.trajectory.GetStringSelection() == "Yes":
