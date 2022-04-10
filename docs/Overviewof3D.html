@@ -480,7 +480,7 @@ const thebe_selector_output = ".output, .cell_output"
 <p>The purpose of the subdirectories is as follows:</p>
 <p><strong>calibration_images:</strong> This directory will contain a set of calibration images acquired from the two cameras. A calibration image can be acquired using a printed checkerboard and its pair wise images are taken from both the cameras to consider as a set of calibration images. These pair of images are saved as <code class="docutils literal notranslate"><span class="pre">.jpg</span></code> with camera names as the prefix. e.g. <code class="docutils literal notranslate"><span class="pre">camera-1-01.jpg</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2-01.jpg</span></code> for the first pair of images. While taking the images:</p>
 <ul class="simple">
-<li><p>Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circularly will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
+<li><p>Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
 <li><p>Cover several distances, and within each distance, cover all parts of the image view (all corners and center).
 Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 squares.</p></li>
 <li><p>Aim for taking at least 70 pair of images as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>
@@ -507,7 +507,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 <ul class="simple">
 <li><p>While taking the images:</p>
 <ul>
-<li><p>Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circularly will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
+<li><p>Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
 <li><p>Cover several distances, and within each distance, cover all parts of the image view (all corners and center).</p></li>
 <li><p>Use a checkerboard as big as possible, ideally with at least 8x6 squares.</p></li>
 <li><p>Aim for taking at least 30-70 pair of images, as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>

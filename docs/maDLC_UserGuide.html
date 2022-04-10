@@ -379,8 +379,8 @@ const thebe_selector_output = ".output, .cell_output"
       </a>
      </li>
      <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#decision-break-point">
-       ——————– DECISION / BREAK POINT ——————-
+      <a class="reference internal nav-link" href="#decision-point">
+       ——————– DECISION POINT ——————-
       </a>
       <ul class="nav section-nav flex-column">
        <li class="toc-h4 nav-item toc-entry">
@@ -400,6 +400,23 @@ const thebe_selector_output = ".output, .cell_output"
        Optimized Animal Assembly + Video Analysis:
       </a>
      </li>
+    </ul>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-true">
+     IF auto_track = True:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-false">
+     IF auto_track = False:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
+     Using Unsupervised Identity Tracking:
+    </a>
+    <ul class="nav section-nav flex-column">
      <li class="toc-h3 nav-item toc-entry">
       <a class="reference internal nav-link" href="#refine-tracklets">
        Refine Tracklets:
@@ -515,8 +532,8 @@ const thebe_selector_output = ".output, .cell_output"
       </a>
      </li>
      <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#decision-break-point">
-       ——————– DECISION / BREAK POINT ——————-
+      <a class="reference internal nav-link" href="#decision-point">
+       ——————– DECISION POINT ——————-
       </a>
       <ul class="nav section-nav flex-column">
        <li class="toc-h4 nav-item toc-entry">
@@ -536,6 +553,23 @@ const thebe_selector_output = ".output, .cell_output"
        Optimized Animal Assembly + Video Analysis:
       </a>
      </li>
+    </ul>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-true">
+     IF auto_track = True:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-false">
+     IF auto_track = False:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
+     Using Unsupervised Identity Tracking:
+    </a>
+    <ul class="nav section-nav flex-column">
      <li class="toc-h3 nav-item toc-entry">
       <a class="reference internal nav-link" href="#refine-tracklets">
        Refine Tracklets:
@@ -582,7 +616,7 @@ const thebe_selector_output = ".output, .cell_output"
   <div class="tex2jax_ignore mathjax_ignore section" id="deeplabcut-for-multi-animal-projects">
 <h1>DeepLabCut for Multi-Animal Projects<a class="headerlink" href="#deeplabcut-for-multi-animal-projects" title="Permalink to this headline">¶</a></h1>
 <p>This document should serve as the user guide for maDLC,
-and it is here to support the scientific advances presented in Lauer et al. 2021.</p>
+and it is here to support the scientific advances presented in <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 <p>Note, we strongly encourage you to use the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/PROJECT_GUI.md">Project Manager GUI</a> when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!</p>
 <div class="section" id="how-to-think-about-using-madlc">
 <h2>How to think about using maDLC:<a class="headerlink" href="#how-to-think-about-using-madlc" title="Permalink to this headline">¶</a></h2>
@@ -785,7 +819,7 @@ are listed in Box 2.</p></li>
 <li><p>At this step, the ImageNet pre-trained networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the <strong><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/Troubleshooting-Tips">WIKI troubleshooting for more help!</a></strong>).</p></li>
 </ul>
 <p><strong>OPTIONAL POINTS:</strong></p>
-<p>With the data-driven skeleton selection introduced in 2.2rc1, DLC networks are trained by default
+<p>With the data-driven skeleton selection introduced in 2.2rc1+, DLC networks are trained by default
 on complete skeletons (i.e., they learn all possible redundant connections), before being optimally pruned
 at model evaluation. Although this procedure is by far superior to manually defining a graph,
 we leave manually-defining a skeleton as an option for the advanced user:</p>
@@ -797,7 +831,7 @@ we leave manually-defining a skeleton as an option for the advanced user:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">paf_graph</span><span class="o">=</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Importantly, a user-defined graph is still required to cover all multianimalbodyparts at least once.</p>
+<p>Importantly, if a user-defined graph is used it still is required to cover all multianimalbodyparts at least once.</p>
 <p><strong>DATA AUGMENTATION:</strong> At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a> file for a full list of parameters <strong>you might want to change before running this step.</strong> There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), <a class="reference external" href="https://github.com/tensorpack/tensorpack">TensorPack</a> for data augmentation (currently this is easiest on Linux only), or <a class="reference external" href="https://imgaug.readthedocs.io/en/latest/">imgaug</a>. We recommend <code class="docutils literal notranslate"><span class="pre">imgaug</span></code> (which is default now!). You can set this by passing:<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset(config_path,</span> <span class="pre">augmenter_type='imgaug')</span> </code></p>
 <p>The differences of the loaders are as follows:</p>
 <ul class="simple">
@@ -919,8 +953,8 @@ but does not guarantee best performance.</p>
 </div>
 <p>you can drop “Indices” to run this on all training/testing images (this is very slow!)</p>
 </div>
-<div class="section" id="decision-break-point">
-<h3>——————– DECISION / BREAK POINT ——————-<a class="headerlink" href="#decision-break-point" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="decision-point">
+<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="attention">
 <h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this headline">¶</a></h4>
 <p><strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
@@ -955,16 +989,22 @@ Flagged frames will be added to your collection of images in the corresponding l
 <ul class="simple">
 <li><p>Please note that <strong>novel videos DO NOT need to be added to the config.yaml file</strong>. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. <code class="docutils literal notranslate"><span class="pre">videotype='.mp4'</span></code>), or pass the path to the <strong>folder</strong> or exact video(s) you wish to analyze:</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><em>NEW</em> in 2.2.0.3: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> has a new argument <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you’ll now get the .h5 file you might be used to getting in standard DLC. If <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code>, one must run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> and <code class="docutils literal notranslate"><span class="pre">stitch_tracklets</span></code> manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).</p>
-<p>Now that you have detections (which are saved as a pickle file, not h5, btw), we need to assemble and track the animals. This step has several tracker types (<code class="docutils literal notranslate"><span class="pre">default_track_method</span></code> in the main config.yaml file), and we recommend testing which one works best on your data (but typically we find ellipse is best).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
-                                        <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
 </div>
-<p>You can validate the tracking parameters. Namely, you can iteratively change the parameters, run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> then load them in the GUI (<code class="docutils literal notranslate"><span class="pre">refine_tracklets</span></code>) if you want to look at the performance. If you want to edit these, you will need to open the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file (or click button in GUI). The options are:</p>
+</div>
+<div class="section" id="if-auto-track-true">
+<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><em>NEW</em> in 2.2.0.3+: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> has a new argument <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you’ll now get the <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file you might be used to getting in standard DLC. If <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code>, one must run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> and <code class="docutils literal notranslate"><span class="pre">stitch_tracklets</span></code> manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).</p></li>
+</ul>
+</div>
+<div class="section" id="if-auto-track-false">
+<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>You can validate the tracking parameters. Namely, you can iteratively change the parameters, run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> then load them in the GUI (<code class="docutils literal notranslate"><span class="pre">refine_tracklets</span></code>) if you want to look at the performance. If you want to edit these, you will need to open the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file (or click button in GUI). The options are:</p></li>
+</ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tracking:</span>
 <span class="c1">#p/m pixels in width and height for increasing bounding boxes.</span>
 <span class="n">boundingboxslack</span> <span class="p">:</span> <span class="mi">0</span>
@@ -976,17 +1016,18 @@ Flagged frames will be added to your collection of images in the corresponding l
 <span class="n">min_hits</span><span class="p">:</span> <span class="mi">3</span>
 </pre></div>
 </div>
-<p><strong>IMPORTANT POINT</strong></p>
-<p>If the network has been trained to learn the animals’ identities (i.e., you set <code class="docutils literal notranslate"><span class="pre">identity=True</span></code> in config.yaml before training)
-this information can be leveraged both during: (i) animal assembly, where body parts
-are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints
-is no longer considered in that case); and (ii) animal tracking, where identity only can be
-utilized in place of motion trackers to form tracklets.</p>
+<ul>
+<li><p><strong>IMPORTANT POINT FOR SUPERVISED IDENTITY TRACKING</strong></p>
+<p>If the network has been trained to learn the animals’ identities (i.e., you set <code class="docutils literal notranslate"><span class="pre">identity=True</span></code> in config.yaml before training) this information can be leveraged both during: (i) animal assembly, where body parts are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints is no longer considered in that case); and (ii) animal tracking, where identity only can be utilized in place of motion trackers to form tracklets.</p>
+</li>
+</ul>
 <p>To use this ID information, simply pass:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">identity_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Note:</strong> If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.</p>
+<ul class="simple">
+<li><p><strong>Note:</strong> If only one individual is to be assembled and tracked, assembly and tracking are skipped, and detections are treated as in single-animal projects; i.e., it is the keypoints with highest confidence that are kept and accumulated over frames to form a single, long tracklet. No action is required from users, this is done automatically.</p></li>
+</ul>
 <p><strong>Animal assembly and tracking quality</strong> can be assessed via <code class="docutils literal notranslate"><span class="pre">deeplabcut.utils.make_labeled_video.create_video_from_pickled_tracks</span></code>. This function provides an additional diagnostic tool before moving on to refining tracklets.</p>
 <p>If animal assemblies do not look pretty, an alternative to the outlier search described above is to pass the
 <code class="docutils literal notranslate"><span class="pre">_assemblies.pickle</span></code> to <code class="docutils literal notranslate"><span class="pre">find_outliers_in_raw_data</span></code> in place of the <code class="docutils literal notranslate"><span class="pre">_full.pickle</span></code>.
@@ -1007,9 +1048,16 @@ can be directly specified as follows:</p>
 </div>
 <p>In such cases, file columns will default to dummy animal names (ind1, ind2, …, up to indn).</p>
 </div>
+<div class="section" id="using-unsupervised-identity-tracking">
+<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this headline">¶</a></h2>
+<p>In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note you should pass the n_tracks (number of animals) you expect to see in the video.</p>
 <div class="section" id="refine-tracklets">
 <h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this headline">¶</a></h3>
-<p>You can also optionally <strong>refine the tracklets</strong>. You can fix both “major” ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the <code class="docutils literal notranslate"><span class="pre">...trackertype.pickle</span></code> file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this <code class="docutils literal notranslate"><span class="pre">.h5</span></code> this to refine (again) in case you find another issue, etc!</p>
+<p>You can also optionally <strong>refine the tracklets</strong>. You can fix both “major” ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the <code class="docutils literal notranslate"><span class="pre">...trackertype.pickle</span></code> or <code class="docutils literal notranslate"><span class="pre">.h5'</span></code> file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this <code class="docutils literal notranslate"><span class="pre">.h5</span></code> this to refine (again) in case you find another issue, etc!</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_tracklets</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">pickle_or_h5_file</span><span class="p">,</span> <span class="n">videofile_path</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_swap_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_tracklet_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">trail_len</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1035,17 +1083,20 @@ can be directly specified as follows:</p>
 <div class="section" id="plotting-results">
 <h3>Plotting Results:<a class="headerlink" href="#plotting-results" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><strong>NOTE :bulb::mega::</strong> Before you create a video, you should set what threshold to use for plotting. This is set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file as <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> - if you have a well trained network, this should be high, i.e. set it to <code class="docutils literal notranslate"><span class="pre">0.8</span></code> or higher! IF YOU FILLED IN GAPS, you need to set this to 0 to “see” the filled in parts.</p></li>
+<li><p><strong>NOTE :bulb::mega::</strong> Before you create a video, you should set what threshold to use for plotting. This is set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file as <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> - if you have a well trained network, this should be high, i.e. set it to <code class="docutils literal notranslate"><span class="pre">0.8</span></code> or higher! IF YOU FILLED IN GAPS, you need to set this to <code class="docutils literal notranslate"><span class="pre">0</span></code> to “see” the filled in parts.</p></li>
 <li><p>You can also determine a good <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> value by looking at the likelihood plot created during <code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code>:</p></li>
 </ul>
 <p>Plot the outputs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/reachingvideo1.avi&#39;</span><span class="p">],</span><span class="n">filtered</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/reachingvideo1.avi&#39;</span><span class="p">],</span><span class="n">filtered</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Create videos:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>deeplabcut.create_labeled_video(config_path, [`/analysis/project/videos/reachingvideo1.avi&#39;,&#39;/fullpath/project/videos/reachingvideo2.avi&#39;],filtered = True)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">videos</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">filtered</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fastmode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">Frames2plot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">displayedbodyparts</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">displayedindividuals</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">codec</span><span class="o">=</span><span class="s1">&#39;mp4v&#39;</span><span class="p">,</span> <span class="n">outputframerate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">displaycropped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color_by</span><span class="o">=</span><span class="s1">&#39;bodypart&#39;</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p><strong>NOTE :bulb::mega::</strong> You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!</p></li>
+</ul>
 <p>(more details <a class="reference external" href="functionDetails.md#i-video-analysis-and-plotting-results">here</a>)</p>
 </div>
 <div class="section" id="help">

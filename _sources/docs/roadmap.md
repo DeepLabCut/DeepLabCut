@@ -46,5 +46,5 @@
 - [ ] DeepLabCut PyTorch model zoo
 - [X] DLC-CookBook v0.1
 - [X] DLC BLog for releases and user-highlights
-- [ ] New Docker containers into main repo / linked to Docker hub and repo(s)
+- [X] New Docker containers into main repo / linked to Docker hub and repo(s)
 - [ ] 3D >2 camera support
