@@ -57,7 +57,7 @@ def transformer_reID(
 
     n_tracks: int
         number of tracks to be formed in the videos.
-        (TODO) handling videos with different number of tracks
+        TODO: handling videos with different number of tracks
 
     n_triplets: (optional) int
         number of triplets to be mined from the videos
@@ -87,8 +87,8 @@ def transformer_reID(
 
     DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
         cfg,
-        shuffle,
-        cfg["TrainingFraction"][trainingsetindex],
+        shuffle=shuffle,
+        trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
 
@@ -96,9 +96,11 @@ def transformer_reID(
         config,
         videos,
         track_method,
+        videotype=videotype,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
         modelprefix=modelprefix,
         n_triplets=n_triplets,
-        videotype=videotype,
     )
 
     (
@@ -112,11 +114,11 @@ def transformer_reID(
         trainingsetindex=trainingsetindex,
     )
 
-    # modelprefix impacts where the model is loaded
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         config,
         DLCscorer,
         videos,
+        videotype=videotype,
         train_frac=train_frac,
         modelprefix=modelprefix,
         train_epochs=train_epochs,
@@ -133,9 +135,11 @@ def transformer_reID(
     deeplabcut.stitch_tracklets(
         config,
         videos,
+        videotype=videotype,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
         track_method=track_method,
         modelprefix=modelprefix,
         n_tracks=n_tracks,
-        videotype=videotype,
         transformer_checkpoint=transformer_checkpoint,
     )
