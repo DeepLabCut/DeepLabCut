@@ -93,9 +93,7 @@ class TransformerID(wx.Panel):
         videotypes = [".avi", ".mp4", ".mov"]
         self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
         self.videotype.SetValue(".avi")
-        videotype_text_boxsizer.Add(
-            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
-        )
+        videotype_text_boxsizer.Add(self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
         shuffles_text_boxsizer = wx.StaticBoxSizer(shuffles_text, wx.VERTICAL)
@@ -112,12 +110,20 @@ class TransformerID(wx.Panel):
         self.ntriplets = wx.SpinCtrl(self, value="1000", min=100, max=5000)
         ntriplets_text_boxsizer.Add(self.ntriplets, 2, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
+        trackertype_text = wx.StaticBox(self, label="Specify the tracking type (ellipse recommended)")
+        trackertype_text_boxsizer = wx.StaticBoxSizer(trackertype_text, wx.VERTICAL)
+        trackertype = ["ellipse", "box"]
+        self.trackertype = wx.ComboBox(self, choices=trackertype, style=wx.CB_READONLY)
+        self.trackertype.SetValue("ellipse")
+        trackertype_text_boxsizer.Add(self.trackertype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+
 
 
         hbox1.Add(videotype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(ntracks_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox2.Add(ntriplets_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox2.Add(trackertype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
         boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -192,6 +198,7 @@ class TransformerID(wx.Panel):
             videotype=self.videotype.GetValue(),
             n_tracks=self.n_tracks.GetValue(),
             shuffle=self.shuffles.GetValue(),
+            track_method=self.trackertype.GetValue(),
         )
 
     def reset_transformer_reID(self, event):
