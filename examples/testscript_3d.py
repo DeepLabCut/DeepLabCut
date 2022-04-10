@@ -28,7 +28,11 @@ if __name__ == "__main__":
     videoname = "reachingvideo1"
     video = [
         os.path.join(
-            basepath, "examples", "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
+            basepath,
+            "examples",
+            "Reaching-Mackenzie-2018-08-30",
+            "videos",
+            videoname + ".avi",
         )
     ]
 
@@ -144,12 +148,14 @@ if __name__ == "__main__":
     cam2_images.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
     for idx, name in enumerate(cam1_images):
         os.rename(
-            name, os.path.join(cwd, str("camera-1_" + "{0:0=2d}".format(idx + 1) + ".jpg"))
+            name,
+            os.path.join(cwd, str("camera-1_" + "{0:0=2d}".format(idx + 1) + ".jpg")),
         )
 
     for idx, name in enumerate(cam2_images):
         os.rename(
-            name, os.path.join(cwd, str("camera-2_" + "{0:0=2d}".format(idx + 1) + ".jpg"))
+            name,
+            os.path.join(cwd, str("camera-2_" + "{0:0=2d}".format(idx + 1) + ".jpg")),
         )
 
     # Removing some of the images where the corner was not detected
@@ -164,9 +170,10 @@ if __name__ == "__main__":
 
     print("TRIANGULATING")
     video_dir = os.path.join(os.path.dirname(basepath), folder)
-    deeplabcut.auxiliaryfunctions.edit_config(path_config_file, edits={"pcutoff": 0.1}) #otherwise get all-nan slices
+    deeplabcut.auxiliaryfunctions.edit_config(
+        path_config_file, edits={"pcutoff": 0.1}
+    )  # otherwise get all-nan slices
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
-
 
     print("CREATING LABELED VIDEO 3-D")
     deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10)

@@ -255,7 +255,7 @@ def create_tracking_dataset(
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        print("No video(s) were found. Please check your paths and/or 'videotype'.")
         return DLCscorer
 
 

@@ -7,13 +7,15 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import random
 from pathlib import Path
 
-#MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
-MODELS = ["dlcrnet_ms5",] # "efficientnet-b0", "mobilenet_v2_0.35"]
+# MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
+MODELS = [
+    "dlcrnet_ms5",
+]  # "efficientnet-b0", "mobilenet_v2_0.35"]
 
 N_ITER = 5
-TESTTRACKER = 'ellipse'
+TESTTRACKER = "ellipse"
 
-USE_SHELVE = False #random.choice([True, False])
+USE_SHELVE = False  # random.choice([True, False])
 
 if __name__ == "__main__":
 
@@ -111,10 +113,7 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder,
-        0.8,
-        1,
-        cfg,
+        trainingsetfolder, 0.8, 1, cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
@@ -181,15 +180,12 @@ if __name__ == "__main__":
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Tracklets created...")
 
     ### adding it here
-    modelprefix = ''
+    modelprefix = ""
     (
         trainposeconfigfile,
         testposeconfigfile,
@@ -201,10 +197,7 @@ if __name__ == "__main__":
     print("Creating triplet dataset")
 
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        config_path,
-        [new_video_path],
-        TESTTRACKER,
-        videotype='mp4',
+        config_path, [new_video_path], TESTTRACKER, videotype="mp4",
     )
 
     train_epochs = 10
@@ -234,16 +227,12 @@ if __name__ == "__main__":
         "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
         track_method=TESTTRACKER,
-        transformer_checkpoint=transformer_checkpoint
+        transformer_checkpoint=transformer_checkpoint,
     )
-
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Trajectory plotted.")
 
@@ -254,26 +243,19 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method=TESTTRACKER
+        track_method=TESTTRACKER,
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path,
-        [new_video_path],
-        "mp4",
-        automatic=True,
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER
     )
     print("Outlier frames extracted.")
 
@@ -286,6 +268,7 @@ if __name__ == "__main__":
         "machinelabels-iter" + str(cfg["iteration"]) + ".h5",
     )
 
+    """
     print("RELABELING")
     DF = pd.read_hdf(file, "df_with_missing")
     DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
@@ -310,46 +293,69 @@ if __name__ == "__main__":
         format="table",
         mode="w",
     )
+    """
 
     print("MERGING")
     deeplabcut.merge_datasets(config_path)  # iteration + 1
 
-    print("CREATING TRAININGSET updated training set")
-    deeplabcut.create_training_dataset(config_path, net_type=NET)
+    print('CREATING TRAININGSET UPDATED TRAINING SET')
+    deeplabcut.create_training_dataset(config_path, Shuffles=[3], net_type=NET)
 
-    print("Training network...")
-    deeplabcut.train_network(config_path, maxiters=N_ITER)
-    print("Network trained.")
+    print('TRAINING NETWORK...')
+    deeplabcut.train_network(config_path, shuffle=3, maxiters=N_ITER)
+    print("NETWORK TRAINED!")
 
-    print("Evaluating network...")
-    deeplabcut.evaluate_network(config_path, plotting=True)
+    print('EVALUATING NETWORK...')
+    deeplabcut.evaluate_network(config_path, Shuffles=[3], plotting=True)
 
-    print("Network evaluated....")
+    print('NETWORK EVALUATED....')
 
-    print("Analyzing video with auto_track....")
+    print('ANALYZING VIDEO WITH AUTO_TRACK....')
     deeplabcut.analyze_videos(
         config_path,
         [new_video_path],
+        shuffle=3,
+        videotype = 'mp4',
         save_as_csv=True,
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
         allow_growth=True,
         use_shelve=USE_SHELVE,
-        auto_track=False,
+        auto_track=True,
     )
 
     n_tracks = 3
 
-    print ('Testing the unified API for transformer')
+    print('TESTING THE UNIFIED API FOR TRANSFORMER')
 
     deeplabcut.transformer_reID(
         config_path,
-        scorer,
         [new_video_path],
-        n_tracks,
+        videotype = 'mp4',
+        shuffle=3,
+        n_tracks=n_tracks,
         track_method=TESTTRACKER,
         train_epochs=10,
         n_triplets=10,
     )
+
+    print('CREATING LABELED VIDEOS (FOR ELLIPSE AND TRANSFORMER)...')
+
+    deeplabcut.create_labeled_video(
+        config_path,
+        [new_video_path],
+        videotype = 'mp4',
+        shuffle=3,
+        track_method="ellipse",
+    )
+
+    deeplabcut.create_labeled_video(
+        config_path,
+        [new_video_path],
+        videotype = 'mp4',
+        shuffle=3,
+        track_method="transformer",
+    )
+
 
     print("ALL DONE!!! - default multianimal cases are functional.")

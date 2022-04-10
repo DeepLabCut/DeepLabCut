@@ -460,7 +460,7 @@ class Analyze_videos(wx.Panel):
     def analyze_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
-        video_type = self.videotype.GetValue(),
+        videotype = self.videotype.GetValue(),
 
         if self.cfg.get("multianimalproject", False):
             print("DLC network loading and video analysis starting ... ")
