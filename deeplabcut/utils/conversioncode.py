@@ -10,6 +10,7 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import pandas as pd
 from deeplabcut.utils import auxiliaryfunctions
+from itertools import islice
 from pathlib import Path
 
 
@@ -63,13 +64,18 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
                 with open(fn) as datafile:
-                    next(datafile)
-                    if "individuals" in next(datafile):
-                        header = list(range(4))
-                    else:
-                        header = list(range(3))
-                data = pd.read_csv(fn, index_col=0, header=header)
+                    head = list(islice(datafile, 0, 5))
+                if "individuals" in head[1]:
+                    header = list(range(4))
+                else:
+                    header = list(range(3))
+                if head[-1].split(",")[0] == "labeled-data":
+                    index_col = [0, 1, 2]
+                else:
+                    index_col = 0
+                data = pd.read_csv(fn, index_col=index_col, header=header)
                 data.columns = data.columns.set_levels([scorer], level="scorer")
+                guarantee_multiindex_rows(data)
                 data.to_hdf(fn.replace(".csv", ".h5"), key="df_with_missing", mode="w")
                 data.to_csv(fn)
         except FileNotFoundError:

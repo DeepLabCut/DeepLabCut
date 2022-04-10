@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2.0.6",
+    version="2.2.1rc1",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -43,6 +43,7 @@ setuptools.setup(
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
         "tqdm",
+        "torch",
         "pyyaml",
         "Pillow>=7.1",
     ],
@@ -58,6 +59,7 @@ setuptools.setup(
             [
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
+                "deeplabcut/reid_cfg.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",

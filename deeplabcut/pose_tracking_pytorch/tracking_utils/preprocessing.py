@@ -2,7 +2,7 @@ import numpy as np
 
 
 def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
-    # locate the right spot from the features
+    ''' extract the deep feature at the location of the keypoint (x,y) '''
     if valid_mask_for_fish:
 
         mask = np.array([1, 2, 6])
@@ -24,12 +24,21 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
 
 def convert_coord_from_img_space_to_feature_space(arr, stride):
 
-    stride = stride * 2 # because there is only one deconv. This will change if there are different numbers of deconv layers    
+    '''
+    if stride ==8:
+        stride = stride * 2
+    elif stride == 4:
+        stride = stride *4
+    elif stride ==2:
+        stride = stride *8
+    '''
+    # More elegantly one can simply define:
+    stride = 16
 
     arr = np.nan_to_num(arr).astype(np.int64)
 
     # take care of difference between feature map space and original image space
-    
+
     arr = (arr - (stride//2) ) // stride
 
     return arr.astype(np.int64)

@@ -35,7 +35,10 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingut
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.pose_estimation_tensorflow.core.openvino.session import GetPoseF_OV, is_openvino_available
+from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
+    GetPoseF_OV,
+    is_openvino_available,
+)
 
 
 ####################################################
@@ -73,7 +76,7 @@ def create_tracking_dataset(
     )
 
     # allow_growth must be true here because tensorflow does not automatically free gpu memory and setting it as false occupies all gpu memory so that pytorch cannot kick in
-    allow_growth=True
+    allow_growth = True
 
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -231,16 +234,15 @@ def create_tracking_dataset(
             # should close tensorflow session here in order to free gpu
             sess.close()
             tf.keras.backend.clear_session()
-            create_triplets_dataset(Videos, DLCscorer, track_method,  n_triplets=n_triplets)
+            create_triplets_dataset(
+                Videos, DLCscorer, track_method, n_triplets=n_triplets
+            )
 
         else:
-            raise NotImplementedError("not implmented")
+            raise NotImplementedError("not implemented")
 
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
-            print(
-                "The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
-            )
             print(
                 "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
@@ -253,7 +255,7 @@ def create_tracking_dataset(
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        print("No video(s) were found. Please check your paths and/or 'videotype'.")
         return DLCscorer
 
 
@@ -998,14 +1000,16 @@ def AnalyzeVideo(
             # GetPoseF_GTF(cfg,dlc_cfg, sess, inputs, outputs,cap,nframes,int(dlc_cfg["batch_size"]))
         else:
             if int(dlc_cfg["batch_size"]) > 1:
-                args = (cfg,
-                        dlc_cfg,
-                        sess,
-                        inputs,
-                        outputs,
-                        cap,
-                        nframes,
-                        int(dlc_cfg["batch_size"]))
+                args = (
+                    cfg,
+                    dlc_cfg,
+                    sess,
+                    inputs,
+                    outputs,
+                    cap,
+                    nframes,
+                    int(dlc_cfg["batch_size"]),
+                )
                 if use_openvino:
                     PredictedData, nframes = GetPoseF_OV(*args)
                 elif TFGPUinference:
@@ -1385,13 +1389,7 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg,
-    inference_cfg,
-    data,
-    metadata,
-    output_path,
-    greedy=False,
-    calibrate=False,
+    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in trackingutils.TRACK_METHODS:
@@ -1477,7 +1475,6 @@ def _convert_detections_to_tracklets(
     tracklets["header"] = pdindex
     with open(output_path, "wb") as f:
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
-
 
 
 def convert_detections2tracklets(

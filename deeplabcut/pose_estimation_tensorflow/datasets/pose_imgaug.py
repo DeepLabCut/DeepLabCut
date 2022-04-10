@@ -287,7 +287,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         scale = self.sample_scale()
 
         found_valid = False
-        n_tries = 10 
+        n_tries = 10
         while n_tries > 1:
             idx = np.random.choice(self.num_images)
             size = self.data[idx].im_size

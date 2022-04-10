@@ -1,10 +1,17 @@
+"""
+DeepLabCut2.2 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
 import numpy as np
 import os
 import pickle
 import shelve
-from deeplabcut.refine_training_dataset.stitch import (
-    TrackletStitcher,
-)
+from deeplabcut.refine_training_dataset.stitch import TrackletStitcher
 from pathlib import Path
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
 
@@ -79,12 +86,12 @@ def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000):
             videofolder, vname + dlcscorer + "_bpt_features.pickle"
         )
 
-        if track_method == 'ellipse':
-            method = 'el'
-        elif track_method == 'box':
-            method = 'bx'
+        if track_method == "ellipse":
+            method = "el"
+        elif track_method == "box":
+            method = "bx"
         else:
-            raise ValueError (f'{track_method} is not supported here')
+            raise ValueError(f"{track_method} is not supported here")
 
         track_file = os.path.join(videofolder, vname + dlcscorer + f"_{method}.pickle")
         out_fname = os.path.join(videofolder, vname + dlcscorer + "_triplet_vector.npy")
