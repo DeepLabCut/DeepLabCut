@@ -96,6 +96,10 @@ from deeplabcut.pose_estimation_tensorflow import (
     export_model,
 )
 
+from deeplabcut.pose_tracking_pytorch import(
+    transformer_reID
+)
+
 
 from deeplabcut.pose_estimation_3d import (
     calibrate_cameras,

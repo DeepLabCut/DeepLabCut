@@ -60,7 +60,7 @@ TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_
  The purpose of the subdirectories is as follows:
 
  **calibration_images:** This directory will contain a set of calibration images acquired from the two cameras. A calibration image can be acquired using a printed checkerboard and its pair wise images are taken from both the cameras to consider as a set of calibration images. These pair of images are saved as ``.jpg`` with camera names as the prefix. e.g. ``camera-1-01.jpg`` and ``camera-2-01.jpg`` for the first pair of images. While taking the images:
-- Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circularly will change the origin across the frames and may result in incorrect order of detected corners.
+- Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circular will change the origin across the frames and may result in incorrect order of detected corners.
 - Cover several distances, and within each distance, cover all parts of the image view (all corners and center).
 Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 squares.
 - Aim for taking at least 70 pair of images as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.
@@ -89,7 +89,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 ffmpeg -i videoname.mp4 -vframes 20 camera-1-%03d.jpg
 ```
 - While taking the images:
-     - Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circularly will change the origin across the frames and may result in incorrect order of detected corners.
+     - Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.
 
      - Cover several distances, and within each distance, cover all parts of the image view (all corners and center).
 

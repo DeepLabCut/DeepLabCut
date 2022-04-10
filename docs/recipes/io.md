@@ -21,11 +21,11 @@ While moving videos between computers or from your computer to cloud storage you
 The issue can present itself during those steps and you have to carefully review the traceback. Sometimes it might look like the videos were analyzed but in fact analysis stopped right before the end of the video (corruption of the metadata when more indices are assigned than there are actual frames in a video). 
 To tackle this issue, the easiest solution might be to re-encode the video, this will not only help with corruption but can also – if you choose so – compress the video without perceivable loss of quality. Common package used for video processing is FFmpeg which you can use from the terminal inside your DEEPLABCUT environment (without going into iPython).
 There are number of video codecs that can be used to re-encode your video and if you want to keep the video in the same container (`.avi`, `.mp4`, `.ts` etc.) you should check which codec allows encoding to a certain container. For instance, for `.avi` it will be MJPEG and for `.mp4` H264 and H265. 
-To reencode your video, simply use:
+To re-encode your video, simply use:
 ```
 ffmpeg -i "path_to_video" -c:v codec_name "output_path"
 ```
-For instance, to reencode to `.mp4` format with compression use:
+For instance, to re-encode to `.mp4` format with compression use:
 ```
 ffmpeg -i "path_to_video" -c:v h264 -crf 18 -preset fast "output_path"
 ```

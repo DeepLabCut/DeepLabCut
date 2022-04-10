@@ -30,6 +30,7 @@ from deeplabcut.gui.refine_labels import Refine_labels
 from deeplabcut.gui.refine_tracklets import Refine_tracklets
 from deeplabcut.gui.train_network import Train_network
 from deeplabcut.gui.video_editing import Video_Editing
+from deeplabcut.gui.transformerID import TransformerID
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -407,25 +408,30 @@ class Create_new_project(wx.Panel):
                 page8 = Analyze_videos(self.parent, self.gui_size, self.cfg)
                 self.parent.AddPage(page8, "Analyze videos")
 
-                page9 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page9, "Create videos")
+                if cfg.get("multianimalproject", False):
+                    page9 = TransformerID(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page9, "OPT: Unsupervised ID")
 
-                page11 = Video_Editing(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page11, "OPT: Video editor")
 
-                page12 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
-                self.parent.AddPage(page12, "OPT: Extract/Refine Outliers")
+                page10 = Create_Labeled_Videos(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page10, "Create videos")
+
+                page11 = Extract_outlier_frames(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page11, "OPT: Extract/Refine Outliers")
+
+                page12 = Video_Editing(self.parent, self.gui_size, self.cfg)
+                self.parent.AddPage(page12, "OPT: Video editor")
 
                 #page10 = Refine_labels(self.parent, self.gui_size, self.cfg, page5)
                 #self.parent.AddPage(page10, "OPT: Refine Labels")
 
                 self.edit_config_file.Enable(True)
 
-
-
                 if cfg.get("multianimalproject", False):
-                    page = Refine_tracklets(self.parent, self.gui_size, self.cfg)
-                    self.parent.AddPage(page, "OPT: Refine tracklets")
+                    page13 = Refine_tracklets(self.parent, self.gui_size, self.cfg)
+                    self.parent.AddPage(page13, "OPT: Refine tracklets")
+
+
 
     def add_videos(self, event):
         print("adding new videos to be able to label ...")

@@ -18,7 +18,7 @@ import pandas as pd
 import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
-from deeplabcut.utils import conversioncode
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
 
 
 def create_config_template(multianimal=False):
@@ -718,14 +718,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
     """Find potential data files from the hints given to the function."""
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
-    if track_method == "skeleton":
-        tracker = "_sk"
-    elif track_method == "box":
-        tracker = "_bx"
-    elif track_method == "ellipse":
-        tracker = "_el"
-    else:
-        tracker = ""
+    tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):

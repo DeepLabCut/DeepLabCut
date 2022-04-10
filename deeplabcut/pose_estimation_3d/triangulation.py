@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
 
 matplotlib_axes_logger.setLevel("ERROR")
 
@@ -153,13 +154,7 @@ def triangulate(
                     track_method = "box"
 
                 # Get track method suffix
-                method_to_suffix = {
-                    "ellipse": "_el",
-                    "box": "_bx",
-                    "skeleton": "_sk",
-                    "": "",
-                }
-                tr_method_suffix = method_to_suffix[track_method]
+                tr_method_suffix = TRACK_METHODS.get(track_method, "")
 
                 shuffle = cfg_3d[str("shuffle_" + cam_names[j])]
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
@@ -362,7 +357,7 @@ def triangulate(
 
             num_frames = dataFrame_camera1_undistort.shape[0]
             ### Assign nan to [X,Y] of low likelihood predictions ###
-            # Convert the data to a np array to easily mask out the low likelyhood predictions
+            # Convert the data to a np array to easily mask out the low likelihood predictions
             data_cam1_tmp = dataFrame_camera1_undistort.to_numpy().reshape(
                 (num_frames, -1, 3)
             )

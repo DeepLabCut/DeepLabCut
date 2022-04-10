@@ -631,10 +631,8 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = (
-            auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-                cfg, comparisonbodyparts
-            )
+        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+            cfg, comparisonbodyparts
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(

@@ -163,7 +163,7 @@ def filterpredictions(
     Videos = auxiliaryfunctions.Getlistofvideos(video, videotype)
 
     if not len(Videos):
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        print("No video(s) were found. Please check your paths and/or 'videotype'.")
         return
 
     for video in Videos:

@@ -11,9 +11,9 @@ MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 
 
 N_ITER = 5
-TESTTRACKER = 'ellipse'
+TESTTRACKER = "ellipse"
 
-USE_SHELVE = False #random.choice([True, False])
+USE_SHELVE = False  # random.choice([True, False])
 
 if __name__ == "__main__":
 
@@ -111,10 +111,7 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
     datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        trainingsetfolder,
-        0.8,
-        1,
-        cfg,
+        trainingsetfolder, 0.8, 1, cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
@@ -181,10 +178,7 @@ if __name__ == "__main__":
 
     print("Convert detections to tracklets...")
     deeplabcut.convert_detections2tracklets(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Tracklets created...")
 
@@ -193,15 +187,12 @@ if __name__ == "__main__":
         [new_video_path],
         "mp4",
         output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
-        track_method=TESTTRACKER
+        track_method=TESTTRACKER,
     )
 
     print("Plotting trajectories...")
     deeplabcut.plot_trajectories(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Trajectory plotted.")
 
@@ -212,26 +203,19 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method=TESTTRACKER
+        track_method=TESTTRACKER,
     )
     print("Labeled video created.")
 
     print("Filtering predictions...")
     deeplabcut.filterpredictions(
-        config_path,
-        [new_video_path],
-        "mp4",
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
     )
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
     deeplabcut.extract_outlier_frames(
-        config_path,
-        [new_video_path],
-        "mp4",
-        automatic=True,
-        track_method=TESTTRACKER
+        config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER
     )
     print("Outlier frames extracted.")
 

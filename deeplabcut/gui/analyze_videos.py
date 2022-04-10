@@ -103,8 +103,20 @@ class Analyze_videos(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=0, max=100)
         shuffle_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
+        videotype_text = wx.StaticBox(self, label="Specify the videotype")
+        videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
+
+        videotypes = [".avi", ".mp4", ".mov"]
+        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
+        self.videotype.SetValue(".avi")
+        videotype_text_boxsizer.Add(
+            self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
+        )
+
+
         boxsizer.Add(self.hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
         self.hbox1.Add(shuffle_boxsizer, 0, 0)
+        self.hbox1.Add(videotype_text_boxsizer, 0, 0)
 
         if self.cfg.get("multianimalproject", False):
             ntracks_text = wx.StaticBox(self, label="Number of animals")
@@ -448,6 +460,7 @@ class Analyze_videos(wx.Panel):
     def analyze_videos(self, event):
 
         shuffle = self.shuffle.GetValue()
+        videotype = self.videotype.GetValue(),
 
         if self.cfg.get("multianimalproject", False):
             print("DLC network loading and video analysis starting ... ")
@@ -479,6 +492,7 @@ class Analyze_videos(wx.Panel):
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
+                self.videotype.GetValue(),
                 shuffle=shuffle,
                 gputouse=None,
                 cropping=crop,
@@ -493,10 +507,15 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.create_video_with_all_detections(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     shuffle=shuffle,
                 )
             if self.filter.GetStringSelection() == "Yes":
-                deeplabcut.filterpredictions(self.config, self.filelist)
+                deeplabcut.filterpredictions(
+                    self.config,
+                    self.filelist,
+                    self.videotype.GetValue(),
+                    )
 
             if self.csv.GetStringSelection() == "Yes":
                 deeplabcut.analyze_videos_converth5_to_csv(self.filelist,listofvideos=True)
@@ -513,11 +532,12 @@ class Analyze_videos(wx.Panel):
                     showfig = False
                 else:
                     showfig = True
-                deeplabcut.plot_trajectories(self.config,self.filelist,showfigures=showfig)
+                deeplabcut.plot_trajectories(self.config,self.filelist,self.videotype.GetValue(),showfigures=showfig)
         else:
             scorername = deeplabcut.analyze_videos(
                 self.config,
                 self.filelist,
+                self.videotype.GetValue(),
                 shuffle=shuffle,
                 gputouse=None,
                 save_as_csv=save_as_csv,
@@ -528,6 +548,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.filterpredictions(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     shuffle=shuffle,
                     filtertype="median",
                     windowlength=5,
@@ -542,6 +563,7 @@ class Analyze_videos(wx.Panel):
                 deeplabcut.plot_trajectories(
                     self.config,
                     self.filelist,
+                    self.videotype.GetValue(),
                     displayedbodyparts=self.bodyparts,
                     shuffle=shuffle,
                     filtered=_filter,

@@ -283,7 +283,7 @@ class DLCTransReID(nn.Module):
 
         # forwarding through blocks. But num of blocks should be reduced
 
-        # i can't really tell what the diffrence is
+        # i can't really tell what the difference is
         if self.local_feature:
             for blk in self.blocks[:-1]:
                 x = blk(x)
