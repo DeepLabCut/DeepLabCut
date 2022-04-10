@@ -36,7 +36,7 @@ class TransformerID(wx.Panel):
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
-        text = wx.StaticText(self, label="DeepLabCut - OPTIONAL: Unsupervised ID Tracking")
+        text = wx.StaticText(self, label="DeepLabCut - OPTIONAL: Unsupervised ID Tracking with Transformer")
         self.sizer.Add(text, pos=(0, 0), flag=wx.TOP | wx.LEFT | wx.BOTTOM, border=15)
         # Add logo of DLC
         icon = wx.StaticBitmap(self, bitmap=wx.Bitmap(LOGO_PATH))
@@ -86,6 +86,7 @@ class TransformerID(wx.Panel):
         boxsizer = wx.StaticBoxSizer(sb, wx.VERTICAL)
 
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
@@ -106,11 +107,20 @@ class TransformerID(wx.Panel):
         self.n_tracks = wx.SpinCtrl(self, value="2", min=0, max=100)
         ntracks_text_boxsizer.Add(self.n_tracks, 2, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
+        ntriplets_text = wx.StaticBox(self, label="Specify the no. triplets")
+        ntriplets_text_boxsizer = wx.StaticBoxSizer(ntriplets_text, wx.VERTICAL)
+        self.ntriplets = wx.SpinCtrl(self, value="1000", min=100, max=5000)
+        ntriplets_text_boxsizer.Add(self.ntriplets, 2, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
+
+
 
         hbox1.Add(videotype_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
         hbox1.Add(shuffles_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        hbox1.Add(ntracks_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox2.Add(ntracks_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        hbox2.Add(ntriplets_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
         boxsizer.Add(hbox1, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        boxsizer.Add(hbox2, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         self.sizer.Add(
             boxsizer,
@@ -127,7 +137,7 @@ class TransformerID(wx.Panel):
         self.sizer.Add(self.help_button, pos=(6, 0), flag=wx.LEFT, border=10)
         self.help_button.Bind(wx.EVT_BUTTON, self.help_function)
 
-        self.ok = wx.Button(self, label="Run")
+        self.ok = wx.Button(self, label="Run Transformer")
         self.sizer.Add(self.ok, pos=(6, 4))
         self.ok.Bind(wx.EVT_BUTTON, self.transformer_reID)
 
