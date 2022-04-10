@@ -357,7 +357,7 @@ def triangulate(
 
             num_frames = dataFrame_camera1_undistort.shape[0]
             ### Assign nan to [X,Y] of low likelihood predictions ###
-            # Convert the data to a np array to easily mask out the low likelyhood predictions
+            # Convert the data to a np array to easily mask out the low likelihood predictions
             data_cam1_tmp = dataFrame_camera1_undistort.to_numpy().reshape(
                 (num_frames, -1, 3)
             )

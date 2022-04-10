@@ -60,7 +60,7 @@ def create_new_project(_, *args, **kwargs):
     videos : list \n
     \tA list of string containing the full paths of the videos to include in the project.\n
     working_directory : string, optional \n
-    \tThe directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string\n
+    \the directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string\n
     copy_videos : bool, optional \n
     If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is ``True``; if provided it must be either ``True`` or ``False`` \n
 
@@ -620,17 +620,17 @@ def export_model(_, *args, **kwargs):
     \tpath to the DLC Project config.yaml file
 
     iteration : int, optional\n
-    \tthe model iteration you wish to export.\n
+    \the model iteration you wish to export.\n
     \tIf None, uses the iteration listed in the config file
 
     shuffle : int, optional\n
-    \tthe shuffle of the model to export. default = 1
+    \the shuffle of the model to export. default = 1
 
     trainingsetindex : int, optional\n
-    \tthe index of the training fraction for the model you wish to export. default = 1
+    \the index of the training fraction for the model you wish to export. default = 1
 
     snapshotindex : int, optional\n
-    \tthe snapshot index for the weights you wish to export.\n
+    \the snapshot index for the weights you wish to export.\n
     \tIf None, uses the snapshotindex as defined in 'config.yaml'. Default = None
 
     TFGPUinference : bool, optional\n

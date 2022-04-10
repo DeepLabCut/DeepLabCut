@@ -30,7 +30,7 @@ def transformer_reID(
 
     - Mines triplets from tracklets in videos (from another tracker)
     - These triplets are later used to tran a transformer with triplet loss
-    - The transformer derived appearance similiarity is then used as a stitching loss when tracklets are
+    - The transformer derived appearance similarity is then used as a stitching loss when tracklets are
     stitched during tracking.
 
     Outputs: The tracklet file is saved in the same folder where the non-transformer tracklet file is stored.

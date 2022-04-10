@@ -239,7 +239,7 @@ def create_tracking_dataset(
             )
 
         else:
-            raise NotImplementedError("not implmented")
+            raise NotImplementedError("not implemented")
 
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
