@@ -723,14 +723,19 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem
+        starts_by_scorer = (
+            file.startswith(videoname + scorer)
+            or file.startswith(videoname + scorer_legacy)
+        )
+        if tracker:
+            matches_tracker = stem.endswith(tracker)
+        else:
+            matches_tracker = not any(stem.endswith(s) for s in TRACK_METHODS.values())
         if all(
             (
-                (
-                    file.startswith(videoname + scorer)
-                    or file.startswith(videoname + scorer_legacy)
-                ),
+                starts_by_scorer,
                 "skeleton" not in file,
-                (stem.endswith(tracker) if tracker else not (stem.endswith("_sk") or stem.endswith("_bx"))),
+                matches_tracker,
                 (filtered and "filtered" in file)
                 or (not filtered and "filtered" not in file),
             )
