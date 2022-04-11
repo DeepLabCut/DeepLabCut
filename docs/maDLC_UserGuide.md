@@ -515,9 +515,7 @@ In such cases, file columns will default to dummy animal names (ind1, ind2, ...,
 In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:
 
 ```python
-from deeplabcut.pose_tracking_pytorch import transformer_reID
-
-transformer_reID(config, videos_to_analyze, n_tracks=None, videotype="mp4")
+deeplabcut.transformer_reID(config, videos_to_analyze, n_tracks=None, videotype="mp4")
 ```
 Note you should pass the n_tracks (number of animals) you expect to see in the video.
 

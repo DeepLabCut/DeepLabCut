@@ -72,8 +72,7 @@ def transformer_reID(
     --------
 
     Training model for one video based on ellipse-tracker derived tracklets
-    >>> from deeplabcut.pose_tracking_pytorch import transformer_reID
-    >>> transformer_reID(path_config_file,[''/home/alex/video.mp4'],track_method="ellipse")
+    >>> deeplabcut.transformer_reID(path_config_file,[''/home/alex/video.mp4'],track_method="ellipse")
 
     --------
 

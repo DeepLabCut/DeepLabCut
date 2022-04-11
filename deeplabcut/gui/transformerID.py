@@ -163,7 +163,7 @@ class TransformerID(wx.Panel):
         filepath = "help.txt"
         f = open(filepath, "w")
         sys.stdout = f
-        fnc_name = "deeplabcut.pose_tracking_pytorch.transformer_reID"
+        fnc_name = "deeplabcut.transformer_reID"
         pydoc.help(fnc_name)
         f.close()
         sys.stdout = sys.__stdout__
@@ -192,9 +192,7 @@ class TransformerID(wx.Panel):
             self.sel_vids.SetLabel("Total %s Videos selected" % len(self.filelist))
 
     def run_transformer_reID(self, event):
-        from deeplabcut.pose_tracking_pytorch import transformer_reID
-
-        transformer_reID(
+        deeplabcut.transformer_reID(
             config=self.config,
             videos=self.filelist,
             videotype=self.videotype.GetValue(),

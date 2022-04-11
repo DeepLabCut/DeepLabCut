@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pickle
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.pose_tracking_pytorch import transformer_reID
 import random
 from pathlib import Path
 
@@ -204,7 +203,7 @@ if __name__ == "__main__":
     train_epochs = 10
     train_frac = 0.8
 
-    print("Training transfomer")
+    print("Training transformer")
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         config_path,
@@ -329,10 +328,10 @@ if __name__ == "__main__":
 
     print('TESTING THE UNIFIED API FOR TRANSFORMER')
 
-    transformer_reID(
+    deeplabcut.transformer_reID(
         config_path,
         [new_video_path],
-        videotype = 'mp4',
+        videotype='mp4',
         shuffle=3,
         n_tracks=n_tracks,
         track_method=TESTTRACKER,
