@@ -8,7 +8,12 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import random
-import torch
+try:
+    import torch
+except ModuleNotFoundError:
+    raise ModuleNotFoundError(
+        "Unsupervised identity learning requires PyTorch. Please run `pip install torch`."
+    )
 import numpy as np
 import os
 import glob
