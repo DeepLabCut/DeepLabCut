@@ -359,7 +359,7 @@ def get_list_of_videos(
 
         shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
 
-    if not isinstance(videotype, typing.Sequence):
+    if isinstance(videotype, str):
         videotype = [videotype]
 
     # filter list of videos
