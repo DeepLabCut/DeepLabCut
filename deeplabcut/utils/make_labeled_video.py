@@ -342,7 +342,7 @@ def CreateVideoSlow(
 def create_labeled_video(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -374,7 +374,8 @@ def create_labeled_video(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional
         Number of shuffles of training dataset. Default is set to 1.
@@ -836,7 +837,7 @@ def create_video_with_keypoints_only(
 def create_video_with_all_detections(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
@@ -856,7 +857,8 @@ def create_video_with_all_detections(
         where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional
         Number of shuffles of training dataset. Default is set to 1.

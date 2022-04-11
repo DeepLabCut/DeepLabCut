@@ -50,7 +50,7 @@ def create_tracking_dataset(
     config,
     videos,
     track_method,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
@@ -262,7 +262,7 @@ def create_tracking_dataset(
 def analyze_videos(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
@@ -299,7 +299,8 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
@@ -1480,7 +1481,7 @@ def _convert_detections_to_tracklets(
 def convert_detections2tracklets(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     overwrite=False,
@@ -1506,7 +1507,8 @@ def convert_detections2tracklets(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.

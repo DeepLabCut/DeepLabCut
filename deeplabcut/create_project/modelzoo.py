@@ -68,7 +68,7 @@ def create_pretrained_human_project(
     videos,
     working_directory=None,
     copy_videos=False,
-    videotype=".mp4",
+    videotype="",
     createlabeledvideo=True,
     analyzevideo=True,
 ):
@@ -106,7 +106,7 @@ def create_pretrained_project(
     model="full_human",
     working_directory=None,
     copy_videos=False,
-    videotype=None,
+    videotype="",
     analyzevideo=True,
     filtered=True,
     createlabeledvideo=True,

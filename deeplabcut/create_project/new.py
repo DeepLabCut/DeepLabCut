@@ -22,7 +22,7 @@ def create_new_project(
     videos,
     working_directory=None,
     copy_videos=False,
-    videotype=".avi",
+    videotype="",
     multianimal=False,
 ):
     """Creates a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with the default values. Change its parameters to your projects need.
@@ -107,7 +107,7 @@ def create_new_project(
         # Check if it is a folder
         if os.path.isdir(i):
             vids_in_dir = [
-                os.path.join(i, vp) for vp in os.listdir(i) if videotype in vp
+                os.path.join(i, vp) for vp in os.listdir(i) if vp.endswith(videotype)
             ]
             vids = vids + vids_in_dir
             if len(vids_in_dir) == 0:

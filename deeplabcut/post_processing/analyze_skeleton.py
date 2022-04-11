@@ -169,7 +169,7 @@ def analyzebone(bp1, bp2):
 def analyzeskeleton(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     filtered=False,

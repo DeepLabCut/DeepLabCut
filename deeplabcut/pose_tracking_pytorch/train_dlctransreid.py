@@ -12,6 +12,7 @@ import torch
 import numpy as np
 import os
 import glob
+from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
 from .config import cfg
 from .datasets import make_dlc_dataloader
@@ -61,7 +62,7 @@ def train_tracking_transformer(
     path_config_file,
     dlcscorer,
     videos,
-    videotype="avi",
+    videotype="",
     train_frac=0.8,
     modelprefix="",
     train_epochs=100,
@@ -69,7 +70,7 @@ def train_tracking_transformer(
     ckpt_folder="",
 ):
     npy_list = []
-    #TODO: use Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     for video in videos:
         videofolder = str(Path(video).parents[0])
         video_name = Path(video).stem

@@ -67,7 +67,7 @@ def columnwise_spline_interp(data, max_gap=0):
 def filterpredictions(
     config,
     video,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     filtertype="median",

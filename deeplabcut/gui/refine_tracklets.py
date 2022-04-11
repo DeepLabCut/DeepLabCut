@@ -17,6 +17,7 @@ import wx
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
 from deeplabcut.gui import LOGO_PATH
 from pathlib import Path
@@ -96,9 +97,8 @@ class Refine_tracklets(wx.Panel):
         hbox_ = wx.BoxSizer(wx.HORIZONTAL)
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
+        self.videotype = wx.ComboBox(self, choices=("",) + SUPPORTED_VIDEOS, style=wx.CB_READONLY)
+        self.videotype.SetValue("")
         videotype_text_boxsizer.Add(
             self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
         )

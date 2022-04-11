@@ -60,7 +60,7 @@ def create_labeled_video_3d(
     start=0,
     end=None,
     trailpoints=0,
-    videotype="avi",
+    videotype="",
     view=(-113, -270),
     xlim=None,
     ylim=None,
@@ -95,7 +95,8 @@ def create_labeled_video_3d(
         Number of revious frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input is a directory.\nOnly videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     view: list
         A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view

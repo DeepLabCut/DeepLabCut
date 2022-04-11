@@ -12,7 +12,7 @@ Licensed under GNU Lesser General Public License v3.0
 def transformer_reID(
     config,
     videos,
-    videotype=".mp4",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     track_method="ellipse",
@@ -43,8 +43,9 @@ def transformer_reID(
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
-    videotype: (optional) str
-        extension for the video file
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional
         which shuffle to use
