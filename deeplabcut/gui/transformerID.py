@@ -163,7 +163,7 @@ class TransformerID(wx.Panel):
         filepath = "help.txt"
         f = open(filepath, "w")
         sys.stdout = f
-        fnc_name = "deeplabcut.transformer_reID"
+        fnc_name = "deeplabcut.pose_tracking_pytorch.transformer_reID"
         pydoc.help(fnc_name)
         f.close()
         sys.stdout = sys.__stdout__
