@@ -145,7 +145,7 @@ class TransformerID(wx.Panel):
 
         self.ok = wx.Button(self, label="Run Transformer")
         self.sizer.Add(self.ok, pos=(6, 4))
-        self.ok.Bind(wx.EVT_BUTTON, self.transformer_reID)
+        self.ok.Bind(wx.EVT_BUTTON, self.run_transformer_reID)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(
@@ -191,8 +191,10 @@ class TransformerID(wx.Panel):
             self.filelist = self.filelist + self.vids
             self.sel_vids.SetLabel("Total %s Videos selected" % len(self.filelist))
 
-    def transformer_reID(self, event):
-        deeplabcut.transformer_reID(
+    def run_transformer_reID(self, event):
+        from deeplabcut.pose_tracking_pytorch import transformer_reID
+
+        transformer_reID(
             config=self.config,
             videos=self.filelist,
             videotype=self.videotype.GetValue(),
