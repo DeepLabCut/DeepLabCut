@@ -485,7 +485,7 @@ def create_labeled_video(
         skeleton_color = None
 
     start_path = os.getcwd()
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     if not Videos:
         return
@@ -882,7 +882,7 @@ def create_video_with_all_detections(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
     )
 
-    videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if not videos:
         return
 

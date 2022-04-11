@@ -319,8 +319,10 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def Getlistofvideos(videos: typing.Union[typing.List[str], str],
-                    videotype: typing.Optional[str] = None) -> typing.List[str]:
+def get_list_of_videos(
+    videos: typing.Union[typing.List[str], str],
+    videotype: typing.Optional[str] = None
+) -> typing.List[str]:
     """ Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
 

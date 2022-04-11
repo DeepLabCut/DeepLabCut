@@ -303,7 +303,7 @@ def extract_outlier_frames(
         modelprefix=modelprefix,
     )
 
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 

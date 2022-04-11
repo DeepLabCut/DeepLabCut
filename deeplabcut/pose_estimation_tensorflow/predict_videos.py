@@ -213,7 +213,7 @@ def create_tracking_dataset(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             for video in Videos:
@@ -544,7 +544,7 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
@@ -1657,7 +1657,7 @@ def convert_detections2tracklets(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if len(Videos) > 0:
         for video in Videos:
             print("Processing... ", video)

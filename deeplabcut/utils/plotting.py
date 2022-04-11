@@ -245,7 +245,7 @@ def plot_trajectories(
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if not len(Videos):
         print(
             "No videos found. Make sure you passed a list of videos and that *videotype* is right."

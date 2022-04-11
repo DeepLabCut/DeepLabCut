@@ -160,7 +160,7 @@ def filterpredictions(
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
     )
-    Videos = auxiliaryfunctions.Getlistofvideos(video, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
 
     if not len(Videos):
         print("No video(s) were found. Please check your paths and/or 'videotype'.")
