@@ -1,0 +1,93 @@
+[
+  {
+    "benchmark": "trimouse",
+    "method": "DLCRNet_ms5 (30K)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "trimouse",
+    "method": "EfficientNet B7 (30K)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "trimouse",
+    "method": "ResNet50 (30K)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "parenting",
+    "method": "DLCRNet_ms5 (30k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "parenting",
+    "method": "EfficientNet B7 (30k) ",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "parenting",
+    "method": "EfficientNet B7_s4 (30k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "marmosets",
+    "method": "DLCRNet_ms5 (200k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "marmosets",
+    "method": "DLCRNet_ms5_s4 (200k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "marmosets",
+    "method": "EfficientNet B7 (200k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "marmosets",
+    "method": "EfficientNet B7_s4 (200k) ",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "fish",
+    "method": "DLCRNet_ms5 (30k)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "fish",
+    "method": "EfficientNet B7 (30K)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  },
+  {
+    "benchmark": "fish",
+    "method": "ResNet50 (30K)",
+    "version": "2.2.1",
+    "RMSE": NaN,
+    "mAP": NaN
+  }
+]

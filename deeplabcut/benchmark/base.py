@@ -1,3 +1,11 @@
+# DeepLabCut2.0 Toolbox (deeplabcut.org)
+# © A. & M. Mathis Labs
+# https://github.com/AlexEMG/DeepLabCut
+# Please see AUTHORS for contributors.
+#
+# https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+# Licensed under GNU Lesser General Public License v3.0
+
 """Base classes for benchmark and result definition
 
 Benchmarks subclass the abstract ``Benchmark`` class and are defined by ``name``, their
@@ -11,6 +19,7 @@ Note for contributors:
 If you decide to contribute a benchmark which does not fit into this evaluation framework,
 please feel free to extend the base classes (e.g. to support additional metrics).
 """
+
 import abc
 import dataclasses
 import os
@@ -20,7 +29,7 @@ from typing import Tuple
 
 import pandas as pd
 
-import benchmark.metrics
+import deeplabcut.benchmark.metrics
 
 
 class BenchmarkEvaluationError(RuntimeError):
@@ -58,12 +67,12 @@ class Benchmark(abc.ABC):
                 )
 
     def compute_pose_rmse(self, results_objects):
-        return benchmark.metrics.calc_rmse_from_obj(
+        return deeplabcut.benchmark.metrics.calc_rmse_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 
     def compute_pose_map(self, results_objects):
-        return benchmark.metrics.calc_map_from_obj(
+        return deeplabcut.benchmark.metrics.calc_map_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 
@@ -114,7 +123,7 @@ class Result:
     benchmark_name: str
     root_mean_squared_error: float = float("nan")
     mean_avg_precision: float = float("nan")
-    benchmark_version: str = benchmark.__version__
+    benchmark_version: str = deeplabcut.__version__
 
     _export_mapping = dict(
         benchmark_name="benchmark",

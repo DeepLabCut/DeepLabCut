@@ -7,23 +7,109 @@ MOCK_MODULES = ["statsmodels", "statsmodels.api", "pytables"]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = unittest.mock.MagicMock()
 
-import numpy as np
-import pandas as pd
+import os
 import pickle
 from collections import defaultdict
 
-try:
-    from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-    from deeplabcut.pose_estimation_tensorflow.core import evaluate_multianimal
-except (ImportError, ModuleNotFoundError) as e:
-    import warnings
+import numpy as np
+import pandas as pd
 
-    warnings.warn(
-        "Did not find DeepLabCut. You will be able to use and extend the benchmark, "
-        "but it will not be possible to run evaluations."
+import deeplabcut.benchmark.utils
+from deeplabcut.pose_estimation_tensorflow.core import evaluate_multianimal
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
+
+
+def _format_gt_data(h5file):
+    df = pd.read_hdf(h5file)
+
+    def _get_unique_level_values(header, level):
+        return header.get_level_values(level).unique().to_list()
+
+    animals = _get_unique_level_values(df.columns, "individuals")
+    kpts = _get_unique_level_values(df.columns, "bodyparts")
+    try:
+        n_unique = len(
+            _get_unique_level_values(
+                df.xs("single", level="individuals", axis=1).columns, "bodyparts"
+            )
+        )
+    except KeyError:
+        n_unique = 0
+    guarantee_multiindex_rows(df)
+    file_paths = [os.path.join(*row) for row in df.index.to_list()]
+    temp = (
+        df.stack("individuals", dropna=False)
+        .reindex(animals, level="individuals")
+        .reindex(kpts, level="bodyparts", axis=1)
     )
+    data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
+    meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
+    return {
+        "annotations": dict(zip(file_paths, data)),
+        "metadata": meta,
+    }
 
-import benchmark.utils
+
+def calc_prediction_errors(preds, gt):
+    kpts_gt = gt["metadata"]["keypoints"]
+    kpts_pred = preds["metadata"]["keypoints"]
+    map_ = {kpts_gt.index(kpt): i for i, kpt in enumerate(kpts_pred)}
+    annot = gt["annotations"]
+
+    # Map image paths from predicted data to GT as the first are typically
+    # absolute whereas the latter are relative to the project path.
+    def _map(strings, substrings):
+        lookup = dict()
+        strings_ = strings.copy()
+        substrings_ = substrings.copy()
+        while strings_:
+            string = strings_.pop()
+            for s in substrings_:
+                if string.endswith(s):
+                    lookup[string] = s
+                    substrings_.remove(s)
+                    break
+        return lookup
+
+    map_images = _map(list(preds["predictions"]), list(annot))
+
+    errors = np.full(
+        (
+            len(preds["predictions"]),
+            len(gt["metadata"]["animals"]),
+            len(kpts_gt),
+            2,  # Hold distance to GT and confidence
+        ),
+        np.nan,
+    )
+    for n, (path, preds_) in enumerate(preds["predictions"].items()):
+        if not preds_:
+            continue
+        xy_gt = annot[map_images[path]].swapaxes(0, 1)
+        xy_pred = preds_["coordinates"][0]
+        conf_pred = preds_["confidence"]
+        for i, xy_gt_ in enumerate(xy_gt):
+            visible = np.flatnonzero(np.all(~np.isnan(xy_gt_), axis=1))
+            xy_pred_ = xy_pred[map_[i]]
+            if visible.size and xy_pred_.size:
+                # Pick the predictions closest to ground truth,
+                # rather than the ones the model has most confident in.
+                neighbors = evaluate_multianimal._find_closest_neighbors(
+                    xy_gt_[visible], xy_pred_, k=3
+                )
+                found = neighbors != -1
+                if ~np.any(found):
+                    continue
+                min_dists = np.linalg.norm(
+                    xy_gt_[visible][found] - xy_pred_[neighbors[found]],
+                    axis=1,
+                )
+                conf_pred_ = conf_pred[map_[i]]
+                errors[n, visible[found], i, 0] = min_dists
+                errors[n, visible[found], i, 1] = conf_pred_[neighbors[found], 0]
+    return errors
 
 
 def conv_obj_to_assemblies(eval_results_obj, keypoint_names):
@@ -31,18 +117,13 @@ def conv_obj_to_assemblies(eval_results_obj, keypoint_names):
     assemblies = {}
     for image_path, results in eval_results_obj.items():
         lst = []
-        for dict_ in results:
+        for pose in results:
             ass = inferenceutils.Assembly(len(keypoint_names))
             for i, kpt in enumerate(keypoint_names):
-                xy = dict_["pose"][kpt]
-                if ~np.isnan(xy).all():
-                    joint = inferenceutils.Joint(pos=(xy), label=i)
-                    ass.add_joint(joint)
-            # TODO(jeylau) add affinity.setter to Assembly
-            ass._affinity = dict_["score"]
-            ass._links = [None]
-            if len(ass):
-                lst.append(ass)
+                xy = pose[kpt]
+                joint = inferenceutils.Joint(pos=(xy), label=i)
+                ass.add_joint(joint)
+            lst.append(ass)
         assemblies[image_path] = lst
     return assemblies
 
@@ -110,7 +191,7 @@ def calc_rmse_from_obj(
     drop_kpts=None,
 ):
     """Calc prediction errors for submissions."""
-    gt = evaluate_multianimal._format_gt_data(h5_file)
+    gt = _format_gt_data(h5_file)
     kpts = gt["metadata"]["keypoints"]
     if drop_kpts:
         for k, v in gt["annotations"].items():
@@ -135,5 +216,5 @@ def calc_rmse_from_obj(
             }
             preds["predictions"][image] = temp
     with benchmark.utils.DisableOutput():
-        errors = evaluate_multianimal.calc_prediction_errors(preds, gt)
+        errors = calc_prediction_errors(preds, gt)
     return np.nanmean(errors[..., 0])

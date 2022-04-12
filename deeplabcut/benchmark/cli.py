@@ -22,14 +22,14 @@ def main():
     """Main CLI entry point for generating benchmark results."""
     args = _parse_args()
     if not args.nocache:
-        results = benchmark.loadcache()
+        results = deeplabcut.benchmark.loadcache()
     else:
         results = None
-    results = benchmark.evaluate(
+    results = deeplabcut.benchmark.evaluate(
         include_benchmarks=args.include,
         results=results,
         on_error=args.onerror,
     )
     if not args.nocache:
-        benchmark.savecache(results)
+        deeplabcut.benchmark.savecache(results)
     print(results.toframe())
