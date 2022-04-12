@@ -11,6 +11,7 @@ import numpy as np
 import os
 import pickle
 import shelve
+from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from deeplabcut.refine_training_dataset.stitch import TrackletStitcher
 from pathlib import Path
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
@@ -74,7 +75,7 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
     save_train_triplets(feature_fname, triplets, out_name)
 
 
-def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000):
+def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000, destfolder=None):
 
     # 1) reference to video folder and get the proper bpt_feature file for feature table
     # 2) get either the path to gt or the path to track pickle
@@ -82,19 +83,15 @@ def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000):
     for video in videos:
         vname = Path(video).stem
         videofolder = str(Path(video).parents[0])
+        if destfolder is None:
+            destfolder = videofolder
         feature_fname = os.path.join(
-            videofolder, vname + dlcscorer + "_bpt_features.pickle"
+            destfolder, vname + dlcscorer + "_bpt_features.pickle"
         )
 
-        if track_method == "ellipse":
-            method = "el"
-        elif track_method == "box":
-            method = "bx"
-        else:
-            raise ValueError(f"{track_method} is not supported here")
-
-        track_file = os.path.join(videofolder, vname + dlcscorer + f"_{method}.pickle")
-        out_fname = os.path.join(videofolder, vname + dlcscorer + "_triplet_vector.npy")
+        method = trackingutils.TRACK_METHODS[track_method]
+        track_file = os.path.join(destfolder, vname + dlcscorer + f"{method}.pickle")
+        out_fname = os.path.join(destfolder, vname + dlcscorer + "_triplet_vector.npy")
         create_train_using_pickle(
             feature_fname, track_file, out_fname, n_triplets=n_triplets
         )

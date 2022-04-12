@@ -225,7 +225,6 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         "mp4",
-        output_name=os.path.splitext(new_video_path)[0] + scorer + "_el.h5",
         track_method=TESTTRACKER,
         transformer_checkpoint=transformer_checkpoint,
     )
@@ -243,7 +242,7 @@ if __name__ == "__main__":
         "mp4",
         save_frames=False,
         color_by="individual",
-        track_method=TESTTRACKER,
+        track_method="transformer",
     )
     print("Labeled video created.")
 
@@ -315,7 +314,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         shuffle=3,
-        videotype = 'mp4',
+        videotype='mp4',
         save_as_csv=True,
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
@@ -337,6 +336,7 @@ if __name__ == "__main__":
         track_method=TESTTRACKER,
         train_epochs=10,
         n_triplets=10,
+        destfolder=DESTFOLDER,
     )
 
     print('CREATING LABELED VIDEOS (FOR ELLIPSE AND TRANSFORMER)...')
@@ -347,6 +347,7 @@ if __name__ == "__main__":
         videotype = 'mp4',
         shuffle=3,
         track_method="ellipse",
+        destfolder=DESTFOLDER,
     )
 
     deeplabcut.create_labeled_video(
@@ -355,6 +356,7 @@ if __name__ == "__main__":
         videotype = 'mp4',
         shuffle=3,
         track_method="transformer",
+        destfolder=DESTFOLDER,
     )
 
 

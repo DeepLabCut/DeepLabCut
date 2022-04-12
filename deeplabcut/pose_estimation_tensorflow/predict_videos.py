@@ -235,7 +235,7 @@ def create_tracking_dataset(
             sess.close()
             tf.keras.backend.clear_session()
             create_triplets_dataset(
-                Videos, DLCscorer, track_method, n_triplets=n_triplets
+                Videos, DLCscorer, track_method, n_triplets=n_triplets, destfolder=destfolder,
             )
 
         else:

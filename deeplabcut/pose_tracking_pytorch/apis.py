@@ -21,6 +21,7 @@ def transformer_reID(
     train_epochs=100,
     train_frac = 0.8,
     modelprefix="",
+    destfolder=None,
 ):
 
     """
@@ -102,6 +103,7 @@ def transformer_reID(
         trainingsetindex=trainingsetindex,
         modelprefix=modelprefix,
         n_triplets=n_triplets,
+        destfolder=destfolder,
     )
 
     (
@@ -124,6 +126,7 @@ def transformer_reID(
         modelprefix=modelprefix,
         train_epochs=train_epochs,
         ckpt_folder=snapshotfolder,
+        destfolder=destfolder,
     )
 
     transformer_checkpoint = os.path.join(
@@ -143,4 +146,5 @@ def transformer_reID(
         modelprefix=modelprefix,
         n_tracks=n_tracks,
         transformer_checkpoint=transformer_checkpoint,
+        destfolder=destfolder,
     )
