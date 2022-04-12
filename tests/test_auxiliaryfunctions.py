@@ -17,11 +17,9 @@ def test_get_list_of_videos(tmpdir_factory):
         path = _create_fake_file(f"fake.{ext}")
         fake_videos.append(path)
     
-    #add some other office files:
-    path = _create_fake_file(f"fake.{xls}")
-    fake_videos.append(path)
-    path = _create_fake_file(f"fake.{pptx}")
-    fake_videos.append(path)
+    # Add some other office files:
+    path = _create_fake_file("fake.xls")
+    path = _create_fake_file("fake.pptx")
         
     # Add a .pickle and .h5 files
     _ = _create_fake_file("fake.pickle")
