@@ -233,7 +233,7 @@ class Evaluate_network(wx.Panel):
         trainFraction = cfg["TrainingFraction"]
         self.inf_cfg_path = os.path.join(
             cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction[-1], self.shuffles.GetValue(), cfg
             ),
             "test",

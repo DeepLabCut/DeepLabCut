@@ -120,7 +120,7 @@ def extract_maps(
         modelfolder = os.path.join(
             cfg["project_path"],
             str(
-                auxiliaryfunctions.GetModelFolder(
+                auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg, modelprefix=modelprefix
                 )
             ),
@@ -150,7 +150,7 @@ def extract_maps(
         evaluationfolder = os.path.join(
             cfg["project_path"],
             str(
-                auxiliaryfunctions.GetEvaluationFolder(
+                auxiliaryfunctions.get_evaluation_folder(
                     trainFraction, shuffle, cfg, modelprefix=modelprefix
                 )
             ),
@@ -419,7 +419,7 @@ def extract_save_all_maps(
     from deeplabcut.utils.auxiliaryfunctions import (
         read_config,
         attempttomakefolder,
-        GetEvaluationFolder,
+        get_evaluation_folder,
         IntersectionofBodyPartsandOnesGivenbyUser,
     )
     from tqdm import tqdm
@@ -438,7 +438,7 @@ def extract_save_all_maps(
         if not dest_folder:
             dest_folder = os.path.join(
                 cfg["project_path"],
-                str(GetEvaluationFolder(frac, shuffle, cfg, modelprefix=modelprefix)),
+                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix)),
                 "maps",
             )
         attempttomakefolder(dest_folder)

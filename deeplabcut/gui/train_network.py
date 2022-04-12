@@ -247,10 +247,10 @@ class Train_network(wx.Panel):
         cfg = auxiliaryfunctions.read_config(self.config)
         trainFraction = cfg["TrainingFraction"]
         #print(trainFraction[-1])
-        #        print(os.path.join(cfg['project_path'],auxiliaryfunctions.GetModelFolder(trainFraction, self.shuffles.GetValue(),cfg),'train','pose_cfg.yaml'))
+        #        print(os.path.join(cfg['project_path'],auxiliaryfunctions.get_model_folder(trainFraction, self.shuffles.GetValue(),cfg),'train','pose_cfg.yaml'))
         self.pose_cfg_path = os.path.join(
             cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction[-1], self.shuffles.GetValue(), cfg
             ),
             "train",

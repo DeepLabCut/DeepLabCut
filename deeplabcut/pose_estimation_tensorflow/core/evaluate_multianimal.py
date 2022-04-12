@@ -175,7 +175,7 @@ def evaluate_multianimal_full(
             modelfolder = os.path.join(
                 cfg["project_path"],
                 str(
-                    auxiliaryfunctions.GetModelFolder(
+                    auxiliaryfunctions.get_model_folder(
                         trainFraction, shuffle, cfg, modelprefix=modelprefix
                     )
                 ),
@@ -218,7 +218,7 @@ def evaluate_multianimal_full(
             evaluationfolder = os.path.join(
                 cfg["project_path"],
                 str(
-                    auxiliaryfunctions.GetEvaluationFolder(
+                    auxiliaryfunctions.get_evaluation_folder(
                         trainFraction, shuffle, cfg, modelprefix=modelprefix
                     )
                 ),

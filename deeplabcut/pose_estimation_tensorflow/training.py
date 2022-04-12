@@ -30,7 +30,7 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
     from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
-    modelfoldername = auxiliaryfunctions.GetModelFolder(
+    modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
     trainposeconfigfile = Path(
@@ -130,7 +130,7 @@ def train_network(
 
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
-    modelfoldername = auxiliaryfunctions.GetModelFolder(
+    modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
     poseconfigfile = Path(

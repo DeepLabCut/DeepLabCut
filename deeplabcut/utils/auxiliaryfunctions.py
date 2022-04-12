@@ -469,7 +469,7 @@ def GetDataandMetaDataFilenames(trainingsetfolder, trainFraction, shuffle, cfg):
     return datafn, metadatafn
 
 
-def GetModelFolder(trainFraction, shuffle, cfg, modelprefix=""):
+def get_model_folder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
@@ -486,7 +486,7 @@ def GetModelFolder(trainFraction, shuffle, cfg, modelprefix=""):
     )
 
 
-def GetEvaluationFolder(trainFraction, shuffle, cfg, modelprefix=""):
+def get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
@@ -569,7 +569,7 @@ def GetScorerName(
 
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(GetModelFolder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+            str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
             "train",
         )
         Snapshots = np.array(
@@ -583,7 +583,7 @@ def GetScorerName(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(GetModelFolder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+            str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
             "train",
             "pose_cfg.yaml",
         )
