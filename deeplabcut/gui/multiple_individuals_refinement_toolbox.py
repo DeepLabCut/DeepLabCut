@@ -31,7 +31,11 @@ from skimage import io
 
 from deeplabcut.gui import auxfun_drag
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, visualization
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    visualization,
+    conversioncode,
+)
 
 
 # ###########################################################################
@@ -55,7 +59,7 @@ class ImagePanel(BasePanel):
                     + "/"
                     + str(len(index) - 1)
                     + " "
-                    + str(Path(index[itr]).stem)
+                    + str(Path(*index[itr]).stem)
                     + " "
                     + " Threshold chosen is: "
                     + str("{0:.2f}".format(threshold))
@@ -68,7 +72,7 @@ class ImagePanel(BasePanel):
                     + "/"
                     + str(len(index) - 1)
                     + " "
-                    + str(Path(index[itr]).stem)
+                    + str(Path(*index[itr]).stem)
                 )
             )
         if keep_view:
@@ -136,13 +140,13 @@ class ScrollPanel(SP.ScrolledPanel):
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent, config):
+    def __init__(self, parent, config, jump_unlabeled):
         super(MainFrame, self).__init__("DeepLabCut - Refinement ToolBox", parent)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
-
+        self.jump_unlabeled = jump_unlabeled
         ###################################################################################################################################################
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
@@ -234,6 +238,7 @@ class MainFrame(BaseFrame):
         self.file = 0
         self.updatedCoords = []
         self.drs = []
+        self.config_file = config
         self.cfg = auxiliaryfunctions.read_config(config)
         self.humanscorer = self.cfg["scorer"]
         self.move2corner = self.cfg["move2corner"]
@@ -313,7 +318,7 @@ class MainFrame(BaseFrame):
         MainFrame.updateZoomPan(self)
         self.updatedCoords = []
 
-        img_name = Path(self.index[self.iter]).name
+        img_name = Path(*self.index[self.iter]).name
         #        self.axes.clear()
         self.figure.delaxes(self.figure.axes[1])
         (
@@ -344,7 +349,12 @@ class MainFrame(BaseFrame):
 
         fname = str("machinelabels-iter" + str(self.iterationindex) + ".h5")
         self.statusbar.SetStatusText("Looking for a folder to start refining...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
+        if self.jump_unlabeled:
+            cwd = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                self.config_file
+            ))
+        else:
+            cwd = os.path.join(os.getcwd(), "labeled-data")
         #        dlg = wx.FileDialog(self, "Choose the machinelabels file for current iteration.",cwd, "",wildcard=fname,style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if platform.system() == "Darwin":
             dlg = wx.FileDialog(
@@ -400,12 +410,11 @@ class MainFrame(BaseFrame):
             # Overwrite the config-defined individual names
             # with those actually present in the annotated data
             self.individual_names = (
-                self.Dataframe
-                    .columns
-                    .get_level_values("individuals")
-                    .unique()
-                    .to_list()
+                self.Dataframe.columns.get_level_values("individuals")
+                .unique()
+                .to_list()
             )
+            conversioncode.guarantee_multiindex_rows(self.Dataframe)
             self.Dataframe.sort_index(inplace=True)
             self.scorer = self.Dataframe.columns.get_level_values(0)[0]
 
@@ -416,7 +425,7 @@ class MainFrame(BaseFrame):
             self.index = list(self.Dataframe.iloc[:, 0].index)
             # Reading images
 
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
             self.norm, self.colorIndex = self.image_panel.getColorIndices(
                 self.img, self.bodyparts
@@ -483,7 +492,7 @@ class MainFrame(BaseFrame):
                 textBox.ShowModal()
                 self.threshold = float(textBox.GetValue())
                 textBox.Destroy()
-                self.img = os.path.join(self.project_path, self.index[self.iter])
+                self.img = os.path.join(self.project_path, *self.index[self.iter])
                 img_name = Path(self.img).name
                 self.axes.clear()
                 self.preview = False
@@ -569,7 +578,7 @@ class MainFrame(BaseFrame):
 
         if len(self.index) > self.iter:
             self.updatedCoords = []
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
 
             # Plotting
@@ -624,7 +633,7 @@ class MainFrame(BaseFrame):
                     self.index = list(self.Dataframe.iloc[:, 0].index)
                 self.iter = self.iter - 1
 
-                self.img = os.path.join(self.project_path, self.index[self.iter])
+                self.img = os.path.join(self.project_path, *self.index[self.iter])
                 img_name = Path(self.img).name
 
                 (
@@ -673,7 +682,7 @@ class MainFrame(BaseFrame):
         if self.iter >= 0:
             self.updatedCoords = []
             # Reading Image
-            self.img = os.path.join(self.project_path, self.index[self.iter])
+            self.img = os.path.join(self.project_path, *self.index[self.iter])
             img_name = Path(self.img).name
 
             # Plotting
@@ -779,7 +788,7 @@ class MainFrame(BaseFrame):
     def check_labels(self):
         print("Checking labels if they are outside the image")
         for i in self.Dataframe.index:
-            image_name = os.path.join(self.project_path, i)
+            image_name = os.path.join(self.project_path, *i)
             im = PIL.Image.open(image_name)
             self.width, self.height = im.size
             for ind in self.individual_names:
@@ -1164,9 +1173,9 @@ class MainFrame(BaseFrame):
         self.figure.canvas.draw()
 
 
-def show(config):
+def show(config, jump_unlabeled=False):
     app = wx.App()
-    frame = MainFrame(None, config).Show()
+    frame = MainFrame(None, config, jump_unlabeled).Show()
     app.MainLoop()
 
 

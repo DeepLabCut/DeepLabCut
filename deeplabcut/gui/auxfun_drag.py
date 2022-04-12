@@ -144,7 +144,7 @@ class DraggablePoint:
 
     def on_hover(self, event):
         """
-        Annotate the lables and likelihood when the user hovers over the data points.
+        Annotate the labels and likelihood when the user hovers over the data points.
         """
         vis = self.annot.get_visible()
 

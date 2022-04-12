@@ -6,28 +6,30 @@ channels:
   - conda-forge
 dependencies:
   - ffmpeg
+  - imgaug=0.4.0
   - jupyter
-  - nb_conda
   - matplotlib
   - moviepy
-  - networkx
-  - numba
+  - nb_conda
+  - networkx>=2.6
+  - numba>=0.54.0
   - opencv
-  - imgaug=0.4.0
   - pandas>=1.0.1
   - patsy
   - Pillow>=7.1
   - pip
+  - pytables
+  # - pytables==3.7.0
   - python=3.7
   - pyyaml
-  - pytables
   - scikit-image>=0.17,<=0.18.1
   - scikit-learn
   - scipy>=1.4
   - statsmodels>=0.11
   - tensorflow>=2.0
-  - tensorpack
-  - tf_slim
+  - tensorpack==0.11
+  - tf_slim==1.1.0
   - tqdm
   - pip:
-    - git+https://github.com/esi-neuroscience/DeepLabCut.git#egg=deeplabcut
+    - numpy==1.18.5
+  #   - git+https://github.com/esi-neuroscience/DeepLabCut.git#egg=deeplabcut

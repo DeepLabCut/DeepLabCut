@@ -282,7 +282,7 @@ def evaluate_network(_, config, **kwargs):
 
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
-@click.argument("video", nargs=-1)
+@click.argument("videos", nargs=-1)
 @click.option(
     "-num",
     "--num_shuffles",
@@ -330,7 +330,7 @@ def analyze_videos(_, *args, **kwargs):
 
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
-@click.argument("video")
+@click.argument("videos")
 @click.option(
     "-num",
     "--num_shuffles",
@@ -458,7 +458,7 @@ def refine_labels(_, config):
 ###########################################################################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
-@click.argument("video", nargs=-1)
+@click.argument("videos", nargs=-1)
 @click.option(
     "-num",
     "--num_shuffles",
@@ -507,7 +507,7 @@ def create_labeled_video(_, *args, **kwargs):
 ###########################################################################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
-@click.argument("video", nargs=-1)
+@click.argument("videos", nargs=-1)
 @click.option(
     "-num",
     "--num_shuffles",

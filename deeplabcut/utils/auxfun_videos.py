@@ -8,6 +8,13 @@ Please see AUTHORS for contributors.
 https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
+#from deeplabcut.utils.auxfun_videos import imread
+#auxfun_videos.imread(image_path, mode="skimage")
+
+import skimage.color
+from skimage import io
+from skimage.util import img_as_ubyte
 import cv2
 import datetime
 import numpy as np
@@ -54,7 +61,9 @@ class VideoReader:
         while fr < numframes:
             success, frame = self.video.read()
             if not success or frame is None:
-                warnings.warn(f'Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file')
+                warnings.warn(
+                    f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file"
+                )
             fr += 1
 
     @property
@@ -301,9 +310,9 @@ class VideoWriter(VideoReader):
         x1, _, y1, _ = self.get_bbox()
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i \"{self.video_path}\" "
+            f'ffmpeg -n -i "{self.video_path}" '
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
-            f"-c:a copy \"{output_path}\""
+            f'-c:a copy "{output_path}"'
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -343,16 +352,26 @@ class VideoWriter(VideoReader):
             dest_folder = self.directory
         return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
 
-    
+
 def check_video_integrity(video_path):
     vid = VideoReader(video_path)
     vid.check_integrity()
     vid.check_integrity_robust()
 
-    
-# Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
-def imread(path, mode=None):
-    return cv2.imread(path)[..., ::-1]  # ~10% faster than using cv2.cvtColor
+def imread(image_path, mode="skimage"):
+    ''' Read image either with skimage or cv2.
+    Returns frame in uint with 3 color channels. '''
+    if mode == "skimage":
+        image = io.imread(image_path)
+        if image.ndim == 2 or image.shape[-1] == 1:
+            image = skimage.color.gray2rgb(image)
+        elif image.shape[-1] == 4:
+            image = skimage.color.rgba2rgb(image)
+
+        return img_as_ubyte(image)
+
+    elif mode=="cv2":
+        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121

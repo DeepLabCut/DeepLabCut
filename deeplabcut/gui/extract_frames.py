@@ -27,7 +27,7 @@ class Extract_frames(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
         # design the panel

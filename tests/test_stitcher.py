@@ -60,7 +60,7 @@ def test_tracklet(tracklet):
     assert tracklet.end == TRACKLET_START + TRACKLET_LEN - 1
     np.testing.assert_equal(
         tracklet.centroid,
-        np.full((TRACKLET_LEN, 2), np.arange(tracklet.data.shape[1]).mean())
+        np.full((TRACKLET_LEN, 2), np.arange(tracklet.data.shape[1]).mean()),
     )
     tracklet2 = Tracklet(tracklet.data, tracklet.inds + TRACKLET_LEN)
     assert tracklet not in tracklet2
@@ -80,9 +80,7 @@ def test_tracklet_default_identity(tracklet):
 
 @pytest.mark.parametrize("tracklet", make_fake_tracklets())
 def test_tracklet_data_access(tracklet):
-    np.testing.assert_equal(
-        tracklet.get_data_at(TRACKLET_START), tracklet.data[0]
-    )
+    np.testing.assert_equal(tracklet.get_data_at(TRACKLET_START), tracklet.data[0])
     tracklet.set_data_at(TRACKLET_START + 1, tracklet.data[0] * 2)
     np.testing.assert_equal(tracklet.data[1], tracklet.data[0] * 2)
     tracklet.del_data_at(TRACKLET_START + 1)
@@ -92,7 +90,7 @@ def test_tracklet_data_access(tracklet):
 
 @pytest.mark.parametrize(
     "tracklet, where, norm",
-    list(zip(make_fake_tracklets(), ("head", "tail"), (False, True)))
+    list(zip(make_fake_tracklets(), ("head", "tail"), (False, True))),
 )
 def test_tracklet_calc_velocity(tracklet, where, norm):
     _ = tracklet.calc_velocity(where, norm)
@@ -194,9 +192,7 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
 
 
 def test_stitcher_montblanc(real_tracklets_montblanc):
-    stitcher = TrackletStitcher.from_dict_of_dict(
-        real_tracklets_montblanc, n_tracks=3,
-    )
+    stitcher = TrackletStitcher.from_dict_of_dict(real_tracklets_montblanc, n_tracks=3,)
     assert len(stitcher) == 5
     assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
     assert all(tracklet.identity == -1 for tracklet in stitcher.tracklets)
@@ -214,7 +210,7 @@ def test_stitcher_montblanc(real_tracklets_montblanc):
     assert all(len(track) >= 176 for track in stitcher.tracks)
     assert all(0.996 <= track.likelihood <= 1 for track in stitcher.tracks)
 
-    df_gt = pd.read_hdf('tests/data/montblanc_tracks.h5')
+    df_gt = pd.read_hdf("tests/data/montblanc_tracks.h5")
     df = stitcher.format_df()
     np.testing.assert_equal(df.to_numpy(), df_gt.to_numpy())
 
@@ -235,7 +231,7 @@ def test_stitcher_with_identity(real_tracklets):
     assert len(stitcher) == 6
 
     stitcher.build_graph()
-    weight = stitcher.G.edges[('0out', '3in')]['weight']
+    weight = stitcher.G.edges[("0out", "3in")]["weight"]
 
     def weight_func(t1, t2):
         w = 0.01 if t1.identity == t2.identity else 1
@@ -243,7 +239,7 @@ def test_stitcher_with_identity(real_tracklets):
 
     stitcher.build_graph(weight_func=weight_func)
     assert stitcher.G.number_of_edges() == 27
-    new_weight = stitcher.G.edges[('0out', '3in')]['weight']
+    new_weight = stitcher.G.edges[("0out", "3in")]["weight"]
     assert new_weight == weight // 100
 
     stitcher.stitch()

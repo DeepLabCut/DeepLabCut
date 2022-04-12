@@ -28,9 +28,10 @@ class Create_training_dataset(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
+        self.cfg = auxiliaryfunctions.read_config(self.config)
         # design the panel
         self.sizer = wx.GridBagSizer(5, 5)
 
@@ -89,17 +90,16 @@ class Create_training_dataset(wx.Panel):
             "dlcrnet_ms5",
             "resnet_50",
             "resnet_101",
-            "resnet_152",
             "mobilenet_v2_1.0",
-            "mobilenet_v2_0.75",
-            "mobilenet_v2_0.5",
-            "mobilenet_v2_0.35",
             "efficientnet-b0",
-            "efficientnet-b3",
-            "efficientnet-b6",
         ]
         self.net_choice.Set(options)
-        self.net_choice.SetValue("dlcrnet_ms5")
+        
+        if self.cfg.get("multianimalproject", False):
+            self.net_choice.SetValue("dlcrnet_ms5")
+        else:
+            self.net_choice.SetValue("resnet_50")
+
         netboxsizer.Add(self.net_choice, 20, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
         aug_text = wx.StaticBox(self, label="Select the augmentation method")
@@ -120,12 +120,12 @@ class Create_training_dataset(wx.Panel):
         self.shuffle = wx.SpinCtrl(self, value="1", min=1, max=100)
         shuffle_text_boxsizer.Add(self.shuffle, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
 
-        trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
-        trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex_box, wx.VERTICAL)
-        self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
-        trainingindex_boxsizer.Add(
-            self.trainingindex, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
-        )
+        #trainingindex_box = wx.StaticBox(self, label="Specify the trainingset index")
+        #trainingindex_boxsizer = wx.StaticBoxSizer(trainingindex_box, wx.VERTICAL)
+        #self.trainingindex = wx.SpinCtrl(self, value="0", min=0, max=100)
+        #trainingindex_boxsizer.Add(
+        #    self.trainingindex, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10
+        #)
 
         self.userfeedback = wx.RadioBox(
             self,
@@ -137,9 +137,9 @@ class Create_training_dataset(wx.Panel):
         self.userfeedback.SetSelection(1)
 
         self.hbox2.Add(shuffle_text_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        #self.hbox2.Add(trainingindex_boxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
-        self.hbox3.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.hbox2.Add(self.userfeedback, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         if config_file.get("multianimalproject", False):
 
@@ -320,7 +320,7 @@ class Create_training_dataset(wx.Panel):
         """
         num_shuffles = self.shuffle.GetValue()
         config_file = auxiliaryfunctions.read_config(self.config)
-        trainindex = self.trainingindex.GetValue()
+        #trainindex = self.trainingindex.GetValue()
 
         if self.userfeedback.GetStringSelection() == "Yes":
             userfeedback = True
@@ -362,7 +362,7 @@ class Create_training_dataset(wx.Panel):
         self.sel_config.SetPath("")
         # self.shuffles.SetValue("1")
         self.net_choice.SetValue("resnet_50")
-        self.aug_choice.SetValue("default")
+        self.aug_choice.SetValue("imgaug")
         self.model_comparison_choice.SetSelection(1)
         self.network_box.Hide()
         self.networks_to_compare.Hide()

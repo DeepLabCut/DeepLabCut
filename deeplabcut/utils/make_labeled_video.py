@@ -21,10 +21,12 @@ import os.path
 from pathlib import Path
 from functools import partial
 from multiprocessing import Pool
+from typing import Iterable
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa
@@ -428,6 +430,11 @@ def create_labeled_video(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the same.
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
+
     Examples
     --------
     If you want to create the labeled video for only 1 video
@@ -453,6 +460,8 @@ def create_labeled_video(
 
     """
     cfg = auxiliaryfunctions.read_config(config)
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
@@ -646,38 +655,103 @@ def proc_video(
                 clip.close()
             else:
                 if displaycropped:  # then the cropped video + the labels is depicted
-                    clip = vp(
-                        fname=video,
-                        sname=videooutname,
-                        codec=codec,
-                        sw=x2 - x1,
-                        sh=y2 - y1,
-                        fps=outputframerate,
-                    )
+                    bbox = x1, x2, y1, y2
                 else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    clip = vp(fname=video, sname=videooutname, codec=codec, fps=outputframerate)
-                CreateVideo(
-                    clip,
-                    df,
-                    cfg["pcutoff"],
-                    cfg["dotsize"],
-                    cfg["colormap"],
-                    labeled_bpts,
-                    trailpoints,
-                    cropping,
-                    x1,
-                    x2,
-                    y1,
-                    y2,
-                    bodyparts2connect,
-                    skeleton_color,
-                    draw_skeleton,
-                    displaycropped,
-                    color_by,
+                    bbox = None
+                _create_labeled_video(
+                    video,
+                    filepath,
+                    keypoints2show=labeled_bpts,
+                    animals2show=individuals,
+                    bbox=bbox,
+                    codec=codec,
+                    output_path=videooutname,
+                    pcutoff=cfg["pcutoff"],
+                    dotsize=cfg["dotsize"],
+                    cmap=cfg["colormap"],
+                    color_by=color_by,
+                    skeleton_edges=bodyparts2connect,
+                    skeleton_color=skeleton_color,
+                    trailpoints=trailpoints,
+                    fps=outputframerate,
                 )
 
         except FileNotFoundError as e:
             print(e)
+
+
+def _create_labeled_video(
+    video,
+    h5file,
+    keypoints2show="all",
+    animals2show="all",
+    skeleton_edges=None,
+    pcutoff=0.6,
+    dotsize=8,
+    cmap="cool",
+    color_by="bodypart",
+    skeleton_color="k",
+    trailpoints=0,
+    bbox=None,
+    codec="mp4v",
+    fps=None,
+    output_path="",
+):
+    if color_by not in ("bodypart", "individual"):
+        raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
+
+    if not output_path:
+        s = "_id" if color_by == "individual" else "_bp"
+        output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
+    try:
+        x1, x2, y1, y2 = bbox
+        display_cropped = True
+        sw = x2 - x1
+        sh = y2 - y1
+    except TypeError:
+        x1 = x2 = y1 = y2 = 0
+        display_cropped = False
+        sw = ""
+        sh = ""
+
+    clip = vp(
+        fname=video,
+        sname=output_path,
+        codec=codec,
+        sw=sw,
+        sh=sh,
+        fps=fps,
+    )
+    df = pd.read_hdf(h5file)
+    try:
+        animals = df.columns.get_level_values("individuals").unique().to_list()
+        if animals2show != "all" and isinstance(animals, Iterable):
+            animals = [a for a in animals if a in animals2show]
+        df = df.loc(axis=1)[:, animals]
+    except KeyError:
+        pass
+    kpts = df.columns.get_level_values("bodyparts").unique().to_list()
+    if keypoints2show != "all" and isinstance(keypoints2show, Iterable):
+        kpts = [kpt for kpt in kpts if kpt in keypoints2show]
+    CreateVideo(
+        clip,
+        df,
+        pcutoff,
+        dotsize,
+        cmap,
+        kpts,
+        trailpoints,
+        False,
+        x1,
+        x2,
+        y1,
+        y2,
+        skeleton_edges,
+        skeleton_color,
+        bool(skeleton_edges),
+        display_cropped,
+        color_by,
+    )
 
 
 def create_video_with_keypoints_only(
@@ -831,8 +905,9 @@ def create_video_with_all_detections(
 
         if not (os.path.isfile(outputname)):
             print("Creating labeled video for ", str(Path(video).stem))
-            with open(full_pickle, "rb") as file:
-                data = pickle.load(file)
+            h5file = full_pickle.replace("_full.pickle", ".h5")
+            data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
@@ -860,6 +935,8 @@ def create_video_with_all_detections(
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
+                if frame is None:
+                    continue
                 try:
                     ind = frames.index(n)
                     dets = Assembler._flatten_detections(data[frame_names[ind]])

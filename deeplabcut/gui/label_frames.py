@@ -27,6 +27,7 @@ def label_frames(
     imtypes=["*.png"],
     config3d=None,
     sourceCam=None,
+    jump_unlabeled=False,
 ):
     """
     Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
@@ -73,11 +74,11 @@ def label_frames(
     if cfg.get("multianimalproject", False) or multiple_individualsGUI:
         from deeplabcut.gui import multiple_individuals_labeling_toolbox
 
-        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
+        multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam, jump_unlabeled)
     else:
         from deeplabcut.gui import labeling_toolbox
 
-        labeling_toolbox.show(config, config3d, sourceCam, imtypes=imtypes)
+        labeling_toolbox.show(config, config3d, sourceCam, imtypes, jump_unlabeled)
 
     os.chdir(startpath)
 
@@ -90,7 +91,7 @@ class Label_frames(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
         # design the panel
@@ -186,7 +187,7 @@ class Label_frames(wx.Panel):
     def check_labelF(self, event):
         dlg = wx.MessageDialog(
             None,
-            "This will now plot the labeled frames afer you have finished labeling!",
+            "This will now plot the labeled frames after you have finished labeling!",
         )
         result = dlg.ShowModal()
         check_labels(self.config, visualizeindividuals=False)
@@ -194,7 +195,7 @@ class Label_frames(wx.Panel):
     def check_labelInd(self, event):
         dlg = wx.MessageDialog(
             None,
-            "This will now plot the labeled frames afer you have finished labeling!",
+            "This will now plot the labeled frames after you have finished labeling!",
         )
         result = dlg.ShowModal()
         check_labels(self.config, visualizeindividuals=True)

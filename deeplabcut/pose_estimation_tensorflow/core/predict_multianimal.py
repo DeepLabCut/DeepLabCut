@@ -18,7 +18,7 @@ from scipy.ndimage import measurements
 
 
 def extract_cnn_output(outputs_np, cfg):
-    """ extract locref, scmap and partaffinityfield from network """
+    """extract locref, scmap and partaffinityfield from network"""
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
     if cfg["location_refinement"]:
@@ -39,7 +39,7 @@ def extract_cnn_output(outputs_np, cfg):
 
 
 def extract_cnn_outputmulti(outputs_np, cfg):
-    """ extract locref + scmap from network
+    """extract locref + scmap from network
     Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
     scmap = outputs_np[0]
     if cfg["location_refinement"]:
@@ -212,9 +212,7 @@ def predict_batched_peaks_and_costs(
     n_points=10,
     n_decimals=3,
 ):
-    scmaps, locrefs, *pafs, peaks = sess.run(
-        outputs, feed_dict={inputs: images_batch}
-    )
+    scmaps, locrefs, *pafs, peaks = sess.run(outputs, feed_dict={inputs: images_batch})
     if ~np.any(peaks):
         return []
 
@@ -267,7 +265,7 @@ def find_local_maxima(scmap, radius, threshold):
 
 
 def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
-    pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding='SAME')
+    pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding="SAME")
     maxima = scmaps * tf.cast(tf.equal(scmaps, pooled), tf.float32)
     return tf.cast(tf.where(maxima >= threshold), tf.int32)
 
@@ -282,7 +280,8 @@ def find_local_peak_indices_dilation(scmaps, radius, threshold):
     width = tf.shape(scmaps)[2]
     depth = tf.shape(scmaps)[3]
     scmaps_flat = tf.reshape(
-        tf.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
+        tf.transpose(scmaps, [0, 3, 1, 2]),
+        [-1, height, width, 1],
     )
     scmaps_dil = tf.nn.dilation2d(
         scmaps_flat,
@@ -292,7 +291,8 @@ def find_local_peak_indices_dilation(scmaps, radius, threshold):
         padding="SAME",
     )
     scmaps_dil = tf.transpose(
-        tf.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
+        tf.reshape(scmaps_dil, [-1, depth, height, width]),
+        [0, 2, 3, 1],
     )
     argmax_and_thresh_img = (scmaps > scmaps_dil) & (scmaps > threshold)
     return tf.cast(tf.where(argmax_and_thresh_img), tf.int32)

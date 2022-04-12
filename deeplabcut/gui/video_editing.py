@@ -33,7 +33,7 @@ class Video_Editing(wx.Panel):
     def __init__(self, parent, gui_size, cfg):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
-        # variable initilization
+        # variable initialization
         self.filelist = []
         self.config = cfg
 

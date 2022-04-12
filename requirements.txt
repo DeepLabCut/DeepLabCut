@@ -1,28 +1,22 @@
 ipython
 filterpy
-h5py
 ruamel.yaml>=0.15.0
 intel-openmp ; platform_machine == "x86_64"
 imgaug==0.4.0 ; platform_machine == "x86_64"
-jupyter-book>=0.7.0b
-numba
+numba>=0.54.0
 matplotlib
-networkx
-numpy
+networkx>=2.6
+numpy>=1.18.5
 opencv-python-headless ; platform_machine == "x86_64"
 pandas>=1.0.1
-patsy
 pyyaml
-setuptools
 scikit-image>=0.17,<=0.18.1
-scikit-learn
+scikit-learn>=1.0
 scipy>=1.4
-six
-statsmodels>=0.11
+statsmodels>=0.11,<=0.13.1
 tensorflow>=2.0
-tables<=3.6.1
-tensorpack
-tf_slim
+tables
+tensorpack==0.11
+tf_slim==1.1.0
 tqdm
-moviepy
 Pillow>=7.1

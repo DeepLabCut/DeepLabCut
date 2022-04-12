@@ -2,20 +2,23 @@
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](/docs/installation.md#technical-considerations)).
 
-The installation process is as easy as this figure!
+## PIP:
+
+- Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support) or without: `pip install deeplabcut`.
+
+- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
+
+## CONDA: The installation process is as easy as this figure! -->
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609805496320-48N5Y3NEBIVVNUIXPNBV/ke17ZwdGBToddI8pDm48kEPc72vD8ARkQNSjpzTzPRsUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8GRo6ASst2s6pLvNAu_PZdLjGeaj0GkoPWeOP-8DYHB5lK4wgKtPMRocsaeGU4PClrIJgRK3oXroL8Ygt-EThXU/Intall.png?format=750w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
-
-
- ## Step 1: You need to have Python >3.7 installed, and we highly recommend using Anaconda to do so.
+### Step 1: You need to have Python >3.7 installed, and we highly recommend using Anaconda to do so.
 
  ### Simply download the appropriate files here: https://www.anaconda.com/distribution/
 
 - Anaconda is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine.
 
-## Step 2: Easy install: please use our supplied Anaconda environments
+### Step 2: Easy install: please use our supplied Anaconda environments
 
 You first **need to decide if you want to use a CPU or GPU for your models**: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
 
@@ -23,9 +26,7 @@ You first **need to decide if you want to use a CPU or GPU for your models**: (N
 
   - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. **Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!**
 
-  - **DIY:** For the experts that want DLC in a different custom environment, it's also on pypi, simply `pip install 'deeplabcut[gui]'` (and have Tensorflow and wxPython also installed) for DeepLabCut + GUI.  Deeplabcut without the GUIs can be installed with `pip install deeplabcut`. See more Tips at the bottom as well.
-
-### CPU or GPU:
+- Next:
 
 (A) **Click [HERE](http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file!**
 (or you can grab from github: git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
@@ -57,6 +58,9 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed.](/docs#readme)
 
+## DOCKER:
+
+- We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page [here](https://deeplabcut.github.io/DeepLabCut/docs/docker.html).
 
 ### Pro Tips:
 
@@ -155,7 +159,7 @@ If you perform the system-wide installation, and the computer has other Python p
 
 - Computer:
 
-     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS** and for verions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (https://github.com/DeepLabCut/Docker4DeepLabCut2.0). Now we use the new Docker containers supplied on this repo, also available through [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) or the [`deeplabcut-docker`](https://pypi.org/project/deeplabcut-docker/) helper script.
+     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS** and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (https://github.com/DeepLabCut/Docker4DeepLabCut2.0). Now we use the new Docker containers supplied on this repo, also available through [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) or the [`deeplabcut-docker`](https://pypi.org/project/deeplabcut-docker/) helper script.
 
 - Computer Hardware:
      - Ideally, you will use a strong GPU with *at least* 8GB memory such as the [NVIDIA GeForce 1080 Ti or 2080 Ti](https://www.nvidia.com/en-us/shop/geforce/?page=1&limit=9&locale=en-us).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/DeepLabCut/DeepLabCut/issues/47) or Google Colaboratory.

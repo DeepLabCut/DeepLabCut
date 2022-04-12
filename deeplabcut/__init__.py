@@ -17,13 +17,7 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
 from deeplabcut import DEBUG
 
-# DLClight version does not support GUIs. Importing accordingly
-import matplotlib as mpl
-
 try:
-    import wx
-
-    mpl.use("WxAgg")
     from deeplabcut import generate_training_dataset
     from deeplabcut import refine_training_dataset
 
@@ -34,14 +28,10 @@ try:
     from deeplabcut.gui.tracklet_toolbox import refine_tracklets
 
     from deeplabcut.utils.skeleton import SkeletonBuilder
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     print(
         "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
     )
-    mpl.use(
-        "AGG"
-    )  # anti-grain geometry engine #https://matplotlib.org/faq/usage_faq.html
-
 
 from deeplabcut.create_project import (
     create_new_project,
@@ -67,6 +57,7 @@ from deeplabcut.generate_training_dataset import (
     dropimagesduetolackofannotation,
     adddatasetstovideolistandviceversa,
     dropduplicatesinannotatinfiles,
+    dropunlabeledframes
 )
 from deeplabcut.utils import (
     create_labeled_video,
@@ -75,8 +66,8 @@ from deeplabcut.utils import (
     auxiliaryfunctions,
     convert2_maDLC,
     convertcsv2h5,
-    convertannotationdata_fromwindows2unixstyle,
     analyze_videos_converth5_to_csv,
+    analyze_videos_converth5_to_nwb,
     auxfun_videos,
 )
 

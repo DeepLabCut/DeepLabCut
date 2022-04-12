@@ -21,7 +21,7 @@ from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
 
 
-def refine_labels(config, multianimal=False):
+def refine_labels(config, multianimal=False, jump_unlabeled=False):
     """
     Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
     Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
@@ -52,11 +52,11 @@ def refine_labels(config, multianimal=False):
     if not multianimal and not cfg.get("multianimalproject", False):
         from deeplabcut.gui import refinement
 
-        refinement.show(config)
+        refinement.show(config, jump_unlabeled)
     else:  # loading multianimal labeling GUI
         from deeplabcut.gui import multiple_individuals_refinement_toolbox
 
-        multiple_individuals_refinement_toolbox.show(config)
+        multiple_individuals_refinement_toolbox.show(config, jump_unlabeled)
 
     os.chdir(startpath)
 
@@ -69,7 +69,7 @@ class Refine_labels(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.method = "automatic"
         self.config = cfg
         self.page = page
