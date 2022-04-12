@@ -19,6 +19,7 @@ import deeplabcut
 from deeplabcut import utils
 
 from deeplabcut.gui import LOGO_PATH
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
 
 class TransformerID(wx.Panel):
@@ -90,9 +91,8 @@ class TransformerID(wx.Panel):
 
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
+        self.videotype = wx.ComboBox(self, choices=("",) + SUPPORTED_VIDEOS, style=wx.CB_READONLY)
+        self.videotype.SetValue("")
         videotype_text_boxsizer.Add(self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1)
 
         shuffles_text = wx.StaticBox(self, label="Specify the shuffle")
@@ -145,7 +145,7 @@ class TransformerID(wx.Panel):
 
         self.ok = wx.Button(self, label="Run Transformer")
         self.sizer.Add(self.ok, pos=(6, 4))
-        self.ok.Bind(wx.EVT_BUTTON, self.transformer_reID)
+        self.ok.Bind(wx.EVT_BUTTON, self.run_transformer_reID)
 
         self.reset = wx.Button(self, label="Reset")
         self.sizer.Add(
@@ -191,7 +191,7 @@ class TransformerID(wx.Panel):
             self.filelist = self.filelist + self.vids
             self.sel_vids.SetLabel("Total %s Videos selected" % len(self.filelist))
 
-    def transformer_reID(self, event):
+    def run_transformer_reID(self, event):
         deeplabcut.transformer_reID(
             config=self.config,
             videos=self.filelist,
@@ -207,7 +207,7 @@ class TransformerID(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
-        self.videotype.SetValue(".avi")
+        self.videotype.SetValue("")
         self.sel_vids.SetLabel("Select videos to analyze")
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)

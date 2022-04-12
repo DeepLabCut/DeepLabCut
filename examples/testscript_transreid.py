@@ -203,7 +203,7 @@ if __name__ == "__main__":
     train_epochs = 10
     train_frac = 0.8
 
-    print("Training transfomer")
+    print("Training transformer")
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
         config_path,
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     deeplabcut.transformer_reID(
         config_path,
         [new_video_path],
-        videotype = 'mp4',
+        videotype='mp4',
         shuffle=3,
         n_tracks=n_tracks,
         track_method=TESTTRACKER,

@@ -250,7 +250,6 @@ class Video_Editing(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
-        # self.videotype.SetStringSelection(".avi")
         self.sel_vids.SetLabel("Select videos")
         self.filelist = []
         self.rotate.SetSelection(1)
