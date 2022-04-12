@@ -19,7 +19,7 @@ def _create_horizontal_layout(
 ) -> QtWidgets.QHBoxLayout():
 
     layout = QtWidgets.QHBoxLayout()
-    layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+    layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
     layout.setContentsMargins(*margins)
 
@@ -31,7 +31,18 @@ def _create_vertical_layout(
 ) -> QtWidgets.QVBoxLayout():
 
     layout = QtWidgets.QVBoxLayout()
-    layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+    layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+    layout.setSpacing(spacing)
+    layout.setContentsMargins(*margins)
+
+    return layout
+
+def _create_grid_layout(
+    lignment=None, spacing: int = 20, margins: tuple = (0, 0, 0, 0)
+) -> QtWidgets.QGridLayout():
+
+    layout = QtWidgets.QGridLayout()
+    layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
     layout.setContentsMargins(*margins)
 
@@ -56,7 +67,9 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         filetype:str = None , 
         cwd:str = None, 
         single_file:bool =False, 
-        parent=None
+        parent=None,
+        dialog_text:str = None,
+        file_text:str = None,
         ):
         super(BrowseFilesButton, self).__init__(button_label)
         self.filetype = filetype
@@ -64,7 +77,11 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         self.cwd = cwd
         self.parent = parent
 
+        self.dialog_text = dialog_text
+        self.file_text = file_text
         self.clicked.connect(self.browse_files)
+
+
 
     def browse_files(self):
         # Look for any extension by default
@@ -82,13 +99,23 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         if self.cwd:
             cwd = self.cwd
         
+        dialog_text = f"Select .{file_ext} files"
+        if self.dialog_text:
+            dialog_text = self.dialog_text
+
+        file_text = f"Files (*.{file_ext})"
+        if self.file_text:
+            file_text = self.file_text
+        
         filepaths = open_file_func(
             self, 
-            f"Select .{file_ext} files",
+            dialog_text,
             cwd,
-            f"Files (*.{file_ext})"
+            file_text
             )
 
         if filepaths:
+            # NOTE: how to store and access widget property
             self.setProperty("files", filepaths[0])
-        
+            print(self.Property("files"))
+            
