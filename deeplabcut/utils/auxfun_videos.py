@@ -20,7 +20,9 @@ import subprocess
 import warnings
 
 
-SUPPORTED_VIDEOS = 'avi', 'mp4', 'mov', 'mpeg', 'mkv'
+# more videos are in principle covered, as OpenCV is used and allows many formats.
+SUPPORTED_VIDEOS = 'avi', 'mp4', 'mov', 'mpeg', 'mpg', 'mpv', 'mkv', 'flv', 'qt', 'yuv'
+
 
 
 class VideoReader:
