@@ -19,6 +19,7 @@ import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
+from deeplabcut.utils import auxfun_videos
 
 
 def create_config_template(multianimal=False):
@@ -319,8 +320,10 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def Getlistofvideos(videos: typing.Union[typing.List[str], str],
-                    videotype: typing.Optional[str] = None) -> typing.List[str]:
+def get_list_of_videos(
+    videos: typing.Union[typing.List[str], str],
+    videotype: typing.Union[typing.List[str], str] = ""
+) -> typing.List[str]:
     """ Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
 
@@ -332,19 +335,19 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
     Args:
         videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory,
             finds all videos whose extension matches  ``videotype`` in the directory
-        videotype (None, str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
-            but raises a ``ValueError`` if not provided if ``videos`` is a directory.
+
+        videotype (list[str], str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
+            and filters with common video extensions if a directory is passed in.
     """
     if isinstance(videos, str):
         videos = [videos]
-
 
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
         """
         Returns all the videos in the directory.
         """
-        if videotype is None:
-            raise ValueError('When given a directory of videos, must be given a videotype')
+        if not videotype:
+            videotype = auxfun_videos.SUPPORTED_VIDEOS
 
         from random import shuffle
 
@@ -356,17 +359,15 @@ def Getlistofvideos(videos: typing.Union[typing.List[str], str],
 
         shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
 
-    # if not given a videotype and given a list of files, use empty string
-    # ( 'file.mp4'.endswith('')  == True )
-    if videotype is None:
-        videotype = ''
+    if isinstance(videotype, str):
+        videotype = [videotype]
 
     # filter list of videos
     videos = [
         v
         for v in videos
         if os.path.isfile(v)
-        and v.endswith(videotype)
+        and any(v.endswith(ext) for ext in videotype)
         and "_labeled." not in v
         and "_full." not in v
     ]

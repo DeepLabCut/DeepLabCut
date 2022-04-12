@@ -169,7 +169,7 @@ def analyzebone(bp1, bp2):
 def analyzeskeleton(
     config,
     videos,
-    videotype="avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -224,7 +224,7 @@ def analyzeskeleton(
         modelprefix=modelprefix,
     )
 
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     for video in Videos:
         print("Processing %s" % (video))
         if destfolder is None:

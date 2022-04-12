@@ -27,7 +27,7 @@ matplotlib_axes_logger.setLevel("ERROR")
 def triangulate(
     config,
     video_path,
-    videotype="avi",
+    videotype="",
     filterpredictions=True,
     filtertype="median",
     gputouse=None,
@@ -50,8 +50,9 @@ def triangulate(
         i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+
 
     filterpredictions: Bool, optional
         Filter the predictions with filter specified by "filtertype". If specified it

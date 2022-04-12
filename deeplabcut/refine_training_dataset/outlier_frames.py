@@ -169,7 +169,7 @@ def find_outliers_in_raw_detections(
 def extract_outlier_frames(
     config,
     videos,
-    videotype=".avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
@@ -204,7 +204,8 @@ def extract_outlier_frames(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional
         The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
@@ -303,7 +304,7 @@ def extract_outlier_frames(
         modelprefix=modelprefix,
     )
 
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 

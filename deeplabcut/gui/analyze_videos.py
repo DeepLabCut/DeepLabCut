@@ -19,6 +19,7 @@ import webbrowser
 import deeplabcut
 import wx
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 from deeplabcut.gui import LOGO_PATH
 
 
@@ -106,9 +107,8 @@ class Analyze_videos(wx.Panel):
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
 
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
+        self.videotype = wx.ComboBox(self, choices=("",) + SUPPORTED_VIDEOS, style=wx.CB_READONLY)
+        self.videotype.SetValue("")
         videotype_text_boxsizer.Add(
             self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
         )
@@ -585,7 +585,6 @@ class Analyze_videos(wx.Panel):
             # self.select_destfolder.SetPath("None")
         #self.config = []
         #self.sel_config.SetPath("")
-        #self.videotype.SetStringSelection(".avi")
         self.sel_vids.SetLabel("Select videos to analyze")
         self.filelist = []
         self.shuffle.SetValue(1)

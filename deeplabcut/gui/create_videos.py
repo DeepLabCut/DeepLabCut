@@ -19,6 +19,7 @@ import deeplabcut
 
 from deeplabcut.gui import LOGO_PATH
 from deeplabcut.utils import auxiliaryfunctions, skeleton, auxfun_multianimal
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
 
 class Create_Labeled_Videos(wx.Panel):
@@ -94,9 +95,8 @@ class Create_Labeled_Videos(wx.Panel):
         videotype_text = wx.StaticBox(self, label="Specify the videotype")
         videotype_text_boxsizer = wx.StaticBoxSizer(videotype_text, wx.VERTICAL)
 
-        videotypes = [".avi", ".mp4", ".mov"]
-        self.videotype = wx.ComboBox(self, choices=videotypes, style=wx.CB_READONLY)
-        self.videotype.SetValue(".avi")
+        self.videotype = wx.ComboBox(self, choices=("",) + SUPPORTED_VIDEOS, style=wx.CB_READONLY)
+        self.videotype.SetValue("")
         videotype_text_boxsizer.Add(
             self.videotype, 1, wx.EXPAND | wx.TOP | wx.BOTTOM, 1
         )
@@ -388,7 +388,7 @@ class Create_Labeled_Videos(wx.Panel):
         """
         self.config = []
         self.sel_config.SetPath("")
-        self.videotype.SetStringSelection(".avi")
+        self.videotype.SetStringSelection("")
         self.sel_vids.SetLabel("Select videos")
         self.filelist = []
         self.shuffle.SetValue(1)

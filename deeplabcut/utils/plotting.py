@@ -163,7 +163,7 @@ def PlottingResults(
 def plot_trajectories(
     config,
     videos,
-    videotype=".avi",
+    videotype="",
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -189,7 +189,8 @@ def plot_trajectories(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: list, optional
     List of integers specifying the shuffle indices of the training dataset. The default is [1]
@@ -245,7 +246,7 @@ def plot_trajectories(
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
-    Videos = auxiliaryfunctions.Getlistofvideos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if not len(Videos):
         print(
             "No videos found. Make sure you passed a list of videos and that *videotype* is right."
