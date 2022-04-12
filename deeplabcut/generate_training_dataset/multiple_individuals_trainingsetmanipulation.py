@@ -357,7 +357,7 @@ def create_multianimaltraining_dataset(
             # Test files as well as pose_yaml files (containing training and testing information)
             #################################################################################
 
-            modelfoldername = auxiliaryfunctions.GetModelFolder(
+            modelfoldername = auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg
             )
             auxiliaryfunctions.attempttomakefolder(

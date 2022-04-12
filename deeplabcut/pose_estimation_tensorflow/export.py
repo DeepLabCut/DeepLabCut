@@ -114,7 +114,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     model_folder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 train_fraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),

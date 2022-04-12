@@ -85,7 +85,7 @@ def calculatepafdistancebounds(
         modelfolder = os.path.join(
             cfg["project_path"],
             str(
-                auxiliaryfunctions.GetModelFolder(
+                auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg, modelprefix=modelprefix
                 )
             ),
@@ -288,7 +288,7 @@ def return_evaluate_network_data(
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
@@ -334,7 +334,7 @@ def return_evaluate_network_data(
     evaluationfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetEvaluationFolder(
+            auxiliaryfunctions.get_evaluation_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
@@ -649,7 +649,7 @@ def evaluate_network(
                 modelfolder = os.path.join(
                     cfg["project_path"],
                     str(
-                        auxiliaryfunctions.GetModelFolder(
+                        auxiliaryfunctions.get_model_folder(
                             trainFraction, shuffle, cfg, modelprefix=modelprefix
                         )
                     ),
@@ -681,7 +681,7 @@ def evaluate_network(
                 evaluationfolder = os.path.join(
                     cfg["project_path"],
                     str(
-                        auxiliaryfunctions.GetEvaluationFolder(
+                        auxiliaryfunctions.get_evaluation_folder(
                             trainFraction, shuffle, cfg, modelprefix=modelprefix
                         )
                     ),

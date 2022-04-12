@@ -219,7 +219,7 @@ def create_pretrained_project(
             os.path.join(
                 config["project_path"],
                 str(
-                    auxiliaryfunctions.GetModelFolder(
+                    auxiliaryfunctions.get_model_folder(
                         trainFraction=config["TrainingFraction"][0],
                         shuffle=1,
                         cfg=config,
@@ -232,7 +232,7 @@ def create_pretrained_project(
             os.path.join(
                 config["project_path"],
                 str(
-                    auxiliaryfunctions.GetModelFolder(
+                    auxiliaryfunctions.get_model_folder(
                         trainFraction=config["TrainingFraction"][0],
                         shuffle=1,
                         cfg=config,
@@ -246,7 +246,7 @@ def create_pretrained_project(
         train_dir.mkdir(parents=True, exist_ok=True)
         test_dir.mkdir(parents=True, exist_ok=True)
 
-        modelfoldername = auxiliaryfunctions.GetModelFolder(
+        modelfoldername = auxiliaryfunctions.get_model_folder(
             trainFraction=config["TrainingFraction"][0], shuffle=1, cfg=config
         )
         path_train_config = str(

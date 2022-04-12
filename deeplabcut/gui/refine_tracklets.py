@@ -227,7 +227,7 @@ class Refine_tracklets(wx.Panel):
         trainFraction = self.cfg["TrainingFraction"]
         self.inf_cfg_path = os.path.join(
             self.cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction[-1], self.shuffle.GetValue(), self.cfg
             ),
             "test",

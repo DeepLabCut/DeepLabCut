@@ -956,7 +956,7 @@ def create_training_dataset(
                 # Creating file structure for training &
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
-                modelfoldername = auxiliaryfunctions.GetModelFolder(
+                modelfoldername = auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg
                 )
                 auxiliaryfunctions.attempttomakefolder(

@@ -10,7 +10,7 @@ rm -r OUT
 cd ..
 pip uninstall deeplabcut
 pythonw setup.py sdist bdist_wheel
-pip install dist/deeplabcut-2.2.1rc1-py3-none-any.whl
+pip install dist/deeplabcut-2.2.1-py3-none-any.whl
 
 # download: https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
 # assuming it's in Downloads...

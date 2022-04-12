@@ -391,7 +391,7 @@ class Analyze_videos(wx.Panel):
         #trainFraction = cfg["TrainingFraction"][trainingsetindex]
         self.inf_cfg_path = os.path.join(
             cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, self.shuffle.GetValue(), cfg
             ),
             "test",

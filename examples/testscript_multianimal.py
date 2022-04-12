@@ -120,7 +120,7 @@ if __name__ == "__main__":
     assert all(len(pickledata[i]["image"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
-    model_folder = auxiliaryfunctions.GetModelFolder(
+    model_folder = auxiliaryfunctions.get_model_folder(
         TRAIN_SIZE, 1, cfg, cfg["project_path"]
     )
     pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")

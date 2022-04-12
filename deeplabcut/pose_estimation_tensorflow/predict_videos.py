@@ -99,7 +99,7 @@ def create_tracking_dataset(
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
@@ -427,7 +427,7 @@ def analyze_videos(
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
@@ -1234,7 +1234,7 @@ def analyze_time_lapse_frames(
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
@@ -1586,7 +1586,7 @@ def convert_detections2tracklets(
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
