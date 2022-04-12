@@ -723,6 +723,8 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
 
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
+
+
         stem = Path(file).stem
         starts_by_scorer = (
             file.startswith(videoname + scorer)
@@ -742,6 +744,10 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
             )
         ):
             candidates.append(file)
+
+        print(scorer, scorer_legacy,'scorer',tracker)
+        print(starts_by_scorer,matches_tracker)
+        print(file,candidates,stem)
     if not len(candidates):
         msg = (
             f'No {"un" if not filtered else ""}filtered data file found in {folder} '
