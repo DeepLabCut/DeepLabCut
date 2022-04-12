@@ -114,7 +114,7 @@ class Create_training_dataset(wx.Panel):
         self.hbox1.Add(augboxsizer, 10, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         shuffle_text = wx.StaticBox(
-            self, label="Set a specific shuffle indx (1 network only)"
+            self, label="Set a specific shuffle index (1 network only)"
         )
         shuffle_text_boxsizer = wx.StaticBoxSizer(shuffle_text, wx.VERTICAL)
         self.shuffle = wx.SpinCtrl(self, value="1", min=1, max=100)
