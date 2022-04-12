@@ -9,6 +9,8 @@ from PySide2.QtGui import QIcon
 
 from deeplabcut.generate_training_dataset import extract_frames
 
+from components import _create_horizontal_layout
+
 
 class ExtractFrames(QWidget):
     def __init__(self, parent, cfg):
@@ -31,47 +33,30 @@ class ExtractFrames(QWidget):
         self.separatorLine.setLineWidth(0)
         self.separatorLine.setMidLineWidth(1)
 
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setAlignment(Qt.AlignTop)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(main_layout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 10, 20)
+        self.setLayout(self.main_layout)
 
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 2. Extract Frames")
+        l1_step1.setStyleSheet("font:bold")    
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        main_layout.addWidget(l1_step1)
-        main_layout.addWidget(self.separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(self.separatorLine)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        # layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 550, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-
-        self.cfg_line = QtWidgets.QLineEdit()
-
-        self.cfg_line.setMaximumWidth(500)
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
-
-        main_layout.addLayout(layout_cfg)
+        layout_config = _create_horizontal_layout()
+        self._generate_config_layout(layout_config)
+        self.main_layout.addLayout(layout_config)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 50)
 
-        label = QtWidgets.QLabel("Optional Attributes")
+        label = QtWidgets.QLabel("Attributes")
+        label.setStyleSheet("font:bold")
         label.setContentsMargins(20, 20, 0, 10)
         self.layout_attributes.addWidget(label)
 
@@ -102,7 +87,24 @@ class ExtractFrames(QWidget):
         self.layout_attributes.addLayout(self.layout_select_specify)
         self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-        main_layout.addLayout(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
+
+    def _generate_config_layout(self, layout):
+        cfg_text = QtWidgets.QLabel("Active config file:")
+
+        self.cfg_line = QtWidgets.QLineEdit()
+        self.cfg_line.setMinimumHeight(30)
+        self.cfg_line.setText(self.config)
+        self.cfg_line.textChanged[str].connect(self.update_cfg)
+
+        browse_button = QtWidgets.QPushButton("Browse")
+        browse_button.setMaximumWidth(100)
+        browse_button.setMinimumHeight(30)
+        browse_button.clicked.connect(self.browse_dir)
+
+        layout.addWidget(cfg_text)
+        layout.addWidget(self.cfg_line)
+        layout.addWidget(browse_button)
 
     def _choose(self):
         l_opt1 = QtWidgets.QVBoxLayout()
