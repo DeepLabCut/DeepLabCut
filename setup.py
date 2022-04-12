@@ -32,7 +32,7 @@ if platform.machine() == "ppc64le":
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.2.0.2",
+    version="2.2.0.6",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",

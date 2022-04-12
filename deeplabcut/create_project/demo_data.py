@@ -17,18 +17,22 @@ from deeplabcut.utils import auxiliaryfunctions
 
 def load_demo_data(config, createtrainingset=True):
     """
-  Loads the demo data. Make sure that you are in the same directory where you have downloaded or cloned the deeplabcut.
+    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018. 
+    When loading, it sets paths correctly to run this project on your system
+    
+    Parameter
+      ----------
+      config : string
+          Full path of the config.yaml file of the provided demo dataset as a string.
 
-  Parameter
-    ----------
-    config : string
-        Full path of the config.yaml file of the provided demo dataset as a string.
-
-    Example
-    --------
-    >>> deeplabcut.load_demo_data('config.yaml')
-    --------
-  """
+      createtrainingset : bool 
+          Boolean variable indicating if a training set shall be created. 
+          
+      Example
+      --------
+      >>> deeplabcut.load_demo_data('config.yaml')
+      --------
+    """
     config = Path(config).resolve()
     config = str(config)
 
@@ -53,7 +57,7 @@ def transform_data(config):
     elif "openfield" in project_path:
         video_file = os.path.join(project_path, "videos", "m4s1.mp4")
     else:
-        print("This is not an offical demo dataset.")
+        print("This is not an official demo dataset.")
 
     if "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE" in cfg["video_sets"].keys():
         cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop(

@@ -22,7 +22,7 @@ class Load_project(wx.Panel):
         """Constructor"""
         wx.Panel.__init__(self, parent=parent)
 
-        # variable initilization
+        # variable initialization
         self.config = cfg
         # design the panel
         self.sizer = wx.GridBagSizer(10, 15)

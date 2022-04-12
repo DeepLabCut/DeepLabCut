@@ -21,7 +21,12 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-from deeplabcut.utils import auxiliaryfunctions, visualization, frameselectiontools
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxfun_multianimal,
+    visualization,
+    frameselectiontools,
+)
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -201,7 +206,7 @@ def extract_outlier_frames(
         Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
 
     shuffle : int, optional
-        The shufle index of training dataset. The extracted frames will be stored in the labeled-dataset for
+        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
         the corresponding shuffle of training dataset. Default is set to 1
 
     trainingsetindex: int, optional
@@ -261,6 +266,10 @@ def extract_outlier_frames(
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
+    track_method: string, optional
+         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+
     Examples
 
     Windows example for extracting the frames with default settings
@@ -283,6 +292,8 @@ def extract_outlier_frames(
     )
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
+
+    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
         cfg,
@@ -418,8 +429,8 @@ def extract_outlier_frames(
 
 
 def convertparms2start(pn):
-    """ Creating a start value for sarimax in case of an value error
-    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk """
+    """Creating a start value for sarimax in case of an value error
+    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk"""
     if "ar." in pn:
         return 0
     elif "ma." in pn:
@@ -437,7 +448,7 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
     Y[p < pcutoff] = np.nan  # Set uncertain estimates to nan (modeled as missing data)
     if np.sum(np.isfinite(Y)) > 10:
 
-        # SARIMAX implemetnation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
+        # SARIMAX implementation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
         mod = sm.tsa.statespace.SARIMAX(
             Y.flatten(),
             order=(ARdegree, 0, MAdegree),
@@ -474,8 +485,8 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
 def compute_deviations(
     Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None
 ):
-    """ Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
-    as well as mean fit. """
+    """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
+    as well as mean fit."""
 
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
     df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
@@ -488,7 +499,7 @@ def compute_deviations(
         meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
         distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
         significant = (
-            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (x < CIy[:, 0]) + (y > CIy[:, 1])
+            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
         )
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
@@ -780,7 +791,7 @@ def PlottingSingleFrame(
     strwidth=4,
     savelabeled=True,
 ):
-    """ Label frame and save under imagename / this is already cropped (for clip) """
+    """Label frame and save under imagename / this is already cropped (for clip)"""
     from skimage import io
 
     imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
@@ -849,7 +860,7 @@ def PlottingSingleFramecv2(
     strwidth=4,
     savelabeled=True,
 ):
-    """ Label frame and save under imagename / cap is not already cropped. """
+    """Label frame and save under imagename / cap is not already cropped."""
     from skimage import io
 
     imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")

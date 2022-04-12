@@ -18,13 +18,13 @@ https://imgaug.readthedocs.io/en/latest/
 import logging
 import os
 import pickle
-import random as rand
 
 import imgaug.augmenters as iaa
 import numpy as np
 import scipy.io as sio
 
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.conversioncode import robust_split_path
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import DataItem, Batch
@@ -93,7 +93,12 @@ class ImgaugPoseDataset(BasePoseDataset):
 
                 item = DataItem()
                 item.image_id = i
-                item.im_path = sample[0][0]
+                im_path = sample[0][0]
+                if isinstance(im_path, str):
+                    im_path = robust_split_path(im_path)
+                else:
+                    im_path = [s.strip() for s in im_path]
+                item.im_path = os.path.join(*im_path)
                 item.im_size = sample[1][0]
                 if len(sample) >= 3:
                     joints = sample[2][0][0]
@@ -123,7 +128,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 sample = pickledata[i]  # mlab[0, i]
                 item = DataItem()
                 item.image_id = i
-                item.im_path = sample["image"]  # [0][0]
+                item.im_path = os.path.join(*sample["image"])  # [0][0]
                 item.im_size = sample["size"]  # sample[1][0]
                 if len(sample) >= 3:
                     item.num_animals = len(sample["joints"])
@@ -279,13 +284,28 @@ class ImgaugPoseDataset(BasePoseDataset):
         joint_ids = []
         data_items = []
         # Scale is sampled only once to transform all of the images of a batch into same size.
-        scale = self.get_scale()
-        while True:
+        scale = self.sample_scale()
+
+        found_valid = False
+        n_tries = 10 
+        while n_tries > 1:
             idx = np.random.choice(self.num_images)
             size = self.data[idx].im_size
             target_size = np.ceil(size[1:3] * scale).astype(int)
             if self.is_valid_size(target_size[1] * target_size[0]):
+                found_valid = True
                 break
+            n_tries -= 1
+        if not found_valid:
+            if size[1] * size[2] > self.max_input_sizesquare:
+                s = "large", "increasing `max_input_size`", "decreasing"
+            else:
+                s = "small", "decreasing `min_input_size`", "increasing"
+            raise ValueError(
+                f"Image size {size[1:3]} may be too {s[0]}. "
+                f"Consider {s[1]} and/or {s[2]} `global_scale` "
+                "in the train/pose_cfg.yaml."
+            )
 
         stride = self.cfg["stride"]
         for i in range(self.batch_size):
@@ -295,7 +315,9 @@ class ImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="RGB")
+            image = imread(
+                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
+            )
 
             if self.has_gt:
                 joints = np.copy(data_item.joints)
@@ -396,16 +418,6 @@ class ImgaugPoseDataset(BasePoseDataset):
         if self.cfg["mirror"]:
             num *= 2
         return num
-
-    def get_scale(self):
-        cfg = self.cfg
-        scale = cfg["global_scale"]
-        if hasattr(cfg, "scale_jitter_lo") and hasattr(cfg, "scale_jitter_up"):
-            scale_jitter = rand.uniform(
-                0.75 * cfg["scale_jitter_lo"], 1.25 * cfg["scale_jitter_up"]
-            )
-            scale *= scale_jitter
-        return scale
 
     def is_valid_size(self, target_size_product):
         if target_size_product > self.max_input_sizesquare:

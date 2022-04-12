@@ -30,7 +30,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from deeplabcut.gui import auxfun_drag
 from deeplabcut.gui.widgets import BasePanel, WidgetPanel, BaseFrame
-from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils import (
+    auxiliaryfunctions,
+    auxiliaryfunctions_3d,
+    conversioncode,
+)
 
 
 class ImagePanel(BasePanel):
@@ -169,7 +173,9 @@ class ImagePanel(BasePanel):
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
-            im = self.drawEpLines(im.copy(), epLines, sourcePts, offsets, colorIndex, cmap)
+            im = self.drawEpLines(
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+            )
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
@@ -241,18 +247,18 @@ class ScrollPanel(SP.ScrolledPanel):
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent, config, imtypes, config3d, sourceCam):
+    def __init__(self, parent, config, imtypes, config3d, sourceCam, jump_unlabeled):
         super(MainFrame, self).__init__(
             "DeepLabCut2.0 - Labeling ToolBox", parent, imtypes
         )
-
+        self.jump_unlabeled = jump_unlabeled
         self.statusbar.SetStatusText(
             "Looking for a folder to start labeling. Click 'Load frames' to begin."
         )
         self.Bind(wx.EVT_CHAR_HOOK, self.OnKeyPressed)
         ###################################################################################################################################################
 
-        # Spliting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
+        # Splitting the frame into top and bottom panels. Bottom panels contains the widgets. The top panel is for showing images and plotting!
 
         topSplitter = wx.SplitterWindow(self)
         vSplitter = wx.SplitterWindow(topSplitter)
@@ -482,7 +488,7 @@ class MainFrame(BaseFrame):
         """
         MainFrame.updateZoomPan(self)
         wx.MessageBox(
-            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deletd point by going to a previous/next image then returning to the current iamge. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
+            "1. Select an individual and one of the body parts from the radio buttons to add a label (if necessary change config.yaml first to edit the label names). \n\n2. Right clicking on the image will add the selected label and the next available label will be selected from the radio button. \n The label will be marked as circle filled with a unique color (and individual ID a unique color on the rim).\n\n3. To change the marker size, mark the checkbox and move the slider, then uncheck the box. \n\n4. Hover your mouse over this newly added label to see its name. \n\n5. Use left click and drag to move the label position.  \n\n6. Once you are happy with the position, right click to add the next available label. You can always reposition the old labels, if required. You can delete a label with the middle button mouse click (or click 'delete' key). \n\n7. Click Next/Previous to move to the next/previous image (or hot-key arrows left and right).\n User can also re-label a deleted point by going to a previous/next image then returning to the current image. \n NOTE: the user cannot add a label if the label is already present. \n \n8. You can click Cntrl+C to copy+paste labels from a previous image into the current image. \n\n9. When finished labeling all the images, click 'Save' to save all the labels as a .h5 file. \n\n10. Click OK to continue using the labeling GUI. For more tips and hotkeys: see docs!!",
             "User instructions",
             wx.OK | wx.ICON_INFORMATION,
         )
@@ -559,24 +565,29 @@ class MainFrame(BaseFrame):
         """
         Show the DirDialog and ask the user to change the directory where machine labels are stored
         """
-        self.statusbar.SetStatusText("Looking for a folder to start labeling...")
-        cwd = os.path.join(os.getcwd(), "labeled-data")
-        dlg = wx.DirDialog(
-            self,
-            "Choose the directory where your extracted frames are saved:",
-            cwd,
-            style=wx.DD_DEFAULT_STYLE,
-        )
-        if dlg.ShowModal() == wx.ID_OK:
-            self.dir = dlg.GetPath()
-            self.load.Enable(False)
-            self.next.Enable(True)
-            self.save.Enable(True)
+        if self.jump_unlabeled:
+            self.dir = str(auxiliaryfunctions.find_next_unlabeled_folder(
+                self.config_file
+            ))
         else:
+            self.statusbar.SetStatusText("Looking for a folder to start labeling...")
+            cwd = os.path.join(os.getcwd(), "labeled-data")
+            dlg = wx.DirDialog(
+                self,
+                "Choose the directory where your extracted frames are saved:",
+                cwd,
+                style=wx.DD_DEFAULT_STYLE,
+            )
+            if dlg.ShowModal() != wx.ID_OK:
+                dlg.Destroy()
+                self.Close(True)
+                return
+            self.dir = dlg.GetPath()
             dlg.Destroy()
-            self.Close(True)
-            return
-        dlg.Destroy()
+
+        self.load.Enable(False)
+        self.next.Enable(True)
+        self.save.Enable(True)
 
         # Enabling the zoom, pan and home buttons
         self.zoom.Enable(True)
@@ -612,21 +623,23 @@ class MainFrame(BaseFrame):
         self.statusbar.SetStatusText(
             "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
         )
-        self.relativeimagenames = [
+        relativeimagenames = [
             "labeled" + n.split("labeled")[1] for n in self.index
         ]  # [n.split(self.project_path+'/')[1] for n in self.index]
-
+        self.relativeimagenames = [tuple(name.split(os.path.sep))
+                                   for name in relativeimagenames]
         # Reading the existing dataset,if already present
         try:
             self.dataFrame = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5")
             )
+            conversioncode.guarantee_multiindex_rows(self.dataFrame)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
 
             # Finds the first empty row in the dataframe and sets the iteration to that index
             for idx, j in enumerate(self.dataFrame.index):
-                values = self.dataFrame.loc[j, :].values
+                values = self.dataFrame.loc(axis=0)[j].values
                 if np.prod(np.isnan(values)) == 1:
                     self.iter = idx
                     break
@@ -637,38 +650,38 @@ class MainFrame(BaseFrame):
             a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.relativeimagenames)
+                index = pd.MultiIndex.from_tuples(self.relativeimagenames)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.dataFrame = pd.concat([self.dataFrame, frame], axis=1)
             self.iter = 0
 
         # Reading the image name
-        self.img = self.dataFrame.index[self.iter]
+        self.img = os.path.join(*self.dataFrame.index[self.iter])
         img_name = Path(self.img).name
         self.norm, self.colorIndex = self.image_panel.getColorIndices(
             self.img, self.bodyparts
         )
 
         # Checking for new frames and adding them to the existing dataframe
-        old_imgs = np.sort(list(self.dataFrame.index))
+        old_imgs = sorted(self.dataFrame.index)
         self.newimages = list(set(self.relativeimagenames) - set(old_imgs))
-        if not self.newimages:
-            pass
-        else:
+        if self.newimages:
             print("Found new frames..")
             # Create an empty dataframe with all the new images and then merge this to the existing dataframe.
             self.df = None
             a = np.empty((len(self.newimages), 2))
             a[:] = np.nan
             for bodypart in self.bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.newimages)
+                index = pd.MultiIndex.from_tuples(self.newimages)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.df = pd.concat([self.df, frame], axis=1)
             self.dataFrame = pd.concat([self.dataFrame, self.df], axis=0)
             # Sort it by the index values
@@ -726,11 +739,12 @@ class MainFrame(BaseFrame):
             a = np.empty((len(self.index), 2))
             a[:] = np.nan
             for bodypart in self.new_bodyparts:
-                index = pd.MultiIndex.from_product(
+                cols = pd.MultiIndex.from_product(
                     [[self.scorer], [bodypart], ["x", "y"]],
                     names=["scorer", "bodyparts", "coords"],
                 )
-                frame = pd.DataFrame(a, columns=index, index=self.relativeimagenames)
+                index = pd.MultiIndex.from_tuples(self.relativeimagenames)
+                frame = pd.DataFrame(a, columns=cols, index=index)
                 self.dataFrame = pd.concat([self.dataFrame, frame], axis=1)
 
             (
@@ -936,8 +950,6 @@ class MainFrame(BaseFrame):
         self.dataFrame.to_hdf(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
             "df_with_missing",
-            format="table",
-            mode="w",
         )
 
     def onChecked(self, event):
@@ -950,9 +962,9 @@ class MainFrame(BaseFrame):
             self.slider.Enable(False)
 
 
-def show(config, config3d, sourceCam, imtypes=["*.png"]):
+def show(config, config3d, sourceCam, imtypes=["*.png"], jump_unlabeled=False):
     app = wx.App()
-    frame = MainFrame(None, config, imtypes, config3d, sourceCam).Show()
+    frame = MainFrame(None, config, imtypes, config3d, sourceCam, jump_unlabeled).Show()
     app.MainLoop()
 
 

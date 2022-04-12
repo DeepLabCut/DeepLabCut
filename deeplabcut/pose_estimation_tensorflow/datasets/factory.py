@@ -23,6 +23,7 @@ class PoseDatasetFactory:
                 warnings.warn("Overwriting existing dataset {}.")
             cls._datasets[type_] = dataset
             return dataset
+
         return wrapper
 
     @classmethod

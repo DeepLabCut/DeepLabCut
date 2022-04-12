@@ -31,7 +31,7 @@ def mirror_joints_map(all_joints, num_joints):
 
 
 def crop_image(joints, im, Xlabel, Ylabel, cfg):
-    """ Randomly cropping image around xlabel,ylabel taking into account size of image.
+    """Randomly cropping image around xlabel,ylabel taking into account size of image.
     Introduced in DLC 2.0 (Nature Protocols paper)"""
     widthforward = int(cfg["minsize"] + np.random.randint(cfg["rightwidth"]))
     widthback = int(cfg["minsize"] + np.random.randint(cfg["leftwidth"]))
