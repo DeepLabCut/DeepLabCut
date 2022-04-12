@@ -10,6 +10,8 @@ from deeplabcut.generate_training_dataset import check_labels
 from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
 
+from components import _create_horizontal_layout
+
 
 def label_frames(
     self,
@@ -88,41 +90,22 @@ class LabelFrames(QWidget):
         self.separatorLine.setLineWidth(0)
         self.separatorLine.setMidLineWidth(1)
 
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setAlignment(Qt.AlignTop)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(main_layout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 10, 20)
+        self.setLayout(self.main_layout)
 
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 3. Label Frames")
+        l1_step1.setStyleSheet("font:bold")    
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        main_layout.addWidget(l1_step1)
-        main_layout.addWidget(self.separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(self.separatorLine)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
-
-        main_layout.addLayout(layout_cfg)
+        layout_config = _create_horizontal_layout()
+        self._generate_config_layout(layout_config)
+        self.main_layout.addLayout(layout_config)
 
         layout_label_btns = QtWidgets.QVBoxLayout()
         layout_label_btns.setAlignment(Qt.AlignTop)
@@ -139,7 +122,7 @@ class LabelFrames(QWidget):
         layout_label_btns.addWidget(self.label_frames_btn, alignment=Qt.AlignRight)
         layout_label_btns.addWidget(self.check_labels_btn, alignment=Qt.AlignRight)
         #
-        main_layout.addLayout(layout_label_btns)
+        self.main_layout.addLayout(layout_label_btns)
 
         self.cfg = auxiliaryfunctions.read_config(self.config)
         if self.cfg.get("multianimalproject", False):
@@ -147,6 +130,23 @@ class LabelFrames(QWidget):
             # TODO:finish multianimal part
         else:
             print("True")
+
+    def _generate_config_layout(self, layout):
+        cfg_text = QtWidgets.QLabel("Active config file:")
+
+        self.cfg_line = QtWidgets.QLineEdit()
+        self.cfg_line.setMinimumHeight(30)
+        self.cfg_line.setText(self.config)
+        self.cfg_line.textChanged[str].connect(self.update_cfg)
+
+        browse_button = QtWidgets.QPushButton("Browse")
+        browse_button.setMaximumWidth(100)
+        browse_button.setMinimumHeight(30)
+        browse_button.clicked.connect(self.browse_dir)
+
+        layout.addWidget(cfg_text)
+        layout.addWidget(self.cfg_line)
+        layout.addWidget(browse_button)
 
     def update_cfg(self):
         text = self.cfg_line.text()
