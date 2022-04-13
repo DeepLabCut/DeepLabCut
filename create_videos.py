@@ -48,10 +48,21 @@ class CreateVideos(QWidget):
         self.main_layout.addWidget(
             _create_label_widget(
                 "DeepLabCut - Optional Step. Create Videos",
-                "font:bold; font-size:18px;",
-                (20, 20, 0, 10),
+                "font:bold;",
+                (10, 10, 0, 10),
             )
         )
+
+        self.separatorLine = QtWidgets.QFrame()
+        self.separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
+
+        self.separatorLine.setLineWidth(0)
+        self.separatorLine.setMidLineWidth(1)
+
+        self.main_layout.addWidget(self.separatorLine)
+        dummy_space = _create_label_widget("", margins=(0, 5, 0, 0))
+        self.main_layout.addWidget(dummy_space)
 
         layout_config = _create_horizontal_layout()
         self._generate_config_layout(layout_config)
@@ -62,21 +73,22 @@ class CreateVideos(QWidget):
         self._generate_layout_video_analysis(self.layout_video_selection)
         self.main_layout.addLayout(self.layout_video_selection)
 
+        tmp_layout = _create_horizontal_layout()
+
         self.main_layout.addWidget(
-            _create_label_widget("Analysis Attributes", "font:bold")
+            _create_label_widget("Attributes", "font:bold")
         )
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
-        self.main_layout.addLayout(self.layout_attributes)
+        tmp_layout.addLayout(self.layout_attributes)
 
         self.layout_multi_animal = _create_horizontal_layout()
 
         if self.cfg.get("multianimalproject", False):
-            self.main_layout.addWidget(
-                _create_label_widget("Multi-animal settings", "font:bold")
-            )
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
-            self.main_layout.addLayout(self.layout_multi_animal)
+            tmp_layout.addLayout(self.layout_multi_animal)
+
+        self.main_layout.addLayout(tmp_layout)
 
         self.main_layout.addWidget(
             _create_label_widget("Video Parameters", "font:bold")
@@ -90,6 +102,7 @@ class CreateVideos(QWidget):
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
     def _generate_config_layout(self, layout):
+
         cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
@@ -119,17 +132,7 @@ class CreateVideos(QWidget):
 
         layout.addWidget(self.videotype_widget)
 
-        """
-        # NOTE: Reusable file selecting button -- not entirely there yet
-        self.select_video_button = BrowseFilesButton(
-            "Select videos",
-            ".avi",
-            single_file=False,
-            parent=self
-            )
-        self.select_video_button.setMaximumWidth(200)
-        self.select_video_button.setMinimumHeight(30)
-        """
+           
         self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(200)
         self.select_video_button.setMinimumHeight(30)
@@ -137,8 +140,14 @@ class CreateVideos(QWidget):
 
         layout.addWidget(self.select_video_button)
 
-        self.selected_videos_text = QtWidgets.QLabel("")
+        self.selected_videos_text = QtWidgets.QLabel("") #updated when videos are selected
         layout.addWidget(self.selected_videos_text)
+
+        self.clear_videos = QtWidgets.QPushButton("Clear selection")
+        self.clear_videos.clicked.connect(self.clear_selected_videos)
+        layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
+
+
 
     def _generate_layout_multianimal_only_options(self, layout):
         tmp_text = QtWidgets.QLabel("Color keypoints by:")
@@ -244,16 +253,16 @@ class CreateVideos(QWidget):
         self.bdpt_list_widget.setSelectionMode(
             QtWidgets.QAbstractItemView.MultiSelection
         )
-        self.bdpt_list_widget.selectAll()
+        # self.bdpt_list_widget.selectAll()
         self.bdpt_list_widget.setEnabled(False)
         self.bdpt_list_widget.itemSelectionChanged.connect(
             self.update_selected_bodyparts
         )
-        nested_tmp_layout.addWidget(self.bdpt_list_widget)
+        nested_tmp_layout.addWidget(self.bdpt_list_widget, Qt.AlignLeft)
 
-        tmp_layout.addLayout(nested_tmp_layout)
+        tmp_layout.addLayout(nested_tmp_layout, Qt.AlignLeft)
 
-        layout.addLayout(tmp_layout)
+        layout.addLayout(tmp_layout, Qt.AlignLeft)
 
     def update_high_quality_video(self, s):
         if s == Qt.Checked:
@@ -279,7 +288,7 @@ class CreateVideos(QWidget):
     def update_use_all_bodyparts(self, s):
         if s == Qt.Checked:
             self.bdpt_list_widget.setEnabled(False)
-            self.bdpt_list_widget.selectAll()
+            # self.bdpt_list_widget.selectAll()
             self.logger.info("Plot all bodyparts ENABLED.")
 
         else:
@@ -314,8 +323,9 @@ class CreateVideos(QWidget):
         self.logger.info(f"Coloring keypoints in videos by {text}")
 
     def update_cfg(self):
-        text = self.proj_line.text()
+        text = self.cfg_line.text()
         self.config = text
+        self.cfg = auxiliaryfunctions.read_config(self.config)
 
     def browse_dir(self):
         cwd = self.config
@@ -337,7 +347,7 @@ class CreateVideos(QWidget):
             f"Video files (*.{self.videotype_widget.currentText()})",
         )
 
-        if filenames:
+        if filenames[0]:
             self.filelist.update(
                 filenames[0]
             )  # Qt returns a tuple ( list of files, filetype )
@@ -346,6 +356,15 @@ class CreateVideos(QWidget):
             self.select_video_button.adjustSize()
             self.selected_videos_text.adjustSize()
             self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
+
+    def clear_selected_videos(self):
+        self.selected_videos_text.setText("")
+        self.select_video_button.setText("Select videos")
+        self.filelist.clear()
+        self.select_video_button.adjustSize()
+        self.selected_videos_text.adjustSize()
+        self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
+
 
     def update_filter_choice(self, rb):
         if rb.text() == "Yes":
@@ -392,7 +411,8 @@ class CreateVideos(QWidget):
         if self.plot_trajectories.checkState() == False:
             plot_trajectories = False
 
-        if len(self.bodyparts_to_use) != len(self.all_bodyparts):
+        bodyparts = self.all_bodyparts
+        if  len(self.bodyparts_to_use)!=0 and self.plot_all_bodyparts.checkState()==Qt.Checked:
             bodyparts = self.bodyparts_to_use
 
         deeplabcut.create_labeled_video(
