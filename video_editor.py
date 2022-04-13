@@ -3,6 +3,8 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
 from deeplabcut import CropVideo, DownSampleVideo
+from deeplabcut.utils import auxiliaryfunctions
+
 
 
 class VideoEditor(QWidget):
@@ -125,8 +127,10 @@ class VideoEditor(QWidget):
         self.main_layout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
-        text = self.proj_line.text()
+        text = self.cfg_line.text()
         self.config = text
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+
 
     def browse_dir(self):
         cwd = self.config

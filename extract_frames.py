@@ -7,6 +7,7 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.generate_training_dataset import extract_frames
 
 from components import _create_horizontal_layout
@@ -250,8 +251,9 @@ class ExtractFrames(QWidget):
         self.layout_select_specify.addLayout(l_opt)
 
     def update_cfg(self):
-        text = self.proj_line.text()
+        text = self.cfg_line.text()
         self.config = text
+        self.cfg = auxiliaryfunctions.read_config(self.config)
 
     def browse_dir(self):
         cwd = self.config
