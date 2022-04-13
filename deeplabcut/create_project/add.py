@@ -107,7 +107,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             cfg["video_sets_original"].update(params)
     videos_str = [str(video) for video in videos]
     if extract_frames:
-        frame_extraction.extract_frames(config, userfeedback=False, videos=videos_str)
+        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
         print(
             "New videos were added to the project and frames have been extracted for labeling!"
         )
