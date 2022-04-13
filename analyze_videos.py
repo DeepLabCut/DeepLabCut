@@ -6,13 +6,13 @@ from deeplabcut.utils import auxiliaryfunctions
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (
-    QWidget,
     QComboBox,
     QSpinBox,
 )
 
 from widgets import ConfigEditor
 from components import (
+    DefaultTab,
     _create_grid_layout,
     _create_label_widget,
     _create_horizontal_layout,
@@ -20,22 +20,14 @@ from components import (
 )
 
 
-class AnalyzeVideos(QWidget):
-    def __init__(self, parent, cfg):
-        super(AnalyzeVideos, self).__init__(parent)
-
-        self.logger = logging.getLogger("GUI")
+class AnalyzeVideos(DefaultTab):
+    def __init__(self, parent, tab_heading):
+        super(AnalyzeVideos, self).__init__(parent, tab_heading)
 
         self.filelist = set()
-        self.all_bodyparts = []
-        self.config = cfg
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-        if self.cfg["multianimalproject"]:
-            self.all_bodyparts = self.cfg["multianimalbodyparts"]
+        
+        if self.is_multianimal:
             self.tracker_method = self.cfg.get("default_track_method", "ellipse")
-        else:
-            self.all_bodyparts = self.cfg["bodyparts"]
 
         self.backend_variables = {
             "save_as_csv": False,
@@ -54,35 +46,9 @@ class AnalyzeVideos(QWidget):
             "use_transformer_tracking": False,
         }
 
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.setLayout(self.main_layout)
-
         self.set_page()
 
     def set_page(self):
-        self.main_layout.addWidget(
-            _create_label_widget(
-                "DeepLabCut - Step 7. Analyze Videos",
-                "font:bold;",
-                (10, 10, 0, 10),
-            )
-        )
-
-        self.separatorLine = QtWidgets.QFrame()
-        self.separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
-
-        self.separatorLine.setLineWidth(0)
-        self.separatorLine.setMidLineWidth(1)
-
-        self.main_layout.addWidget(self.separatorLine)
-        dummy_space = _create_label_widget("", margins=(0, 5, 0, 0))
-        self.main_layout.addWidget(dummy_space)
-
-        layout_config = _create_horizontal_layout()
-        self._generate_config_layout(layout_config)
-        self.main_layout.addLayout(layout_config)
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.layout_video_selection = _create_horizontal_layout()
         self._generate_layout_video_analysis(self.layout_video_selection)
@@ -91,7 +57,7 @@ class AnalyzeVideos(QWidget):
         tmp_layout = _create_horizontal_layout()
 
         self.main_layout.addWidget(
-            _create_label_widget("Analysis Attributes", "font:bold")
+            _create_label_widget("Attributes", "font:bold")
         )
         self.layout_attributes = _create_grid_layout()
         self._generate_layout_attributes(self.layout_attributes)
@@ -125,23 +91,6 @@ class AnalyzeVideos(QWidget):
 
         self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
-
-    def _generate_config_layout(self, layout):
-        cfg_text = QtWidgets.QLabel("Active config file:")
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.setMinimumHeight(30)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout.addWidget(cfg_text)
-        layout.addWidget(self.cfg_line)
-        layout.addWidget(browse_button)
 
     def _generate_layout_single_animal(self, layout):
         # Dynamic bodypart cropping
@@ -436,21 +385,6 @@ class AnalyzeVideos(QWidget):
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
             self.logger.info("Plot trajectories DISABLED.")
-
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.config = text
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
 
     def select_videos(self):
         cwd = self.config.split("/")[0:-1]

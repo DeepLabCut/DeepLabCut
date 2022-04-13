@@ -12,6 +12,7 @@ from PySide2.QtWidgets import (
 )
 
 from components import (
+    DefaultTab,
     _create_horizontal_layout,
     _create_label_widget,
     _create_vertical_layout,
@@ -19,54 +20,16 @@ from components import (
 )
 
 
-class CreateVideos(QWidget):
-    def __init__(self, parent, cfg):
-        super(CreateVideos, self).__init__(parent)
-
-        self.logger = logging.getLogger("GUI")
+class CreateVideos(DefaultTab):
+    def __init__(self, parent, tab_heading):
+        super(CreateVideos, self).__init__(parent, tab_heading)
 
         self.filelist = set()
-        self.config = cfg
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-        self.all_bodyparts = []
-
-        if self.cfg["multianimalproject"]:
-            self.all_bodyparts = self.cfg["multianimalbodyparts"]
-        else:
-            self.all_bodyparts = self.cfg["bodyparts"]
-
         self.bodyparts_to_use = self.all_bodyparts
-
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.setLayout(self.main_layout)
 
         self.set_page()
 
     def set_page(self):
-
-        self.main_layout.addWidget(
-            _create_label_widget(
-                "DeepLabCut - Optional Step. Create Videos",
-                "font:bold;",
-                (10, 10, 0, 10),
-            )
-        )
-
-        self.separatorLine = QtWidgets.QFrame()
-        self.separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
-
-        self.separatorLine.setLineWidth(0)
-        self.separatorLine.setMidLineWidth(1)
-
-        self.main_layout.addWidget(self.separatorLine)
-        dummy_space = _create_label_widget("", margins=(0, 5, 0, 0))
-        self.main_layout.addWidget(dummy_space)
-
-        layout_config = _create_horizontal_layout()
-        self._generate_config_layout(layout_config)
-        self.main_layout.addLayout(layout_config)
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.layout_video_selection = _create_horizontal_layout()
@@ -100,24 +63,6 @@ class CreateVideos(QWidget):
         self.run_button = QtWidgets.QPushButton("Create videos")
         self.run_button.clicked.connect(self.create_videos)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
-
-    def _generate_config_layout(self, layout):
-
-        cfg_text = QtWidgets.QLabel("Active config file:")
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.setMinimumHeight(30)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout.addWidget(cfg_text)
-        layout.addWidget(self.cfg_line)
-        layout.addWidget(browse_button)
 
     def _generate_layout_video_analysis(self, layout):
 
@@ -321,21 +266,6 @@ class CreateVideos(QWidget):
 
     def update_color_by(self, text):
         self.logger.info(f"Coloring keypoints in videos by {text}")
-
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.config = text
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
 
     def select_videos(self):
         cwd = self.config.split("/")[0:-1]

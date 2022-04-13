@@ -11,7 +11,7 @@ class OpenProject(QtWidgets.QDialog):
 
         self.setWindowTitle("Load Existing Project")
 
-        self.cfg = None
+        self.config = None
         self.loaded = False
         self.user_fbk = True
 
@@ -62,8 +62,8 @@ class OpenProject(QtWidgets.QDialog):
         )
         if not config:
             return
-        self.cfg = config[0]
-        self.open_line.setText(self.cfg)
+        self.config = config[0]
+        self.open_line.setText(self.config)
 
     def activate_fbk(self, state):
         # Activates the feedback option
@@ -74,7 +74,7 @@ class OpenProject(QtWidgets.QDialog):
             self.user_fbk = False
 
     def open_project(self):
-        if self.cfg == "":
+        if self.config == "":
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Please choose the config.yaml file to load the project")

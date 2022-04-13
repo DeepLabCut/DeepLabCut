@@ -1,4 +1,5 @@
 import os
+import logging
 from pathlib import Path
 import qdarkstyle
 
@@ -25,6 +26,9 @@ from refine_labels import RefineLabels
 
 
 class MainWindow(QMainWindow):
+
+    config_loaded = QtCore.Signal() 
+
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -32,8 +36,9 @@ class MainWindow(QMainWindow):
         self.screen_width = desktop.width()
         self.screen_height = desktop.height()
 
+        self.logger = logging.getLogger("GUI")
+
         self.config = None
-        self.cfg = dict()
         self.loaded = False
         self.user_feedback = False
 
@@ -49,6 +54,10 @@ class MainWindow(QMainWindow):
         self.createToolBars(0)
 
         # TODO: finish toolbars and menubar functionality
+
+    @property
+    def cfg(self):
+        return auxiliaryfunctions.read_config(self.config)
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
@@ -115,13 +124,13 @@ class MainWindow(QMainWindow):
         self.newAction.setIcon(QIcon("assets/icons/" + names[0]))
         self.newAction.setShortcut("Ctrl+N")
 
-        self.newAction.triggered.connect(self._create)
+        self.newAction.triggered.connect(self._create_project)
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
         self.openAction.setIcon(QIcon("assets/icons/" + names[1]))
         self.openAction.setShortcut("Ctrl+O")
-        self.openAction.triggered.connect(self._open)
+        self.openAction.triggered.connect(self._open_project)
 
         self.saveAction = QAction("&Save", self)
         self.exitAction = QAction("&Exit", self)
@@ -183,31 +192,30 @@ class MainWindow(QMainWindow):
         self.fileToolBar.removeAction(self.helpAction)
 
     @QtCore.Slot()
-    def _create(self):
-        create_p = CreateProject(self)
-        create_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        if create_p.exec_() == QtWidgets.QDialog.Accepted:
-            self.loaded = create_p.loaded
-            self.cfg = create_p.cfg
-            self.user_feedback = create_p.user_fbk
+    def _create_project(self):
+        create_project = CreateProject(self)
+        create_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        if create_project.exec_() == QtWidgets.QDialog.Accepted:
+            self.loaded = create_project.loaded
+            self.config = create_project.config
+            self.user_feedback = create_project.user_fbk
 
-        if create_p.loaded:
+        if create_project.loaded:
             self.add_tabs()
 
-    def _open(self):
-        open_p = OpenProject(self)
-        open_p.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        if open_p.exec_() == QtWidgets.QDialog.Accepted:
-            self.loaded = open_p.loaded
-            self.cfg = open_p.cfg
-            self.user_feedback = open_p.user_fbk
+    def _open_project(self):
+        open_project = OpenProject(self)
+        open_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        if open_project.exec_() == QtWidgets.QDialog.Accepted:
+            self.loaded = open_project.loaded
+            self.config = open_project.config
+            self.user_feedback = open_project.user_fbk
 
-        if open_p.loaded:
+        if open_project.loaded:
             self.add_tabs()
 
     def load_config(self, config):
         self.config = config
-        self.cfg = auxiliaryfunctions.read_config(config)
         self.config_loaded.emit()
         print(f'Project "{self.cfg["Task"]}" successfully loaded.')
 
@@ -236,16 +244,16 @@ class MainWindow(QMainWindow):
 
         tabs = QtWidgets.QTabWidget()
         tabs.setContentsMargins(0, 20, 0, 0)
-        extract_frames = ExtractFrames(self, self.cfg)
-        label_frames = LabelFrames(self, self.cfg)
-        create_training_dataset = CreateTrainingDataset(self, self.cfg)
-        train_network = TrainNetwork(self, self.cfg)
-        evaluate_network = EvaluateNetwork(self, self.cfg)
-        video_editor = VideoEditor(self, self.cfg)
-        analyze_videos = AnalyzeVideos(self, self.cfg)
-        create_videos = CreateVideos(self, self.cfg)
-        extract_outlier_frames = ExtractOutlierFrames(self, self.cfg)
-        refine_labels = RefineLabels(self, self.cfg)
+        extract_frames = ExtractFrames(self, "DeepLabCut - Step 2. Extract Frames")
+        label_frames = LabelFrames(self, self.config)
+        create_training_dataset = CreateTrainingDataset(self, self.config)
+        train_network = TrainNetwork(self, self.config)
+        evaluate_network = EvaluateNetwork(self, self.config)
+        video_editor = VideoEditor(self, self.config)
+        analyze_videos = AnalyzeVideos(self, "DeepLabCut - Step 7. Analyze Videos")
+        create_videos = CreateVideos(self, "DeepLabCut - Optional Step. Create Videos")
+        extract_outlier_frames = ExtractOutlierFrames(self, self.config)
+        refine_labels = RefineLabels(self, self.config)
 
         tabs.addTab(extract_frames, "Extract frames")
         tabs.addTab(label_frames, "Label frames")
