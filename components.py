@@ -56,6 +56,84 @@ def _create_grid_layout(
     return layout
 
 
+class VideoSelectionWidget(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(VideoSelectionWidget, self).__init__(parent)
+        self.parent = parent
+
+        self.files = set()
+        self.logger = self.parent.logger
+        self.project_folder = self.parent.project_folder
+        
+        self._init_layout()
+    
+    def _init_layout(self):
+        layout = _create_horizontal_layout()
+
+        # Videotype selection
+        self.videotype_widget = QtWidgets.QComboBox()
+        self.videotype_widget.setMaximumWidth(100)
+        self.videotype_widget.setMinimumHeight(30)
+        options = ["avi", "mp4", "mov"]
+        self.videotype_widget.addItems(options)
+        self.videotype_widget.setCurrentText("avi")
+        self.videotype_widget.currentTextChanged.connect(self.update_videotype)
+
+        # Select videos
+        self.select_video_button = QtWidgets.QPushButton("Select videos")
+        self.select_video_button.setMaximumWidth(200)
+        self.select_video_button.setMinimumHeight(30)
+        self.select_video_button.clicked.connect(self.select_videos)
+
+        # Number of selected videos text
+        self.selected_videos_text = QtWidgets.QLabel("") #updated when videos are selected
+
+        # Clear video selection
+        self.clear_videos = QtWidgets.QPushButton("Clear selection")
+        self.clear_videos.clicked.connect(self.clear_selected_videos)
+        self.clear_videos.setMinimumHeight(30)
+
+        layout.addWidget(self.videotype_widget)
+        layout.addWidget(self.select_video_button)
+        layout.addWidget(self.selected_videos_text)
+        layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
+
+        self.setLayout(layout)
+
+    def update_videotype(self, vtype):
+        self.logger.info(f"Looking for .{vtype} videos")
+        self.files.clear()
+        self.selected_videos_text.setText("")
+        self.select_video_button.setText("Select videos")
+
+    def select_videos(self):
+        cwd = self.project_folder
+        filenames = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            "Select video(s) to analyze",
+            cwd,
+            f"Video files (*.{self.videotype_widget.currentText()})",
+        )
+
+        if filenames[0]:
+            self.files.update(
+                filenames[0]
+            )  # Qt returns a tuple ( list of files, filetype )
+            self.selected_videos_text.setText("%s videos selected" % len(self.files))
+            self.select_video_button.setText("Add more videos")
+            self.select_video_button.adjustSize()
+            self.selected_videos_text.adjustSize()
+            self.logger.info(f"Videos selected to analyze:\n{self.files}")
+
+    def clear_selected_videos(self):
+        self.selected_videos_text.setText("")
+        self.select_video_button.setText("Select videos")
+        self.files.clear()
+        self.select_video_button.adjustSize()
+        self.selected_videos_text.adjustSize()
+        self.logger.info(f"Videos selected to analyze:\n{self.files}")
+
+
 class DefaultTab(QtWidgets.QWidget):
     def __init__(self, parent, tab_heading):
         super(DefaultTab, self).__init__(parent)
@@ -76,6 +154,7 @@ class DefaultTab(QtWidgets.QWidget):
 
         self._init_default_layout()
 
+        # TODO: Delete this after making sure the class works as intended
         self.logger.debug("Initializing default tab window...")
         self.logger.debug(f"Config file: {self.config}")
         self.logger.debug(f"Config dict: {self.cfg}")
@@ -198,6 +277,9 @@ class BrowseFilesButton(QtWidgets.QPushButton):
 
         self.dialog_text = dialog_text
         self.file_text = file_text
+
+        self.files = set()
+
         self.clicked.connect(self.browse_files)
 
     def browse_files(self):
@@ -227,7 +309,5 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         filepaths = open_file_func(self, dialog_text, cwd, file_text)
 
         if filepaths:
-            # NOTE: how to store and access widget property
-            self.setProperty("files", filepaths[0])
-            print(self.Property("files"))
+            self.files.update(filepaths[0])
 

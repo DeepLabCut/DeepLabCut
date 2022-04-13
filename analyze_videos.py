@@ -13,6 +13,7 @@ from PySide2.QtWidgets import (
 from widgets import ConfigEditor
 from components import (
     DefaultTab,
+    VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
     _create_horizontal_layout,
@@ -48,11 +49,15 @@ class AnalyzeVideos(DefaultTab):
 
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
+
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.layout_video_selection = _create_horizontal_layout()
-        self._generate_layout_video_analysis(self.layout_video_selection)
-        self.main_layout.addLayout(self.layout_video_selection)
+        self.video_selection_widget = VideoSelectionWidget(self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
         tmp_layout = _create_horizontal_layout()
 
@@ -149,33 +154,6 @@ class AnalyzeVideos(DefaultTab):
             self.update_selected_bodyparts
         )
         layout.addWidget(self.bdpt_list_widget, Qt.AlignLeft)
-
-    def _generate_layout_video_analysis(self, layout):
-
-        self.videotype_widget = QComboBox()
-        self.videotype_widget.setMaximumWidth(100)
-        self.videotype_widget.setMinimumHeight(30)
-
-        options = ["avi", "mp4", "mov"]
-        self.videotype_widget.addItems(options)
-        self.videotype_widget.setCurrentText(self.backend_variables["input_video_type"])
-        self.videotype_widget.currentTextChanged.connect(self.update_videotype)
-
-        layout.addWidget(self.videotype_widget)
-
-        self.select_video_button = QtWidgets.QPushButton("Select videos")
-        self.select_video_button.setMaximumWidth(200)
-        self.select_video_button.setMinimumHeight(30)
-        self.select_video_button.clicked.connect(self.select_videos)
-
-        layout.addWidget(self.select_video_button)
-
-        self.selected_videos_text = QtWidgets.QLabel("")
-        layout.addWidget(self.selected_videos_text)
-
-        self.clear_videos = QtWidgets.QPushButton("Clear selection")
-        self.clear_videos.clicked.connect(self.clear_selected_videos)
-        layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
         # Shuffle
@@ -320,13 +298,6 @@ class AnalyzeVideos(DefaultTab):
             self.backend_variables["calibrate_assembly"] = False
             self.logger.info("Assembly calibration DISABLED")
 
-    def update_videotype(self, vtype):
-        self.logger.info(f"Looking for .{vtype} videos")
-        self.backend_variables["input_video_type"] = vtype
-        self.filelist.clear()
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
-
     def update_selected_bodyparts(self):
         selected_bodyparts = [
             item.text() for item in self.bdpt_list_widget.selectedItems()
@@ -386,34 +357,6 @@ class AnalyzeVideos(DefaultTab):
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
             self.logger.info("Plot trajectories DISABLED.")
 
-    def select_videos(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
-        filenames = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Select video(s) to analyze",
-            cwd,
-            f"Video files (*.{self.videotype_widget.currentText()})",
-        )
-
-        if filenames:
-            self.filelist.update(
-                filenames[0]
-            )  # Qt returns a tuple ( list of files, filetype )
-            self.selected_videos_text.setText("%s videos selected" % len(self.filelist))
-            self.select_video_button.setText("Add more videos")
-            self.select_video_button.adjustSize()
-            self.selected_videos_text.adjustSize()
-            self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
-
-    def clear_selected_videos(self):
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
-        self.filelist.clear()
-        self.select_video_button.adjustSize()
-        self.selected_videos_text.adjustSize()
-        self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
-
     def edit_config_file(self):
 
         if not self.config:
@@ -425,7 +368,7 @@ class AnalyzeVideos(DefaultTab):
         shuffle = self.shuffle.value()
         trainingsetindex = self.trainingset.value()
 
-        videos = list(self.filelist)
+        videos = list(self.files)
         save_as_csv = self.backend_variables["save_as_csv"]
         filter_data = self.backend_variables["filter_data"]
         videotype = self.backend_variables["input_video_type"]

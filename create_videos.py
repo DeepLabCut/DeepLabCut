@@ -13,6 +13,7 @@ from PySide2.QtWidgets import (
 
 from components import (
     DefaultTab,
+    VideoSelectionWidget,
     _create_horizontal_layout,
     _create_label_widget,
     _create_vertical_layout,
@@ -29,12 +30,15 @@ class CreateVideos(DefaultTab):
 
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.layout_video_selection = _create_horizontal_layout()
-        self._generate_layout_video_analysis(self.layout_video_selection)
-        self.main_layout.addLayout(self.layout_video_selection)
+        self.video_selection_widget = VideoSelectionWidget(self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
         tmp_layout = _create_horizontal_layout()
 
@@ -63,36 +67,6 @@ class CreateVideos(DefaultTab):
         self.run_button = QtWidgets.QPushButton("Create videos")
         self.run_button.clicked.connect(self.create_videos)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
-
-    def _generate_layout_video_analysis(self, layout):
-
-        self.videotype_widget = QComboBox()
-        self.videotype_widget.setMaximumWidth(100)
-        self.videotype_widget.setMinimumHeight(30)
-
-        options = ["avi", "mp4", "mov"]
-        self.videotype_widget.addItems(options)
-        self.videotype_widget.setCurrentText("avi")
-        self.videotype_widget.currentTextChanged.connect(self.update_videotype)
-
-        layout.addWidget(self.videotype_widget)
-
-           
-        self.select_video_button = QtWidgets.QPushButton("Select videos")
-        self.select_video_button.setMaximumWidth(200)
-        self.select_video_button.setMinimumHeight(30)
-        self.select_video_button.clicked.connect(self.select_videos)
-
-        layout.addWidget(self.select_video_button)
-
-        self.selected_videos_text = QtWidgets.QLabel("") #updated when videos are selected
-        layout.addWidget(self.selected_videos_text)
-
-        self.clear_videos = QtWidgets.QPushButton("Clear selection")
-        self.clear_videos.clicked.connect(self.clear_selected_videos)
-        layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
-
-
 
     def _generate_layout_multianimal_only_options(self, layout):
         tmp_text = QtWidgets.QLabel("Color keypoints by:")
@@ -258,43 +232,8 @@ class CreateVideos(DefaultTab):
         else:
             self.logger.info("Overwrite videos DISABLED")
 
-    def update_videotype(self, vtype):
-        self.logger.info(f"Looking for .{vtype} videos")
-        self.filelist.clear()
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
-
     def update_color_by(self, text):
         self.logger.info(f"Coloring keypoints in videos by {text}")
-
-    def select_videos(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
-        filenames = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Select video(s) to analyze",
-            cwd,
-            f"Video files (*.{self.videotype_widget.currentText()})",
-        )
-
-        if filenames[0]:
-            self.filelist.update(
-                filenames[0]
-            )  # Qt returns a tuple ( list of files, filetype )
-            self.selected_videos_text.setText("%s videos selected" % len(self.filelist))
-            self.select_video_button.setText("Add more videos")
-            self.select_video_button.adjustSize()
-            self.selected_videos_text.adjustSize()
-            self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
-
-    def clear_selected_videos(self):
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
-        self.filelist.clear()
-        self.select_video_button.adjustSize()
-        self.selected_videos_text.adjustSize()
-        self.logger.info(f"Videos selected to analyze:\n{self.filelist}")
-
 
     def update_filter_choice(self, rb):
         if rb.text() == "Yes":
@@ -319,7 +258,7 @@ class CreateVideos(DefaultTab):
         config = self.config
         shuffle = self.shuffle.value()
         trainingsetindex = self.trainingset.value()
-        videos = self.filelist
+        videos = self.files
         bodyparts = "all"
         videotype = self.videotype_widget.currentText()
         trailpoints = self.trail_points.value()
