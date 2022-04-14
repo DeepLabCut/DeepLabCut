@@ -13,7 +13,9 @@ from collections import defaultdict
 import deeplabcut
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
-from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import calc_iou
+from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import (
+    calc_iou, TRACK_METHODS,
+)
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
@@ -1134,7 +1136,7 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = os.path.join(videofolder, vname + DLCscorer + "_bpt_features.pickle")
+        feature_dict_path = os.path.join(dest, vname + DLCscorer + "_bpt_features.pickle")
         # should only exist one
         if transformer_checkpoint:
             import dbm
@@ -1147,13 +1149,8 @@ def stitch_tracklets(
 
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 
-        if track_method == "ellipse":
-            method = "el"
-        elif track_method == "box":
-            method = "bx"
-        else:
-            method = "sk"
-        pickle_file = dataname.split(".h5")[0] + f"_{method}.pickle"
+        method = TRACK_METHODS[track_method]
+        pickle_file = dataname.split(".h5")[0] + f"{method}.pickle"
         try:
             stitcher = TrackletStitcher.from_pickle(
                 pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
