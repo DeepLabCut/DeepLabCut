@@ -7,7 +7,7 @@ In this repo we directly support 2-camera based 3D pose estimation. If you want 
 
 **ATTENTION: Our code base in this repo assumes you:**
 
-A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)). We also support multi-animal 3D with this code (please see [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0)).
+A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/UseOverviewGuide.md). This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)). We also support multi-animal 3D with this code (please see [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0)).
 
 B. You are using 2 cameras, in a [stereo configuration](https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223), for 3D*.
 

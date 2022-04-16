@@ -48,8 +48,8 @@ crop_sampling: hybrid  # Sample crop centers either uniformly over the image or 
 #Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
 #default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
 #types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
-#For deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
-#For tensorpack, see https://github.com/AlexEMG/DeepLabCut/pull/409
+#For deterministic, see https://github.com/DeepLabCut/DeepLabCut/pull/324
+#For tensorpack, see https://github.com/DeepLabCut/DeepLabCut/pull/409
 
 #what is the fraction of training samples with cropping? (used for scalecrop)
 cropratio: 0.4

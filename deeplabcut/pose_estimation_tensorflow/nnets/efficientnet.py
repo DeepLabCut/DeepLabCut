@@ -1,7 +1,7 @@
 """
 DeepLabCut 2.1.9 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS

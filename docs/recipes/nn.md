@@ -29,7 +29,7 @@ by DeepLabCut, default values (see the augmentation variables in the
 [default pose_cfg.yaml](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml#L23-L74) file)
 can be readily overwritten prior to training.
 
-When you `create_training_dataset` [you have several options](https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md#create-training-dataset) on what types of augmentation to use.
+When you `create_training_dataset` [you have several options](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset) on what types of augmentation to use.
 ```python
 deeplabcut.create_training_dataset(configpath, augmenter_type='imgaug')
 ```
