@@ -142,9 +142,9 @@ Here are some additional resources users have found helpful (posted without endo
 - http://www.python36.com/install-tensorflow-gpu-windows/
 
 
-FFMEG:
+FFMPEG:
 
-- A few Windows users report needing to install re-install ffmeg (after windows updates) as described here: https://video.stackexchange.com/questions/20495/how-do-i-set-up-and-use-ffmpeg-in-windows (A potential error could occur when making new videos). On Ubuntu, the command is: `sudo apt install ffmpeg`
+- A few Windows users report needing to install re-install ffmpeg (after windows updates) as described here: https://video.stackexchange.com/questions/20495/how-do-i-set-up-and-use-ffmpeg-in-windows (A potential error could occur when making new videos). On Ubuntu, the command is: `sudo apt install ffmpeg`
 
 DEEPLABCUT:
 
