@@ -26,9 +26,9 @@ python main.py
 - [x] Create labeled videos
   - [x] color by ID / bodypart
   - [x] plug in multi-animal values in function call
-- [ ] Model evaluation
-  - [ ] Edit inference config file option
-  - [ ] Use specific bodyparts option
+- [x] Model evaluation
+  - [x] Edit inference config file option
+  - [x] Use specific bodyparts option
 - [ ] Extract outlier frames
   - [ ] Add multianimal support
 - [ ] Labeling, plug in multi-animal matplotlib code
