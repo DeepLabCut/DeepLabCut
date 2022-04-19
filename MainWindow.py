@@ -248,7 +248,7 @@ class MainWindow(QMainWindow):
         label_frames = LabelFrames(self, self.config)
         create_training_dataset = CreateTrainingDataset(self, self.config)
         train_network = TrainNetwork(self, self.config)
-        evaluate_network = EvaluateNetwork(self, self.config)
+        evaluate_network = EvaluateNetwork(self, "DeepLabCut - Step 6. Evaluate Network")
         video_editor = VideoEditor(self, self.config)
         analyze_videos = AnalyzeVideos(self, "DeepLabCut - Step 7. Analyze Videos")
         create_videos = CreateVideos(self, "DeepLabCut - Optional Step. Create Videos")

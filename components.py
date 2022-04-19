@@ -55,6 +55,24 @@ def _create_grid_layout(
 
     return layout
 
+class BodypartListWidget(QtWidgets.QListWidget):
+    def __init__(self, parent, all_bodyparts):
+        super(BodypartListWidget, self).__init__()
+
+        self.parent = parent
+        self.all_bodyparts = all_bodyparts
+        self.selected_bodyparts = self.all_bodyparts
+
+        self.setEnabled(False)
+        
+        self.addItems(self.all_bodyparts)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+
+        self.itemSelectionChanged.connect(self.update_selected_bodyparts)
+
+    def update_selected_bodyparts(self):
+        self.selected_bodyparts = [item.text() for item in self.selectedItems()]
+
 
 class VideoSelectionWidget(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -154,7 +172,7 @@ class DefaultTab(QtWidgets.QWidget):
 
         self._init_default_layout()
 
-        # TODO: Delete this after making sure the class works as intended
+        # TODO: Delete these after making sure the class works as intended
         self.logger.debug("Initializing default tab window...")
         self.logger.debug(f"Config file: {self.config}")
         self.logger.debug(f"Config dict: {self.cfg}")
