@@ -1,7 +1,4 @@
-import logging
-
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
@@ -12,6 +9,7 @@ from PySide2.QtWidgets import (
 
 from widgets import ConfigEditor
 from components import (
+    BodypartListWidget,
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
@@ -22,13 +20,13 @@ from components import (
 
 
 class AnalyzeVideos(DefaultTab):
-    def __init__(self, parent, tab_heading):
-        super(AnalyzeVideos, self).__init__(parent, tab_heading)
+    def __init__(self, root, parent, tab_heading):
+        super(AnalyzeVideos, self).__init__(root, parent, tab_heading)
 
         self.filelist = set()
         
-        if self.is_multianimal:
-            self.tracker_method = self.cfg.get("default_track_method", "ellipse")
+        if self.root.is_multianimal:
+            self.tracker_method = self.root.cfg.get("default_track_method", "ellipse")
 
         self.backend_variables = {
             "save_as_csv": False,
@@ -41,7 +39,7 @@ class AnalyzeVideos(DefaultTab):
             "filter_data": False,
             "plot_trajectories": False,
             "plot_trajectories": False,
-            "bodyparts_to_use": self.all_bodyparts,
+            "bodyparts_to_use": self.root.all_bodyparts,
             "create_video_all_detections": False,
             "robustnframes": False,  # Use ffprobe
             "use_transformer_tracking": False,
@@ -56,7 +54,7 @@ class AnalyzeVideos(DefaultTab):
     def set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(self)
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
 
         tmp_layout = _create_horizontal_layout()
@@ -74,7 +72,7 @@ class AnalyzeVideos(DefaultTab):
         self.layout_multi_animal = _create_horizontal_layout()
 
 
-        if self.cfg["multianimalproject"]:
+        if self.root.is_multianimal:
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
             tmp_layout.addLayout(self.layout_multi_animal)
         else:
@@ -142,18 +140,12 @@ class AnalyzeVideos(DefaultTab):
         layout.addLayout(tmp_layout)
 
         # Bodypart list
-        self.bdpt_list_widget = QtWidgets.QListWidget()
-        self.bdpt_list_widget.setMaximumWidth(500)
-        self.bdpt_list_widget.addItems(self.all_bodyparts)
-        self.bdpt_list_widget.setSelectionMode(
-            QtWidgets.QAbstractItemView.MultiSelection
+        self.bodyparts_list_widget = BodypartListWidget(
+            root=self.root, parent=self,
         )
-        # self.bdpt_list_widget.selectAll()
-        self.bdpt_list_widget.setEnabled(False)
-        self.bdpt_list_widget.itemSelectionChanged.connect(
-            self.update_selected_bodyparts
-        )
-        layout.addWidget(self.bdpt_list_widget, Qt.AlignLeft)
+        self.bodyparts_list_widget.setMaximumWidth(600)
+        self.bodyparts_list_widget.setMaximumHeight(500)
+        layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
     def _generate_layout_attributes(self, layout):
         # Shuffle
@@ -162,6 +154,7 @@ class AnalyzeVideos(DefaultTab):
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
         self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
         layout.addWidget(opt_text, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
@@ -198,7 +191,7 @@ class AnalyzeVideos(DefaultTab):
 
         opt_text = QtWidgets.QLabel("Number of animals in videos")
         self.num_animals_in_videos = QSpinBox()
-        self.num_animals_in_videos.setValue(len(self.cfg.get("individuals", 1)))
+        self.num_animals_in_videos.setValue(len(self.root.all_individuals))
         self.num_animals_in_videos.setMaximum(100)
         self.num_animals_in_videos.setMinimumHeight(30)
         tmp_layout.addWidget(opt_text, 1, 0)
@@ -298,15 +291,6 @@ class AnalyzeVideos(DefaultTab):
             self.backend_variables["calibrate_assembly"] = False
             self.logger.info("Assembly calibration DISABLED")
 
-    def update_selected_bodyparts(self):
-        selected_bodyparts = [
-            item.text() for item in self.bdpt_list_widget.selectedItems()
-        ]
-        self.logger.info(
-            f"Selected bodyparts for trajecories plotting:\n\t{selected_bodyparts}"
-        )
-        self.backend_variables["bodyparts_to_use"] = selected_bodyparts
-
     def update_tracker_type(self, method):
         self.logger.info(f"Using {method} tracker")
         self.tracker_method = method
@@ -346,26 +330,28 @@ class AnalyzeVideos(DefaultTab):
     def update_plot_trajectory_choice(self, s):
         if s == Qt.Checked:
             self.backend_variables["plot_trajectories"] = True
-            self.bdpt_list_widget.setEnabled(True)
+            self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
             self.logger.info("Plot trajectories ENABLED.")
 
         else:
             self.backend_variables["plot_trajectories"] = False
-            self.bdpt_list_widget.setEnabled(False)
+            self.bodyparts_list_widget.setEnabled(False)
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
             self.logger.info("Plot trajectories DISABLED.")
 
     def edit_config_file(self):
 
-        if not self.config:
+        if not self.root.config:
             return
-        editor = ConfigEditor(self.config)
+        editor = ConfigEditor(self.root.config)
         editor.show()
 
     def analyze_videos(self):
-        shuffle = self.shuffle.value()
+
+        config = self.root.config
+        shuffle = self.root.shuffle_value
         trainingsetindex = self.trainingset.value()
 
         videos = list(self.files)
@@ -386,14 +372,14 @@ class AnalyzeVideos(DefaultTab):
         cropping = None
         dynamic_cropping_params = (False, 0.5, 10)
 
-        if self.cfg["cropping"] == "True":
-            cropping = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
+        if self.root.cfg["cropping"] == "True":
+            cropping = self.root.cfg["x1"], self.root.cfg["x2"], self.root.cfg["y1"], self.root.cfg["y2"]
 
         if self.backend_variables["dynamic_cropping"]:
             dynamic_cropping_params = (True, 0.5, 10)
 
         scorername = deeplabcut.analyze_videos(
-            self.config,
+            config,
             videos=videos,
             videotype=videotype,
             shuffle=shuffle,
@@ -411,16 +397,16 @@ class AnalyzeVideos(DefaultTab):
 
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
-                config=self.config,
+                config,
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
             )
 
-        if self.cfg["multianimalproject"]:
+        if self.root.is_multianimal:
             deeplabcut.convert_detections2tracklets(
-                self.config,
+                config,
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
@@ -438,7 +424,7 @@ class AnalyzeVideos(DefaultTab):
                 # TODO: Plug in code, when codebase stable.
             else:
                 deeplabcut.stitch_tracklets(
-                    config_path=self.config,
+                    config,
                     videos=videos,
                     videotype=videotype,
                     shuffle=shuffle,
@@ -449,7 +435,7 @@ class AnalyzeVideos(DefaultTab):
 
         if filter_data:
             deeplabcut.filterpredictions(
-                self.config,
+                config,
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
@@ -460,11 +446,11 @@ class AnalyzeVideos(DefaultTab):
             )
 
         if self.backend_variables["plot_trajectories"]:
-            bdpts = self.bdpt_list_widget.selectedItems()
+            bdpts = self.bodyparts_list_widget.selected_bodyparts
             self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
             showfig = self.backend_variables["show_figures"]
             deeplabcut.plot_trajectories(
-                self.config,
+                config,
                 videos=videos,
                 displayedbodyparts=bdpts,
                 videotype=videotype,

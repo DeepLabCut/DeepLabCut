@@ -1,9 +1,6 @@
 import os
-import subprocess
-import sys
-import webbrowser
 
-from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup
+from PySide2.QtWidgets import QSpinBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -21,16 +18,15 @@ from widgets import ConfigEditor
 
 
 class EvaluateNetwork(DefaultTab):
-    def __init__(self, parent, tab_heading):
-        super(EvaluateNetwork, self).__init__(parent, tab_heading)
+    def __init__(self, root, parent, tab_heading):
+        super(EvaluateNetwork, self).__init__(root, parent, tab_heading)
 
         self.method = "automatic"
 
         self.plot_choice = False
         self.plot_scoremaps = False
-        # self.bodyparts = []
 
-        self.bodyparts_to_use = self.all_bodyparts
+        self.bodyparts_to_use = self.root.all_bodyparts
 
         self.set_page()
 
@@ -64,7 +60,7 @@ class EvaluateNetwork(DefaultTab):
 
         self.main_layout.addLayout(self.layout_attributes)
 
-        if self.is_multianimal:
+        if self.root.is_multianimal:
             self.main_layout.addWidget(self.edit_posecfg_btn, alignment=Qt.AlignRight)
 
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
@@ -91,6 +87,7 @@ class EvaluateNetwork(DefaultTab):
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
         self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
@@ -110,9 +107,10 @@ class EvaluateNetwork(DefaultTab):
         editor.show()
 
     def plot_maps(self):
-        shuffle = self.shuffle.value()
+        shuffle = self.root.shuffle_value
+        config = self.root.config
         deeplabcut.extract_save_all_maps(
-            self.config, shuffle=shuffle, Indices=[0, 1, 5]
+            config, shuffle=shuffle, Indices=[0, 1, 5]
         )
 
     def _generate_additional_attributes(self, layout):
@@ -134,7 +132,7 @@ class EvaluateNetwork(DefaultTab):
         layout.addLayout(tmp_layout)
 
         self.bodyparts_list_widget = BodypartListWidget(
-            parent=self, all_bodyparts=self.all_bodyparts
+            root=self.root, parent=self,
         )
         self.bodyparts_list_widget.setMaximumWidth(600)
         self.bodyparts_list_widget.setMaximumHeight(500)
@@ -166,20 +164,21 @@ class EvaluateNetwork(DefaultTab):
 
     def evaluate_network(self):
 
+        config = self.root.config
         trainingsetindex = self.trainingsetidx.value()
 
-        Shuffles = [self.shuffle.value()]
+        Shuffles = [self.root.shuffle_value]
         plotting = self.plot_choice
 
         bodyparts_to_use = "all"
         if (
-            len(self.all_bodyparts)
+            len(self.root.all_bodyparts)
             != len(self.bodyparts_list_widget.selected_bodyparts)
         ) and self.use_all_bodyparts.checkState() == False:
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(
-            self.config,
+            config,
             Shuffles=Shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,

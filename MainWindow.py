@@ -1,6 +1,7 @@
 import os
 import logging
 from pathlib import Path
+from typing import List
 import qdarkstyle
 
 from deeplabcut import auxiliaryfunctions
@@ -42,6 +43,10 @@ class MainWindow(QMainWindow):
         self.loaded = False
         self.user_feedback = False
 
+        self.shuffle_value = 1
+
+        self.selected_files = set()
+
         self.default_set()
 
         self.welcome_page("Welcome.png")
@@ -58,6 +63,32 @@ class MainWindow(QMainWindow):
     @property
     def cfg(self):
         return auxiliaryfunctions.read_config(self.config)
+
+    @property
+    def project_folder(self) -> str:
+        return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
+
+    @property
+    def is_multianimal(self) -> bool:
+        return bool(self.cfg.get("multianimalproject"))
+
+    @property
+    def all_bodyparts(self) -> List:
+        if self.is_multianimal:
+            return self.cfg.get("multianimalbodyparts")
+        else:
+            return self.cfg["bodyparts"]
+
+    @property
+    def all_individuals(self) -> List:
+        if self.is_multianimal:
+            return self.cfg.get("individuals")
+        else:
+            return [""]
+
+    def update_shuffle(self, value):
+        self.logger.info(f"Shuffle set to {value}")
+        self.shuffle_value = value
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
@@ -244,14 +275,14 @@ class MainWindow(QMainWindow):
 
         tabs = QtWidgets.QTabWidget()
         tabs.setContentsMargins(0, 20, 0, 0)
-        extract_frames = ExtractFrames(self, "DeepLabCut - Step 2. Extract Frames")
+        extract_frames = ExtractFrames(root=self, parent=self, tab_heading="DeepLabCut - Step 2. Extract Frames")
         label_frames = LabelFrames(self, self.config)
         create_training_dataset = CreateTrainingDataset(self, self.config)
         train_network = TrainNetwork(self, self.config)
-        evaluate_network = EvaluateNetwork(self, "DeepLabCut - Step 6. Evaluate Network")
+        evaluate_network = EvaluateNetwork(root=self, parent=self, tab_heading="DeepLabCut - Step 6. Evaluate Network")
         video_editor = VideoEditor(self, self.config)
-        analyze_videos = AnalyzeVideos(self, "DeepLabCut - Step 7. Analyze Videos")
-        create_videos = CreateVideos(self, "DeepLabCut - Optional Step. Create Videos")
+        analyze_videos = AnalyzeVideos(root=self, parent=self, tab_heading="DeepLabCut - Step 7. Analyze Videos")
+        create_videos = CreateVideos(root=self, parent=self, tab_heading="DeepLabCut - Optional Step. Create Videos")
         extract_outlier_frames = ExtractOutlierFrames(self, self.config)
         refine_labels = RefineLabels(self, self.config)
 

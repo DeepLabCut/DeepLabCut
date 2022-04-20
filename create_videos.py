@@ -1,12 +1,8 @@
-import logging
-
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (
-    QWidget,
     QComboBox,
     QSpinBox,
 )
@@ -17,16 +13,15 @@ from components import (
     _create_horizontal_layout,
     _create_label_widget,
     _create_vertical_layout,
-    BrowseFilesButton,
 )
 
 
 class CreateVideos(DefaultTab):
-    def __init__(self, parent, tab_heading):
-        super(CreateVideos, self).__init__(parent, tab_heading)
+    def __init__(self, root, parent, tab_heading):
+        super(CreateVideos, self).__init__(root, parent, tab_heading)
 
         self.filelist = set()
-        self.bodyparts_to_use = self.all_bodyparts
+        self.bodyparts_to_use = self.root.all_bodyparts
 
         self.set_page()
 
@@ -37,7 +32,7 @@ class CreateVideos(DefaultTab):
     def set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(self)
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
 
         tmp_layout = _create_horizontal_layout()
@@ -51,7 +46,7 @@ class CreateVideos(DefaultTab):
 
         self.layout_multi_animal = _create_horizontal_layout()
 
-        if self.cfg.get("multianimalproject", False):
+        if self.root.is_multianimal:
             self._generate_layout_multianimal_only_options(self.layout_multi_animal)
             tmp_layout.addLayout(self.layout_multi_animal)
 
@@ -87,6 +82,8 @@ class CreateVideos(DefaultTab):
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
         self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
+
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
@@ -168,7 +165,7 @@ class CreateVideos(DefaultTab):
         # Bodypart list
         self.bdpt_list_widget = QtWidgets.QListWidget()
         # self.bdpt_list_widget.setMaximumWidth(500)
-        self.bdpt_list_widget.addItems(self.all_bodyparts)
+        self.bdpt_list_widget.addItems(self.root.all_bodyparts)
         self.bdpt_list_widget.setSelectionMode(
             QtWidgets.QAbstractItemView.MultiSelection
         )
@@ -255,8 +252,8 @@ class CreateVideos(DefaultTab):
 
     def create_videos(self):
 
-        config = self.config
-        shuffle = self.shuffle.value()
+        config = self.root.config
+        shuffle = self.root.shuffle_value
         trainingsetindex = self.trainingset.value()
         videos = self.files
         bodyparts = "all"
@@ -280,7 +277,7 @@ class CreateVideos(DefaultTab):
         if self.plot_trajectories.checkState() == False:
             plot_trajectories = False
 
-        bodyparts = self.all_bodyparts
+        bodyparts = "all"
         if  len(self.bodyparts_to_use)!=0 and self.plot_all_bodyparts.checkState()==Qt.Checked:
             bodyparts = self.bodyparts_to_use
 
