@@ -18,12 +18,12 @@ class OpenProject(QtWidgets.QDialog):
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
 
-        self.open_button = QtWidgets.QPushButton("Ok")
-        self.open_button.setDefault(True)
-        self.open_button.clicked.connect(self.open_project)
+        self.ok_button = QtWidgets.QPushButton("Ok")
+        self.ok_button.setDefault(True)
+        self.ok_button.clicked.connect(self.open_project)
 
         main_layout.addWidget(self.open_frame)
-        main_layout.addWidget(self.open_button, alignment=QtCore.Qt.AlignRight)
+        main_layout.addWidget(self.ok_button, alignment=QtCore.Qt.AlignRight)
 
     def layout_open(self):
         self.open_frame = QtWidgets.QFrame(self)
@@ -64,6 +64,7 @@ class OpenProject(QtWidgets.QDialog):
             return
         self.config = config[0]
         self.open_line.setText(self.config)
+        self.ok_button.setFocus()
 
     def activate_fbk(self, state):
         # Activates the feedback option
