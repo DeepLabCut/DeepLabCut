@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
 
         self.shuffle_value = 1
 
-        self.selected_files = set()
+        self.files = set()
 
         self.default_set()
 
@@ -89,6 +89,11 @@ class MainWindow(QMainWindow):
     def update_shuffle(self, value):
         self.logger.info(f"Shuffle set to {value}")
         self.shuffle_value = value
+
+    def update_files(self, files:set):
+        self.files.update(files)
+        self.logger.info(f"Videos selected to analyze:\n{self.files}")
+
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
@@ -273,8 +278,8 @@ class MainWindow(QMainWindow):
     def add_tabs(self):
         # Add all the other pages
 
-        tabs = QtWidgets.QTabWidget()
-        tabs.setContentsMargins(0, 20, 0, 0)
+        self.tab_widget = QtWidgets.QTabWidget()
+        self.tab_widget.setContentsMargins(0, 20, 0, 0)
         extract_frames = ExtractFrames(root=self, parent=self, tab_heading="DeepLabCut - Step 2. Extract Frames")
         label_frames = LabelFrames(self, self.config)
         create_training_dataset = CreateTrainingDataset(self, self.config)
@@ -286,15 +291,38 @@ class MainWindow(QMainWindow):
         extract_outlier_frames = ExtractOutlierFrames(self, self.config)
         refine_labels = RefineLabels(self, self.config)
 
-        tabs.addTab(extract_frames, "Extract frames")
-        tabs.addTab(label_frames, "Label frames")
-        tabs.addTab(create_training_dataset, "Create training dataset")
-        tabs.addTab(train_network, "Train network")
-        tabs.addTab(evaluate_network, "Evaluate network")
-        tabs.addTab(video_editor, "Video editor")
-        tabs.addTab(analyze_videos, "Analyze videos")
-        tabs.addTab(create_videos, "Create videos")
-        tabs.addTab(extract_outlier_frames, "Extract outlier frames")
-        tabs.addTab(refine_labels, "Refine labels")
+        self.tab_widget.addTab(extract_frames, "Extract frames")
+        self.tab_widget.addTab(label_frames, "Label frames")
+        self.tab_widget.addTab(create_training_dataset, "Create training dataset")
+        self.tab_widget.addTab(train_network, "Train network")
+        self.tab_widget.addTab(evaluate_network, "Evaluate network")
+        self.tab_widget.addTab(video_editor, "Video editor")
+        self.tab_widget.addTab(analyze_videos, "Analyze videos")
+        self.tab_widget.addTab(create_videos, "Create videos")
+        self.tab_widget.addTab(extract_outlier_frames, "Extract outlier frames")
+        self.tab_widget.addTab(refine_labels, "Refine labels")
 
-        self.setCentralWidget(tabs)
+        self.setCentralWidget(self.tab_widget)
+
+        self.tab_widget.currentChanged.connect(self.refresh_active_tab)
+
+    def refresh_active_tab(self):
+        active_tab = self.tab_widget.currentWidget()
+        tab_label = self.tab_widget.tabText(self.tab_widget.currentIndex())
+
+        widget_to_attribute_map = {
+            QtWidgets.QSpinBox: "setValue",
+            QtWidgets.QLineEdit: "setText",
+        }
+        
+        def _attempt_attribute_update(widget_name, updated_value):
+            try:
+                widget = getattr(active_tab, widget_name)
+                method = getattr(widget, widget_to_attribute_map[type(widget)])
+                self.logger.debug(f"Setting {widget_name}={updated_value} in tab '{tab_label}'")
+                method(updated_value)
+            except AttributeError: 
+                self.logger.debug(f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping...")
+
+        _attempt_attribute_update("shuffle", self.shuffle_value)
+        _attempt_attribute_update("cfg_line", self.config)

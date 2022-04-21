@@ -20,31 +20,12 @@ from components import (
 
 
 class AnalyzeVideos(DefaultTab):
+    # TODO: self.files DOES NOT WORK!
     def __init__(self, root, parent, tab_heading):
         super(AnalyzeVideos, self).__init__(root, parent, tab_heading)
 
-        self.filelist = set()
-        
         if self.root.is_multianimal:
             self.tracker_method = self.root.cfg.get("default_track_method", "ellipse")
-
-        self.backend_variables = {
-            "save_as_csv": False,
-            "dynamic_cropping": False,
-            "input_video_type": "avi",
-            "show_figures": True,
-            "calibrate_assembly": False,
-            "assemble_with_ID_only": False,
-            "overwrite_tracks": False,
-            "filter_data": False,
-            "plot_trajectories": False,
-            "plot_trajectories": False,
-            "bodyparts_to_use": self.root.all_bodyparts,
-            "create_video_all_detections": False,
-            "robustnframes": False,  # Use ffprobe
-            "use_transformer_tracking": False,
-        }
-
         self.set_page()
 
     @property
@@ -101,6 +82,7 @@ class AnalyzeVideos(DefaultTab):
         self.crop_bodyparts.setCheckState(Qt.Unchecked)
         self.crop_bodyparts.stateChanged.connect(self.update_crop_choice)
 
+        self.dynamic_cropping = False
         layout.addWidget(self.crop_bodyparts)
 
     def _generate_layout_other_options(self, layout):
@@ -152,7 +134,7 @@ class AnalyzeVideos(DefaultTab):
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
-        self.shuffle.setValue(1)
+        self.shuffle.setValue(self.root.shuffle_value)
         self.shuffle.setMinimumHeight(30)
         self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
@@ -246,49 +228,37 @@ class AnalyzeVideos(DefaultTab):
     def update_use_transformer_tracking(self, state):
         if state == Qt.Checked:
             self.logger.info("Transformer tracking ENABLED")
-            self.backend_variables["use_transformer_tracking"] = True
         else:
             self.logger.info("Transformer tracking DISABLED")
-            self.backend_variables["use_transformer_tracking"] = False
 
     def update_robustnframes(self, state):
         if state == Qt.Checked:
             self.logger.info("Robust frame reading - use ffprobe ENABLED")
-            self.backend_variables["robustnframes"] = True
         else:
             self.logger.info("Robust frame reading - use ffprobe DISABLED")
-            self.backend_variables["robustnframes"] = False
 
     def update_create_video_detections(self, state):
         if state == Qt.Checked:
-            self.backend_variables["create_video_all_detections"] = True
             self.logger.info("Create video with all detections ENABLED")
         else:
-            self.backend_variables["create_video_all_detections"] = False
             self.logger.info("Create video with all detections DISABLED")
 
     def update_overwrite_tracks(self, state):
         if state == Qt.Checked:
-            self.backend_variables["overwrite_tracks"] = True
             self.logger.info("Overwrite tracks ENABLED")
         else:
-            self.backend_variables["overwrite_tracks"] = False
             self.logger.info("Overwrite tracks DISABLED")
 
     def update_assemble_with_ID_only(self, state):
         if state == Qt.Checked:
-            self.backend_variables["assemble_with_ID_only"] = True
             self.logger.info("Assembly with ID only ENABLED")
         else:
-            self.backend_variables["assemble_with_ID_only"] = False
             self.logger.info("Assembly with ID only DISABLED")
 
     def update_calibrate_assembly(self, state):
         if state == Qt.Checked:
-            self.backend_variables["calibrate_assembly"] = True
             self.logger.info("Assembly calibration ENABLED")
         else:
-            self.backend_variables["calibrate_assembly"] = False
             self.logger.info("Assembly calibration DISABLED")
 
     def update_tracker_type(self, method):
@@ -297,45 +267,37 @@ class AnalyzeVideos(DefaultTab):
 
     def update_csv_choice(self, s):
         if s == Qt.Checked:
-            self.backend_variables["save_as_csv"] = True
             self.logger.info("Save results as CSV ENABLED")
         else:
-            self.backend_variables["save_as_csv"] = False
             self.logger.info("Save results as CSV DISABLED")
 
     def update_filter_choice(self, s):
         if s == Qt.Checked:
-            self.backend_variables["filter_data"] = True
             self.logger.info("Filtering predictions ENABLED")
         else:
-            self.backend_variables["filter_data"] = False
             self.logger.info("Filtering predictions DISABLED")
 
     def update_showfigs_choice(self, s):
         if s == Qt.Checked:
-            self.backend_variables["show_figures"] = True
             self.logger.info("Plots will show as pop ups.")
         else:
-            self.backend_variables["show_figures"] = False
             self.logger.info("Plots will not show up.")
 
     def update_crop_choice(self, s):
         if s == Qt.Checked:
-            self.backend_variables["dynamic_cropping"] = True
             self.logger.info("Dynamic bodypart cropping ENABLED.")
+            self.dynamic_cropping = True
         else:
-            self.backend_variables["dynamic_cropping"] = False
             self.logger.info("Dynamic bodypart cropping DISABLED.")
+            self.dynamic_cropping = False
 
     def update_plot_trajectory_choice(self, s):
         if s == Qt.Checked:
-            self.backend_variables["plot_trajectories"] = True
             self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
             self.logger.info("Plot trajectories ENABLED.")
 
         else:
-            self.backend_variables["plot_trajectories"] = False
             self.bodyparts_list_widget.setEnabled(False)
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
@@ -355,17 +317,15 @@ class AnalyzeVideos(DefaultTab):
         trainingsetindex = self.trainingset.value()
 
         videos = list(self.files)
-        save_as_csv = self.backend_variables["save_as_csv"]
-        filter_data = self.backend_variables["filter_data"]
-        videotype = self.backend_variables["input_video_type"]
-        calibrate_assembly = self.backend_variables["calibrate_assembly"]
-        assemble_with_ID_only = self.backend_variables["assemble_with_ID_only"]
-        overwrite_tracks = self.backend_variables["overwrite_tracks"]
-        create_video_all_detections = self.backend_variables[
-            "create_video_all_detections"
-        ]
-        robustnframes = self.backend_variables["robustnframes"]
-        use_transformer_tracking = self.backend_variables["use_transformer_tracking"]
+        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        filter_data = self.filter_predictions.checkState() == Qt.Checked
+        videotype = self.video_selection_widget.currentText()
+        calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+        assemble_with_ID_only = self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+        overwrite_tracks = self.overwrite_tracks.checkState() == Qt.Checked
+        create_video_all_detections = self.create_detections_video_checkbox.checkState() == Qt.Checked
+        robustnframes = self.use_robustnframes.checkState() == Qt.Checked
+        use_transformer_tracking = self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
         track_method = self.tracker_method
         num_animals_in_videos = self.num_animals_in_videos.value()
 
@@ -375,7 +335,7 @@ class AnalyzeVideos(DefaultTab):
         if self.root.cfg["cropping"] == "True":
             cropping = self.root.cfg["x1"], self.root.cfg["x2"], self.root.cfg["y1"], self.root.cfg["y2"]
 
-        if self.backend_variables["dynamic_cropping"]:
+        if self.dynamic_cropping:
             dynamic_cropping_params = (True, 0.5, 10)
 
         scorername = deeplabcut.analyze_videos(
@@ -445,10 +405,10 @@ class AnalyzeVideos(DefaultTab):
                 save_as_csv=save_as_csv,
             )
 
-        if self.backend_variables["plot_trajectories"]:
+        if self.plot_trajectories.checkState() == Qt.Checked:
             bdpts = self.bodyparts_list_widget.selected_bodyparts
             self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
-            showfig = self.backend_variables["show_figures"]
+            showfig = self.show_trajectory_plots.checkState() == Qt.Checked
             deeplabcut.plot_trajectories(
                 config,
                 videos=videos,

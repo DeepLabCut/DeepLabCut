@@ -80,7 +80,7 @@ class CreateVideos(DefaultTab):
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
-        self.shuffle.setValue(1)
+        self.shuffle.setValue(self.root.shuffle_value)
         self.shuffle.setMinimumHeight(30)
         self.shuffle.valueChanged.connect(self.root.update_shuffle)
 

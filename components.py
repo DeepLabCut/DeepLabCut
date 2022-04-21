@@ -86,6 +86,9 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
+    # TODO: Selected should sync across tabs
+    #       automatically! Probably need a slot
+    #       in main window...
     def __init__(
         self, 
         root: QtWidgets.QMainWindow, 
@@ -96,7 +99,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root = root
         self.parent = parent
 
-        self.files = self.root.selected_files
+        self.files = self.root.files
         
         self._init_layout()
     
@@ -156,7 +159,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.select_video_button.setText("Add more videos")
             self.select_video_button.adjustSize()
             self.selected_videos_text.adjustSize()
-            self.root.logger.info(f"Videos selected to analyze:\n{self.files}")
+            self.root.update_files(self.files)
 
     def clear_selected_videos(self):
         self.selected_videos_text.setText("")
