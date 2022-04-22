@@ -33,8 +33,9 @@ class Welcome(wx.Panel):
         line = wx.StaticLine(self)
         sizer.Add(line, pos=(1, 0), span=(1, 8), flag=wx.EXPAND | wx.BOTTOM, border=10)
 
+        from deeplabcut import VERSION
         # if editing this text make sure you add the '\n' to get the new line. The sizer is unable to format lines correctly.
-        description = "DeepLabCut™ is an open source tool for markerless\npose estimation of user-defined body parts with deep learning.\nA. and M.W. Mathis Labs | http://www.deeplabcut.org\n \nWelcome to the DeepLabCut Project Manager GUI!\nTo get started, please click on the 'Manage Project'\n tab to create or load an existing project. \n "
+        description = f"DeepLabCut™ is an open source tool for markerless\npose estimation of user-defined body parts with deep learning.\nA. and M.W. Mathis Labs | http://www.deeplabcut.org\n \nWelcome to the DeepLabCut Project Manager GUI v{VERSION}!\nTo get started, please click on the 'Manage Project'\n tab to create or load an existing project. \n "
 
         self.proj_name = wx.StaticText(self, label=description, style=wx.ALIGN_CENTRE)
         sizer.Add(self.proj_name, pos=(2, 3), border=10)
