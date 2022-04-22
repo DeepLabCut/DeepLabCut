@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
         self.user_feedback = False
 
         self.shuffle_value = 1
-
+        self.videotype = "avi"
         self.files = set()
 
         self.default_set()
@@ -89,6 +89,10 @@ class MainWindow(QMainWindow):
     def update_shuffle(self, value):
         self.logger.info(f"Shuffle set to {value}")
         self.shuffle_value = value
+
+    def update_videotype(self, vtype):
+        self.logger.info(f"Videotype set to {vtype}")
+        self.videotype = vtype
 
     def update_files(self, files:set):
         self.files.update(files)
@@ -280,14 +284,14 @@ class MainWindow(QMainWindow):
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
-        extract_frames = ExtractFrames(root=self, parent=self, tab_heading="DeepLabCut - Step 2. Extract Frames")
-        label_frames = LabelFrames(self, self.config)
+        extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
+        label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
         create_training_dataset = CreateTrainingDataset(self, self.config)
         train_network = TrainNetwork(self, self.config)
-        evaluate_network = EvaluateNetwork(root=self, parent=self, tab_heading="DeepLabCut - Step 6. Evaluate Network")
+        evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
         video_editor = VideoEditor(self, self.config)
-        analyze_videos = AnalyzeVideos(root=self, parent=self, tab_heading="DeepLabCut - Step 7. Analyze Videos")
-        create_videos = CreateVideos(root=self, parent=self, tab_heading="DeepLabCut - Optional Step. Create Videos")
+        analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
+        create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
         extract_outlier_frames = ExtractOutlierFrames(self, self.config)
         refine_labels = RefineLabels(self, self.config)
 
@@ -324,5 +328,17 @@ class MainWindow(QMainWindow):
             except AttributeError: 
                 self.logger.debug(f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping...")
 
+        def _attempt_video_widget_update(videotype, selected_videos):
+            # TODO: NOT WORKING
+            try:
+                video_widget = active_tab.video_selection_widget
+                self.logger.debug(f"Setting videotype={videotype} and videos={active_tab.video_selection_widget.files} in tab '{tab_label}'")
+                video_widget.videotype_widget.setCurrentText(videotype)
+                video_widget._update_video_selection(selected_videos)
+            except AttributeError:
+                self.logger.debug(f"Tab '{tab_label}' has no attribute video_selection_widget. Skipping...")
+
         _attempt_attribute_update("shuffle", self.shuffle_value)
         _attempt_attribute_update("cfg_line", self.config)
+        # _attempt_video_widget_update(self.videotype, self.files)
+

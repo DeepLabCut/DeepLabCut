@@ -1068,9 +1068,3 @@ class MainFrame(QMainWindow):
         self.figure.canvas.draw()
 
         return self.buttonCounter
-
-
-def show(self, config, config3d, sourceCam, imtypes=["*.png"]):
-
-    frame = MainFrame(self, config, imtypes, config3d, sourceCam)
-    frame.show()
