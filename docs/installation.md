@@ -88,7 +88,7 @@ We have some tips for linux users here, as the latest Ubuntu doesn't easily supp
 
 ### **GPU Support:**
 
-The ONLY thing you need to do **first** if you have an NVIDIA GPU and the mathcing NVIDIA CUDA+driver installed.
+The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.
 - CUDA: https://developer.nvidia.com/cuda-downloads (just follow the prompts here!)
 - DRIVERS: https://www.nvidia.com/Download/index.aspx
 
