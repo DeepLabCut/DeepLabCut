@@ -16,6 +16,9 @@ import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
 from deeplabcut import DEBUG
+from deeplabcut.version import __version__, VERSION
+
+print(f"Loading DLC {VERSION}...")
 
 try:
     from deeplabcut import generate_training_dataset
@@ -123,7 +126,3 @@ from deeplabcut.refine_training_dataset import (
 )
 from deeplabcut.post_processing import filterpredictions, analyzeskeleton
 
-
-
-
-from deeplabcut.version import __version__, VERSION
