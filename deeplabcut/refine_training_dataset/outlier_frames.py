@@ -157,10 +157,11 @@ def find_outliers_in_raw_detections(
         temp_coords = dict_["coordinates"][0]
         temp = dict_["confidence"]
         if kept_keypoints is not None:
-            temp = [vals for i, vals in enumerate(temp) if i in kept_keypoints]
-        coords = np.concatenate(temp_coords).squeeze()
-        conf = np.concatenate(temp).squeeze()
-        data[frame_ind] = np.c_[coords, conf]
+            temp_coords = [temp_coords[i] for i in kept_keypoints]
+            temp = [temp[i] for i in kept_keypoints]
+        coords = np.concatenate(temp_coords)
+        conf = np.concatenate(temp)
+        data[frame_ind] = np.c_[coords, conf].squeeze()
         if np.any(conf < threshold):
             candidates.append(frame_ind)
     return candidates, data
