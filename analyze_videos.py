@@ -1,548 +1,420 @@
-from deeplabcut.utils import auxiliaryfunctions
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-
 import deeplabcut
 
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (
+    QComboBox,
+    QSpinBox,
+)
 
-class AnalyzeVideos(QWidget):
-    def __init__(self, parent, cfg):
-        super(AnalyzeVideos, self).__init__(parent)
+from widgets import ConfigEditor
+from components import (
+    BodypartListWidget,
+    DefaultTab,
+    VideoSelectionWidget,
+    _create_grid_layout,
+    _create_label_widget,
+    _create_horizontal_layout,
+    _create_vertical_layout,
+)
 
-        self.filelist = []
-        self.picklelist = []
-        self.bodyparts = []
-        self.config = cfg
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-        self.draw = False
 
-        self.csv = False
-        self.dynamic = False
-        self.trajectory = False
-        self.filter = False
-        self.showfigs = True
+class AnalyzeVideos(DefaultTab):
+    def __init__(self, root, parent, h1_description):
+        super(AnalyzeVideos, self).__init__(root, parent, h1_description)
 
-        # if self.cfg.get("multianimalproject", False):
-        #     self.bodyparts = self.cfg["multianimalbodyparts"]
-        # else:
-        #     self.bodyparts = self.cfg["bodyparts"]
-
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
-
+        if self.root.is_multianimal:
+            self.tracker_method = self.root.cfg.get("default_track_method", "ellipse")
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 7. Analyze Videos ....")
-        l1_step1.setContentsMargins(20, 0, 0, 10)
+        tmp_layout = _create_horizontal_layout()
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(
+            _create_label_widget("Attributes", "font:bold")
+        )
+        self.layout_attributes = _create_grid_layout()
+        self._generate_layout_attributes(self.layout_attributes)
+        tmp_layout.addLayout(self.layout_attributes)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
+        # Single / Multi animal Only Layouts
+        self.layout_single_animal = _create_horizontal_layout()
 
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
+        self.layout_multi_animal = _create_horizontal_layout()
 
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
 
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
-
-        layout_choose_video = QtWidgets.QHBoxLayout()
-        layout_choose_video.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_choose_video.setSpacing(70)
-        layout_choose_video.setContentsMargins(20, 10, 300, 0)
-        choose_video_text = QtWidgets.QLabel("Choose the videos")
-        choose_video_text.setContentsMargins(0, 0, 52, 0)
-
-        self.select_video_button = QtWidgets.QPushButton("Select videos to analyze")
-        self.select_video_button.setMaximumWidth(350)
-        self.select_video_button.clicked.connect(self.select_video)
-
-        layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(self.select_video_button)
-
-        self.inLayout.addLayout(layout_cfg)
-        self.inLayout.addLayout(layout_choose_video)
-
-        self.layout_attributes = QtWidgets.QVBoxLayout()
-        self.layout_attributes.setAlignment(Qt.AlignTop)
-        self.layout_attributes.setSpacing(20)
-        self.layout_attributes.setContentsMargins(0, 0, 40, 0)
-
-        label = QtWidgets.QLabel("Attributes")
-        label.setContentsMargins(20, 20, 0, 10)
-        self.layout_attributes.addWidget(label)
-
-        self.layout_specify = QtWidgets.QHBoxLayout()
-        self.layout_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_specify.setSpacing(30)
-        self.layout_specify.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_videotype()
-        self._layout_shuffle()
-        self._layout_trainingset()
-
-        self.layout_attributes.addLayout(self.layout_specify)
-
-        if self.cfg.get("multianimalproject", False):
-            print("multianimalproject")
-            # TODO: finish multianimal part:
-            # self.robust = wx.RadioBox(
-            #                 self,
-            #                 label="Use ffprobe to read video metadata (slow but robust)",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.robust.SetSelection(1)
-            #             self.hbox2.Add(self.robust, 1, 1)
-            #
-            #             self.create_video_with_all_detections = wx.RadioBox(
-            #                 self,
-            #                 label="Create video for checking detections",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.create_video_with_all_detections.SetSelection(1)
-            #             self.hbox2.Add(
-            #                 self.create_video_with_all_detections,
-            #                 1,
-            #                 wx.EXPAND | wx.TOP | wx.BOTTOM,
-            #                 1,
-            #             )
-            #
-            #             tracker_text = wx.StaticBox(
-            #                 self, label="Specify the Tracker Method (you can try each)"
-            #             )
-            #             tracker_text_boxsizer = wx.StaticBoxSizer(tracker_text, wx.VERTICAL)
-            #             trackertypes = ["skeleton", "box", "ellipse"]
-            #             self.trackertypes = wx.ComboBox(
-            #                 self, choices=trackertypes, style=wx.CB_READONLY
-            #             )
-            #             self.trackertypes.SetValue("ellipse")
-            #             tracker_text_boxsizer.Add(
-            #                 self.trackertypes, 1,wx.EXPAND | wx.TOP | wx.BOTTOM,1
-            #             )
-            #             self.hbox3.Add(tracker_text_boxsizer, 1,  1)
-            #
-            #             self.overwrite = wx.RadioBox(
-            #                 self,
-            #                 label="Overwrite tracking files (set to yes if you edit inference parameters)",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.overwrite.SetSelection(1)
-            #             self.hbox3.Add(self.overwrite, 1, 1)
-            #
-            #             self.calibrate = wx.RadioBox(
-            #                 self,
-            #                 label="Calibrate animal assembly?",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.calibrate.SetSelection(1)
-            #             self.hbox4.Add(self.calibrate, 1, 1)
-            #
-            #             self.identity_toggle = wx.RadioBox(
-            #                 self,
-            #                 label="Assemble with identity only?",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            #             self.identity_toggle.SetSelection(1)
-            #             self.hbox4.Add(self.identity_toggle, 1, 1)
-            #
-            #             winsize_text = wx.StaticBox(self, label="Prioritize past connections over a window of size:")
-            #             winsize_sizer = wx.StaticBoxSizer(winsize_text, wx.VERTICAL)
-            #             self.winsize = wx.SpinCtrl(self, value="0")
-            #             winsize_sizer.Add(self.winsize, 1, wx.EXPAND | wx.TOP | wx.BOTTOM,1)
-            #             self.hbox4.Add(winsize_sizer, 1, 1)
+        if self.root.is_multianimal:
+            self._generate_layout_multianimal_only_options(self.layout_multi_animal)
+            tmp_layout.addLayout(self.layout_multi_animal)
         else:
-            self.layout_save_filter = QtWidgets.QHBoxLayout()
-            self.layout_save_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+            self._generate_layout_single_animal(self.layout_single_animal)
+            tmp_layout.addLayout(self.layout_single_animal)
 
-            self.layout_save_filter.setSpacing(200)
-            self.layout_save_filter.setContentsMargins(20, 0, 50, 20)
+        self.main_layout.addLayout(tmp_layout)
 
-            self._layout_save()
-            self._layout_filter()
-            self._layout_plot()
-            self.layout_attributes.addLayout(self.layout_save_filter)
+        self.main_layout.addWidget(_create_label_widget("", "font:bold"))
+        self.layout_other_options = _create_vertical_layout()
+        self._generate_layout_other_options(self.layout_other_options)
+        self.main_layout.addLayout(self.layout_other_options)
 
-            self.layout_crop_plot = QtWidgets.QHBoxLayout()
-            self.layout_crop_plot.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.analyze_videos_btn = QtWidgets.QPushButton("Analyze Videos")
+        self.analyze_videos_btn.clicked.connect(self.analyze_videos)
 
-            self.layout_crop_plot.setSpacing(170)
-            self.layout_crop_plot.setContentsMargins(20, 0, 50, 20)
+        self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
+        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
 
-            self._layout_crop()
-            self._layout_trajectories()
+        self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
 
-            self.layout_attributes.addLayout(self.layout_crop_plot)
+    def _generate_layout_single_animal(self, layout):
+        # Dynamic bodypart cropping
+        self.crop_bodyparts = QtWidgets.QCheckBox("Dynamically crop bodyparts")
+        self.crop_bodyparts.setCheckState(Qt.Unchecked)
+        self.crop_bodyparts.stateChanged.connect(self.update_crop_choice)
 
-        self.step_button = QtWidgets.QPushButton("Step 1: Analyze Videos")
-        self.step_button.setContentsMargins(0, 40, 40, 40)
-        self.step_button.clicked.connect(self.analyze_videos)
+        self.dynamic_cropping = False
+        layout.addWidget(self.crop_bodyparts)
 
-        self.edit_config_file = QtWidgets.QPushButton("Edit config.yaml")
-        # TODO: finish function:
-        # self.edit_config_file.clicked.connect(self.)
+    def _generate_layout_other_options(self, layout):
 
-        self.layout_attributes.addWidget(self.step_button, alignment=Qt.AlignRight)
-        self.layout_attributes.addWidget(self.edit_config_file, alignment=Qt.AlignRight)
-        self.inLayout.addLayout(self.layout_attributes)
+        tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
-    def update_cfg(self):
-        text = self.proj_line.text()
-        self.config = text
+        # Save results as csv
+        self.save_as_csv = QtWidgets.QCheckBox("Save result(s) as csv")
+        self.save_as_csv.setCheckState(Qt.Unchecked)
+        self.save_as_csv.stateChanged.connect(self.update_csv_choice)
 
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
+        tmp_layout.addWidget(self.save_as_csv)
+
+        # Filter predictions
+        self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
+        self.filter_predictions.setCheckState(Qt.Unchecked)
+        self.filter_predictions.stateChanged.connect(self.update_filter_choice)
+
+        tmp_layout.addWidget(self.filter_predictions)
+
+
+        # Plot Trajectories
+        self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
+        self.plot_trajectories.setCheckState(Qt.Unchecked)
+        self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
+
+        tmp_layout.addWidget(self.plot_trajectories)
+
+        # Show trajectory plots
+        self.show_trajectory_plots = QtWidgets.QCheckBox("Show trajectory plots")
+        self.show_trajectory_plots.setCheckState(Qt.Unchecked)
+        self.show_trajectory_plots.setEnabled(False)
+        self.show_trajectory_plots.stateChanged.connect(self.update_showfigs_choice)
+
+        tmp_layout.addWidget(self.show_trajectory_plots)
+
+        layout.addLayout(tmp_layout)
+
+        # Bodypart list
+        self.bodyparts_list_widget = BodypartListWidget(
+            root=self.root, parent=self,
         )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
+        self.bodyparts_list_widget.setMaximumWidth(600)
+        self.bodyparts_list_widget.setMaximumHeight(500)
+        layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
-    def select_video(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video to modify", cwd, "", "*.*"
-        )
-        if videos_file[0]:
-            self.vids = videos_file[0]
-            self.filelist.append(self.vids)
-            self.select_video_button.setText(
-                "Total %s Videos selected" % len(self.filelist)
-            )
-            self.select_video_button.adjustSize()
-
-    def _layout_videotype(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the videotype")
-        self.videotype = QComboBox()
-        self.videotype.setMinimumWidth(350)
-        self.videotype.setMinimumHeight(30)
-        options = [".avi", ".mp4", ".mov"]
-        self.videotype.addItems(options)
-        self.videotype.setCurrentText(".avi")
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.videotype)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_shuffle(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(0, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the shuffle")
+    def _generate_layout_attributes(self, layout):
+        # Shuffle
+        opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
-        self.shuffle.setValue(1)
-        self.shuffle.setMinimumWidth(400)
+        self.shuffle.setValue(self.root.shuffle_value)
         self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.shuffle)
-        self.layout_specify.addLayout(l_opt)
+        layout.addWidget(opt_text, 0, 0)
+        layout.addWidget(self.shuffle, 0, 1)
 
-    def _layout_trainingset(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the trainingset index")
+        # Trainingset index
+        opt_text = QtWidgets.QLabel("Trainingset index")
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumWidth(400)
         self.trainingset.setMinimumHeight(30)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trainingset)
-        self.layout_specify.addLayout(l_opt)
+        layout.addWidget(opt_text, 1, 0)
+        layout.addWidget(self.trainingset, 1, 1)
 
-    def _layout_save(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+        # Overwrite analysis files
+        self.overwrite_tracks = QtWidgets.QCheckBox("Overwrite tracks")
+        self.overwrite_tracks.setCheckState(Qt.Unchecked)
+        self.overwrite_tracks.stateChanged.connect(self.update_overwrite_tracks)
 
-        opt_text = QtWidgets.QLabel("Want to save result(s) as csv?")
-        self.btngroup_csv_choice = QButtonGroup()
+        layout.addWidget(self.overwrite_tracks, 0, 2)
 
-        self.csv_choice1 = QtWidgets.QRadioButton("Yes")
-        self.csv_choice1.toggled.connect(
-            lambda: self.update_csv_choice(self.csv_choice1)
+    def _generate_layout_multianimal_only_options(self, layout):
+        
+        tmp_layout = QtWidgets.QGridLayout()
+
+        opt_text = QtWidgets.QLabel("Tracking method")
+        self.tracker_type_selector = QComboBox()
+        self.tracker_type_selector.setMinimumHeight(30)
+        self.tracker_type_selector.addItems(["skeleton", "box", "ellipse"])
+        self.tracker_type_selector.setCurrentText(self.tracker_method)
+        self.tracker_type_selector.currentTextChanged.connect(self.update_tracker_type)
+        tmp_layout.addWidget(opt_text, 0, 0)
+        tmp_layout.addWidget(self.tracker_type_selector, 0, 1)
+
+        opt_text = QtWidgets.QLabel("Number of animals in videos")
+        self.num_animals_in_videos = QSpinBox()
+        self.num_animals_in_videos.setValue(len(self.root.all_individuals))
+        self.num_animals_in_videos.setMaximum(100)
+        self.num_animals_in_videos.setMinimumHeight(30)
+        tmp_layout.addWidget(opt_text, 1, 0)
+        tmp_layout.addWidget(self.num_animals_in_videos, 1, 1)
+
+        # layout.addLayout(tmp_layout)
+
+        # tmp_layout = QtWidgets.QGridLayout()
+
+        self.calibrate_assembly_checkbox = QtWidgets.QCheckBox("Calibrate assembly")
+        self.calibrate_assembly_checkbox.setCheckState(Qt.Unchecked)
+        self.calibrate_assembly_checkbox.stateChanged.connect(
+            self.update_calibrate_assembly
         )
+        tmp_layout.addWidget(self.calibrate_assembly_checkbox, 0, 2)
 
-        self.csv_choice2 = QtWidgets.QRadioButton("No")
-        self.csv_choice2.setChecked(True)
-        self.csv_choice2.toggled.connect(
-            lambda: self.update_csv_choice(self.csv_choice2)
+        self.assemble_with_ID_only_checkbox = QtWidgets.QCheckBox(
+            "Assemble with ID only"
         )
-
-        self.btngroup_csv_choice.addButton(self.csv_choice1)
-        self.btngroup_csv_choice.addButton(self.csv_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.csv_choice1)
-        l_opt.addWidget(self.csv_choice2)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_filter(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Want to filter the predictions?")
-        self.btngroup_filter_choice = QButtonGroup()
-
-        self.filter_choice1 = QtWidgets.QRadioButton("Yes")
-        self.filter_choice1.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice1)
+        self.assemble_with_ID_only_checkbox.setCheckState(Qt.Unchecked)
+        self.assemble_with_ID_only_checkbox.stateChanged.connect(
+            self.update_assemble_with_ID_only
         )
+        tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 1, 2)
 
-        self.filter_choice2 = QtWidgets.QRadioButton("No")
-        self.filter_choice2.setChecked(True)
-        self.filter_choice2.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice2)
+        self.use_transformer_tracking_checkbox = QtWidgets.QCheckBox(
+            "Use tranformer tracking"
         )
-
-        self.btngroup_filter_choice.addButton(self.filter_choice1)
-        self.btngroup_filter_choice.addButton(self.filter_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.filter_choice1)
-        l_opt.addWidget(self.filter_choice2)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_plot(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Want plots to pop up?")
-        self.btngroup_showfigs_choice = QButtonGroup()
-
-        self.showfigs_choice1 = QtWidgets.QRadioButton("Yes")
-        self.showfigs_choice1.setChecked(True)
-        self.showfigs_choice1.toggled.connect(
-            lambda: self.update_showfigs_choice(self.showfigs_choice1)
+        self.use_transformer_tracking_checkbox.setCheckState(Qt.Unchecked)
+        self.use_transformer_tracking_checkbox.stateChanged.connect(
+            self.update_use_transformer_tracking
         )
+        tmp_layout.addWidget(self.use_transformer_tracking_checkbox, 0, 3)
 
-        self.showfigs_choice2 = QtWidgets.QRadioButton("No")
-        self.showfigs_choice2.toggled.connect(
-            lambda: self.update_showfigs_choice(self.showfigs_choice2)
+        self.create_detections_video_checkbox = QtWidgets.QCheckBox(
+            "Create video with all detections"
         )
-
-        self.btngroup_showfigs_choice.addButton(self.showfigs_choice1)
-        self.btngroup_showfigs_choice.addButton(self.showfigs_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.showfigs_choice1)
-        l_opt.addWidget(self.showfigs_choice2)
-        self.layout_save_filter.addLayout(l_opt)
-
-    def _layout_crop(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Want to dynamically crop bodyparts?")
-        self.btngroup_crop_choice = QButtonGroup()
-
-        self.crop_choice1 = QtWidgets.QRadioButton("Yes")
-        self.crop_choice1.toggled.connect(
-            lambda: self.update_crop_choice(self.crop_choice1)
+        self.create_detections_video_checkbox.setCheckState(Qt.Unchecked)
+        self.create_detections_video_checkbox.stateChanged.connect(
+            self.update_create_video_detections
         )
+        tmp_layout.addWidget(self.create_detections_video_checkbox, 1, 3)
 
-        self.crop_choice2 = QtWidgets.QRadioButton("No")
-        self.crop_choice2.setChecked(True)
-        self.crop_choice2.toggled.connect(
-            lambda: self.update_crop_choice(self.crop_choice2)
-        )
+        # Use ffprobe
+        self.use_robustnframes = QtWidgets.QCheckBox("Robust frame reading")
+        self.use_robustnframes.setCheckState(Qt.Unchecked)
+        self.use_robustnframes.stateChanged.connect(self.update_robustnframes)
+        tmp_layout.addWidget(self.use_robustnframes, 0, 4)
 
-        self.btngroup_crop_choice.addButton(self.crop_choice1)
-        self.btngroup_crop_choice.addButton(self.crop_choice2)
+        layout.addLayout(tmp_layout)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.crop_choice1)
-        l_opt.addWidget(self.crop_choice2)
-        self.layout_crop_plot.addLayout(l_opt)
-
-    def _layout_trajectories(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-
-        # TODO: add CheckListBox:
-
-        #   self.trajectory_to_plot = wx.CheckListBox(
-        #       self, choices=bodyparts, style=0, name="Select the bodyparts"
-        #   )
-        #   self.trajectory_to_plot.Bind(wx.EVT_CHECKLISTBOX, self.getbp)
-        #   self.trajectory_to_plot.SetCheckedItems(range(len(bodyparts)))
-        #   self.trajectory_to_plot.Hide()
-
-        opt_text = QtWidgets.QLabel("Want to plot the trajectories?")
-        self.btngroup_plot_trajectory_choice = QButtonGroup()
-
-        self.plot_trajectory_choice1 = QtWidgets.QRadioButton("Yes")
-        self.plot_trajectory_choice1.toggled.connect(
-            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice1)
-        )
-
-        self.plot_trajectory_choice2 = QtWidgets.QRadioButton("No")
-        self.plot_trajectory_choice2.setChecked(True)
-        self.plot_trajectory_choice2.toggled.connect(
-            lambda: self.update_plot_trajectory_choice(self.plot_trajectory_choice2)
-        )
-
-        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice1)
-        self.btngroup_plot_trajectory_choice.addButton(self.plot_trajectory_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.plot_trajectory_choice1)
-        l_opt.addWidget(self.plot_trajectory_choice2)
-        self.layout_crop_plot.addLayout(l_opt)
-
-    def update_csv_choice(self, rb):
-        if rb.text() == "Yes":
-            self.csv = True
+    def update_use_transformer_tracking(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Transformer tracking ENABLED")
         else:
-            self.csv = False
+            self.root.logger.info("Transformer tracking DISABLED")
 
-    def update_filter_choice(self, rb):
-        if rb.text() == "Yes":
-            self.filter = True
+    def update_robustnframes(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Robust frame reading - use ffprobe ENABLED")
         else:
-            self.filter = False
+            self.root.logger.info("Robust frame reading - use ffprobe DISABLED")
 
-    def update_showfigs_choice(self, rb):
-        if rb.text() == "Yes":
-            self.showfigs = True
+    def update_create_video_detections(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Create video with all detections ENABLED")
         else:
-            self.showfigs = False
+            self.root.logger.info("Create video with all detections DISABLED")
 
-    def update_crop_choice(self, rb):
-        if rb.text() == "Yes":
-            self.dynamic = True
+    def update_overwrite_tracks(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Overwrite tracks ENABLED")
         else:
-            self.dynamic = False
+            self.root.logger.info("Overwrite tracks DISABLED")
 
-    def update_plot_trajectory_choice(self, rb):
-        if rb.text() == "Yes":
-            self.trajectory = True
-            # TODO: finish functionality
-            # self.trajectory_to_plot.Show()
-            # self.getbp()
+    def update_assemble_with_ID_only(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Assembly with ID only ENABLED")
         else:
-            self.trajectory = False
-            # self.trajectory_to_plot.Hide()
-            # self.bodyparts = []
+            self.root.logger.info("Assembly with ID only DISABLED")
 
-    def getbp(self, event):
-        self.bodyparts = list(self.trajectory_to_plot.GetCheckedStrings())
+    def update_calibrate_assembly(self, state):
+        if state == Qt.Checked:
+            self.root.logger.info("Assembly calibration ENABLED")
+        else:
+            self.root.logger.info("Assembly calibration DISABLED")
+
+    def update_tracker_type(self, method):
+        self.root.logger.info(f"Using {method} tracker")
+        self.tracker_method = method
+
+    def update_csv_choice(self, s):
+        if s == Qt.Checked:
+            self.root.logger.info("Save results as CSV ENABLED")
+        else:
+            self.root.logger.info("Save results as CSV DISABLED")
+
+    def update_filter_choice(self, s):
+        if s == Qt.Checked:
+            self.root.logger.info("Filtering predictions ENABLED")
+        else:
+            self.root.logger.info("Filtering predictions DISABLED")
+
+    def update_showfigs_choice(self, s):
+        if s == Qt.Checked:
+            self.root.logger.info("Plots will show as pop ups.")
+        else:
+            self.root.logger.info("Plots will not show up.")
+
+    def update_crop_choice(self, s):
+        if s == Qt.Checked:
+            self.root.logger.info("Dynamic bodypart cropping ENABLED.")
+            self.dynamic_cropping = True
+        else:
+            self.root.logger.info("Dynamic bodypart cropping DISABLED.")
+            self.dynamic_cropping = False
+
+    def update_plot_trajectory_choice(self, s):
+        if s == Qt.Checked:
+            self.bodyparts_list_widget.setEnabled(True)
+            self.show_trajectory_plots.setEnabled(True)
+            self.root.logger.info("Plot trajectories ENABLED.")
+
+        else:
+            self.bodyparts_list_widget.setEnabled(False)
+            self.show_trajectory_plots.setEnabled(False)
+            self.show_trajectory_plots.setCheckState(Qt.Unchecked)
+            self.root.logger.info("Plot trajectories DISABLED.")
+
+    def edit_config_file(self):
+
+        if not self.root.config:
+            return
+        editor = ConfigEditor(self.root.config)
+        editor.show()
 
     def analyze_videos(self):
-        shuffle = self.shuffle.value()
+
+        config = self.root.config
+        shuffle = self.root.shuffle_value
         trainingsetindex = self.trainingset.value()
 
-        if self.cfg.get("multianimalproject", False):
-            print("Analyzing ... ")
-        else:
-            save_as_csv = self.csv
-            if self.dynamic:
-                dynamic = (True, 0.5, 10)
-            else:
-                dynamic = (False, 0.5, 10)
+        videos = list(self.files)
+        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        filter_data = self.filter_predictions.checkState() == Qt.Checked
+        videotype = self.video_selection_widget.videotype_widget.currentText()
+        calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+        assemble_with_ID_only = self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+        overwrite_tracks = self.overwrite_tracks.checkState() == Qt.Checked
+        create_video_all_detections = self.create_detections_video_checkbox.checkState() == Qt.Checked
+        robustnframes = self.use_robustnframes.checkState() == Qt.Checked
+        use_transformer_tracking = self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
+        track_method = self.tracker_method
+        num_animals_in_videos = self.num_animals_in_videos.value()
 
-            _filter = self.filter
+        cropping = None
+        dynamic_cropping_params = (False, 0.5, 10)
 
-        if self.cfg["cropping"] == "True":
-            crop = self.cfg["x1"], self.cfg["x2"], self.cfg["y1"], self.cfg["y2"]
-        else:
-            crop = None
-        if self.cfg.get("multianimalproject", False):
-            print("multianimalproject")
-        else:
+        if self.root.cfg["cropping"] == "True":
+            cropping = self.root.cfg["x1"], self.root.cfg["x2"], self.root.cfg["y1"], self.root.cfg["y2"]
 
-            scorername = deeplabcut.analyze_videos(
-                self.config,
-                self.filelist,
-                videotype=self.videotype.currentText(),
+        if self.dynamic_cropping:
+            dynamic_cropping_params = (True, 0.5, 10)
+
+        scorername = deeplabcut.analyze_videos(
+            config,
+            videos=videos,
+            videotype=videotype,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            gputouse=None,
+            save_as_csv=save_as_csv,
+            cropping=cropping,
+            dynamic=dynamic_cropping_params,
+            robust_nframes=robustnframes,
+            auto_track=False,
+            n_tracks=num_animals_in_videos,
+            calibrate=calibrate_assembly,
+            identity_only=assemble_with_ID_only,
+        )
+
+        if create_video_all_detections:
+            deeplabcut.create_video_with_all_detections(
+                config,
+                videos=videos,
+                videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
-                gputouse=None,
-                save_as_csv=save_as_csv,
-                cropping=crop,
-                dynamic=dynamic,
             )
-            if _filter:
-                deeplabcut.filterpredictions(
-                    self.config,
-                    self.filelist,
-                    videotype=self.videotype.currentText(),
+
+        if self.root.is_multianimal:
+            deeplabcut.convert_detections2tracklets(
+                config,
+                videos=videos,
+                videotype=videotype,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                overwrite=overwrite_tracks,
+                calibrate=calibrate_assembly,
+                identity_only=assemble_with_ID_only,
+                track_method=track_method,
+            )
+
+            if use_transformer_tracking:
+                raise NotImplementedError(
+                    "Transformer has not been integrated to GUI yet"
+                )
+                # TODO: Plug in code, when codebase stable.
+            else:
+                deeplabcut.stitch_tracklets(
+                    config,
+                    videos=videos,
+                    videotype=videotype,
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
-                    filtertype="median",
-                    windowlength=5,
-                    save_as_csv=save_as_csv,
+                    n_tracks=num_animals_in_videos,
+                    track_method=track_method,
                 )
 
-            if self.trajectory:
-                showfig = self.showfigs
-                deeplabcut.plot_trajectories(
-                    self.config,
-                    self.filelist,
-                    displayedbodyparts=self.bodyparts,
-                    videotype=self.videotype.currentText(),
-                    shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
-                    filtered=_filter,
-                    showfigures=showfig,
-                )
+        if filter_data:
+            deeplabcut.filterpredictions(
+                config,
+                videos=videos,
+                videotype=videotype,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                filtertype="median",
+                windowlength=5,
+                save_as_csv=save_as_csv,
+            )
+
+        if self.plot_trajectories.checkState() == Qt.Checked:
+            bdpts = self.bodyparts_list_widget.selected_bodyparts
+            self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
+            showfig = self.show_trajectory_plots.checkState() == Qt.Checked
+            deeplabcut.plot_trajectories(
+                config,
+                videos=videos,
+                displayedbodyparts=bdpts,
+                videotype=videotype,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                filtered=filter_data,
+                showfigures=showfig,
+            )

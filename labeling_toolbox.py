@@ -16,12 +16,25 @@ import numpy as np
 import pandas as pd
 
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-from PyQt5.QtWidgets import QWidget
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QFrame,
+    QVBoxLayout,
+    QScrollArea,
+    QHBoxLayout,
+    QSlider,
+    QLabel,
+    QCheckBox,
+    QButtonGroup,
+    QStatusBar,
+    QSplitter,
+    QMessageBox,
+    QPushButton,
+)
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -239,6 +252,9 @@ class ScrollPanel(QFrame):
         self.choiceBox = QVBoxLayout(self)
         self.choiceBox.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
+        self.checkBox = QCheckBox("Adjust marker size")
+        self.choiceBox.addWidget(self.checkBox)
+
         slider_vbox = QVBoxLayout(self)
         slider_vbox.setContentsMargins(0, 0, 0, 20)
         slider_hbox = QHBoxLayout(self)
@@ -266,9 +282,6 @@ class ScrollPanel(QFrame):
         self.slider.setEnabled(False)
         self.choiceBox.addLayout(slider_vbox)
 
-        self.checkBox = QCheckBox("Adjust marker size")
-        self.choiceBox.addWidget(self.checkBox)
-
         self.btngroup = QButtonGroup()
         fieldrbns_text = QtWidgets.QLabel("Select a bodypart to label")
         fieldrbns_text.setContentsMargins(0, 20, 0, 0)
@@ -293,7 +306,6 @@ class MainFrame(QMainWindow):
         super(MainFrame, self).__init__(parent)
 
         self.setWindowTitle("DeepLabCut2.0 - Labeling ToolBox")
-        self.setMinimumSize(1600, 750)
         size = self.size()
         self.imtypes = imtypes
 
@@ -408,7 +420,8 @@ class MainFrame(QMainWindow):
         self.drs = []
         self.num = []
         self.view_locked = False
-        # Workaround for MAC - xlim and ylim changed events seem to be triggered too often so need to make sure that the
+        # Workaround for MAC - xlim and ylim changed events seem to be
+        # triggered too often so need to make sure that the
         # xlim and ylim have actually changed before turning zoom off
         self.prezoom_xlim = []
         self.prezoom_ylim = []
@@ -606,8 +619,9 @@ class MainFrame(QMainWindow):
             print("No images found!!")
 
         self.index = np.sort(imlist)
+        video_name = os.path.split(str(self.dir))[-1]
         self.statusBar.showMessage(
-            "Working on folder: {}".format(os.path.split(str(self.dir))[-1])
+            "Working on folder: {}".format(video_name)
         )
         self.relativeimagenames = [
             "labeled" + n.split("labeled")[1] for n in self.index
@@ -1054,9 +1068,3 @@ class MainFrame(QMainWindow):
         self.figure.canvas.draw()
 
         return self.buttonCounter
-
-
-def show(self, config, config3d, sourceCam, imtypes=["*.png"]):
-
-    frame = MainFrame(self, config, imtypes, config3d, sourceCam)
-    frame.show()

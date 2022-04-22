@@ -1,8 +1,8 @@
 from deeplabcut.create_project import create_new_project
 
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QCheckBox
+from PySide2 import QtCore, QtWidgets
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QCheckBox
 import os
 
 
@@ -11,7 +11,6 @@ class CreateProject(QtWidgets.QDialog):
         super(CreateProject, self).__init__(parent)
 
         self.setWindowTitle("New Project")
-        self.setMinimumSize(900, 500)
 
         self.name_default = "-".join(("{}", "{}", "newProject"))
         self.proj_default = ""
@@ -19,7 +18,7 @@ class CreateProject(QtWidgets.QDialog):
         self.loc_default = ""
         self.project_location = ""
 
-        self.cfg = None
+        self.config = None
         self.copy = False
         self.loaded = False
         self.user_fbk = True
@@ -158,7 +157,7 @@ class CreateProject(QtWidgets.QDialog):
     def create_newproject(self):
         # create the new project
         if self.proj_default != "" and self.exp_default != "" and self.filelist != []:
-            self.cfg = create_new_project(
+            self.config = create_new_project(
                 self.proj_default,
                 self.exp_default,
                 self.filelist,
@@ -179,9 +178,9 @@ class CreateProject(QtWidgets.QDialog):
             msg.setMinimumWidth(300)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
-            self.cfg = False
+            self.config = False
 
-        if self.cfg:
+        if self.config:
             self.loaded = True
 
             msg = QtWidgets.QMessageBox()

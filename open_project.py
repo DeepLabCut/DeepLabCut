@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QCheckBox
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QCheckBox
 
 
 class OpenProject(QtWidgets.QDialog):
@@ -10,21 +10,20 @@ class OpenProject(QtWidgets.QDialog):
         super(OpenProject, self).__init__(parent)
 
         self.setWindowTitle("Load Existing Project")
-        self.setMinimumSize(800, 400)
 
-        self.cfg = None
+        self.config = None
         self.loaded = False
         self.user_fbk = True
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
 
-        self.open_button = QtWidgets.QPushButton("Ok")
-        self.open_button.setDefault(True)
-        self.open_button.clicked.connect(self.open_project)
+        self.ok_button = QtWidgets.QPushButton("Ok")
+        self.ok_button.setDefault(True)
+        self.ok_button.clicked.connect(self.open_project)
 
         main_layout.addWidget(self.open_frame)
-        main_layout.addWidget(self.open_button, alignment=QtCore.Qt.AlignRight)
+        main_layout.addWidget(self.ok_button, alignment=QtCore.Qt.AlignRight)
 
     def layout_open(self):
         self.open_frame = QtWidgets.QFrame(self)
@@ -63,8 +62,9 @@ class OpenProject(QtWidgets.QDialog):
         )
         if not config:
             return
-        self.cfg = config[0]
-        self.open_line.setText(self.cfg)
+        self.config = config[0]
+        self.open_line.setText(self.config)
+        self.ok_button.setFocus()
 
     def activate_fbk(self, state):
         # Activates the feedback option
@@ -75,7 +75,7 @@ class OpenProject(QtWidgets.QDialog):
             self.user_fbk = False
 
     def open_project(self):
-        if self.cfg == "":
+        if self.config == "":
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Please choose the config.yaml file to load the project")
@@ -90,22 +90,9 @@ class OpenProject(QtWidgets.QDialog):
 
             self.loaded = False
         else:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("Project Loaded!")
-
-            msg.setWindowTitle("Info")
-            msg.setMinimumWidth(400)
             self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
             self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.buttonClicked.connect(self.ok_clicked)
-            msg.exec_()
+
             self.loaded = True
-
+            self.accept()
             self.close()
-
-    def ok_clicked(self):
-        self.loaded = True
-        self.accept()

@@ -1,366 +1,236 @@
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions, skeleton
 
-from PyQt5.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (
+    QComboBox,
+    QSpinBox,
+)
+
+from components import (
+    DefaultTab,
+    VideoSelectionWidget,
+    _create_horizontal_layout,
+    _create_label_widget,
+    _create_vertical_layout,
+)
 
 
-class CreateVideos(QWidget):
-    def __init__(self, parent, cfg):
-        super(CreateVideos, self).__init__(parent)
+class CreateVideos(DefaultTab):
+    def __init__(self, root, parent, h1_description):
+        super(CreateVideos, self).__init__(root, parent, h1_description)
 
-        self.filelist = []
-        self.config = cfg
-        self.bodyparts = []
-        self.draw = False
-        self.slow = False
-        self.filtered = False
-        self.slow = False
-
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
+        self.filelist = set()
+        self.bodyparts_to_use = self.root.all_bodyparts
 
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Create Labeled Videos")
-        l1_step1.setContentsMargins(20, 0, 0, 10)
+        tmp_layout = _create_horizontal_layout()
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(
+            _create_label_widget("Attributes", "font:bold")
+        )
+        self.layout_attributes = _create_horizontal_layout()
+        self._generate_layout_attributes(self.layout_attributes)
+        tmp_layout.addLayout(self.layout_attributes)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
+        self.layout_multi_animal = _create_horizontal_layout()
 
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
+        if self.root.is_multianimal:
+            self._generate_layout_multianimal_only_options(self.layout_multi_animal)
+            tmp_layout.addLayout(self.layout_multi_animal)
 
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
+        self.main_layout.addLayout(tmp_layout)
 
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
+        self.main_layout.addWidget(
+            _create_label_widget("Video Parameters", "font:bold")
+        )
+        self.layout_video_parameters = _create_vertical_layout()
+        self._generate_layout_video_parameters(self.layout_video_parameters)
+        self.main_layout.addLayout(self.layout_video_parameters)
 
-        layout_choose_video = QtWidgets.QHBoxLayout()
-        layout_choose_video.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_choose_video.setSpacing(70)
-        layout_choose_video.setContentsMargins(20, 10, 300, 0)
-        choose_video_text = QtWidgets.QLabel("Choose the videos")
-        choose_video_text.setContentsMargins(0, 0, 52, 0)
-
-        self.select_video_button = QtWidgets.QPushButton("Select videos")
-        self.select_video_button.setMaximumWidth(350)
-        self.select_video_button.clicked.connect(self.select_video)
-
-        layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(self.select_video_button)
-
-        self.inLayout.addLayout(layout_cfg)
-        self.inLayout.addLayout(layout_choose_video)
-
-        self.layout_attributes = QtWidgets.QVBoxLayout()
-        self.layout_attributes.setAlignment(Qt.AlignTop)
-        self.layout_attributes.setSpacing(20)
-        self.layout_attributes.setContentsMargins(0, 0, 40, 0)
-
-        label = QtWidgets.QLabel("Additional Attributes")
-        label.setContentsMargins(20, 20, 0, 10)
-        self.layout_attributes.addWidget(label)
-
-        self.layout_specify = QtWidgets.QHBoxLayout()
-        self.layout_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_specify.setSpacing(30)
-        self.layout_specify.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_videotype()
-        self._layout_shuffle()
-        self._layout_trainingset()
-
-        self.layout_attributes.addLayout(self.layout_specify)
-
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-        if self.cfg.get("multianimalproject", False):
-            # TODO: finish multianimal part
-            print("multianimalproject")
-            # self.plot_idv = wx.RadioBox(
-            #                 self,
-            #                 label="Create video with animal ID colored?",
-            #                 choices=["Yes", "No"],
-            #                 majorDimension=1,
-            #                 style=wx.RA_SPECIFY_COLS,
-            #             )
-            # self.plot_idv.SetSelection(1)
-
-        self.layout_include_specify = QtWidgets.QHBoxLayout()
-        self.layout_include_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_include_specify.setSpacing(40)
-        self.layout_include_specify.setContentsMargins(20, 0, 50, 0)
-
-        self._draw_skeleton()
-        self._trail_points()
-        self._video_slow()
-        self.layout_attributes.addLayout(self.layout_include_specify)
-
-        self.layout_filter = QtWidgets.QHBoxLayout()
-        self.layout_filter.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_filter.setSpacing(40)
-        self.layout_filter.setContentsMargins(20, 0, 50, 0)
-        self._filter()
-        self.layout_attributes.addLayout(self.layout_filter)
-
-        self.layout_plot_bp = QtWidgets.QHBoxLayout()
-        self.layout_plot_bp.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_plot_bp.setSpacing(40)
-        self.layout_plot_bp.setContentsMargins(20, 0, 50, 0)
-        self._plot_bp()
-        self.layout_attributes.addLayout(self.layout_plot_bp)
-
-        self.btn_layout = QtWidgets.QHBoxLayout()
-        self.btn_layout.setContentsMargins(0, 20, 20, 20)
-        self.btn_layout.setSpacing(20)
-
-        self.build = QtWidgets.QPushButton("DOWNSAMPLE")
-        self.build.setMaximumWidth(200)
-        self.build.clicked.connect(self.build_skeleton)
-        self.btn_layout.addWidget(self.build, alignment=Qt.AlignRight)
-
-        self.run_button = QtWidgets.QPushButton("RUN")
-        self.run_button.setContentsMargins(0, 40, 40, 40)
+        self.run_button = QtWidgets.QPushButton("Create videos")
         self.run_button.clicked.connect(self.create_videos)
-        self.btn_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
-        self.layout_attributes.addLayout(self.btn_layout)
-        self.inLayout.addLayout(self.layout_attributes)
+    def _generate_layout_multianimal_only_options(self, layout):
+        tmp_text = QtWidgets.QLabel("Color keypoints by:")
+        self.color_by_widget = QComboBox()
+        self.color_by_widget.setMaximumWidth(150)
+        self.color_by_widget.setMinimumHeight(30)
+        self.color_by_widget.addItems(["bodypart", "individual"])
+        self.color_by_widget.setCurrentText("bodypart")
+        self.color_by_widget.currentTextChanged.connect(self.update_color_by)
 
-    def update_cfg(self):
-        text = self.proj_line.text()
-        self.config = text
+        layout.addWidget(tmp_text)
+        layout.addWidget(self.color_by_widget)
 
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
+    def _generate_layout_attributes(self, layout):
+        # Shuffle
+        opt_text = QtWidgets.QLabel("Shuffle")
+        self.shuffle = QSpinBox()
+        self.shuffle.setMaximum(100)
+        self.shuffle.setValue(self.root.shuffle_value)
+        self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
-    def select_video(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video to modify", cwd, "", "*.*"
-        )
-        if videos_file[0]:
-            self.vids = videos_file[0]
-            self.filelist.append(self.vids)
-            self.select_video_button.setText(
-                "Total %s Videos selected" % len(self.filelist)
-            )
-            self.select_video_button.adjustSize()
 
-    def _layout_videotype(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.shuffle)
 
-        opt_text = QtWidgets.QLabel("Specify the videotype")
-        self.videotype = QComboBox()
-        self.videotype.setMinimumWidth(350)
-        self.videotype.setMinimumHeight(30)
-        options = [".avi", ".mp4", ".mov"]
-        self.videotype.addItems(options)
-        self.videotype.setCurrentText(".avi")
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.videotype)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_shuffle(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the shuffle")
-        self.shuffles = QSpinBox()
-        self.shuffles.setMaximum(100)
-        self.shuffles.setValue(1)
-        self.shuffles.setMinimumWidth(400)
-        self.shuffles.setMinimumHeight(30)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.shuffles)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_trainingset(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the trainingset index")
+        # Trainingset index
+        opt_text = QtWidgets.QLabel("Trainingset index")
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumWidth(400)
         self.trainingset.setMinimumHeight(30)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trainingset)
-        self.layout_specify.addLayout(l_opt)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.trainingset)
 
-    def _draw_skeleton(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+        # Overwrite videos
+        self.overwrite_videos = QtWidgets.QCheckBox("Overwrite videos")
+        self.overwrite_videos.setCheckState(Qt.Unchecked)
+        self.overwrite_videos.stateChanged.connect(self.update_overwrite_videos)
 
-        opt_text = QtWidgets.QLabel("Include the skeleton in the video?")
-        self.btngroup_draw_skeleton_choice = QButtonGroup()
+        layout.addWidget(self.overwrite_videos)
 
-        self.draw_skeleton_choice1 = QtWidgets.QRadioButton("Yes")
-        self.draw_skeleton_choice1.toggled.connect(
-            lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice1)
-        )
+    def _generate_layout_video_parameters(self, layout):
 
-        self.draw_skeleton_choice2 = QtWidgets.QRadioButton("No")
-        self.draw_skeleton_choice2.setChecked(True)
-        self.draw_skeleton_choice2.toggled.connect(
-            lambda: self.update_draw_skeleton_choice(self.draw_skeleton_choice2)
-        )
+        tmp_layout = _create_horizontal_layout()
 
-        self.btngroup_draw_skeleton_choice.addButton(self.draw_skeleton_choice1)
-        self.btngroup_draw_skeleton_choice.addButton(self.draw_skeleton_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.draw_skeleton_choice1)
-        l_opt.addWidget(self.draw_skeleton_choice2)
-        self.layout_include_specify.addLayout(l_opt)
-
-    def _trail_points(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(122, 0, 0, 0)
-
+        # Trail Points
         opt_text = QtWidgets.QLabel("Specify the number of trail points")
         self.trail_points = QSpinBox()
         self.trail_points.setValue(0)
-        self.trail_points.setMinimumWidth(400)
+        self.trail_points.setMinimumWidth(100)
         self.trail_points.setMinimumHeight(30)
+        tmp_layout.addWidget(opt_text)
+        tmp_layout.addWidget(self.trail_points)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trail_points)
-        self.layout_include_specify.addLayout(l_opt)
+        layout.addLayout(tmp_layout)
 
-    def _video_slow(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(30, 0, 0, 0)
+        tmp_layout = _create_vertical_layout()
 
-        opt_text = QtWidgets.QLabel("Create a higher quality video? (slow)")
-        self.btngroup_video_slow_choice = QButtonGroup()
+        # Plot all bodyparts
+        self.plot_all_bodyparts = QtWidgets.QCheckBox("Plot all bodyparts")
+        self.plot_all_bodyparts.setCheckState(Qt.Checked)
+        self.plot_all_bodyparts.stateChanged.connect(self.update_use_all_bodyparts)
+        tmp_layout.addWidget(self.plot_all_bodyparts)
 
-        self.video_slow_choice1 = QtWidgets.QRadioButton("Yes")
-        self.video_slow_choice1.toggled.connect(
-            lambda: self.update_video_slow_choice(self.video_slow_choice1)
+        # Skeleton
+        self.draw_skeleton_checkbox = QtWidgets.QCheckBox("Draw skeleton")
+        self.draw_skeleton_checkbox.setCheckState(Qt.Checked)
+        self.draw_skeleton_checkbox.stateChanged.connect(self.update_draw_skeleton)
+        tmp_layout.addWidget(self.draw_skeleton_checkbox)
+
+        # Filtered data
+        self.use_filtered_data_checkbox = QtWidgets.QCheckBox("Use filtered data")
+        self.use_filtered_data_checkbox.setCheckState(Qt.Unchecked)
+        self.use_filtered_data_checkbox.stateChanged.connect(
+            self.update_use_filtered_data
         )
+        tmp_layout.addWidget(self.use_filtered_data_checkbox)
 
-        self.video_slow_choice2 = QtWidgets.QRadioButton("No")
-        self.video_slow_choice2.setChecked(True)
-        self.video_slow_choice2.toggled.connect(
-            lambda: self.update_video_slow_choice(self.video_slow_choice2)
+        # Plot trajectories
+        self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
+        self.plot_trajectories.setCheckState(Qt.Unchecked)
+        self.plot_trajectories.stateChanged.connect(self.update_plot_trajectory_choice)
+        tmp_layout.addWidget(self.plot_trajectories)
+
+        # High quality video
+        self.create_high_quality_video = QtWidgets.QCheckBox(
+            "High quality video (slow)"
         )
-
-        self.btngroup_video_slow_choice.addButton(self.video_slow_choice1)
-        self.btngroup_video_slow_choice.addButton(self.video_slow_choice2)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.video_slow_choice1)
-        l_opt.addWidget(self.video_slow_choice2)
-        self.layout_include_specify.addLayout(l_opt)
-
-    def _filter(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Use filtered predictions?")
-        self.btngroup_filter_choice = QButtonGroup()
-
-        self.filter_choice1 = QtWidgets.QRadioButton("Yes")
-        self.filter_choice1.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice1)
+        self.create_high_quality_video.setCheckState(Qt.Unchecked)
+        self.create_high_quality_video.stateChanged.connect(
+            self.update_high_quality_video
         )
+        tmp_layout.addWidget(self.create_high_quality_video)
 
-        self.filter_choice2 = QtWidgets.QRadioButton("No")
-        self.filter_choice2.setChecked(True)
-        self.filter_choice2.toggled.connect(
-            lambda: self.update_filter_choice(self.filter_choice2)
+        nested_tmp_layout = _create_horizontal_layout()
+        nested_tmp_layout.addLayout(tmp_layout)
+
+        tmp_layout = _create_vertical_layout()
+        # Bodypart list
+        self.bdpt_list_widget = QtWidgets.QListWidget()
+        # self.bdpt_list_widget.setMaximumWidth(500)
+        self.bdpt_list_widget.addItems(self.root.all_bodyparts)
+        self.bdpt_list_widget.setSelectionMode(
+            QtWidgets.QAbstractItemView.MultiSelection
         )
+        # self.bdpt_list_widget.selectAll()
+        self.bdpt_list_widget.setEnabled(False)
+        self.bdpt_list_widget.itemSelectionChanged.connect(
+            self.update_selected_bodyparts
+        )
+        nested_tmp_layout.addWidget(self.bdpt_list_widget, Qt.AlignLeft)
 
-        self.btngroup_filter_choice.addButton(self.filter_choice1)
-        self.btngroup_filter_choice.addButton(self.filter_choice2)
+        tmp_layout.addLayout(nested_tmp_layout, Qt.AlignLeft)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.filter_choice1)
-        l_opt.addWidget(self.filter_choice2)
-        self.layout_filter.addLayout(l_opt)
+        layout.addLayout(tmp_layout, Qt.AlignLeft)
 
-    def _plot_bp(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(40, 0, 0, 0)
+    def update_high_quality_video(self, s):
+        if s == Qt.Checked:
+            self.logger.info("High quality ENABLED.")
 
-        opt_text = QtWidgets.QLabel("Plot all bodyparts?")
-        self.btngroup_bodypart_choice = QButtonGroup()
+        else:
+            self.logger.info("High quality DISABLED.")
 
-        self.bodypart_choice1 = QtWidgets.QRadioButton("Yes")
-        self.bodypart_choice1.setChecked(True)
-        # self.rotate_video_choice1.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice1))
+    def update_plot_trajectory_choice(self, s):
+        if s == Qt.Checked:
+            self.logger.info("Plot trajectories ENABLED.")
 
-        self.bodypart_choice2 = QtWidgets.QRadioButton("No")
-        self.bodypart_choice2.setChecked(True)
-        # self.rotate_video_choice2.toggled.connect(lambda: self.update_rotate_video_choice(self.rotate_video_choice2))
+        else:
+            self.logger.info("Plot trajectories DISABLED.")
 
-        self.btngroup_bodypart_choice.addButton(self.bodypart_choice1)
-        self.btngroup_bodypart_choice.addButton(self.bodypart_choice2)
+    def update_selected_bodyparts(self):
+        selected_bodyparts = [
+            item.text() for item in self.bdpt_list_widget.selectedItems()
+        ]
+        self.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
+        self.bodyparts_to_use = selected_bodyparts
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.bodypart_choice1)
-        l_opt.addWidget(self.bodypart_choice2)
-        self.layout_filter.addLayout(l_opt)
+    def update_use_all_bodyparts(self, s):
+        if s == Qt.Checked:
+            self.bdpt_list_widget.setEnabled(False)
+            # self.bdpt_list_widget.selectAll()
+            self.logger.info("Plot all bodyparts ENABLED.")
+
+        else:
+            self.bdpt_list_widget.setEnabled(True)
+            self.logger.info("Plot all bodyparts DISABLED.")
+
+    def update_use_filtered_data(self, state):
+        if state == Qt.Checked:
+            self.logger.info("Use filtered data ENABLED")
+        else:
+            self.logger.info("Use filtered data DISABLED")
+
+    def update_draw_skeleton(self, state):
+        if state == Qt.Checked:
+            self.logger.info("Draw skeleton ENABLED")
+        else:
+            self.logger.info("Draw skeleton DISABLED")
+
+    def update_overwrite_videos(self, state):
+        if state == Qt.Checked:
+            self.logger.info("Overwrite videos ENABLED")
+        else:
+            self.logger.info("Overwrite videos DISABLED")
+
+    def update_color_by(self, text):
+        self.logger.info(f"Coloring keypoints in videos by {text}")
 
     def update_filter_choice(self, rb):
         if rb.text() == "Yes":
@@ -380,69 +250,58 @@ class CreateVideos(QWidget):
         else:
             self.draw = False
 
-    def build_skeleton(self):
-        skeleton.SkeletonBuilder(self.config)
-
     def create_videos(self):
 
-        shuffle = self.shuffles.value()
+        config = self.root.config
+        shuffle = self.root.shuffle_value
         trainingsetindex = self.trainingset.value()
-        # self.filelist = self.filelist + self.vids
+        videos = self.files
+        bodyparts = "all"
+        videotype = self.videotype_widget.currentText()
+        trailpoints = self.trail_points.value()
+        color_by = self.color_by_widget.currentText()
 
-        if len(self.bodyparts) == 0:
-            self.bodyparts = "all"
+        filtered = True
+        if self.use_filtered_data_checkbox.checkState() == False:
+            filtered = False
 
-        config_file = auxiliaryfunctions.read_config(self.config)
-        if config_file.get("multianimalproject", False):
-            # TODO: finish multianimal part
-            print("multianimalproject")
-            # print(
-            #     "Creating a video with the "
-            #     + self.trackertypes.GetValue()
-            #     + " tracker method!"
-            # )
-            # if self.plot_idv.GetStringSelection() == "Yes":
-            #     color_by = "individual"
-            # else:
-            #     color_by = "bodypart"
-            #
-            # deeplabcut.create_labeled_video(
-            #     self.config,
-            #     self.filelist,
-            #     self.videotype.GetValue(),
-            #     shuffle=shuffle,
-            #     trainingsetindex=trainingsetindex,
-            #     save_frames=self.slow,
-            #     draw_skeleton=self.draw,
-            #     displayedbodyparts=self.bodyparts,
-            #     trailpoints=self.trail_points.GetValue(),
-            #     filtered=self.filtered,
-            #     color_by=color_by,
-            #     track_method=self.trackertypes.GetValue(),
-            # )
-            #
-            # if self.trajectory.GetStringSelection() == "Yes":
-            #     deeplabcut.plot_trajectories(
-            #         self.config,
-            #         self.filelist,
-            #         displayedbodyparts=self.bodyparts,
-            #         videotype=self.videotype.GetValue(),
-            #         shuffle=shuffle,
-            #         trainingsetindex=trainingsetindex,
-            #         filtered=self.filtered,
-            #         showfigures=False,
-            #         track_method=self.trackertypes.GetValue(),
-            #     )
-        else:
-            deeplabcut.create_labeled_video(
-                self.config,
-                self.filelist,
-                self.videotype.currentText(),
+        draw_skeleton = True
+        if self.draw_skeleton_checkboxx.checkState() == False:
+            draw_skeleton = False
+
+        slow_video = True
+        if self.create_high_quality_video.checkState() == False:
+            slow_video = False
+
+        plot_trajectories = True
+        if self.plot_trajectories.checkState() == False:
+            plot_trajectories = False
+
+        bodyparts = "all"
+        if  len(self.bodyparts_to_use)!=0 and self.plot_all_bodyparts.checkState()==Qt.Checked:
+            bodyparts = self.bodyparts_to_use
+
+        deeplabcut.create_labeled_video(
+            config=config,
+            videos=videos,
+            videotype=videotype,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            filtered=filtered,
+            save_frames=slow_video,
+            displayedbodyparts=bodyparts,
+            draw_skeleton=draw_skeleton,
+            trailpoints=trailpoints,
+            color_by=color_by,
+        )
+
+        if plot_trajectories:
+            deeplabcut.plot_trajectories(
+                config=config,
+                videos=videos,
+                videotype=videotype,
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
-                save_frames=self.slow,
-                draw_skeleton=self.draw,
-                displayedbodyparts=self.bodyparts,
-                trailpoints=self.trail_points.value(),
-                filtered=self.filtered,
+                filtered=filtered,
+                displayedbodyparts=bodyparts,
             )

@@ -1,8 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
+from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 
-import deeplabcut
+from deeplabcut import CropVideo, DownSampleVideo
+from deeplabcut.utils import auxiliaryfunctions
+
 
 
 class VideoEditor(QWidget):
@@ -15,11 +17,11 @@ class VideoEditor(QWidget):
 
         self.rotate_val = None
 
-        self.inLayout = QtWidgets.QVBoxLayout(self)
-        self.inLayout.setAlignment(Qt.AlignTop)
-        self.inLayout.setSpacing(20)
-        self.inLayout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.inLayout)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(0, 20, 0, 20)
+        self.setLayout(self.main_layout)
 
         self.set_page()
 
@@ -34,8 +36,8 @@ class VideoEditor(QWidget):
         l1_step1 = QtWidgets.QLabel("DeepLabCut - Optional Video Editor")
         l1_step1.setContentsMargins(20, 0, 0, 10)
 
-        self.inLayout.addWidget(l1_step1)
-        self.inLayout.addWidget(separatorLine)
+        self.main_layout.addWidget(l1_step1)
+        self.main_layout.addWidget(separatorLine)
 
         layout_cfg = QtWidgets.QHBoxLayout()
         layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -73,8 +75,8 @@ class VideoEditor(QWidget):
         layout_choose_video.addWidget(choose_video_text)
         layout_choose_video.addWidget(self.select_video_button)
 
-        self.inLayout.addLayout(layout_cfg)
-        self.inLayout.addLayout(layout_choose_video)
+        self.main_layout.addLayout(layout_cfg)
+        self.main_layout.addLayout(layout_choose_video)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
@@ -122,11 +124,13 @@ class VideoEditor(QWidget):
         self.btn_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
         self.layout_attributes.addLayout(self.btn_layout)
-        self.inLayout.addLayout(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
 
     def update_cfg(self):
-        text = self.proj_line.text()
+        text = self.cfg_line.text()
         self.config = text
+        self.cfg = auxiliaryfunctions.read_config(self.config)
+
 
     def browse_dir(self):
         cwd = self.config
@@ -273,7 +277,7 @@ class VideoEditor(QWidget):
         Videos = self.filelist
         if len(Videos) > 0:
             for video in Videos:
-                deeplabcut.DownSampleVideo(
+                DownSampleVideo(
                     video,
                     width=-1,
                     height=self.video_height.value(),
@@ -287,6 +291,6 @@ class VideoEditor(QWidget):
         Videos = self.filelist
         if len(Videos) > 0:
             for video in Videos:
-                deeplabcut.CropVideo(video, useGUI=True)
+                CropVideo(video, useGUI=True)
         else:
             print("Please select a video first!")
