@@ -17,8 +17,8 @@ from components import (
 
 
 class CreateVideos(DefaultTab):
-    def __init__(self, root, parent, tab_heading):
-        super(CreateVideos, self).__init__(root, parent, tab_heading)
+    def __init__(self, root, parent, h1_description):
+        super(CreateVideos, self).__init__(root, parent, h1_description)
 
         self.filelist = set()
         self.bodyparts_to_use = self.root.all_bodyparts

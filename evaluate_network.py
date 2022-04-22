@@ -18,13 +18,8 @@ from widgets import ConfigEditor
 
 
 class EvaluateNetwork(DefaultTab):
-    def __init__(self, root, parent, tab_heading):
-        super(EvaluateNetwork, self).__init__(root, parent, tab_heading)
-
-        self.method = "automatic"
-
-        self.plot_choice = False
-        self.plot_scoremaps = False
+    def __init__(self, root, parent, h1_description):
+        super(EvaluateNetwork, self).__init__(root, parent, h1_description)
 
         self.bodyparts_to_use = self.root.all_bodyparts
 
@@ -146,10 +141,8 @@ class EvaluateNetwork(DefaultTab):
 
     def update_plot_predictions(self, s):
         if s == Qt.Checked:
-            self.plot_choice = True
             self.logger.info("Plot predictions ENABLED")
         else:
-            self.plot_choice = False
             self.logger.info("Plot predictions DISABLED")
 
     def update_bodypart_choice(self, s):
@@ -168,7 +161,7 @@ class EvaluateNetwork(DefaultTab):
         trainingsetindex = self.trainingsetidx.value()
 
         Shuffles = [self.root.shuffle_value]
-        plotting = self.plot_choice
+        plotting = self.plot_predictions.checkState() == Qt.Checked
 
         bodyparts_to_use = "all"
         if (

@@ -12,10 +12,12 @@ import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
 from components import EditYamlButton, _create_horizontal_layout, _create_label_widget
+from widgets import ConfigEditor
 
 
 class TrainNetwork(QWidget):
     def __init__(self, parent, cfg):
+        # TODO: Add ROOT window, add ROOT shuffle
         super(TrainNetwork, self).__init__(parent)
 
         self.method = "automatic"
@@ -87,18 +89,8 @@ class TrainNetwork(QWidget):
 
         self.layout_attributes.addLayout(self.layout_display)
 
-        self.pose_cfg_path = os.path.join(
-            self.cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
-                self.cfg["TrainingFraction"][int(self.trainingindex.value())],
-                int(self.shuffle.value()),
-                self.cfg,
-            ),
-            "train",
-            "pose_cfg.yaml",
-        )
-        self.edit_posecfg_btn = EditYamlButton(
-            "Edit pose_cfg.yaml", self.pose_cfg_path, parent=self)
+        self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
+        self.edit_posecfg_btn.clicked.connect(self.open_posecfg_editor)
 
         self.ok_button = QtWidgets.QPushButton("Train Network")
         self.ok_button.clicked.connect(self.train_network)
@@ -108,6 +100,19 @@ class TrainNetwork(QWidget):
 
         self.main_layout.addLayout(self.layout_attributes)
 
+    @property
+    def pose_cfg_path(self):
+        return os.path.join(
+            self.cfg["project_path"],
+            auxiliaryfunctions.GetModelFolder(
+                self.cfg["TrainingFraction"][int(self.trainingindex.value())],
+                int(self.shuffle.value()),
+                self.cfg,
+            ),
+            "train",
+            "pose_cfg.yaml",
+        )
+
     def _generate_layout_attributes(self, layout):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
@@ -115,6 +120,7 @@ class TrainNetwork(QWidget):
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
         self.shuffle.setMinimumHeight(30)
+        
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
@@ -145,6 +151,10 @@ class TrainNetwork(QWidget):
         layout.addWidget(cfg_text)
         layout.addWidget(self.cfg_line)
         layout.addWidget(browse_button)
+
+    def open_posecfg_editor(self):
+        editor = ConfigEditor(self.pose_cfg_path)
+        editor.show()
 
 
     def update_cfg(self):
