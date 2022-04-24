@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -79,7 +79,7 @@ def train_network(
 
     max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. Every savinginteration many times
         a snapshot is stored, however only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-        See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+        See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
     displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
         the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None

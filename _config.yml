@@ -19,4 +19,4 @@ repository:
   branch: master
 
 launch_buttons:
-  colab_url: "https://colab.research.google.com/github/AlexEMG/DeepLabCut/blob/master/examples/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"
+  colab_url: "https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"

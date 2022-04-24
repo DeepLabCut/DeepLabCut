@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 Adapted from DeeperCut by Eldar Insafutdinov
@@ -40,7 +40,7 @@ cfg["batch_size"] = 1
 
 # types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
 cfg["dataset_type"] = "imgaug"  # >> imagaug default as of 2.2
-# you can also set this to deterministic, see https://github.com/AlexEMG/DeepLabCut/pull/324
+# you can also set this to deterministic, see https://github.com/DeepLabCut/DeepLabCut/pull/324
 cfg["deterministic"] = False
 cfg["mirror"] = False
 
