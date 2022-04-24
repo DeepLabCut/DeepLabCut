@@ -201,7 +201,7 @@ Alternatively, you can set the loader (as well as other training parameters) in 
 
 **MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
 
-Please also see the following page on selecting models: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations
+Please also consult the following page on selecting models: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations
 
  See Box 2 on how to specify **which network is loaded for training (including your own network, etc):**
 
