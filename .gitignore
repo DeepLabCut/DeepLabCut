@@ -1,3 +1,5 @@
+#Jupyter book build directory
+_build/*
 #Data and examples
 /examples/open*
 /examples/Reac*
