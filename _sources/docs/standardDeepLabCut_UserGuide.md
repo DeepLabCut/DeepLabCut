@@ -31,7 +31,7 @@ Optional arguments specify the working directory, where the project directory wi
 deeplabcut.create_new_project('Name of the project', 'Name of the experimenter', ['Full path of video 1', 'Full path of video2', 'Full path of video3'], working_directory='Full path of the working directory', copy_videos=True/False, multianimal=True/False)
 ```
 
-#### Important path formatting note:
+**Important path formatting note**
 
 Windows users, you must input paths as: ``r'C:\Users\computername\Videos\reachingvideo1.avi' `` or
 
@@ -64,6 +64,9 @@ The ``create_new_project`` step writes the following parameters to the configura
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_project.new.rst
 ```

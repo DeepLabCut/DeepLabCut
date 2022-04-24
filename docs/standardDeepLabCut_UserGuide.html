@@ -334,8 +334,8 @@ const thebe_selector_output = ".output, .cell_output"
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#important-path-formatting-note">
-       Important path formatting note:
+      <a class="reference internal nav-link" href="#api-docs">
+       API Docs
       </a>
      </li>
     </ul>
@@ -475,8 +475,8 @@ const thebe_selector_output = ".output, .cell_output"
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#important-path-formatting-note">
-       Important path formatting note:
+      <a class="reference internal nav-link" href="#api-docs">
+       API Docs
       </a>
      </li>
     </ul>
@@ -613,8 +613,7 @@ Simply <code class="docutils literal notranslate"><span class="pre">python</span
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;Name of the project&#39;</span><span class="p">,</span> <span class="s1">&#39;Name of the experimenter&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Full path of video 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Full path of video2&#39;</span><span class="p">,</span> <span class="s1">&#39;Full path of video3&#39;</span><span class="p">],</span> <span class="n">working_directory</span><span class="o">=</span><span class="s1">&#39;Full path of the working directory&#39;</span><span class="p">,</span> <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span> <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="important-path-formatting-note">
-<h4>Important path formatting note:<a class="headerlink" href="#important-path-formatting-note" title="Permalink to this headline">¶</a></h4>
+<p><strong>Important path formatting note</strong></p>
 <p>Windows users, you must input paths as: <code class="docutils literal notranslate"><span class="pre">r'C:\Users\computername\Videos\reachingvideo1.avi'</span> </code> or</p>
 <p><code class="docutils literal notranslate"> <span class="pre">'C:\\Users\\computername\\Videos\\reachingvideo1.avi'</span></code></p>
 <p>(TIP: you can also place <code class="docutils literal notranslate"><span class="pre">config_path</span></code> in front of <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project</span></code> to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path=deeplabcut.create_new_project(...)</span></code>)</p>
@@ -632,6 +631,10 @@ Simply <code class="docutils literal notranslate"><span class="pre">python</span
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
+<div class="section" id="api-docs">
+<h4>API Docs<a class="headerlink" href="#api-docs" title="Permalink to this headline">¶</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="deeplabcut.create_project.new.create_new_project">
 <span class="sig-prename descclassname"><span class="pre">deeplabcut.create_project.new.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_videos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multianimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.create_project.new.create_new_project" title="Permalink to this definition">¶</a></dt>
@@ -699,6 +702,7 @@ of the videos will be created in the <code class="docutils literal notranslate">
 <p>Users must format paths with either:  r’C:OR ‘C:\ &lt;- i.e. a double backslash )</p>
 </dd></dl>
 
+</div>
 </div>
 </div>
 <div class="section" id="b-configure-the-project">
