@@ -607,7 +607,6 @@ Simply <code class="docutils literal notranslate"><span class="pre">python</span
 <p>To begin, navigate to anaconda prompt and right-click to “open as admin “(windows), or simply launch “terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, go here). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>) and then type (windows/unix) <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or  (macOS) <code class="docutils literal notranslate"><span class="pre">pythonw</span></code>. Then type <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code>.</p>
 <div class="section" id="a-create-a-new-project">
 <h3>(A) Create a New Project<a class="headerlink" href="#a-create-a-new-project" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_new_project">DOCSTRING</a></p>
 <p>The function <strong>create_new_project</strong> creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
 <p>Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full path of the videos that are (initially) used to create the training dataset.</p>
 <p>Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working_directory is unspecified, the project directory is created in the current working directory, and if copy_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).</p>
@@ -633,6 +632,73 @@ Simply <code class="docutils literal notranslate"><span class="pre">python</span
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
+<dl class="py function">
+<dt class="sig sig-object py" id="deeplabcut.create_project.new.create_new_project">
+<span class="sig-prename descclassname"><span class="pre">deeplabcut.create_project.new.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_videos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multianimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.create_project.new.create_new_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the necessary folders and files for a new project.</p>
+<p>Creating a new project involves creating the project directory, sub-directories and
+a basic configuration file. The configuration file is loaded with the default
+values. Change its parameters to your projects need.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>project</strong><span class="classifier">string</span></dt><dd><p>The name of the project.</p>
+</dd>
+<dt><strong>experimenter</strong><span class="classifier">string</span></dt><dd><p>The name of the experimenter.</p>
+</dd>
+<dt><strong>videos</strong><span class="classifier">list[str]</span></dt><dd><p>A list of strings representing the full paths of the videos to include in the
+project. If the strings represent a directory instead of a file, all videos of
+<code class="docutils literal notranslate"><span class="pre">videotype</span></code> will be imported.</p>
+</dd>
+<dt><strong>working_directory</strong><span class="classifier">string, optional</span></dt><dd><p>The directory where the project will be created. The default is the
+<code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">working</span> <span class="pre">directory</span></code>.</p>
+</dd>
+<dt><strong>copy_videos</strong><span class="classifier">bool, optional, Default: False.</span></dt><dd><p>If True, the videos are copied to the <code class="docutils literal notranslate"><span class="pre">videos</span></code> directory. If False, symlinks
+of the videos will be created in the <code class="docutils literal notranslate"><span class="pre">project/videos</span></code> directory.</p>
+</dd>
+<dt><strong>multianimal: bool, optional. Default: False.</strong></dt><dd><p>For creating a multi-animal project (introduced in DLC 2.2)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>Path to the new project configuration file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Linux/MacOS:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
+<span class="go">        project=&#39;reaching-task&#39;,</span>
+<span class="go">        experimenter=&#39;Linus&#39;,</span>
+<span class="go">        videos=[</span>
+<span class="go">            &#39;/data/videos/mouse1.avi&#39;,</span>
+<span class="go">            &#39;/data/videos/mouse2.avi&#39;,</span>
+<span class="go">            &#39;/data/videos/mouse3.avi&#39;</span>
+<span class="go">        ],</span>
+<span class="go">        working_directory=&#39;/analysis/project/&#39;,</span>
+<span class="go">    )</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
+<span class="go">        project=&#39;reaching-task&#39;,</span>
+<span class="go">        experimenter=&#39;Linus&#39;,</span>
+<span class="go">        videos=[&#39;/data/videos&#39;],</span>
+<span class="go">        videotype=&#39;.mp4&#39;,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>Windows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
+<span class="go">        &#39;reaching-task&#39;,</span>
+<span class="go">        &#39;Bill&#39;,</span>
+<span class="go">        [r&#39;C:\yourusername\rig-95\Videos\reachingvideo1.avi&#39;],</span>
+<span class="go">        copy_videos=True,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>Users must format paths with either:  r’C:OR ‘C:\ &lt;- i.e. a double backslash )</p>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="b-configure-the-project">
