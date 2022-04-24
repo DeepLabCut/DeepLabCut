@@ -1,10 +1,10 @@
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
@@ -297,7 +297,7 @@ def attempttomakefolder(foldername, recursive=False):
     except TypeError:  # https://www.python.org/dev/peps/pep-0519/
         foldername = os.fspath(
             foldername
-        )  # https://github.com/AlexEMG/DeepLabCut/issues/105 (windows)
+        )  # https://github.com/DeepLabCut/DeepLabCut/issues/105 (windows)
 
     if os.path.isdir(foldername):
         pass

@@ -1,11 +1,11 @@
 # DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 
-https://github.com/AlexEMG/DeepLabCut
+https://github.com/DeepLabCut/DeepLabCut
 
 Please see AUTHORS for contributors.
 
-https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 
 The code was built on Eldar's DeeperCut code: https://github.com/eldar/pose-tensorflow
 
