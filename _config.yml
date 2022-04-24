@@ -3,6 +3,10 @@ author: The DeepLabCut Team
 logo: docs/images/logo.png
 only_build_toc_files: true
 
+sphinx:
+  extra_extensions:
+    - numpydoc
+
 execute:
   execute_notebooks: "off"
 
