@@ -5,8 +5,6 @@ only_build_toc_files: true
 
 sphinx:
   extra_extensions:
-    - sphinx.ext.autodoc
-    - sphinx.ext.autosummary
     - numpydoc
 
 execute:
