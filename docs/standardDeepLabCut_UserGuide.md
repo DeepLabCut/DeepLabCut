@@ -68,7 +68,7 @@ The ``create_new_project`` step writes the following parameters to the configura
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
-.. include:: ./api/deeplabcut.create_project.new.rst
+.. include:: ./api/deeplabcut.create_new_project.rst
 ```
 
 ### (B) Configure the Project
@@ -126,7 +126,7 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
-.. include:: ./api/deeplabcut.generate_training_dataset.frame_extraction.rst
+.. include:: ./api/deeplabcut.extract_frames.rst
 ```
 
 ### (D) Label Frames
@@ -175,7 +175,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
-.. include:: ./api/deeplabcut.generate_training_dataset.trainingsetmanipulation.rst
+.. include:: ./api/deeplabcut.check_labels.rst
 ```
 
 ### (F) Create Training Dataset(s)
