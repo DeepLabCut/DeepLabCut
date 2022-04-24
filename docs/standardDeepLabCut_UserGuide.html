@@ -607,7 +607,7 @@ Simply <code class="docutils literal notranslate"><span class="pre">python</span
 <p>To begin, navigate to anaconda prompt and right-click to “open as admin “(windows), or simply launch “terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, go here). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>) and then type (windows/unix) <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or  (macOS) <code class="docutils literal notranslate"><span class="pre">pythonw</span></code>. Then type <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code>.</p>
 <div class="section" id="a-create-a-new-project">
 <h3>(A) Create a New Project<a class="headerlink" href="#a-create-a-new-project" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_new_project">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_new_project">DOCSTRING</a></p>
 <p>The function <strong>create_new_project</strong> creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
 <p>Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full path of the videos that are (initially) used to create the training dataset.</p>
 <p>Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working_directory is unspecified, the project directory is created in the current working directory, and if copy_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).</p>
@@ -644,7 +644,7 @@ Please DO NOT have spaces in the names of bodyparts.</p>
 </div>
 <div class="section" id="c-data-selection-extract-frames">
 <h3>(C) Data Selection (extract frames)<a class="headerlink" href="#c-data-selection-extract-frames" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#extract_frames">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#extract_frames">DOCSTRING</a></p>
 <p><strong>CRITICAL:</strong> A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>. However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).</p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;automatic/manual&#39;</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s1">&#39;uniform/kmeans&#39;</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
@@ -680,7 +680,7 @@ bar to navigate across the video and <em>Grab a Frame</em> (or a range of frames
 </div>
 <div class="section" id="d-label-frames">
 <h3>(D) Label Frames<a class="headerlink" href="#d-label-frames" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#label_frames">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#label_frames">DOCSTRING</a></p>
 <p>The toolbox provides a function <strong>label_frames</strong> which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
 interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.</p>
@@ -707,7 +707,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 </div>
 <div class="section" id="e-check-annotated-frames">
 <h3>(E) Check Annotated Frames<a class="headerlink" href="#e-check-annotated-frames" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#check_labels">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#check_labels">DOCSTRING</a></p>
 <p>OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:</p>
@@ -718,7 +718,7 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 </div>
 <div class="section" id="f-create-training-dataset-s">
 <h3>(F) Create Training Dataset(s)<a class="headerlink" href="#f-create-training-dataset-s" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset">DOCSTRING</a></p>
 <p><strong>CRITICAL POINT:</strong> Only run this step <strong>where</strong> you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).</p>
 <ul class="simple">
 <li><p>If you move your project folder, you must <strong>only</strong> change the <code class="docutils literal notranslate"><span class="pre">project_path</span></code> in the main config.yaml file - that’s it - no need to change the video paths, etc! Your project is fully portable.</p></li>
@@ -740,7 +740,7 @@ are listed in Box 2.</p></li>
 <li><p>At this step, the ImageNet pre-trained networks (i.e. ResNet-50, ResNet-101 and ResNet-152, etc) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the <strong><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips">WIKI troubleshooting for more help!</a></strong>).</p></li>
 </ul>
 <p><strong>CRITICAL POINT:</strong> At this step, for <strong>create_training_dataset</strong> you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set <code class="docutils literal notranslate"><span class="pre">net_type</span></code> and <code class="docutils literal notranslate"><span class="pre">augmenter_type</span></code> when you call the function.</p>
-<p><strong>DATA AUGMENTATION:</strong> At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a> file for a full list of parameters <strong>you might want to change before running this step.</strong> There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), <a class="reference external" href="https://github.com/tensorpack/tensorpack">TensorPack</a> for data augmentation (currently this is easiest on Linux only), or <a class="reference external" href="https://imgaug.readthedocs.io/en/latest/">imgaug</a>. We recommend <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>. You can set this by passing:<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset(config_path,</span> <span class="pre">augmenter_type='imgaug')</span> </code></p>
+<p><strong>DATA AUGMENTATION:</strong> At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a> file for a full list of parameters <strong>you might want to change before running this step.</strong> There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), <a class="reference external" href="https://github.com/tensorpack/tensorpack">TensorPack</a> for data augmentation (currently this is easiest on Linux only), or <a class="reference external" href="https://imgaug.readthedocs.io/en/latest/">imgaug</a>. We recommend <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>. You can set this by passing:<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset(config_path,</span> <span class="pre">augmenter_type='imgaug')</span> </code></p>
 <p>The differences of the loaders are as follows:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">imgaug</span></code>: a lot of augmentation possibilities, efficient code for target map creation &amp; batch sizes &gt;1 supported. You can set the parameters such as the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file for the model you are training. This is the recommended DEFAULT!</p></li>
@@ -748,9 +748,9 @@ are listed in Box 2.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size&gt;1</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">deterministic</span></code>: only useful for testing, freezes numpy seed; otherwise like default.</p></li>
 </ul>
-<p>Alternatively, you can set the loader (as well as other training parameters) in the <strong>pose_cfg.yaml</strong> file of the model that you want to train. Note, to get details on the options, look at the default file: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a>.</p>
-<p><strong>MODEL COMPARISON:</strong> You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison(</span></code> (<a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison">check the docstring for more details!</a>).</p>
-<p>Please also see our helper WIKI on selecting models: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use%3F">https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use?</a></p>
+<p>Alternatively, you can set the loader (as well as other training parameters) in the <strong>pose_cfg.yaml</strong> file of the model that you want to train. Note, to get details on the options, look at the default file: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a>.</p>
+<p><strong>MODEL COMPARISON:</strong> You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison(</span></code> (<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison">check the docstring for more details!</a>).</p>
+<p>Please also consult the following page on selecting models: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations">https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations</a></p>
 <p>See Box 2 on how to specify <strong>which network is loaded for training (including your own network, etc):</strong></p>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
@@ -758,7 +758,7 @@ are listed in Box 2.</p></li>
 </div>
 <div class="section" id="g-train-the-network">
 <h3>(G) Train The Network<a class="headerlink" href="#g-train-the-network" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#train_network">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#train_network">DOCSTRING</a></p>
 <p>The function ‘train_network’ helps the user in training the network. It is used as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
@@ -772,7 +772,7 @@ are listed in Box 2.</p></li>
 At user specified iterations during training checkpoints are stored in the subdirectory <em>train</em> under the respective iteration directory.</p>
 <p>If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> in the <strong>pose_cfg.yaml</strong> file under the <em>train</em> subdirectory (see Box 2).</p>
-<p><strong>CRITICAL POINT:</strong> It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around <strong>500,000</strong>) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation">https://github.com/AlexEMG/DeepLabCut/wiki/Data-Augmentation</a>.</p>
+<p><strong>CRITICAL POINT:</strong> It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around <strong>500,000</strong>) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Data-Augmentation">https://github.com/DeepLabCut/DeepLabCut/wiki/Data-Augmentation</a>.</p>
 <p>The variables <code class="docutils literal notranslate"><span class="pre">display_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> in the <strong>pose_cfg.yaml</strong> file allows the user to alter how often the loss is displayed and how often the weights are stored.</p>
 <p><strong>maDeepLabCut CRITICAL POINT:</strong> For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">maxiters</span></code>. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!</p>
 <p><strong>Parameters:</strong></p>
@@ -789,7 +789,7 @@ gputouse: int, optional. Natural number indicating the number of your GPU (see n
 See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
 max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-See: https://github.com/AlexEMG/DeepLabCut/issues/8#issuecomment-387404835
+See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
 autotune: property of TensorFlow, somehow faster if &#39;false&#39; (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
 
@@ -805,7 +805,7 @@ maxiters: This sets how many iterations to train. This variable is set in pose_c
 </div>
 <div class="section" id="h-evaluate-the-trained-network">
 <h3>(H) Evaluate the Trained Network<a class="headerlink" href="#h-evaluate-the-trained-network" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#evaluate_network">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#evaluate_network">DOCSTRING</a></p>
 <p>It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
 manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma separated file and displayed
@@ -858,7 +858,7 @@ labeled accurately</p>
 </div>
 <div class="section" id="i-novel-video-analysis">
 <h3>(I) Novel Video Analysis:<a class="headerlink" href="#i-novel-video-analysis" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#analyze_videos">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#analyze_videos">DOCSTRING</a></p>
 <p>The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
 to the variable snapshotindex in the config.yaml file. By default, the most recent checkpoint (i.e. last) is used for
@@ -889,7 +889,7 @@ by default. You can also set a destination folder (<code class="docutils literal
 </div>
 <div class="section" id="filter-data-recommended">
 <h4>Filter data (RECOMMENDED!):<a class="headerlink" href="#filter-data-recommended" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#filterpredictions">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#filterpredictions">DOCSTRING</a></p>
 <p>You can also filter the predictions with a median filter (default) or with a <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html">SARIMAX model</a>, if you wish. This creates a new .h5 file with the ending <em>_filtered</em> that you can use in create_labeled_data and/or plot trajectories.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
 </pre></div>
@@ -909,7 +909,7 @@ by default. You can also set a destination folder (<code class="docutils literal
 </div>
 <div class="section" id="plot-trajectories">
 <h4>Plot Trajectories:<a class="headerlink" href="#plot-trajectories" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#plot_trajectories">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#plot_trajectories">DOCSTRING</a></p>
 <p>The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
 can be called by typing:</p>
@@ -924,7 +924,7 @@ can be called by typing:</p>
 </div>
 <div class="section" id="create-labeled-videos">
 <h4>Create Labeled Videos:<a class="headerlink" href="#create-labeled-videos" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/DOCSTRINGS#create_labeled_video">DOCSTRING</a></p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_labeled_video">DOCSTRING</a></p>
 <p>Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add <code class="docutils literal notranslate"><span class="pre">save_frames=True</span></code>. One can use the command as follows to create multiple labeled videos:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">,</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo2.avi&#39;</span><span class="p">],</span> <span class="n">save_frames</span> <span class="o">=</span> <span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
@@ -982,7 +982,7 @@ displaycropped: If =True then the video will be cropped (to the size in  the con
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyzeskeleton</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">video</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>See more details here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py">https://github.com/AlexEMG/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py</a></p>
+<p>See more details here: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py">https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py</a></p>
 </div>
 <div class="section" id="j-optional-active-learning-network-refinement-extract-outlier-frames">
 <h3>(J) Optional Active Learning -&gt; Network Refinement: Extract Outlier Frames<a class="headerlink" href="#j-optional-active-learning-network-refinement-extract-outlier-frames" title="Permalink to this headline">¶</a></h3>
@@ -1066,7 +1066,7 @@ labels for these images are also provided. See more details [here]((<a class="re
 </div>
 <div class="section" id="d-toolbox">
 <h2>3D Toolbox<a class="headerlink" href="#d-toolbox" title="Permalink to this headline">¶</a></h2>
-<p>Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7+) here: <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md">https://github.com/AlexEMG/DeepLabCut/blob/master/docs/Overviewof3D.md</a></p>
+<p>Please find all the information on using the 3D toolbox of DeepLabCut (as of 2.0.7+) here: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md">https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md</a></p>
 </div>
 <div class="section" id="other-functions-some-are-yet-to-be-documented">
 <h2>Other functions, some are yet-to-be-documented:<a class="headerlink" href="#other-functions-some-are-yet-to-be-documented" title="Permalink to this headline">¶</a></h2>
