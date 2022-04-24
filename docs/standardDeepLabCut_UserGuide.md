@@ -179,7 +179,6 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```
 
 ### (F) Create Training Dataset(s)
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset)
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).
 
@@ -226,6 +225,13 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
+
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_dataset.rst
+```
 
 ### (G) Train The Network
 [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#train_network)
