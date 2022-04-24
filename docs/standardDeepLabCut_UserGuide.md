@@ -82,7 +82,6 @@ Please DO NOT have spaces in the names of bodyparts.
 
 
  ### (C) Data Selection (extract frames)
- [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#extract_frames)
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
 
@@ -122,6 +121,13 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
 </p>
+
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.generate_training_dataset.frame_extraction.rst
+```
 
 ### (D) Label Frames
 [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#label_frames)
