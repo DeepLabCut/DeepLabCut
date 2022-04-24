@@ -288,36 +288,46 @@ def check_labels(
     draw_skeleton=True,
     visualizeindividuals=True,
 ):
-    """
-    Double check if the labels were at correct locations and stored in a proper file format.\n
-    This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
+    """Check the labelled frames.
+
+    Double check if the labels were at the correct locations and stored in the proper
+    file format.
+
+    This creates a new subdirectory for each video under the 'labeled-data' and all the
+    frames are plotted with the labels.
+
     Make sure that these labels are fine.
 
-    Parameter
+    Parameters
     ----------
     config : string
         Full path of the config.yaml file as a string.
 
-    Labels: List of at least 3 matplotlib markers. The first one will be used to indicate the human ground truth location (Default: +)
+    Labels: list, default='+'
+        List of at least 3 matplotlib markers. The first one will be used to indicate
+        the human ground truth location (Default: +)
 
-    scale : float, default =1
+    scale : float, default=1
         Change the relative size of the output images.
 
-    dpi : int, optional
-        Output resolution. 100 dpi by default.
+    dpi : int, optional, default=100.
+        Output resolution in dpi.
 
-    draw_skeleton: bool, default True.
+    draw_skeleton: bool, default: True.
         Plot skeleton overlaid over body parts.
 
-    visualizeindividuals: bool, default True:
-        For a multianimal project the different individuals have different colors (and all bodyparts the same).
-        If False, the colors change over bodyparts rather than individuals.
+    visualizeindividuals: bool, default: True.
+        For a multianimal project, if True, the different individuals have different
+        colors (and all bodyparts the same). If False, the colors change over bodyparts
+        rather than individuals.
 
-    Example
+    Returns
+    -------
+    None
+
+    Examples
     --------
-    for labeling the frames
     >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
-    --------
     """
 
     from deeplabcut.utils import visualization
