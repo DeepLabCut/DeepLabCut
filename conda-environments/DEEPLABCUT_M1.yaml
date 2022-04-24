@@ -28,6 +28,7 @@ channels:
 dependencies:
   - python=3.7
   - pip
+  - ipython
   - jupyter
   - nb_conda
   - python.app
