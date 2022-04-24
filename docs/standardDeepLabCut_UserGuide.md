@@ -234,7 +234,6 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 ```
 
 ### (G) Train The Network
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#train_network)
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 ```python
@@ -285,7 +284,14 @@ saveiters: this variable is actually set in pose_config.yaml. However, you can o
 the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
 
 maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
-```    
+```
+
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.train_network.rst
+```
 
 ### (H) Evaluate the Trained Network
 [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#evaluate_network)
