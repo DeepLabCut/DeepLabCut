@@ -1,7 +1,7 @@
 format: jb-book
 root: docs/intro
 parts:
-- caption: Main Documentation
+- caption: User Documentation
   chapters:
   - file: docs/README
   - file: docs/UseOverviewGuide
@@ -11,6 +11,9 @@ parts:
   - file: docs/maDLC_UserGuide
   - file: docs/PROJECT_GUI
   - file: docs/Overviewof3D
+- caption: API Documentation
+  chapters:
+  - file: docs/api/deeplabcut.create_project.new.rst
 - caption: Tutorials
   chapters:
   - file: docs/tutorial
