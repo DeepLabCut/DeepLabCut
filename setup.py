@@ -33,7 +33,7 @@ setuptools.setup(
         "networkx>=2.6",
         "numpy>=1.18.5",
         "pandas>=1.0.1",
-        "scikit-image>=0.17,<=0.18.1",
+        "scikit-image>=0.17,<=1.0.0",
         "scikit-learn>=1.0",
         "scipy>=1.4",
         "statsmodels>=0.11,!=0.13.2",
