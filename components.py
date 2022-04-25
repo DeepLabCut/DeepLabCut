@@ -10,7 +10,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 def _create_label_widget(
-    text: str, style: str = "", margins: tuple = (20, 50, 0, 0),
+    text: str, style: str = "", margins: tuple = (20, 50, 0, 10),
 ) -> QtWidgets.QLabel:
 
     label = QtWidgets.QLabel(text)
@@ -109,16 +109,14 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # Videotype selection
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMaximumWidth(100)
-        self.videotype_widget.setMinimumHeight(30)
         options = ["avi", "mp4", "mov"]
         self.videotype_widget.addItems(options)
-        self.videotype_widget.setCurrentText("avi")
+        self.videotype_widget.setCurrentText(self.root.videotype)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
         # Select videos
         self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(200)
-        self.select_video_button.setMinimumHeight(30)
         self.select_video_button.clicked.connect(self.select_videos)
 
         # Number of selected videos text
@@ -127,7 +125,6 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
         self.clear_videos.clicked.connect(self.clear_selected_videos)
-        self.clear_videos.setMinimumHeight(30)
 
         layout.addWidget(self.videotype_widget)
         layout.addWidget(self.select_video_button)
@@ -137,10 +134,19 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_videotype(self, vtype):
-        self.root.logger.info(f"Looking for .{vtype} videos")
+        self.clear_selected_videos()
+        self.root.update_videotype(vtype)
+
+    def _update_video_selection(self, videopaths):
         self.files.clear()
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
+        self.files.update(
+            videopaths
+        )  
+        if len(self.files)>0:
+            self.selected_videos_text.setText("%s videos selected" % len(self.files))
+            self.select_video_button.setText("Add more videos")
+            # self.select_video_button.adjustSize()
+        self.root.update_files(self.files)
 
     def select_videos(self):
         cwd = self.root.project_folder()
@@ -152,22 +158,16 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            self.files.update(
-                filenames[0]
-            )  # Qt returns a tuple ( list of files, filetype )
-            self.selected_videos_text.setText("%s videos selected" % len(self.files))
-            self.select_video_button.setText("Add more videos")
-            self.select_video_button.adjustSize()
-            self.selected_videos_text.adjustSize()
-            self.root.update_files(self.files)
-
+            # Qt returns a tuple (list of files, filetype)
+            self._update_video_selection(filenames[0]) 
+            
     def clear_selected_videos(self):
         self.selected_videos_text.setText("")
         self.select_video_button.setText("Select videos")
         self.files.clear()
-        self.select_video_button.adjustSize()
-        self.selected_videos_text.adjustSize()
-        self.root.logger.info(f"Videos selected to analyze:\n{self.files}")
+        self.root.files.clear()
+        # self.select_video_button.adjustSize()
+        self.root.logger.info(f"Cleared selected videos:\n{self.files}")
 
 
 class DefaultTab(QtWidgets.QWidget):
@@ -175,38 +175,25 @@ class DefaultTab(QtWidgets.QWidget):
         self, 
         root: QtWidgets.QMainWindow, 
         parent: QtWidgets.QWidget, 
-        tab_heading: str
+        h1_description: str
         ):
         super(DefaultTab, self).__init__(parent)
-
-        self.logger = logging.getLogger("GUI")
 
         self.parent = parent
         self.root = root
 
-        self.tab_heading = tab_heading
+        self.h1_description = h1_description
 
-        # NOTE: Does it make sense to add other commong info?
-        # Like shuffle, trainingsetidx
-
-        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.setLayout(self.main_layout)
 
         self._init_default_layout()
 
-        # TODO: Delete these after making sure the class works as intended
-        # self.logger.debug("Initializing default tab window...")
-        # self.logger.debug(f"Config file: {self.root.config}")
-        # self.logger.debug(f"Config dict: {self.root.cfg}")
-        # self.logger.debug(f"Project folder: {self.root.project_folder}")
-        # self.logger.debug(f"Is multianimal: {self.root.is_multianimal}")
-        # self.logger.debug(f"All bodyparts: {self.root.all_bodyparts}")
-
-
     def _init_default_layout(self):
         # Add tab header
         self.main_layout.addWidget(
-            _create_label_widget(self.tab_heading, "font:bold;", (10, 10, 0, 10),)
+            _create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10),)
         )
 
         # Add separating line
@@ -227,13 +214,11 @@ class DefaultTab(QtWidgets.QWidget):
         cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.root.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
         browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
-        browse_button.setMinimumHeight(30)
         browse_button.clicked.connect(self.browse_cfg_file)
 
         project_config_layout.addWidget(cfg_text)
@@ -256,7 +241,7 @@ class DefaultTab(QtWidgets.QWidget):
             return
 
         self.root.config = config[0]
-        self.logger.info(f"Changed config file: {self.root.config}")
+        self.root.logger.info(f"Changed config file: {self.root.config}")
         self.cfg_line.setText(self.root.config)
 
     def update_cfg(self):
