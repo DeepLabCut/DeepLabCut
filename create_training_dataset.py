@@ -94,13 +94,11 @@ class CreateTrainingDataset(QWidget):
         cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
         browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
-        browse_button.setMinimumHeight(30)
         browse_button.clicked.connect(self.browse_dir)
 
         layout.addWidget(cfg_text)
@@ -132,7 +130,6 @@ class CreateTrainingDataset(QWidget):
         opt_text = QtWidgets.QLabel("Select the network")
         self.net_choice = QComboBox()
         self.net_choice.setMinimumWidth(550)
-        self.net_choice.setMinimumHeight(30)
         options = [
             "dlcrnet_ms5",
             "resnet_50",
@@ -162,7 +159,6 @@ class CreateTrainingDataset(QWidget):
         opt_text = QtWidgets.QLabel("Select the augmentation method")
         self.aug_choice = QComboBox()
         self.aug_choice.setMinimumWidth(550)
-        self.aug_choice.setMinimumHeight(30)
         options = ["default", "tensorpack", "imgaug"]
         self.aug_choice.addItems(options)
         self.aug_choice.setCurrentText("imgaug")
@@ -182,7 +178,6 @@ class CreateTrainingDataset(QWidget):
         self.shuffle = QSpinBox()
         self.shuffle.setValue(1)
         self.shuffle.setMinimumWidth(550)
-        self.shuffle.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.shuffle)
@@ -198,7 +193,6 @@ class CreateTrainingDataset(QWidget):
         self.trainingindex = QSpinBox()
         self.trainingindex.setValue(0)
         self.trainingindex.setMinimumWidth(550)
-        self.trainingindex.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.trainingindex)

@@ -42,7 +42,6 @@ class ExtractFrames(DefaultTab):
 
         self.extraction_method_widget = QtWidgets.QComboBox()
         self.extraction_method_widget.setMinimumWidth(150)
-        self.extraction_method_widget.setMinimumHeight(30)
         options = ["automatic", "manual"]
         self.extraction_method_widget.addItems(options)
         self.extraction_method_widget.currentTextChanged.connect(
@@ -60,7 +59,6 @@ class ExtractFrames(DefaultTab):
 
         self.extraction_algorithm_widget = QtWidgets.QComboBox()
         self.extraction_algorithm_widget.setMinimumWidth(150)
-        self.extraction_algorithm_widget.setMinimumHeight(30)
         options = ["kmeans", "uniform"]
         self.extraction_algorithm_widget.addItems(options)
         self.extraction_algorithm_widget.currentTextChanged.connect(
@@ -72,7 +70,6 @@ class ExtractFrames(DefaultTab):
 
         self.frame_cropping_widget = QtWidgets.QComboBox()
         self.frame_cropping_widget.setMinimumWidth(150)
-        self.frame_cropping_widget.setMinimumHeight(30)
         options = ["disabled", "read from config", "GUI"]
         self.frame_cropping_widget.addItems(options)
         self.frame_cropping_widget.currentTextChanged.connect(
@@ -94,7 +91,6 @@ class ExtractFrames(DefaultTab):
         self.cluster_step_widget = QSpinBox()
         self.cluster_step_widget.setValue(25)
         # self.cluster_step_widget.setMinimumWidth(100)
-        self.cluster_step_widget.setMinimumHeight(30)
 
         # GUI Slider width
         gui_slider_label = QtWidgets.QLabel("GUI slider width")
@@ -102,7 +98,6 @@ class ExtractFrames(DefaultTab):
         self.slider_width_widget = QSpinBox()
         self.slider_width_widget.setValue(25)
         self.slider_width_widget.setMinimumWidth(100)
-        self.slider_width_widget.setMinimumHeight(30)
         self.slider_width_widget.setEnabled(False)
 
         # 1st attributes line

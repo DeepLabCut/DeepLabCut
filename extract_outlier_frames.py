@@ -62,7 +62,6 @@ class ExtractOutlierFrames(DefaultTab):
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.setMinimumHeight(30)
         self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
         layout.addWidget(opt_text)
@@ -73,7 +72,6 @@ class ExtractOutlierFrames(DefaultTab):
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumHeight(30)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingset)
@@ -82,7 +80,6 @@ class ExtractOutlierFrames(DefaultTab):
         opt_text = QtWidgets.QLabel("Tracking method")
         self.tracker_type_widget = QComboBox()
         self.tracker_type_widget.setMinimumWidth(150)
-        self.tracker_type_widget.setMinimumHeight(30)
         self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
         self.tracker_type_widget.setCurrentText("skeleton")
         self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
@@ -98,7 +95,6 @@ class ExtractOutlierFrames(DefaultTab):
         opt_text = QtWidgets.QLabel("Specify the algorithm")
         self.outlier_algorithm_widget = QComboBox()
         self.outlier_algorithm_widget.setMinimumWidth(150)
-        self.outlier_algorithm_widget.setMinimumHeight(30)
         options = ["jump", "fitting", "uncertain", "manual"]
         self.outlier_algorithm_widget.addItems(options)
         self.outlier_algorithm_widget.setCurrentText("jump")

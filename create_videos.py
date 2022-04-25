@@ -67,7 +67,6 @@ class CreateVideos(DefaultTab):
         tmp_text = QtWidgets.QLabel("Color keypoints by:")
         self.color_by_widget = QComboBox()
         self.color_by_widget.setMaximumWidth(150)
-        self.color_by_widget.setMinimumHeight(30)
         self.color_by_widget.addItems(["bodypart", "individual"])
         self.color_by_widget.setCurrentText("bodypart")
         self.color_by_widget.currentTextChanged.connect(self.update_color_by)
@@ -81,7 +80,6 @@ class CreateVideos(DefaultTab):
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.setMinimumHeight(30)
         self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
 
@@ -93,7 +91,6 @@ class CreateVideos(DefaultTab):
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumHeight(30)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingset)
@@ -114,7 +111,6 @@ class CreateVideos(DefaultTab):
         self.trail_points = QSpinBox()
         self.trail_points.setValue(0)
         self.trail_points.setMinimumWidth(100)
-        self.trail_points.setMinimumHeight(30)
         tmp_layout.addWidget(opt_text)
         tmp_layout.addWidget(self.trail_points)
 

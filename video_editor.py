@@ -49,7 +49,6 @@ class VideoEditor(QWidget):
         self.cfg_line = QtWidgets.QLineEdit()
         self.cfg_line.setMaximumWidth(800)
         self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
@@ -171,7 +170,6 @@ class VideoEditor(QWidget):
 
         self.video_height.setValue(256)
         self.video_height.setMinimumWidth(400)
-        self.video_height.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.video_height)
@@ -224,7 +222,6 @@ class VideoEditor(QWidget):
 
         self.video_start.setValue(1)
         self.video_start.setMinimumWidth(400)
-        self.video_start.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.video_start)
@@ -243,7 +240,6 @@ class VideoEditor(QWidget):
 
         self.video_stop.setValue(30)
         self.video_stop.setMinimumWidth(400)
-        self.video_stop.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.video_stop)
@@ -263,7 +259,6 @@ class VideoEditor(QWidget):
 
         self.angle.setValue(0.0)
         self.angle.setMinimumWidth(400)
-        self.angle.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.angle)

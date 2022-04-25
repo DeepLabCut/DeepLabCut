@@ -47,7 +47,6 @@ class LabelFrames(DefaultTab):
 
         self.color_by_widget = QtWidgets.QComboBox()
         self.color_by_widget.setMinimumWidth(150)
-        self.color_by_widget.setMinimumHeight(30)
         options = ["individual", "bodypart"]
         self.color_by_widget.addItems(options)
         self.color_by_widget.currentTextChanged.connect(

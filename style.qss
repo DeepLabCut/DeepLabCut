@@ -1,0 +1,23 @@
+ /* 
+ Variables used
+ --------------
+
+ widgets height: 25px 
+
+ */
+
+QPushButton{
+    min-height: 25px;
+}
+
+QSpinBox{
+    min-height: 25px;
+}
+
+QComboBox{
+    min-height: 25px;
+}
+
+QLineEdit{
+    min-height: 25px;
+}
