@@ -796,7 +796,7 @@ def create_training_dataset(
 
     Notes
     -----
-    Use the function ``add_new_video`` at any stage of the project to add more videos
+    Use the function ``add_new_videos`` at any stage of the project to add more videos
     to the project.
 
     Examples

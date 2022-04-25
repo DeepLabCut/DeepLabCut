@@ -177,8 +177,8 @@ def extract_frames(
 
     Notes
     -----
-    Use the function ``add_new_video`` at any stage of the project to add new videos to
-    the config file and extract their frames.
+    Use the function ``add_new_videos`` at any stage of the project to add new videos
+    to the config file and extract their frames.
 
     The following parameters for automatic extraction are used from the config file
 
