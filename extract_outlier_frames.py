@@ -6,224 +6,141 @@ import deeplabcut
 from deeplabcut import utils
 from deeplabcut.utils import auxiliaryfunctions
 
+from components import DefaultTab, VideoSelectionWidget, _create_horizontal_layout, _create_label_widget
 
 
-class ExtractOutlierFrames(QWidget):
-    def __init__(self, parent, cfg):
-        super(ExtractOutlierFrames, self).__init__(parent)
 
-        # variable initilization
-        self.config = cfg
-        self.cfg = utils.read_config(cfg)
+class ExtractOutlierFrames(DefaultTab):
+    def __init__(self, root, parent, h1_description):
+        super(ExtractOutlierFrames, self).__init__(root, parent, h1_description)
         self.filelist = []
-
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.main_layout.setAlignment(Qt.AlignTop)
-        self.main_layout.setSpacing(20)
-        self.main_layout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.main_layout)
 
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 8. Extract outlier frame")
-        l1_step1.setContentsMargins(20, 0, 0, 10)
+        self.main_layout.addWidget(
+            _create_label_widget("Attributes", "font:bold")
+        )
+        self.layout_attributes = _create_horizontal_layout()
+        self._generate_layout_attributes(self.layout_attributes)
 
-        self.main_layout.addWidget(l1_step1)
-        self.main_layout.addWidget(separatorLine)
+        self._generate_multianimal_options(self.layout_attributes)
 
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
+        self.main_layout.addLayout(self.layout_attributes)
 
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setMinimumHeight(30)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
-
-        layout_choose_video = QtWidgets.QHBoxLayout()
-        layout_choose_video.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_choose_video.setSpacing(70)
-        layout_choose_video.setContentsMargins(20, 10, 300, 0)
-        choose_video_text = QtWidgets.QLabel("Choose the videos")
-        choose_video_text.setContentsMargins(0, 0, 52, 0)
-
-        self.select_video_button = QtWidgets.QPushButton("Select videos to analyze")
-        self.select_video_button.setMaximumWidth(350)
-        self.select_video_button.clicked.connect(self.select_video)
-
-        layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(self.select_video_button)
-
-        self.main_layout.addLayout(layout_cfg)
-        self.main_layout.addLayout(layout_choose_video)
 
         self.layout_attributes = QtWidgets.QVBoxLayout()
         self.layout_attributes.setAlignment(Qt.AlignTop)
         self.layout_attributes.setSpacing(20)
         self.layout_attributes.setContentsMargins(0, 0, 40, 0)
 
-        label = QtWidgets.QLabel("Optional Attributes")
-        label.setContentsMargins(20, 20, 0, 10)
-        self.layout_attributes.addWidget(label)
+        self.main_layout.addWidget(
+            _create_label_widget("Frame extraction options", "font:bold")
+        )
+        self.layout_extraction_options = _create_horizontal_layout()
+        self._generate_layout_extraction_options(self.layout_extraction_options)
+        self.main_layout.addLayout(self.layout_extraction_options)
 
-        self.layout_specify = QtWidgets.QHBoxLayout()
-        self.layout_specify.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.layout_specify.setSpacing(30)
-        self.layout_specify.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_videotype()
-        self._layout_shuffle()
-        self._layout_trainingset()
-
-        self.layout_attributes.addLayout(self.layout_specify)
-
-        self.layout_outlier_alg = QtWidgets.QHBoxLayout()
-        self.layout_outlier_alg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.layout_outlier_alg.setSpacing(20)
-        self.layout_outlier_alg.setContentsMargins(20, 0, 50, 0)
-
-        self._outlier_alg()
-        self.layout_attributes.addLayout(self.layout_outlier_alg)
         self.ok_button = QtWidgets.QPushButton("Ok")
         self.ok_button.setContentsMargins(0, 40, 40, 40)
         self.ok_button.clicked.connect(self.extract_outlier_frames)
 
-        self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-        self.main_layout.addLayout(self.layout_attributes)
+    def _generate_layout_attributes(self, layout):
+        # Shuffle
+        opt_text = QtWidgets.QLabel("Shuffle")
+        self.shuffle = QSpinBox()
+        self.shuffle.setMaximum(100)
+        self.shuffle.setValue(self.root.shuffle_value)
+        self.shuffle.setMinimumHeight(30)
+        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.config = text
-        self.cfg = auxiliaryfunctions.read_config(self.config)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.shuffle)
 
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
-
-    def select_video(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video to modify", cwd, "", "*.*"
-        )
-        if videos_file[0]:
-            self.vids = videos_file[0]
-            self.filelist.append(self.vids)
-            self.select_video_button.setText(
-                "Total %s Videos selected" % len(self.filelist)
-            )
-            self.select_video_button.adjustSize()
-
-    def _layout_videotype(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Select the network")
-        self.videotype = QComboBox()
-        self.videotype.setMinimumWidth(350)
-        self.videotype.setMinimumHeight(30)
-        options = [".avi", ".mp4", ".mov"]
-        self.videotype.addItems(options)
-        self.videotype.setCurrentText(".avi")
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.videotype)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_shuffle(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the shuffle")
-        self.shuffles = QSpinBox()
-        self.shuffles.setMaximum(100)
-        self.shuffles.setValue(1)
-        self.shuffles.setMinimumWidth(400)
-        self.shuffles.setMinimumHeight(30)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.shuffles)
-        self.layout_specify.addLayout(l_opt)
-
-    def _layout_trainingset(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Specify the trainingset index")
+        # Trainingset index
+        opt_text = QtWidgets.QLabel("Trainingset index")
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumWidth(400)
         self.trainingset.setMinimumHeight(30)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.trainingset)
-        self.layout_specify.addLayout(l_opt)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.trainingset)
 
-    def _outlier_alg(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+    def _generate_multianimal_options(self, layout):
+        opt_text = QtWidgets.QLabel("Tracking method")
+        self.tracker_type_widget = QComboBox()
+        self.tracker_type_widget.setMinimumWidth(150)
+        self.tracker_type_widget.setMinimumHeight(30)
+        self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
+        self.tracker_type_widget.setCurrentText("skeleton")
+        self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
+
+        layout.addWidget(opt_text)
+        layout.addWidget(self.tracker_type_widget)
+        if not self.root.is_multianimal:
+            opt_text.hide()
+            self.tracker_type_widget.hide()
+
+    def _generate_layout_extraction_options(self, layout):
 
         opt_text = QtWidgets.QLabel("Specify the algorithm")
-        self.videotype = QComboBox()
-        self.videotype.setMinimumWidth(350)
-        self.videotype.setMinimumHeight(30)
+        self.outlier_algorithm_widget = QComboBox()
+        self.outlier_algorithm_widget.setMinimumWidth(150)
+        self.outlier_algorithm_widget.setMinimumHeight(30)
         options = ["jump", "fitting", "uncertain", "manual"]
-        self.videotype.addItems(options)
-        self.videotype.setCurrentText("jump")
+        self.outlier_algorithm_widget.addItems(options)
+        self.outlier_algorithm_widget.setCurrentText("jump")
+        self.outlier_algorithm_widget.currentTextChanged.connect(self.update_outlier_algorithm)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.videotype)
-        self.layout_outlier_alg.addLayout(l_opt)
+        layout.addWidget(opt_text)
+        layout.addWidget(self.outlier_algorithm_widget)
+
+    def update_tracker_type(self, method):
+        self.root.logger.info(f"Using {method.upper()} tracker")
+
+    def update_outlier_algorithm(self, algorithm):
+        self.root.logger.info(f"Using {algorithm.upper()} algorithm for frame extraction")
 
     def extract_outlier_frames(self):
-        tracker = ""
-        # TODO: multianimal part
-        # if self.cfg.get("multianimalproject", False):
-        #     tracker = self.trackertypes.GetValue()
+        config = self.root.config
+        shuffle = self.root.shuffle_value
+        trainingsetindex = self.trainingset.value()
+        videos = self.files
+        videotype = self.video_selection_widget.videotype_widget.currentText()
+        outlieralgorithm = self.outlier_algorithm_widget.currentText()
+        track_method = ""
 
+        if self.root.is_multianimal:
+            track_method = self.tracker_type_widget.currentText()
+
+        self.root.logger.debug(
+        f"""Running extract outlier frames with options:
+        config: {config},
+        shuffle: {shuffle},
+        trainingset index: {trainingsetindex},
+        videos: {videos},
+        videotype: {videotype},
+        outlier algorithm: {outlieralgorithm},
+        track method: {track_method}
+        """)
         deeplabcut.extract_outlier_frames(
-            config=self.config,
-            videos=self.filelist,
-            videotype=self.videotype.currentText(),
-            shuffle=self.shuffles.value(),
-            trainingsetindex=self.trainingset.value(),
-            outlieralgorithm=self.videotype.currentText(),
-            track_method=tracker,
+            config=config,
+            videos=videos,
+            videotype=videotype,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            outlieralgorithm=outlieralgorithm,
+            track_method=track_method,
         )

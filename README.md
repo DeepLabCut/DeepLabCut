@@ -29,8 +29,8 @@ python main.py
 - [x] Model evaluation
   - [x] Edit inference config file option
   - [x] Use specific bodyparts option
-- [ ] Extract outlier frames
-  - [ ] Add multianimal support
+- [x] Extract outlier frames
+  - [x] Add multianimal support
 - [ ] Labeling, plug in multi-animal matplotlib code
 - [ ] Refine labels
   - [ ] Plug in merge datasets 

@@ -292,7 +292,7 @@ class MainWindow(QMainWindow):
         video_editor = VideoEditor(self, self.config)
         analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
         create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
-        extract_outlier_frames = ExtractOutlierFrames(self, self.config)
+        extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
         refine_labels = RefineLabels(self, self.config)
 
         self.tab_widget.addTab(extract_frames, "Extract frames")
