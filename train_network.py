@@ -104,7 +104,7 @@ class TrainNetwork(QWidget):
     def pose_cfg_path(self):
         return os.path.join(
             self.cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
+            auxiliaryfunctions.get_model_folder(
                 self.cfg["TrainingFraction"][int(self.trainingindex.value())],
                 int(self.shuffle.value()),
                 self.cfg,
@@ -119,7 +119,6 @@ class TrainNetwork(QWidget):
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(1)
-        self.shuffle.setMinimumHeight(30)
         
 
         layout.addWidget(opt_text)
@@ -130,7 +129,6 @@ class TrainNetwork(QWidget):
         self.trainingindex = QSpinBox()
         self.trainingindex.setMaximum(100)
         self.trainingindex.setValue(0)
-        self.trainingindex.setMinimumHeight(30)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingindex)
@@ -139,13 +137,11 @@ class TrainNetwork(QWidget):
         cfg_text = QtWidgets.QLabel("Active config file:")
 
         self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMinimumHeight(30)
         self.cfg_line.setText(self.config)
         self.cfg_line.textChanged[str].connect(self.update_cfg)
 
         browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
-        browse_button.setMinimumHeight(30)
         browse_button.clicked.connect(self.browse_dir)
 
         layout.addWidget(cfg_text)
@@ -187,7 +183,6 @@ class TrainNetwork(QWidget):
         self.display_iters_spin.setValue(1000)
 
         self.display_iters_spin.setMinimumWidth(300)
-        self.display_iters_spin.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.display_iters_spin)
@@ -207,7 +202,6 @@ class TrainNetwork(QWidget):
         self.save_iters_spin.setValue(50000)
 
         self.save_iters_spin.setMinimumWidth(300)
-        self.save_iters_spin.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.save_iters_spin)
@@ -226,7 +220,6 @@ class TrainNetwork(QWidget):
         self.max_iters_spin.setMaximum(int(self.max_iters))
         self.max_iters_spin.setValue(1030000)
         self.max_iters_spin.setMinimumWidth(300)
-        self.max_iters_spin.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.max_iters_spin)
@@ -244,7 +237,6 @@ class TrainNetwork(QWidget):
         self.snapshots.setMinimum(1)
         self.snapshots.setMaximum(100)
         self.snapshots.setMinimumWidth(300)
-        self.snapshots.setMinimumHeight(30)
 
         l_opt.addWidget(opt_text)
         l_opt.addWidget(self.snapshots)

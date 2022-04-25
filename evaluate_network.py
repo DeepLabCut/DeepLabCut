@@ -39,24 +39,24 @@ class EvaluateNetwork(DefaultTab):
         self.main_layout.addLayout(self.layout_additional_attributes)
 
         self.ev_nw_button = QtWidgets.QPushButton("Evaluate Network")
-        self.ev_nw_button.setMinimumWidth(200)
+        self.ev_nw_button.setMinimumWidth(150)
         self.ev_nw_button.setContentsMargins(0, 80, 40, 40)
         self.ev_nw_button.clicked.connect(self.evaluate_network)
 
         self.opt_button = QtWidgets.QPushButton("Plot 3 test maps")
-        self.opt_button.setMinimumWidth(200)
+        self.opt_button.setMinimumWidth(150)
         self.opt_button.setContentsMargins(0, 80, 40, 40)
         self.opt_button.clicked.connect(self.plot_maps)
 
-        self.edit_posecfg_btn = QtWidgets.QPushButton("Edit inference_cfg.yaml")
-        self.edit_posecfg_btn.setMinimumWidth(200)
-        self.edit_posecfg_btn.setContentsMargins(0, 80, 40, 40)
-        self.edit_posecfg_btn.clicked.connect(self.open_inferencecfg_editor)
+        self.edit_inferencecfg_btn = QtWidgets.QPushButton("Edit inference_cfg.yaml")
+        self.edit_inferencecfg_btn.setMinimumWidth(150)
+        self.edit_inferencecfg_btn.setContentsMargins(0, 80, 40, 40)
+        self.edit_inferencecfg_btn.clicked.connect(self.open_inferencecfg_editor)
 
         self.main_layout.addLayout(self.layout_attributes)
 
         if self.root.is_multianimal:
-            self.main_layout.addWidget(self.edit_posecfg_btn, alignment=Qt.AlignRight)
+            self.main_layout.addWidget(self.edit_inferencecfg_btn, alignment=Qt.AlignRight)
 
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
@@ -65,11 +65,11 @@ class EvaluateNetwork(DefaultTab):
     @property
     def inference_cfg_path(self):
         return os.path.join(
-            self.cfg["project_path"],
-            auxiliaryfunctions.GetModelFolder(
-                self.cfg["TrainingFraction"][int(self.trainingsetidx.value())],
+            self.root.cfg["project_path"],
+            auxiliaryfunctions.get_model_folder(
+                self.root.cfg["TrainingFraction"][int(self.trainingsetidx.value())],
                 int(self.shuffle.value()),
-                self.cfg,
+                self.root.cfg,
             ),
             "test",
             "inference_cfg.yaml",
@@ -81,8 +81,6 @@ class EvaluateNetwork(DefaultTab):
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.setMinimumHeight(30)
-        self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
@@ -92,7 +90,6 @@ class EvaluateNetwork(DefaultTab):
         self.trainingsetidx = QSpinBox()
         self.trainingsetidx.setMaximum(100)
         self.trainingsetidx.setValue(0)
-        self.trainingsetidx.setMinimumHeight(30)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingsetidx)

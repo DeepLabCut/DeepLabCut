@@ -23,8 +23,6 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(AnalyzeVideos, self).__init__(root, parent, h1_description)
 
-        if self.root.is_multianimal:
-            self.tracker_method = self.root.cfg.get("default_track_method", "ellipse")
         self.set_page()
 
     @property
@@ -134,7 +132,6 @@ class AnalyzeVideos(DefaultTab):
         self.shuffle = QSpinBox()
         self.shuffle.setMaximum(100)
         self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.setMinimumHeight(30)
         self.shuffle.valueChanged.connect(self.root.update_shuffle)
 
         layout.addWidget(opt_text, 0, 0)
@@ -145,7 +142,6 @@ class AnalyzeVideos(DefaultTab):
         self.trainingset = QSpinBox()
         self.trainingset.setMaximum(100)
         self.trainingset.setValue(0)
-        self.trainingset.setMinimumHeight(30)
 
         layout.addWidget(opt_text, 1, 0)
         layout.addWidget(self.trainingset, 1, 1)
@@ -162,19 +158,17 @@ class AnalyzeVideos(DefaultTab):
         tmp_layout = QtWidgets.QGridLayout()
 
         opt_text = QtWidgets.QLabel("Tracking method")
-        self.tracker_type_selector = QComboBox()
-        self.tracker_type_selector.setMinimumHeight(30)
-        self.tracker_type_selector.addItems(["skeleton", "box", "ellipse"])
-        self.tracker_type_selector.setCurrentText(self.tracker_method)
-        self.tracker_type_selector.currentTextChanged.connect(self.update_tracker_type)
+        self.tracker_type_widget = QComboBox()
+        self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
+        self.tracker_type_widget.setCurrentText("skeleton")
+        self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
         tmp_layout.addWidget(opt_text, 0, 0)
-        tmp_layout.addWidget(self.tracker_type_selector, 0, 1)
+        tmp_layout.addWidget(self.tracker_type_widget, 0, 1)
 
         opt_text = QtWidgets.QLabel("Number of animals in videos")
         self.num_animals_in_videos = QSpinBox()
         self.num_animals_in_videos.setValue(len(self.root.all_individuals))
         self.num_animals_in_videos.setMaximum(100)
-        self.num_animals_in_videos.setMinimumHeight(30)
         tmp_layout.addWidget(opt_text, 1, 0)
         tmp_layout.addWidget(self.num_animals_in_videos, 1, 1)
 
@@ -261,8 +255,7 @@ class AnalyzeVideos(DefaultTab):
             self.root.logger.info("Assembly calibration DISABLED")
 
     def update_tracker_type(self, method):
-        self.root.logger.info(f"Using {method} tracker")
-        self.tracker_method = method
+        self.root.logger.info(f"Using {method.upper()} tracker")
 
     def update_csv_choice(self, s):
         if s == Qt.Checked:
@@ -325,7 +318,7 @@ class AnalyzeVideos(DefaultTab):
         create_video_all_detections = self.create_detections_video_checkbox.checkState() == Qt.Checked
         robustnframes = self.use_robustnframes.checkState() == Qt.Checked
         use_transformer_tracking = self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
-        track_method = self.tracker_method
+        track_method = self.tracker_type_widget.currentText() if self.root.is_multianimal else ""
         num_animals_in_videos = self.num_animals_in_videos.value()
 
         cropping = None
