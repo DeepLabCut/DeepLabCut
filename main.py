@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 
 import PySide2.QtWidgets as QtWidgets
@@ -10,6 +11,13 @@ from MainWindow import MainWindow
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon('./assets/logo.png'))
+
+    stylefile = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "style.qss"
+    )
+    with open(stylefile, "r") as f:
+        app.setStyleSheet(f.read())
+
 
     # Set up a logger and add an stdout handler. 
     # A single logger can have many handlers: 
