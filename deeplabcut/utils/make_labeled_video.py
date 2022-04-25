@@ -876,7 +876,7 @@ def create_video_with_all_detections(
 
     """
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
-    import pickle, re
+    import re
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]

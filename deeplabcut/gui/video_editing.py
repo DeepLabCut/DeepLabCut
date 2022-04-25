@@ -18,7 +18,6 @@ import wx
 import wx.lib.agw.floatspin as FS
 
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 from deeplabcut.gui import LOGO_PATH
 

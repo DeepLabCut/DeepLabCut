@@ -17,7 +17,7 @@ import wx
 
 from deeplabcut.generate_training_dataset import check_labels
 from deeplabcut.gui import LOGO_PATH
-from deeplabcut.utils import auxiliaryfunctions, skeleton
+from deeplabcut.utils import auxiliaryfunctions
 from pathlib import Path
 
 
