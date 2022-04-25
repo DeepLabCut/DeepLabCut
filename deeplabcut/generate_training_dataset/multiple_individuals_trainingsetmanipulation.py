@@ -111,7 +111,7 @@ def create_multianimaltraining_dataset(
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL] Use the function 'add_new_video' at any stage of the project to add more videos to the project.
+    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
 
     Imporant differences to standard:
      - stores coordinates with numdigits as many digits

@@ -141,7 +141,7 @@ def add_new_videos(_, *args, **kwargs):
 def extract_frames(_, *args, **kwargs):
     """
     Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
-    Use the function ``add_new_video`` at any stage of the project to add new videos to the config file and extract their frames. \n
+    Use the function ``add_new_videos`` at any stage of the project to add new videos to the config file and extract their frames.\n
 
     CONFIG : string \n
         Full path of the config.yaml file as a string.  \n \n \n
