@@ -45,7 +45,7 @@ def test_calc_target_and_scoremap_sizes(
 def test_get_batch(ma_dataset):
     for batch_size in 1, 4, 8, 16:
         ma_dataset.batch_size = batch_size
-        (batch_images, joint_ids, batch_joints, data_items,) = ma_dataset.get_batch()
+        batch_images, joint_ids, batch_joints, _, data_items = ma_dataset.get_batch()
         assert (
             len(batch_images)
             == len(joint_ids)
@@ -67,7 +67,8 @@ def test_build_augmentation_pipeline(ma_dataset):
 @pytest.mark.parametrize("num_idchannel", range(4))
 def test_get_targetmaps(ma_dataset, num_idchannel):
     ma_dataset.cfg["num_idchannel"] = num_idchannel
-    batch = ma_dataset.get_batch()[1:]
+    batch = list(ma_dataset.get_batch()[1:])
+    batch.pop(2)
     target_size, sm_size = ma_dataset.calc_target_and_scoremap_sizes()
     scale = np.mean(target_size / ma_dataset.default_size)
     maps = ma_dataset.get_targetmaps_update(*batch, sm_size, scale)
