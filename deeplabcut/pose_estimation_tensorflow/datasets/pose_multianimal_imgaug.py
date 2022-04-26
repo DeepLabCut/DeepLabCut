@@ -20,6 +20,8 @@ from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
+from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.utils.auxfun_multianimal import extractindividualsandbodyparts
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
@@ -29,6 +31,12 @@ from math import sqrt
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
+        self.main_cfg = read_config(
+            os.path.join(self.cfg["project_path"], "config.yaml")
+        )
+        animals, unique, multi = extractindividualsandbodyparts(self.main_cfg)
+        self._n_kpts = len(multi) + len(unique)
+        self._n_animals = len(animals)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
@@ -111,12 +119,19 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 )
             )
 
-        if cfg.get("fliplr", False):
+        if cfg.get("fliplr", False) and cfg.get("symmetric_pairs"):
             opt = cfg.get("fliplr", False)
             if type(opt) == int:
-                pipeline.add(sometimes(iaa.Fliplr(opt)))
+                p = opt
             else:
-                pipeline.add(sometimes(iaa.Fliplr(0.5)))
+                p = 0.5
+            pipeline.add(sometimes(
+                augmentation.KeypointFliplr(
+                    cfg["all_joints_names"],
+                    symmetric_pairs=cfg["symmetric_pairs"],
+                    p=p,
+                )
+            ))
         if cfg.get("rotation", False):
             opt = cfg.get("rotation", False)
             if type(opt) == int:
@@ -236,6 +251,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         batch_images = []
         batch_joints = []
         joint_ids = []
+        inds_visible = []
         data_items = []
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
@@ -249,17 +265,19 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             if self.has_gt:
                 Joints = data_item.joints
+                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                for j in range(self._n_animals):
+                    for n, x, y in Joints.get(j, []):
+                        kpts[j * self._n_kpts + int(n)] = x, y
                 joint_id = [
                     Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
                 ]
-                joint_points = np.concatenate(
-                    [Joints[person_id][:, 1:3] for person_id in Joints.keys()]
-                )
                 joint_ids.append(joint_id)
-                batch_joints.append(np.array(joint_points))
+                batch_joints.append(kpts)
+                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
 
             batch_images.append(image)
-        return batch_images, joint_ids, batch_joints, data_items
+        return batch_images, joint_ids, batch_joints, inds_visible, data_items
 
     def get_targetmaps_update(
         self, joint_ids, joints, data_items, sm_size, scale,
@@ -325,7 +343,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            (batch_images, joint_ids, batch_joints, data_items,) = self.get_batch()
+            batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -339,7 +357,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
             # Discard keypoints whose coordinates lie outside the cropped image
             batch_joints_valid = []
             joint_ids_valid = []
-            for joints, ids in zip(batch_joints, joint_ids):
+            for joints, ids, visible in zip(batch_joints, joint_ids, inds_visible):
+                joints = joints[visible]
                 inside = np.logical_and.reduce(
                     (
                         joints[:, 0] < image_shape[1],
@@ -367,7 +386,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         shape=batch_images[i].shape,
                     )
                     im = kps.draw_on_image(batch_images[i])
-                    # imageio.imwrite(data_items[i].im_path.split('/')[-1],im)
                     imageio.imwrite(
                         os.path.join(self.cfg["project_path"], str(i) + ".png"), im
                     )
