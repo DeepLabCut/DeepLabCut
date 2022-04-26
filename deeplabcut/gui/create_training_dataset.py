@@ -347,7 +347,7 @@ class Create_training_dataset(wx.Panel):
             if self.model_comparison_choice.GetStringSelection() == "Yes":
                 deeplabcut.create_training_model_comparison(
                     self.config,
-                    trainindex=trainindex,
+                    # trainindex=trainindex,
                     num_shuffles=num_shuffles,
                     userfeedback=userfeedback,
                     net_types=self.net_type,
