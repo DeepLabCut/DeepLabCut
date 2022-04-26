@@ -1,4 +1,5 @@
 import imgaug.augmenters as iaa
+import numpy as np
 import pytest
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 
@@ -7,7 +8,7 @@ from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 def test_keypoint_aware_cropping(
     sample_image, sample_keypoints, width, height,
 ):
-    aug = augmentation.KeypointAwareCropToFixedSize(width=width, height=height,)
+    aug = augmentation.KeypointAwareCropToFixedSize(width=width, height=height)
     images_aug, keypoints_aug = aug(
         images=[sample_image], keypoints=[sample_keypoints],
     )
@@ -50,3 +51,23 @@ def test_sequential(
         images=[very_small_image] * n_samples, keypoints=[sample_keypoints] * n_samples,
     )
     assert len(images_aug) == len(keypoints_aug) == n_samples
+
+
+def test_keypoint_horizontal_flip(
+    sample_image, sample_keypoints,
+):
+    keypoints_flipped = sample_keypoints.copy()
+    keypoints_flipped[:, 0] = sample_image.shape[1] - keypoints_flipped[:, 0]
+    pairs = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 11)]
+    aug = augmentation.KeypointFliplr(
+        keypoints=list(map(str, range(12))),
+        symmetric_pairs=pairs,
+    )
+    keypoints_aug = aug(
+        images=[sample_image], keypoints=[sample_keypoints],
+    )[1][0]
+    temp = keypoints_aug.reshape((3, 12, 2))
+    for pair in pairs:
+        temp[:, pair] = temp[:, pair[::-1]]
+    keypoints_unaug = temp.reshape((-1, 2))
+    np.testing.assert_allclose(keypoints_unaug, keypoints_flipped)
