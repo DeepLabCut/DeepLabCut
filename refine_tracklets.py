@@ -1,12 +1,13 @@
 import os
+from pathlib import Path
 
 from PySide2.QtWidgets import QWidget, QMessageBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
+import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
-from pathlib import Path
 
 from components import (
     DefaultTab,
@@ -18,50 +19,10 @@ from components import (
 from widgets import ConfigEditor
 
 
-def refine_labels(config, multianimal=False):
-    """
-    Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.
-
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
-
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
-    Examples
-    --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
-
-    """
-
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if not multianimal and not cfg.get("multianimalproject", False):
-        from deeplabcut.gui import refinement
-
-        refinement.show(config)
-    else:  # loading multianimal labeling GUI
-        from deeplabcut.gui import multiple_individuals_refinement_toolbox
-
-        multiple_individuals_refinement_toolbox.show(config)
-
-    os.chdir(startpath)
-
-
-class RefineLabels(DefaultTab):
+class RefineTracklets(DefaultTab):
     # TODO: Add "run tracking" button + function
     def __init__(self, root, parent, h1_description):
-        super(RefineLabels, self).__init__(root, parent, h1_description)
+        super(RefineTracklets, self).__init__(root, parent, h1_description)
         # variable initilization
 
         # TODO: rename this to private -> _set_page in all tabs
@@ -237,8 +198,6 @@ class RefineLabels(DefaultTab):
         raise NotImplementedError
 
     def merge_dataset(self):
-        # TODO: make sure this is correct
-
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Warning)
         msg.setText(
@@ -249,13 +208,8 @@ class RefineLabels(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QMessageBox.Yes:
-            pass
-            # TODO: finish -->
-            # notebook = self.GetParent()
-            # notebook.SetSelection(4)
-            # deeplabcut.merge_datasets(self.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.config, forceiterate=None)
 
     def refine_labels(self):
         self.merge_button.setEnabled(True)
-        # TODO: finish refine_labels part
-        # deeplabcut.refine_labels(self.config)
+        deeplabcut.refine_labels(self.config)

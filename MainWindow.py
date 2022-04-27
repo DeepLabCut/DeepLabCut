@@ -23,7 +23,7 @@ from video_editor import VideoEditor
 from analyze_videos import AnalyzeVideos
 from create_videos import CreateVideos
 from extract_outlier_frames import ExtractOutlierFrames
-from refine_labels import RefineLabels
+from refine_tracklets import RefineTracklets
 
 
 class MainWindow(QMainWindow):
@@ -293,7 +293,7 @@ class MainWindow(QMainWindow):
         analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
         create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
         extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
-        refine_labels = RefineLabels(root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels")
+        refine_tracklets = RefineTracklets(root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels")
 
         self.tab_widget.addTab(extract_frames, "Extract frames")
         self.tab_widget.addTab(label_frames, "Label frames")
@@ -304,7 +304,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(analyze_videos, "Analyze videos")
         self.tab_widget.addTab(create_videos, "Create videos")
         self.tab_widget.addTab(extract_outlier_frames, "Extract outlier frames")
-        self.tab_widget.addTab(refine_labels, "Refine tracklets")
+        self.tab_widget.addTab(refine_tracklets, "Refine tracklets")
 
         self.setCentralWidget(self.tab_widget)
 
