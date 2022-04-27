@@ -288,7 +288,7 @@ def check_labels(
     draw_skeleton=True,
     visualizeindividuals=True,
 ):
-    """Check the labelled frames.
+    """Check the labeled frames.
 
     Double check if the labels were at the correct locations and stored in the proper
     file format.
@@ -310,10 +310,10 @@ def check_labels(
     scale : float, default=1
         Change the relative size of the output images.
 
-    dpi : int, optional, default=100.
+    dpi : int, optional, default=100
         Output resolution in dpi.
 
-    draw_skeleton: bool, default: True.
+    draw_skeleton: bool, default=True
         Plot skeleton overlaid over body parts.
 
     visualizeindividuals: bool, default: True.

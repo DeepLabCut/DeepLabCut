@@ -78,7 +78,7 @@ def extract_frames(
 ):
     """Extracts frames from the project videos.
 
-    Frames will be extracted from vidoes listed in the config.yaml file.
+    Frames will be extracted from videos listed in the config.yaml file.
 
     The frames are selected from the videos in a randomly and temporally uniformly
     distributed way (``uniform``), by clustering based on visual appearance
