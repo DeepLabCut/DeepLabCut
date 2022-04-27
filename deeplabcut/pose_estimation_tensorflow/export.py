@@ -16,7 +16,6 @@ import tarfile
 import numpy as np
 import ruamel.yaml
 import tensorflow as tf
-from tensorflow.python.tools import freeze_graph
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.config import load_config

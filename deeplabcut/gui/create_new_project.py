@@ -26,7 +26,6 @@ from deeplabcut.gui.evaluate_network import Evaluate_network
 from deeplabcut.gui.extract_frames import Extract_frames
 from deeplabcut.gui.extract_outlier_frames import Extract_outlier_frames
 from deeplabcut.gui.label_frames import Label_frames
-from deeplabcut.gui.refine_labels import Refine_labels
 from deeplabcut.gui.refine_tracklets import Refine_tracklets
 from deeplabcut.gui.train_network import Train_network
 from deeplabcut.gui.video_editing import Video_Editing

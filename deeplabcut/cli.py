@@ -11,8 +11,6 @@ from pathlib import Path
 
 import click
 
-import deeplabcut
-
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 

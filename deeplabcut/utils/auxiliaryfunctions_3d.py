@@ -69,8 +69,6 @@ def compute_triangulation_calibration_images(
     """
     Performs triangulation of the calibration images.
     """
-    from mpl_toolkits.mplot3d import Axes3D
-
     triangulate = []
     P1 = stereo_matrix["P1"]
     P2 = stereo_matrix["P2"]
