@@ -1,5 +1,8 @@
 # PyQT-Based DLC GUI
 
+This is a re-implementation of the DeepLabCut WxPython-based GUI in PySide2. Various architecture design changes and UX improvements are documented [here](DesignDocumentation.md).
+## Installation and running
+
 Additional dependencies:
 ```bash
 pip install PySide2
@@ -11,27 +14,11 @@ To run:
 python main.py
 ```
 
-## ToDO:
-- [ ] Video analysis (multi-animal options)
-  - [x] ffprobe to read video metadata
-  - [x] create video for checking detections
-  - [x] choose tracker type
-  - [x] overwrite tracking files
-  - [x] calibrate assembly
-  - [x] assemble with ID only
-  - [ ] prioritize past connections in assembly
-  - [x] plug everything in 
-- [ ] Create training dataset
-  - [ ] Model comparison
-- [x] Create labeled videos
-  - [x] color by ID / bodypart
-  - [x] plug in multi-animal values in function call
-- [x] Model evaluation
-  - [x] Edit inference config file option
-  - [x] Use specific bodyparts option
-- [x] Extract outlier frames
-  - [x] Add multianimal support
-- [ ] Labeling, plug in multi-animal matplotlib code
-- [ ] Refine labels
-  - [ ] Plug in merge datasets 
-  - [ ] Plug in refine_labels()
+## Missing components:
+- Video analysis
+  - prioritize past connections in assembly
+- Create training dataset
+  - Model comparison
+- Missing labeling code
+  - multi-animal labeling GUI code, as well as 
+  - outlier and tracklet refinement GUI code
