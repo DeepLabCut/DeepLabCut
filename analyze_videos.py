@@ -11,6 +11,8 @@ from widgets import ConfigEditor
 from components import (
     BodypartListWidget,
     DefaultTab,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
@@ -122,26 +124,19 @@ class AnalyzeVideos(DefaultTab):
         self.bodyparts_list_widget = BodypartListWidget(
             root=self.root, parent=self,
         )
-        self.bodyparts_list_widget.setMaximumWidth(600)
-        self.bodyparts_list_widget.setMaximumHeight(500)
         layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
     def _generate_layout_attributes(self, layout):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.valueChanged.connect(self.root.update_shuffle)
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
 
         # Trainingset index
         opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = QSpinBox()
-        self.trainingset.setMaximum(100)
-        self.trainingset.setValue(0)
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text, 1, 0)
         layout.addWidget(self.trainingset, 1, 1)
@@ -285,11 +280,13 @@ class AnalyzeVideos(DefaultTab):
 
     def update_plot_trajectory_choice(self, s):
         if s == Qt.Checked:
+            self.bodyparts_list_widget.show()
             self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
             self.root.logger.info("Plot trajectories ENABLED.")
 
         else:
+            self.bodyparts_list_widget.hide()
             self.bodyparts_list_widget.setEnabled(False)
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)

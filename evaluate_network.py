@@ -10,6 +10,8 @@ from deeplabcut.utils import auxiliaryfunctions
 from components import (
     BodypartListWidget,
     DefaultTab,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
     _create_horizontal_layout,
     _create_label_widget,
     _create_vertical_layout,
@@ -61,41 +63,23 @@ class EvaluateNetwork(DefaultTab):
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
 
-
-    @property
-    def inference_cfg_path(self):
-        return os.path.join(
-            self.root.cfg["project_path"],
-            auxiliaryfunctions.get_model_folder(
-                self.root.cfg["TrainingFraction"][int(self.trainingsetidx.value())],
-                int(self.shuffle.value()),
-                self.root.cfg,
-            ),
-            "test",
-            "inference_cfg.yaml",
-        )
-
     def _generate_layout_attributes(self, layout):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(self.root.shuffle_value)
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
 
         # Trainingset index
         opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingsetidx = QSpinBox()
-        self.trainingsetidx.setMaximum(100)
-        self.trainingsetidx.setValue(0)
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text)
-        layout.addWidget(self.trainingsetidx)
+        layout.addWidget(self.trainingset)
 
     def open_inferencecfg_editor(self):
-        editor = ConfigEditor(self.inference_cfg_path)
+        editor = ConfigEditor(self.root.inference_cfg_path)
         editor.show()
 
     def plot_maps(self):
@@ -126,8 +110,6 @@ class EvaluateNetwork(DefaultTab):
         self.bodyparts_list_widget = BodypartListWidget(
             root=self.root, parent=self,
         )
-        self.bodyparts_list_widget.setMaximumWidth(600)
-        self.bodyparts_list_widget.setMaximumHeight(500)
         layout.addWidget(self.bodyparts_list_widget, alignment=Qt.AlignLeft)
 
     def update_map_choice(self, state):
@@ -145,9 +127,11 @@ class EvaluateNetwork(DefaultTab):
     def update_bodypart_choice(self, s):
         if s == Qt.Checked:
             self.bodyparts_list_widget.setEnabled(False)
+            self.bodyparts_list_widget.hide()
             self.root.logger.info("Use all bodyparts")
         else:
             self.bodyparts_list_widget.setEnabled(True)
+            self.bodyparts_list_widget.show()
             self.root.logger.info(
                 f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}"
             )
@@ -155,7 +139,7 @@ class EvaluateNetwork(DefaultTab):
     def evaluate_network(self):
 
         config = self.root.config
-        trainingsetindex = self.trainingsetidx.value()
+        trainingsetindex = self.trainingset.value()
 
         Shuffles = [self.root.shuffle_value]
         plotting = self.plot_predictions.checkState() == Qt.Checked

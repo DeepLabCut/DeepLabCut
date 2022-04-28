@@ -11,6 +11,8 @@ from deeplabcut.utils import auxiliaryfunctions
 
 from components import (
     DefaultTab,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_horizontal_layout,
@@ -94,10 +96,11 @@ class RefineTracklets(DefaultTab):
     def _generate_layout_attributes(self, layout):
         # Shuffle
         shuffle_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QtWidgets.QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.valueChanged.connect(self.root.update_shuffle)
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+
+        # Trainingset index
+        trainingset_label = QtWidgets.QLabel("Trainingset index")
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         # Num animals
         num_animals_text = QtWidgets.QLabel("Number of animals in video")
@@ -108,6 +111,8 @@ class RefineTracklets(DefaultTab):
 
         layout.addWidget(shuffle_text)
         layout.addWidget(self.shuffle)
+        layout.addWidget(trainingset_label)
+        layout.addWidget(self.trainingset)
         layout.addWidget(num_animals_text)
         layout.addWidget(self.num_animals_in_videos)
         

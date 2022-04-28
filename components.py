@@ -3,6 +3,7 @@ import os
 from typing import List
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
+from dlc_params import DLC_Params
 
 from widgets import ConfigEditor
 
@@ -72,6 +73,9 @@ class BodypartListWidget(QtWidgets.QListWidget):
         self.selected_bodyparts = self.root.all_bodyparts
 
         self.setEnabled(False)
+        self.setMaximumWidth(600)
+        self.setMaximumHeight(500)
+        self.hide()
         
         self.addItems(self.root.all_bodyparts)
         self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
@@ -109,8 +113,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # Videotype selection
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMaximumWidth(100)
-        options = ["avi", "mp4", "mov"]
-        self.videotype_widget.addItems(options)
+        self.videotype_widget.addItems(DLC_Params.VIDEOTYPES)
         self.videotype_widget.setCurrentText(self.root.videotype)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
@@ -169,6 +172,27 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # self.select_video_button.adjustSize()
         self.root.logger.info(f"Cleared selected videos:\n{self.files}")
 
+class TrainingSetSpinBox(QtWidgets.QSpinBox):
+    def __init__(self, root, parent):
+        super(TrainingSetSpinBox, self).__init__(parent)
+        
+        self.root = root
+        self.parent = parent
+
+        self.setMaximum(100)
+        self.setValue(self.root.trainingset_index)
+        self.valueChanged.connect(self.root.update_trainingset)
+
+class ShuffleSpinBox(QtWidgets.QSpinBox):
+    def __init__(self, root, parent):
+        super(ShuffleSpinBox, self).__init__(parent)
+        
+        self.root = root
+        self.parent = parent
+
+        self.setMaximum(100)
+        self.setValue(self.root.shuffle_value)
+        self.valueChanged.connect(self.root.update_shuffle)
 
 class DefaultTab(QtWidgets.QWidget):
     def __init__(
@@ -268,9 +292,6 @@ class EditYamlButton(QtWidgets.QPushButton):
 
 
 class BrowseFilesButton(QtWidgets.QPushButton):
-    # NOTE: This is not functioning as intended yet. I dont know how
-    #       to store and retrieve information in the button, so that it
-    #       can be accessed elsewhere.
     def __init__(
         self,
         button_label: str,

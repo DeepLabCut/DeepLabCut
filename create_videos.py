@@ -8,7 +8,10 @@ from PySide2.QtWidgets import (
 )
 
 from components import (
+    BodypartListWidget,
     DefaultTab,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_horizontal_layout,
     _create_label_widget,
@@ -20,9 +23,7 @@ class CreateVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(CreateVideos, self).__init__(root, parent, h1_description)
 
-        self.filelist = set()
         self.bodyparts_to_use = self.root.all_bodyparts
-
         self.set_page()
 
     @property
@@ -77,21 +78,15 @@ class CreateVideos(DefaultTab):
     def _generate_layout_attributes(self, layout):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.valueChanged.connect(self.root.update_shuffle)
-
-
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
 
         # Trainingset index
         opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = QSpinBox()
-        self.trainingset.setMaximum(100)
-        self.trainingset.setValue(0)
-
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
+        
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingset)
 
@@ -158,19 +153,12 @@ class CreateVideos(DefaultTab):
         nested_tmp_layout.addLayout(tmp_layout)
 
         tmp_layout = _create_vertical_layout()
+        
         # Bodypart list
-        self.bdpt_list_widget = QtWidgets.QListWidget()
-        # self.bdpt_list_widget.setMaximumWidth(500)
-        self.bdpt_list_widget.addItems(self.root.all_bodyparts)
-        self.bdpt_list_widget.setSelectionMode(
-            QtWidgets.QAbstractItemView.MultiSelection
+        self.bodyparts_list_widget = BodypartListWidget(
+            root=self.root, parent=self,
         )
-        # self.bdpt_list_widget.selectAll()
-        self.bdpt_list_widget.setEnabled(False)
-        self.bdpt_list_widget.itemSelectionChanged.connect(
-            self.update_selected_bodyparts
-        )
-        nested_tmp_layout.addWidget(self.bdpt_list_widget, Qt.AlignLeft)
+        nested_tmp_layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
         tmp_layout.addLayout(nested_tmp_layout, Qt.AlignLeft)
 
@@ -192,19 +180,20 @@ class CreateVideos(DefaultTab):
 
     def update_selected_bodyparts(self):
         selected_bodyparts = [
-            item.text() for item in self.bdpt_list_widget.selectedItems()
+            item.text() for item in self.bodyparts_list_widget.selectedItems()
         ]
         self.root.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
         self.bodyparts_to_use = selected_bodyparts
 
     def update_use_all_bodyparts(self, s):
         if s == Qt.Checked:
-            self.bdpt_list_widget.setEnabled(False)
-            # self.bdpt_list_widget.selectAll()
+            self.bodyparts_list_widget.setEnabled(False)
+            self.bodyparts_list_widget.hide()
             self.root.logger.info("Plot all bodyparts ENABLED.")
 
         else:
-            self.bdpt_list_widget.setEnabled(True)
+            self.bodyparts_list_widget.setEnabled(True)
+            self.bodyparts_list_widget.show()
             self.root.logger.info("Plot all bodyparts DISABLED.")
 
     def update_use_filtered_data(self, state):
