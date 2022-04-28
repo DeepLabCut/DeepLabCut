@@ -6,7 +6,7 @@ import deeplabcut
 from deeplabcut import utils
 from deeplabcut.utils import auxiliaryfunctions
 
-from components import DefaultTab, VideoSelectionWidget, _create_horizontal_layout, _create_label_widget
+from components import DefaultTab, ShuffleSpinBox, TrainingSetSpinBox, VideoSelectionWidget, _create_horizontal_layout, _create_label_widget
 
 
 
@@ -106,19 +106,14 @@ class ExtractOutlierFrames(DefaultTab):
     def _generate_layout_attributes(self, layout):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(self.root.shuffle_value)
-        self.shuffle.valueChanged.connect(self.root.update_shuffle)
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
 
         # Trainingset index
         opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = QSpinBox()
-        self.trainingset.setMaximum(100)
-        self.trainingset.setValue(0)
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingset)
