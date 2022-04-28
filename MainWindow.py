@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         self.user_feedback = False
 
         self.shuffle_value = 1
+        self.trainingset_index = 0
         self.videotype = "avi"
         self.files = set()
 
@@ -89,6 +90,9 @@ class MainWindow(QMainWindow):
     def update_shuffle(self, value):
         self.logger.info(f"Shuffle set to {value}")
         self.shuffle_value = value
+
+    def update_trainingset(self, value):
+        self.logger.info(f"Trainingset index set to {value}")
 
     def update_videotype(self, vtype):
         self.logger.info(f"Videotype set to {vtype}")
@@ -286,7 +290,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
         extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
         label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
-        create_training_dataset = CreateTrainingDataset(self, self.config)
+        create_training_dataset = CreateTrainingDataset(root=self, parent=self, h1_description="DeepLabCut - Step 4. Create training dataset")
         train_network = TrainNetwork(self, self.config)
         evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
         video_editor = VideoEditor(self, self.config)
