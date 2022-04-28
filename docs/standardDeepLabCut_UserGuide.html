@@ -349,6 +349,13 @@ const thebe_selector_output = ".output, .cell_output"
     <a class="reference internal nav-link" href="#c-data-selection-extract-frames">
      (C) Data Selection (extract frames)
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id1">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#d-label-frames">
@@ -359,16 +366,37 @@ const thebe_selector_output = ".output, .cell_output"
     <a class="reference internal nav-link" href="#e-check-annotated-frames">
      (E) Check Annotated Frames
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id2">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#f-create-training-dataset-s">
      (F) Create Training Dataset(s)
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id3">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#g-train-the-network">
      (G) Train The Network
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id4">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#h-evaluate-the-trained-network">
@@ -490,6 +518,13 @@ const thebe_selector_output = ".output, .cell_output"
     <a class="reference internal nav-link" href="#c-data-selection-extract-frames">
      (C) Data Selection (extract frames)
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id1">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#d-label-frames">
@@ -500,16 +535,37 @@ const thebe_selector_output = ".output, .cell_output"
     <a class="reference internal nav-link" href="#e-check-annotated-frames">
      (E) Check Annotated Frames
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id2">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#f-create-training-dataset-s">
      (F) Create Training Dataset(s)
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id3">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#g-train-the-network">
      (G) Train The Network
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id4">
+       API Docs
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#h-evaluate-the-trained-network">
@@ -714,7 +770,6 @@ Please DO NOT have spaces in the names of bodyparts.</p>
 </div>
 <div class="section" id="c-data-selection-extract-frames">
 <h3>(C) Data Selection (extract frames)<a class="headerlink" href="#c-data-selection-extract-frames" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#extract_frames">DOCSTRING</a></p>
 <p><strong>CRITICAL:</strong> A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>. However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).</p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;automatic/manual&#39;</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s1">&#39;uniform/kmeans&#39;</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
@@ -747,6 +802,172 @@ bar to navigate across the video and <em>Grab a Frame</em> (or a range of frames
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
 </p>
+<div class="section" id="id1">
+<h4>API Docs<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="deeplabcut.generate_training_dataset.frame_extraction.extract_frames">
+<span class="sig-prename descclassname"><span class="pre">deeplabcut.generate_training_dataset.frame_extraction.</span></span><span class="sig-name descname"><span class="pre">extract_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'automatic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kmeans'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userfeedback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_resizewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opencv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slider_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extracted_cam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videos_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.generate_training_dataset.frame_extraction.extract_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts frames from the project videos.</p>
+<p>Frames will be extracted from videos listed in the config.yaml file.</p>
+<p>The frames are selected from the videos in a randomly and temporally uniformly
+distributed way (<code class="docutils literal notranslate"><span class="pre">uniform</span></code>), by clustering based on visual appearance
+(<code class="docutils literal notranslate"><span class="pre">k-means</span></code>), or by manual selection.</p>
+<p>After frames have been extracted from all videos from one camera, matched frames
+from other cameras can be extracted using <code class="docutils literal notranslate"><span class="pre">mode</span> <span class="pre">=</span> <span class="pre">&quot;match&quot;</span></code>. This is necessary if
+you plan to use epipolar lines to improve labeling across multiple camera angles.
+It will overwrite previously extracted images from the second camera angle if
+necessary.</p>
+<p>Please refer to the user guide for more details on methods and parameters
+<a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">https://www.nature.com/articles/s41596-019-0176-0</a> or the preprint:
+<a class="reference external" href="https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf">https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf</a></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>config</strong><span class="classifier">string</span></dt><dd><p>Full path of the config.yaml file as a string.</p>
+</dd>
+<dt><strong>mode</strong><span class="classifier">string. Either <code class="docutils literal notranslate"><span class="pre">&quot;automatic&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;manual&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;match&quot;</span></code>.</span></dt><dd><p>String containing the mode of extraction. It must be either <code class="docutils literal notranslate"><span class="pre">&quot;automatic&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;manual&quot;</span></code> to extract the initial set of frames. It can also be <code class="docutils literal notranslate"><span class="pre">&quot;match&quot;</span></code>
+to match frames between the cameras in preparation for the use of epipolar line
+during labeling; namely, extract from camera_1 first, then run this to extract
+the matched frames in camera_2.</p>
+<p>WARNING: if you use <code class="docutils literal notranslate"><span class="pre">&quot;match&quot;</span></code>, and you previously extracted and labeled
+frames from the second camera, this will overwrite your data. This will require
+you to delete the <code class="docutils literal notranslate"><span class="pre">collectdata(.h5/.csv)</span></code> files before labeling. Use with
+caution!</p>
+</dd>
+<dt><strong>algo</strong><span class="classifier">string, Either <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>, Default: <cite>“uniform”</cite>.</span></dt><dd><p>String specifying the algorithm to use for selecting the frames. Currently,
+deeplabcut supports either <code class="docutils literal notranslate"><span class="pre">kmeans</span></code> or <code class="docutils literal notranslate"><span class="pre">uniform</span></code> based selection. This flag
+is only required for <code class="docutils literal notranslate"><span class="pre">automatic</span></code> mode and the default is <code class="docutils literal notranslate"><span class="pre">uniform</span></code>. For
+<code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>, frames are picked in temporally uniform way, <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code>
+performs clustering on downsampled frames (see user guide for details).</p>
+<p>NOTE: Color information is discarded for <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code>, thus e.g. for
+camouflaged octopus clustering one might want to change this.</p>
+</dd>
+<dt><strong>crop</strong><span class="classifier">bool or str, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, video frames are cropped according to the corresponding
+coordinates stored in the project configuration file. Alternatively, if
+cropping coordinates are not known yet, crop=``”GUI”`` triggers a user
+interface where the cropping area can be manually drawn and saved.</p>
+</dd>
+<dt><strong>userfeedback: bool, optional</strong></dt><dd><p>If this is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> during <code class="docutils literal notranslate"><span class="pre">&quot;automatic&quot;</span></code> mode then frames for all
+videos are extracted. The user can set this to <code class="docutils literal notranslate"><span class="pre">&quot;True&quot;</span></code>, which will result in
+a dialog, where the user is asked for each video if (additional/any) frames
+from this video should be extracted. Use this, e.g. if you have already labeled
+some folders and want to extract data for new videos.</p>
+</dd>
+<dt><strong>cluster_resizewidth: int, default: 30</strong></dt><dd><p>For <code class="docutils literal notranslate"><span class="pre">&quot;k-means&quot;</span></code> one can change the width to which the images are downsampled
+(aspect ratio is fixed).</p>
+</dd>
+<dt><strong>cluster_step: int, default: 1</strong></dt><dd><p>By default each frame is used for clustering, but for long videos one could
+only use every nth frame (set using this parameter). This saves memory before
+clustering can start, however, reading the individual frames takes longer due
+to the skipping.</p>
+</dd>
+<dt><strong>cluster_color: bool, default: False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">&quot;False&quot;</span></code> then each downsampled image is treated as a grayscale vector
+(discarding color information). If <code class="docutils literal notranslate"><span class="pre">&quot;True&quot;</span></code>, then the color channels are
+considered. This increases the computational complexity.</p>
+</dd>
+<dt><strong>opencv: bool, default: True</strong></dt><dd><p>Uses openCV for loading &amp; extractiong (otherwise moviepy (legacy)).</p>
+</dd>
+<dt><strong>slider_width: int, default: 25</strong></dt><dd><p>Width of the video frames slider, in percent of window.</p>
+</dd>
+<dt><strong>config3d: string, optional</strong></dt><dd><p>Path to the project configuration file in the 3D project. This will be used to
+match frames extracted from all cameras present in the field ‘camera_names’ to
+the frames extracted from the camera given by the parameter ‘extracted_cam’.</p>
+</dd>
+<dt><strong>extracted_cam: int, default: 0</strong></dt><dd><p>The index of the camera that already has extracted frames. This will match
+frame numbers to extract for all other cameras. This parameter is necessary if
+you wish to use epipolar lines in the labeling toolbox. Only use if
+<code class="docutils literal notranslate"><span class="pre">mode='match'</span></code> and <code class="docutils literal notranslate"><span class="pre">config3d</span></code> is provided.</p>
+</dd>
+<dt><strong>videos_list: list[str], Default: None</strong></dt><dd><p>A list of the string containing full paths to videos to extract frames for. If
+this is left as <code class="docutils literal notranslate"><span class="pre">None</span></code> all videos specified in the config file will have
+frames extracted. Otherwise one can select a subset by passing those paths.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Use the function <code class="docutils literal notranslate"><span class="pre">add_new_videos</span></code> at any stage of the project to add new videos
+to the config file and extract their frames.</p>
+<p>The following parameters for automatic extraction are used from the config file</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">numframes2pick</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">stop</span></code></p></li>
+</ul>
+<p>While selecting the frames manually, you do not need to specify the <code class="docutils literal notranslate"><span class="pre">crop</span></code>
+parameter in the command. Rather, you will get a prompt in the graphic user
+interface to choose if you need to crop or not.</p>
+<p class="rubric">Examples</p>
+<p>To extract frames automatically with ‘kmeans’ and then crop the frames</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        config=&#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        mode=&#39;automatic&#39;,</span>
+<span class="go">        algo=&#39;kmeans&#39;,</span>
+<span class="go">        crop=True,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To extract frames automatically with ‘kmeans’ and then defining the cropping area
+using a GUI</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        &#39;automatic&#39;,</span>
+<span class="go">        &#39;kmeans&#39;,</span>
+<span class="go">        &#39;GUI&#39;,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To consider the color information when extracting frames automatically with
+‘kmeans’</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        &#39;automatic&#39;,</span>
+<span class="go">        &#39;kmeans&#39;,</span>
+<span class="go">        cluster_color=True,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To extract frames automatically with ‘uniform’ and then crop the frames</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        &#39;automatic&#39;,</span>
+<span class="go">        &#39;uniform&#39;,</span>
+<span class="go">        crop=True,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To extract frames manually</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;, &#39;manual&#39;</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To extract frames manually, with a 60% wide frames slider</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;, &#39;manual&#39;, slider_width=60,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>To extract frames from a second camera that match the frames extracted from the
+first</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        mode=&#39;match&#39;,</span>
+<span class="go">        extracted_cam=0,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
 </div>
 <div class="section" id="d-label-frames">
 <h3>(D) Label Frames<a class="headerlink" href="#d-label-frames" title="Permalink to this headline">¶</a></h3>
@@ -777,7 +998,6 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 </div>
 <div class="section" id="e-check-annotated-frames">
 <h3>(E) Check Annotated Frames<a class="headerlink" href="#e-check-annotated-frames" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#check_labels">DOCSTRING</a></p>
 <p>OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:</p>
@@ -785,10 +1005,56 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 </pre></div>
 </div>
 <p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
+<div class="section" id="id2">
+<h4>API Docs<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="deeplabcut.generate_training_dataset.trainingsetmanipulation.check_labels">
+<span class="sig-prename descclassname"><span class="pre">deeplabcut.generate_training_dataset.trainingsetmanipulation.</span></span><span class="sig-name descname"><span class="pre">check_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['+',</span> <span class="pre">'.',</span> <span class="pre">'x']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_skeleton</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualizeindividuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.generate_training_dataset.trainingsetmanipulation.check_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the labeled frames.</p>
+<p>Double check if the labels were at the correct locations and stored in the proper
+file format.</p>
+<p>This creates a new subdirectory for each video under the ‘labeled-data’ and all the
+frames are plotted with the labels.</p>
+<p>Make sure that these labels are fine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">string</span></dt><dd><p>Full path of the config.yaml file as a string.</p>
+</dd>
+<dt><strong>Labels: list, default=’+’</strong></dt><dd><p>List of at least 3 matplotlib markers. The first one will be used to indicate
+the human ground truth location (Default: +)</p>
+</dd>
+<dt><strong>scale</strong><span class="classifier">float, default=1</span></dt><dd><p>Change the relative size of the output images.</p>
+</dd>
+<dt><strong>dpi</strong><span class="classifier">int, optional, default=100</span></dt><dd><p>Output resolution in dpi.</p>
+</dd>
+<dt><strong>draw_skeleton: bool, default=True</strong></dt><dd><p>Plot skeleton overlaid over body parts.</p>
+</dd>
+<dt><strong>visualizeindividuals: bool, default: True.</strong></dt><dd><p>For a multianimal project, if True, the different individuals have different
+colors (and all bodyparts the same). If False, the colors change over bodyparts
+rather than individuals.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span><span class="s1">&#39;/analysis/project/reaching-task/config.yaml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
 </div>
 <div class="section" id="f-create-training-dataset-s">
 <h3>(F) Create Training Dataset(s)<a class="headerlink" href="#f-create-training-dataset-s" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset">DOCSTRING</a></p>
 <p><strong>CRITICAL POINT:</strong> Only run this step <strong>where</strong> you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).</p>
 <ul class="simple">
 <li><p>If you move your project folder, you must <strong>only</strong> change the <code class="docutils literal notranslate"><span class="pre">project_path</span></code> in the main config.yaml file - that’s it - no need to change the video paths, etc! Your project is fully portable.</p></li>
@@ -825,10 +1091,103 @@ are listed in Box 2.</p></li>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
+<div class="section" id="id3">
+<h4>API Docs<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset">
+<span class="sig-prename descclassname"><span class="pre">deeplabcut.generate_training_dataset.trainingsetmanipulation.</span></span><span class="sig-name descname"><span class="pre">create_training_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_shuffles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Shuffles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows2linux</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userfeedback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainIndices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testIndices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">net_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augmenter_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posecfg_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a training dataset.</p>
+<p>Labels from all the extracted frames are merged into a single .h5 file.
+Only the videos included in the config file are used to create this dataset.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">string</span></dt><dd><p>Full path of the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file as a string.</p>
+</dd>
+<dt><strong>num_shuffles</strong><span class="classifier">int, optional, default=1</span></dt><dd><p>Number of shuffles of training dataset to create, i.e. <code class="docutils literal notranslate"><span class="pre">[1,2,3]</span></code> for
+<code class="docutils literal notranslate"><span class="pre">num_shuffles=3</span></code>.</p>
+</dd>
+<dt><strong>Shuffles: list[int], optional</strong></dt><dd><p>Alternatively the user can also give a list of shuffles.</p>
+</dd>
+<dt><strong>userfeedback: bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">False</span></code>, all requested train/test splits are created (no matter if they
+already exist). If you want to assure that previous splits etc. are not
+overwritten, set this to <code class="docutils literal notranslate"><span class="pre">True</span></code> and you will be asked for each split.</p>
+</dd>
+<dt><strong>trainIndices: list of lists, optional, default=None</strong></dt><dd><p>List of one or multiple lists containing train indexes.
+A list containing two lists of training indexes will produce two splits.</p>
+</dd>
+<dt><strong>testIndices: list of lists, optional, default=None</strong></dt><dd><p>List of one or multiple lists containing test indexes.</p>
+</dd>
+<dt><strong>net_type: list, optional, default=None</strong></dt><dd><p>Type of networks. Currently supported options are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">resnet_50</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resnet_101</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resnet_152</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mobilenet_v2_1.0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mobilenet_v2_0.75</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mobilenet_v2_0.5</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mobilenet_v2_0.35</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b2</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b3</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b4</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b5</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">efficientnet-b6</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>augmenter_type: string, optional, default=None</strong></dt><dd><p>Type of augmenter. Currently supported augmenters are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">default</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scalecrop</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imgaug</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tensorpack</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deterministic</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>posecfg_template: string, optional, default=None</strong></dt><dd><p>Path to a <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file to use as a template for generating the new
+one for the current iteration. Useful if you would like to start with the same
+parameters a previous training iteration. None uses the default
+<code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt>list(tuple) or None</dt><dd><p>If training dataset was successfully created, a list of tuples is returned.
+The first two elements in each tuple represent the training fraction and the
+shuffle value. The last two elements in each tuple are arrays of integers
+representing the training and test indices.</p>
+<p>Returns None if training dataset could not be created.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Use the function <code class="docutils literal notranslate"><span class="pre">add_new_videos</span></code> at any stage of the project to add more videos
+to the project.</p>
+<p class="rubric">Examples</p>
+<p>Linux/MacOS</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;, num_shuffles=1,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>Windows</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
+<span class="go">        &#39;C:\Users\Ulf\looming-task\config.yaml&#39;, Shuffles=[3,17,5],</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
 </div>
 <div class="section" id="g-train-the-network">
 <h3>(G) Train The Network<a class="headerlink" href="#g-train-the-network" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#train_network">DOCSTRING</a></p>
 <p>The function ‘train_network’ helps the user in training the network. It is used as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
@@ -845,32 +1204,85 @@ the variable <code class="docutils literal notranslate"><span class="pre">init_w
 <p><strong>CRITICAL POINT:</strong> It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around <strong>500,000</strong>) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Data-Augmentation">https://github.com/DeepLabCut/DeepLabCut/wiki/Data-Augmentation</a>.</p>
 <p>The variables <code class="docutils literal notranslate"><span class="pre">display_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> in the <strong>pose_cfg.yaml</strong> file allows the user to alter how often the loss is displayed and how often the weights are stored.</p>
 <p><strong>maDeepLabCut CRITICAL POINT:</strong> For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">maxiters</span></code>. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!</p>
-<p><strong>Parameters:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config : string
-    Full path of the config.yaml file as a string.
-
-shuffle: int, optional
-    Integer value specifying the shuffle index to select for training. Default is set to 1
-
-trainingsetindex: int, optional
-    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-
-gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
-See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-
-autotune: property of TensorFlow, somehow faster if &#39;false&#39; (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
-
-displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don&#39;t use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-
-saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don&#39;t use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-
-maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
+<div class="section" id="id4">
+<h4>API Docs<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="deeplabcut.pose_estimation_tensorflow.training.train_network">
+<span class="sig-prename descclassname"><span class="pre">deeplabcut.pose_estimation_tensorflow.training.</span></span><span class="sig-name descname"><span class="pre">train_network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainingsetindex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_snapshots_to_keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displayiters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveiters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_growth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gputouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autotune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdeconvweights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modelprefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.pose_estimation_tensorflow.training.train_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the network with the labels in the training dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">string</span></dt><dd><p>Full path of the config.yaml file as a string.</p>
+</dd>
+<dt><strong>shuffle: int, optional, default=1</strong></dt><dd><p>Integer value specifying the shuffle index to select for training.</p>
+</dd>
+<dt><strong>trainingsetindex: int, optional, default=0</strong></dt><dd><p>Integer specifying which TrainingsetFraction to use.
+Note that TrainingFraction is a list in config.yaml.</p>
+</dd>
+<dt><strong>max_snapshots_to_keep: int or None</strong></dt><dd><p>Sets how many snapshots are kept, i.e. states of the trained network. Every
+saving interation many times a snapshot is stored, however only the last
+<code class="docutils literal notranslate"><span class="pre">max_snapshots_to_keep</span></code> many are kept! If you change this to None, then all
+are kept.
+See: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835">https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835</a></p>
+</dd>
+<dt><strong>displayiters: optional, default=None</strong></dt><dd><p>This variable is actually set in <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code>. However, you can
+overwrite it with this hack. Don’t use this regularly, just if you are too lazy
+to dig out the <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code> file for the corresponding project. If
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, the value from there is used, otherwise it is overwritten!</p>
+</dd>
+<dt><strong>saveiters: optional, default=None</strong></dt><dd><p>This variable is actually set in <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code>. However, you can
+overwrite it with this hack. Don’t use this regularly, just if you are too lazy
+to dig out the <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code> file for the corresponding project.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the value from there is used, otherwise it is overwritten!</p>
+</dd>
+<dt><strong>maxiters: optional, default=None</strong></dt><dd><p>This variable is actually set in <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code>. However, you can
+overwrite it with this hack. Don’t use this regularly, just if you are too lazy
+to dig out the <code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code> file for the corresponding project.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the value from there is used, otherwise it is overwritten!</p>
+</dd>
+<dt><strong>allow_growth: bool, optional, default=True.</strong></dt><dd><p>For some smaller GPUs the memory issues happen. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the memory
+allocator does not pre-allocate the entire specified GPU memory region, instead
+starting small and growing as needed.
+See issue: <a class="reference external" href="https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2">https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2</a></p>
+</dd>
+<dt><strong>gputouse: optional, default=None</strong></dt><dd><p>Natural number indicating the number of your GPU (see number in nvidia-smi).
+If you do not have a GPU put None.
+See: <a class="reference external" href="https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries">https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries</a></p>
+</dd>
+<dt><strong>autotune: bool, optional, default=False</strong></dt><dd><p>Property of TensorFlow, somehow faster if <code class="docutils literal notranslate"><span class="pre">False</span></code>
+(as Eldar found out, see <a class="reference external" href="https://github.com/tensorflow/tensorflow/issues/13317">https://github.com/tensorflow/tensorflow/issues/13317</a>).</p>
+</dd>
+<dt><strong>keepdeconvweights: bool, optional, default=True</strong></dt><dd><p>Also restores the weights of the deconvolution layers (and the backbone) when
+training from a snapshot. Note that if you change the number of bodyparts, you
+need to set this to false for re-training.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To train the network for first shuffle of the training dataset</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="s1">&#39;/analysis/project/reaching-task/config.yaml&#39;</span><span class="p">)</span>
 </pre></div>
+</div>
+<p>To train the network for second shuffle of the training dataset</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
+<span class="go">        shuffle=2,</span>
+<span class="go">        keepdeconvweights=True,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
 </div>
 </div>
 <div class="section" id="h-evaluate-the-trained-network">

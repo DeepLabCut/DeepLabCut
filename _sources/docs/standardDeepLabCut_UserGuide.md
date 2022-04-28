@@ -68,7 +68,7 @@ The ``create_new_project`` step writes the following parameters to the configura
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
-.. include:: ./api/deeplabcut.create_project.new.rst
+.. include:: ./api/deeplabcut.create_new_project.rst
 ```
 
 ### (B) Configure the Project
@@ -82,7 +82,6 @@ Please DO NOT have spaces in the names of bodyparts.
 
 
  ### (C) Data Selection (extract frames)
- [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#extract_frames)
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
 
@@ -123,6 +122,13 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
 </p>
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.extract_frames.rst
+```
+
 ### (D) Label Frames
 [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#label_frames)
 
@@ -155,7 +161,6 @@ delete key: delete label
 ```
 
 ###  (E) Check Annotated Frames
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#check_labels)
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -166,8 +171,14 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.check_labels.rst
+```
+
 ### (F) Create Training Dataset(s)
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset)
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).
 
@@ -215,8 +226,14 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_dataset.rst
+```
+
 ### (G) Train The Network
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#train_network)
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 ```python
@@ -241,33 +258,12 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
-**Parameters:**
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.train_network.rst
 ```
-config : string
-    Full path of the config.yaml file as a string.
-
-shuffle: int, optional
-    Integer value specifying the shuffle index to select for training. Default is set to 1
-
-trainingsetindex: int, optional
-    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
-
-gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
-See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-
-autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
-
-displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-
-saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-
-maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
-```    
 
 ### (H) Evaluate the Trained Network
 [DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#evaluate_network)
