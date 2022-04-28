@@ -22,7 +22,6 @@ class CreateTrainingDataset(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(CreateTrainingDataset, self).__init__(root, parent, h1_description)
 
-        self.method = "automatic"
         self.userfeedback = False
         self.model_comparison = False
 
@@ -78,25 +77,24 @@ class CreateTrainingDataset(DefaultTab):
         self.root.logger.info(f"Image augmentation set to {augmentation.upper()}")
 
     def create_training_dataset(self):
-        num_shuffles = self.shuffle.value()
-        config_file = auxiliaryfunctions.read_config(self.config)
-        trainindex = self.trainingindex.value()
+        config_file = auxiliaryfunctions.read_config(self.root.config)
+        shuffle = self.shuffle.value()
+        trainindex = self.trainingset.value()
 
         userfeedback = self.userfeedback
 
-        if config_file.get("multianimalproject", False):
-            print("multianimalproject")
+        if self.root.is_multianimal:
             deeplabcut.create_multianimaltraining_dataset(
-                self.config,
-                num_shuffles,
+                config_file,
+                shuffle,
                 Shuffles=[self.shuffle.value()],
                 net_type=self.net_choice.currentText(),
             )
         else:
             if self.model_comparison == False:
                 deeplabcut.create_training_dataset(
-                    self.config,
-                    num_shuffles,
+                    config_file,
+                    shuffle,
                     Shuffles=[self.shuffle.value()],
                     userfeedback=userfeedback,
                     net_type=self.net_choice.currentText(),
@@ -120,12 +118,12 @@ class CreateTrainingDataset(DefaultTab):
                 msg.exec_()
 
             else:
-                # comparison = True
+                raise NotImplementedError
                 # TODO: finish model_comparison
                 deeplabcut.create_training_model_comparison(
-                    self.config,
+                    config_file,
                     trainindex=trainindex,
-                    num_shuffles=num_shuffles,
+                    num_shuffles=shuffle,
                     userfeedback=userfeedback,
                     net_types=self.net_type,
                     augmenter_types=self.aug_type,
