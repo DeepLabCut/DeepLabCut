@@ -178,55 +178,55 @@ class CreateVideos(DefaultTab):
 
     def update_high_quality_video(self, s):
         if s == Qt.Checked:
-            self.logger.info("High quality ENABLED.")
+            self.root.logger.info("High quality ENABLED.")
 
         else:
-            self.logger.info("High quality DISABLED.")
+            self.root.logger.info("High quality DISABLED.")
 
     def update_plot_trajectory_choice(self, s):
         if s == Qt.Checked:
-            self.logger.info("Plot trajectories ENABLED.")
+            self.root.logger.info("Plot trajectories ENABLED.")
 
         else:
-            self.logger.info("Plot trajectories DISABLED.")
+            self.root.logger.info("Plot trajectories DISABLED.")
 
     def update_selected_bodyparts(self):
         selected_bodyparts = [
             item.text() for item in self.bdpt_list_widget.selectedItems()
         ]
-        self.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
+        self.root.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
         self.bodyparts_to_use = selected_bodyparts
 
     def update_use_all_bodyparts(self, s):
         if s == Qt.Checked:
             self.bdpt_list_widget.setEnabled(False)
             # self.bdpt_list_widget.selectAll()
-            self.logger.info("Plot all bodyparts ENABLED.")
+            self.root.logger.info("Plot all bodyparts ENABLED.")
 
         else:
             self.bdpt_list_widget.setEnabled(True)
-            self.logger.info("Plot all bodyparts DISABLED.")
+            self.root.logger.info("Plot all bodyparts DISABLED.")
 
     def update_use_filtered_data(self, state):
         if state == Qt.Checked:
-            self.logger.info("Use filtered data ENABLED")
+            self.root.logger.info("Use filtered data ENABLED")
         else:
-            self.logger.info("Use filtered data DISABLED")
+            self.root.logger.info("Use filtered data DISABLED")
 
     def update_draw_skeleton(self, state):
         if state == Qt.Checked:
-            self.logger.info("Draw skeleton ENABLED")
+            self.root.logger.info("Draw skeleton ENABLED")
         else:
-            self.logger.info("Draw skeleton DISABLED")
+            self.root.logger.info("Draw skeleton DISABLED")
 
     def update_overwrite_videos(self, state):
         if state == Qt.Checked:
-            self.logger.info("Overwrite videos ENABLED")
+            self.root.logger.info("Overwrite videos ENABLED")
         else:
-            self.logger.info("Overwrite videos DISABLED")
+            self.root.logger.info("Overwrite videos DISABLED")
 
     def update_color_by(self, text):
-        self.logger.info(f"Coloring keypoints in videos by {text}")
+        self.root.logger.info(f"Coloring keypoints in videos by {text}")
 
     def update_filter_choice(self, rb):
         if rb.text() == "Yes":

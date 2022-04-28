@@ -132,23 +132,23 @@ class EvaluateNetwork(DefaultTab):
 
     def update_map_choice(self, state):
         if state == Qt.Checked:
-            self.logger.info("Plot scoremaps ENABLED")
+            self.root.logger.info("Plot scoremaps ENABLED")
         else:
-            self.logger.info("Plot predictions DISABLED")
+            self.root.logger.info("Plot predictions DISABLED")
 
     def update_plot_predictions(self, s):
         if s == Qt.Checked:
-            self.logger.info("Plot predictions ENABLED")
+            self.root.logger.info("Plot predictions ENABLED")
         else:
-            self.logger.info("Plot predictions DISABLED")
+            self.root.logger.info("Plot predictions DISABLED")
 
     def update_bodypart_choice(self, s):
         if s == Qt.Checked:
             self.bodyparts_list_widget.setEnabled(False)
-            self.logger.info("Use all bodyparts")
+            self.root.logger.info("Use all bodyparts")
         else:
             self.bodyparts_list_widget.setEnabled(True)
-            self.logger.info(
+            self.root.logger.info(
                 f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}"
             )
 

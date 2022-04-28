@@ -147,16 +147,16 @@ class ExtractFrames(DefaultTab):
     def update_feedback_choice(self, s):
         if s == Qt.Checked:
             self.feedback = True
-            self.logger.info("Enabling user feedback.")
+            self.root.logger.info("Enabling user feedback.")
         else:
             self.feedback = False
-            self.logger.info("Disabling user feedback.")
+            self.root.logger.info("Disabling user feedback.")
 
     def update_opencv_choice(self, s):
         if s == Qt.Checked:
-            self.logger.info("Use openCV enabled.")
+            self.root.logger.info("Use openCV enabled.")
         else:
-            self.logger.info("Use openCV disabled. Using moviepy..")
+            self.root.logger.info("Use openCV disabled. Using moviepy..")
 
     def extract_frames(self):
 
