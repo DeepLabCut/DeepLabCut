@@ -288,36 +288,46 @@ def check_labels(
     draw_skeleton=True,
     visualizeindividuals=True,
 ):
-    """
-    Double check if the labels were at correct locations and stored in a proper file format.\n
-    This creates a new subdirectory for each video under the 'labeled-data' and all the frames are plotted with the labels.\n
+    """Check the labeled frames.
+
+    Double check if the labels were at the correct locations and stored in the proper
+    file format.
+
+    This creates a new subdirectory for each video under the 'labeled-data' and all the
+    frames are plotted with the labels.
+
     Make sure that these labels are fine.
 
-    Parameter
+    Parameters
     ----------
     config : string
         Full path of the config.yaml file as a string.
 
-    Labels: List of at least 3 matplotlib markers. The first one will be used to indicate the human ground truth location (Default: +)
+    Labels: list, default='+'
+        List of at least 3 matplotlib markers. The first one will be used to indicate
+        the human ground truth location (Default: +)
 
-    scale : float, default =1
+    scale : float, default=1
         Change the relative size of the output images.
 
-    dpi : int, optional
-        Output resolution. 100 dpi by default.
+    dpi : int, optional, default=100
+        Output resolution in dpi.
 
-    draw_skeleton: bool, default True.
+    draw_skeleton: bool, default=True
         Plot skeleton overlaid over body parts.
 
-    visualizeindividuals: bool, default True:
-        For a multianimal project the different individuals have different colors (and all bodyparts the same).
-        If False, the colors change over bodyparts rather than individuals.
+    visualizeindividuals: bool, default: True.
+        For a multianimal project, if True, the different individuals have different
+        colors (and all bodyparts the same). If False, the colors change over bodyparts
+        rather than individuals.
 
-    Example
+    Returns
+    -------
+    None
+
+    Examples
     --------
-    for labeling the frames
     >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
-    --------
     """
 
     from deeplabcut.utils import visualization
@@ -712,52 +722,97 @@ def create_training_dataset(
     augmenter_type=None,
     posecfg_template=None,
 ):
-    """
-    Creates a training dataset. Labels from all the extracted frames are merged into a single .h5 file.\n
-    Only the videos included in the config file are used to create this dataset.\n
+    """Creates a training dataset.
 
-    [OPTIONAL] Use the function 'add_new_video' at any stage of the project to add more videos to the project.
+    Labels from all the extracted frames are merged into a single .h5 file.
+    Only the videos included in the config file are used to create this dataset.
 
-    Parameter
+    Parameters
     ----------
     config : string
-        Full path of the config.yaml file as a string.
+        Full path of the ``config.yaml`` file as a string.
 
-    num_shuffles : int, optional
-        Number of shuffles of training dataset to create, i.e. [1,2,3] for num_shuffles=3. Default is set to 1.
+    num_shuffles : int, optional, default=1
+        Number of shuffles of training dataset to create, i.e. ``[1,2,3]`` for
+        ``num_shuffles=3``.
 
-    Shuffles: list of shuffles.
-        Alternatively the user can also give a list of shuffles (integers!).
+    Shuffles: list[int], optional
+        Alternatively the user can also give a list of shuffles.
 
-    userfeedback: bool, optional
-        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
-        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
+    userfeedback: bool, optional, default=False
+        If ``False``, all requested train/test splits are created (no matter if they
+        already exist). If you want to assure that previous splits etc. are not
+        overwritten, set this to ``True`` and you will be asked for each split.
 
-    trainIndices: list of lists, optional (default=None)
+    trainIndices: list of lists, optional, default=None
         List of one or multiple lists containing train indexes.
         A list containing two lists of training indexes will produce two splits.
 
-    testIndices: list of lists, optional (default=None)
+    testIndices: list of lists, optional, default=None
         List of one or multiple lists containing test indexes.
 
-    net_type: list
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0, mobilenet_v2_0.75,
-        mobilenet_v2_0.5, mobilenet_v2_0.35, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
-        efficientnet-b4, efficientnet-b5, and efficientnet-b6 are supported.
+    net_type: list, optional, default=None
+        Type of networks. Currently supported options are
 
-    augmenter_type: string
-        Type of augmenter. Currently default, imgaug, tensorpack, and deterministic are supported.
+        * ``resnet_50``
+        * ``resnet_101``
+        * ``resnet_152``
+        * ``mobilenet_v2_1.0``
+        * ``mobilenet_v2_0.75``
+        * ``mobilenet_v2_0.5``
+        * ``mobilenet_v2_0.35``
+        * ``efficientnet-b0``
+        * ``efficientnet-b1``
+        * ``efficientnet-b2``
+        * ``efficientnet-b3``
+        * ``efficientnet-b4``
+        * ``efficientnet-b5``
+        * ``efficientnet-b6``
 
-    posecfg_template: string (optional, default=None)
-        Path to a pose_cfg.yaml file to use as a template for generating the new one for the current iteration. Useful if you
-        would like to start with the same parameters a previous training iteration. None uses the default pose_cfg.yaml.
+    augmenter_type: string, optional, default=None
+        Type of augmenter. Currently supported augmenters are
+        
+        * ``default``
+        * ``scalecrop``
+        * ``imgaug``
+        * ``tensorpack``
+        * ``deterministic``
 
-    Example
+    posecfg_template: string, optional, default=None
+        Path to a ``pose_cfg.yaml`` file to use as a template for generating the new
+        one for the current iteration. Useful if you would like to start with the same
+        parameters a previous training iteration. None uses the default
+        ``pose_cfg.yaml``.
+
+    Returns
+    -------
+    list(tuple) or None
+        If training dataset was successfully created, a list of tuples is returned.
+        The first two elements in each tuple represent the training fraction and the
+        shuffle value. The last two elements in each tuple are arrays of integers
+        representing the training and test indices.
+
+        Returns None if training dataset could not be created.
+
+    Notes
+    -----
+    Use the function ``add_new_videos`` at any stage of the project to add more videos
+    to the project.
+
+    Examples
     --------
-    >>> deeplabcut.create_training_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
-    Windows:
-    >>> deeplabcut.create_training_dataset('C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
-    --------
+
+    Linux/MacOS
+
+    >>> deeplabcut.create_training_dataset(
+            '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
+        )
+
+    Windows
+
+    >>> deeplabcut.create_training_dataset(
+            'C:\\Users\\Ulf\\looming-task\\config.yaml', Shuffles=[3,17,5],
+        )
     """
     import scipy.io as sio
 
