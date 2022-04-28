@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 import qdarkstyle
 
+import deeplabcut
 from deeplabcut import auxiliaryfunctions
 
 from PySide2.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QWidget, QMainWindow
@@ -11,6 +12,7 @@ from PySide2 import QtCore
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
+from components import ShuffleSpinBox, TrainingSetSpinBox
 
 from create_project import CreateProject
 from open_project import OpenProject
@@ -87,16 +89,46 @@ class MainWindow(QMainWindow):
         else:
             return [""]
 
+    @property
+    def pose_cfg_path(self)->str:
+        try:
+            return os.path.join(
+                self.cfg["project_path"],
+                auxiliaryfunctions.get_model_folder(
+                    self.cfg["TrainingFraction"][int(self.trainingset_index)],
+                    int(self.shuffle_value),
+                    self.cfg,
+                ),
+                "train",
+                "pose_cfg.yaml",
+            )
+        except FileNotFoundError:
+            return Path(deeplabcut.__file__).parent/"pose_cfg.yaml"
+
+    @property
+    def inference_cfg_path(self)->str:
+        return os.path.join(
+            self.cfg["project_path"],
+            auxiliaryfunctions.get_model_folder(
+                self.cfg["TrainingFraction"][int(self.trainingset_index)],
+                int(self.shuffle_value),
+                self.cfg,
+            ),
+            "test",
+            "inference_cfg.yaml",
+        )
+
     def update_shuffle(self, value):
-        self.logger.info(f"Shuffle set to {value}")
         self.shuffle_value = value
+        self.logger.info(f"Shuffle set to {self.shuffle_value}")
 
     def update_trainingset(self, value):
-        self.logger.info(f"Trainingset index set to {value}")
+        self.trainingset_index = value
+        self.logger.info(f"Trainingset index set to {self.trainingset_index}")
 
     def update_videotype(self, vtype):
-        self.logger.info(f"Videotype set to {vtype}")
         self.videotype = vtype
+        self.logger.info(f"Videotype set to {self.videotype}")
 
     def update_files(self, files:set):
         self.files.update(files)
@@ -291,9 +323,9 @@ class MainWindow(QMainWindow):
         extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
         label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
         create_training_dataset = CreateTrainingDataset(root=self, parent=self, h1_description="DeepLabCut - Step 4. Create training dataset")
-        train_network = TrainNetwork(self, self.config)
+        train_network = TrainNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network")
         evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
-        video_editor = VideoEditor(self, self.config)
+        video_editor = VideoEditor(root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor")
         analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
         create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
         extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
@@ -320,6 +352,8 @@ class MainWindow(QMainWindow):
 
         widget_to_attribute_map = {
             QtWidgets.QSpinBox: "setValue",
+            ShuffleSpinBox: "setValue",
+            TrainingSetSpinBox: "setValue",
             QtWidgets.QLineEdit: "setText",
         }
         
@@ -343,6 +377,7 @@ class MainWindow(QMainWindow):
                 self.logger.debug(f"Tab '{tab_label}' has no attribute video_selection_widget. Skipping...")
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
+        _attempt_attribute_update("trainingset", self.trainingset_index)
         _attempt_attribute_update("cfg_line", self.config)
         # _attempt_video_widget_update(self.videotype, self.files)
 

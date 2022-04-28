@@ -1,7 +1,4 @@
 import os
-import sys
-import subprocess
-from pathlib import Path
 
 from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
@@ -11,248 +8,135 @@ from PySide2.QtGui import QIcon
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-from components import EditYamlButton, _create_horizontal_layout, _create_label_widget
+from components import DefaultTab, EditYamlButton, ShuffleSpinBox, TrainingSetSpinBox, _create_grid_layout, _create_horizontal_layout, _create_label_widget
 from widgets import ConfigEditor
 
 
-class TrainNetwork(QWidget):
-    def __init__(self, parent, cfg):
-        # TODO: Add ROOT window, add ROOT shuffle
-        super(TrainNetwork, self).__init__(parent)
+class TrainNetwork(DefaultTab):
+   
+    def __init__(self, root, parent, h1_description):
+        super(TrainNetwork, self).__init__(root, parent, h1_description)
 
-        self.method = "automatic"
-        self.userfeedback = False
-        self.model_comparison = False
-        self.pose_cfg_choice = False
-        self.config = cfg
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.main_layout.setAlignment(Qt.AlignTop)
-        self.main_layout.setSpacing(20)
-        self.main_layout.setContentsMargins(0, 20, 10, 20)
-        self.setLayout(self.main_layout)
-
-        # use the default pose_cfg file for default values
-        default_pose_cfg_path = os.path.join(
-            Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
-        )
-
-        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
+        pose_cfg = auxiliaryfunctions.read_plainconfig(self.root.pose_cfg_path)
         self.display_iters = str(pose_cfg["display_iters"])
         self.save_iters = str(pose_cfg["save_iters"])
-        self.max_iters = str(pose_cfg["multi_step"][-1][-1])
+        self.MAX_ITERS = 10000000
 
         self.set_page()
 
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
-
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
-
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Step 5. Train network")
-        l1_step1.setStyleSheet("font:bold")    
-        l1_step1.setContentsMargins(20, 0, 0, 10)
-
-        self.main_layout.addWidget(l1_step1)
-        self.main_layout.addWidget(separatorLine)
-
-        layout_config = _create_horizontal_layout()
-        self._generate_config_layout(layout_config)
-        self.main_layout.addLayout(layout_config)
 
         self.main_layout.addWidget(
             _create_label_widget("Attributes", "font:bold")
         )
-        tmp_layout = _create_horizontal_layout()
-        self._generate_layout_attributes(tmp_layout)
-        self.main_layout.addLayout(tmp_layout)
+        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
+        self._generate_layout_attributes(self.layout_attributes)
+        self.main_layout.addLayout(self.layout_attributes)
 
-        self.layout_attributes = QtWidgets.QVBoxLayout()
-        self.layout_attributes.setAlignment(Qt.AlignTop)
-        self.layout_attributes.setContentsMargins(0, 0, 10, 0)
 
-        self.layout_display = QtWidgets.QHBoxLayout()
-        self.layout_display.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_display.setSpacing(20)
-        self.layout_display.setContentsMargins(0, 0, 20, 0)
-
-        self._display()
-        self._save()
-        self._max()
-        self._num_of_snapshots()
-
-        self.layout_attributes.addLayout(self.layout_display)
+        self.main_layout.addWidget(_create_label_widget("")) #dummy label
 
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
+        self.edit_posecfg_btn.setMinimumWidth(150)
         self.edit_posecfg_btn.clicked.connect(self.open_posecfg_editor)
 
         self.ok_button = QtWidgets.QPushButton("Train Network")
+        self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.train_network)
         
-        self.layout_attributes.addWidget(self.edit_posecfg_btn, alignment=Qt.AlignRight)
-        self.layout_attributes.addWidget(self.ok_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.edit_posecfg_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-        self.main_layout.addLayout(self.layout_attributes)
-
-    @property
-    def pose_cfg_path(self):
-        return os.path.join(
-            self.cfg["project_path"],
-            auxiliaryfunctions.get_model_folder(
-                self.cfg["TrainingFraction"][int(self.trainingindex.value())],
-                int(self.shuffle.value()),
-                self.cfg,
-            ),
-            "train",
-            "pose_cfg.yaml",
-        )
 
     def _generate_layout_attributes(self, layout):
         # Shuffle
-        opt_text = QtWidgets.QLabel("Shuffle")
-        self.shuffle = QSpinBox()
-        self.shuffle.setMaximum(100)
-        self.shuffle.setValue(1)
-        
-
-        layout.addWidget(opt_text)
-        layout.addWidget(self.shuffle)
+        shuffle_label = QtWidgets.QLabel("Shuffle")
+        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        self.shuffle.setMinimumWidth(150)
 
         # Trainingset index
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingindex = QSpinBox()
-        self.trainingindex.setMaximum(100)
-        self.trainingindex.setValue(0)
+        trainingset_label = QtWidgets.QLabel("Trainingset index")
+        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
+        self.trainingset.setMinimumWidth(150)
 
-        layout.addWidget(opt_text)
-        layout.addWidget(self.trainingindex)
-
-    def _generate_config_layout(self, layout):
-        cfg_text = QtWidgets.QLabel("Active config file:")
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout.addWidget(cfg_text)
-        layout.addWidget(self.cfg_line)
-        layout.addWidget(browse_button)
-
-    def open_posecfg_editor(self):
-        editor = ConfigEditor(self.pose_cfg_path)
-        editor.show()
-
-
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.config = text
-        self.cfg = auxiliaryfunctions.read_config(self.config)
-
-
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
-
-    def _display(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Display iterations")
+        # Display iterations
+        dispiters_label = QtWidgets.QLabel("Display iterations")
         self.display_iters_spin = QSpinBox()
-
+        self.display_iters_spin.setMinimumWidth(150)
         self.display_iters_spin.setMinimum(1)
-        self.display_iters_spin.setMaximum(int(self.max_iters))
+        self.display_iters_spin.setMaximum(int(self.MAX_ITERS))
         self.display_iters_spin.setValue(1000)
+        self.display_iters_spin.valueChanged.connect(self.log_display_iters)
 
-        self.display_iters_spin.setMinimumWidth(300)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.display_iters_spin)
-        self.layout_display.addLayout(l_opt)
-
-    def _save(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Save iterations")
+        # Save iterations
+        saveiters_label = QtWidgets.QLabel("Save iterations")
         self.save_iters_spin = QSpinBox()
-
+        self.save_iters_spin.setMinimumWidth(150)
         self.save_iters_spin.setMinimum(1)
-        self.save_iters_spin.setMaximum(int(self.max_iters))
+        self.save_iters_spin.setMaximum(int(self.MAX_ITERS))
         self.save_iters_spin.setValue(50000)
+        self.save_iters_spin.valueChanged.connect(self.log_save_iters)
 
-        self.save_iters_spin.setMinimumWidth(300)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.save_iters_spin)
-        self.layout_display.addLayout(l_opt)
-
-    def _max(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Maximum iterations")
+        # Max iterations
+        maxiters_label = QtWidgets.QLabel("Maximum iterations")
         self.max_iters_spin = QSpinBox()
-
+        self.max_iters_spin.setMinimumWidth(150)
         self.max_iters_spin.setMinimum(1)
-        self.max_iters_spin.setMaximum(int(self.max_iters))
-        self.max_iters_spin.setValue(1030000)
-        self.max_iters_spin.setMinimumWidth(300)
+        self.max_iters_spin.setMaximum(int(self.MAX_ITERS))
+        self.max_iters_spin.setValue(100000)
+        self.max_iters_spin.valueChanged.connect(self.log_max_iters)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.max_iters_spin)
-        self.layout_display.addLayout(l_opt)
-
-    def _num_of_snapshots(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Number of snapshots to keep")
+        # Max number snapshots to keep
+        snapkeep_label = QtWidgets.QLabel("Number of snapshots to keep")
         self.snapshots = QSpinBox()
+        self.snapshots.setMinimumWidth(150)
         self.snapshots.setValue(5)
         self.snapshots.setMinimum(1)
         self.snapshots.setMaximum(100)
-        self.snapshots.setMinimumWidth(300)
+        self.snapshots.valueChanged.connect(self.log_snapshots)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.snapshots)
-        self.layout_display.addLayout(l_opt)
+        layout.addWidget(shuffle_label, 0, 0)
+        layout.addWidget(self.shuffle, 0, 1)
+        layout.addWidget(trainingset_label, 0, 2)
+        layout.addWidget(self.trainingset, 0, 3)
+        layout.addWidget(dispiters_label, 1, 0)
+        layout.addWidget(self.display_iters_spin, 1, 1)
+        layout.addWidget(saveiters_label, 1, 2)
+        layout.addWidget(self.save_iters_spin, 1, 3)
+        layout.addWidget(maxiters_label, 1, 4)
+        layout.addWidget(self.max_iters_spin, 1, 5)
+        layout.addWidget(snapkeep_label, 1, 6)
+        layout.addWidget(self.snapshots, 1, 7)
+        # layout.addWidget()
+
+    def log_display_iters(self, value):
+        self.root.logger.info(f"Display iters set to {value}")
+
+    def log_save_iters(self, value):
+        self.root.logger.info(f"Save iters set to {value}")
+
+    def log_max_iters(self, value):
+        self.root.logger.info(f"Max iters set to {value}")
+
+    def log_snapshots(self, value):
+        self.root.logger.info(f"Max snapshots to keep set to {value}")
+
+    def open_posecfg_editor(self):
+        editor = ConfigEditor(self.root.pose_cfg_path)
+        editor.show()
 
     def train_network(self):
 
+        config = self.root.config
         shuffle = int(self.shuffle.value())
-        trainingsetindex = int(self.trainingindex.value())
+        trainingsetindex = int(self.trainingset.value())
         max_snapshots_to_keep = int(self.snapshots.value())
         displayiters = int(self.display_iters_spin.value())
         saveiters = int(self.save_iters_spin.value())
         maxiters = int(self.max_iters_spin.value())
 
         deeplabcut.train_network(
-            self.config,
+            config,
             shuffle,
             trainingsetindex,
             gputouse=None,

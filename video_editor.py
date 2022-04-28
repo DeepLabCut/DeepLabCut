@@ -1,291 +1,160 @@
+import time
+
 from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from deeplabcut import CropVideo, DownSampleVideo
+from deeplabcut import CropVideo, DownSampleVideo, ShortenVideo
 from deeplabcut.utils import auxiliaryfunctions
 
+from components import (
+    DefaultTab,
+    VideoSelectionWidget,
+    _create_grid_layout,
+    _create_horizontal_layout,
+    _create_label_widget,
+)
 
 
-class VideoEditor(QWidget):
-    def __init__(self, parent, cfg):
-        super(VideoEditor, self).__init__(parent)
-
-        self.method = "automatic"
-        self.filelist = []
-        self.config = cfg
-
-        self.rotate_val = None
-
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.main_layout.setAlignment(Qt.AlignTop)
-        self.main_layout.setSpacing(20)
-        self.main_layout.setContentsMargins(0, 20, 0, 20)
-        self.setLayout(self.main_layout)
+class VideoEditor(DefaultTab):
+    def __init__(self, root, parent, h1_description):
+        super(VideoEditor, self).__init__(root, parent, h1_description)
 
         self.set_page()
 
+    @property
+    def files(self):
+        self.video_selection_widget.files
+
     def set_page(self):
-        separatorLine = QtWidgets.QFrame()
-        separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        separatorLine.setLineWidth(0)
-        separatorLine.setMidLineWidth(1)
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
-        l1_step1 = QtWidgets.QLabel("DeepLabCut - Optional Video Editor")
-        l1_step1.setContentsMargins(20, 0, 0, 10)
-
-        self.main_layout.addWidget(l1_step1)
-        self.main_layout.addWidget(separatorLine)
-
-        layout_cfg = QtWidgets.QHBoxLayout()
-        layout_cfg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_cfg.setSpacing(20)
-        layout_cfg.setContentsMargins(20, 10, 300, 0)
-        cfg_text = QtWidgets.QLabel("Select the config file")
-        cfg_text.setContentsMargins(0, 0, 60, 0)
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setMaximumWidth(800)
-        self.cfg_line.setMinimumWidth(600)
-        self.cfg_line.setText(self.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_dir)
-
-        layout_cfg.addWidget(cfg_text)
-        layout_cfg.addWidget(self.cfg_line)
-        layout_cfg.addWidget(browse_button)
-
-        layout_choose_video = QtWidgets.QHBoxLayout()
-        layout_choose_video.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_choose_video.setSpacing(70)
-        layout_choose_video.setContentsMargins(20, 10, 300, 0)
-        choose_video_text = QtWidgets.QLabel("Choose the video")
-        choose_video_text.setContentsMargins(0, 0, 60, 0)
-
-        self.select_video_button = QtWidgets.QPushButton("Select video")
-        self.select_video_button.setMaximumWidth(250)
-        self.select_video_button.clicked.connect(self.select_video)
-
-        layout_choose_video.addWidget(choose_video_text)
-        layout_choose_video.addWidget(self.select_video_button)
-
-        self.main_layout.addLayout(layout_cfg)
-        self.main_layout.addLayout(layout_choose_video)
-
-        self.layout_attributes = QtWidgets.QVBoxLayout()
-        self.layout_attributes.setAlignment(Qt.AlignTop)
-        self.layout_attributes.setSpacing(20)
-        self.layout_attributes.setContentsMargins(0, 0, 40, 0)
-
-        label = QtWidgets.QLabel("Attributes")
-        label.setContentsMargins(20, 20, 0, 10)
-        self.layout_attributes.addWidget(label)
-
-        self.layout_downsample = QtWidgets.QHBoxLayout()
-        self.layout_downsample.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_downsample.setSpacing(200)
-        self.layout_downsample.setContentsMargins(20, 0, 50, 20)
-
-        self._layout_downsample()
-        self._layout_rotate_video()
-
-        self.layout_shorten = QtWidgets.QHBoxLayout()
-        self.layout_shorten.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-        self.layout_shorten.setSpacing(20)
-        self.layout_shorten.setContentsMargins(20, 0, 50, 0)
-
-        self._start_time()
-        self._stop_time()
-        self._angle()
-
-        self.layout_attributes.addLayout(self.layout_downsample)
-        self.layout_attributes.addLayout(self.layout_shorten)
-
-        self.btn_layout = QtWidgets.QHBoxLayout()
-        self.btn_layout.setContentsMargins(0, 20, 20, 20)
-        self.btn_layout.setSpacing(20)
-
-        self.down_button = QtWidgets.QPushButton("DOWNSAMPLE")
-        self.down_button.setMaximumWidth(200)
-        self.down_button.clicked.connect(self.downsample_video)
-        self.btn_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
-
-        self.crop_button = QtWidgets.QPushButton("CROP")
-        self.crop_button.setMaximumWidth(200)
-        self.crop_button.clicked.connect(self.crop_video)
-        self.btn_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
-
-        self.layout_attributes.addLayout(self.btn_layout)
+        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
+        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
+        self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.config = text
-        self.cfg = auxiliaryfunctions.read_config(self.config)
+        self.trim_button = QtWidgets.QPushButton("Trim")
+        self.trim_button.setMinimumWidth(150)
+        self.trim_button.clicked.connect(self.downsample_videos)
+        self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
 
+        self.down_button = QtWidgets.QPushButton("Downsample")
+        self.down_button.setMinimumWidth(150)
+        self.down_button.clicked.connect(self.downsample_videos)
+        self.main_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
 
-    def browse_dir(self):
-        cwd = self.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            return
-        self.config = config[0]
-        self.cfg_line.setText(self.config)
+        self.crop_button = QtWidgets.QPushButton("Crop")
+        self.crop_button.setMinimumWidth(150)
+        self.crop_button.clicked.connect(self.crop_videos)
+        self.main_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
-    def select_video(self):
-        cwd = self.config.split("/")[0:-1]
-        cwd = "\\".join(cwd)
+    def _generate_layout_attributes(self, layout):
 
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video to modify", cwd, "", "*.*"
-        )
-        if videos_file[0]:
-            self.vids = videos_file[0]
-            self.filelist.append(self.vids)
-            self.select_video_button.setText(
-                "Total %s Videos selected" % len(self.filelist)
-            )
-            self.select_video_button.adjustSize()
-
-    def _layout_downsample(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel(
-            "Downsample - specify the video height (aspect ratio fixed)"
-        )
+        videoheight_label = QtWidgets.QLabel("Video height (aspect ratio fixed)")
         self.video_height = QSpinBox()
         self.video_height.setMaximum(1000)
-
         self.video_height.setValue(256)
-        self.video_height.setMinimumWidth(400)
+        self.video_height.setMinimumWidth(150)
+        self.video_height.valueChanged.connect(self.log_video_height)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.video_height)
-        self.layout_downsample.addLayout(l_opt)
+        rotate_label = QtWidgets.QLabel("Rotate video")
+        self.video_rotation = QtWidgets.QComboBox()
+        self.video_rotation.addItems(["no", "clockwise", "specific angle"])
+        self.video_rotation.setMinimumWidth(150)
+        self.video_rotation.currentTextChanged.connect(self.update_video_rotation)
 
-    def _layout_rotate_video(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Downsample: rotate video?")
-        self.btngroup_rotate_video_choice = QButtonGroup()
-
-        self.rotate_video_choice1 = QtWidgets.QRadioButton("Yes")
-        self.rotate_video_choice1.toggled.connect(
-            lambda: self.update_rotate_video_choice(self.rotate_video_choice1)
-        )
-
-        self.rotate_video_choice2 = QtWidgets.QRadioButton("No")
-        self.rotate_video_choice2.setChecked(True)
-        self.rotate_video_choice2.toggled.connect(
-            lambda: self.update_rotate_video_choice(self.rotate_video_choice2)
-        )
-
-        self.rotate_video_choice3 = QtWidgets.QRadioButton("Arbitrary")
-        self.rotate_video_choice3.toggled.connect(
-            lambda: self.update_rotate_video_choice(self.rotate_video_choice3)
-        )
-
-        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice1)
-        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice2)
-        self.btngroup_rotate_video_choice.addButton(self.rotate_video_choice3)
-
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.rotate_video_choice1)
-        l_opt.addWidget(self.rotate_video_choice2)
-        l_opt.addWidget(self.rotate_video_choice3)
-        self.layout_downsample.addLayout(l_opt)
-
-    def _start_time(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Shorten: start time (sec)")
+        trim_start_label = QtWidgets.QLabel("Trim start (sec)")
         self.video_start = QSpinBox()
         self.video_start.setMaximum(3600)
-
         self.video_start.setValue(1)
-        self.video_start.setMinimumWidth(400)
+        self.video_start.setMinimumWidth(150)
+        self.video_start.valueChanged.connect(self.log_video_start)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.video_start)
-        self.layout_shorten.addLayout(l_opt)
-
-    def _stop_time(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
-
-        opt_text = QtWidgets.QLabel("Shorten: stop time (sec)")
+        trim_end_label = QtWidgets.QLabel("Trim end (sec)")
         self.video_stop = QSpinBox()
         self.video_stop.setMaximum(3600)
         self.video_stop.setMinimum(1)
-
         self.video_stop.setValue(30)
-        self.video_stop.setMinimumWidth(400)
+        self.video_stop.setMinimumWidth(150)
+        self.video_stop.valueChanged.connect(self.log_video_stop)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.video_stop)
-        self.layout_shorten.addLayout(l_opt)
+        angle_label = QtWidgets.QLabel("Rotation angle (deg)")
+        self.rotation_angle = QDoubleSpinBox()
+        self.rotation_angle.setMaximum(360.0)
+        self.rotation_angle.setMinimum(-360.0)
+        self.rotation_angle.setDecimals(2)
+        self.rotation_angle.setValue(0.0)
+        self.rotation_angle.setMinimumWidth(150)
+        self.rotation_angle.setEnabled(False)
+        self.rotation_angle.valueChanged.connect(self.log_rotation_angle)
 
-    def _angle(self):
-        l_opt = QtWidgets.QVBoxLayout()
-        l_opt.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        l_opt.setSpacing(20)
-        l_opt.setContentsMargins(20, 0, 0, 0)
+        downsample_title = QtWidgets.QLabel("Downsample and rotate:")
+        trim_title = QtWidgets.QLabel("Shorten video (trim):")
 
-        opt_text = QtWidgets.QLabel("Angle for arbitrary rotation (deg)")
-        self.angle = QDoubleSpinBox()
-        self.angle.setMaximum(360.0)
-        self.angle.setMinimum(-360.0)
-        self.angle.setDecimals(2)
+        layout.addWidget(downsample_title, 0, 0)
+        layout.addWidget(trim_title, 0, 4)
+        layout.addWidget(videoheight_label, 1, 0)
+        layout.addWidget(self.video_height, 1, 1)
+        layout.addWidget(rotate_label, 1, 2)
+        layout.addWidget(self.video_rotation, 1, 3)
+        layout.addWidget(angle_label, 2, 2)
+        layout.addWidget(self.rotation_angle, 2, 3)
+        layout.addWidget(trim_start_label, 1, 4)
+        layout.addWidget(self.video_start, 1, 5)
+        layout.addWidget(trim_end_label, 2, 4)
+        layout.addWidget(self.video_stop, 2, 5)
+        # layout.addWidget()
 
-        self.angle.setValue(0.0)
-        self.angle.setMinimumWidth(400)
+    def update_video_rotation(self, option):
+        self.root.logger.info(f"Video rotation set to {option.upper()}")
+        if option == "specific angle":
+            self.rotation_angle.setEnabled(True)
+        else:
+            self.rotation_angle.setEnabled(False)
 
-        l_opt.addWidget(opt_text)
-        l_opt.addWidget(self.angle)
-        self.layout_shorten.addLayout(l_opt)
+    def log_video_height(self, value):
+        self.root.logger.info(f"Video height set to {value}")
 
-    def update_rotate_video_choice(self, rb):
-        self.rotate_val = rb.text()
+    def log_video_start(self, value):
+        start_time = time.strftime("%H:%M:%S", time.gmtime(value))
+        self.root.logger.info(f"Video start time set to {start_time}")
 
-    def downsample_video(self, event):
+    def log_video_stop(self, value):
+        stop_time = time.strftime("%H:%M:%S", time.gmtime(value))
+        self.root.logger.info(f"Video start time set to {stop_time}")
 
-        Videos = self.filelist
-        if len(Videos) > 0:
-            for video in Videos:
+    def log_rotation_angle(self, value):
+        self.root.logger.info(f"Rotation angle set to {value}")
+
+    def trim_videos(self):
+        start = time.strftime("%H:%M:%S", time.gmtime(self.video_start.value()))
+        stop = time.strftime("%H:%M:%S", time.gmtime(self.video_stop.value()))
+        if self.files:
+            for video in self.files:
+                ShortenVideo(video, start, stop)
+        else:
+            self.root.logger.error("No videos selected...")
+
+    def downsample_videos(self):
+        if self.files:
+            for video in self.files:
                 DownSampleVideo(
                     video,
                     width=-1,
                     height=self.video_height.value(),
-                    rotatecw=self.rotate_val,
-                    angle=self.angle.value(),
+                    rotatecw=self.video_rotation.value(),
+                    angle=self.rotation_angle.value(),
                 )
         else:
-            print("Please select a video first!")
+            self.root.logger.error("No videos selected...")
 
-    def crop_video(self, event):
-        Videos = self.filelist
-        if len(Videos) > 0:
-            for video in Videos:
+    def crop_videos(self):
+        if self.files:
+            for video in self.files:
                 CropVideo(video, useGUI=True)
         else:
-            print("Please select a video first!")
+            self.root.logger.error("No videos selected...")
