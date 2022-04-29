@@ -20,9 +20,9 @@ will create a `QtWidgets.QHBoxLayout` object, and set the alignment, spacing, an
 
 #### Functional components
 
-Since PySide does not support using the same instance of an object in various places (each QWidget can only be attached to one parent), functional components such as `VideoSelectionWidget` or `BodypartListWidget` are also defined to reduce code duplication, since this functionality is needed in several different parts of the code. 
+Since Qt does not support using the same instance of an object in various places (each QWidget can only be attached to one parent), functional components such as `VideoSelectionWidget` or `BodypartListWidget` are also defined to reduce code duplication, since this functionality is needed in several different parts of the code. 
 
-Useful defaults are provided in the class constructor where prudent. 
+Useful defaults are provided in the class constructor where applicable. 
 
 ### Main Window
 
@@ -32,7 +32,7 @@ The main window of the application inherits from `QtWidgets.QMainWindow`. This i
 
 All the Tab classes inherit from a custom class, `components.DefaultTab` which inherits from `QtWidgets.QWidget` and implements the basic layout common in all tabs (step description, config line, browse new config file), and holds commonly variables and functionality. 
 
-To create a tab object, one needs to provide the `root`, `parent` and `h1_description` arguments. There is only one `root` element, the Main Window. The parent refers to the current widget's direct parent, and can be the MainWindow or another tab, depending on how nested of a composition is implemented. The `h1_description` is just the information provided at the top of each tab, e.g. "DeepLabCut Step 1X - Label some unicorns".
+To create a tab object, one needs to provide the `root`, `parent` and `h1_description` arguments. There is only one `root` element, the Main Window. The parent refers to the current widget's direct parent, and can be the MainWindow or another tab, depending on how nested of a composition is implemented. The `h1_description` is just the information provided at the top of each tab, e.g. "DeepLabCut Step X - Label some unicorns".
 
 ### Keeping "state" of variables across tabs
 
@@ -42,7 +42,7 @@ This is a rather rough solution towards having a stateful UI, and an approach wh
 
 A persistent-state UI (recover GUI state after closing and reopening the application) could be implemented by storing the previously mentioned dict as a JSON or YAML file in the installation path of DeepLabCut, and read the file upon opening the software.
 
-#### Concentrate global and constant values
+### Concentrate global and constant values
 
 Throughout the software, there are repeatedly used values such as supported videotypes, augmentation types ets. These are all maintained in a single file, `dlc_params.py`, and are accessed from other files:
 
@@ -78,7 +78,7 @@ Most logging messages are sent with `INFO` level, while some messages that would
 
 ### GUI Styling
 
-A [QSS stylesheet](https://doc.qt.io/qt-5/stylesheet-reference.html)[^*] is used to define global styles for the GUI. The syntax is similar to CSS. This helps to apply the common "separation of concerns" design pattern which argues that interface styling and interface behavior should be separated. 
+A [QSS stylesheet](https://doc.qt.io/qt-5/stylesheet-reference.html)[^*] is used to define global styles for the GUI. The syntax is similar to CSS. This helps to apply the "separation of concerns" design pattern which argues that styling code and behavioral code should be separated. 
 
 [^*]: Python specific examples [here](https://doc.qt.io/qtforpython/overviews/stylesheet-examples.html).
 
@@ -98,5 +98,5 @@ Benefits include the fact that all styling can be changed from a single place, i
 - Open project mini-window:
   - removed redundant "Project Loaded" info message
   - “Ok” button is automatically set in focus after selecting config file, so that you can just press “Enter” button to load (small detail, but actually quite convenient)
-- Basic "state" kept for variables across tabs. Check `MainWindow.refresh_active_tab()` for what is currently updated, and how to sync more values likewise.
+- Basic "state" kept for variables across tabs. Check `MainWindow.refresh_active_tab()` for what is currently kept in sync.
 - `config` files, `pose_config` and `inference_cfg` files are editable through a built-in Config Editor. 
