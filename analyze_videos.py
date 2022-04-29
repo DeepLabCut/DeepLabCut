@@ -1,16 +1,10 @@
-import deeplabcut
-
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (
-    QComboBox,
-    QSpinBox,
-)
 
 from widgets import ConfigEditor
 from components import (
-    BodypartListWidget,
     DefaultTab,
+    BodypartListWidget,
     ShuffleSpinBox,
     TrainingSetSpinBox,
     VideoSelectionWidget,
@@ -19,6 +13,8 @@ from components import (
     _create_horizontal_layout,
     _create_vertical_layout,
 )
+
+import deeplabcut
 
 
 class AnalyzeVideos(DefaultTab):
@@ -39,25 +35,21 @@ class AnalyzeVideos(DefaultTab):
 
         tmp_layout = _create_horizontal_layout()
 
-        self.main_layout.addWidget(
-            _create_label_widget("Attributes", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout()
         self._generate_layout_attributes(self.layout_attributes)
         tmp_layout.addLayout(self.layout_attributes)
 
         # Single / Multi animal Only Layouts
-        self.layout_single_animal = _create_horizontal_layout()
-
-        self.layout_multi_animal = _create_horizontal_layout()
-
+        self.layout_singleanimal = _create_horizontal_layout()
+        self.layout_multianimal = _create_horizontal_layout()
 
         if self.root.is_multianimal:
-            self._generate_layout_multianimal_only_options(self.layout_multi_animal)
-            tmp_layout.addLayout(self.layout_multi_animal)
+            self._generate_layout_multianimal(self.layout_multianimal)
+            tmp_layout.addLayout(self.layout_multianimal)
         else:
-            self._generate_layout_single_animal(self.layout_single_animal)
-            tmp_layout.addLayout(self.layout_single_animal)
+            self._generate_layout_single_animal(self.layout_singleanimal)
+            tmp_layout.addLayout(self.layout_singleanimal)
 
         self.main_layout.addLayout(tmp_layout)
 
@@ -102,7 +94,6 @@ class AnalyzeVideos(DefaultTab):
 
         tmp_layout.addWidget(self.filter_predictions)
 
-
         # Plot Trajectories
         self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
         self.plot_trajectories.setCheckState(Qt.Unchecked)
@@ -121,9 +112,7 @@ class AnalyzeVideos(DefaultTab):
         layout.addLayout(tmp_layout)
 
         # Bodypart list
-        self.bodyparts_list_widget = BodypartListWidget(
-            root=self.root, parent=self,
-        )
+        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
         layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
     def _generate_layout_attributes(self, layout):
@@ -148,22 +137,21 @@ class AnalyzeVideos(DefaultTab):
 
         layout.addWidget(self.overwrite_tracks, 0, 2)
 
-    def _generate_layout_multianimal_only_options(self, layout):
-        
+    def _generate_layout_multianimal(self, layout):
+
         tmp_layout = QtWidgets.QGridLayout()
 
         opt_text = QtWidgets.QLabel("Tracking method")
-        self.tracker_type_widget = QComboBox()
+        self.tracker_type_widget = QtWidgets.QComboBox()
         self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
-        self.tracker_type_widget.setCurrentText("skeleton")
         self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
         tmp_layout.addWidget(opt_text, 0, 0)
         tmp_layout.addWidget(self.tracker_type_widget, 0, 1)
 
         opt_text = QtWidgets.QLabel("Number of animals in videos")
-        self.num_animals_in_videos = QSpinBox()
-        self.num_animals_in_videos.setValue(len(self.root.all_individuals))
+        self.num_animals_in_videos = QtWidgets.QSpinBox()
         self.num_animals_in_videos.setMaximum(100)
+        self.num_animals_in_videos.setValue(len(self.root.all_individuals))
         tmp_layout.addWidget(opt_text, 1, 0)
         tmp_layout.addWidget(self.num_animals_in_videos, 1, 1)
 
@@ -310,19 +298,32 @@ class AnalyzeVideos(DefaultTab):
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
         calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
-        assemble_with_ID_only = self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+        assemble_with_ID_only = (
+            self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+        )
         overwrite_tracks = self.overwrite_tracks.checkState() == Qt.Checked
-        create_video_all_detections = self.create_detections_video_checkbox.checkState() == Qt.Checked
+        create_video_all_detections = (
+            self.create_detections_video_checkbox.checkState() == Qt.Checked
+        )
         robustnframes = self.use_robustnframes.checkState() == Qt.Checked
-        use_transformer_tracking = self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
-        track_method = self.tracker_type_widget.currentText() if self.root.is_multianimal else ""
+        use_transformer_tracking = (
+            self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
+        )
+        track_method = (
+            self.tracker_type_widget.currentText() if self.root.is_multianimal else ""
+        )
         num_animals_in_videos = self.num_animals_in_videos.value()
 
         cropping = None
         dynamic_cropping_params = (False, 0.5, 10)
 
         if self.root.cfg["cropping"] == "True":
-            cropping = self.root.cfg["x1"], self.root.cfg["x2"], self.root.cfg["y1"], self.root.cfg["y2"]
+            cropping = (
+                self.root.cfg["x1"],
+                self.root.cfg["x2"],
+                self.root.cfg["y1"],
+                self.root.cfg["y2"],
+            )
 
         if self.dynamic_cropping:
             dynamic_cropping_params = (True, 0.5, 10)

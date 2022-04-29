@@ -21,6 +21,7 @@ from label_frames import LabelFrames
 from create_training_dataset import CreateTrainingDataset
 from train_network import TrainNetwork
 from evaluate_network import EvaluateNetwork
+from unsupervised_id_tracking import UnsupervizedIdTracking
 from video_editor import VideoEditor
 from analyze_videos import AnalyzeVideos
 from create_videos import CreateVideos
@@ -117,6 +118,13 @@ class MainWindow(QMainWindow):
             "test",
             "inference_cfg.yaml",
         )
+
+    def update_cfg(self, text):
+        self.root.config = text
+        # Remove transformer_tracking tab if single animal 
+        # (6th tab from 0)
+        self.unsupervised_id_tracking.setEnabled(True if self.is_multianimal else False)
+        
 
     def update_shuffle(self, value):
         self.shuffle_value = value
@@ -306,7 +314,12 @@ class MainWindow(QMainWindow):
         self.createToolBars(1)
 
     def lightmode(self):
-        self.setStyleSheet("Fusion")
+        stylefile = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "style.qss"
+        )
+        with open(stylefile, "r") as f:
+            self.setStyleSheet(f.read())
+
         self.welcome_page("Welcome.png")
 
         names = ["new_project.png", "open.png", "help.png"]
@@ -320,27 +333,31 @@ class MainWindow(QMainWindow):
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
-        extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
-        label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
-        create_training_dataset = CreateTrainingDataset(root=self, parent=self, h1_description="DeepLabCut - Step 4. Create training dataset")
-        train_network = TrainNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network")
-        evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
-        video_editor = VideoEditor(root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor")
-        analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
-        create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
-        extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
-        refine_tracklets = RefineTracklets(root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels")
+        self.extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
+        self.label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
+        self.create_training_dataset = CreateTrainingDataset(root=self, parent=self, h1_description="DeepLabCut - Step 4. Create training dataset")
+        self.train_network = TrainNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network")
+        self.evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
+        self.analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
+        self.unsupervised_id_tracking = UnsupervizedIdTracking(root=self, parent=self, h1_description="DeepLabCut - Optional Unsupervised ID Tracking with Transformer")
+        self.create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
+        self.extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
+        self.refine_tracklets = RefineTracklets(root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels")
+        self.video_editor = VideoEditor(root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor")
 
-        self.tab_widget.addTab(extract_frames, "Extract frames")
-        self.tab_widget.addTab(label_frames, "Label frames")
-        self.tab_widget.addTab(create_training_dataset, "Create training dataset")
-        self.tab_widget.addTab(train_network, "Train network")
-        self.tab_widget.addTab(evaluate_network, "Evaluate network")
-        self.tab_widget.addTab(video_editor, "Video editor")
-        self.tab_widget.addTab(analyze_videos, "Analyze videos")
-        self.tab_widget.addTab(create_videos, "Create videos")
-        self.tab_widget.addTab(extract_outlier_frames, "Extract outlier frames")
-        self.tab_widget.addTab(refine_tracklets, "Refine tracklets")
+        self.tab_widget.addTab(self.extract_frames, "Extract frames")
+        self.tab_widget.addTab(self.label_frames, "Label frames")
+        self.tab_widget.addTab(self.create_training_dataset, "Create training dataset")
+        self.tab_widget.addTab(self.train_network, "Train network")
+        self.tab_widget.addTab(self.evaluate_network, "Evaluate network")
+        self.tab_widget.addTab(self.analyze_videos, "Analyze videos")
+        self.tab_widget.addTab(self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)")
+        if not self.is_multianimal:
+            self.unsupervised_id_tracking.setEnabled(False)
+        self.tab_widget.addTab(self.create_videos, "Create videos")
+        self.tab_widget.addTab(self.extract_outlier_frames, "Extract outlier frames (*)")
+        self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
+        self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         self.setCentralWidget(self.tab_widget)
 
@@ -380,4 +397,7 @@ class MainWindow(QMainWindow):
         _attempt_attribute_update("trainingset", self.trainingset_index)
         _attempt_attribute_update("cfg_line", self.config)
         # _attempt_video_widget_update(self.videotype, self.files)
+
+        # Update single/multi animal menus
+        # TODO
 
