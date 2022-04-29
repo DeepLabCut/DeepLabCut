@@ -88,7 +88,8 @@ Benefits include the fact that all styling can be changed from a single place, i
 
 - Stylesheets
 - Logging
-- Globally used, constant values such as `videotypes=["avi", "mov", ""mp4]` is all centralized in one place only.
+- Globally used, constant values such as `videotypes=["avi", "mov", ""mp4]` is all centralized in one place only
+- A basic landing page
 - UI improvements such as enabling/disabling options based on current selections (e.g. in `Extract Frames` tab)
 - UI improvements in video selection: 
   - show count of selected videos
@@ -98,5 +99,5 @@ Benefits include the fact that all styling can be changed from a single place, i
 - Open project mini-window:
   - removed redundant "Project Loaded" info message
   - “Ok” button is automatically set in focus after selecting config file, so that you can just press “Enter” button to load (small detail, but actually quite convenient)
-- Basic "state" kept for variables across tabs. Check `MainWindow.refresh_active_tab()` for what is currently kept in sync.
-- `config` files, `pose_config` and `inference_cfg` files are editable through a built-in Config Editor. 
+- Basic "state" kept for variables across tabs. Check `MainWindow.refresh_active_tab()` for what is currently kept in sync
+- `config` files, `pose_config` and `inference_cfg` files are editable through a built-in Config Editor
