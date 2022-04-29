@@ -21,3 +21,9 @@ class DLC_Params:
 
     IMAGE_AUGMENTERS = ["default", "tensorpack", "imgaug"]
 
+    FRAME_EXTRACTION_ALGORITHMS = ["kmeans", "uniform"]
+
+    OUTLIER_EXTRACTION_ALGORITHMS = ["jump", "fitting", "uncertain", "manual"]
+
+    TRACKERS = ["ellipse", "box", "skeleton"]
+

@@ -7,7 +7,6 @@ from PySide2.QtGui import QIcon
 
 from MainWindow import MainWindow
 
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon('./assets/logo.png'))
@@ -17,7 +16,6 @@ if __name__ == '__main__':
     )
     with open(stylefile, "r") as f:
         app.setStyleSheet(f.read())
-
 
     # Set up a logger and add an stdout handler. 
     # A single logger can have many handlers: 

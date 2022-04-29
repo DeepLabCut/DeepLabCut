@@ -1,14 +1,7 @@
-import os
-from pathlib import Path
-
-from PySide2.QtWidgets import QWidget, QMessageBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
 
-import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
-
+from widgets import ConfigEditor
 from components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -18,7 +11,8 @@ from components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
-from widgets import ConfigEditor
+
+import deeplabcut
 
 
 class RefineTracklets(DefaultTab):
@@ -33,19 +27,6 @@ class RefineTracklets(DefaultTab):
     @property
     def files(self):
         self.video_selection_widget.files
-
-    @property
-    def inference_cfg_path(self):
-        return os.path.join(
-            self.root.cfg["project_path"],
-            auxiliaryfunctions.get_model_folder(
-                self.root.cfg["TrainingFraction"][0], #NOTE: trainingsetindex hardcoded!
-                int(self.root.shuffle_value),
-                self.root.cfg,
-            ),
-            "test",
-            "inference_cfg.yaml",
-        )
 
     def set_page(self):
 
@@ -115,7 +96,7 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.trainingset)
         layout.addWidget(num_animals_text)
         layout.addWidget(self.num_animals_in_videos)
-        
+
     def _generate_layout_refinement(self, layout):
 
         section_title = _create_label_widget(
@@ -195,11 +176,11 @@ class RefineTracklets(DefaultTab):
         self.root.logger.info(f"Number of animals in video set to {num_animals}")
 
     def open_inferencecfg_editor(self):
-        editor = ConfigEditor(self.inference_cfg_path)
+        editor = ConfigEditor(self.root.inference_cfg_path)
         editor.show()
 
     def filter_tracks(self):
-        #TODO: 
+        # TODO:
         raise NotImplementedError
 
     def merge_dataset(self):
@@ -212,7 +193,7 @@ class RefineTracklets(DefaultTab):
         msg.setWindowIcon(QtWidgets.QMessageBox.Warning)
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
-        if result == QMessageBox.Yes:
+        if result == QtWidgets.QMessageBox.Yes:
             deeplabcut.merge_datasets(self.config, forceiterate=None)
 
     def refine_labels(self):

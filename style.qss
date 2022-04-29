@@ -7,17 +7,25 @@
  */
 
 QPushButton{
-    min-height: 25px;
+    height: 25px;
+    min-width: 100px;
 }
 
 QSpinBox{
-    min-height: 25px;
+    height: 25px;
+    width: 100px
+}
+
+QDoubleSpinBox{
+    height: 25px;
+    width: 100px
 }
 
 QComboBox{
-    min-height: 25px;
+    height: 25px;
+    min-width: 100px;
 }
 
 QLineEdit{
-    min-height: 25px;
+    height: 25px;
 }

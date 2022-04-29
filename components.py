@@ -239,7 +239,7 @@ class DefaultTab(QtWidgets.QWidget):
 
         self.cfg_line = QtWidgets.QLineEdit()
         self.cfg_line.setText(self.root.config)
-        self.cfg_line.textChanged[str].connect(self.update_cfg)
+        self.cfg_line.textChanged[str].connect(self.root.update_cfg)
 
         browse_button = QtWidgets.QPushButton("Browse")
         browse_button.setMaximumWidth(100)
@@ -267,10 +267,6 @@ class DefaultTab(QtWidgets.QWidget):
         self.root.config = config[0]
         self.root.logger.info(f"Changed config file: {self.root.config}")
         self.cfg_line.setText(self.root.config)
-
-    def update_cfg(self):
-        text = self.cfg_line.text()
-        self.root.config = text
 
 
 class EditYamlButton(QtWidgets.QPushButton):

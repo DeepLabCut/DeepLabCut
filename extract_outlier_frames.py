@@ -1,12 +1,18 @@
-from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-import deeplabcut
-from deeplabcut import utils
-from deeplabcut.utils import auxiliaryfunctions
+from dlc_params import DLC_Params
+from components import (
+    DefaultTab,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
+    VideoSelectionWidget,
+    _create_horizontal_layout,
+    _create_label_widget,
+)
 
-from components import DefaultTab, ShuffleSpinBox, TrainingSetSpinBox, VideoSelectionWidget, _create_horizontal_layout, _create_label_widget
+import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 
 
 
@@ -43,12 +49,15 @@ def refine_labels(config, multianimal=False):
     cfg = auxiliaryfunctions.read_config(config)
     if not multianimal and not cfg.get("multianimalproject", False):
         from deeplabcut.gui import refinement
+
         refinement.show(config)
     else:
         from deeplabcut.gui import multiple_individuals_refinement_toolbox
+
         multiple_individuals_refinement_toolbox.show(config)
 
     os.chdir(startpath)
+
 
 class ExtractOutlierFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
@@ -67,15 +76,12 @@ class ExtractOutlierFrames(DefaultTab):
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
 
-        self.main_layout.addWidget(
-            _create_label_widget("Attributes", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
 
         self._generate_multianimal_options(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
-
 
         self.main_layout.addWidget(
             _create_label_widget("Frame extraction options", "font:bold")
@@ -83,7 +89,6 @@ class ExtractOutlierFrames(DefaultTab):
         self.layout_extraction_options = _create_horizontal_layout()
         self._generate_layout_extraction_options(self.layout_extraction_options)
         self.main_layout.addLayout(self.layout_extraction_options)
-
 
         self.extract_outlierframes_button = QtWidgets.QPushButton("Extract frames")
         self.extract_outlierframes_button.clicked.connect(self.extract_outlier_frames)
@@ -99,7 +104,9 @@ class ExtractOutlierFrames(DefaultTab):
         self.merge_data_button.clicked.connect(self.merge_dataset)
         self.merge_data_button.setMinimumWidth(150)
 
-        self.main_layout.addWidget(self.extract_outlierframes_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(
+            self.extract_outlierframes_button, alignment=Qt.AlignRight
+        )
         self.main_layout.addWidget(self.label_outliers_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.merge_data_button, alignment=Qt.AlignRight)
 
@@ -120,10 +127,8 @@ class ExtractOutlierFrames(DefaultTab):
 
     def _generate_multianimal_options(self, layout):
         opt_text = QtWidgets.QLabel("Tracking method")
-        self.tracker_type_widget = QComboBox()
-        self.tracker_type_widget.setMinimumWidth(150)
-        self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
-        self.tracker_type_widget.setCurrentText("skeleton")
+        self.tracker_type_widget = QtWidgets.QComboBox()
+        self.tracker_type_widget.addItems(DLC_Params.TRACKERS)
         self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
 
         layout.addWidget(opt_text)
@@ -135,12 +140,11 @@ class ExtractOutlierFrames(DefaultTab):
     def _generate_layout_extraction_options(self, layout):
 
         opt_text = QtWidgets.QLabel("Specify the algorithm")
-        self.outlier_algorithm_widget = QComboBox()
-        self.outlier_algorithm_widget.setMinimumWidth(150)
-        options = ["jump", "fitting", "uncertain", "manual"]
-        self.outlier_algorithm_widget.addItems(options)
-        self.outlier_algorithm_widget.setCurrentText("jump")
-        self.outlier_algorithm_widget.currentTextChanged.connect(self.update_outlier_algorithm)
+        self.outlier_algorithm_widget = QtWidgets.QComboBox()
+        self.outlier_algorithm_widget.addItems(DLC_Params.OUTLIER_EXTRACTION_ALGORITHMS)
+        self.outlier_algorithm_widget.currentTextChanged.connect(
+            self.update_outlier_algorithm
+        )
 
         layout.addWidget(opt_text)
         layout.addWidget(self.outlier_algorithm_widget)
@@ -149,7 +153,9 @@ class ExtractOutlierFrames(DefaultTab):
         self.root.logger.info(f"Using {method.upper()} tracker")
 
     def update_outlier_algorithm(self, algorithm):
-        self.root.logger.info(f"Using {algorithm.upper()} algorithm for frame extraction")
+        self.root.logger.info(
+            f"Using {algorithm.upper()} algorithm for frame extraction"
+        )
 
     def extract_outlier_frames(self):
         self.launch_refinement_gui.setEnabled(True)
@@ -166,7 +172,7 @@ class ExtractOutlierFrames(DefaultTab):
             track_method = self.tracker_type_widget.currentText()
 
         self.root.logger.debug(
-        f"""Running extract outlier frames with options:
+            f"""Running extract outlier frames with options:
         config: {config},
         shuffle: {shuffle},
         trainingset index: {trainingsetindex},
@@ -174,7 +180,8 @@ class ExtractOutlierFrames(DefaultTab):
         videotype: {videotype},
         outlier algorithm: {outlieralgorithm},
         track method: {track_method}
-        """)
+        """
+        )
         deeplabcut.extract_outlier_frames(
             config=config,
             videos=videos,

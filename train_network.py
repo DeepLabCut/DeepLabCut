@@ -1,19 +1,27 @@
 import os
 
-from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
+from components import (
+    DefaultTab,
+    EditYamlButton,
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
+    _create_grid_layout,
+    _create_horizontal_layout,
+    _create_label_widget,
+)
+from widgets import ConfigEditor
+
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
 
-from components import DefaultTab, EditYamlButton, ShuffleSpinBox, TrainingSetSpinBox, _create_grid_layout, _create_horizontal_layout, _create_label_widget
-from widgets import ConfigEditor
+
 
 
 class TrainNetwork(DefaultTab):
-   
     def __init__(self, root, parent, h1_description):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
 
@@ -26,15 +34,12 @@ class TrainNetwork(DefaultTab):
 
     def set_page(self):
 
-        self.main_layout.addWidget(
-            _create_label_widget("Attributes", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-
-        self.main_layout.addWidget(_create_label_widget("")) #dummy label
+        self.main_layout.addWidget(_create_label_widget(""))  # dummy label
 
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
         self.edit_posecfg_btn.setMinimumWidth(150)
@@ -43,26 +48,22 @@ class TrainNetwork(DefaultTab):
         self.ok_button = QtWidgets.QPushButton("Train Network")
         self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.train_network)
-        
+
         self.main_layout.addWidget(self.edit_posecfg_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
-
 
     def _generate_layout_attributes(self, layout):
         # Shuffle
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
-        self.shuffle.setMinimumWidth(150)
 
         # Trainingset index
         trainingset_label = QtWidgets.QLabel("Trainingset index")
         self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-        self.trainingset.setMinimumWidth(150)
 
         # Display iterations
         dispiters_label = QtWidgets.QLabel("Display iterations")
-        self.display_iters_spin = QSpinBox()
-        self.display_iters_spin.setMinimumWidth(150)
+        self.display_iters_spin = QtWidgets.QSpinBox()
         self.display_iters_spin.setMinimum(1)
         self.display_iters_spin.setMaximum(int(self.MAX_ITERS))
         self.display_iters_spin.setValue(1000)
@@ -70,8 +71,7 @@ class TrainNetwork(DefaultTab):
 
         # Save iterations
         saveiters_label = QtWidgets.QLabel("Save iterations")
-        self.save_iters_spin = QSpinBox()
-        self.save_iters_spin.setMinimumWidth(150)
+        self.save_iters_spin = QtWidgets.QSpinBox()
         self.save_iters_spin.setMinimum(1)
         self.save_iters_spin.setMaximum(int(self.MAX_ITERS))
         self.save_iters_spin.setValue(50000)
@@ -79,8 +79,7 @@ class TrainNetwork(DefaultTab):
 
         # Max iterations
         maxiters_label = QtWidgets.QLabel("Maximum iterations")
-        self.max_iters_spin = QSpinBox()
-        self.max_iters_spin.setMinimumWidth(150)
+        self.max_iters_spin = QtWidgets.QSpinBox()
         self.max_iters_spin.setMinimum(1)
         self.max_iters_spin.setMaximum(int(self.MAX_ITERS))
         self.max_iters_spin.setValue(100000)
@@ -88,11 +87,10 @@ class TrainNetwork(DefaultTab):
 
         # Max number snapshots to keep
         snapkeep_label = QtWidgets.QLabel("Number of snapshots to keep")
-        self.snapshots = QSpinBox()
-        self.snapshots.setMinimumWidth(150)
-        self.snapshots.setValue(5)
+        self.snapshots = QtWidgets.QSpinBox()
         self.snapshots.setMinimum(1)
         self.snapshots.setMaximum(100)
+        self.snapshots.setValue(5)
         self.snapshots.valueChanged.connect(self.log_snapshots)
 
         layout.addWidget(shuffle_label, 0, 0)

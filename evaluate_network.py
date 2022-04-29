@@ -1,11 +1,5 @@
-import os
-
-from PySide2.QtWidgets import QSpinBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-
-import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 from components import (
     BodypartListWidget,
@@ -17,6 +11,8 @@ from components import (
     _create_vertical_layout,
 )
 from widgets import ConfigEditor
+
+import deeplabcut
 
 
 class EvaluateNetwork(DefaultTab):
@@ -34,7 +30,7 @@ class EvaluateNetwork(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.main_layout.addWidget(_create_label_widget("")) #dummy text
+        self.main_layout.addWidget(_create_label_widget(""))  # dummy text
         self.layout_additional_attributes = _create_vertical_layout()
         self._generate_additional_attributes(self.layout_additional_attributes)
 
@@ -42,23 +38,22 @@ class EvaluateNetwork(DefaultTab):
 
         self.ev_nw_button = QtWidgets.QPushButton("Evaluate Network")
         self.ev_nw_button.setMinimumWidth(150)
-        self.ev_nw_button.setContentsMargins(0, 80, 40, 40)
         self.ev_nw_button.clicked.connect(self.evaluate_network)
 
         self.opt_button = QtWidgets.QPushButton("Plot 3 test maps")
         self.opt_button.setMinimumWidth(150)
-        self.opt_button.setContentsMargins(0, 80, 40, 40)
         self.opt_button.clicked.connect(self.plot_maps)
 
         self.edit_inferencecfg_btn = QtWidgets.QPushButton("Edit inference_cfg.yaml")
         self.edit_inferencecfg_btn.setMinimumWidth(150)
-        self.edit_inferencecfg_btn.setContentsMargins(0, 80, 40, 40)
         self.edit_inferencecfg_btn.clicked.connect(self.open_inferencecfg_editor)
 
         self.main_layout.addLayout(self.layout_attributes)
 
         if self.root.is_multianimal:
-            self.main_layout.addWidget(self.edit_inferencecfg_btn, alignment=Qt.AlignRight)
+            self.main_layout.addWidget(
+                self.edit_inferencecfg_btn, alignment=Qt.AlignRight
+            )
 
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
@@ -85,9 +80,7 @@ class EvaluateNetwork(DefaultTab):
     def plot_maps(self):
         shuffle = self.root.shuffle_value
         config = self.root.config
-        deeplabcut.extract_save_all_maps(
-            config, shuffle=shuffle, Indices=[0, 1, 5]
-        )
+        deeplabcut.extract_save_all_maps(config, shuffle=shuffle, Indices=[0, 1, 5])
 
     def _generate_additional_attributes(self, layout):
 
@@ -107,9 +100,7 @@ class EvaluateNetwork(DefaultTab):
         tmp_layout.addWidget(self.use_all_bodyparts)
         layout.addLayout(tmp_layout)
 
-        self.bodyparts_list_widget = BodypartListWidget(
-            root=self.root, parent=self,
-        )
+        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
         layout.addWidget(self.bodyparts_list_widget, alignment=Qt.AlignLeft)
 
     def update_map_choice(self, state):

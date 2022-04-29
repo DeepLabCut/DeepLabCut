@@ -1,11 +1,5 @@
-import deeplabcut
-
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (
-    QComboBox,
-    QSpinBox,
-)
 
 from components import (
     BodypartListWidget,
@@ -17,6 +11,8 @@ from components import (
     _create_label_widget,
     _create_vertical_layout,
 )
+
+import deeplabcut
 
 
 class CreateVideos(DefaultTab):
@@ -38,18 +34,16 @@ class CreateVideos(DefaultTab):
 
         tmp_layout = _create_horizontal_layout()
 
-        self.main_layout.addWidget(
-            _create_label_widget("Attributes", "font:bold")
-        )
-        self.layout_attributes = _create_horizontal_layout()
+        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
+        self.layout_attributes = _create_horizontal_layout(margins=(0, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
         tmp_layout.addLayout(self.layout_attributes)
 
-        self.layout_multi_animal = _create_horizontal_layout()
+        self.layout_multianimal = _create_horizontal_layout()
 
         if self.root.is_multianimal:
-            self._generate_layout_multianimal_only_options(self.layout_multi_animal)
-            tmp_layout.addLayout(self.layout_multi_animal)
+            self._generate_layout_multianimal(self.layout_multianimal)
+            tmp_layout.addLayout(self.layout_multianimal)
 
         self.main_layout.addLayout(tmp_layout)
 
@@ -64,10 +58,9 @@ class CreateVideos(DefaultTab):
         self.run_button.clicked.connect(self.create_videos)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
-    def _generate_layout_multianimal_only_options(self, layout):
+    def _generate_layout_multianimal(self, layout):
         tmp_text = QtWidgets.QLabel("Color keypoints by:")
-        self.color_by_widget = QComboBox()
-        self.color_by_widget.setMaximumWidth(150)
+        self.color_by_widget = QtWidgets.QComboBox()
         self.color_by_widget.addItems(["bodypart", "individual"])
         self.color_by_widget.setCurrentText("bodypart")
         self.color_by_widget.currentTextChanged.connect(self.update_color_by)
@@ -79,14 +72,14 @@ class CreateVideos(DefaultTab):
         # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
-        
+
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
 
         # Trainingset index
         opt_text = QtWidgets.QLabel("Trainingset index")
         self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-        
+
         layout.addWidget(opt_text)
         layout.addWidget(self.trainingset)
 
@@ -103,9 +96,8 @@ class CreateVideos(DefaultTab):
 
         # Trail Points
         opt_text = QtWidgets.QLabel("Specify the number of trail points")
-        self.trail_points = QSpinBox()
+        self.trail_points = QtWidgets.QSpinBox()
         self.trail_points.setValue(0)
-        self.trail_points.setMinimumWidth(100)
         tmp_layout.addWidget(opt_text)
         tmp_layout.addWidget(self.trail_points)
 
@@ -153,11 +145,9 @@ class CreateVideos(DefaultTab):
         nested_tmp_layout.addLayout(tmp_layout)
 
         tmp_layout = _create_vertical_layout()
-        
+
         # Bodypart list
-        self.bodyparts_list_widget = BodypartListWidget(
-            root=self.root, parent=self,
-        )
+        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
         nested_tmp_layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
         tmp_layout.addLayout(nested_tmp_layout, Qt.AlignLeft)
@@ -182,7 +172,9 @@ class CreateVideos(DefaultTab):
         selected_bodyparts = [
             item.text() for item in self.bodyparts_list_widget.selectedItems()
         ]
-        self.root.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
+        self.root.logger.info(
+            f"Selected bodyparts for plotting:\n\t{selected_bodyparts}"
+        )
         self.bodyparts_to_use = selected_bodyparts
 
     def update_use_all_bodyparts(self, s):
@@ -263,7 +255,10 @@ class CreateVideos(DefaultTab):
             plot_trajectories = False
 
         bodyparts = "all"
-        if  len(self.bodyparts_to_use)!=0 and self.plot_all_bodyparts.checkState()==Qt.Checked:
+        if (
+            len(self.bodyparts_to_use) != 0
+            and self.plot_all_bodyparts.checkState() == Qt.Checked
+        ):
             bodyparts = self.bodyparts_to_use
 
         deeplabcut.create_labeled_video(

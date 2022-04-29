@@ -1,11 +1,7 @@
 import time
 
-from PySide2.QtWidgets import QWidget, QSpinBox, QButtonGroup, QDoubleSpinBox
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-
-from deeplabcut import CropVideo, DownSampleVideo, ShortenVideo
-from deeplabcut.utils import auxiliaryfunctions
 
 from components import (
     DefaultTab,
@@ -14,6 +10,8 @@ from components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
+
+from deeplabcut import CropVideo, DownSampleVideo, ShortenVideo
 
 
 class VideoEditor(DefaultTab):
@@ -55,40 +53,35 @@ class VideoEditor(DefaultTab):
     def _generate_layout_attributes(self, layout):
 
         videoheight_label = QtWidgets.QLabel("Video height (aspect ratio fixed)")
-        self.video_height = QSpinBox()
+        self.video_height = QtWidgets.QSpinBox()
         self.video_height.setMaximum(1000)
         self.video_height.setValue(256)
-        self.video_height.setMinimumWidth(150)
         self.video_height.valueChanged.connect(self.log_video_height)
 
         rotate_label = QtWidgets.QLabel("Rotate video")
         self.video_rotation = QtWidgets.QComboBox()
         self.video_rotation.addItems(["no", "clockwise", "specific angle"])
-        self.video_rotation.setMinimumWidth(150)
         self.video_rotation.currentTextChanged.connect(self.update_video_rotation)
 
         trim_start_label = QtWidgets.QLabel("Trim start (sec)")
-        self.video_start = QSpinBox()
+        self.video_start = QtWidgets.QSpinBox()
         self.video_start.setMaximum(3600)
         self.video_start.setValue(1)
-        self.video_start.setMinimumWidth(150)
         self.video_start.valueChanged.connect(self.log_video_start)
 
         trim_end_label = QtWidgets.QLabel("Trim end (sec)")
-        self.video_stop = QSpinBox()
+        self.video_stop = QtWidgets.QSpinBox()
         self.video_stop.setMaximum(3600)
         self.video_stop.setMinimum(1)
         self.video_stop.setValue(30)
-        self.video_stop.setMinimumWidth(150)
         self.video_stop.valueChanged.connect(self.log_video_stop)
 
         angle_label = QtWidgets.QLabel("Rotation angle (deg)")
-        self.rotation_angle = QDoubleSpinBox()
+        self.rotation_angle = QtWidgets.QDoubleSpinBox()
         self.rotation_angle.setMaximum(360.0)
         self.rotation_angle.setMinimum(-360.0)
         self.rotation_angle.setDecimals(2)
         self.rotation_angle.setValue(0.0)
-        self.rotation_angle.setMinimumWidth(150)
         self.rotation_angle.setEnabled(False)
         self.rotation_angle.valueChanged.connect(self.log_rotation_angle)
 

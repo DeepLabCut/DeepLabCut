@@ -20,12 +20,10 @@ class LabelFrames(DefaultTab):
         super(LabelFrames, self).__init__(root, parent, h1_description)
 
         self.set_page()
-        
 
     def set_page(self):
 
-
-        self.main_layout.addWidget(_create_label_widget("")) #dummy text
+        self.main_layout.addWidget(_create_label_widget(""))  # dummy text
 
         self.label_frames_btn = QtWidgets.QPushButton("Label Frames")
         self.label_frames_btn.clicked.connect(self.label_frames)
@@ -35,28 +33,23 @@ class LabelFrames(DefaultTab):
         self.check_labels_btn.setEnabled(True)
 
         if self.root.is_multianimal:
-            self._add_color_by_option()
-        
+            self.layout_multianimal = _create_horizontal_layout()
+            self._generate_layout_multianimal(self.layout_multianimal)
+            self.main_layout.addLayout(self.layout_multianimal)
+
         self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.check_labels_btn, alignment=Qt.AlignRight)
 
-
-
-    def _add_color_by_option(self):
-        self.layout_multianimal_options = _create_horizontal_layout()
+    def _generate_layout_multianimal(self, layout):
 
         self.color_by_widget = QtWidgets.QComboBox()
         self.color_by_widget.setMinimumWidth(150)
         options = ["individual", "bodypart"]
         self.color_by_widget.addItems(options)
-        self.color_by_widget.currentTextChanged.connect(
-            self.log_color_by_option
-        )
+        self.color_by_widget.currentTextChanged.connect(self.log_color_by_option)
 
-        self.layout_multianimal_options.addWidget(QtWidgets.QLabel("Color labels by"))
-        self.layout_multianimal_options.addWidget(self.color_by_widget)
-
-        self.main_layout.addLayout(self.layout_multianimal_options)
+        layout.addWidget(QtWidgets.QLabel("Color labels by"))
+        layout.addWidget(self.color_by_widget)
 
     def log_color_by_option(self, choice):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
@@ -68,14 +61,12 @@ class LabelFrames(DefaultTab):
         if self.root.is_multianimal:
             if self.color_by_widget.currentText() == "individual":
                 visualizeindividuals = True
-        
+
         check_labels(self.root.config, visualizeindividuals=visualizeindividuals)
 
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText(
-            "Labeled images have been created in project-folder/labeled-data/"
-        )
+        msg.setText("Labeled images have been created in project-folder/labeled-data/")
 
         msg.setWindowTitle("Info")
         msg.setWindowIcon(QtWidgets.QMessageBox.Information)
@@ -84,19 +75,19 @@ class LabelFrames(DefaultTab):
 
     def label_frames(self):
         if self.root.is_multianimal:
-        # TODO:
+            # TODO:
             raise NotImplementedError
 
             import multiple_individuals_labeling_toolbox
             # multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
         else:
             import labeling_toolbox
+
             labeling_frame = labeling_toolbox.MainFrame(
-                self, 
-                self.root.config, 
-                imtypes=["*.png"], 
-                config3d=None, 
+                self,
+                self.root.config,
+                imtypes=["*.png"],
+                config3d=None,
                 sourceCam=None,
             )
             labeling_frame.show()
-        

@@ -1,12 +1,10 @@
 import os
-from PySide2.QtWidgets import QWidget, QComboBox, QSpinBox, QButtonGroup
+
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
-import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
-
+from dlc_params import DLC_Params
 from components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -15,7 +13,9 @@ from components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
-from dlc_params import DLC_Params
+
+import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class CreateTrainingDataset(DefaultTab):
@@ -47,28 +47,26 @@ class CreateTrainingDataset(DefaultTab):
 
         # Augmentation method
         augmentation_label = QtWidgets.QLabel("Augmentation method")
-        self.aug_choice = QComboBox()
-        self.aug_choice.setMinimumWidth(150)
+        self.aug_choice = QtWidgets.QComboBox()
         self.aug_choice.addItems(DLC_Params.IMAGE_AUGMENTERS)
         self.aug_choice.setCurrentText("imgaug")
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
-        self.net_choice = QComboBox()
-        self.net_choice.setMinimumWidth(150)
+        self.net_choice = QtWidgets.QComboBox()
         self.net_choice.addItems(DLC_Params.NNETS)
         self.net_choice.setCurrentText("resnet_50")
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
-        layout.addWidget(nnet_label, 0, 0)
-        layout.addWidget(self.net_choice, 0, 1)
-        layout.addWidget(augmentation_label, 1, 0)
-        layout.addWidget(self.aug_choice, 1, 1)
-        layout.addWidget(shuffle_label, 0, 2)
-        layout.addWidget(self.shuffle, 0, 3)
-        layout.addWidget(trainingset_label, 1, 2)
-        layout.addWidget(self.trainingset, 1, 3)
+        layout.addWidget(shuffle_label, 0, 0)
+        layout.addWidget(self.shuffle, 0, 1)
+        layout.addWidget(trainingset_label, 0, 2)
+        layout.addWidget(self.trainingset, 0, 3)
+        layout.addWidget(nnet_label, 1, 0)
+        layout.addWidget(self.net_choice, 1, 1)
+        layout.addWidget(augmentation_label, 1, 2)
+        layout.addWidget(self.aug_choice, 1, 3)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
