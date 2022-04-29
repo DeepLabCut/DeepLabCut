@@ -92,7 +92,7 @@ class CreateVideos(DefaultTab):
 
     def _generate_layout_video_parameters(self, layout):
 
-        tmp_layout = _create_horizontal_layout()
+        tmp_layout = _create_horizontal_layout(margins=(0,0,0,0))
 
         # Trail Points
         opt_text = QtWidgets.QLabel("Specify the number of trail points")
@@ -103,7 +103,7 @@ class CreateVideos(DefaultTab):
 
         layout.addLayout(tmp_layout)
 
-        tmp_layout = _create_vertical_layout()
+        tmp_layout = _create_vertical_layout(margins=(0,0,0,0))
 
         # Plot all bodyparts
         self.plot_all_bodyparts = QtWidgets.QCheckBox("Plot all bodyparts")
@@ -141,10 +141,10 @@ class CreateVideos(DefaultTab):
         )
         tmp_layout.addWidget(self.create_high_quality_video)
 
-        nested_tmp_layout = _create_horizontal_layout()
+        nested_tmp_layout = _create_horizontal_layout(margins=(0,0,0,0))
         nested_tmp_layout.addLayout(tmp_layout)
 
-        tmp_layout = _create_vertical_layout()
+        tmp_layout = _create_vertical_layout(margins=(0,0,0,0))
 
         # Bodypart list
         self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
