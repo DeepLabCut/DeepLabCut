@@ -12,7 +12,12 @@ from PySide2 import QtCore
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
-from components import ShuffleSpinBox, TrainingSetSpinBox
+from components import (
+    ShuffleSpinBox,
+    TrainingSetSpinBox,
+    _create_label_widget,
+    _create_vertical_layout,
+)
 
 from create_project import CreateProject
 from open_project import OpenProject
@@ -31,7 +36,7 @@ from refine_tracklets import RefineTracklets
 
 class MainWindow(QMainWindow):
 
-    config_loaded = QtCore.Signal() 
+    config_loaded = QtCore.Signal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -53,7 +58,7 @@ class MainWindow(QMainWindow):
 
         self.default_set()
 
-        self.welcome_page("Welcome.png")
+        self._generate_welcome_page()
         self.window_set()
         self.default_set()
 
@@ -61,8 +66,6 @@ class MainWindow(QMainWindow):
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
-
-        # TODO: finish toolbars and menubar functionality
 
     @property
     def cfg(self):
@@ -91,7 +94,7 @@ class MainWindow(QMainWindow):
             return [""]
 
     @property
-    def pose_cfg_path(self)->str:
+    def pose_cfg_path(self) -> str:
         try:
             return os.path.join(
                 self.cfg["project_path"],
@@ -104,10 +107,10 @@ class MainWindow(QMainWindow):
                 "pose_cfg.yaml",
             )
         except FileNotFoundError:
-            return Path(deeplabcut.__file__).parent/"pose_cfg.yaml"
+            return Path(deeplabcut.__file__).parent / "pose_cfg.yaml"
 
     @property
-    def inference_cfg_path(self)->str:
+    def inference_cfg_path(self) -> str:
         return os.path.join(
             self.cfg["project_path"],
             auxiliaryfunctions.get_model_folder(
@@ -121,10 +124,8 @@ class MainWindow(QMainWindow):
 
     def update_cfg(self, text):
         self.root.config = text
-        # Remove transformer_tracking tab if single animal 
-        # (6th tab from 0)
+        # Disable transformer_tracking tab if single animal
         self.unsupervised_id_tracking.setEnabled(True if self.is_multianimal else False)
-        
 
     def update_shuffle(self, value):
         self.shuffle_value = value
@@ -138,10 +139,9 @@ class MainWindow(QMainWindow):
         self.videotype = vtype
         self.logger.info(f"Videotype set to {self.videotype}")
 
-    def update_files(self, files:set):
+    def update_files(self, files: set):
         self.files.update(files)
         self.logger.info(f"Videos selected to analyze:\n{self.files}")
-
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
@@ -159,36 +159,48 @@ class MainWindow(QMainWindow):
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("Status Bar")
 
-    def set_pic(self, name):
-        pic_dir = os.path.dirname(os.path.realpath(name)) + os.path.sep
-        file = pic_dir + "/assets/" + name
-        pixmap = QPixmap(file)
-        lbl = QLabel(self)
-        lbl.setPixmap(pixmap)
-        lbl.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        lbl.setScaledContents(True)
-        lbl.setMaximumWidth(1565)
-        return lbl
+    def _generate_welcome_page(self):
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.setAlignment(Qt.AlignCenter | Qt.AlignTop)
+        self.layout.setSpacing(30)
 
-    def welcome_page(self, name):
-        layout = QVBoxLayout()
+        self.layout.addWidget(
+            _create_label_widget(
+                "Welcome to the DeepLabCut Project Manager GUI!",
+                "font:bold; font-size:18px;",
+                margins=(0, 30, 0, 0),
+            )
+        )
 
-        layout.addWidget(self.set_pic(name))
-        layout.setAlignment(Qt.AlignTop)
+        logo = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "assets/logo_transparent.png"
+        )
 
-        lbl_welcome1 = QLabel("Welcome to the DeepLabCut Project Manager GUI!")
-        lbl_welcome1.setAlignment(Qt.AlignCenter)
-        lbl_welcome2 = QLabel("To get started, please click on the 'File'")
-        lbl_welcome2.setAlignment(Qt.AlignCenter)
-        lbl_welcome3 = QLabel("tab to create or load an existing project.")
-        lbl_welcome3.setAlignment(Qt.AlignCenter)
+        image_widget = QtWidgets.QLabel(self)
+        image_widget.setContentsMargins(0, 0, 0, 0)
+        image_widget.setFixedHeight(400)
+        image_widget.setFixedWidth(400)
+        pixmap = QtGui.QPixmap(logo)
+        image_widget.setPixmap(pixmap.scaledToHeight(400))
+        self.layout.addWidget(image_widget)
 
-        layout.addWidget(lbl_welcome1)
-        layout.addWidget(lbl_welcome2)
-        layout.addWidget(lbl_welcome3)
+        self.layout_buttons = QtWidgets.QHBoxLayout()
+        self.layout_buttons.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
+        self.create_project_button = QtWidgets.QPushButton("CREATE PROJECT")
+        self.create_project_button.setFixedWidth(200)
+        self.create_project_button.clicked.connect(self._create_project)
+
+        self.load_project_button = QtWidgets.QPushButton("LOAD PROJECT")
+        self.load_project_button.setFixedWidth(200)
+        self.load_project_button.clicked.connect(self._open_project)
+
+        self.layout_buttons.addWidget(self.create_project_button)
+        self.layout_buttons.addWidget(self.load_project_button)
+
+        self.layout.addLayout(self.layout_buttons)
 
         widget = QWidget()
-        widget.setLayout(layout)
+        widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
     def project_folder(self):
@@ -305,7 +317,6 @@ class MainWindow(QMainWindow):
 
     def darkmode(self):
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-        self.welcome_page("Welcome2.png")
 
         names = ["new_project2.png", "open2.png", "help2.png"]
         self.remove_action()
@@ -320,8 +331,6 @@ class MainWindow(QMainWindow):
         with open(stylefile, "r") as f:
             self.setStyleSheet(f.read())
 
-        self.welcome_page("Welcome.png")
-
         names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
         self.createActions(names)
@@ -333,17 +342,49 @@ class MainWindow(QMainWindow):
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
-        self.extract_frames = ExtractFrames(root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames")
-        self.label_frames = LabelFrames(root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames")
-        self.create_training_dataset = CreateTrainingDataset(root=self, parent=self, h1_description="DeepLabCut - Step 4. Create training dataset")
-        self.train_network = TrainNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network")
-        self.evaluate_network = EvaluateNetwork(root=self, parent=self, h1_description="DeepLabCut - Step 6. Evaluate Network")
-        self.analyze_videos = AnalyzeVideos(root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos")
-        self.unsupervised_id_tracking = UnsupervizedIdTracking(root=self, parent=self, h1_description="DeepLabCut - Optional Unsupervised ID Tracking with Transformer")
-        self.create_videos = CreateVideos(root=self, parent=self, h1_description="DeepLabCut - Optional Step. Create Videos")
-        self.extract_outlier_frames = ExtractOutlierFrames(root=self, parent=self, h1_description="DeepLabCut - Step 8. Extract outlier frame")
-        self.refine_tracklets = RefineTracklets(root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels")
-        self.video_editor = VideoEditor(root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor")
+        self.extract_frames = ExtractFrames(
+            root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames"
+        )
+        self.label_frames = LabelFrames(
+            root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames"
+        )
+        self.create_training_dataset = CreateTrainingDataset(
+            root=self,
+            parent=self,
+            h1_description="DeepLabCut - Step 4. Create training dataset",
+        )
+        self.train_network = TrainNetwork(
+            root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network"
+        )
+        self.evaluate_network = EvaluateNetwork(
+            root=self,
+            parent=self,
+            h1_description="DeepLabCut - Step 6. Evaluate Network",
+        )
+        self.analyze_videos = AnalyzeVideos(
+            root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos"
+        )
+        self.unsupervised_id_tracking = UnsupervizedIdTracking(
+            root=self,
+            parent=self,
+            h1_description="DeepLabCut - Optional Unsupervised ID Tracking with Transformer",
+        )
+        self.create_videos = CreateVideos(
+            root=self,
+            parent=self,
+            h1_description="DeepLabCut - Optional Step. Create Videos",
+        )
+        self.extract_outlier_frames = ExtractOutlierFrames(
+            root=self,
+            parent=self,
+            h1_description="DeepLabCut - Step 8. Extract outlier frame",
+        )
+        self.refine_tracklets = RefineTracklets(
+            root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels"
+        )
+        self.video_editor = VideoEditor(
+            root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor"
+        )
 
         self.tab_widget.addTab(self.extract_frames, "Extract frames")
         self.tab_widget.addTab(self.label_frames, "Label frames")
@@ -351,11 +392,15 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.train_network, "Train network")
         self.tab_widget.addTab(self.evaluate_network, "Evaluate network")
         self.tab_widget.addTab(self.analyze_videos, "Analyze videos")
-        self.tab_widget.addTab(self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)")
+        self.tab_widget.addTab(
+            self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)"
+        )
         if not self.is_multianimal:
             self.unsupervised_id_tracking.setEnabled(False)
         self.tab_widget.addTab(self.create_videos, "Create videos")
-        self.tab_widget.addTab(self.extract_outlier_frames, "Extract outlier frames (*)")
+        self.tab_widget.addTab(
+            self.extract_outlier_frames, "Extract outlier frames (*)"
+        )
         self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
@@ -373,25 +418,33 @@ class MainWindow(QMainWindow):
             TrainingSetSpinBox: "setValue",
             QtWidgets.QLineEdit: "setText",
         }
-        
+
         def _attempt_attribute_update(widget_name, updated_value):
             try:
                 widget = getattr(active_tab, widget_name)
                 method = getattr(widget, widget_to_attribute_map[type(widget)])
-                self.logger.debug(f"Setting {widget_name}={updated_value} in tab '{tab_label}'")
+                self.logger.debug(
+                    f"Setting {widget_name}={updated_value} in tab '{tab_label}'"
+                )
                 method(updated_value)
-            except AttributeError: 
-                self.logger.debug(f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping...")
+            except AttributeError:
+                self.logger.debug(
+                    f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping..."
+                )
 
         def _attempt_video_widget_update(videotype, selected_videos):
             # TODO: NOT WORKING
             try:
                 video_widget = active_tab.video_selection_widget
-                self.logger.debug(f"Setting videotype={videotype} and videos={active_tab.video_selection_widget.files} in tab '{tab_label}'")
+                self.logger.debug(
+                    f"Setting videotype={videotype} and videos={active_tab.video_selection_widget.files} in tab '{tab_label}'"
+                )
                 video_widget.videotype_widget.setCurrentText(videotype)
                 video_widget._update_video_selection(selected_videos)
             except AttributeError:
-                self.logger.debug(f"Tab '{tab_label}' has no attribute video_selection_widget. Skipping...")
+                self.logger.debug(
+                    f"Tab '{tab_label}' has no attribute video_selection_widget. Skipping..."
+                )
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
         _attempt_attribute_update("trainingset", self.trainingset_index)
