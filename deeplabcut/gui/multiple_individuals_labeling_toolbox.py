@@ -143,7 +143,7 @@ class ImagePanel(BasePanel):
         else:
             return None, None, None
 
-    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
+    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap, norm):
         height, width, depth = drawImage.shape
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
@@ -157,8 +157,7 @@ class ImagePanel(BasePanel):
                         - offsets[1],
                     ],
                 )
-                cIdx = cIdx / 255
-                color = cmap(cIdx, bytes=True)[:-1]
+                color = cmap(norm(cIdx), bytes=True)[:-1]
                 color = tuple([int(x) for x in color])
                 drawImage = cv2.line(drawImage, (x0, y0), (x1, y1), color, 1)
         return drawImage
@@ -172,13 +171,14 @@ class ImagePanel(BasePanel):
         im = cv2.imread(img)[..., ::-1]
         colorIndex = []
         for indiv in range(len(individuals)):
-            colorIndex.extend(np.linspace(np.max(im), np.min(im), len(bodyparts)))
+            colorIndex.extend(np.linspace(np.max(im), 0, len(bodyparts)))
         colorIndex = np.array(colorIndex)
+        norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
             im = self.drawEpLines(
-                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap, norm
             )
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
