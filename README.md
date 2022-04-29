@@ -15,10 +15,9 @@ python main.py
 ```
 
 ## Missing components:
-- Video analysis
-  - prioritize past connections in assembly
 - Create training dataset
   - Model comparison
 - Missing labeling code
   - multi-animal labeling GUI code, as well as 
   - outlier and tracklet refinement GUI code
+- GUI cropping in ExtractFrames
