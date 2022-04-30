@@ -142,7 +142,7 @@ class ImagePanel(BasePanel):
         else:
             return None, None, None
 
-    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap):
+    def drawEpLines(self, drawImage, lines, sourcePts, offsets, colorIndex, cmap, norm):
         height, width, depth = drawImage.shape
         for line, pt, cIdx in zip(lines, sourcePts, colorIndex):
             if pt[0] > -1000:
@@ -156,8 +156,7 @@ class ImagePanel(BasePanel):
                         - offsets[1],
                     ],
                 )
-                cIdx = cIdx / 255
-                color = cmap(cIdx, bytes=True)[:-1]
+                color = cmap(norm(cIdx), bytes=True)[:-1]
                 color = tuple([int(x) for x in color])
                 drawImage = cv2.line(drawImage, (x0, y0), (x1, y1), color, 1)
 
@@ -169,12 +168,12 @@ class ImagePanel(BasePanel):
         self.axes.clear()
         # convert the image to RGB as you are showing the image with matplotlib
         im = cv2.imread(img)[..., ::-1]
-        colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
+        norm, colorIndex = getColorIndices(img, bodyparts)
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
         if epLines is not None:
             im = self.drawEpLines(
-                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap, norm
             )
         ax = self.axes.imshow(im, cmap=cmap)
         self.orig_xlim = self.axes.get_xlim()
@@ -182,9 +181,11 @@ class ImagePanel(BasePanel):
         divider = make_axes_locatable(self.axes)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(
-            ax, cax=cax, spacing="proportional", ticks=colorIndex
+            plt.cm.ScalarMappable(cmap=cmap),
+            cax=cax,
+            ticks=np.linspace(0, 1, len(bodyparts)),
         )
-        cbar.set_ticklabels(bodyparts)
+        cbar.set_ticklabels(bodyparts[::-1])
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
         if keep_view:
             self.axes.set_xlim(xlim)
@@ -193,14 +194,16 @@ class ImagePanel(BasePanel):
             self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
-    def getColorIndices(self, img, bodyparts):
-        """
-        Returns the colormaps ticks and . The order of ticks labels is reversed.
-        """
-        im = cv2.imread(img)
-        norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
-        ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
-        return norm, ticks
+
+def getColorIndices(img, bodyparts):
+    """
+    Returns the colormaps ticks and . The order of ticks labels is reversed.
+    """
+    im = cv2.imread(img)
+    vmax = np.max(im)
+    norm = mcolors.Normalize(vmin=0, vmax=vmax)
+    ticks = np.linspace(0, vmax, len(bodyparts))[::-1]
+    return norm, ticks
 
 
 class ScrollPanel(SP.ScrolledPanel):
@@ -662,7 +665,7 @@ class MainFrame(BaseFrame):
         # Reading the image name
         self.img = os.path.join(*self.dataFrame.index[self.iter])
         img_name = Path(self.img).name
-        self.norm, self.colorIndex = self.image_panel.getColorIndices(
+        self.norm, self.colorIndex = getColorIndices(
             self.img, self.bodyparts
         )
 
@@ -733,7 +736,7 @@ class MainFrame(BaseFrame):
             result = dlg.ShowModal()
             if result == wx.ID_NO:
                 self.bodyparts = self.new_bodyparts
-                self.norm, self.colorIndex = self.image_panel.getColorIndices(
+                self.norm, self.colorIndex = getColorIndices(
                     self.img, self.bodyparts
                 )
             a = np.empty((len(self.index), 2))
