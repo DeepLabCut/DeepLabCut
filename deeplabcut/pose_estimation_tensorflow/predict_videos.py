@@ -296,7 +296,7 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional, default=""
+    videotype: str, optional, default=""
         Checks for the extension of the video in case the input to the video is a
         directory. Only videos with this extension are analyzed. If left unspecified,
         videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
@@ -345,7 +345,8 @@ def analyze_videos(
         enough given the movement of the animal).
 
     modelprefix: str, optional, default=""
-        ?
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     robust_nframes: bool, optional, default=False
         Evaluate a video's number of frames in a robust manner.
@@ -391,8 +392,8 @@ def analyze_videos(
         animals in the video is different from the number of animals the model was
         trained on.
 
-    use_openvino: str, optional, default=None
-        ?
+    use_openvino: str, optional
+        Use "CPU" for inference if OpenVINO is available in the Python environment.
 
     Returns
     -------

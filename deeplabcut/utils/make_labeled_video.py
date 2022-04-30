@@ -376,7 +376,7 @@ def create_labeled_video(
         A list of strings containing the full paths to videos for analysis or a path
         to the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional, default=""
+    videotype: str, optional, default=""
         Checks for the extension of the video in case the input to the video is a
         directory. Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions
@@ -458,6 +458,10 @@ def create_labeled_video(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the
         same.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.

@@ -517,15 +517,16 @@ def evaluate_network(
     Shuffles: list, optional, default=[1]
         List of integers specifying the shuffle indices of the training dataset.
 
-    trainingsetindex: int, optional, default=0
+    trainingsetindex: int or str, optional, default=0
         Integer specifying which "TrainingsetFraction" to use.
-        Note that "TrainingFraction" is a list in config.yaml). This variable can also
+        Note that "TrainingFraction" is a list in config.yaml. This variable can also
         be set to "all".
 
     plotting: bool or str, optional, default=False
         Plots the predictions on the train and test images.
-        If provided it must be either ``True``, ``False``, "bodypart", or "individual".
-        Setting to ``True`` defaults as "bodypart" for multi-animal projects.
+        If provided it must be either ``True``, ``False``, ``"bodypart"``, or
+        ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
+        multi-animal projects.
 
     show_errors: bool, optional, default=True
         Display train and test errors.
@@ -540,14 +541,18 @@ def evaluate_network(
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     rescale: bool, optional, default=False
-        Evaluate the model at the 'global_scale' variable (as set in the
-        test/pose_config.yaml file for a particular project). I.e. every image will be
+        Evaluate the model at the ``'global_scale'`` variable (as set in the
+        ``pose_config.yaml`` file for a particular project). I.e. every image will be
         resized according to that scale and prediction will be compared to the resized
         ground truth. The error will be reported in pixels at rescaled to the
-        *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5,
-        the predictions are calculated on [100,100] pixel images, compared to
-        1/2*ground truth and this error is then multiplied by 2!. The evaluation images
-        are also shown for the original size!
+        *original* size. I.e. For a [200,200] pixel image evaluated at
+        ``global_scale=.5``, the predictions are calculated on [100,100] pixel images,
+        compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     Returns
     -------

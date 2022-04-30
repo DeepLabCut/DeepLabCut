@@ -136,8 +136,9 @@ def filterpredictions(
         the video is used by default. Note that for subsequent analysis this folder
         also needs to be passed.
 
-    modelprefix: string, optional, default=""
-        ?
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.

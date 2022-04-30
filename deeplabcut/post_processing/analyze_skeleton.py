@@ -192,7 +192,10 @@ def analyzeskeleton(
         videos with same extension are stored.
 
     videotype: str, optional, default=""
-        ?
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions
+        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -214,6 +217,10 @@ def analyzeskeleton(
         Specifies the destination folder for analysis data. If ``None``, the path of
         the video is used. Note that for subsequent analysis this folder also needs to
         be passed.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.

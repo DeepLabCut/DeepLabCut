@@ -188,7 +188,7 @@ def plot_trajectories(
         Full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: string, optional, default=""
+    videotype: str, optional, default=""
         Checks for the extension of the video in case the input to the video is a
         directory. Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions
@@ -219,6 +219,10 @@ def plot_trajectories(
     destfolder: string or None, optional, default=None
         Specifies the destination folder that was used for storing analysis data. If
         ``None``, the path of the video is used.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
     imagetype: string, optional, default=".png"
         Specifies the output image format - '.tif', '.jpg', '.svg' and ".png".
