@@ -200,7 +200,7 @@ def extract_outlier_frames(
 
     Parameters
     ----------
-    config : string
+    config: str
         Full path of the config.yaml file.
 
     videos : list[str]
@@ -264,7 +264,7 @@ def extract_outlier_frames(
         Significance level for detecting outliers based on confidence interval of
         fitted ARIMA model. Only the distance is used however.
 
-    extractionalgorithm : string, optional, default="kmeans"
+    extractionalgorithm : str, optional, default="kmeans"
         String specifying the algorithm to use for selecting the frames from the
         identified putatative outlier frames. Currently, deeplabcut supports either
         ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).
@@ -295,7 +295,7 @@ def extract_outlier_frames(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
-    track_method: string, optional, default=""
+    track_method: str, optional, default=""
          Specifies the tracker used to generate the data.
          Empty by default (corresponding to a single animal project).
          For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
@@ -982,7 +982,7 @@ def merge_datasets(config, forceiterate=None):
 
     Parameters
     ----------
-    config : string
+    config: str
         Full path of the config.yaml file.
 
     forceiterate: int or None, optional, default=None

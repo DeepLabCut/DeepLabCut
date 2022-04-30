@@ -289,8 +289,8 @@ def analyze_videos(
 
     Parameters
     ----------
-    config: string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
     videos: list[str]
         A list of strings containing the full paths to videos for analysis or a path to

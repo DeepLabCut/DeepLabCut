@@ -184,7 +184,7 @@ def analyzeskeleton(
 
     Parameters
     ----------
-    config: string
+    config: str
         Full path of the config.yaml file.
 
     videos: list[str]

@@ -181,8 +181,8 @@ def plot_trajectories(
 
     Parameters
     ----------
-    config: string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
     videos: list[str]
         Full paths to videos for analysis or a path to the directory, where all the

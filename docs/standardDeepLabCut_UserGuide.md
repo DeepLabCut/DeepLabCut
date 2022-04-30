@@ -130,7 +130,6 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 ```
 
 ### (D) Label Frames
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#label_frames)
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
@@ -158,6 +157,13 @@ HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
 Ctrl + C: Copy labels from previous frame. With multi-animal DLC, only the keypoints of the animal currently selected are duplicated.
 Keyboard arrows: advance frames
 delete key: delete label
+```
+
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.label_frames.rst
 ```
 
 ###  (E) Check Annotated Frames
@@ -481,7 +487,7 @@ NEW, as of 2.0.7+: You can save the "skeleton" that was applied in ``create_labe
 deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None)
 ```
 
-##### API Docs
+#### API Docs
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -583,8 +589,15 @@ Now you can run ``create_training_dataset``, then ``train_network``, etc. If you
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
-#### API Docs
-```{admonition} Click the button to see API Docs for merge_datasets
+#### API Docs for deeplabcut.refine_labels
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.refine_labels.rst
+```
+
+#### API Docs for deeplabcut.merge_datasets
+```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.merge_datasets.rst
