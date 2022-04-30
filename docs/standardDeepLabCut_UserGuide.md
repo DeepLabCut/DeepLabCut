@@ -222,7 +222,7 @@ The differences of the loaders are as follows:
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
 
-**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
+**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison``.
 
 Please also consult the following page on selecting models: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations
 
@@ -232,11 +232,18 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
 
-#### API Docs
+#### API Docs for deeplabcut.create_training_dataset
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset.rst
+```
+
+#### API Docs for deeplabcut.create_training_model_comparison
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_model_comparison.rst
 ```
 
 ### (G) Train The Network

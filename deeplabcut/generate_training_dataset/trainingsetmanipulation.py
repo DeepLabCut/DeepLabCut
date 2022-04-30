@@ -1113,51 +1113,90 @@ def create_training_model_comparison(
     userfeedback=False,
     windows2linux=False,
 ):
-    """
-    Creates a training dataset with different networks and augmentation types (dataset_loader) so that the shuffles
-    have same training and testing indices.
+    """Creates a training dataset to compare networks and augmentation types.
 
-    Therefore, this function is useful for benchmarking the performance of different network and augmentation types on the same training/testdata.\n
+    The datasets are created such that the shuffles have same training and testing
+    indices. Therefore, this function is useful for benchmarking the performance of
+    different network and augmentation types on the same training/testdata.
 
-    Parameter
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    trainindex: int, optional
-        Either (in case uniform = True) indexes which element of TrainingFraction in the config file should be used (note it is a list!).
-        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first if trainindex=0, the second if trainindex =1, etc.
+    trainindex: int, optional, default=0
+        Either (in case uniform = True) indexes which element of TrainingFraction in
+        the config file should be used (note it is a list!).
+        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first
+        if trainindex=0, the second if trainindex=1, etc.
 
-    num_shuffles : int, optional
-        Number of shuffles of training dataset to create, i.e. [1,2,3] for num_shuffles=3. Default is set to 1.
+    num_shuffles : int, optional, default=1
+        Number of shuffles of training dataset to create,
+        i.e. [1,2,3] for num_shuffles=3.
 
-    net_types: list
-        Type of networks. Currently resnet_50, resnet_101, resnet_152, mobilenet_v2_1.0,mobilenet_v2_0.75, mobilenet_v2_0.5, mobilenet_v2_0.35,
-        efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4,
-        efficientnet-b5, and efficientnet-b6 are supported.
+    net_types: list[str], optional, default=["resnet_50"]
+        Currently supported networks are
 
-    augmenter_types: list
-        Type of augmenters. Currently "default", "imgaug", "tensorpack", and "deterministic" are supported.
+        * ``"resnet_50"``
+        * ``"resnet_101"``
+        * ``"resnet_152"``
+        * ``"mobilenet_v2_1.0"``
+        * ``"mobilenet_v2_0.75"``
+        * ``"mobilenet_v2_0.5"``
+        * ``"mobilenet_v2_0.35"``
+        * ``"efficientnet-b0"``
+        * ``"efficientnet-b1"``
+        * ``"efficientnet-b2"``
+        * ``"efficientnet-b3"``
+        * ``"efficientnet-b4"``
+        * ``"efficientnet-b5"``
+        * ``"efficientnet-b6"``
 
-    userfeedback: bool, optional
-        If this is set to false, then all requested train/test splits are created (no matter if they already exist). If you
-        want to assure that previous splits etc. are not overwritten, then set this to True and you will be asked for each split.
+    augmenter_types: list[str], optional, default=["imgaug"]
+        Currently supported augmenters are
+
+        * ``"default"``
+        * ``"imgaug"``
+        * ``"tensorpack"``
+        * ``"deterministic"``
+
+    userfeedback: bool, optional, default=False
+        If ``False``, then all requested train/test splits are created, no matter if
+        they already exist. If you want to assure that previous splits etc. are not
+        overwritten, then set this to True and you will be asked for each split.
+
+    windows2linux
+
+        ..deprecated::
+            Has no effect since 2.2.0.4 and will be removed in 2.2.1.
 
     Returns
-    ----------
+    -------
     shuffle_list: list
-        List of indices corresponding to the trainigsplits/models that were created.
+        List of indices corresponding to the trainingsplits/models that were created.
 
-    Example
+    Examples
     --------
-    >>> shuffle_list = deeplabcut.create_training_model_comparison('/analysis/project/reaching-task/config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    On Linux/MacOS
 
-    Windows:
-    >>> shuffle_list = deeplabcut.create_training_model_comparison('C:\\Users\\Ulf\\looming-task\\config.yaml',num_shuffles=1,net_types=['resnet_50','resnet_152'],augmenter_types=['tensorpack','deterministic'])
+    >>> shuffle_list = deeplabcut.create_training_model_comparison(
+            '/analysis/project/reaching-task/config.yaml',
+            num_shuffles=1,
+            net_types=['resnet_50','resnet_152'],
+            augmenter_types=['tensorpack','deterministic'],
+        )
 
-    See examples/testscript_openfielddata_augmentationcomparison.py for an example of how to use shuffle_list.
+    On Windows
 
-    --------
+    >>> shuffle_list = deeplabcut.create_training_model_comparison(
+            'C:\\Users\\Ulf\\looming-task\\config.yaml',
+            num_shuffles=1,
+            net_types=['resnet_50','resnet_152'],
+            augmenter_types=['tensorpack','deterministic'],
+        )
+
+    See ``examples/testscript_openfielddata_augmentationcomparison.py`` for an example
+    of how to use ``shuffle_list``.
     """
     # read cfg file
     cfg = auxiliaryfunctions.read_config(config)
