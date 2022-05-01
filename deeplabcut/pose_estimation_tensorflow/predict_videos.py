@@ -642,9 +642,9 @@ def checkcropping(cfg, cap):
         raise Exception("Please check the order of cropping parameter!")
     if (
         cfg["x1"] >= 0
-        and cfg["x2"] < int(cap.get(3) + 1)
+        and cfg["x2"] < int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 1)
         and cfg["y1"] >= 0
-        and cfg["y2"] < int(cap.get(4) + 1)
+        and cfg["y2"] < int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 1)
     ):
         pass  # good cropping box
     else:
@@ -659,7 +659,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     )
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
-    ny, nx = int(cap.get(4)), int(cap.get(3))
+    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -792,7 +792,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
-    ny, nx = int(cap.get(4)), int(cap.get(3))
+    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -863,7 +863,7 @@ def GetPoseDynamic(
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
-        ny, nx = (int(cap.get(4)), int(cap.get(3)))
+        ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     x1, x2, y1, y2 = 0, nx, 0, ny
     detected = False
     # TODO: perform detection on resized image (For speed)
@@ -960,13 +960,11 @@ def AnalyzeVideo(
             raise IOError(
                 "Video could not be opened. Please check that the the file integrity."
             )
-        fps = cap.get(
-            5
-        )  # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
-        nframes = int(cap.get(7))
+        # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         duration = nframes * 1.0 / fps
-        size = (int(cap.get(4)), int(cap.get(3)))
-
+        size = (int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
         ny, nx = size
         print(
             "Duration of video [s]: ",
