@@ -371,7 +371,7 @@ by default. You can also set a destination folder (``destfolder``) for the outpu
 .. include:: ./api/deeplabcut.analyze_videos.rst
 ```
 
-### (I) Novel Video Analysis: extra features
+### Novel Video Analysis: extra features
 
 #### Dynamic-cropping of videos:
 
@@ -382,7 +382,7 @@ dynamic: triple containing (state, detectiontreshold, margin)
 
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e., any body part > detectiontreshold), then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost; i.e., <detectiontreshold). The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 ```
-#### Filter data (RECOMMENDED!):
+### (J) Filter pose data data (RECOMMENDED!):
 
 You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
@@ -402,14 +402,14 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
-##### API Docs
+#### API Docs
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.filterpredictions.rst
 ```
 
-#### Plot Trajectories:
+### (K) Plot Trajectories:
 
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
@@ -426,14 +426,14 @@ It creates a folder called ``plot-poses`` (in the directory of the video). The p
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
 </p>
 
-##### API Docs
+#### API Docs
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.plot_trajectories.rst
 ```
 
-#### Create Labeled Videos:
+### (L) Create Labeled Videos:
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
@@ -486,7 +486,7 @@ This function has various other parameters, in particular the user can set the `
 .. include:: ./api/deeplabcut.create_labeled_video.rst
 ```
 
-### Extract "Skeleton" Features:
+#### Extract "Skeleton" Features:
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in ``create_labeled_videos`` for more computations. Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You can use the function by:
 
@@ -501,7 +501,7 @@ deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingse
 .. include:: ./api/deeplabcut.analyzeskeleton.rst
 ```
 
-### (J) Optional Active Learning -> Network Refinement: Extract Outlier Frames
+### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -555,7 +555,7 @@ In the automatic configuration, before the frame selection happens, the user is 
 .. include:: ./api/deeplabcut.extract_outlier_frames.rst
 ```
 
- ### (K) Refine Labels: Augmentation of the Training Dataset
+ ### (N) Refine Labels: Augmentation of the Training Dataset
 
  Based on the performance of DeepLabCut, four scenarios are possible:
 
