@@ -22,27 +22,27 @@ from pathlib import Path
 
 
 def refine_labels(config, multianimal=False, jump_unlabeled=False):
-    """
-    Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.
+    """Refines the labels of the outlier frames extracted from the analyzed videos.
+
+    Helps in augmenting the training dataset. Use ``deeplabcut.analyze_videos`` to
+    analyze a video and extracts the outlier frames using
+    ``deeplabcut.extract_outlier_frames`` before refining the labels.
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
+    multianimal, bool, optional, default=False
+        If ``True``, a user can label multiple individuals. Note for
+        ``"multianimalproject=True"`` this is automatically used.
 
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
+    jump_unlabeled: bool, optional, default=False
+        Aumatically jump to the next folder containing unlabeled images.
 
     Examples
     --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
-
+    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml')
     """
 
     startpath = os.getcwd()

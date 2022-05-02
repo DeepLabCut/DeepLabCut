@@ -282,128 +282,187 @@ def analyze_videos(
     identity_only=False,
     use_openvino="CPU" if is_openvino_available else None,
 ):
-    """
-    Makes prediction based on a trained network. The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+    """Makes prediction based on a trained network.
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
-            comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    The index of the trained network is specified by parameters in the config file
+    (in particular the variable 'snapshotindex').
 
     Parameters
     ----------
-    config: string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    videos: list[str]
+        A list of strings containing the full paths to videos for analysis or a path to
+        the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed. If left unspecified,
+        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+    shuffle: int, optional, default=1
+        An integer specifying the shuffle index of the training dataset used for
+        training the network.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
-    See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+    gputouse: int or None, optional, default=None
+        Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
+        GPU put ``None``.
+        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+    save_as_csv: bool, optional, default=False
+        Saves the predictions in a .csv file.
 
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
-        folder also needs to be passed.
+    destfolder: string or None, optional, default=None
+        Specifies the destination folder for analysis data. If ``None``, the path of
+        the video is used. Note that for subsequent analysis this folder also needs to
+        be passed.
 
-    batchsize: int, default from pose_cfg.yaml
-        Change batch size for inference; if given overwrites value in pose_cfg.yaml
+    batchsize: int or None, optional, default=None
+        Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
-    cropping: list, optional (default=None)
+    cropping: list or None, optional, default=None
         List of cropping coordinates as [x1, x2, y1, y2].
         Note that the same cropping parameters will then be used for all videos.
-        If different video crops are desired, run 'analyze_videos' on individual videos
-        with the corresponding cropping coordinates.
+        If different video crops are desired, run ``analyze_videos`` on individual
+        videos with the corresponding cropping coordinates.
 
-    TFGPUinference: bool, default: True
-        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by
-        Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis Source: https://arxiv.org/abs/1909.11229
+    TFGPUinference: bool, optional, default=True
+        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining
+        boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
+        Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
+        Source: https://arxiv.org/abs/1909.11229
 
-    dynamic: triple containing (state, detectiontreshold, margin)
+    dynamic: tuple(bool, float, int) triple containing (state, detectiontreshold, margin)
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
         then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
         expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
         current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
         enough given the movement of the animal).
 
-    robust_nframes: bool, optional (default=False)
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    robust_nframes: bool, optional, default=False
         Evaluate a video's number of frames in a robust manner.
         This option is slower (as the whole video is read frame-by-frame),
         but does not rely on metadata, hence its robustness against file corruption.
 
-    allow_growth: bool, default false.
-        For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
-        GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
+    allow_growth: bool, optional, default=False.
+        For some smaller GPUs the memory issues happen. If ``True``, the memory
+        allocator does not pre-allocate the entire specified GPU memory region, instead
+        starting small and growing as needed.
+        See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
-    use_shelve: bool, optional (default=False)
+    use_shelve: bool, optional, default=False
         By default, data are dumped in a pickle file at the end of the video analysis.
-        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a pickle-based,
-        persistent, database-like object by default, resulting in constant memory footprint.
+        Otherwise, data are written to disk on the fly using a "shelf"; i.e., a
+        pickle-based, persistent, database-like object by default, resulting in
+        constant memory footprint.
 
     The following parameters are only relevant for multi-animal projects:
 
-    auto_track: bool, optional (default=True)
-        By default, tracking and stitching are automatically performed, producing the final h5 data file.
-        This is equivalent to the behavior for single-animal projects.
+    auto_track: bool, optional, default=True
+        By default, tracking and stitching are automatically performed, producing the
+        final h5 data file. This is equivalent to the behavior for single-animal
+        projects.
 
-        If False, one must run `convert_detections2tracklets` and `stitch_tracklets` afterwards, in order to obtain the h5 file.
+        If ``False``, one must run ``convert_detections2tracklets`` and
+        ``stitch_tracklets`` afterwards, in order to obtain the h5 file.
 
     This function has 3 related sub-calls:
 
-    identity_only: bool, optional (default=False)
-        If True and animal identity was learned by the model,
-        assembly and tracking rely exclusively on identity prediction.
+    identity_only: bool, optional, default=False
+        If ``True`` and animal identity was learned by the model, assembly and tracking
+        rely exclusively on identity prediction.
 
-    calibrate: bool, optional (default=False)
-        If True, use training data to calibrate the animal assembly procedure.
-        This improves its robustness to wrong body part links,
-        but requires very little missing data.
+    calibrate: bool, optional, default=False
+        If ``True``, use training data to calibrate the animal assembly procedure. This
+        improves its robustness to wrong body part links, but requires very little
+        missing data.
 
-    n_tracks : int, optional
-        Number of tracks to reconstruct. By default, taken as the number
-        of individuals defined in the config.yaml. Another number can be
-        passed if the number of animals in the video is different from
-        the number of animals the model was trained on.
+    n_tracks: int or None, optional, default=None
+        Number of tracks to reconstruct. By default, taken as the number of individuals
+        defined in the config.yaml. Another number can be passed if the number of
+        animals in the video is different from the number of animals the model was
+        trained on.
+
+    use_openvino: str, optional
+        Use "CPU" for inference if OpenVINO is available in the Python environment.
+
+    Returns
+    -------
+    pandas array
+        The labels are stored as MultiIndex Pandas Array, which contains the name of
+        the network, body part name, (x, y) label position in pixels, and the
+        likelihood for each frame per body part. These arrays are stored in an
+        efficient Hierarchical Data Format (HDF) in the same directory, where the video
+        is stored. However, if the flag save_as_csv is set to True, the data can also
+        be exported in comma-separated values format (.csv), which in turn can be
+        imported in many programs, such as MATLAB, R, Prism, etc.
 
     Examples
     --------
 
-    Windows example for analyzing 1 video
-    >>> deeplabcut.analyze_videos('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
-    --------
+    Analyzing a single video on Windows
 
-    If you want to analyze only 1 video
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi'])
-    --------
+    >>> deeplabcut.analyze_videos(
+            'C:\\myproject\\reaching-task\\config.yaml',
+            ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
+        )
 
-    If you want to analyze all videos of type avi in a folder:
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos'],videotype='.avi')
-    --------
+    Analyzing a single video on Linux/MacOS
 
-    If you want to analyze multiple videos
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'])
-    --------
+    >>> deeplabcut.analyze_videos(
+            '/analysis/project/reaching-task/config.yaml',
+            ['/analysis/project/videos/reachingvideo1.avi'],
+        )
 
-    If you want to analyze multiple videos with shuffle = 2
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2)
+    Analyze all videos of type ``avi`` in a folder
 
-    --------
-    If you want to analyze multiple videos with shuffle = 2 and save results as an additional csv file too
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml',['/analysis/project/videos/reachingvideo1.avi','/analysis/project/videos/reachingvideo2.avi'],shuffle=2,save_as_csv=True)
-    --------
+    >>> deeplabcut.analyze_videos(
+            '/analysis/project/reaching-task/config.yaml',
+            ['/analysis/project/videos'],
+            videotype='.avi',
+        )
 
+    Analyze multiple videos
+
+    >>> deeplabcut.analyze_videos(
+            '/analysis/project/reaching-task/config.yaml',
+            [
+                '/analysis/project/videos/reachingvideo1.avi',
+                '/analysis/project/videos/reachingvideo2.avi',
+            ],
+        )
+
+    Analyze multiple videos with ``shuffle=2``
+
+    >>> deeplabcut.analyze_videos(
+            '/analysis/project/reaching-task/config.yaml',
+            [
+                '/analysis/project/videos/reachingvideo1.avi',
+                '/analysis/project/videos/reachingvideo2.avi',
+            ],
+            shuffle=2,
+        )
+
+    Analyze multiple videos with ``shuffle=2``, save results as an additional csv file
+
+    >>> deeplabcut.analyze_videos(
+            '/analysis/project/reaching-task/config.yaml',
+            [
+                '/analysis/project/videos/reachingvideo1.avi',
+                '/analysis/project/videos/reachingvideo2.avi',
+            ],
+            shuffle=2,
+            save_as_csv=True,
+        )
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training

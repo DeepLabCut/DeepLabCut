@@ -177,61 +177,82 @@ def plot_trajectories(
     linewidth=1.0,
     track_method="",
 ):
-    """
-    Plots the trajectories of various bodyparts across the video.
+    """Plots the trajectories of various bodyparts across the video.
 
     Parameters
     ----------
-     config : string
-    Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    videos: list[str]
+        Full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions
+        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
-    shuffle: list, optional
-    List of integers specifying the shuffle indices of the training dataset. The default is [1]
+    shuffle: int, optional, default=1
+        Integer specifying the shuffle index of the training dataset.
 
-    trainingsetindex: int, optional
-    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        Note that TrainingFraction is a list in config.yaml.
 
-    filtered: bool, default false
-    Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
+    filtered: bool, optional, default=False
+        Boolean variable indicating if filtered output should be plotted rather than
+        frame-by-frame predictions. Filtered version can be calculated with
+        ``deeplabcut.filterpredictions``.
 
-    displayedbodyparts: list of strings, optional
+    displayedbodyparts: list[str] or str, optional, default="all"
         This select the body parts that are plotted in the video.
         Either ``all``, then all body parts from config.yaml are used,
         or a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
+        to select only these two body parts.
 
-    showfigures: bool, default false
-    If true then plots are also displayed.
+    showfigures: bool, optional, default=False
+        If ``True`` then plots are also displayed.
 
-    destfolder: string, optional
-        Specifies the destination folder that was used for storing analysis data (default is the path of the video).
+    destfolder: string or None, optional, default=None
+        Specifies the destination folder that was used for storing analysis data. If
+        ``None``, the path of the video is used.
 
-    imagetype: string, default ".png"
-        Specifies the output image format, tested '.tif', '.jpg', '.svg' and ".png".
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
 
-    resolution: int, default 100
-        Specifies the resolution (in dpi) of saved figures. Note higher resolution figures take longer to generate.
+    imagetype: string, optional, default=".png"
+        Specifies the output image format - '.tif', '.jpg', '.svg' and ".png".
 
-    linewidth: float, default 1.0
+    resolution: int, optional, default=100
+        Specifies the resolution (in dpi) of saved figures.
+        Note higher resolution figures take longer to generate.
+
+    linewidth: float, optional, default=1.0
         Specifies width of line for line and histogram plots.
 
-    track_method: string, optional
-         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+    track_method: string, optional, default=""
+         Specifies the tracker used to generate the data.
+         Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+         be taken from the config.yaml file if none is given.
 
-    Example
-    --------
-    for labeling the frames
-    >>> deeplabcut.plot_trajectories('home/alex/analysis/project/reaching-task/config.yaml',['/home/alex/analysis/project/videos/reachingvideo1.avi'])
+    Returns
+    -------
+    None
+
+    Examples
     --------
 
+    To label the frames
+
+    >>> deeplabcut.plot_trajectories(
+            'home/alex/analysis/project/reaching-task/config.yaml',
+            ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
+        )
     """
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)

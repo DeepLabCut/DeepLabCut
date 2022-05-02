@@ -190,103 +190,154 @@ def extract_outlier_frames(
     modelprefix="",
     track_method="",
 ):
-    """
-    Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
-    start to stop as defined in config.yaml.
+    """Extracts the outlier frames.
 
-    Another crucial parameter in config.yaml is how many frames to extract 'numframes2extract'.
+    Extracts the outlier frames if the predictions are not correct for a certain video
+    from the cropped video running from start to stop as defined in config.yaml.
 
-    Parameter
+    Another crucial parameter in config.yaml is how many frames to extract
+    ``numframes2extract``.
+
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    videos : list[str]
+        The full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions
+        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
-    shuffle : int, optional
-        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
-        the corresponding shuffle of training dataset. Default is set to 1
+    shuffle : int, optional, default=1
+        The shuffle index of training dataset. The extracted frames will be stored in
+        the labeled-dataset for the corresponding shuffle of training dataset.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        Note that TrainingFraction is a list in config.yaml.
 
-    outlieralgorithm: 'fitting', 'jump', 'uncertain', or 'manual'
-        String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports three methods + a manual GUI option. 'Fitting'
-        fits a Auto Regressive Integrated Moving Average model to the data and computes the distance to the estimated data. Larger distances than
-        epsilon are then potentially identified as outliers. The methods 'jump' identifies larger jumps than 'epsilon' in any body part; and 'uncertain'
-        looks for frames with confidence below p_bound. The default is set to ``jump``.
+    outlieralgorithm: str, optional, default="jump".
+        String specifying the algorithm used to detect the outliers.
 
-    comparisonbodyparts: list of strings, optional
-        This selects the body parts for which the comparisons with the outliers are carried out. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+        * ``'Fitting'`` fits a Auto Regressive Integrated Moving Average model to the
+          data and computes the distance to the estimated data. Larger distances than
+          epsilon are then potentially identified as outliers
+        * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
+        * ``'uncertain'`` looks for frames with confidence below p_bound
+        * ``'manual'`` launches a GUI from which the user can choose the frames
 
-    p_bound: float between 0 and 1, optional
-        For outlieralgorithm 'uncertain' this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.
+    comparisonbodyparts: list[str] or str, optional, default="all"
+        This selects the body parts for which the comparisons with the outliers are
+        carried out. If ``"all"``, then all body parts from config.yaml are used. If a
+        list of strings that are a subset of the full list E.g. ['hand','Joystick'] for
+        the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these body
+        parts.
 
-    epsilon; float,optional
-        Meaning depends on outlieralgoritm. The default is set to 20 pixels.
-        For outlieralgorithm 'fitting': Float bound according to which frames are picked when the (average) body part estimate deviates from model fit
-        For outlieralgorithm 'jump': Float bound specifying the distance by which body points jump from one frame to next (Euclidean distance)
+    p_bound: float between 0 and 1, optional, default=0.01
+        For outlieralgorithm ``'uncertain'`` this parameter defines the likelihood
+        below which a body part will be flagged as a putative outlier.
 
-    ARdegree: int, optional
-        For outlieralgorithm 'fitting': Autoregressive degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and seasonal part)
-        see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
+    epsilon: float, optional, default=20
+        If ``'outlieralgorithm'`` is ``'fitting'``, this is the float bound according
+        to which frames are picked when the (average) body part estimate deviates from
+        model fit.
 
-    MAdegree: int
-        For outlieralgorithm 'fitting': MovingAvarage degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and seasonal part)
+        If ``'outlieralgorithm'`` is ``'jump'``, this is the float bound specifying the
+        distance by which body points jump from one frame to next (Euclidean distance).
+
+    ARdegree: int, optional, default=3
+        For outlieralgorithm ``'fitting'``: Autoregressive degree of ARIMA model degree.
+        (Note we use SARIMAX without exogeneous and seasonal part)
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
-    alpha: float
-        Significance level for detecting outliers based on confidence interval of fitted ARIMA model. Only the distance is used however.
+    MAdegree: int, optional, default=1
+        For outlieralgorithm ``'fitting'``: MovingAvarage degree of ARIMA model degree.
+        (Note we use SARIMAX without exogeneous and seasonal part)
+        See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
-    extractionalgorithm : string, optional
-        String specifying the algorithm to use for selecting the frames from the identified putatative outlier frames. Currently, deeplabcut
-        supports either ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).
-        The default is set to``uniform``, if provided it must be either ``uniform`` or ``kmeans``.
+    alpha: float, optional, default=0.01
+        Significance level for detecting outliers based on confidence interval of
+        fitted ARIMA model. Only the distance is used however.
 
-    automatic : bool, optional
-        Set it to True, if you want to extract outliers without being asked for user feedback.
+    extractionalgorithm : str, optional, default="kmeans"
+        String specifying the algorithm to use for selecting the frames from the
+        identified putatative outlier frames. Currently, deeplabcut supports either
+        ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).
 
-    cluster_resizewidth: number, default: 30
-        For k-means one can change the width to which the images are downsampled (aspect ratio is fixed).
+    automatic : bool, optional, default=False
+        If ``True``, extract outliers without being asked for user feedback.
 
-    cluster_color: bool, default: False
-        If false then each downsampled image is treated as a grayscale vector (discarding color information). If true, then the color channels are considered. This increases
-        the computational complexity.
+    cluster_resizewidth: number, default=30
+        If ``"extractionalgorithm"`` is ``"kmeans"``, one can change the width to which
+        the images are downsampled (aspect ratio is fixed).
 
-    opencv: bool, default: True
-        Uses openCV for loading & extractiong (otherwise moviepy (legacy))
+    cluster_color: bool, optional, default=False
+        If ``False``, each downsampled image is treated as a grayscale vector
+        (discarding color information). If ``True``, then the color channels are
+        considered. This increases the computational complexity.
 
-    savelabeled: bool, default: False
-        If true also saves frame with predicted labels in each folder.
+    opencv: bool, optional, default=True
+        Uses openCV for loading & extractiong (otherwise moviepy (legacy)).
 
-    destfolder: string, optional
-        Specifies the destination folder that was used for storing analysis data (default is the path of the video).
+    savelabeled: bool, optional, default=False
+        If ``True``, frame are saved with predicted labels in each folder.
 
-    track_method: string, optional
-         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+    destfolder: str or None, optional, default=None
+        Specifies the destination folder that was used for storing analysis data. If
+        ``None``, the path of the video is used.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    track_method: str, optional, default=""
+         Specifies the tracker used to generate the data.
+         Empty by default (corresponding to a single animal project).
+         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+         be taken from the config.yaml file if none is given.
+
+    Returns
+    -------
+    None
 
     Examples
+    --------
 
-    Windows example for extracting the frames with default settings
-    >>> deeplabcut.extract_outlier_frames('C:\\myproject\\reaching-task\\config.yaml',['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'])
-    --------
-    for extracting the frames with default settings
-    >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'])
-    --------
-    for extracting the frames with kmeans
-    >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'],extractionalgorithm='kmeans')
-    --------
-    for extracting the frames with kmeans and epsilon = 5 pixels.
-    >>> deeplabcut.extract_outlier_frames('/analysis/project/reaching-task/config.yaml',['/analysis/project/video/reachinvideo1.avi'],epsilon = 5,extractionalgorithm='kmeans')
-    --------
+    Extract the frames with default settings on Windows.
+
+    >>> deeplabcut.extract_outlier_frames(
+            'C:\\myproject\\reaching-task\\config.yaml',
+            ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
+        )
+
+    Extract the frames with default settings on Linux/MacOS.
+
+    >>> deeplabcut.extract_outlier_frames(
+            '/analysis/project/reaching-task/config.yaml',
+            ['/analysis/project/video/reachinvideo1.avi'],
+        )
+
+    Extract the frames using the "kmeans" algorithm.
+
+    >>> deeplabcut.extract_outlier_frames(
+            '/analysis/project/reaching-task/config.yaml',
+            ['/analysis/project/video/reachinvideo1.avi'],
+            extractionalgorithm='kmeans',
+        )
+
+    Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
+
+    >>> deeplabcut.extract_outlier_frames(
+            '/analysis/project/reaching-task/config.yaml',
+            ['/analysis/project/video/reachinvideo1.avi'],
+            epsilon=5,
+            extractionalgorithm='kmeans',
+        )
     """
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -921,22 +972,27 @@ def PlottingSingleFramecv2(
 
 
 def merge_datasets(config, forceiterate=None):
-    """
-    Checks if the original training dataset can be merged with the newly refined training dataset. To do so it will check
-    if the frames in all extracted video sets were relabeled. If this is the case then the iterate variable is advanced by 1.
+    """Merge the original training dataset with the newly refined data.
 
-    Parameter
+    Checks if the original training dataset can be merged with the newly refined
+    training dataset. To do so it will check if the frames in all extracted video sets
+    were relabeled.
+
+    If this is the case then the ``"iteration"`` variable is advanced by 1.
+
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    forceiterate: int, optional
-        If an integer is given the iteration variable is set to this value (this is only done if all datasets were labeled or refined)
+    forceiterate: int or None, optional, default=None
+        If an integer is given the iteration variable is set to this value
+        This is only done if all datasets were labeled or refined.
 
-    Example
+    Examples
     --------
+
     >>> deeplabcut.merge_datasets('/analysis/project/reaching-task/config.yaml')
-    --------
     """
 
     cfg = auxiliaryfunctions.read_config(config)

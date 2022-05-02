@@ -130,7 +130,6 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 ```
 
 ### (D) Label Frames
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#label_frames)
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
@@ -158,6 +157,13 @@ HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
 Ctrl + C: Copy labels from previous frame. With multi-animal DLC, only the keypoints of the animal currently selected are duplicated.
 Keyboard arrows: advance frames
 delete key: delete label
+```
+
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.label_frames.rst
 ```
 
 ###  (E) Check Annotated Frames
@@ -216,7 +222,7 @@ The differences of the loaders are as follows:
 
 Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
 
-**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison(`` ([check the docstring for more details!](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#or-use-create_training_model_comparison)).
+**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison``.
 
 Please also consult the following page on selecting models: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations
 
@@ -226,11 +232,18 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
 
-#### API Docs
+#### API Docs for deeplabcut.create_training_dataset
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset.rst
+```
+
+#### API Docs for deeplabcut.create_training_model_comparison
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_model_comparison.rst
 ```
 
 ### (G) Train The Network
@@ -266,7 +279,6 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 ```
 
 ### (H) Evaluate the Trained Network
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#evaluate_network)
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
@@ -326,8 +338,14 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.evaluate_network.rst
+```
+
 ### (I) Novel Video Analysis:
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#analyze_videos)
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -346,7 +364,14 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to ``False``
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
-### (I) Novel Video Analysis: extra features
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.analyze_videos.rst
+```
+
+### Novel Video Analysis: extra features
 
 #### Dynamic-cropping of videos:
 
@@ -357,8 +382,7 @@ dynamic: triple containing (state, detectiontreshold, margin)
 
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e., any body part > detectiontreshold), then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost; i.e., <detectiontreshold). The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 ```
-#### Filter data (RECOMMENDED!):
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#filterpredictions)
+### (J) Filter pose data data (RECOMMENDED!):
 
 You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
@@ -378,8 +402,14 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
-#### Plot Trajectories:
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#plot_trajectories)
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.filterpredictions.rst
+```
+
+### (K) Plot Trajectories:
 
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
@@ -388,15 +418,22 @@ can be called by typing:
 ```
 deeplabcut.plot_trajectories(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’])
 ```
- It creates a folder called ``plot-poses`` (in the directory of the video). The plots display the coordinates of body parts vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in body part detections across frames). Here are example plot outputs on a demo video (left):
+
+It creates a folder called ``plot-poses`` (in the directory of the video). The plots display the coordinates of body parts vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in body part detections across frames). Here are example plot outputs on a demo video (left):
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w" height="240">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
 </p>
 
-#### Create Labeled Videos:
-[DOCSTRING](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_labeled_video)
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.plot_trajectories.rst
+```
+
+### (L) Create Labeled Videos:
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
@@ -440,31 +477,31 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" width="40%">
 </p>
 
-**Other optional Parameters:**
-```
-videotype: string, optional. Checks for the extension of the video in case the input is a directory. Only videos with this extension are analyzed. The default is ``.avi``
-
-save_frames: bool (i.e. True or False). If true creates each frame individually and then combines into a video. This variant is relatively slow as it stores all individual frames. However, it uses matplotlib to create the frames and is therefore much more flexible (one can set transparency of markers, crop, and easily customize).
-
-delete: bool (i.e. True or False). If true then the individual frames created during the video generation will be deleted.
-
-displayedbodyparts: list of strings, optional. This selects the body parts that are plotted in the video. Either `all`, then all body parts from config.yaml are used or a list of strings that are a subset of the full list. E.g. ['Hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
-
-displaycropped: If =True then the video will be cropped (to the size in  the config.yaml file) and points plotted.
-```
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
-### Extract "Skeleton" Features:
+##### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_labeled_video.rst
+```
+
+#### Extract "Skeleton" Features:
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in ``create_labeled_videos`` for more computations. Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You can use the function by:
 
 ```python
 deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None)
 ```
-See more details here: https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/post_processing/analyze_skeleton.py
 
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.analyzeskeleton.rst
+```
 
-### (J) Optional Active Learning -> Network Refinement: Extract Outlier Frames
+### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -511,7 +548,14 @@ list (``extractionalgorithm='uniform'``), by performing ``extractionalgorithm='k
 
 In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user can run the extract_outlier_frames iteratively, and (even) extract additional frames from the same video. Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback (see below).
 
- ### (K) Refine Labels: Augmentation of the Training Dataset
+#### API Docs
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.extract_outlier_frames.rst
+```
+
+ ### (N) Refine Labels: Augmentation of the Training Dataset
 
  Based on the performance of DeepLabCut, four scenarios are possible:
 
@@ -551,6 +595,20 @@ automatically done).
 Now you can run ``create_training_dataset``, then ``train_network``, etc. If your original labels were adjusted at all, start from fresh weights (the typically recommended path anyhow), otherwise consider using your already trained network weights (see Box 2).
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
+
+#### API Docs for deeplabcut.refine_labels
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.refine_labels.rst
+```
+
+#### API Docs for deeplabcut.merge_datasets
+```{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.merge_datasets.rst
+```
 
 ### Jupyter Notebooks for Demonstration of the DeepLabCut Workflow
 

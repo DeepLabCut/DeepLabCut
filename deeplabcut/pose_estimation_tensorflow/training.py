@@ -121,6 +121,10 @@ def train_network(
         training from a snapshot. Note that if you change the number of bodyparts, you
         need to set this to false for re-training.
 
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
     Returns
     -------
     None

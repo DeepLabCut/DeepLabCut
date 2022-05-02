@@ -178,38 +178,59 @@ def analyzeskeleton(
     modelprefix="",
     track_method="",
 ):
-    """
-    Extracts length and orientation of each "bone" of the skeleton as defined in the config file.
+    """Extracts length and orientation of each "bone" of the skeleton.
 
-    Parameter
+    The bone and skeleton information is defined in the config file.
+
+    Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config: str
+        Full path of the config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+    videos: list[str]
+        The full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
 
-    shuffle : int, optional
-        The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for
-        the corresponding shuffle of training dataset. Default is set to 1
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions
+        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+    shuffle : int, optional, default=1
+        The shuffle index of training dataset. The extracted frames will be stored in
+        the labeled-dataset for the corresponding shuffle of training dataset.
 
-    filtered: bool, default false
-        Boolean variable indicating if filtered output should be plotted rather than frame-by-frame predictions. Filtered version can be calculated with deeplabcut.filterpredictions
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        Note that TrainingFraction is a list in config.yaml.
 
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+    filtered: bool, optional, default=False
+        Boolean variable indicating if filtered output should be plotted rather than
+        frame-by-frame predictions. Filtered version can be calculated with
+        ``deeplabcut.filterpredictions``.
 
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
-        folder also needs to be passed.
+    save_as_csv: bool, optional, default=False
+        Saves the predictions in a .csv file.
 
-    track_method: string, optional
-         Specifies the tracker used to generate the data. Empty by default (corresponding to a single animal project).
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken from the config.yaml file if none is given.
+    destfolder: string or None, optional, default=None
+        Specifies the destination folder for analysis data. If ``None``, the path of
+        the video is used. Note that for subsequent analysis this folder also needs to
+        be passed.
 
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    track_method: string, optional, default=""
+        Specifies the tracker used to generate the data.
+        Empty by default (corresponding to a single animal project).
+        For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+        be taken from the config.yaml file if none is given.
+
+    Returns
+    -------
+    None
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)

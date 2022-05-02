@@ -502,58 +502,87 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
 ):
-    """
+    """Evaluates the network.
 
-    Evaluates the network based on the saved models at different stages of the training network.\n
-    The evaluation results are stored in the .h5 and .csv file under the subdirectory 'evaluation_results'.
-    Change the snapshotindex parameter in the config file to 'all' in order to evaluate all the saved models.
+    Evaluates the network based on the saved models at different stages of the training
+    network. The evaluation results are stored in the .h5 and .csv file under the
+    subdirectory 'evaluation_results'. Change the snapshotindex parameter in the config
+    file to 'all' in order to evaluate all the saved models.
+
     Parameters
     ----------
     config : string
-        Full path of the config.yaml file as a string.
+        Full path of the config.yaml file.
 
-    Shuffles: list, optional
-        List of integers specifying the shuffle indices of the training dataset. The default is [1]
+    Shuffles: list, optional, default=[1]
+        List of integers specifying the shuffle indices of the training dataset.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+    trainingsetindex: int or str, optional, default=0
+        Integer specifying which "TrainingsetFraction" to use.
+        Note that "TrainingFraction" is a list in config.yaml. This variable can also
+        be set to "all".
 
-    plotting: bool or str, optional
+    plotting: bool or str, optional, default=False
         Plots the predictions on the train and test images.
-        The default is ``False``; if provided it must be either ``True``, ``False``, "bodypart", or "individual".
-        Setting to ``True`` defaults as "bodypart" for multi-animal projects.
+        If provided it must be either ``True``, ``False``, ``"bodypart"``, or
+        ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
+        multi-animal projects.
 
-    show_errors: bool, optional
-        Display train and test errors. The default is `True``
+    show_errors: bool, optional, default=True
+        Display train and test errors.
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
+    comparisonbodyparts: str or list, optional, default="all"
+        The average error will be computed for those body parts only.
+        The provided list has to be a subset of the defined body parts.
 
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
+    gputouse: int or None, optional, default=None
+        Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
+        GPU put `None``.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
-    rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+    rescale: bool, optional, default=False
+        Evaluate the model at the ``'global_scale'`` variable (as set in the
+        ``pose_config.yaml`` file for a particular project). I.e. every image will be
+        resized according to that scale and prediction will be compared to the resized
+        ground truth. The error will be reported in pixels at rescaled to the
+        *original* size. I.e. For a [200,200] pixel image evaluated at
+        ``global_scale=.5``, the predictions are calculated on [100,100] pixel images,
+        compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    Returns
+    -------
+    None
 
     Examples
     --------
-    If you do not want to plot, just evaluate shuffle 1.
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml', Shuffles=[1])
-    --------
-    If you want to plot and evaluate shuffle 0 and 1.
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[0, 1],plotting = True)
+    If you do not want to plot and evaluate with shuffle set to 1.
 
-    --------
-    If you want to plot assemblies for a maDLC project:
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',Shuffles=[1],plotting = "individual")
+    >>> deeplabcut.evaluate_network(
+            '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
+        )
 
-    Note: this defaults to standard plotting for single-animal projects.
+    If you want to plot and evaluate with shuffle set to 0 and 1.
 
+    >>> deeplabcut.evaluate_network(
+            '/analysis/project/reaching-task/config.yaml',
+            Shuffles=[0, 1],
+            plotting=True,
+        )
+
+    If you want to plot assemblies for a maDLC project
+
+    >>> deeplabcut.evaluate_network(
+            '/analysis/project/reaching-task/config.yaml',
+            Shuffles=[1],
+            plotting="individual",
+        )
+
+    Note: This defaults to standard plotting for single-animal projects.
     """
     if plotting not in (True, False, "bodypart", "individual"):
         raise ValueError(f"Unknown value for `plotting`={plotting}")

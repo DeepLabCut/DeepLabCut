@@ -29,43 +29,63 @@ def label_frames(
     sourceCam=None,
     jump_unlabeled=False,
 ):
-    """
-    Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.
+    """Manually label/annotate the extracted frames.
 
-    Parameter
+    Update the list of body parts you want to localize in the config.yaml file first.
+
+    Parameters
     ----------
-    config : string
-        String containing the full path of the config file in the project.
+    config: str
+        Full path of the config.yaml file.
 
-    multiple_individualsGUI: bool, optional
-        If this is set to True, a user can label multiple individuals. Note for "multianimalproject=True" this is automatically used.
-        The default is ``False``; if provided it must be either ``True`` or ``False``.
+    multiple_individualsGUI: bool, optional, default=False
+        If ``True``, a user can label multiple individuals. Note for
+        ``"multianimalproject=True"`` this is automatically used.
 
-    imtypes: list of imagetypes to look for in folder to be labeled.
-        By default only png images are considered.
+    imtypes: list[str], optional, default=["*.png"]
+        Image types to look for in the folder. By default only png images are labeled.
 
-    config3d: string, optional
-        String containing the full path of the config file in the 3D project. Include when epipolar lines would be helpful for labeling additional camera angles.
+    config3d: str or None, optional, default=None
+        Full path of the config file in the 3D project. Include when epipolar lines
+        would be helpful for labeling additional camera angles.
 
-    sourceCam: string, optional
-        String containing the camera name from which to pull labeling data to generate epipolar lines. This must match the pattern in 'camera_names' in the 3D config file.
-        If no value is entered, data will be pulled from either cam1 or cam2
+    sourceCam: str or None, optional, default=None
+        The camera name from which to pull labeling data to generate epipolar lines.
+        This must match the pattern in ``'camera_names'`` in the 3D config file.
+        If no value is entered, data will be pulled from either cam1 or cam2.
 
-    Example
+    jump_unlabeled: bool, optional, default=False
+        Aumatically jump to the next folder containing unlabeled images.
+
+    Returns
+    -------
+    None
+
+    Examples
     --------
-    Standard use case:
+    Standard use case
+
     >>> deeplabcut.label_frames('/myawesomeproject/reaching4thestars/config.yaml')
 
-    To label multiple individuals (without having a multiple individuals project); otherwise this GUI is loaded automatically
-    >>> deeplabcut.label_frames('/analysis/project/reaching-task/config.yaml',multiple_individualsGUI=True)
+    To label multiple individuals (without having a multiple individuals project);
+    otherwise this GUI is loaded automatically
 
-    To label other image types
-    >>> label_frames(config,multiple=False,imtypes=['*.jpg','*.jpeg'])
+    >>> deeplabcut.label_frames(
+            '/analysis/project/reaching-task/config.yaml',
+            multiple_individualsGUI=True,
+        )
 
-    To label with epipolar lines projected from labels in another camera angle #+++
-    >>> label_frames(config, config3d='/analysis/project/reaching-task/reaching-task-3d/config.yaml', sourceCam='cam1')
-    --------
+    To label non-default image types
 
+    >>> label_frames(config, multiple=False, imtypes=['*.jpg','*.jpeg'])
+
+    To label with epipolar lines projected from labels in another camera angle.
+
+    >>> label_frames(
+        config,
+        config3d='/analysis/project/reaching-task/reaching-task-3d/config.yaml',
+        sourceCam='cam1',
+    )
     """
     startpath = os.getcwd()
     wd = Path(config).resolve().parents[0]
