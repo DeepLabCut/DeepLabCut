@@ -45,6 +45,19 @@ from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
 # Loading data, and defining model folder
 ####################################################
 
+def cv_dtype_to_numpy_dtype(cv_dtype):
+    cv_dtype = int(cv_dtype)
+    # https://github.com/opencv/opencv/blob/d861c03366a0883b2a84ff4a2de06e523891373d/modules/videoio/src/cap_v4l.cpp#L1638
+
+    return {
+        cv2.CV_8U: np.uint8,
+        cv2.CV_8S: np.int8,
+        cv2.CV_16U: np.uint16,
+        cv2.CV_16S: np.int16,
+        cv2.CV_32S: np.int32,
+        cv2.CV_32F: np.float32,
+        cv2.CV_64F: np.float64,
+    }[cv_dtype]
 
 def create_tracking_dataset(
     config,
@@ -852,12 +865,16 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
     ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    video_ny, video_nx = ny, nx
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
     pose_tensor = predict.extract_GPUprediction(
         outputs, dlc_cfg
     )  # extract_output_tensor(outputs, dlc_cfg)
+    frame_dtype = cv_dtype_to_numpy_dtype(cap.get(cv2.CAP_PROP_FORMAT))
+    frame_bgr = np.empty((video_ny, video_nx, 3), dtype=frame_dtype)
+    frame_rgb = np.empty((ny, nx, 3), dtype=frame_dtype)
     frames = np.empty(
         (batchsize, ny, nx, 3), dtype="ubyte"
     )  # this keeps all frames in a batch
@@ -868,15 +885,20 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     while cap.isOpened():
         if counter != 0 and counter % step == 0:
             pbar.update(step)
-        ret, frame = cap.read()
+        ret, _ = cap.read(frame_bgr)
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
-                frames[batch_ind] = img_as_ubyte(
-                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )
+                # If we need cropping, get a view of the bgr frame
+                frame_cropped_bgr = frame_bgr[cfg["y1"]: cfg["y2"], cfg["x1"]: cfg["x2"], :]
             else:
-                frames[batch_ind] = img_as_ubyte(frame)
+                # Otherwise, just point to the original bgr frame
+                frame_cropped_bgr = frame_bgr
+
+            if frame_cropped_bgr.dtype != np.uint8:
+                cv2.cvtColor(frame_cropped_bgr, cv2.COLOR_BGR2RGB, dst=frame_rgb)
+                frames[batch_ind] = img_as_ubyte(frame_rgb)
+            else:
+                cv2.cvtColor(frame_cropped_bgr, cv2.COLOR_BGR2RGB, dst=frames[batch_ind])
             inds.append(counter)
             if batch_ind == batchsize - 1:
                 # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
