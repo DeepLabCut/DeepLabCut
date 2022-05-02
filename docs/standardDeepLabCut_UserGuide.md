@@ -1,13 +1,13 @@
 # DeepLabCut User Guide (for single animal projects)
 
-This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/maDLC_UserGuide.md).
+This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html).
 
 To get started, you can use the GUI, or the terminal. See below.
 
 ## DeepLabCut Project Manager GUI (recommended for beginners)
 
 **GUI:**
-Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](https://github.com/DeepLabCut/DeepLabCut/blob/master//docs/PROJECT_GUI.md).
+Simply ``python -m deeplabcut`` or MacOS: ``pythonw -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html).
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
@@ -208,7 +208,7 @@ Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdi
 configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
 are listed in Box 2.
 
-- At this step, the ImageNet pre-trained networks (i.e. ResNet-50, ResNet-101 and ResNet-152, etc) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips)**).
+- At this step, the ImageNet pre-trained networks (i.e. ResNet-50, ResNet-101 and ResNet-152, etc) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[docs for more help!](https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html)**).
 
 **CRITICAL POINT:** At this step, for **create_training_dataset** you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set ``net_type`` and ``augmenter_type`` when you call the function.
 
@@ -265,7 +265,7 @@ At user specified iterations during training checkpoints are stored in the subdi
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://github.com/DeepLabCut/DeepLabCut/wiki/Data-Augmentation.
+**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#using-custom-image-augmentation.
 
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
 
