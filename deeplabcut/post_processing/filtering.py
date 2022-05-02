@@ -164,7 +164,7 @@ def filterpredictions(
             MAdegree=2,
         )
 
-    Use median filter over 10bins:
+    Use median filter over 10 bins:
 
     >>> deeplabcut.filterpredictions(
             'C:\\myproject\\reaching-task\\config.yaml',

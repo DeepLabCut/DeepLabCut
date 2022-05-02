@@ -194,8 +194,8 @@ def plot_trajectories(
         If left unspecified, videos with common extensions
         ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
-    shuffle: list, optional, default=1
-        List of integers specifying the shuffle indices of the training dataset.
+    shuffle: int, optional, default=1
+        Integer specifying the shuffle index of the training dataset.
 
     trainingsetindex: int, optional, default=0
         Integer specifying which TrainingsetFraction to use.

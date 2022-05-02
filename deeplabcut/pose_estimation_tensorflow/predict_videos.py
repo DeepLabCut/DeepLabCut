@@ -409,7 +409,7 @@ def analyze_videos(
     Examples
     --------
 
-    Analysing a single video on Windows
+    Analyzing a single video on Windows
 
     >>> deeplabcut.analyze_videos(
             'C:\\myproject\\reaching-task\\config.yaml',
