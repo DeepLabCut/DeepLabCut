@@ -316,15 +316,15 @@ class Assembler:
         if self._kde is None:
             raise ValueError("Assembler should be calibrated first with training data.")
 
-        if not len(assembly):
-            # Distance is undefined if the assembly is empty
+        dists = assembly.calc_pairwise_distances() - self._kde.mean
+        mask = np.isnan(dists)
+        # Distance is undefined if the assembly is empty
+        if not len(assembly) or mask.all():
             if return_proba:
                 return np.inf, 0
             return np.inf
 
-        dists = assembly.calc_pairwise_distances() - self._kde.mean
-        mask = np.isnan(dists)
-        if mask.any() and nan_policy == "little":
+        if nan_policy == "little":
             inds = np.flatnonzero(~mask)
             dists = dists[inds]
             inv_cov = self._kde.inv_cov[np.ix_(inds, inds)]
