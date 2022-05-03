@@ -3,6 +3,7 @@ import os
 import pickle
 import pytest
 from conftest import TEST_DATA_DIR
+from copy import deepcopy
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from scipy.spatial.distance import squareform
 
@@ -294,8 +295,9 @@ def test_assembler_calibration(real_assemblies):
     assert np.isclose(p, 0.993, atol=1e-3)
 
     # Test empty assembly
-    assembly.data[:, :2] = np.nan
-    mahal, proba = ass.calc_assembly_mahalanobis_dist(assembly, return_proba=True)
+    assembly_ = deepcopy(assembly)
+    assembly_.data[:, :2] = np.nan
+    mahal, proba = ass.calc_assembly_mahalanobis_dist(assembly_, return_proba=True)
     assert np.isinf(mahal)
     assert proba == 0
 
