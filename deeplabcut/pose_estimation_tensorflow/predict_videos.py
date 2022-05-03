@@ -636,6 +636,7 @@ def analyze_videos(
                         modelprefix=modelprefix,
                         calibrate=calibrate,
                         identity_only=identity_only,
+                        use_shelve=use_shelve,
                     )
                     stitch_tracklets(
                         config,
@@ -1551,6 +1552,7 @@ def convert_detections2tracklets(
     window_size=0,
     identity_only=False,
     track_method="",
+    use_shelve=True,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1783,6 +1785,10 @@ def convert_detections2tracklets(
                     )
                 tracklets = {}
                 multi_bpts = cfg["multianimalbodyparts"]
+                if use_shelve:
+                    shelf_path = dataname.split(".h5")[0] + "_assemblies.pickle"
+                else:
+                    shelf_path = ""
                 ass = inferenceutils.Assembler(
                     data,
                     max_n_individuals=inferencecfg["topktoretain"],
@@ -1792,6 +1798,7 @@ def convert_detections2tracklets(
                     min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
+                    shelf_path=shelf_path,
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
@@ -1802,7 +1809,7 @@ def convert_detections2tracklets(
                     )
                     ass.calibrate(train_data_file)
                 ass.assemble()
-                ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+
                 try:
                     data.close()
                 except AttributeError:

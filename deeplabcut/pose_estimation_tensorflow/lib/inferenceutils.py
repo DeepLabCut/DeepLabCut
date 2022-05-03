@@ -15,6 +15,7 @@ import numpy as np
 import operator
 import pandas as pd
 import pickle
+import shelve
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
@@ -240,6 +241,7 @@ class Assembler:
         add_discarded=False,
         window_size=0,
         method="m1",
+        shelf_path="",
     ):
         self.data = data
         self.metadata = self.parse_metadata(self.data)
@@ -268,8 +270,15 @@ class Assembler:
         self._trees = dict()
         self.safe_edge = False
         self._kde = None
-        self.assemblies = dict()
-        self.unique = dict()
+        if shelf_path:
+            self.db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL)
+            self.db["assemblies"] = {}
+            self.db["unique"] = {}
+        else:
+            self.db = {
+                "assemblies": {},
+                "unique": {},
+            }
 
     def __getitem__(self, item):
         return self.data[self.metadata["imnames"][item]]
@@ -277,6 +286,14 @@ class Assembler:
     @property
     def n_keypoints(self):
         return self.metadata["num_joints"]
+
+    @property
+    def assemblies(self):
+        return self.db["assemblies"]
+
+    @property
+    def unique(self):
+        return self.db["unique"]
 
     def calibrate(self, train_data_file):
         df = pd.read_hdf(train_data_file)
@@ -774,8 +791,6 @@ class Assembler:
         return assemblies, unique
 
     def assemble(self, chunk_size=1, n_processes=None):
-        self.assemblies = dict()
-        self.unique = dict()
         # Spawning (rather than forking) multiple processes does not
         # work nicely with the GUI or interactive sessions.
         # In that case, we fall back to the serial assembly.
@@ -783,9 +798,9 @@ class Assembler:
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
-                    self.assemblies[i] = assemblies
+                    self.db["assemblies"][i] = assemblies
                 if unique is not None:
-                    self.unique[i] = unique
+                    self.db["unique"][i] = assemblies
         else:
             global wrapped  # Hack to make the function pickable
 
@@ -799,10 +814,15 @@ class Assembler:
                         wrapped, range(n_frames), chunksize=chunk_size
                     ):
                         if assemblies:
-                            self.assemblies[i] = assemblies
+                            self.db["assemblies"][i] = assemblies
                         if unique is not None:
-                            self.unique[i] = unique
+                            self.db["unique"][i] = unique
                         pbar.update()
+
+        try:
+            self.db.close()
+        except AttributeError:
+            pass
 
     @staticmethod
     def parse_metadata(data):
