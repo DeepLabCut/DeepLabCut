@@ -293,6 +293,12 @@ def test_assembler_calibration(real_assemblies):
     p = ass.calc_link_probability(link)
     assert np.isclose(p, 0.993, atol=1e-3)
 
+    # Test empty assembly
+    assembly.data[:, :2] = np.nan
+    mahal, proba = ass.calc_assembly_mahalanobis_dist(assembly, return_proba=True)
+    assert np.isinf(mahal)
+    assert proba == 0
+
 
 def test_find_outlier_assemblies(real_assemblies):
     assert len(inferenceutils.find_outlier_assemblies(real_assemblies)) == 13
