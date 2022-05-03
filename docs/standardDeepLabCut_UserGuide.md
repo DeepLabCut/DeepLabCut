@@ -159,13 +159,6 @@ Keyboard arrows: advance frames
 delete key: delete label
 ```
 
-#### API Docs
-```{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.label_frames.rst
-```
-
 ###  (E) Check Annotated Frames
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
@@ -596,12 +589,6 @@ Now you can run ``create_training_dataset``, then ``train_network``, etc. If you
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
-#### API Docs for deeplabcut.refine_labels
-```{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.refine_labels.rst
-```
 
 #### API Docs for deeplabcut.merge_datasets
 ```{admonition} Click the button to see API Docs
