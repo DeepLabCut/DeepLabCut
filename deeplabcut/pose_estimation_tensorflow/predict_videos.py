@@ -1785,10 +1785,6 @@ def convert_detections2tracklets(
                     )
                 tracklets = {}
                 multi_bpts = cfg["multianimalbodyparts"]
-                if use_shelve:
-                    shelf_path = dataname.split(".h5")[0] + "_assemblies.pickle"
-                else:
-                    shelf_path = ""
                 ass = inferenceutils.Assembler(
                     data,
                     max_n_individuals=inferencecfg["topktoretain"],
@@ -1798,7 +1794,7 @@ def convert_detections2tracklets(
                     min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
-                    shelf_path=shelf_path,
+                    shelf_path=dataname if use_shelve else "",
                 )
                 if calibrate:
                     trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
@@ -1869,6 +1865,12 @@ def convert_detections2tracklets(
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
                     pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
+
+                try:
+                    ass.assemblies.close()
+                    ass.unique.close()
+                except AttributeError:
+                    pass
 
         os.chdir(str(start_path))
 

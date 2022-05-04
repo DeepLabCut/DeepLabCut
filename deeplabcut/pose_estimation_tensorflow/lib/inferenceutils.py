@@ -13,6 +13,7 @@ import multiprocessing
 import networkx as nx
 import numpy as np
 import operator
+import os
 import pandas as pd
 import pickle
 import shelve
@@ -221,6 +222,18 @@ class Assembly:
         return pdist(self.xy, metric="sqeuclidean")
 
 
+class _Shelf(shelve.DbfilenameShelf):
+
+    def __setitem__(self, key, value):
+        return super().__setitem__(str(key), value)
+
+    def __getitem__(self, key):
+        return super().__getitem__(str(key))
+
+    def get(self, key, default=None):
+        return super().get(str(key), default)
+
+
 class Assembler:
     def __init__(
         self,
@@ -264,21 +277,15 @@ class Assembler:
         self.add_discarded = add_discarded
         self.window_size = window_size
         self.method = method
+        self.shelf_path = shelf_path
         self.graph = graph or self.metadata["paf_graph"]
         self.paf_inds = paf_inds or self.metadata["paf"]
         self._gamma = 0.01
         self._trees = dict()
         self.safe_edge = False
         self._kde = None
-        if shelf_path:
-            self.db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL)
-            self.db["assemblies"] = {}
-            self.db["unique"] = {}
-        else:
-            self.db = {
-                "assemblies": {},
-                "unique": {},
-            }
+        self.assemblies = dict()
+        self.unique = dict()
 
     def __getitem__(self, item):
         return self.data[self.metadata["imnames"][item]]
@@ -286,14 +293,6 @@ class Assembler:
     @property
     def n_keypoints(self):
         return self.metadata["num_joints"]
-
-    @property
-    def assemblies(self):
-        return self.db["assemblies"]
-
-    @property
-    def unique(self):
-        return self.db["unique"]
 
     def calibrate(self, train_data_file):
         df = pd.read_hdf(train_data_file)
@@ -790,7 +789,23 @@ class Assembler:
 
         return assemblies, unique
 
+    def _reset_storage(self):
+        if self.shelf_path:
+            root, _ = os.path.splitext(self.shelf_path)
+            self.assemblies = _Shelf(
+                root + "_assemblies.pickle",
+                flag="n",
+            )
+            self.unique = _Shelf(
+                root + "_unique.pickle",
+                flag="n",
+            )
+        else:
+            self.assemblies = dict()
+            self.unique = dict()
+
     def assemble(self, chunk_size=1, n_processes=None):
+        self._reset_storage()
         # Spawning (rather than forking) multiple processes does not
         # work nicely with the GUI or interactive sessions.
         # In that case, we fall back to the serial assembly.
@@ -798,9 +813,9 @@ class Assembler:
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
-                    self.db["assemblies"][i] = assemblies
+                    self.assemblies[i] = assemblies
                 if unique is not None:
-                    self.db["unique"][i] = assemblies
+                    self.unique[i] = unique
         else:
             global wrapped  # Hack to make the function pickable
 
@@ -814,15 +829,10 @@ class Assembler:
                         wrapped, range(n_frames), chunksize=chunk_size
                     ):
                         if assemblies:
-                            self.db["assemblies"][i] = assemblies
+                            self.assemblies[i] = assemblies
                         if unique is not None:
-                            self.db["unique"][i] = unique
+                            self.unique[i] = unique
                         pbar.update()
-
-        try:
-            self.db.close()
-        except AttributeError:
-            pass
 
     @staticmethod
     def parse_metadata(data):
