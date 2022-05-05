@@ -1552,7 +1552,7 @@ def convert_detections2tracklets(
     window_size=0,
     identity_only=False,
     track_method="",
-    use_shelve=True,
+    use_shelve=False,
 ):
     """
     This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
@@ -1764,6 +1764,38 @@ def convert_detections2tracklets(
 
                 imnames = [fn for fn in data if fn != "metadata"]
 
+                multi_bpts = cfg["multianimalbodyparts"]
+                if use_shelve:
+                    shelf_path = dataname.split(".h5")[0] + "_assemblies.pickle"
+                else:
+                    shelf_path = ""
+                ass = inferenceutils.Assembler(
+                    data,
+                    max_n_individuals=inferencecfg["topktoretain"],
+                    n_multibodyparts=len(multi_bpts),
+                    greedy=greedy,
+                    pcutoff=inferencecfg.get("pcutoff", 0.1),
+                    min_affinity=inferencecfg.get("pafthreshold", 0.05),
+                    window_size=window_size,
+                    identity_only=identity_only,
+                    shelf_path=shelf_path,
+                )
+                if calibrate:
+                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    train_data_file = os.path.join(
+                        cfg["project_path"],
+                        str(trainingsetfolder),
+                        "CollectedData_" + cfg["scorer"] + ".h5",
+                    )
+                    ass.calibrate(train_data_file)
+                ass.assemble()
+
+                try:
+                    data.close()
+                except AttributeError:
+                    pass
+
+                # Animal tracking
                 if track_method == "box":
                     mot_tracker = trackingutils.SORTBox(
                         inferencecfg["max_age"],
@@ -1783,34 +1815,10 @@ def convert_detections2tracklets(
                         inferencecfg.get("min_hits", 1),
                         inferencecfg.get("iou_threshold", 0.6),
                     )
-                tracklets = {}
-                multi_bpts = cfg["multianimalbodyparts"]
-                ass = inferenceutils.Assembler(
-                    data,
-                    max_n_individuals=inferencecfg["topktoretain"],
-                    n_multibodyparts=len(multi_bpts),
-                    greedy=greedy,
-                    pcutoff=inferencecfg.get("pcutoff", 0.1),
-                    min_affinity=inferencecfg.get("pafthreshold", 0.05),
-                    window_size=window_size,
-                    identity_only=identity_only,
-                    shelf_path=dataname if use_shelve else "",
-                )
-                if calibrate:
-                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-                    train_data_file = os.path.join(
-                        cfg["project_path"],
-                        str(trainingsetfolder),
-                        "CollectedData_" + cfg["scorer"] + ".h5",
-                    )
-                    ass.calibrate(train_data_file)
-                ass.assemble()
-
-                try:
-                    data.close()
-                except AttributeError:
-                    pass
-
+                if use_shelve:
+                    tracklets = inferenceutils._NestedShelf(trackname, flag="c")
+                else:
+                    tracklets = {}
                 if cfg[
                     "uniquebodyparts"
                 ]:  # Initialize storage of the 'single' individual track
