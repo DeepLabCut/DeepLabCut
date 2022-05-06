@@ -283,10 +283,13 @@ def GetPoseandCostsF_from_assemblies(
 
             if batch_ind == batchsize - 1:
 
-                (D, features) = predict.predict_batched_peaks_and_costs(
+                preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
+                if not preds:
+                    continue
 
+                D, features = preds
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
@@ -305,10 +308,13 @@ def GetPoseandCostsF_from_assemblies(
         elif counter >= nframes:
             if batch_ind > 0:
 
-                (D, features) = predict.predict_batched_peaks_and_costs(
+                preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
+                if not preds:
+                    continue
 
+                D, features = preds
                 for i, (ind, data) in enumerate(zip(inds, D)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
