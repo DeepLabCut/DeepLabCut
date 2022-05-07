@@ -1,3 +1,4 @@
+(docker-containers)=
 # DeepLabCut Docker containers
 
 For DeepLabCut 2.2.0.2 and onwards, we provide container containers on [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut). Using Docker is an alternative approach to using DeepLabCut, which only requires the user to install [Docker](https://www.docker.com/) on your machine, vs. following the step-by-step installation guide for a Anaconda setup. All dependencies needed to run DeepLabCut in terminal or GUI mode, or running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided Docker images.
