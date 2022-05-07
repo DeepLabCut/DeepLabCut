@@ -52,7 +52,7 @@ Now you will see that your data within `labeled-data` are converted to a new for
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
-to begin training. See function details [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/functionDetails.md#f-create-training-datasets)).
+to begin training.
 
 **Advanced option:** You can also assign former `bodyparts` to either `uniquebodyparts` or `multianimalbodyparts` (you can even leave some unassigned, which means they will be dropped in the conversion).
 

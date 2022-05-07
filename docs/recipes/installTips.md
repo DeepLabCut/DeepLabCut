@@ -1,3 +1,4 @@
+(installation-tips)=
 # Installation Tips
 
 ## How to use the latest updates directly from GitHub
