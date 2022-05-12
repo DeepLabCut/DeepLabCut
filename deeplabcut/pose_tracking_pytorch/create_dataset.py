@@ -42,25 +42,26 @@ def save_train_triplets(feature_fname, triplets, out_name):
         anchor_coord, anchor_frame = anchor
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
-
-        # if animal == 'pup' and anchor_coord.shape[0]!=5:
-        #    continue
-
+               
+        
         anchor_frame = "frame" + str(anchor_frame).zfill(zfill_width)
         pos_frame = "frame" + str(pos_frame).zfill(zfill_width)
         neg_frame = "frame" + str(neg_frame).zfill(zfill_width)
 
-        anchor_vec = query_feature_by_coord_in_img_space(
-            feature_dict, anchor_frame, anchor_coord
-        )
-        pos_vec = query_feature_by_coord_in_img_space(
-            feature_dict, pos_frame, pos_coord
-        )
-        neg_vec = query_feature_by_coord_in_img_space(
-            feature_dict, neg_frame, neg_coord
-        )
+        if anchor_frame in feature_dict and pos_frame in feature_dict and neg_frame in feature_dict:
+            # only try to find these features if they are in the dictionary
+            
+            anchor_vec = query_feature_by_coord_in_img_space(
+                feature_dict, anchor_frame, anchor_coord
+            )
+            pos_vec = query_feature_by_coord_in_img_space(
+                feature_dict, pos_frame, pos_coord
+            )
+            neg_vec = query_feature_by_coord_in_img_space(
+                feature_dict, neg_frame, neg_coord
+            )
 
-        ret_vecs.append([anchor_vec, pos_vec, neg_vec])
+            ret_vecs.append([anchor_vec, pos_vec, neg_vec])
 
     ret_vecs = np.array(ret_vecs)
 
