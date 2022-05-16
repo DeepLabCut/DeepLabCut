@@ -723,7 +723,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
 
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
-        stem = Path(file).stem
+        stem = Path(file).stem.replace("_filtered", "")
         starts_by_scorer = (
             file.startswith(videoname + scorer)
             or file.startswith(videoname + scorer_legacy)
