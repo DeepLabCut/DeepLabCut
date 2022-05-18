@@ -2,16 +2,16 @@
 
 import argparse
 
-import deeplabcut.benchmark
+import benchmark
 
 
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--include", nargs="+", default=None, required=False)
     parser.add_argument(
-        "--onerror", 
-        default="return", 
-        required=False, 
+        "--onerror",
+        default="return",
+        required=False,
         choices=("ignore", "return", "raise")
     )
     parser.add_argument("--nocache", action="store_true")
@@ -22,14 +22,17 @@ def main():
     """Main CLI entry point for generating benchmark results."""
     args = _parse_args()
     if not args.nocache:
-        results = deeplabcut.benchmark.loadcache()
+        results = benchmark.loadcache()
     else:
         results = None
-    results = deeplabcut.benchmark.evaluate(
+    results = benchmark.evaluate(
         include_benchmarks=args.include,
         results=results,
         on_error=args.onerror,
     )
     if not args.nocache:
-        deeplabcut.benchmark.savecache(results)
-    print(results.toframe())
+        benchmark.savecache(results)
+    try:
+        print(results.toframe())
+    except StopIteration:
+        pass

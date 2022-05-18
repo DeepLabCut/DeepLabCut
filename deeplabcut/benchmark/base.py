@@ -22,14 +22,13 @@ please feel free to extend the base classes (e.g. to support additional metrics)
 
 import abc
 import dataclasses
-import os
 from typing import Iterable
-from typing import List
 from typing import Tuple
 
 import pandas as pd
 
-import deeplabcut.benchmark.metrics
+import benchmark.metrics
+from deeplabcut import __version__
 
 
 class BenchmarkEvaluationError(RuntimeError):
@@ -67,12 +66,12 @@ class Benchmark(abc.ABC):
                 )
 
     def compute_pose_rmse(self, results_objects):
-        return deeplabcut.benchmark.metrics.calc_rmse_from_obj(
+        return benchmark.metrics.calc_rmse_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 
     def compute_pose_map(self, results_objects):
-        return deeplabcut.benchmark.metrics.calc_map_from_obj(
+        return benchmark.metrics.calc_map_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 
@@ -123,7 +122,7 @@ class Result:
     benchmark_name: str
     root_mean_squared_error: float = float("nan")
     mean_avg_precision: float = float("nan")
-    benchmark_version: str = deeplabcut.__version__
+    benchmark_version: str = __version__
 
     _export_mapping = dict(
         benchmark_name="benchmark",

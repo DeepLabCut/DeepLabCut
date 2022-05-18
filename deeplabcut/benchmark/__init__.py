@@ -12,7 +12,7 @@ import json
 import os
 from typing import Container
 
-from deeplabcut.benchmark.base import Benchmark, Result, ResultCollection
+from benchmark.base import Benchmark, Result, ResultCollection
 
 DATA_ROOT = os.path.join(os.path.dirname(__file__), "data")
 CACHE = os.path.join(os.path.dirname(__file__), ".results")
