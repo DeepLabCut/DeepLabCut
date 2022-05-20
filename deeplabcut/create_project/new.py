@@ -193,7 +193,7 @@ def create_new_project(
                     import subprocess
 
                     subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
-                except OSError:
+                except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
                         "cutting/pasting the video instead."
