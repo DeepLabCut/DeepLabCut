@@ -336,11 +336,16 @@ class TrackletVisualizer:
 
     def save_coords(self):
         coords, nonempty, inds = self.manager.get_non_nan_elements(self._curr_frame)
+        if not inds.size:
+            return
         prob = self.manager.prob[:, self._curr_frame]
         for dp in self.dps:
             label = dp.individual_names, dp.bodyParts
             ind = self.manager._label_pairs.index(label)
-            nrow = np.flatnonzero(inds == ind)[0]
+            nrow = np.flatnonzero(inds == ind)
+            if not nrow.size:
+                return
+            nrow = nrow[0]
             if not np.array_equal(
                 coords[nrow], dp.point.center
             ):  # Keypoint has been displaced
