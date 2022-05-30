@@ -744,6 +744,7 @@ class MainFrame(BaseFrame):
             DataU1 = pd.read_hdf(
                 os.path.join(self.dir, "CollectedData_" + self.humanscorer + ".h5")
             )
+            conversioncode.guarantee_multiindex_rows(DataU1)
             # combine datasets Original Col. + corrected machinefiles:
             DataCombined = pd.concat([self.Dataframe, DataU1])
             # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
