@@ -72,11 +72,10 @@ class SkeletonBuilder:
             )
         self.tree = KDTree(self.xy)
         # Handle image previously annotated on a different platform
-        sep = "/" if "/" in row else "\\"
-        if sep != os.path.sep:
-            row = row.replace(sep, os.path.sep)
-        
-        self.image = io.imread(os.path.join(self.cfg["project_path"], row))
+        if isinstance(row, str):
+            sep = "/" if "/" in row else "\\"
+            row = row.split(sep)
+        self.image = io.imread(os.path.join(self.cfg["project_path"], *row))
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
@@ -105,7 +104,9 @@ class SkeletonBuilder:
         mask = count.where(count == count.values.max())
         kept = mask.stack().index.to_list()
         np.random.shuffle(kept)
-        row, col = kept.pop()
+        picked = kept.pop()
+        row = picked[:-1]
+        col = picked[-1]
         return row, col
 
     def show(self):
