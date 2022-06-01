@@ -1,5 +1,6 @@
 import sys
 import os
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 import logging
 
 import PySide2.QtWidgets as QtWidgets

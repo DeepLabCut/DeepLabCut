@@ -6,10 +6,8 @@ from pathlib import Path
 import cv2
 import re
 import matplotlib.colors as mcolors
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from matplotlib.figure import Figure
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,9 +38,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from deeplabcut.gui import auxfun_drag
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from widgets import BaseFrame
 
 
-class ImagePanel(QFrame):
+class ImagePanel(BaseFrame):
     def __init__(self, parent, config, config3d, sourceCam, dir=None):
         super(ImagePanel, self).__init__(parent)
         self.config = config
@@ -50,25 +49,6 @@ class ImagePanel(QFrame):
         self.sourceCam = sourceCam
         self.toolbar = None
         self.dir = dir
-
-        self.figure = Figure()
-        self.axes = self.figure.add_subplot(1, 1, 1)
-        self.canvas = FigureCanvas(self.figure)
-        self.orig_xlim = None
-        self.orig_ylim = None
-
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.canvas)
-
-    def getfigure(self):
-        """
-        Returns the figure, axes and canvas
-        """
-        return self.figure, self.axes, self.canvas
-
-    def resetView(self):
-        self.axes.set_xlim(self.orig_xlim)
-        self.axes.set_ylim(self.orig_ylim)
 
     def retrieveData_and_computeEpLines(self, img, imNum):
 
@@ -188,56 +168,48 @@ class ImagePanel(QFrame):
 
         return drawImage
 
-    def drawplot(
-        self, img, img_name, itr, index, bodyparts, cmap, keep_view=False, dir=None
-    ):
+    def drawplot(self, img, img_name, itr, index, bodyparts, cmap, keep_view=False):
         xlim = self.axes.get_xlim()
         ylim = self.axes.get_ylim()
         self.axes.clear()
         # convert the image to RGB as you are showing the image with matplotlib
-
-        image = dir + "/" + img.split("/")[-1]
-
-        im = cv2.imread(image)[..., ::-1]
-
-        colorIndex = np.linspace(np.max(im), np.min(im), len(bodyparts))
+        im = cv2.imread(img)[..., ::-1]
+        norm, colorIndex = getColorIndices(img, bodyparts)
         # draw epipolar lines
         epLines, sourcePts, offsets = self.retrieveData_and_computeEpLines(img, itr)
-
         if epLines is not None:
             im = self.drawEpLines(
-                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap
+                im.copy(), epLines, sourcePts, offsets, colorIndex, cmap, norm
             )
         ax = self.axes.imshow(im, cmap=cmap)
-
         self.orig_xlim = self.axes.get_xlim()
         self.orig_ylim = self.axes.get_ylim()
         divider = make_axes_locatable(self.axes)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = self.figure.colorbar(
-            ax, cax=cax, spacing="proportional", ticks=colorIndex
+            plt.cm.ScalarMappable(cmap=cmap),
+            cax=cax,
+            ticks=np.linspace(0, 1, len(bodyparts)),
         )
-        cbar.set_ticklabels(bodyparts)
-
+        cbar.set_ticklabels(bodyparts[::-1])
         self.axes.set_title(str(str(itr) + "/" + str(len(index) - 1) + " " + img_name))
         if keep_view:
             self.axes.set_xlim(xlim)
             self.axes.set_ylim(ylim)
         if self.toolbar is None:
-            self.toolbar = NavigationToolbar(self.canvas, self)
-
+            self.toolbar = NavigationToolbar(self.canvas)
         return (self.figure, self.axes, self.canvas, self.toolbar)
 
-    def getColorIndices(self, img, bodyparts, dir):
-        """
-        Returns the colormaps ticks and . The order of ticks labels is reversed.
-        """
-        image = dir + "/" + img.split("/")[-1]
-        im = cv2.imread(image)
-        norm = mcolors.Normalize(vmin=0, vmax=np.max(im))
-        ticks = np.linspace(0, np.max(im), len(bodyparts))[::-1]
 
-        return norm, ticks
+def getColorIndices(img, bodyparts):
+    """
+    Returns the colormaps ticks and . The order of ticks labels is reversed.
+    """
+    im = cv2.imread(img)
+    vmax = np.max(im)
+    norm = mcolors.Normalize(vmin=0, vmax=vmax)
+    ticks = np.linspace(0, vmax, len(bodyparts))[::-1]
+    return norm, ticks
 
 
 class ScrollPanel(QFrame):

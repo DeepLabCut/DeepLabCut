@@ -1,11 +1,40 @@
 import ast
 import os
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT,
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.figure import Figure
 from queue import Queue
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QCursor
 
 from deeplabcut import auxiliaryfunctions
+
+
+class BaseFrame(QtWidgets.QFrame):
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent)
+
+        self.figure = Figure()
+        self.axes = self.figure.add_subplot(1, 1, 1)
+        self.canvas = FigureCanvas(self.figure)
+        self.orig_xlim = None
+        self.orig_ylim = None
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.canvas)
+
+    def getfigure(self):
+        """
+        Returns the figure, axes and canvas
+        """
+        return self.figure, self.axes, self.canvas
+
+    def resetView(self):
+        self.axes.set_xlim(self.orig_xlim)
+        self.axes.set_ylim(self.orig_ylim)
+
 
 class DragDropListView(QtWidgets.QListView):
     def __init__(self, parent=None):

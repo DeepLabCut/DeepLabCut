@@ -81,13 +81,21 @@ class LabelFrames(DefaultTab):
             import multiple_individuals_labeling_toolbox
             # multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
         else:
-            import labeling_toolbox
+            import napari
 
-            labeling_frame = labeling_toolbox.MainFrame(
-                self,
-                self.root.config,
-                imtypes=["*.png"],
-                config3d=None,
-                sourceCam=None,
-            )
-            labeling_frame.show()
+            viewer = napari.Viewer()
+            dialog = QtWidgets.QDialog()
+            main_layout = QtWidgets.QVBoxLayout(dialog)
+            main_layout.addWidget(viewer)
+            dialog.show()
+
+            # import labeling_toolbox
+            #
+            # labeling_frame = labeling_toolbox.MainFrame(
+            #     self,
+            #     self.root.config,
+            #     imtypes=["*.png"],
+            #     config3d=None,
+            #     sourceCam=None,
+            # )
+            # labeling_frame.show()
