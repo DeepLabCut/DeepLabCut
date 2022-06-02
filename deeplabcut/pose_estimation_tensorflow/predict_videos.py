@@ -646,6 +646,7 @@ def analyze_videos(
                         destfolder=destfolder,
                         n_tracks=n_tracks,
                         modelprefix=modelprefix,
+                        save_as_csv=save_as_csv,
                     )
         else:
             for video in Videos:

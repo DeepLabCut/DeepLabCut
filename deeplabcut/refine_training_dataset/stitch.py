@@ -888,13 +888,15 @@ class TrackletStitcher:
             df = df.join(df2, how="outer")
         return df
 
-    def write_tracks(self, output_name="", suffix="", animal_names=None):
+    def write_tracks(self, output_name="", suffix="", animal_names=None, save_as_csv=False):
         df = self.format_df(animal_names)
         if not output_name:
             if suffix:
                 suffix = "_" + suffix
             output_name = self.filename.replace(".pickle", f"{suffix}.h5")
         df.to_hdf(output_name, "tracks", format="table", mode="w")
+        if save_as_csv:
+            df.to_csv(output_name.replace(".h5", ".csv"))
 
     @staticmethod
     def calculate_edge_weight(tracklet1, tracklet2):
@@ -1002,6 +1004,7 @@ def stitch_tracklets(
     track_method="",
     output_name="",
     transformer_checkpoint="",
+    save_as_csv=False,
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1079,6 +1082,9 @@ def stitch_tracklets(
         Name of the output h5 file.
         By default, tracks are automatically stored into the same directory
         as the pickle file and with its name.
+
+    save_as_csv: bool, optional
+        Whether to write the tracks to a CSV file too (False by default).
 
     Returns
     -------
@@ -1175,11 +1181,17 @@ def stitch_tracklets(
             stitcher.stitch()
             if transformer_checkpoint:
                 stitcher.write_tracks(
-                    output_name=output_name, animal_names=animal_names, suffix="tr"
+                    output_name=output_name,
+                    animal_names=animal_names,
+                    suffix="tr",
+                    save_as_csv=save_as_csv,
                 )
             else:
                 stitcher.write_tracks(
-                    output_name=output_name, animal_names=animal_names, suffix=""
+                    output_name=output_name,
+                    animal_names=animal_names,
+                    suffix="",
+                    save_as_csv=save_as_csv,
                 )
         except FileNotFoundError as e:
             print(e, "\nSkipping...")
