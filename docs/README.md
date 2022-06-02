@@ -1,3 +1,4 @@
+(readme)=
 # Welcome to Our Documentation Hub!
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
@@ -8,12 +9,12 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 
 **Otherwise, here are the links to all the key steps to get you up and running within a day!**
 
--  **[How to install DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/installation.md)**
+-  **[How to install DeepLabCut](how-to-install)**
 
--  Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick:
+-  Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick:
 
--  **[How to use standard DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/standardDeepLabCut_UserGuide.md)**
--  **[How to use multi-animal DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/maDLC_UserGuide.md)**
+-  **[How to use standard DeepLabCut](single-animal-userguide)**
+-  **[How to use multi-animal DeepLabCut](multi-animal-userguide)**
 
 
 ## More resources for help, additional docs, and roadmap of the project!
@@ -26,11 +27,11 @@ If you are new to DeepLabCut, we have 3 resources we recommend before jumping in
 
  - [Real-time feedback with DeepLabCut: DeepLabCut-live](https://github.com/DeepLabCut/DeepLabCut-live)
 
- - [DeepLabCut 3D](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/Overviewof3D.md)
+ - [DeepLabCut 3D](3D-overview)
 
- - [Helper functions](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/HelperFunctions.md)
+ - [Helper functions](helper-functions)
 
- - [Developer Road Map!](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)
+ - [Developer Road Map!](dev-roadmap)
 
  - [How to Contribute to DeepLabCut](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/DeepLabCut/DeepLabCut/blob/master/CODE_OF_CONDUCT.md)
 

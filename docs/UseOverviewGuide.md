@@ -1,18 +1,19 @@
+(overview)=
 ## Documentation Overview:
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
-- [How to install DeepLabCut](/docs/installation.md)
+- [How to install DeepLabCut](how-to-install)
 
-- Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](/docs/UseOverviewGuide.md#important-information-on-using-deeplabcut)** Then pick:
+- Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick:
 
-- (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md)
-- (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
+- (1) [How to use standard DeepLabCut](single-animal-userguide)
+- (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
 
  **Additional Learning Resources:**
 
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
- - [HOW-TO-GUIDES:](https://deeplabcut.github.io/docs/UseOverviewGuide.md) step-by-step user guidelines for using DeepLabCut on your own datasets (see below)
+ - [HOW-TO-GUIDES:](overview) step-by-step user guidelines for using DeepLabCut on your own datasets (see below)
  - [EXPLANATIONS:](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials) resources on understanding how DeepLabCut works
  - [REFERENCES:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
 
@@ -67,6 +68,8 @@ You can have as many projects on your computer as you wish. You can have DeepLab
  </p>
 
 
+(important-info-regd-usage)=
+
 # Specific Advice for Using DeepLabCut:
 
 ### Important information on using DeepLabCut:
@@ -99,25 +102,28 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
 
-Please read [this convert 2 maDLC guide](/docs/convert_maDLC.md)
+Please read [this convert 2 maDLC guide](convert-maDLC)
 
 ### The options for using DeepLabCut:
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options.
 
-[**Option 1**](/docs/UseOverviewGuide.md#option-1-demo-notebooks) DEMOs: for a quick introduction to DLC on our data.
+[**Option 1**](using-demo-notebooks) DEMOs: for a quick introduction to DLC on our data.
 
-[**Option 2**](/docs/UseOverviewGuide.md#option-2-using-the-project-manager-gui) Standalone GUI: is the perfect place for beginners who want to start using DeepLabCut on your own data.
+[**Option 2**](using-project-manager-gui) Standalone GUI: is the perfect place for
+beginners who want to start using DeepLabCut on your own data.
 
-[**Option 3**](/docs/UseOverviewGuide.md#option-3-using-the-program-terminal-start-ipython) In the terminal: is best for more advanced users, as with the terminal interface you get the most versatility and options.  
+[**Option 3**](using-the-terminal) In the terminal: is best for more advanced users, as
+with the terminal interface you get the most versatility and options.
 
-
+(using-demo-notebooks)=
 ## Option 1: Demo Notebooks:
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
+(using-project-manager-gui)=
 ## Option 2: using the Project Manager GUI:
 [VIDEO TUTORIAL!](https://www.youtube.com/watch?v=KcXogR-p5Ak)
 
@@ -132,12 +138,12 @@ python -m deeplabcut
 ```
 That's it! Follow the GUI for details
 
-
+(using-the-terminal)=
 ## Option 3: using the program terminal, Start iPython*:
 
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
 Please decide with mode you want to use DeepLabCut, and follow one of the following:
 
-- (1) [How to use standard DeepLabCut](/docs/standardDeepLabCut_UserGuide.md)
-- (2) [How to use multi-animal DeepLabCut](/docs/maDLC_UserGuide.md)
+- (1) [How to use standard DeepLabCut](single-animal-userguide)
+- (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)

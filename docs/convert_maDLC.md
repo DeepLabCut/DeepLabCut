@@ -1,3 +1,4 @@
+(convert-maDLC)=
 ### How to convert a pre-2.2 project for use with DeepLabCut 2.2
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC" alt="DLC!" align="right" vspace = "50">
@@ -51,7 +52,7 @@ Now you will see that your data within `labeled-data` are converted to a new for
 ```python
 deeplabcut.create_multianimaltraining_dataset(path_config_file)
 ```
-to begin training. See function details [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/functionDetails.md#f-create-training-datasets)).
+to begin training.
 
 **Advanced option:** You can also assign former `bodyparts` to either `uniquebodyparts` or `multianimalbodyparts` (you can even leave some unassigned, which means they will be dropped in the conversion).
 
