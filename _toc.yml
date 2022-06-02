@@ -3,7 +3,6 @@ root: docs/intro
 parts:
 - caption: Main Documentation
   chapters:
-  - file: docs/README
   - file: docs/UseOverviewGuide
   - file: docs/installation
   - file: docs/docker
