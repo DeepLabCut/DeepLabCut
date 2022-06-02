@@ -1,3 +1,4 @@
+(governance-model)=
 # Governance Model of DeepLabCut
 (adapted from https://napari.org/docs/_sources/developers/GOVERNANCE.md.txt)
 
@@ -84,7 +85,7 @@ The current steering council of DeepLabCut consists of the original developers:
 The SC membership is revisited every January. SC members who do
 not actively engage with the SC duties are expected to resign. New members are
 added by nomination by a core developer. Nominees should have demonstrated
-long-term, continued commitment to the project and its [mission and values](https://github.com/DeepLabCut/DeepLabCut/docs/MISSION_AND_VALUES.md). A
+long-term, continued commitment to the project and its [mission and values](mission-and-values). A
 nomination will result in discussion that cannot take more than a month and
 then admission to the SC by consensus. During that time deadlocked votes of the SC will
 be postponed until the new member has joined and another vote can be held.
@@ -98,7 +99,7 @@ members of the community. All non-sensitive project management discussion takes
 place on the [issue tracker](https://github.com/deeplabcut/deeplabcut/issues). Occasionally,
 sensitive discussions may occur on a private core developer medium.
 
-Decisions should be made in accordance with the [mission and values](https://github.com/DeepLabCut/DeepLabCut/docs/MISSION_AND_VALUES.md)
+Decisions should be made in accordance with the [mission and values](mission-and-values)
 of the DeepLabCut project.
 
 DeepLabCut uses a “consensus seeking” process for making decisions. The group

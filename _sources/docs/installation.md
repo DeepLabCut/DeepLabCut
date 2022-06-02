@@ -1,12 +1,13 @@
+(how-to-install)=
 # How To Install DeepLabCut
 
-DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](/docs/installation.md#technical-considerations)).
+DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install)).
 
 ## PIP:
 
 - Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support) or without: `pip install deeplabcut`.
 
-- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](/docs/installation.md#system-wide-considerations)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
+- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
 ## CONDA: The installation process is as easy as this figure! -->
 
@@ -150,11 +151,12 @@ DEEPLABCUT:
 
 - if you git clone or download this folder, and are inside of it then ``import deeplabcut`` will import the package from there rather than from the latest on PyPi!
 
-
+(system-wide-considerations-during-install)=
 ## System-wide considerations:
 
 If you perform the system-wide installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them. If you have a dedicated machine for DeepLabCut, this is fine. If there are other applications that require different versions of libraries, then one would potentially break those applications. The solution to this problem is to create a virtual environment, a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages. One way to manage virtual environments is to use conda environments (for which you need Anaconda installed).
 
+(tech-considerations-during-install)=
 ## Technical Considerations:
 
 - Computer:
@@ -174,8 +176,8 @@ If you perform the system-wide installation, and the computer has other Python p
      - TensorFlow
        - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
-     - Docker: We highly recommend advanced users use the supplied [Docker container](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md)
+     - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers)
 
 
 
-Return to [readme](../README.md).
+Return to [readme](readme).

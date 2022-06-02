@@ -522,13 +522,13 @@ const thebe_selector_output = ".output, .cell_output"
               <div>
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="how-to-install-deeplabcut">
-<h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this headline">¶</a></h1>
-<p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference external" href="/docs/installation.md#technical-considerations">technical considerations</a>).</p>
+<span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this headline">¶</a></h1>
+<p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a>).</p>
 <div class="section" id="pip">
 <h2>PIP:<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> (for GUI support) or without: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>.</p></li>
-<li><p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference external" href="/docs/installation.md#system-wide-considerations">note below</a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md"><strong>Docker container</strong></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p></li>
+<li><p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference internal" href="#system-wide-considerations-during-install"><span class="std std-ref">note below</span></a>), <strong>Anaconda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref"><strong>Docker container</strong></span></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p></li>
 </ul>
 </div>
 <div class="section" id="conda-the-installation-process-is-as-easy-as-this-figure">
@@ -662,11 +662,11 @@ Here are some additional resources users have found helpful (posted without endo
 </ul>
 </div>
 <div class="section" id="system-wide-considerations">
-<h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Permalink to this headline">¶</a></h2>
+<span id="system-wide-considerations-during-install"></span><h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Permalink to this headline">¶</a></h2>
 <p>If you perform the system-wide installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them. If you have a dedicated machine for DeepLabCut, this is fine. If there are other applications that require different versions of libraries, then one would potentially break those applications. The solution to this problem is to create a virtual environment, a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages. One way to manage virtual environments is to use conda environments (for which you need Anaconda installed).</p>
 </div>
 <div class="section" id="technical-considerations">
-<h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Permalink to this headline">¶</a></h2>
+<span id="tech-considerations-during-install"></span><h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Computer:</p>
 <ul>
@@ -694,11 +694,11 @@ Here are some additional resources users have found helpful (posted without endo
 <li><p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: <a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.</p></li>
 </ul>
 </li>
-<li><p>Docker: We highly recommend advanced users use the supplied <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker.md">Docker container</a></p></li>
+<li><p>Docker: We highly recommend advanced users use the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref">Docker container</span></a></p></li>
 </ul>
 </li>
 </ul>
-<p>Return to <span class="xref myst">readme</span>.</p>
+<p>Return to <a class="reference internal" href="README.html#readme"><span class="std std-ref">readme</span></a>.</p>
 </div>
 </div>
 
