@@ -430,10 +430,9 @@ const thebe_selector_output = ".output, .cell_output"
 <h1>DeepLabCut Documentation<a class="headerlink" href="#deeplabcut-documentation" title="Permalink to this headline">¶</a></h1>
 <p>DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. Read a short development and application summary below. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic.</p>
 <p>This new JupyterBook Docs Hub serves as a landing page for both new and advanced users. Check out the left sidebar for new the main docs, but also tutorials and “recipes” for interesting ways to use DLC and functionality that is not documented elsewhere. Have a new recipe? Please contribute!</p>
-<p>To get started, click on the <strong>“Welcome to Our Documentation Hub!”</strong> in the table of contents!</p>
 <p><strong>Latest updates:</strong></p>
 <ul class="simple">
-<li><p><strong>DeepLabCut supports multi-animal pose estimation!</strong> maDLC is out of beta/rc mode and beta is depreciated, thanks to the testers out there! Your labeled data will be backwards compatible, but not all other steps. Please see the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">new <code class="docutils literal notranslate"><span class="pre">2.2+</span></code> release</a> for what’s new &amp; how to install it, please see our new <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1">preprint, Lauer et al 2021</a>, and the new docs on how to use it!</p></li>
+<li><p><strong>DeepLabCut supports multi-animal pose estimation!</strong> maDLC is out of beta/rc mode and beta is depreciated, thanks to the testers out there! Your labeled data will be backwards compatible, but not all other steps. Please see the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">new <code class="docutils literal notranslate"><span class="pre">2.2+</span></code> releases</a> for what’s new &amp; how to install it, please see our new paper in <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Nature Methods (2022)</a>, and the docs on how to use it!</p></li>
 <li><p>We have a <strong>real-time DeepLabCut-live!</strong> package available! <a class="reference external" href="http://DLClive.deeplabcut.org">http://DLClive.deeplabcut.org</a></p></li>
 <li><p>Check out the docs in JupyterBook! <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">https://deeplabcut.github.io/DeepLabCut</a> (or in the <span class="xref myst">README</span>).</p></li>
 <li><p>For a step-by-step user guide, please also see the <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nature Protocols paper</a>!</p></li>
@@ -474,7 +473,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="section" id="references">
 <h2>References:<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<p>If you use this code or data we kindly as that you please <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">cite Mathis et al, 2018</a> and, if you use the Python package (DeepLabCut2.x) please also cite <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath, Mathis et al, 2019</a>. If you utilize the MobileNetV2s or EfficientNets please cite <a class="reference external" href="https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf">Mathis, Biasi et al. 2021</a>. If you use multi-animal in beta mode, please contact us; if you use the 2.2rc1+, please cite <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1">Lauer et al. 2021</a>.</p>
+<p>If you use this code or data we kindly as that you please <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">cite Mathis et al, 2018</a> and, if you use the Python package (DeepLabCut2.x) please also cite <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath, Mathis et al, 2019</a>. If you utilize the MobileNetV2s or EfficientNets please cite <a class="reference external" href="https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf">Mathis, Biasi et al. 2021</a>. If you use multi-animal code please cite <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 <p>DOIs (#ProTip, for helping you find citations for software, check out <a class="reference external" href="http://citeas.org/">CiteAs.org</a>!):</p>
 <ul class="simple">
 <li><p>Mathis et al 2018: <a class="reference external" href="https://doi.org/10.1038/s41593-018-0209-y">10.1038/s41593-018-0209-y</a></p></li>
@@ -488,7 +487,7 @@ const thebe_selector_output = ".output, .cell_output"
     year = {2018},
     url = {https://www.nature.com/articles/s41593-018-0209-y}}
 
- @article{NathMathisetal2019,
+@article{NathMathisetal2019,
     title = {Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
     author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
     journal = {Nature Protocols},
@@ -503,12 +502,13 @@ const thebe_selector_output = ".output, .cell_output"
     year      = {2021},
     pages     = {1859-1868}}
 
-@article{Lauer2021MultianimalPE,
-    title = {Multi-animal pose estimation and tracking with DeepLabCut},
-    author = {Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Tanmay Nath and Mohammed Mostafizur Rahman and V. Di Santo and Daniel Soberanes and         Guoping Feng and V. Murthy and G. Lauder and C. Dulac and M. Mathis and Alexander Mathis},
-    journal = {bioRxiv},
-    year = {2021}
-    url = {https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1}}
+@article{Lauer2022MultianimalPE,
+   title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
+   author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur   Rahman and Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
+   journal={Nature Methods},
+   year={2022},
+   volume={19},
+   pages={496 - 504}}
 
 @article{insafutdinov2016eccv,
     title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
@@ -563,6 +563,7 @@ This package includes graphical user interfaces to label your data, and take you
 <div class="section" id="news-and-in-the-news">
 <h2>News (and in the news):<a class="headerlink" href="#news-and-in-the-news" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
+<li><p>April 2022: multi-animal identification and tracking with DeepLabCut is published in Nature Methods!</p></li>
 <li><p>August 2021: 2.2 becomes the new stable release for DeepLabCut.</p></li>
 <li><p>July 2021: Docs are now at <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">https://deeplabcut.github.io/DeepLabCut</a> and we now include TensorFlow 2 support!</p></li>
 <li><p>May 2021: DeepLabCut hit 200,000 downloads! Also, Our preprint on 2.2, multi-animal DeepLabCut is released!</p></li>
