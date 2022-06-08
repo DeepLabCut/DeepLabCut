@@ -32,9 +32,8 @@ def test_ellipse_fitter():
 
 def test_ellipse_tracker(ellipse):
     tracker1 = trackingutils.EllipseTracker(ellipse.parameters)
-    assert tracker1.id == 0
     tracker2 = trackingutils.EllipseTracker(ellipse.parameters)
-    assert tracker2.id == 1
+    assert tracker1.id != tracker2.id
     tracker1.update(ellipse.parameters)
     assert tracker1.hit_streak == 1
     state = tracker1.predict()
@@ -75,9 +74,8 @@ def test_tracking_ellipse(real_assemblies, real_tracklets):
 def test_box_tracker():
     bbox = 0, 0, 100, 100
     tracker1 = trackingutils.BoxTracker(bbox)
-    assert tracker1.id == 0
     tracker2 = trackingutils.BoxTracker(bbox)
-    assert tracker2.id == 1
+    assert tracker1.id != tracker2.id
     tracker1.update(bbox)
     assert tracker1.hit_streak == 1
     state = tracker1.predict()
