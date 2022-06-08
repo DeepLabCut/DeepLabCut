@@ -17,7 +17,10 @@ bpt1 = df.xs('head', level='bodyparts', axis=1).to_numpy()
 bpt2 = df.xs('tail', level='bodyparts', axis=1).to_numpy()
 # We calculate the vectors from a point to the other
 # and group them per frame and per animal.
-diff = (bpt1 - bpt2).reshape((len(df), -1, 2))
+try:
+    diff = (bpt1 - bpt2).reshape((len(df), -1, 2))
+except ValueError:
+    diff = (bpt1 - bpt2).reshape((len(df), -1, 3))
 dist = np.linalg.norm(diff, axis=2)
 mask = np.any(dist >= max_dist, axis=1)
 flagged_frames = df.iloc[mask].index
