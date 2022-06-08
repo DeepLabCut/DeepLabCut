@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Installation Tips &#8212; DeepLabCut</title>
     
-  <link href="../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../intro.html">
-   DeepLabCut Documentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    DeepLabCut Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Main Documentation
  </span>
@@ -233,86 +248,176 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/docs/recipes/installTips.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/DeepLabCut/DeepLabCut"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/installTips.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
         </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/installTips.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../../_sources/docs/recipes/installTips.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#how-to-use-the-latest-updates-directly-from-github">
    How to use the latest updates directly from GitHub
@@ -386,12 +491,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>Installation Tips</h1>
@@ -481,13 +585,14 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="installation-tips">
-<span id="id1"></span><h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="how-to-use-the-latest-updates-directly-from-github">
-<h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Permalink to this headline">¶</a></h2>
+  <section class="tex2jax_ignore mathjax_ignore" id="installation-tips">
+<span id="id1"></span><h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Permalink to this headline">#</a></h1>
+<section id="how-to-use-the-latest-updates-directly-from-github">
+<h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Permalink to this headline">#</a></h2>
 <p>We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code> code from!</p>
 <p>But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.</p>
 <p><strong>Step 1:</strong></p>
@@ -517,8 +622,8 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">testscript_multianimal</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<div class="section" id="quick-pull-and-install-from-the-github-repository">
-<h3>Quick pull and install from the github repository<a class="headerlink" href="#quick-pull-and-install-from-the-github-repository" title="Permalink to this headline">¶</a></h3>
+<section id="quick-pull-and-install-from-the-github-repository">
+<h3>Quick pull and install from the github repository<a class="headerlink" href="#quick-pull-and-install-from-the-github-repository" title="Permalink to this headline">#</a></h3>
 <p>If you just want to install the latest pre-release without editing, you can activate your anaconda env, and run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
@@ -527,12 +632,12 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">upgrade</span><span class="o">-</span><span class="n">strategy</span> <span class="n">eager</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="installation-on-ubuntu-18-04-lts">
-<h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts">
-<h3>Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)<a class="headerlink" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="installation-on-ubuntu-18-04-lts">
+<h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Permalink to this headline">#</a></h2>
+<section id="here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts">
+<h3>Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)<a class="headerlink" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts" title="Permalink to this headline">#</a></h3>
 <p>install gcc:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
 </pre></div>
@@ -572,13 +677,13 @@ const thebe_selector_output = ".output, .cell_output"
 </pre></div>
 </div>
 <p>and you’ll see driver version, CUDA version, status of graphics card(s).</p>
-</div>
-</div>
-<div class="section" id="installation-on-ubuntu-20-04-lts">
-<h2>Installation on Ubuntu 20.04 LTS<a class="headerlink" href="#installation-on-ubuntu-20-04-lts" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="installation-on-ubuntu-20-04-lts">
+<h2>Installation on Ubuntu 20.04 LTS<a class="headerlink" href="#installation-on-ubuntu-20-04-lts" title="Permalink to this headline">#</a></h2>
 <p>Hello! Another cookbook entry on how to install your freshly installed 20.04 LTS system for DLC use. Namely, CUDA, drivers, Docker, and anaconda!</p>
-<div class="section" id="let-s-start-with-cuda-support-for-your-gpu">
-<h3>Let’s start with CUDA support for your GPU:<a class="headerlink" href="#let-s-start-with-cuda-support-for-your-gpu" title="Permalink to this headline">¶</a></h3>
+<section id="let-s-start-with-cuda-support-for-your-gpu">
+<h3>Let’s start with CUDA support for your GPU:<a class="headerlink" href="#let-s-start-with-cuda-support-for-your-gpu" title="Permalink to this headline">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">gcc</span></code></p>
 <p>then:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
@@ -634,9 +739,9 @@ const thebe_selector_output = ".output, .cell_output"
 
 </pre></div>
 </div>
-</div>
-<div class="section" id="next-docker">
-<h3>Next, Docker!<a class="headerlink" href="#next-docker" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="next-docker">
+<h3>Next, Docker!<a class="headerlink" href="#next-docker" title="Permalink to this headline">#</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> \
     <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> \
     <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> \
@@ -682,9 +787,9 @@ For more examples and ideas, visit:
  https://docs.docker.com/get-started/
 </pre></div>
 </div>
-</div>
-<div class="section" id="next-anaconda">
-<h3>Next, Anaconda!<a class="headerlink" href="#next-anaconda" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="next-anaconda">
+<h3>Next, Anaconda!<a class="headerlink" href="#next-anaconda" title="Permalink to this headline">#</a></h3>
 <p>Click here to get the ubuntu/linux package: <a class="reference external" href="https://www.anaconda.com/products/individual#linux">https://www.anaconda.com/products/individual#linux</a></p>
 <p>this downloads a file, save it (I save into downloads)</p>
 <p>then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>:</p>
@@ -700,19 +805,19 @@ For more examples and ideas, visit:
 </pre></div>
 </div>
 <p>Follow prompts!</p>
-</div>
-<div class="section" id="next-deeplabcut">
-<h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="next-deeplabcut">
+<h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this headline">#</a></h3>
 <p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code></p>
 <p>We strongly recommend for Ubuntu users to use Docker (<a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">https://hub.docker.com/r/deeplabcut/deeplabcut</a>) - it’s a much more reproducible environment.</p>
 <p>If you want to use our conda file, then I proceeded below:</p>
 <p>I grab the conda file from the website at <a class="reference external" href="http://www.deeplabcut.org">www.deeplabcut.org</a>. Simply click to download. For me, this goes into Downloads.</p>
 <p>So, I open a terminal, <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>, and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">DEEPLABCUT.yaml</span></code></p>
 <p>Follow prompts!</p>
-</div>
-</div>
-<div class="section" id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e">
-<h2>Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e">
+<h2>Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e" title="Permalink to this headline">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Command</span> <span class="n">errored</span> <span class="n">out</span> <span class="k">with</span> <span class="n">exit</span> <span class="n">status</span> <span class="mi">1</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import io, os, sys, setuptools, tokenize; sys.argv[0] = &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;; __file__=&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;;f = getattr(tokenize, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;open&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, open)(__file__) if os.path.exists(__file__) else io.StringIO(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;from setuptools import setup; setup()&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);code = f.read().replace(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);f.close();exec(compile(code, __file__, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;exec&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;))&#39;</span> <span class="n">install</span> <span class="o">--</span><span class="n">record</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="n">record</span><span class="o">-</span><span class="n">pzy9q5u2</span><span class="o">/</span><span class="n">install</span><span class="o">-</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="nb">compile</span> <span class="o">--</span><span class="n">install</span><span class="o">-</span><span class="n">headers</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="n">m</span><span class="o">/</span><span class="n">wxpython</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">logs</span> <span class="k">for</span> <span class="n">full</span> <span class="n">command</span> <span class="n">output</span><span class="o">.</span>
 
 <span class="n">failed</span>
@@ -739,9 +844,9 @@ For more examples and ideas, visit:
 </div>
 <p>Activate! <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code> and then run: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">wxpython</span></code>.</p>
 <p>Then run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI.</p>
-</div>
-<div class="section" id="deeplabcut-m1-chip-installation-environment-instructions">
-<h2>DeepLabCut M1 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-m1-chip-installation-environment-instructions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="deeplabcut-m1-chip-installation-environment-instructions">
+<h2>DeepLabCut M1 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-m1-chip-installation-environment-instructions" title="Permalink to this headline">#</a></h2>
 <p>This only assumes you have anaconda installed!</p>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT_M1.yaml</span></code> conda file if you have an Macbok with an M1 chip, and follow these steps:</p>
 <p>(1) git clone the deeplabcut cut repo:</p>
@@ -758,9 +863,9 @@ For more examples and ideas, visit:
 <p>(6) Next, launch DLC with <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
 <p>GUI will open!</p>
 <p>Note: Based on issue #1380 thanks!</p>
-</div>
-<div class="section" id="how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut">
-<h2>How to confirm that your GPU is being used by DeepLabCut<a class="headerlink" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut">
+<h2>How to confirm that your GPU is being used by DeepLabCut<a class="headerlink" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut" title="Permalink to this headline">#</a></h2>
 <p>During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:</p>
 <p><strong>On Windows</strong>:</p>
 <p>(1) Open the task manager. If it looks like the image below, click on “More Details”</p>
@@ -771,9 +876,9 @@ For more examples and ideas, visit:
 <p>(4) During training, you should see the <strong>Dedicated GPU memory usage</strong> increase to near maximum, and you should see some activity in the <strong>CUDA</strong> graph. The graph below is the activity while running <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code>.</p>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w" /></p>
 <p>(5) If you don’t see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cudnn</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code> after installing DeepLabCut.</p>
-</div>
-<div class="section" id="how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
-<h2>How to install DeepLabCut for Intel and  AMD GPUs on Windows<a class="headerlink" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
+<h2>How to install DeepLabCut for Intel and  AMD GPUs on Windows<a class="headerlink" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows" title="Permalink to this headline">#</a></h2>
 <p>If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU acceleration for inference, with an installation that is consistent between devices. This method uses <a class="reference external" href="https://github.com/microsoft/tensorflow-directml">Tensorflow-directml</a> which uses DirectML instead of Cuda for ML training and inference.</p>
 <p>To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.</p>
 <p>The following instructions are using conda and pip for environment management, executing within the Anaconda prompt program that was installed along with Anaconda python. The # lines are not to be typed, they are for guidance.</p>
@@ -787,8 +892,8 @@ conda install <span class="nv">ffmpeg</span><span class="o">==</span><span class
 </pre></div>
 </div>
 <p>Attention: Please note the order of execution of these commands are important, as pip’s dependency manager may change package versions to incorrect ones if done in the wrong version.</p>
-</div>
-</div>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -812,9 +917,11 @@ conda install <span class="nv">ffmpeg</span><span class="o">==</span><span class
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="../HelperFunctions.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -830,28 +937,32 @@ conda install <span class="nv">ffmpeg</span><span class="o">==</span><span class
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
-    
-      By The DeepLabCut Team<br/>
-    
-        &copy; Copyright 2021.<br/>
-      <div class="extra_footer">
-        <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By The DeepLabCut Team<br/>
+  
+      &copy; Copyright 2022.<br/>
+    <div class="extra_footer">
+      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
 
-      </div>
-  </p>
-</footer>
-</main>
+    </div>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>

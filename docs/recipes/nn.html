@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Model training tips &amp; tricks &#8212; DeepLabCut</title>
     
-  <link href="../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../intro.html">
-   DeepLabCut Documentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    DeepLabCut Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Main Documentation
  </span>
@@ -233,86 +248,176 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/docs/recipes/nn.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/DeepLabCut/DeepLabCut"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/nn.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
         </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/nn.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../../_sources/docs/recipes/nn.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#limiting-a-gpu-s-memory-consumption">
    Limiting a GPU’s memory consumption
@@ -362,12 +467,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>Model training tips & tricks</h1>
@@ -433,13 +537,14 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="model-training-tips-tricks">
-<h1>Model training tips &amp; tricks<a class="headerlink" href="#model-training-tips-tricks" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="limiting-a-gpu-s-memory-consumption">
-<h2>Limiting a GPU’s memory consumption<a class="headerlink" href="#limiting-a-gpu-s-memory-consumption" title="Permalink to this headline">¶</a></h2>
+  <section class="tex2jax_ignore mathjax_ignore" id="model-training-tips-tricks">
+<h1>Model training tips &amp; tricks<a class="headerlink" href="#model-training-tips-tricks" title="Permalink to this headline">#</a></h1>
+<section id="limiting-a-gpu-s-memory-consumption">
+<h2>Limiting a GPU’s memory consumption<a class="headerlink" href="#limiting-a-gpu-s-memory-consumption" title="Permalink to this headline">#</a></h2>
 <p>All GPU memory is allocated to training by default, preventing
 other Tensorflow processes from being run on the same machine.</p>
 <p>A flexible solution to limiting memory usage is to call <code class="docutils literal notranslate"><span class="pre">deeplabcut.train(...,</span> <span class="pre">allow_growth=True)</span></code>,
@@ -453,9 +558,9 @@ memory could be done as follows:</p>
 <span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">(</span><span class="n">gpu_options</span><span class="o">=</span><span class="n">gpu_options</span><span class="p">))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="using-custom-image-augmentation">
-<h2>Using custom image augmentation<a class="headerlink" href="#using-custom-image-augmentation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="using-custom-image-augmentation">
+<h2>Using custom image augmentation<a class="headerlink" href="#using-custom-image-augmentation" title="Permalink to this headline">#</a></h2>
 <p>Image augmentation is the process of artificially expanding the training set
 by applying various transformations to images (e.g., rotation or rescaling)
 in order to make models more robust and more accurate (read our
@@ -488,22 +593,22 @@ You can look at what types of augmentation are available to you (or edit those f
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="evaluating-intermediate-and-all-snapshots">
-<h2>Evaluating intermediate (and all) snapshots<a class="headerlink" href="#evaluating-intermediate-and-all-snapshots" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="evaluating-intermediate-and-all-snapshots">
+<h2>Evaluating intermediate (and all) snapshots<a class="headerlink" href="#evaluating-intermediate-and-all-snapshots" title="Permalink to this headline">#</a></h2>
 <p>The latest snapshot stored during training may not necessarily be the one that yields the highest performance. Therefore, you should analyze ALL snapshots, and select the best. Put ‘all’ in the snapshots section of the config.yaml to do this.</p>
-</div>
-<div class="section" id="what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations">
-<h2>What neural network should I use? (Trade offs, speed performance, and considerations)<a class="headerlink" href="#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="with-the-release-of-even-more-network-options-you-now-have-to-decide-what-to-use-this-additionally-flexibility-is-hopefully-helpful-but-we-want-to-give-you-some-guidance-on-where-to-start">
-<h3>With the release of even more network options, you now have to decide what to use! This additionally flexibility is hopefully helpful, but we want to give you some guidance on where to start.<a class="headerlink" href="#with-the-release-of-even-more-network-options-you-now-have-to-decide-what-to-use-this-additionally-flexibility-is-hopefully-helpful-but-we-want-to-give-you-some-guidance-on-where-to-start" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations">
+<h2>What neural network should I use? (Trade offs, speed performance, and considerations)<a class="headerlink" href="#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations" title="Permalink to this headline">#</a></h2>
+<section id="with-the-release-of-even-more-network-options-you-now-have-to-decide-what-to-use-this-additionally-flexibility-is-hopefully-helpful-but-we-want-to-give-you-some-guidance-on-where-to-start">
+<h3>With the release of even more network options, you now have to decide what to use! This additionally flexibility is hopefully helpful, but we want to give you some guidance on where to start.<a class="headerlink" href="#with-the-release-of-even-more-network-options-you-now-have-to-decide-what-to-use-this-additionally-flexibility-is-hopefully-helpful-but-we-want-to-give-you-some-guidance-on-where-to-start" title="Permalink to this headline">#</a></h3>
 <p><strong>TL;DR - your best performance for most everything is ResNet-50; MobileNetV2-1 is much faster, needs less memory on your GPU to train and nearly as accurate.</strong></p>
 <p>You always select the network type when you create a training data set: i.e., standard dlc: <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset(config,</span> <span class="pre">net_type=resnet_50)</span></code> , or maDLC: <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_multianimaltraining_dataset(config,</span> <span class="pre">net_type=dlcrnet_ms5)</span></code>. There is nothing else you should change.</p>
-</div>
-</div>
+</section>
+</section>
 <hr class="docutils" />
-<div class="section" id="resnets">
-<h2>ResNets:<a class="headerlink" href="#resnets" title="Permalink to this headline">¶</a></h2>
+<section id="resnets">
+<h2>ResNets:<a class="headerlink" href="#resnets" title="Permalink to this headline">#</a></h2>
 <p>In Mathis et al. 2018 we benchmarked three networks: <strong>ResNet-50, ResNet-101, and ResNet-101ws</strong>. For ALL lab applications, ResNet-50 was enough. For all the demo videos on <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">www.deeplabcut.org</a> the backbones are ResNet-50’s. Thus, we recommend making this your go-to workhorse for data analysis. Here is a figure from the paper, see panel “B” (they are all within a few pixels of each other on the open-field dataset):</p>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1548558406678-S32H6T3M3U7BWVS4IGYD/ke17ZwdGBToddI8pDm48kD4CqqHoJgLzZVYacqX5G8QUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dqTB9h4P9po3-YSCqzKkit0PccqviqYX7RTAdOBUgXwbCjLISwBs8eEdxAxTptZAUg/SupplFig2-01.png?format=1000w" width="80%">
@@ -517,9 +622,9 @@ You can look at what types of augmentation are available to you (or edit those f
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1547585393723-8BQ6RGSPUUEQ1NNGUQDZ/ke17ZwdGBToddI8pDm48kCebzxgICDi_Bmgq_409OyxZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PICdDqlshOygx3FUsifuoze123Z0BWMsGmyODBJYiFvQc/inferencespeed.png?format=1000w" width="60%">
 </p>
 <p><strong>So, why use a ResNet-101 or even 152?</strong> if you have a much more challenging problem, like multiple humans dancing, this is a good option. You should then also set <code class="docutils literal notranslate"><span class="pre">intermediate_supervision=True</span></code> for best performance in the pose_config.yaml of that shuffle folder ( before you train). Note, for ResNet-50 this does NOT help, and can hurt.</p>
-</div>
-<div class="section" id="when-should-i-use-a-mobilenet">
-<h2>When should I use a MobileNet?<a class="headerlink" href="#when-should-i-use-a-mobilenet" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="when-should-i-use-a-mobilenet">
+<h2>When should I use a MobileNet?<a class="headerlink" href="#when-should-i-use-a-mobilenet" title="Permalink to this headline">#</a></h2>
 <p>MobileNets are fast to run, fast to train, more memory efficient, and faster for analysis (inference) - e.g. on CPUs they are 4 times faster, on GPUs up to 2x! So, if you don’t have a GPU (or a GPU with little memory), and don’t want to use Google COLAB, etc, then these are a great starting point.</p>
 <p>They are smaller/shallower networks though, so you don’t want to be pushing in very large images. So, be sure to use <code class="docutils literal notranslate"><span class="pre">deeplabcut.DownSampleVideo</span></code> on your data (which is frankly never a bad idea).</p>
 <p>Additionally, these are good options for running on “live” videos, i.e. if you want to give real-time feedback in an experiment, you can run a video around a smaller cropped area, and run this rather fast!</p>
@@ -532,19 +637,19 @@ read more here: <a class="reference external" href="https://arxiv.org/abs/1909.1
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570054117297-YA8WOYG50EK55WM6Y8ZI/ke17ZwdGBToddI8pDm48kAWg0301pwdoqO-Bo48aILYUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZbh5EzlyubXk7Q3qHw5ayJHISnXwMOq8Pp90__8eMJefaZFcnumpU7B4DHTHEFkQ/speedtables.png?format=1000w" width="100%">
 </p>
-</div>
-<div class="section" id="when-should-i-use-an-efficientnet">
-<h2>When should I use an EfficientNet?<a class="headerlink" href="#when-should-i-use-an-efficientnet" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="when-should-i-use-an-efficientnet">
+<h2>When should I use an EfficientNet?<a class="headerlink" href="#when-should-i-use-an-efficientnet" title="Permalink to this headline">#</a></h2>
 <p>Built with inverse residual blocks like MobileNets, but more powerful than ResNets, due to optimal depth/width/resolution scaling, <a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet</a> are an excellent choice if you want speed and performance. They do require more careful handling though! Especially for small datasets, you will need to tune the batch size and learning rates. So, we suggest these for more advanced users, or those willing to run experiments to find the best settings. Here is the speed comparison, and for performance see our latest work at: <a class="reference external" href="http://horse10.deeplabcut.org">http://horse10.deeplabcut.org</a></p>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1615891029784-87JAZJN1C5S4HS62F752/ke17ZwdGBToddI8pDm48kLId9V2zDiOqQ5EIZz4b_S0UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKctCpCjeabgTq1Hv_G9BIks_zjAnmEpAaVGioFPvsrieXDegXGHA0z-h8QeHOQDokM/speedTest.png?format=1000w" width="100%">
 </p>
-</div>
-<div class="section" id="how-can-i-compare-them">
-<h2>How can I compare them?<a class="headerlink" href="#how-can-i-compare-them" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="how-can-i-compare-them">
+<h2>How can I compare them?<a class="headerlink" href="#how-can-i-compare-them" title="Permalink to this headline">#</a></h2>
 <p>Great question! So, the best way to do this is to use the <strong>same</strong> test/train split (that is generated in create_training_dataset) with different models. Here, as of 2.1+, we have a <strong>new</strong> function that lets you do this easily. Instead of using <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code> you will run <code class="docutils literal notranslate"><span class="pre">create_training_model_comparison</span></code> (see the docstrings by <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison?</span></code> or run the Project Manager GUI - <code class="docutils literal notranslate"><span class="pre">deeplabcut.launch_dlc()</span></code>-  for assistance.</p>
-</div>
-</div>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -568,9 +673,11 @@ read more here: <a class="reference external" href="https://arxiv.org/abs/1909.1
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="io.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -586,28 +693,32 @@ read more here: <a class="reference external" href="https://arxiv.org/abs/1909.1
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
-    
-      By The DeepLabCut Team<br/>
-    
-        &copy; Copyright 2021.<br/>
-      <div class="extra_footer">
-        <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By The DeepLabCut Team<br/>
+  
+      &copy; Copyright 2022.<br/>
+    <div class="extra_footer">
+      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
 
-      </div>
-  </p>
-</footer>
-</main>
+    </div>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>

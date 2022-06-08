@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>DeepLabCut for Multi-Animal Projects &#8212; DeepLabCut</title>
     
-  <link href="../_static/css/theme.css" rel="stylesheet">
-  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="intro.html">
-   DeepLabCut Documentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    DeepLabCut Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Main Documentation
  </span>
@@ -233,86 +248,176 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/docs/maDLC_UserGuide.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/DeepLabCut/DeepLabCut"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/maDLC_UserGuide.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
         </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/maDLC_UserGuide.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/docs/maDLC_UserGuide.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
    DeepLabCut for Multi-Animal Projects
@@ -448,12 +553,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>DeepLabCut for Multi-Animal Projects</h1>
@@ -605,16 +709,17 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="deeplabcut-for-multi-animal-projects">
-<span id="multi-animal-userguide"></span><h1>DeepLabCut for Multi-Animal Projects<a class="headerlink" href="#deeplabcut-for-multi-animal-projects" title="Permalink to this headline">¶</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-for-multi-animal-projects">
+<span id="multi-animal-userguide"></span><h1>DeepLabCut for Multi-Animal Projects<a class="headerlink" href="#deeplabcut-for-multi-animal-projects" title="Permalink to this headline">#</a></h1>
 <p>This document should serve as the user guide for maDLC,
 and it is here to support the scientific advances presented in <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 <p>Note, we strongly encourage you to use the <a class="reference internal" href="PROJECT_GUI.html#project-manager-gui"><span class="std std-ref">Project Manager GUI</span></a> when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!</p>
-<div class="section" id="how-to-think-about-using-madlc">
-<h2>How to think about using maDLC:<a class="headerlink" href="#how-to-think-about-using-madlc" title="Permalink to this headline">¶</a></h2>
+<section id="how-to-think-about-using-madlc">
+<h2>How to think about using maDLC:<a class="headerlink" href="#how-to-think-about-using-madlc" title="Permalink to this headline">#</a></h2>
 <p>You should think of maDLC being <strong>four</strong> parts.</p>
 <ul class="simple">
 <li><p>(1) Curate annotation data that allows you to learn a model to track the objects/animals of interest.</p></li>
@@ -624,14 +729,14 @@ and it is here to support the scientific advances presented in <a class="referen
 </ul>
 <p>Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below.</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
-</div>
-<div class="section" id="install">
-<h2>Install:<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="install">
+<h2>Install:<a class="headerlink" href="#install" title="Permalink to this headline">#</a></h2>
 <p><strong>Quick start:</strong> If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>; if you need GUI support, please use: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code>.</p>
 <p>IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (<a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github">https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github</a>).</p>
-</div>
-<div class="section" id="get-started-in-the-terminal-or-project-gui">
-<h2>Get started in the terminal or Project GUI:<a class="headerlink" href="#get-started-in-the-terminal-or-project-gui" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-started-in-the-terminal-or-project-gui">
+<h2>Get started in the terminal or Project GUI:<a class="headerlink" href="#get-started-in-the-terminal-or-project-gui" title="Permalink to this headline">#</a></h2>
 <p><strong>GUI:</strong> simply open your conda env, and windows/linux type <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>. MacOS users: <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut.</span></code>
 Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.</p>
 <p><strong>TERMINAL:</strong> To begin, (windows) navigate to anaconda prompt and right-click to “open as admin “, or (unix/MacOS) simply launch “terminal” on your computer. We assume you have DeepLabCut installed (if not, <a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">see installation instructions</span></a>). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>).</p>
@@ -643,8 +748,8 @@ If you use Windows, please always open the terminal with administrator privilege
 </pre></div>
 </div>
 <p><strong>TIP:</strong> for every function there is a associated help document that can be viewed by adding a <strong>?</strong> after the function name; i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project?</span></code>. To exit this help screen, type <code class="docutils literal notranslate"><span class="pre">:q</span></code>.</p>
-<div class="section" id="create-a-new-project">
-<h3>Create a New Project:<a class="headerlink" href="#create-a-new-project" title="Permalink to this headline">¶</a></h3>
+<section id="create-a-new-project">
+<h3>Create a New Project:<a class="headerlink" href="#create-a-new-project" title="Permalink to this headline">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;ProjectName&#39;</span><span class="p">,</span><span class="s1">&#39;YourName&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/usr/FullPath/OfVideo1.avi&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/FullPath/OfVideo2.avi&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/FullPath/OfVideo1.avi&#39;</span><span class="p">],</span>
               <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -674,9 +779,9 @@ If you use Windows, please always open the terminal with administrator privilege
 </div>
 <p>*Please note, <em>Full path of the project configuration file</em> will be referenced as <code class="docutils literal notranslate"><span class="pre">config_path</span></code> throughout this protocol.</p>
 <p>You can also use annotated data from singe-animal projects, by converting those files. There are docs for this: <a class="reference internal" href="convert_maDLC.html#convert-madlc"><span class="std std-ref">convert single to multianimal annotation data</span></a></p>
-</div>
-<div class="section" id="configure-the-project">
-<h3>Configure the Project:<a class="headerlink" href="#configure-the-project" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="configure-the-project">
+<h3>Configure the Project:<a class="headerlink" href="#configure-the-project" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
 <li><p>open the <strong>config.yaml</strong> file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step.</p></li>
 </ul>
@@ -714,9 +819,9 @@ If you use Windows, please always open the terminal with administrator privilege
 <p><strong>Identity:</strong> If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as “indv1”, etc). If you have this scenario, please set <code class="docutils literal notranslate"><span class="pre">identity:</span> <span class="pre">True</span></code> in your <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 <p><strong>Multianimalbodyparts:</strong> are the bodyparts of each individual (in the above list).</p>
 <p><strong>Uniquebodyparts:</strong> are points that you want to track, but that appear only once within each frame, i.e. they are “unique”. Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, …).</p>
-</div>
-<div class="section" id="select-frames-to-label">
-<h3>Select Frames to Label:<a class="headerlink" href="#select-frames-to-label" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="select-frames-to-label">
+<h3>Select Frames to Label:<a class="headerlink" href="#select-frames-to-label" title="Permalink to this headline">#</a></h3>
 <p><strong>CRITICAL:</strong> A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>. However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). <strong>For maDLC, be sure you have labeled frames with closely interacting animals!</strong></p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;automatic/manual&#39;</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s1">&#39;uniform/kmeans&#39;</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
@@ -748,9 +853,9 @@ provided along with the toolbox. This can be launched by using:</p>
 </div>
 <p>The user can use the <em>Load Video</em> button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and <em>Grab a Frame</em> (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.</p>
-</div>
-<div class="section" id="label-frames">
-<h3>Label Frames:<a class="headerlink" href="#label-frames" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="label-frames">
+<h3>Label Frames:<a class="headerlink" href="#label-frames" title="Permalink to this headline">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -777,9 +882,9 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
-</div>
-<div class="section" id="check-annotated-frames">
-<h3>Check Annotated Frames:<a class="headerlink" href="#check-annotated-frames" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="check-annotated-frames">
+<h3>Check Annotated Frames:<a class="headerlink" href="#check-annotated-frames" title="Permalink to this headline">#</a></h3>
 <p>Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:</p>
@@ -791,9 +896,9 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w" width="50%">
 </p>
 <p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
-</div>
-<div class="section" id="create-training-dataset">
-<h3>Create Training Dataset:<a class="headerlink" href="#create-training-dataset" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="create-training-dataset">
+<h3>Create Training Dataset:<a class="headerlink" href="#create-training-dataset" title="Permalink to this headline">#</a></h3>
 <p>At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For <strong>create_multianimaltraining_dataset</strong> we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
 </pre></div>
@@ -843,9 +948,9 @@ folders. Crop size still defaults to (400, 400); if your images are very large (
 <p>In addition, one can specify a crop sampling strategy: crop centers can either be taken at random over the image (<code class="docutils literal notranslate"><span class="pre">uniform</span></code>) or the annotated keypoints (<code class="docutils literal notranslate"><span class="pre">keypoints</span></code>); with a focus on regions of the scene with high body part density (<code class="docutils literal notranslate"><span class="pre">density</span></code>); last, combining <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code> for a <code class="docutils literal notranslate"><span class="pre">hybrid</span></code> balanced strategy (this is the default strategy). Note that both parameters can be easily edited prior to training in the <strong>pose_cfg.yaml</strong> configuration file.
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
 allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).</p>
-</div>
-<div class="section" id="train-the-network">
-<h3>Train The Network:<a class="headerlink" href="#train-the-network" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="train-the-network">
+<h3>Train The Network:<a class="headerlink" href="#train-the-network" title="Permalink to this headline">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -889,9 +994,9 @@ the pose_config.yaml file for the corresponding project. If None, the value from
 maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
 </pre></div>
 </div>
-</div>
-<div class="section" id="evaluate-the-trained-network">
-<h3>Evaluate the Trained Network:<a class="headerlink" href="#evaluate-the-trained-network" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="evaluate-the-trained-network">
+<h3>Evaluate the Trained Network:<a class="headerlink" href="#evaluate-the-trained-network" title="Permalink to this headline">#</a></h3>
 <p>Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -947,11 +1052,11 @@ but does not guarantee best performance.</p>
 </pre></div>
 </div>
 <p>you can drop “Indices” to run this on all training/testing images (this is very slow!)</p>
-</div>
-<div class="section" id="decision-point">
-<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="attention">
-<h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="decision-point">
+<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this headline">#</a></h3>
+<section id="attention">
+<h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this headline">#</a></h4>
 <p><strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
 <p>Please run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scorername</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
@@ -973,30 +1078,30 @@ to run:</p></li>
 </div>
 <p>where pickle_file is the <code class="docutils literal notranslate"><span class="pre">_full.pickle</span></code> one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.</p>
-</div>
-</div>
-<div class="section" id="animal-assembly-tracking-across-frames">
-<h3>——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-<a class="headerlink" href="#animal-assembly-tracking-across-frames" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="animal-assembly-tracking-across-frames">
+<h3>——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-<a class="headerlink" href="#animal-assembly-tracking-across-frames" title="Permalink to this headline">#</a></h3>
 <p>After pose estimation, now you perform assembly and tracking. <em>NEW</em> in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file.</p>
-</div>
-<div class="section" id="optimized-animal-assembly-video-analysis">
-<h3>Optimized Animal Assembly + Video Analysis:<a class="headerlink" href="#optimized-animal-assembly-video-analysis" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="optimized-animal-assembly-video-analysis">
+<h3>Optimized Animal Assembly + Video Analysis:<a class="headerlink" href="#optimized-animal-assembly-video-analysis" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
 <li><p>Please note that <strong>novel videos DO NOT need to be added to the config.yaml file</strong>. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. <code class="docutils literal notranslate"><span class="pre">videotype='.mp4'</span></code>), or pass the path to the <strong>folder</strong> or exact video(s) you wish to analyze:</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="if-auto-track-true">
-<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="if-auto-track-true">
+<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p><em>NEW</em> in 2.2.0.3+: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> has a new argument <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you’ll now get the <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file you might be used to getting in standard DLC. If <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code>, one must run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> and <code class="docutils literal notranslate"><span class="pre">stitch_tracklets</span></code> manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).</p></li>
 </ul>
-</div>
-<div class="section" id="if-auto-track-false">
-<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="if-auto-track-false">
+<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>You can validate the tracking parameters. Namely, you can iteratively change the parameters, run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> then load them in the GUI (<code class="docutils literal notranslate"><span class="pre">refine_tracklets</span></code>) if you want to look at the performance. If you want to edit these, you will need to open the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file (or click button in GUI). The options are:</p></li>
 </ul>
@@ -1042,16 +1147,16 @@ can be directly specified as follows:</p>
 </pre></div>
 </div>
 <p>In such cases, file columns will default to dummy animal names (ind1, ind2, …, up to indn).</p>
-</div>
-<div class="section" id="using-unsupervised-identity-tracking">
-<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="using-unsupervised-identity-tracking">
+<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this headline">#</a></h2>
 <p>In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note you should pass the n_tracks (number of animals) you expect to see in the video.</p>
-<div class="section" id="refine-tracklets">
-<h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this headline">¶</a></h3>
+<section id="refine-tracklets">
+<h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this headline">#</a></h3>
 <p>You can also optionally <strong>refine the tracklets</strong>. You can fix both “major” ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the <code class="docutils literal notranslate"><span class="pre">...trackertype.pickle</span></code> or <code class="docutils literal notranslate"><span class="pre">.h5'</span></code> file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this <code class="docutils literal notranslate"><span class="pre">.h5</span></code> this to refine (again) in case you find another issue, etc!</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_tracklets</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">pickle_or_h5_file</span><span class="p">,</span> <span class="n">videofile_path</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_swap_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_tracklet_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">trail_len</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
@@ -1065,18 +1170,18 @@ can be directly specified as follows:</p>
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
-</div>
-<div class="section" id="once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
-<h3>Once you have analyzed video data (and refined your maDeepLabCut tracklets):<a class="headerlink" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
+<h3>Once you have analyzed video data (and refined your maDeepLabCut tracklets):<a class="headerlink" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets" title="Permalink to this headline">#</a></h3>
 <p>Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis">https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis</a></p>
 <p>You can also filter the predicted bodyparts by:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: <code class="docutils literal notranslate"><span class="pre">deeplabcut.filterpredictions?</span></code></p>
-</div>
-<div class="section" id="plotting-results">
-<h3>Plotting Results:<a class="headerlink" href="#plotting-results" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="plotting-results">
+<h3>Plotting Results:<a class="headerlink" href="#plotting-results" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
 <li><p><strong>NOTE :bulb::mega::</strong> Before you create a video, you should set what threshold to use for plotting. This is set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file as <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> - if you have a well trained network, this should be high, i.e. set it to <code class="docutils literal notranslate"><span class="pre">0.8</span></code> or higher! IF YOU FILLED IN GAPS, you need to set this to <code class="docutils literal notranslate"><span class="pre">0</span></code> to “see” the filled in parts.</p></li>
 <li><p>You can also determine a good <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> value by looking at the likelihood plot created during <code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code>:</p></li>
@@ -1093,9 +1198,9 @@ can be directly specified as follows:</p>
 <li><p><strong>NOTE :bulb::mega::</strong> You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!</p></li>
 </ul>
 <p>(more details <a class="reference external" href="functionDetails.md#i-video-analysis-and-plotting-results">here</a>)</p>
-</div>
-<div class="section" id="help">
-<h3>HELP:<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="help">
+<h3>HELP:<a class="headerlink" href="#help" title="Permalink to this headline">#</a></h3>
 <p>In ipython/Jupyter notebook:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>deeplabcut.nameofthefunction?
 </pre></div>
@@ -1104,9 +1209,9 @@ can be directly specified as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">help</span><span class="p">(</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">nameofthefunction</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="tips-for-daily-use">
-<h3>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="tips-for-daily-use">
+<h3>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this headline">#</a></h3>
 <p align="center">
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
  </p>
@@ -1126,11 +1231,11 @@ can be directly specified as follows:</p>
 </pre></div>
 </div>
 <p>Now, you can run any of the functions described in this documentation.</p>
-</div>
-</div>
-</div>
-<div class="tex2jax_ignore mathjax_ignore section" id="getting-help-with-madlc">
-<h1>Getting help with maDLC:<a class="headerlink" href="#getting-help-with-madlc" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="getting-help-with-madlc">
+<h1>Getting help with maDLC:<a class="headerlink" href="#getting-help-with-madlc" title="Permalink to this headline">#</a></h1>
 <ul class="simple">
 <li><p>If you have a detailed question about how to use the code, or you hit errors that are not “bugs” but you want code assistance, please post on the <a class="reference external" href="https://forum.image.sc/tags/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png%3Bbase64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a></p></li>
 <li><p>If you have a quick, short question that fits a “chat” format:
@@ -1141,7 +1246,7 @@ can be directly specified as follows:</p>
 <li><p>if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: <a class="reference external" href="http://DLCcourse.deeplabcut.org">http://DLCcourse.deeplabcut.org</a>.</p></li>
 </ul>
 <p><strong>Please note:</strong> what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the &gt;700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our <a class="reference internal" href="MISSION_AND_VALUES.html#mission-and-values"><span class="std std-ref">Missions &amp; Values statement</span></a> to learn more about what we DO hope to provide you.</p>
-</div>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -1165,9 +1270,11 @@ can be directly specified as follows:</p>
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="standardDeepLabCut_UserGuide.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -1183,28 +1290,32 @@ can be directly specified as follows:</p>
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
-    
-      By The DeepLabCut Team<br/>
-    
-        &copy; Copyright 2021.<br/>
-      <div class="extra_footer">
-        <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By The DeepLabCut Team<br/>
+  
+      &copy; Copyright 2022.<br/>
+    <div class="extra_footer">
+      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
 
-      </div>
-  </p>
-</footer>
-</main>
+    </div>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>

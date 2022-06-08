@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>3D DeepLabCut &#8212; DeepLabCut</title>
     
-  <link href="../_static/css/theme.css" rel="stylesheet">
-  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="intro.html">
-   DeepLabCut Documentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    DeepLabCut Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Main Documentation
  </span>
@@ -233,86 +248,176 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/docs/Overviewof3D.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/DeepLabCut/DeepLabCut"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/Overviewof3D.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
         </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/Overviewof3D.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/docs/Overviewof3D.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
    *
@@ -360,12 +465,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>3D DeepLabCut</h1>
@@ -429,19 +533,20 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="d-deeplabcut">
-<span id="d-overview"></span><h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Permalink to this headline">¶</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="d-deeplabcut">
+<span id="d-overview"></span><h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Permalink to this headline">#</a></h1>
 <p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 <p><strong>ATTENTION: Our code base in this repo assumes you:</strong></p>
 <p>A. You have 2D videos and a DeepLabCut network to analyze them as described in the <a class="reference internal" href="UseOverviewGuide.html#overview"><span class="std std-ref">main documentation</span></a>. This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See <a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">Nath*, Mathis* et al., 2019</a>). We also support multi-animal 3D with this code (please see <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>).</p>
 <p>B. You are using 2 cameras, in a <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223">stereo configuration</a>, for 3D*.</p>
 <p>C. You have calibration images taken (see details below!).</p>
-<div class="section" id="if-you-need-more-than-2-camera-support">
-<h2>*<strong>If you need more than 2 camera support:</strong><a class="headerlink" href="#if-you-need-more-than-2-camera-support" title="Permalink to this headline">¶</a></h2>
+<section id="if-you-need-more-than-2-camera-support">
+<h2>*<strong>If you need more than 2 camera support:</strong><a class="headerlink" href="#if-you-need-more-than-2-camera-support" title="Permalink to this headline">#</a></h2>
 <p>Here are other excellent options for you to use that extend DeepLabCut:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
 <ul class="simple">
@@ -449,9 +554,9 @@ const thebe_selector_output = ".output, .cell_output"
 <li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut that provides &gt;3 camera support and is built to work directly with DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
 <li><p><strong>Argus, easywand or DLTdv</strong> w/DeepLabCut see <a class="reference external" href="https://github.com/haliaetus13/DLCconverterDLT">https://github.com/haliaetus13/DLCconverterDLT</a>; this can be used with the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
 </ul>
-</div>
-<div class="section" id="jump-in-with-direct-deeplabcut-2-camera-support">
-<h2>Jump in with direct DeepLabCut 2-camera support:<a class="headerlink" href="#jump-in-with-direct-deeplabcut-2-camera-support" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="jump-in-with-direct-deeplabcut-2-camera-support">
+<h2>Jump in with direct DeepLabCut 2-camera support:<a class="headerlink" href="#jump-in-with-direct-deeplabcut-2-camera-support" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>single animal DeepLabCut and multi-animal DeepLabCut (maDLC) projects are supported:</p></li>
 </ul>
@@ -459,8 +564,8 @@ const thebe_selector_output = ".output, .cell_output"
 <img src= "https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560968522350-COKR986AQESF5N1N7QNK/ke17ZwdGBToddI8pDm48kNaO57GzHjWqV-xM6jVvY6ZZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyR5k0u27ivMv3az5DOhUvLuYQefjfUWYPEDVexVC_mSas4X78tjQKn3yE00zHvnK8/3D_maousLarger.gif?format=750w" height="200">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/cd423302-0389-4b63-8869-b787a2c52b8b/maDLC_3d.gif?format=1500w" height="200">
 </p>
-<div class="section" id="create-a-new-3d-project">
-<h3>(1) Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Permalink to this headline">¶</a></h3>
+<section id="create-a-new-3d-project">
+<h3>(1) Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Permalink to this headline">#</a></h3>
 <p>Watch a <a class="reference external" href="https://youtu.be/Eh6oIGE4dwI">DEMO VIDEO</a> on how to use this code, and check out the Notebook <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb">here</a>!</p>
 <p>You will run this function <strong>one</strong> time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.</p>
 <p>The function <strong>create_new_project_3d</strong> creates a new project directory specifically for converting the 2D pose to 3D pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
@@ -487,9 +592,9 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559751031211-IOTHQDAEEFP939AD8L8Q/ke17ZwdGBToddI8pDm48kCpBvlJgRextwO-RLKSiThBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIMRcHFn6kFHmdB2CIEK_nkzQWBtRKl1IphR3INrGSAiA/3dworkflow.png?format=1000w" width="55%">
 </p>
-</div>
-<div class="section" id="take-and-process-camera-calibration-images">
-<h3>(2) Take and Process Camera Calibration Images:<a class="headerlink" href="#take-and-process-camera-calibration-images" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="take-and-process-camera-calibration-images">
+<h3>(2) Take and Process Camera Calibration Images:<a class="headerlink" href="#take-and-process-camera-calibration-images" title="Permalink to this headline">#</a></h3>
 <p>(<strong>CRITICAL!</strong>) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): <a class="reference external" href="https://markhedleyjones.com/projects/calibration-checkerboard-collection">https://markhedleyjones.com/projects/calibration-checkerboard-collection</a>.</p>
 <ul class="simple">
 <li><p>You must save the image pairs as .jpg files.</p></li>
@@ -531,17 +636,17 @@ extracts the grid pattern from the calibration images and store them under the <
 </div>
 <p>This computes the intrinsic and extrinsic parameters for each camera. A re-projection error is also computed using the intrinsic and extrinsic parameters which provide an estimate of how good the parameters are. The transformation between the two cameras are estimated and the cameras are stereo calibrated. Furthermore, the above function brings both the camera image plane to the same plane by computing the stereo rectification. These parameters are stored as a pickle file named as <code class="docutils literal notranslate"><span class="pre">stereo_params.pickle</span></code> under the directory <code class="docutils literal notranslate"><span class="pre">camera_matrix</span></code>.</p>
 <p>Once you have run this for the project, you do not need to do so again (unless you want to re-calibrate your cameras); be advised, if you do re-calibrate, you may want to clearly mark which videos are analyzed with “old” vs. “new” calibration images.</p>
-</div>
-<div class="section" id="check-for-undistortion">
-<h3>(3) Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="check-for-undistortion">
+<h3>(3) Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Permalink to this headline">#</a></h3>
 <p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Each calibration image is undistorted and saved under the directory <code class="docutils literal notranslate"><span class="pre">undistortion</span></code>. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calibration and this step)!</p>
-</div>
-<div class="section" id="triangulation-take-your-2d-to-3d">
-<h3>(4) Triangulation –&gt; Take your 2D to 3D!<a class="headerlink" href="#triangulation-take-your-2d-to-3d" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="triangulation-take-your-2d-to-3d">
+<h3>(4) Triangulation –&gt; Take your 2D to 3D!<a class="headerlink" href="#triangulation-take-your-2d-to-3d" title="Permalink to this headline">#</a></h3>
 <p>If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!</p>
 <p>(<strong>CRITICAL!</strong>) Name the video files in such a way that the file name <strong>contains the name of the cameras</strong> as specified in the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code>. e.g. if the cameras as named as <code class="docutils literal notranslate"><span class="pre">camera-1</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2</span></code> (or <code class="docutils literal notranslate"><span class="pre">cam-1</span></code>, <code class="docutils literal notranslate"><span class="pre">cam-2</span></code> etc.) then the video filename must contain this naming, i.e. this could be named as <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2.avi</span></code> or could be <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1-date.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2-date.avi</span></code>.</p>
 <ul class="simple">
@@ -598,9 +703,9 @@ save_as_csv: bool, optional
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=1000w width="65%">
  </p>
-</div>
-<div class="section" id="visualize-your-3d-deeplabcut-videos">
-<h3>(5) Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="visualize-your-3d-deeplabcut-videos">
+<h3>(5) Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Permalink to this headline">#</a></h3>
 <p>In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the <strong>path of the triangulated file folder</strong>, and specify the start and end frame indices to create a 3D labeled video. Note that the <code class="docutils literal notranslate"><span class="pre">triangulated_file_folder</span></code> is where the newly created file that ends with <code class="docutils literal notranslate"><span class="pre">yourDLC_3D_scorername.h5</span></code> is located. This can be done using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;triangulated_file_folder&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
 </pre></div>
@@ -634,13 +739,13 @@ zlim: list
     A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
 </pre></div>
 </div>
-</div>
-<div class="section" id="if-you-use-this-code">
-<h3>If you use this code:<a class="headerlink" href="#if-you-use-this-code" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="if-you-use-this-code">
+<h3>If you use this code:<a class="headerlink" href="#if-you-use-this-code" title="Permalink to this headline">#</a></h3>
 <p>We kindly ask that you cite <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a> <strong>&amp;</strong> <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath*, Mathis*, et al., 2019</a>. If you use 3D multi-animal: <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -664,9 +769,11 @@ zlim: list
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="PROJECT_GUI.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -682,28 +789,32 @@ zlim: list
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
-    
-      By The DeepLabCut Team<br/>
-    
-        &copy; Copyright 2021.<br/>
-      <div class="extra_footer">
-        <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By The DeepLabCut Team<br/>
+  
+      &copy; Copyright 2022.<br/>
+    <div class="extra_footer">
+      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
 
-      </div>
-  </p>
-</footer>
-</main>
+    </div>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>

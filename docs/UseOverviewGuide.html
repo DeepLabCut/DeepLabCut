@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Documentation Overview: &#8212; DeepLabCut</title>
     
-  <link href="../_static/css/theme.css" rel="stylesheet">
-  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="intro.html">
-   DeepLabCut Documentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    DeepLabCut Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Main Documentation
  </span>
@@ -233,86 +248,176 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/docs/UseOverviewGuide.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/DeepLabCut/DeepLabCut"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/UseOverviewGuide.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
         </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/UseOverviewGuide.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/docs/UseOverviewGuide.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
    Documentation Overview:
@@ -390,12 +495,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>Documentation Overview:</h1>
@@ -489,11 +593,12 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="section" id="documentation-overview">
-<h1>Documentation Overview:<a class="headerlink" href="#documentation-overview" title="Permalink to this headline">¶</a></h1>
+  <section id="documentation-overview">
+<h1>Documentation Overview:<a class="headerlink" href="#documentation-overview" title="Permalink to this headline">#</a></h1>
 <p>Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a>, which is (still) fully relevant to standard DeepLabCut.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">How to install DeepLabCut</span></a></p></li>
@@ -509,29 +614,29 @@ const thebe_selector_output = ".output, .cell_output"
 <li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut#references">REFERENCES:</a> read the science behind DeepLabCut</p></li>
 </ul>
 <p>Getting Started: <a class="reference external" href="https://www.youtube.com/watch?v=A9qZidI7tL8">a video tutorial on navigating the documentation!</a></p>
-<div class="section" id="what-you-need-to-get-started">
-<h2>What you need to get started:<a class="headerlink" href="#what-you-need-to-get-started" title="Permalink to this headline">¶</a></h2>
+<section id="what-you-need-to-get-started">
+<h2>What you need to get started:<a class="headerlink" href="#what-you-need-to-get-started" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p><strong>a set of videos that span the types of behaviors you want to track.</strong> Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is <strong>much better</strong> than 50-100 frames from 2 videos).</p></li>
 <li><p><strong>minimally, a computer w/a CPU.</strong> If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs <a class="reference external" href="https://github.com/DeepLabCutDeepLabCut/wiki/FAQ">here</a>. You can also use cloud computing resources, including COLAB (<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md">see how</a>).</p></li>
 </ul>
-</div>
-<div class="section" id="what-you-don-t-need-to-get-started">
-<h2>What you DON’T need to get started:<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="what-you-don-t-need-to-get-started">
+<h2>What you DON’T need to get started:<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).</p></li>
 <li><p>no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu.</p></li>
 </ul>
-</div>
-<div class="section" id="id1">
-<h2>Overview:<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id1">
+<h2>Overview:<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
 <p><strong>DeepLabCut</strong> is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (a text document) file containing various (project) parameters as well as links the data of the project.</p>
 <p align="center">
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
  </p>
-</div>
-<div class="section" id="overview-of-the-workflow">
-<h2>Overview of the workflow:<a class="headerlink" href="#overview-of-the-workflow" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="overview-of-the-workflow">
+<h2>Overview of the workflow:<a class="headerlink" href="#overview-of-the-workflow" title="Permalink to this headline">#</a></h2>
 <p>This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find <span class="xref myst">here</span>. For additional assistance, you can use the <a class="reference external" href="UseOverviewGuide.md#help">help</a> function to better understand what each function does.</p>
  <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" height="270">
@@ -546,18 +651,18 @@ const thebe_selector_output = ".output, .cell_output"
 <p align="center">
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
-</div>
-</div>
-<div class="tex2jax_ignore mathjax_ignore section" id="specific-advice-for-using-deeplabcut">
-<span id="important-info-regd-usage"></span><h1>Specific Advice for Using DeepLabCut:<a class="headerlink" href="#specific-advice-for-using-deeplabcut" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="important-information-on-using-deeplabcut">
-<h2>Important information on using DeepLabCut:<a class="headerlink" href="#important-information-on-using-deeplabcut" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="specific-advice-for-using-deeplabcut">
+<span id="important-info-regd-usage"></span><h1>Specific Advice for Using DeepLabCut:<a class="headerlink" href="#specific-advice-for-using-deeplabcut" title="Permalink to this headline">#</a></h1>
+<section id="important-information-on-using-deeplabcut">
+<h2>Important information on using DeepLabCut:<a class="headerlink" href="#important-information-on-using-deeplabcut" title="Permalink to this headline">#</a></h2>
 <p>We recommend first using <strong>DeepLabCut for a single animal scenario</strong> to understand the workflow - even if it’s just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2…</p>
-<div class="section" id="additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2">
-<h3>Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):<a class="headerlink" href="#additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2" title="Permalink to this headline">¶</a></h3>
+<section id="additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2">
+<h3>Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):<a class="headerlink" href="#additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2" title="Permalink to this headline">#</a></h3>
 <p>We highly recommend using 2.2 first in the Project Manager GUI (<a class="reference external" href="docs/functionDetails.md#deeplabcut-project-manager-gui">Option 3</a>). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.</p>
-<div class="section" id="what-scenario-do-you-have">
-<h4><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Permalink to this headline">¶</a></h4>
+<section id="what-scenario-do-you-have">
+<h4><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Permalink to this headline">#</a></h4>
 <ul class="simple">
 <li><p><strong>I have single animal videos:</strong></p>
 <ul>
@@ -591,26 +696,26 @@ const thebe_selector_output = ".output, .cell_output"
 <li><p><strong>I have a pre-2.2 single animal project, but I want to use 2.2:</strong></p></li>
 </ul>
 <p>Please read <a class="reference internal" href="convert_maDLC.html#convert-madlc"><span class="std std-ref">this convert 2 maDLC guide</span></a></p>
-</div>
-</div>
-</div>
-<div class="section" id="the-options-for-using-deeplabcut">
-<h2>The options for using DeepLabCut:<a class="headerlink" href="#the-options-for-using-deeplabcut" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+</section>
+<section id="the-options-for-using-deeplabcut">
+<h2>The options for using DeepLabCut:<a class="headerlink" href="#the-options-for-using-deeplabcut" title="Permalink to this headline">#</a></h2>
 <p>Great - now that you get the overall workflow let’s jump in! Here, you have several options.</p>
 <p><a class="reference internal" href="#using-demo-notebooks"><span class="std std-ref"><strong>Option 1</strong></span></a> DEMOs: for a quick introduction to DLC on our data.</p>
 <p><a class="reference internal" href="#using-project-manager-gui"><span class="std std-ref"><strong>Option 2</strong></span></a> Standalone GUI: is the perfect place for
 beginners who want to start using DeepLabCut on your own data.</p>
 <p><a class="reference internal" href="#using-the-terminal"><span class="std std-ref"><strong>Option 3</strong></span></a> In the terminal: is best for more advanced users, as
 with the terminal interface you get the most versatility and options.</p>
-</div>
-<div class="section" id="option-1-demo-notebooks">
-<span id="using-demo-notebooks"></span><h2>Option 1: Demo Notebooks:<a class="headerlink" href="#option-1-demo-notebooks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="option-1-demo-notebooks">
+<span id="using-demo-notebooks"></span><h2>Option 1: Demo Notebooks:<a class="headerlink" href="#option-1-demo-notebooks" title="Permalink to this headline">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=DRT-Cq2vdWs">VIDEO TUTORIAL AVAILABLE!</a></p>
 <p>We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
 own dataset. See all the demo’s <span class="xref myst">here!</span> Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it’s possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.</p>
-</div>
-<div class="section" id="option-2-using-the-project-manager-gui">
-<span id="using-project-manager-gui"></span><h2>Option 2: using the Project Manager GUI:<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="option-2-using-the-project-manager-gui">
+<span id="using-project-manager-gui"></span><h2>Option 2: using the Project Manager GUI:<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Permalink to this headline">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=KcXogR-p5Ak">VIDEO TUTORIAL!</a></p>
 <p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL#2!</a></p>
 <p>Start iPython, or if you are using MacOS, you must use <code class="docutils literal notranslate"><span class="pre">pythonw</span></code> vs. typing <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or <code class="docutils literal notranslate"><span class="pre">python</span></code>, but otherwise it’s the same.
@@ -620,17 +725,17 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need t
 </pre></div>
 </div>
 <p>That’s it! Follow the GUI for details</p>
-</div>
-<div class="section" id="option-3-using-the-program-terminal-start-ipython">
-<span id="using-the-terminal"></span><h2>Option 3: using the program terminal, Start iPython*:<a class="headerlink" href="#option-3-using-the-program-terminal-start-ipython" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="option-3-using-the-program-terminal-start-ipython">
+<span id="using-the-terminal"></span><h2>Option 3: using the program terminal, Start iPython*:<a class="headerlink" href="#option-3-using-the-program-terminal-start-ipython" title="Permalink to this headline">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=7xwOhUcIGio">VIDEO TUTORIAL AVAILABLE!</a></p>
 <p>Please decide with mode you want to use DeepLabCut, and follow one of the following:</p>
 <ul class="simple">
 <li><p>(1) <a class="reference internal" href="standardDeepLabCut_UserGuide.html#single-animal-userguide"><span class="std std-ref">How to use standard DeepLabCut</span></a></p></li>
 <li><p>(2) <a class="reference internal" href="maDLC_UserGuide.html#multi-animal-userguide"><span class="std std-ref">How to use multi-animal DeepLabCut</span></a></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -654,9 +759,11 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need t
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="intro.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -672,28 +779,32 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need t
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
-    
-      By The DeepLabCut Team<br/>
-    
-        &copy; Copyright 2021.<br/>
-      <div class="extra_footer">
-        <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By The DeepLabCut Team<br/>
+  
+      &copy; Copyright 2022.<br/>
+    <div class="extra_footer">
+      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
 
-      </div>
-  </p>
-</footer>
-</main>
+    </div>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>
