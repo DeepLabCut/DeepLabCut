@@ -27,7 +27,7 @@ from typing import Tuple
 
 import pandas as pd
 
-import benchmark.metrics
+import deeplabcut.benchmark.metrics
 from deeplabcut import __version__
 
 
@@ -66,12 +66,12 @@ class Benchmark(abc.ABC):
                 )
 
     def compute_pose_rmse(self, results_objects):
-        return benchmark.metrics.calc_rmse_from_obj(
+        return deeplabcut.benchmark.metrics.calc_rmse_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 
     def compute_pose_map(self, results_objects):
-        return benchmark.metrics.calc_map_from_obj(
+        return deeplabcut.benchmark.metrics.calc_map_from_obj(
             results_objects, h5_file=self.ground_truth, metadata_file=self.metadata
         )
 

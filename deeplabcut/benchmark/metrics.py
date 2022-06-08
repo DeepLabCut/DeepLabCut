@@ -14,7 +14,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-import benchmark.utils
+import deeplabcut.benchmark.utils
 from deeplabcut.pose_estimation_tensorflow.core import evaluate_multianimal
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
@@ -116,13 +116,18 @@ def conv_obj_to_assemblies(eval_results_obj, keypoint_names):
     assemblies = {}
     for image_path, results in eval_results_obj.items():
         lst = []
-        for pose in results:
+        for dict_ in results:
             ass = inferenceutils.Assembly(len(keypoint_names))
             for i, kpt in enumerate(keypoint_names):
-                xy = pose[kpt]
-                joint = inferenceutils.Joint(pos=(xy), label=i)
-                ass.add_joint(joint)
-            lst.append(ass)
+                xy = dict_["pose"][kpt]
+                if ~np.isnan(xy).all():
+                    joint = inferenceutils.Joint(pos=(xy), label=i)
+                    ass.add_joint(joint)
+            # TODO(jeylau) add affinity.setter to Assembly
+            ass._affinity = dict_["score"]
+            ass._links = [None]
+            if len(ass):
+                lst.append(ass)
         assemblies[image_path] = lst
     return assemblies
 
@@ -172,7 +177,7 @@ def calc_map_from_obj(
     assemblies_pred_ = conv_obj_to_assemblies(eval_results_obj, kpts)
     assemblies_pred = dict(enumerate(assemblies_pred_.values()))
 
-    with benchmark.utils.DisableOutput():
+    with deeplabcut.benchmark.utils.DisableOutput():
         oks = inferenceutils.evaluate_assembly(
             assemblies_pred,
             assemblies_gt_test,
@@ -214,6 +219,6 @@ def calc_rmse_from_obj(
                 "confidence": list(np.expand_dims(arr[..., 2], axis=2)),
             }
             preds["predictions"][image] = temp
-    with benchmark.utils.DisableOutput():
+    with deeplabcut.benchmark.utils.DisableOutput():
         errors = calc_prediction_errors(preds, gt)
     return np.nanmean(errors[..., 0])

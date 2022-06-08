@@ -1,4 +1,4 @@
-if __name__ == '__main__':
-    from .cli import main
+from deeplabcut.benchmark.cli import main
 
+if __name__ == "__main__":
     main()

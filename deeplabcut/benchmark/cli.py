@@ -1,8 +1,8 @@
-"""Command line interface for DeepLabCut benchmark."""
+"""Command line interface for DeepLabCut deeplabcut.benchmark."""
 
 import argparse
 
-import benchmark
+import deeplabcut.benchmark
 
 
 def _parse_args():
@@ -12,26 +12,26 @@ def _parse_args():
         "--onerror",
         default="return",
         required=False,
-        choices=("ignore", "return", "raise")
+        choices=("ignore", "return", "raise"),
     )
     parser.add_argument("--nocache", action="store_true")
     return parser.parse_args()
 
 
 def main():
-    """Main CLI entry point for generating benchmark results."""
+    """Main CLI entry point for generating deeplabcut.benchmark results."""
     args = _parse_args()
     if not args.nocache:
-        results = benchmark.loadcache()
+        results = deeplabcut.benchmark.loadcache()
     else:
         results = None
-    results = benchmark.evaluate(
+    results = deeplabcut.benchmark.evaluate(
         include_benchmarks=args.include,
         results=results,
         on_error=args.onerror,
     )
     if not args.nocache:
-        benchmark.savecache(results)
+        deeplabcut.benchmark.savecache(results)
     try:
         print(results.toframe())
     except StopIteration:
