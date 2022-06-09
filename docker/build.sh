@@ -3,6 +3,7 @@
 # > docker/build.sh [build|test|push]
 
 set -e
+set -x
 
 DOCKER=${DOCKER:-'docker'}
 DOCKER_BUILD="$DOCKER build"
