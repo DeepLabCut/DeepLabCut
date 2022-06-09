@@ -29,7 +29,7 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considera
 
 ### Step 2: please use our supplied Anaconda environment
 
-- **Click [HERE](http://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file!**
+- **Click [HERE](https://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file!**
 (or you can grab from github: git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
 To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine)
 
