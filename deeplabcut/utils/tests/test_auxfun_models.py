@@ -31,3 +31,10 @@ class Check4WeightsTestCase(unittest.TestCase):
                     mocked_download.assert_called_with(
                         modeltype, tmpdir / expected_path
                     )
+
+    def test_bad_modeltype(self):
+        actual_path, actual_num_shuffles = Check4weights(
+            "dummymodel", "nonexistentpath", 1
+        )
+        self.assertEqual(actual_path, "nonexistentpath")
+        self.assertEqual(actual_num_shuffles, -1)
