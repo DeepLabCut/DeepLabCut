@@ -47,15 +47,12 @@ def Check4weights(modeltype, parent_path, num_shuffles):
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
 
     if not model_path.exists():
-        if "efficientnet" in modeltype:
-            Downloadweights(modeltype, model_path.parent)
-        else:
-            Downloadweights(modeltype, model_path)
+        Downloadweights(modeltype)
 
     return str(model_path), num_shuffles
 
 
-def Downloadweights(modeltype, model_path):
+def Downloadweights(modeltype, model_path=None):
     """
     Downloads the ImageNet pretrained weights for ResNets, MobileNets et al. from TensorFlow...
     """
@@ -63,9 +60,8 @@ def Downloadweights(modeltype, model_path):
     import tarfile
     from io import BytesIO
 
-    target_dir = model_path.parents[0]
     neturls = auxiliaryfunctions.read_plainconfig(
-        target_dir / "pretrained_model_urls.yaml"
+        MODEL_BASE_PATH / "pretrained_model_urls.yaml"
     )
     try:
         if "efficientnet" in modeltype:
@@ -76,7 +72,7 @@ def Downloadweights(modeltype, model_path):
         print("Downloading a ImageNet-pretrained model from {}....".format(url))
         response = urllib.request.urlopen(url)
         with tarfile.open(fileobj=BytesIO(response.read()), mode="r:gz") as tar:
-            tar.extractall(path=target_dir)
+            tar.extractall(path=MODEL_BASE_PATH)
     except KeyError:
         print("Model does not exist: ", modeltype)
         print("Pick one of the following: ", neturls.keys())
