@@ -47,11 +47,10 @@ def Check4weights(modeltype, parent_path, num_shuffles):
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
 
     if num_shuffles > 0:
-        if "efficientnet" in modeltype:
-            if not model_path.exists():
+        if not model_path.exists():
+            if "efficientnet" in modeltype:
                 Downloadweights(modeltype, model_path.parent)
-        else:
-            if not model_path.is_file():
+            else:
                 Downloadweights(modeltype, model_path)
 
     return str(model_path), num_shuffles
