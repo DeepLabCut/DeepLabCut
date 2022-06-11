@@ -23,7 +23,14 @@ class Check4WeightsTestCase(unittest.TestCase):
                 for modeltype, expected_path in MODELTYPE_FILEPATH_MAP.items():
                     actual_path, _ = Check4weights(modeltype, Path(tmpdir), 1)
                 self.assertIn(str(expected_path), actual_path)
-                mocked_download.assert_called_with(modeltype)
+                if "efficientnet" in modeltype:
+                    mocked_download.assert_called_with(
+                        modeltype, tmpdir / expected_path.parent
+                    )
+                else:
+                    mocked_download.assert_called_with(
+                        modeltype, tmpdir / expected_path
+                    )
 
     def test_bad_modeltype(self):
         actual_path, actual_num_shuffles = Check4weights(
