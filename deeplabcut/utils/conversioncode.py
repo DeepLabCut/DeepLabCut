@@ -74,6 +74,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 else:
                     index_col = 0
                 data = pd.read_csv(fn, index_col=index_col, header=header)
+                data.index = data.index.set_levels(data.index.levels[1].astype(str), level=1)
                 data.columns = data.columns.set_levels([scorer], level="scorer")
                 guarantee_multiindex_rows(data)
                 data.to_hdf(fn.replace(".csv", ".h5"), key="df_with_missing", mode="w")
