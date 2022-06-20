@@ -74,15 +74,33 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             else:
                 print("Copying the videos")
                 shutil.copy(os.fspath(src), os.fspath(dst))
+  
     else:
+        # creates the symlinks of the video and puts it in the videos directory.
+        print("Attempting to create a symbolic link of the video ...")
         for src, dst in zip(videos, destinations):
             if dst.exists():
                 pass
-            else:
-                print("Creating the symbolic link of the video")
+            try:
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
+                print("Created the symlink of {} to {}".format(src, dst))
+            except OSError:
+                try:
+                    import subprocess
+
+                    subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
+                except (OSError, subprocess.CalledProcessError):
+                    print(
+                        "Symlink creation impossible (exFat architecture?): "
+                        "cutting/pasting the video instead."
+                    )
+                    shutil.move(os.fspath(src), os.fspath(dst))
+                    print("{} moved to {}".format(src, dst))
+            videos = destinations
+
+    
 
     if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
