@@ -283,6 +283,11 @@ class Analyze_videos(wx.Panel):
             )
             self.trajectory.Bind(wx.EVT_RADIOBOX, self.chooseOption)
             self.trajectory.SetSelection(0)
+            # Trigger chooseOption as if the radio button had been clicked
+            wx.PostEvent(
+                self.trajectory,
+                wx.CommandEvent(wx.wxEVT_COMMAND_RADIOBOX_SELECTED),
+            )
 
             self.hbox1.Add(self.csv, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
             self.hbox1.Add(self.nwb, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 0)
