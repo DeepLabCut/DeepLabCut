@@ -61,7 +61,7 @@ class BaseFrame(wx.Frame):
         index = 0  # For display 1.
         screenWidth = screenSizes[index][0]
         screenHeight = screenSizes[index][1]
-        self.gui_size = (screenWidth * 0.8, screenHeight * 0.75)
+        self.gui_size = (int(screenWidth * 0.8), int(screenHeight * 0.75))
         self.imtypes = imtypes  # imagetypes to look for in folder e.g. *.png
 
         wx.Frame.__init__(
