@@ -241,7 +241,11 @@ def guarantee_multiindex_rows(df):
         except TypeError:  #  Ignore numerical index of frame indices
             pass
     
-    df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)  # set folder name to str
+    # Ensure folder names are strings
+    try:
+        df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)
+    except AttributeError:
+        pass
 
 
 def robust_split_path(s):
