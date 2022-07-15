@@ -526,7 +526,7 @@ def IntersectionofBodyPartsandOnesGivenbyUser(cfg, comparisonbodyparts):
     if comparisonbodyparts == "all":
         return list(allbpts)
     else:  # take only items in list that are actually bodyparts...
-        cpbpts = list(filter(lambda bp:bp in comparisonbodyparts, allbpts))
+        cpbpts = [bp for bp in allbpts if bp in comparisonbodyparts]
         # Ensure same order as in config.yaml
         return cpbpts
 
