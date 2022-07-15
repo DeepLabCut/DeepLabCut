@@ -240,6 +240,12 @@ def guarantee_multiindex_rows(df):
             df.index = pd.MultiIndex.from_tuples(splits)
         except TypeError:  #  Ignore numerical index of frame indices
             pass
+    
+    # Ensure folder names are strings
+    try:
+        df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)
+    except AttributeError:
+        pass
 
 
 def robust_split_path(s):
