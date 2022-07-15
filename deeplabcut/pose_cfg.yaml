@@ -92,7 +92,7 @@ convolution:
    emboss:
       alpha: [0.0, 1.0]
       strength: [0.5, 1.5]
-      embossratio: 0.1
+   embossratio: 0.1
 
 ##############################################################################
 #### Augmentation type: scalecrop + tensorpack variables
