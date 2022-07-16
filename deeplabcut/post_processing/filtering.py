@@ -292,6 +292,7 @@ def filterpredictions(
         if save_as_csv:
             print("Saving filtered csv poses!")
             data.to_csv(outdataname.split(".h5")[0] + ".csv")
+    return video_to_filtered_df
 
 
 if __name__ == "__main__":
