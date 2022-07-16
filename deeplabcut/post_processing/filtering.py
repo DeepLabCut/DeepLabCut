@@ -148,7 +148,12 @@ def filterpredictions(
 
     Returns
     -------
-    None
+    video_to_filtered_df
+        Dictionary mapping video filepaths to filtered dataframes.
+
+        * If no videos exist, the dictionary will be empty.
+        * If a video is not analyzed, the corresponding value in the dictionary will be
+          None.
 
     Examples
     --------
@@ -200,9 +205,11 @@ def filterpredictions(
     )
     Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
 
+    video_to_filtered_df = {}
+
     if not len(Videos):
         print("No video(s) were found. Please check your paths and/or 'videotype'.")
-        return
+        return video_to_filtered_df
 
     for video in Videos:
         if destfolder is None:
@@ -212,10 +219,11 @@ def filterpredictions(
         vname = Path(video).stem
 
         try:
-            _ = auxiliaryfunctions.load_analyzed_data(
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, True, track_method
             )
             print(f"Data from {vname} were already filtered. Skipping...")
+            video_to_filtered_df[video] = df
             # Data has been filtered so continue to the next video
             continue
         except FileNotFoundError:
@@ -227,6 +235,7 @@ def filterpredictions(
                 destfolder, vname, DLCscorer, track_method=track_method
             )
         except FileNotFoundError as e:
+            video_to_filtered_df[video] = None
             print(e)
             continue
 
@@ -275,6 +284,8 @@ def filterpredictions(
             data.loc[:, mask_data] = xy
         else:
             raise ValueError(f"Unknown filter type {filtertype}")
+
+        video_to_filtered_df[video] = data
 
         outdataname = filepath.replace(".h5", "_filtered.h5")
         data.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
