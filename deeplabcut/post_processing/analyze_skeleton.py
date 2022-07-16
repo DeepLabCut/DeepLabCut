@@ -256,32 +256,32 @@ def analyzeskeleton(
             df, filepath, scorer, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, filtered, track_method
             )
-            output_name = filepath.replace(".h5", f"_skeleton.h5")
-            if os.path.isfile(output_name):
-                print(f"Skeleton in video {vname} already processed. Skipping...")
-                continue
-
-            bones = {}
-            if "individuals" in df.columns.names:
-                for animal_name, df_ in df.groupby(level="individuals", axis=1):
-                    temp = df_.droplevel(["scorer", "individuals"], axis=1)
-                    if animal_name != "single":
-                        for bp1, bp2 in cfg["skeleton"]:
-                            name = "{}_{}_{}".format(animal_name, bp1, bp2)
-                            bones[name] = analyzebone(temp[bp1], temp[bp2])
-            else:
-                for bp1, bp2 in cfg["skeleton"]:
-                    name = "{}_{}".format(bp1, bp2)
-                    bones[name] = analyzebone(df[scorer][bp1], df[scorer][bp2])
-
-            skeleton = pd.concat(bones, axis=1)
-            skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
-            if save_as_csv:
-                skeleton.to_csv(output_name.replace(".h5", ".csv"))
-
         except FileNotFoundError as e:
             print(e)
             continue
+
+        output_name = filepath.replace(".h5", f"_skeleton.h5")
+        if os.path.isfile(output_name):
+            print(f"Skeleton in video {vname} already processed. Skipping...")
+            continue
+
+        bones = {}
+        if "individuals" in df.columns.names:
+            for animal_name, df_ in df.groupby(level="individuals", axis=1):
+                temp = df_.droplevel(["scorer", "individuals"], axis=1)
+                if animal_name != "single":
+                    for bp1, bp2 in cfg["skeleton"]:
+                        name = "{}_{}_{}".format(animal_name, bp1, bp2)
+                        bones[name] = analyzebone(temp[bp1], temp[bp2])
+        else:
+            for bp1, bp2 in cfg["skeleton"]:
+                name = "{}_{}".format(bp1, bp2)
+                bones[name] = analyzebone(df[scorer][bp1], df[scorer][bp2])
+
+        skeleton = pd.concat(bones, axis=1)
+        skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
+        if save_as_csv:
+            skeleton.to_csv(output_name.replace(".h5", ".csv"))
 
 
 if __name__ == "__main__":
