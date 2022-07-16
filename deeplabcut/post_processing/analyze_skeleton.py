@@ -230,12 +230,19 @@ def analyzeskeleton(
 
     Returns
     -------
-    None
+    video_to_skeleton_df
+        Dictionary mapping video filepaths to skeleton dataframes.
+
+        * If no videos exist, the dictionary will be empty.
+        * If a video is not analyzed, the corresponding value in the dictionary will be
+          None.
     """
     # Load config file, scorer and videos
     cfg = auxiliaryfunctions.read_config(config)
     if not cfg["skeleton"]:
         raise ValueError("No skeleton defined in the config.yaml.")
+
+    video_to_skeleton_df = {}
 
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
@@ -258,11 +265,13 @@ def analyzeskeleton(
             )
         except FileNotFoundError as e:
             print(e)
+            video_to_skeleton_df[video] = None
             continue
 
         output_name = filepath.replace(".h5", f"_skeleton.h5")
         if os.path.isfile(output_name):
             print(f"Skeleton in video {vname} already processed. Skipping...")
+            video_to_skeleton_df[video] = pd.read_hdf(output_name, "df_with_missing")
             continue
 
         bones = {}
@@ -279,9 +288,11 @@ def analyzeskeleton(
                 bones[name] = analyzebone(df[scorer][bp1], df[scorer][bp2])
 
         skeleton = pd.concat(bones, axis=1)
+        video_to_skeleton_df[video] = skeleton
         skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
         if save_as_csv:
             skeleton.to_csv(output_name.replace(".h5", ".csv"))
+    return video_to_skeleton_df
 
 
 if __name__ == "__main__":
