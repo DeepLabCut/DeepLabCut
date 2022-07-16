@@ -216,65 +216,70 @@ def filterpredictions(
                 destfolder, vname, DLCscorer, True, track_method
             )
             print(f"Data from {vname} were already filtered. Skipping...")
-        except FileNotFoundError:  # Data haven't been filtered yet
-            try:
-                df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-                    destfolder, vname, DLCscorer, track_method=track_method
-                )
-                nrows = df.shape[0]
-                if filtertype == "arima":
-                    temp = df.values.reshape((nrows, -1, 3))
-                    placeholder = np.empty_like(temp)
-                    for i in range(temp.shape[1]):
-                        x, y, p = temp[:, i].T
-                        meanx, _ = FitSARIMAXModel(
-                            x, p, p_bound, alpha, ARdegree, MAdegree, False
-                        )
-                        meany, _ = FitSARIMAXModel(
-                            y, p, p_bound, alpha, ARdegree, MAdegree, False
-                        )
-                        meanx[0] = x[0]
-                        meany[0] = y[0]
-                        placeholder[:, i] = np.c_[meanx, meany, p]
-                    data = pd.DataFrame(
-                        placeholder.reshape((nrows, -1)),
-                        columns=df.columns,
-                        index=df.index,
-                    )
-                elif filtertype == "median":
-                    data = df.copy()
-                    mask = data.columns.get_level_values("coords") != "likelihood"
-                    data.loc[:, mask] = df.loc[:, mask].apply(
-                        signal.medfilt, args=(windowlength,), axis=0
-                    )
-                elif filtertype == "spline":
-                    data = df.copy()
-                    mask_data = data.columns.get_level_values("coords").isin(("x", "y"))
-                    xy = data.loc[:, mask_data].values
-                    prob = data.loc[:, ~mask_data].values
-                    missing = np.isnan(xy)
-                    xy_filled = columnwise_spline_interp(xy, windowlength)
-                    filled = ~np.isnan(xy_filled)
-                    xy[filled] = xy_filled[filled]
-                    inds = np.argwhere(missing & filled)
-                    if inds.size:
-                        # Retrieve original individual label indices
-                        inds[:, 1] //= 2
-                        inds = np.unique(inds, axis=0)
-                        prob[inds[:, 0], inds[:, 1]] = 0.01
-                        data.loc[:, ~mask_data] = prob
-                    data.loc[:, mask_data] = xy
-                else:
-                    raise ValueError(f"Unknown filter type {filtertype}")
+            # Data has been filtered so continue to the next video
+            continue
+        except FileNotFoundError:
+            pass
 
-                outdataname = filepath.replace(".h5", "_filtered.h5")
-                data.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
-                if save_as_csv:
-                    print("Saving filtered csv poses!")
-                    data.to_csv(outdataname.split(".h5")[0] + ".csv")
-            except FileNotFoundError as e:
-                print(e)
-                continue
+        # Data haven't been filtered yet
+        try:
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
+                destfolder, vname, DLCscorer, track_method=track_method
+            )
+            nrows = df.shape[0]
+            if filtertype == "arima":
+                temp = df.values.reshape((nrows, -1, 3))
+                placeholder = np.empty_like(temp)
+                for i in range(temp.shape[1]):
+                    x, y, p = temp[:, i].T
+                    meanx, _ = FitSARIMAXModel(
+                        x, p, p_bound, alpha, ARdegree, MAdegree, False
+                    )
+                    meany, _ = FitSARIMAXModel(
+                        y, p, p_bound, alpha, ARdegree, MAdegree, False
+                    )
+                    meanx[0] = x[0]
+                    meany[0] = y[0]
+                    placeholder[:, i] = np.c_[meanx, meany, p]
+                data = pd.DataFrame(
+                    placeholder.reshape((nrows, -1)),
+                    columns=df.columns,
+                    index=df.index,
+                )
+            elif filtertype == "median":
+                data = df.copy()
+                mask = data.columns.get_level_values("coords") != "likelihood"
+                data.loc[:, mask] = df.loc[:, mask].apply(
+                    signal.medfilt, args=(windowlength,), axis=0
+                )
+            elif filtertype == "spline":
+                data = df.copy()
+                mask_data = data.columns.get_level_values("coords").isin(("x", "y"))
+                xy = data.loc[:, mask_data].values
+                prob = data.loc[:, ~mask_data].values
+                missing = np.isnan(xy)
+                xy_filled = columnwise_spline_interp(xy, windowlength)
+                filled = ~np.isnan(xy_filled)
+                xy[filled] = xy_filled[filled]
+                inds = np.argwhere(missing & filled)
+                if inds.size:
+                    # Retrieve original individual label indices
+                    inds[:, 1] //= 2
+                    inds = np.unique(inds, axis=0)
+                    prob[inds[:, 0], inds[:, 1]] = 0.01
+                    data.loc[:, ~mask_data] = prob
+                data.loc[:, mask_data] = xy
+            else:
+                raise ValueError(f"Unknown filter type {filtertype}")
+
+            outdataname = filepath.replace(".h5", "_filtered.h5")
+            data.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
+            if save_as_csv:
+                print("Saving filtered csv poses!")
+                data.to_csv(outdataname.split(".h5")[0] + ".csv")
+        except FileNotFoundError as e:
+            print(e)
+            continue
 
 
 if __name__ == "__main__":
