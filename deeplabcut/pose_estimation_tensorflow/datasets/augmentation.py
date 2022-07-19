@@ -1,6 +1,37 @@
 import imgaug.augmenters as iaa
 import numpy as np
+from imgaug import KeypointsOnImage
 from scipy.spatial.distance import pdist, squareform
+from typing import List, Union, Tuple
+
+
+class KeypointFliplr(iaa.Fliplr):
+    def __init__(
+        self,
+        keypoints: List[str],
+        symmetric_pairs: List[Union[Tuple, List]],
+        p: float = 1.0,
+    ):
+        super().__init__(p=p)
+        self.keypoints = keypoints
+        self.symmetric_pairs = symmetric_pairs
+
+    @property
+    def n_keypoints(self):
+        return len(self.keypoints)
+
+    def _augment_batch_(self, batch, random_state, parents, hooks):
+        batch = super()._augment_batch_(batch, random_state, parents, hooks)
+        keypoints = []
+        for kpts in batch.keypoints:
+            kpts_ = list(kpts)
+            n_kpts = len(kpts_)
+            for i1, i2 in self.symmetric_pairs:
+                for j in range(0, n_kpts, self.n_keypoints):
+                    kpts_[i1 + j], kpts_[i2 + j] = kpts_[i2 + j], kpts_[i1 + j]
+            keypoints.append(KeypointsOnImage(kpts_, kpts.shape))
+        batch.keypoints = keypoints
+        return batch
 
 
 class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
