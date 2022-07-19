@@ -36,7 +36,7 @@ setuptools.setup(
         "scikit-image>=0.17,<=1.0.0",
         "scikit-learn>=1.0",
         "scipy>=1.4",
-        "statsmodels>=0.11,!=0.13.2",
+        "statsmodels>=0.11",
         "tables>=3.7.0",
         "tensorflow>=2.0",
         "tensorpack>=0.11",
