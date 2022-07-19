@@ -8,29 +8,23 @@ msgstr ""
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Scarica questa pagina"
-
-msgid "Download notebook file"
-msgstr "Scarica il file del taccuino"
-
-msgid "Open an issue"
-msgstr "Apri un problema"
-
 msgid "repository"
 msgstr "repository"
 
-msgid "Theme by the"
-msgstr "Tema di"
+msgid "open issue"
+msgstr "questione aperta"
 
 msgid "Contents"
 msgstr "Contenuti"
 
-msgid "next page"
-msgstr "pagina successiva"
+msgid "Fullscreen mode"
+msgstr "Modalità schermo intero"
 
-msgid "Last updated on"
-msgstr "Ultimo aggiornamento il"
+msgid "Download this page"
+msgstr "Scarica questa pagina"
+
+msgid "Download source file"
+msgstr "Scarica il file sorgente"
 
 msgid "Launch"
 msgstr "Lanciare"
@@ -38,44 +32,50 @@ msgstr "Lanciare"
 msgid "Edit this page"
 msgstr "Modifica questa pagina"
 
+msgid "Toggle navigation"
+msgstr "Attiva / disattiva la navigazione"
+
+msgid "Theme by the"
+msgstr "Tema di"
+
 msgid "Source repository"
 msgstr "Repository di origine"
 
-msgid "Download source file"
-msgstr "Scarica il file sorgente"
+msgid "Last updated on"
+msgstr "Ultimo aggiornamento il"
+
+msgid "By the"
+msgstr "Dal"
 
 msgid "Sphinx Book Theme"
 msgstr "Tema del libro della Sfinge"
 
+msgid "Open an issue"
+msgstr "Apri un problema"
+
+msgid "next page"
+msgstr "pagina successiva"
+
 msgid "Copyright"
 msgstr "Diritto d'autore"
-
-msgid "Fullscreen mode"
-msgstr "Modalità schermo intero"
-
-msgid "Search the docs ..."
-msgstr "Cerca nei documenti ..."
-
-msgid "suggest edit"
-msgstr "suggerisci modifica"
 
 msgid "Search this book..."
 msgstr "Cerca in questo libro ..."
 
-msgid "By"
-msgstr "Di"
-
-msgid "open issue"
-msgstr "questione aperta"
-
 msgid "Print to PDF"
 msgstr "Stampa in PDF"
+
+msgid "By"
+msgstr "Di"
 
 msgid "previous page"
 msgstr "pagina precedente"
 
-msgid "Toggle navigation"
-msgstr "Attiva / disattiva la navigazione"
+msgid "Search the docs ..."
+msgstr "Cerca nei documenti ..."
 
-msgid "By the"
-msgstr "Dal"
+msgid "Download notebook file"
+msgstr "Scarica il file del taccuino"
+
+msgid "suggest edit"
+msgstr "suggerisci modifica"

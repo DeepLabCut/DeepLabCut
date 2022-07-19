@@ -8,29 +8,23 @@ msgstr ""
 "Language: sk\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Stiahnite si túto stránku"
-
-msgid "Download notebook file"
-msgstr "Stiahnite si zošit"
-
-msgid "Open an issue"
-msgstr "Otvorte problém"
-
 msgid "repository"
 msgstr "Úložisko"
 
-msgid "Theme by the"
-msgstr "Téma od"
+msgid "open issue"
+msgstr "otvorené vydanie"
 
 msgid "Contents"
 msgstr "Obsah"
 
-msgid "next page"
-msgstr "ďalšia strana"
+msgid "Fullscreen mode"
+msgstr "Režim celej obrazovky"
 
-msgid "Last updated on"
-msgstr "Posledná aktualizácia dňa"
+msgid "Download this page"
+msgstr "Stiahnite si túto stránku"
+
+msgid "Download source file"
+msgstr "Stiahnite si zdrojový súbor"
 
 msgid "Launch"
 msgstr "Spustiť"
@@ -38,44 +32,50 @@ msgstr "Spustiť"
 msgid "Edit this page"
 msgstr "Upraviť túto stránku"
 
+msgid "Toggle navigation"
+msgstr "Prepnúť navigáciu"
+
+msgid "Theme by the"
+msgstr "Téma od"
+
 msgid "Source repository"
 msgstr "Zdrojové úložisko"
 
-msgid "Download source file"
-msgstr "Stiahnite si zdrojový súbor"
+msgid "Last updated on"
+msgstr "Posledná aktualizácia dňa"
+
+msgid "By the"
+msgstr "Podľa"
 
 msgid "Sphinx Book Theme"
 msgstr "Téma knihy Sfinga"
 
+msgid "Open an issue"
+msgstr "Otvorte problém"
+
+msgid "next page"
+msgstr "ďalšia strana"
+
 msgid "Copyright"
 msgstr "Autorské práva"
-
-msgid "Fullscreen mode"
-msgstr "Režim celej obrazovky"
-
-msgid "Search the docs ..."
-msgstr "Hľadať v dokumentoch ..."
-
-msgid "suggest edit"
-msgstr "navrhnúť úpravu"
 
 msgid "Search this book..."
 msgstr "Hľadať v tejto knihe ..."
 
-msgid "By"
-msgstr "Autor:"
-
-msgid "open issue"
-msgstr "otvorené vydanie"
-
 msgid "Print to PDF"
 msgstr "Tlač do PDF"
+
+msgid "By"
+msgstr "Autor:"
 
 msgid "previous page"
 msgstr "predchádzajúca strana"
 
-msgid "Toggle navigation"
-msgstr "Prepnúť navigáciu"
+msgid "Search the docs ..."
+msgstr "Hľadať v dokumentoch ..."
 
-msgid "By the"
-msgstr "Podľa"
+msgid "Download notebook file"
+msgstr "Stiahnite si zošit"
+
+msgid "suggest edit"
+msgstr "navrhnúť úpravu"

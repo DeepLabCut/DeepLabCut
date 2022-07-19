@@ -8,29 +8,23 @@ msgstr ""
 "Language: fi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Lataa tämä sivu"
-
-msgid "Download notebook file"
-msgstr "Lataa muistikirjatiedosto"
-
-msgid "Open an issue"
-msgstr "Avaa ongelma"
-
 msgid "repository"
 msgstr "arkisto"
 
-msgid "Theme by the"
-msgstr "Teeman tekijä"
+msgid "open issue"
+msgstr "avoin ongelma"
 
 msgid "Contents"
 msgstr "Sisällys"
 
-msgid "next page"
-msgstr "seuraava sivu"
+msgid "Fullscreen mode"
+msgstr "Koko näytön tila"
 
-msgid "Last updated on"
-msgstr "Viimeksi päivitetty"
+msgid "Download this page"
+msgstr "Lataa tämä sivu"
+
+msgid "Download source file"
+msgstr "Lataa lähdetiedosto"
 
 msgid "Launch"
 msgstr "Tuoda markkinoille"
@@ -38,44 +32,50 @@ msgstr "Tuoda markkinoille"
 msgid "Edit this page"
 msgstr "Muokkaa tätä sivua"
 
+msgid "Toggle navigation"
+msgstr "Vaihda navigointia"
+
+msgid "Theme by the"
+msgstr "Teeman tekijä"
+
 msgid "Source repository"
 msgstr "Lähteen arkisto"
 
-msgid "Download source file"
-msgstr "Lataa lähdetiedosto"
+msgid "Last updated on"
+msgstr "Viimeksi päivitetty"
+
+msgid "By the"
+msgstr "Mukaan"
 
 msgid "Sphinx Book Theme"
 msgstr "Sphinx-kirjan teema"
 
+msgid "Open an issue"
+msgstr "Avaa ongelma"
+
+msgid "next page"
+msgstr "seuraava sivu"
+
 msgid "Copyright"
 msgstr "Tekijänoikeus"
-
-msgid "Fullscreen mode"
-msgstr "Koko näytön tila"
-
-msgid "Search the docs ..."
-msgstr "Hae dokumenteista ..."
-
-msgid "suggest edit"
-msgstr "ehdottaa muokkausta"
 
 msgid "Search this book..."
 msgstr "Hae tästä kirjasta ..."
 
-msgid "By"
-msgstr "Tekijä"
-
-msgid "open issue"
-msgstr "avoin ongelma"
-
 msgid "Print to PDF"
 msgstr "Tulosta PDF-tiedostoon"
+
+msgid "By"
+msgstr "Tekijä"
 
 msgid "previous page"
 msgstr "Edellinen sivu"
 
-msgid "Toggle navigation"
-msgstr "Vaihda navigointia"
+msgid "Search the docs ..."
+msgstr "Hae dokumenteista ..."
 
-msgid "By the"
-msgstr "Mukaan"
+msgid "Download notebook file"
+msgstr "Lataa muistikirjatiedosto"
+
+msgid "suggest edit"
+msgstr "ehdottaa muokkausta"

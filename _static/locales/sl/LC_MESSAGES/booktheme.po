@@ -8,29 +8,23 @@ msgstr ""
 "Language: sl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Prenesite to stran"
-
-msgid "Download notebook file"
-msgstr "Prenesite datoteko zvezka"
-
-msgid "Open an issue"
-msgstr "Odprite številko"
-
 msgid "repository"
 msgstr "odlagališče"
 
-msgid "Theme by the"
-msgstr "Tema avtorja"
+msgid "open issue"
+msgstr "odprto vprašanje"
 
 msgid "Contents"
 msgstr "Vsebina"
 
-msgid "next page"
-msgstr "Naslednja stran"
+msgid "Fullscreen mode"
+msgstr "Celozaslonski način"
 
-msgid "Last updated on"
-msgstr "Nazadnje posodobljeno dne"
+msgid "Download this page"
+msgstr "Prenesite to stran"
+
+msgid "Download source file"
+msgstr "Prenesite izvorno datoteko"
 
 msgid "Launch"
 msgstr "Kosilo"
@@ -38,44 +32,50 @@ msgstr "Kosilo"
 msgid "Edit this page"
 msgstr "Uredite to stran"
 
+msgid "Toggle navigation"
+msgstr "Preklopi navigacijo"
+
+msgid "Theme by the"
+msgstr "Tema avtorja"
+
 msgid "Source repository"
 msgstr "Izvorno skladišče"
 
-msgid "Download source file"
-msgstr "Prenesite izvorno datoteko"
+msgid "Last updated on"
+msgstr "Nazadnje posodobljeno dne"
+
+msgid "By the"
+msgstr "Avtor"
 
 msgid "Sphinx Book Theme"
 msgstr "Tema knjige Sphinx"
 
+msgid "Open an issue"
+msgstr "Odprite številko"
+
+msgid "next page"
+msgstr "Naslednja stran"
+
 msgid "Copyright"
 msgstr "avtorske pravice"
-
-msgid "Fullscreen mode"
-msgstr "Celozaslonski način"
-
-msgid "Search the docs ..."
-msgstr "Poiščite dokumente ..."
-
-msgid "suggest edit"
-msgstr "predlagajte urejanje"
 
 msgid "Search this book..."
 msgstr "Poiščite to knjigo ..."
 
-msgid "By"
-msgstr "Avtor"
-
-msgid "open issue"
-msgstr "odprto vprašanje"
-
 msgid "Print to PDF"
 msgstr "Natisni v PDF"
+
+msgid "By"
+msgstr "Avtor"
 
 msgid "previous page"
 msgstr "Prejšnja stran"
 
-msgid "Toggle navigation"
-msgstr "Preklopi navigacijo"
+msgid "Search the docs ..."
+msgstr "Poiščite dokumente ..."
 
-msgid "By the"
-msgstr "Avtor"
+msgid "Download notebook file"
+msgstr "Prenesite datoteko zvezka"
+
+msgid "suggest edit"
+msgstr "predlagajte urejanje"

@@ -8,29 +8,23 @@ msgstr ""
 "Language: vi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Tải xuống trang này"
-
-msgid "Download notebook file"
-msgstr "Tải xuống tệp sổ tay"
-
-msgid "Open an issue"
-msgstr "Mở một vấn đề"
-
 msgid "repository"
 msgstr "kho"
 
-msgid "Theme by the"
-msgstr "Chủ đề của"
+msgid "open issue"
+msgstr "vấn đề mở"
 
 msgid "Contents"
 msgstr "Nội dung"
 
-msgid "next page"
-msgstr "Trang tiếp theo"
+msgid "Fullscreen mode"
+msgstr "Chế độ toàn màn hình"
 
-msgid "Last updated on"
-msgstr "Cập nhật lần cuối vào"
+msgid "Download this page"
+msgstr "Tải xuống trang này"
+
+msgid "Download source file"
+msgstr "Tải xuống tệp nguồn"
 
 msgid "Launch"
 msgstr "Phóng"
@@ -38,44 +32,50 @@ msgstr "Phóng"
 msgid "Edit this page"
 msgstr "chỉnh sửa trang này"
 
+msgid "Toggle navigation"
+msgstr "Chuyển đổi điều hướng thành"
+
+msgid "Theme by the"
+msgstr "Chủ đề của"
+
 msgid "Source repository"
 msgstr "Kho nguồn"
 
-msgid "Download source file"
-msgstr "Tải xuống tệp nguồn"
+msgid "Last updated on"
+msgstr "Cập nhật lần cuối vào"
+
+msgid "By the"
+msgstr "Bằng"
 
 msgid "Sphinx Book Theme"
 msgstr "Chủ đề sách nhân sư"
 
+msgid "Open an issue"
+msgstr "Mở một vấn đề"
+
+msgid "next page"
+msgstr "Trang tiếp theo"
+
 msgid "Copyright"
 msgstr "Bản quyền"
-
-msgid "Fullscreen mode"
-msgstr "Chế độ toàn màn hình"
-
-msgid "Search the docs ..."
-msgstr "Tìm kiếm tài liệu ..."
-
-msgid "suggest edit"
-msgstr "đề nghị chỉnh sửa"
 
 msgid "Search this book..."
 msgstr "Tìm kiếm cuốn sách này ..."
 
-msgid "By"
-msgstr "Bởi"
-
-msgid "open issue"
-msgstr "vấn đề mở"
-
 msgid "Print to PDF"
 msgstr "In sang PDF"
+
+msgid "By"
+msgstr "Bởi"
 
 msgid "previous page"
 msgstr "trang trước"
 
-msgid "Toggle navigation"
-msgstr "Chuyển đổi điều hướng thành"
+msgid "Search the docs ..."
+msgstr "Tìm kiếm tài liệu ..."
 
-msgid "By the"
-msgstr "Bằng"
+msgid "Download notebook file"
+msgstr "Tải xuống tệp sổ tay"
+
+msgid "suggest edit"
+msgstr "đề nghị chỉnh sửa"

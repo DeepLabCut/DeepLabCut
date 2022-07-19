@@ -8,29 +8,23 @@ msgstr ""
 "Language: uk\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Завантажте цю сторінку"
-
-msgid "Download notebook file"
-msgstr "Завантажте файл блокнота"
-
-msgid "Open an issue"
-msgstr "Відкрийте випуск"
-
 msgid "repository"
 msgstr "сховище"
 
-msgid "Theme by the"
-msgstr "Тема від"
+msgid "open issue"
+msgstr "відкритий випуск"
 
 msgid "Contents"
 msgstr "Зміст"
 
-msgid "next page"
-msgstr "Наступна сторінка"
+msgid "Fullscreen mode"
+msgstr "Повноекранний режим"
 
-msgid "Last updated on"
-msgstr "Останнє оновлення:"
+msgid "Download this page"
+msgstr "Завантажте цю сторінку"
+
+msgid "Download source file"
+msgstr "Завантажити вихідний файл"
 
 msgid "Launch"
 msgstr "Запуск"
@@ -38,44 +32,50 @@ msgstr "Запуск"
 msgid "Edit this page"
 msgstr "Редагувати цю сторінку"
 
+msgid "Toggle navigation"
+msgstr "Переключити навігацію"
+
+msgid "Theme by the"
+msgstr "Тема від"
+
 msgid "Source repository"
 msgstr "Джерело сховища"
 
-msgid "Download source file"
-msgstr "Завантажити вихідний файл"
+msgid "Last updated on"
+msgstr "Останнє оновлення:"
+
+msgid "By the"
+msgstr "По"
 
 msgid "Sphinx Book Theme"
 msgstr "Тема книги \"Сфінкс\""
 
+msgid "Open an issue"
+msgstr "Відкрийте випуск"
+
+msgid "next page"
+msgstr "Наступна сторінка"
+
 msgid "Copyright"
 msgstr "Авторське право"
-
-msgid "Fullscreen mode"
-msgstr "Повноекранний режим"
-
-msgid "Search the docs ..."
-msgstr "Шукати в документах ..."
-
-msgid "suggest edit"
-msgstr "запропонувати редагувати"
 
 msgid "Search this book..."
 msgstr "Шукати в цій книзі ..."
 
-msgid "By"
-msgstr "Автор"
-
-msgid "open issue"
-msgstr "відкритий випуск"
-
 msgid "Print to PDF"
 msgstr "Друк у форматі PDF"
+
+msgid "By"
+msgstr "Автор"
 
 msgid "previous page"
 msgstr "Попередня сторінка"
 
-msgid "Toggle navigation"
-msgstr "Переключити навігацію"
+msgid "Search the docs ..."
+msgstr "Шукати в документах ..."
 
-msgid "By the"
-msgstr "По"
+msgid "Download notebook file"
+msgstr "Завантажте файл блокнота"
+
+msgid "suggest edit"
+msgstr "запропонувати редагувати"

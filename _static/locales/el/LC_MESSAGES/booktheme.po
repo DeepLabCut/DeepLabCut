@@ -8,29 +8,23 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Λήψη αυτής της σελίδας"
-
-msgid "Download notebook file"
-msgstr "Λήψη αρχείου σημειωματάριου"
-
-msgid "Open an issue"
-msgstr "Ανοίξτε ένα ζήτημα"
-
 msgid "repository"
 msgstr "αποθήκη"
 
-msgid "Theme by the"
-msgstr "Θέμα από το"
+msgid "open issue"
+msgstr "ανοιχτό ζήτημα"
 
 msgid "Contents"
 msgstr "Περιεχόμενα"
 
-msgid "next page"
-msgstr "επόμενη σελίδα"
+msgid "Fullscreen mode"
+msgstr "ΛΕΙΤΟΥΡΓΙΑ ΠΛΗΡΟΥΣ ΟΘΟΝΗΣ"
 
-msgid "Last updated on"
-msgstr "Τελευταία ενημέρωση στις"
+msgid "Download this page"
+msgstr "Λήψη αυτής της σελίδας"
+
+msgid "Download source file"
+msgstr "Λήψη αρχείου προέλευσης"
 
 msgid "Launch"
 msgstr "Εκτόξευση"
@@ -38,44 +32,50 @@ msgstr "Εκτόξευση"
 msgid "Edit this page"
 msgstr "Επεξεργαστείτε αυτήν τη σελίδα"
 
+msgid "Toggle navigation"
+msgstr "Εναλλαγή πλοήγησης"
+
+msgid "Theme by the"
+msgstr "Θέμα από το"
+
 msgid "Source repository"
 msgstr "Αποθήκη πηγής"
 
-msgid "Download source file"
-msgstr "Λήψη αρχείου προέλευσης"
+msgid "Last updated on"
+msgstr "Τελευταία ενημέρωση στις"
+
+msgid "By the"
+msgstr "Από το"
 
 msgid "Sphinx Book Theme"
 msgstr "Θέμα βιβλίου Sphinx"
 
+msgid "Open an issue"
+msgstr "Ανοίξτε ένα ζήτημα"
+
+msgid "next page"
+msgstr "επόμενη σελίδα"
+
 msgid "Copyright"
 msgstr "Πνευματική ιδιοκτησία"
-
-msgid "Fullscreen mode"
-msgstr "ΛΕΙΤΟΥΡΓΙΑ ΠΛΗΡΟΥΣ ΟΘΟΝΗΣ"
-
-msgid "Search the docs ..."
-msgstr "Αναζήτηση στα έγγραφα ..."
-
-msgid "suggest edit"
-msgstr "προτείνω επεξεργασία"
 
 msgid "Search this book..."
 msgstr "Αναζήτηση σε αυτό το βιβλίο ..."
 
-msgid "By"
-msgstr "Με"
-
-msgid "open issue"
-msgstr "ανοιχτό ζήτημα"
-
 msgid "Print to PDF"
 msgstr "Εκτύπωση σε PDF"
+
+msgid "By"
+msgstr "Με"
 
 msgid "previous page"
 msgstr "προηγούμενη σελίδα"
 
-msgid "Toggle navigation"
-msgstr "Εναλλαγή πλοήγησης"
+msgid "Search the docs ..."
+msgstr "Αναζήτηση στα έγγραφα ..."
 
-msgid "By the"
-msgstr "Από το"
+msgid "Download notebook file"
+msgstr "Λήψη αρχείου σημειωματάριου"
+
+msgid "suggest edit"
+msgstr "προτείνω επεξεργασία"

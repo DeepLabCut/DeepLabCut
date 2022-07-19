@@ -8,29 +8,23 @@ msgstr ""
 "Language: tg\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Ин саҳифаро зеркашӣ кунед"
-
-msgid "Download notebook file"
-msgstr "Файли дафтарро зеркашӣ кунед"
-
-msgid "Open an issue"
-msgstr "Масъаларо кушоед"
-
 msgid "repository"
 msgstr "анбор"
 
-msgid "Theme by the"
-msgstr "Мавзӯъи аз"
+msgid "open issue"
+msgstr "барориши кушод"
 
 msgid "Contents"
 msgstr "Мундариҷа"
 
-msgid "next page"
-msgstr "саҳифаи оянда"
+msgid "Fullscreen mode"
+msgstr "Ҳолати экрани пурра"
 
-msgid "Last updated on"
-msgstr "Last навсозӣ дар"
+msgid "Download this page"
+msgstr "Ин саҳифаро зеркашӣ кунед"
+
+msgid "Download source file"
+msgstr "Файли манбаъро зеркашӣ кунед"
 
 msgid "Launch"
 msgstr "Оғоз"
@@ -38,44 +32,50 @@ msgstr "Оғоз"
 msgid "Edit this page"
 msgstr "Ин саҳифаро таҳрир кунед"
 
+msgid "Toggle navigation"
+msgstr "Гузаришро иваз кунед"
+
+msgid "Theme by the"
+msgstr "Мавзӯъи аз"
+
 msgid "Source repository"
 msgstr "Анбори манбаъ"
 
-msgid "Download source file"
-msgstr "Файли манбаъро зеркашӣ кунед"
+msgid "Last updated on"
+msgstr "Last навсозӣ дар"
+
+msgid "By the"
+msgstr "Бо"
 
 msgid "Sphinx Book Theme"
 msgstr "Сфинкс Мавзӯи китоб"
 
+msgid "Open an issue"
+msgstr "Масъаларо кушоед"
+
+msgid "next page"
+msgstr "саҳифаи оянда"
+
 msgid "Copyright"
 msgstr "Ҳуқуқи муаллиф"
-
-msgid "Fullscreen mode"
-msgstr "Ҳолати экрани пурра"
-
-msgid "Search the docs ..."
-msgstr "Ҷустуҷӯи ҳуҷҷатҳо ..."
-
-msgid "suggest edit"
-msgstr "пешниҳод вироиш"
 
 msgid "Search this book..."
 msgstr "Ин китобро ҷустуҷӯ кунед ..."
 
-msgid "By"
-msgstr "Бо"
-
-msgid "open issue"
-msgstr "барориши кушод"
-
 msgid "Print to PDF"
 msgstr "Чоп ба PDF"
+
+msgid "By"
+msgstr "Бо"
 
 msgid "previous page"
 msgstr "саҳифаи қаблӣ"
 
-msgid "Toggle navigation"
-msgstr "Гузаришро иваз кунед"
+msgid "Search the docs ..."
+msgstr "Ҷустуҷӯи ҳуҷҷатҳо ..."
 
-msgid "By the"
-msgstr "Бо"
+msgid "Download notebook file"
+msgstr "Файли дафтарро зеркашӣ кунед"
+
+msgid "suggest edit"
+msgstr "пешниҳод вироиш"

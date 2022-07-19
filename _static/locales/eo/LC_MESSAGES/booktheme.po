@@ -8,29 +8,23 @@ msgstr ""
 "Language: eo\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Elŝutu ĉi tiun paĝon"
-
-msgid "Download notebook file"
-msgstr "Elŝutu kajeran dosieron"
-
-msgid "Open an issue"
-msgstr "Malfermu numeron"
-
 msgid "repository"
 msgstr "deponejo"
 
-msgid "Theme by the"
-msgstr "Temo de la"
+msgid "open issue"
+msgstr "malferma numero"
 
 msgid "Contents"
 msgstr "Enhavo"
 
-msgid "next page"
-msgstr "sekva paĝo"
+msgid "Fullscreen mode"
+msgstr "Plenekrana reĝimo"
 
-msgid "Last updated on"
-msgstr "Laste ĝisdatigita la"
+msgid "Download this page"
+msgstr "Elŝutu ĉi tiun paĝon"
+
+msgid "Download source file"
+msgstr "Elŝutu fontodosieron"
 
 msgid "Launch"
 msgstr "Lanĉo"
@@ -38,44 +32,50 @@ msgstr "Lanĉo"
 msgid "Edit this page"
 msgstr "Redaktu ĉi tiun paĝon"
 
+msgid "Toggle navigation"
+msgstr "Ŝalti navigadon"
+
+msgid "Theme by the"
+msgstr "Temo de la"
+
 msgid "Source repository"
 msgstr "Fonto-deponejo"
 
-msgid "Download source file"
-msgstr "Elŝutu fontodosieron"
+msgid "Last updated on"
+msgstr "Laste ĝisdatigita la"
+
+msgid "By the"
+msgstr "Per la"
 
 msgid "Sphinx Book Theme"
 msgstr "Sfinksa Libro-Temo"
 
+msgid "Open an issue"
+msgstr "Malfermu numeron"
+
+msgid "next page"
+msgstr "sekva paĝo"
+
 msgid "Copyright"
 msgstr "Kopirajto"
-
-msgid "Fullscreen mode"
-msgstr "Plenekrana reĝimo"
-
-msgid "Search the docs ..."
-msgstr "Serĉu la dokumentojn ..."
-
-msgid "suggest edit"
-msgstr "sugesti redaktadon"
 
 msgid "Search this book..."
 msgstr "Serĉu ĉi tiun libron ..."
 
-msgid "By"
-msgstr "De"
-
-msgid "open issue"
-msgstr "malferma numero"
-
 msgid "Print to PDF"
 msgstr "Presi al PDF"
+
+msgid "By"
+msgstr "De"
 
 msgid "previous page"
 msgstr "antaŭa paĝo"
 
-msgid "Toggle navigation"
-msgstr "Ŝalti navigadon"
+msgid "Search the docs ..."
+msgstr "Serĉu la dokumentojn ..."
 
-msgid "By the"
-msgstr "Per la"
+msgid "Download notebook file"
+msgstr "Elŝutu kajeran dosieron"
+
+msgid "suggest edit"
+msgstr "sugesti redaktadon"

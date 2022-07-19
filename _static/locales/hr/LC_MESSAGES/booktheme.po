@@ -8,29 +8,23 @@ msgstr ""
 "Language: hr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Preuzmite ovu stranicu"
-
-msgid "Download notebook file"
-msgstr "Preuzmi datoteku bilježnice"
-
-msgid "Open an issue"
-msgstr "Otvorite izdanje"
-
 msgid "repository"
 msgstr "spremište"
 
-msgid "Theme by the"
-msgstr "Tema autora"
+msgid "open issue"
+msgstr "otvoreno izdanje"
 
 msgid "Contents"
 msgstr "Sadržaj"
 
-msgid "next page"
-msgstr "sljedeća stranica"
+msgid "Fullscreen mode"
+msgstr "Način preko cijelog zaslona"
 
-msgid "Last updated on"
-msgstr "Posljednje ažuriranje:"
+msgid "Download this page"
+msgstr "Preuzmite ovu stranicu"
+
+msgid "Download source file"
+msgstr "Preuzmi izvornu datoteku"
 
 msgid "Launch"
 msgstr "Pokrenite"
@@ -38,44 +32,50 @@ msgstr "Pokrenite"
 msgid "Edit this page"
 msgstr "Uredite ovu stranicu"
 
+msgid "Toggle navigation"
+msgstr "Uključi / isključi navigaciju"
+
+msgid "Theme by the"
+msgstr "Tema autora"
+
 msgid "Source repository"
 msgstr "Izvorno spremište"
 
-msgid "Download source file"
-msgstr "Preuzmi izvornu datoteku"
+msgid "Last updated on"
+msgstr "Posljednje ažuriranje:"
+
+msgid "By the"
+msgstr "Od strane"
 
 msgid "Sphinx Book Theme"
 msgstr "Tema knjige Sphinx"
 
+msgid "Open an issue"
+msgstr "Otvorite izdanje"
+
+msgid "next page"
+msgstr "sljedeća stranica"
+
 msgid "Copyright"
 msgstr "Autorska prava"
-
-msgid "Fullscreen mode"
-msgstr "Način preko cijelog zaslona"
-
-msgid "Search the docs ..."
-msgstr "Pretražite dokumente ..."
-
-msgid "suggest edit"
-msgstr "predloži uređivanje"
 
 msgid "Search this book..."
 msgstr "Pretražite ovu knjigu ..."
 
-msgid "By"
-msgstr "Po"
-
-msgid "open issue"
-msgstr "otvoreno izdanje"
-
 msgid "Print to PDF"
 msgstr "Ispis u PDF"
+
+msgid "By"
+msgstr "Po"
 
 msgid "previous page"
 msgstr "Prethodna stranica"
 
-msgid "Toggle navigation"
-msgstr "Uključi / isključi navigaciju"
+msgid "Search the docs ..."
+msgstr "Pretražite dokumente ..."
 
-msgid "By the"
-msgstr "Od strane"
+msgid "Download notebook file"
+msgstr "Preuzmi datoteku bilježnice"
+
+msgid "suggest edit"
+msgstr "predloži uređivanje"

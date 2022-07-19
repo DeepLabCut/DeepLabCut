@@ -8,29 +8,23 @@ msgstr ""
 "Language: lt\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Atsisiųskite šį puslapį"
-
-msgid "Download notebook file"
-msgstr "Atsisiųsti nešiojamojo kompiuterio failą"
-
-msgid "Open an issue"
-msgstr "Atidarykite problemą"
-
 msgid "repository"
 msgstr "saugykla"
 
-msgid "Theme by the"
-msgstr "Tema"
+msgid "open issue"
+msgstr "atviras klausimas"
 
 msgid "Contents"
 msgstr "Turinys"
 
-msgid "next page"
-msgstr "Kitas puslapis"
+msgid "Fullscreen mode"
+msgstr "Pilno ekrano režimas"
 
-msgid "Last updated on"
-msgstr "Paskutinį kartą atnaujinta"
+msgid "Download this page"
+msgstr "Atsisiųskite šį puslapį"
+
+msgid "Download source file"
+msgstr "Atsisiųsti šaltinio failą"
 
 msgid "Launch"
 msgstr "Paleiskite"
@@ -38,44 +32,50 @@ msgstr "Paleiskite"
 msgid "Edit this page"
 msgstr "Redaguoti šį puslapį"
 
+msgid "Toggle navigation"
+msgstr "Perjungti naršymą"
+
+msgid "Theme by the"
+msgstr "Tema"
+
 msgid "Source repository"
 msgstr "Šaltinio saugykla"
 
-msgid "Download source file"
-msgstr "Atsisiųsti šaltinio failą"
+msgid "Last updated on"
+msgstr "Paskutinį kartą atnaujinta"
+
+msgid "By the"
+msgstr "Prie"
 
 msgid "Sphinx Book Theme"
 msgstr "Sfinkso knygos tema"
 
+msgid "Open an issue"
+msgstr "Atidarykite problemą"
+
+msgid "next page"
+msgstr "Kitas puslapis"
+
 msgid "Copyright"
 msgstr "Autorių teisės"
-
-msgid "Fullscreen mode"
-msgstr "Pilno ekrano režimas"
-
-msgid "Search the docs ..."
-msgstr "Ieškoti dokumentuose ..."
-
-msgid "suggest edit"
-msgstr "pasiūlyti redaguoti"
 
 msgid "Search this book..."
 msgstr "Ieškoti šioje knygoje ..."
 
-msgid "By"
-msgstr "Iki"
-
-msgid "open issue"
-msgstr "atviras klausimas"
-
 msgid "Print to PDF"
 msgstr "Spausdinti į PDF"
+
+msgid "By"
+msgstr "Iki"
 
 msgid "previous page"
 msgstr "Ankstesnis puslapis"
 
-msgid "Toggle navigation"
-msgstr "Perjungti naršymą"
+msgid "Search the docs ..."
+msgstr "Ieškoti dokumentuose ..."
 
-msgid "By the"
-msgstr "Prie"
+msgid "Download notebook file"
+msgstr "Atsisiųsti nešiojamojo kompiuterio failą"
+
+msgid "suggest edit"
+msgstr "pasiūlyti redaguoti"

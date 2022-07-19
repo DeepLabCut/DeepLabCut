@@ -8,29 +8,23 @@ msgstr ""
 "Language: et\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download this page"
-msgstr "Laadige see leht alla"
-
-msgid "Download notebook file"
-msgstr "Laadige sülearvuti fail alla"
-
-msgid "Open an issue"
-msgstr "Avage probleem"
-
 msgid "repository"
 msgstr "hoidla"
 
-msgid "Theme by the"
-msgstr "Teema"
+msgid "open issue"
+msgstr "avatud küsimus"
 
 msgid "Contents"
 msgstr "Sisu"
 
-msgid "next page"
-msgstr "järgmine leht"
+msgid "Fullscreen mode"
+msgstr "Täisekraanirežiim"
 
-msgid "Last updated on"
-msgstr "Viimati uuendatud"
+msgid "Download this page"
+msgstr "Laadige see leht alla"
+
+msgid "Download source file"
+msgstr "Laadige alla lähtefail"
 
 msgid "Launch"
 msgstr "Käivitage"
@@ -38,44 +32,50 @@ msgstr "Käivitage"
 msgid "Edit this page"
 msgstr "Muutke seda lehte"
 
+msgid "Toggle navigation"
+msgstr "Lülita navigeerimine sisse"
+
+msgid "Theme by the"
+msgstr "Teema"
+
 msgid "Source repository"
 msgstr "Allikahoidla"
 
-msgid "Download source file"
-msgstr "Laadige alla lähtefail"
+msgid "Last updated on"
+msgstr "Viimati uuendatud"
+
+msgid "By the"
+msgstr "Autor"
 
 msgid "Sphinx Book Theme"
 msgstr "Sfinksiraamatu teema"
 
+msgid "Open an issue"
+msgstr "Avage probleem"
+
+msgid "next page"
+msgstr "järgmine leht"
+
 msgid "Copyright"
 msgstr "Autoriõigus"
-
-msgid "Fullscreen mode"
-msgstr "Täisekraanirežiim"
-
-msgid "Search the docs ..."
-msgstr "Dokumentidest otsimine ..."
-
-msgid "suggest edit"
-msgstr "soovita muuta"
 
 msgid "Search this book..."
 msgstr "Otsige sellest raamatust ..."
 
-msgid "By"
-msgstr "Kõrval"
-
-msgid "open issue"
-msgstr "avatud küsimus"
-
 msgid "Print to PDF"
 msgstr "Prindi PDF-i"
+
+msgid "By"
+msgstr "Kõrval"
 
 msgid "previous page"
 msgstr "eelmine leht"
 
-msgid "Toggle navigation"
-msgstr "Lülita navigeerimine sisse"
+msgid "Search the docs ..."
+msgstr "Dokumentidest otsimine ..."
 
-msgid "By the"
-msgstr "Autor"
+msgid "Download notebook file"
+msgstr "Laadige sülearvuti fail alla"
+
+msgid "suggest edit"
+msgstr "soovita muuta"
