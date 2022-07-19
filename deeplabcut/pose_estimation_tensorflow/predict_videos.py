@@ -267,6 +267,7 @@ def analyze_videos(
     trainingsetindex=0,
     gputouse=None,
     save_as_csv=False,
+    in_random_order=True,
     destfolder=None,
     batchsize=None,
     cropping=None,
@@ -316,6 +317,10 @@ def analyze_videos(
 
     save_as_csv: bool, optional, default=False
         Saves the predictions in a .csv file.
+
+    in_random_order: bool, optional (default=True)
+        Whether or not to analyze videos in a random order.
+        This is only relevant when specifying a video directory in `videos`.
 
     destfolder: string or None, optional, default=None
         Specifies the destination folder for analysis data. If ``None``, the path of
@@ -604,7 +609,7 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype, in_random_order)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
