@@ -322,7 +322,8 @@ def write_pickle(filename, data):
 
 def get_list_of_videos(
     videos: typing.Union[typing.List[str], str],
-    videotype: typing.Union[typing.List[str], str] = ""
+    videotype: typing.Union[typing.List[str], str] = "",
+    in_random_order: bool = True,
 ) -> typing.List[str]:
     """ Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
@@ -338,6 +339,8 @@ def get_list_of_videos(
 
         videotype (list[str], str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
             and filters with common video extensions if a directory is passed in.
+
+        in_random_order (bool): Whether or not to return a shuffled list of videos.
     """
     if isinstance(videos, str):
         videos = [videos]
@@ -349,15 +352,18 @@ def get_list_of_videos(
         if not videotype:
             videotype = auxfun_videos.SUPPORTED_VIDEOS
 
-        from random import shuffle
-
         print("Analyzing all the videos in the directory...")
         videofolder = videos[0]
 
         # make list of full paths
         videos = [os.path.join(videofolder, fn) for fn in os.listdir(videofolder)]
 
-        shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
+        if in_random_order:
+            from random import shuffle
+
+            shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
+        else:
+            videos.sort()
 
     if isinstance(videotype, str):
         videotype = [videotype]
