@@ -258,7 +258,7 @@ def plot_trajectories(
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(

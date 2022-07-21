@@ -230,7 +230,7 @@ def triangulate(
                             run_triangulate = True
 
                     # Check for scorer names in the pickle file of 3d output
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg, shuffle, trainFraction, trainingsiterations="unknown"
                     )
 

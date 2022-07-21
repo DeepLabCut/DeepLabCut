@@ -545,7 +545,7 @@ def form_data_containers(df, bodyparts):
     return df_x, df_y, df_likelihood
 
 
-def GetScorerName(
+def get_scorer_name(
     cfg, shuffle, trainFraction, trainingsiterations="unknown", modelprefix=""
 ):
     """ Extract the scorer/network name for a particular shuffle, training fraction, etc.
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated

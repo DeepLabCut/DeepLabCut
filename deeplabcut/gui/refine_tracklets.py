@@ -302,7 +302,7 @@ class Refine_tracklets(wx.Panel):
         )
 
     def refine_tracklets(self, event):
-        DLCscorer, _ = auxiliaryfunctions.GetScorerName(
+        DLCscorer, _ = auxiliaryfunctions.get_scorer_name(
             self.cfg,
             self.shuffle.GetValue(),
             self.cfg["TrainingFraction"][-1],

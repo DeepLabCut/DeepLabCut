@@ -175,7 +175,7 @@ def create_tracking_dataset(
         )
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -562,7 +562,7 @@ def analyze_videos(
         )
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -1347,7 +1347,7 @@ def analyze_time_lapse_frames(
     dlc_cfg["batch_size"] = cfg["batch_size"]
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -1706,7 +1706,7 @@ def convert_detections2tracklets(
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,

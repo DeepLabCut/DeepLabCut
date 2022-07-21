@@ -271,7 +271,7 @@ def evaluate_multianimal_full(
                     ]  # read how many training siterations that corresponds to.
 
                     # name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,

@@ -383,7 +383,7 @@ def return_evaluate_network_data(
         ]  # read how many training siterations that corresponds to.
 
         # name for deeplabcut net (based on its parameters)
-        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix
         )
         if not returnjustfns:
@@ -783,7 +783,7 @@ def evaluate_network(
                     ]  # read how many training siterations that corresponds to.
 
                     # Name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
