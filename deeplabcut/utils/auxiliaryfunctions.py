@@ -614,7 +614,7 @@ def GetScorerName(
     return scorer, scorer_legacy
 
 
-def CheckifPostProcessing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
+def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
     """ Checks if filtered/bone lengths were already calculated. If not, figures
     out if data was already analyzed (either with legacy scorer name or new one!) """
     outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
@@ -816,5 +816,6 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated
