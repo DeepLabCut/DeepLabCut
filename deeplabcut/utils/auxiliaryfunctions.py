@@ -420,7 +420,7 @@ def grab_files_in_folder(folder, ext="", relative=True):
             yield file if relative else os.path.join(folder, file)
 
 
-def GetVideoList(filename, videopath, videtype):
+def get_video_list(filename, videopath, videtype):
     """ Get list of videos in a path (if filetype == all), otherwise just a specific file."""
     videos = list(grab_files_in_folder(videopath, videtype))
     if filename == "all":
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
 IntersectionofBodyPartsandOnesGivenbyUser = intersection_of_body_parts_and_ones_given_by_user
