@@ -375,7 +375,7 @@ def get_list_of_videos(
     return videos
 
 
-def SaveData(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
+def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
     """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
@@ -813,3 +813,6 @@ def find_next_unlabeled_folder(config_path, verbose=False):
                 frac = (~df.isna()).sum().sum() / df.size
                 print(f"{folder.name} | {int(100 * frac)} %")
     return next_folder
+
+# aliases for backwards-compatibility.
+SaveData = save_data

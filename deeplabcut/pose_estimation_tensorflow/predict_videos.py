@@ -1111,7 +1111,7 @@ def AnalyzeVideo(
 
         print(f"Saving results in {destfolder}...")
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
-        auxiliaryfunctions.SaveData(
+        auxiliaryfunctions.save_data(
             PredictedData[:nframes, :],
             metadata,
             dataname,
@@ -1427,7 +1427,7 @@ def analyze_time_lapse_frames(
 
                 print("Saving results in %s..." % (directory))
 
-                auxiliaryfunctions.SaveData(
+                auxiliaryfunctions.save_data(
                     PredictedData[:nframes, :],
                     metadata,
                     dataname,
