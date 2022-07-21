@@ -48,14 +48,14 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
 
     if not model_path.exists():
         if "efficientnet" in modeltype:
-            Downloadweights(modeltype, model_path.parent)
+            download_weights(modeltype, model_path.parent)
         else:
-            Downloadweights(modeltype, model_path)
+            download_weights(modeltype, model_path)
 
     return str(model_path), num_shuffles
 
 
-def Downloadweights(modeltype, model_path):
+def download_weights(modeltype, model_path):
     """
     Downloads the ImageNet pretrained weights for ResNets, MobileNets et al. from TensorFlow...
     """
@@ -163,3 +163,4 @@ def download_mpii_weights(wd):
 
 # Aliases for backwards-compatibility
 Check4Weights = check_for_weights
+Downloadweights = download_weights
