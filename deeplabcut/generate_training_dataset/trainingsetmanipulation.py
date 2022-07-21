@@ -906,7 +906,7 @@ def create_training_dataset(
             defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path, num_shuffles = auxfun_models.Check4weights(
+        model_path, num_shuffles = auxfun_models.check_for_weights(
             net_type, Path(dlcparent_path), num_shuffles
         )
 

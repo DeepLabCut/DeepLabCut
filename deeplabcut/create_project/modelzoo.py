@@ -262,7 +262,7 @@ def create_pretrained_project(
 
         # Download the weights and put then in appropriate directory
         print("Downloading weights...")
-        auxfun_models.DownloadModel(model, train_dir)
+        auxfun_models.download_model(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
         print(path_train_config)

@@ -34,7 +34,7 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def Check4weights(modeltype, parent_path, num_shuffles):
+def check_for_weights(modeltype, parent_path, num_shuffles):
     """ gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org """
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
@@ -48,14 +48,14 @@ def Check4weights(modeltype, parent_path, num_shuffles):
 
     if not model_path.exists():
         if "efficientnet" in modeltype:
-            Downloadweights(modeltype, model_path.parent)
+            download_weights(modeltype, model_path.parent)
         else:
-            Downloadweights(modeltype, model_path)
+            download_weights(modeltype, model_path)
 
     return str(model_path), num_shuffles
 
 
-def Downloadweights(modeltype, model_path):
+def download_weights(modeltype, model_path):
     """
     Downloads the ImageNet pretrained weights for ResNets, MobileNets et al. from TensorFlow...
     """
@@ -82,7 +82,7 @@ def Downloadweights(modeltype, model_path):
         print("Pick one of the following: ", neturls.keys())
 
 
-def DownloadModel(modelname, target_dir):
+def download_model(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project
     """
@@ -159,3 +159,9 @@ def download_mpii_weights(wd):
             urllib.request.urlretrieve(i, filename)
 
     return filename
+
+
+# Aliases for backwards-compatibility
+Check4Weights = check_for_weights
+Downloadweights = download_weights
+DownloadModel = download_model

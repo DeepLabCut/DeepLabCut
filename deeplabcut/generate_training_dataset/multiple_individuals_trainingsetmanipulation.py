@@ -269,7 +269,7 @@ def create_multianimaltraining_dataset(
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
-    model_path, num_shuffles = auxfun_models.Check4weights(
+    model_path, num_shuffles = auxfun_models.check_for_weights(
         net_type, Path(dlcparent_path), num_shuffles
     )
 
