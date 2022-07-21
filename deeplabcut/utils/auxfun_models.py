@@ -34,7 +34,7 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def Check4weights(modeltype, parent_path, num_shuffles):
+def check_for_weights(modeltype, parent_path, num_shuffles):
     """ gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org """
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
@@ -159,3 +159,7 @@ def download_mpii_weights(wd):
             urllib.request.urlretrieve(i, filename)
 
     return filename
+
+
+# Aliases for backwards-compatibility
+Check4Weights = check_for_weights
