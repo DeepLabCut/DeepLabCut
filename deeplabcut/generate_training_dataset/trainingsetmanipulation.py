@@ -617,7 +617,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
         cfg
     )  # Path concatenation OS platform independent
     auxiliaryfunctions.attempttomakefolder(
@@ -847,7 +847,7 @@ def create_training_dataset(
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
         # Create path for training sets & store data there
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
         )  # Path concatenation OS platform independent
         auxiliaryfunctions.attempttomakefolder(

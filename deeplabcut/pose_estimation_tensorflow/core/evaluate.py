@@ -77,7 +77,7 @@ def calculatepafdistancebounds(
         ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
         datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainingsetfolder, trainFraction, shuffle, cfg
@@ -271,7 +271,7 @@ def return_evaluate_network_data(
     cfg = auxiliaryfunctions.read_config(config)
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
@@ -650,7 +650,7 @@ def evaluate_network(
                 )
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         Data = pd.read_hdf(
             os.path.join(
                 cfg["project_path"],

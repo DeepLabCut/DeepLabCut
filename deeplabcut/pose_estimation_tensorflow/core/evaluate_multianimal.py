@@ -142,7 +142,7 @@ def evaluate_multianimal_full(
         TrainingFractions = [cfg["TrainingFraction"][trainingsetindex]]
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     Data = pd.read_hdf(
         os.path.join(
             cfg["project_path"],

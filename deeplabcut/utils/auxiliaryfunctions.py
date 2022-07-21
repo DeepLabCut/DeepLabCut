@@ -435,7 +435,7 @@ def GetVideoList(filename, videopath, videtype):
 
 
 ## Various functions to get filenames, foldernames etc. based on configuration parameters.
-def GetTrainingSetFolder(cfg):
+def get_training_set_folder(cfg):
     """ Training Set folder for config file based on parameters """
     Task = cfg["Task"]
     date = cfg["date"]
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
 IntersectionofBodyPartsandOnesGivenbyUser = intersection_of_body_parts_and_ones_given_by_user
 GetScorerName = get_scorer_name

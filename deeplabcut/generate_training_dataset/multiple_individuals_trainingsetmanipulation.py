@@ -196,7 +196,7 @@ def create_multianimaltraining_dataset(
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
@@ -527,7 +527,7 @@ def convert_cropped_to_standard_dataset(
 
     datasets_folder = os.path.join(
         project_path,
-        auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        auxiliaryfunctions.get_training_set_folder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),

@@ -1492,7 +1492,7 @@ def _convert_detections_to_tracklets(
         min_affinity=inference_cfg.get("pafthreshold", 0.05),
     )
     if calibrate:
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         train_data_file = os.path.join(
             cfg["project_path"],
             str(trainingsetfolder),
@@ -1795,7 +1795,7 @@ def convert_detections2tracklets(
                     identity_only=identity_only,
                 )
                 if calibrate:
-                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
                     train_data_file = os.path.join(
                         cfg["project_path"],
                         str(trainingsetfolder),
