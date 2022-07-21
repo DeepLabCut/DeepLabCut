@@ -419,7 +419,7 @@ def extract_save_all_maps(
         read_config,
         attempttomakefolder,
         get_evaluation_folder,
-        IntersectionofBodyPartsandOnesGivenbyUser,
+        intersection_of_body_parts_and_ones_given_by_user,
     )
     from tqdm import tqdm
 
@@ -428,7 +428,7 @@ def extract_save_all_maps(
         config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
     )
 
-    comparisonbodyparts = IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
 

@@ -153,7 +153,7 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     all_bpts = np.asarray(

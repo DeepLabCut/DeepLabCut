@@ -275,7 +275,7 @@ def return_evaluate_network_data(
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     ##################################################
@@ -660,7 +660,7 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+        comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
             cfg, comparisonbodyparts
         )
         # Make folder for evaluation

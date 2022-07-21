@@ -341,7 +341,7 @@ def extract_outlier_frames(
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     if not len(bodyparts):
@@ -609,7 +609,7 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, "all")
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)

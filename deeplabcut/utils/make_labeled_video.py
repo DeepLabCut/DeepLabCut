@@ -529,7 +529,7 @@ def create_labeled_video(
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
 
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts
     )
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
