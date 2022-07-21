@@ -387,7 +387,7 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
-def SaveMetadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
+def save_metadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
     with open(metadatafilename, "wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
         pickle.dump(
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+SaveMetadata = save_metadata
 LoadMetadata = load_metadata
 GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder

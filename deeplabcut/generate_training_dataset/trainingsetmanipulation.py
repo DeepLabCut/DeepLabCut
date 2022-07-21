@@ -999,7 +999,7 @@ def create_training_dataset(
                 ################################################################################
                 # Saving metadata (Pickle file)
                 ################################################################################
-                auxiliaryfunctions.SaveMetadata(
+                auxiliaryfunctions.save_metadata(
                     os.path.join(project_path, metadatafilename),
                     data,
                     trainIndices,

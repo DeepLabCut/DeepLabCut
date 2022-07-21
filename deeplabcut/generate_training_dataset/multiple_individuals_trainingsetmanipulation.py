@@ -337,7 +337,7 @@ def create_multianimaltraining_dataset(
             ################################################################################
             # Saving metadata and data file (Pickle file)
             ################################################################################
-            auxiliaryfunctions.SaveMetadata(
+            auxiliaryfunctions.save_metadata(
                 os.path.join(project_path, metadatafilename),
                 data,
                 trainIndices,
