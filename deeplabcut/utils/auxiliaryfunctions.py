@@ -395,7 +395,7 @@ def SaveMetadata(metadatafilename, data, trainIndices, testIndices, trainFractio
         )
 
 
-def LoadMetadata(metadatafile):
+def load_metadata(metadatafile):
     with open(metadatafile, "rb") as f:
         [
             trainingdata_details,
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+LoadMetadata = load_metadata
 GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames

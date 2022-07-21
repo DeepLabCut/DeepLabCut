@@ -188,7 +188,7 @@ def evaluate_multianimal_full(
                 trainIndices,
                 testIndices,
                 trainFraction,
-            ) = auxiliaryfunctions.LoadMetadata(
+            ) = auxiliaryfunctions.load_metadata(
                 os.path.join(cfg["project_path"], metadatafn)
             )
 

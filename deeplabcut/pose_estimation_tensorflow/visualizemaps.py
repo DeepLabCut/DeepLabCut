@@ -131,7 +131,7 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.LoadMetadata(
+        ) = auxiliaryfunctions.load_metadata(
             os.path.join(cfg["project_path"], metadatafn)
         )
         try:

@@ -97,7 +97,7 @@ def calculatepafdistancebounds(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.LoadMetadata(
+        ) = auxiliaryfunctions.load_metadata(
             os.path.join(cfg["project_path"], metadatafn)
         )
         Data = pd.read_hdf(
@@ -295,7 +295,7 @@ def return_evaluate_network_data(
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     # Load meta data
-    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.LoadMetadata(
+    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.load_metadata(
         os.path.join(cfg["project_path"], metadatafn)
     )
 
@@ -691,7 +691,7 @@ def evaluate_network(
                     trainIndices,
                     testIndices,
                     trainFraction,
-                ) = auxiliaryfunctions.LoadMetadata(
+                ) = auxiliaryfunctions.load_metadata(
                     os.path.join(cfg["project_path"], metadatafn)
                 )
 
