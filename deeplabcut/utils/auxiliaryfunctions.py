@@ -445,7 +445,7 @@ def GetTrainingSetFolder(cfg):
     )
 
 
-def GetDataandMetaDataFilenames(trainingsetfolder, trainFraction, shuffle, cfg):
+def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg):
     # Filename for metadata and data relative to project path for corresponding parameters
     metadatafn = os.path.join(
         str(trainingsetfolder),
@@ -816,6 +816,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+GetDataandMetaDataFilenames = get_data_and_metadata_filenames
 IntersectionofBodyPartsandOnesGivenbyUser = intersection_of_body_parts_and_ones_given_by_user
 GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing

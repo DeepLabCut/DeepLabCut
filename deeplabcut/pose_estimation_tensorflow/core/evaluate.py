@@ -79,7 +79,7 @@ def calculatepafdistancebounds(
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
         modelfolder = os.path.join(
@@ -282,7 +282,7 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+    datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, trainFraction, shuffle, cfg
     )
     modelfolder = os.path.join(
@@ -672,7 +672,7 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+                datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                     trainingsetfolder, trainFraction, shuffle, cfg
                 )
                 modelfolder = os.path.join(

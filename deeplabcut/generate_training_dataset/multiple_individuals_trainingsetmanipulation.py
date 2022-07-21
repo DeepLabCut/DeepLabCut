@@ -331,7 +331,7 @@ def create_multianimaltraining_dataset(
             (
                 datafilename,
                 metadatafilename,
-            ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            ) = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             ################################################################################

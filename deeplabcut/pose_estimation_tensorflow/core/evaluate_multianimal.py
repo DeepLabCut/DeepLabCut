@@ -169,7 +169,7 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             modelfolder = os.path.join(
