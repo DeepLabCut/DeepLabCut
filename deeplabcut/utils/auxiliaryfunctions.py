@@ -648,7 +648,7 @@ def CheckifPostProcessing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="fil
                 return False, outdataname, sourcedataname, DLCscorer
 
 
-def CheckifNotAnalyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
+def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
     h5files = list(grab_files_in_folder(destfolder, "h5", relative=False))
     if not len(h5files):
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
@@ -816,4 +816,5 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated

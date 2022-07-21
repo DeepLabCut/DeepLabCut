@@ -1384,7 +1384,7 @@ def analyze_time_lapse_frames(
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
         vname = Path(directory).stem
-        notanalyzed, dataname, DLCscorer = auxiliaryfunctions.CheckifNotAnalyzed(
+        notanalyzed, dataname, DLCscorer = auxiliaryfunctions.check_if_not_analyzed(
             directory, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
         )
         if notanalyzed:
