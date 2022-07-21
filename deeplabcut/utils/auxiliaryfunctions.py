@@ -674,7 +674,7 @@ def CheckifNotAnalyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="vide
     return True, dataname, DLCscorer
 
 
-def CheckifNotEvaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
+def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
     dataname = os.path.join(folder, DLCscorer + "-" + str(snapshot) + ".h5")
     if os.path.isfile(dataname):
         print("This net has already been evaluated!")
@@ -816,3 +816,4 @@ def find_next_unlabeled_folder(config_path, verbose=False):
 
 # aliases for backwards-compatibility.
 SaveData = save_data
+CheckifNotEvaluated = check_if_not_evaluated

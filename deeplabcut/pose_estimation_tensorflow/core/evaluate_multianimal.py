@@ -288,7 +288,7 @@ def evaluate_multianimal_full(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,

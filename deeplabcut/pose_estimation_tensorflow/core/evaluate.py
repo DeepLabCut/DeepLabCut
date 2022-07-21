@@ -398,7 +398,7 @@ def return_evaluate_network_data(
             notanalyzed,
             resultsfilename,
             DLCscorer,
-        ) = auxiliaryfunctions.CheckifNotEvaluated(
+        ) = auxiliaryfunctions.check_if_not_evaluated(
             str(evaluationfolder), DLCscorer, DLCscorerlegacy, Snapshots[snapindex]
         )
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
@@ -800,7 +800,7 @@ def evaluate_network(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
