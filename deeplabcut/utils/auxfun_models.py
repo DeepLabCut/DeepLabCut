@@ -82,7 +82,7 @@ def download_weights(modeltype, model_path):
         print("Pick one of the following: ", neturls.keys())
 
 
-def DownloadModel(modelname, target_dir):
+def download_model(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project
     """
@@ -164,3 +164,4 @@ def download_mpii_weights(wd):
 # Aliases for backwards-compatibility
 Check4Weights = check_for_weights
 Downloadweights = download_weights
+DownloadModel = download_model
