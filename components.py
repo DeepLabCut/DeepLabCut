@@ -57,6 +57,7 @@ def _create_grid_layout(
 
     return layout
 
+
 class BodypartListWidget(QtWidgets.QListWidget):
     def __init__(
         self, 
@@ -97,7 +98,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self, 
         root: QtWidgets.QMainWindow, 
         parent: QtWidgets.QWidget
-        ):
+    ):
         super(VideoSelectionWidget, self).__init__(parent)
         
         self.root = root
@@ -172,6 +173,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # self.select_video_button.adjustSize()
         self.root.logger.info(f"Cleared selected videos:\n{self.files}")
 
+
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
         super(TrainingSetSpinBox, self).__init__(parent)
@@ -182,6 +184,7 @@ class TrainingSetSpinBox(QtWidgets.QSpinBox):
         self.setMaximum(100)
         self.setValue(self.root.trainingset_index)
         self.valueChanged.connect(self.root.update_trainingset)
+
 
 class ShuffleSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
@@ -194,13 +197,14 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
         self.setValue(self.root.shuffle_value)
         self.valueChanged.connect(self.root.update_shuffle)
 
+
 class DefaultTab(QtWidgets.QWidget):
     def __init__(
         self, 
         root: QtWidgets.QMainWindow, 
         parent: QtWidgets.QWidget, 
         h1_description: str
-        ):
+    ):
         super(DefaultTab, self).__init__(parent)
 
         self.parent = parent
@@ -275,7 +279,7 @@ class EditYamlButton(QtWidgets.QPushButton):
         button_label: str, 
         filepath: str, 
         parent: QtWidgets.QWidget = None
-        ):
+    ):
         super(EditYamlButton, self).__init__(button_label)
         self.filepath = filepath
         self.parent = parent
@@ -339,4 +343,3 @@ class BrowseFilesButton(QtWidgets.QPushButton):
 
         if filepaths:
             self.files.update(filepaths[0])
-

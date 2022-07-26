@@ -1,3 +1,4 @@
+import napari
 import os
 
 from PySide2.QtWidgets import QWidget
@@ -81,8 +82,6 @@ class LabelFrames(DefaultTab):
             import multiple_individuals_labeling_toolbox
             # multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
         else:
-            import napari
-
             viewer = napari.Viewer()
             dialog = QtWidgets.QDialog()
             main_layout = QtWidgets.QVBoxLayout(dialog)

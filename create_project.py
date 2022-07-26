@@ -29,7 +29,7 @@ class CreateProject(QtWidgets.QDialog):
 
         self.create_button = QtWidgets.QPushButton("Create")
         self.create_button.setDefault(True)
-        self.create_button.clicked.connect(self.create_newproject)
+        self.create_button.clicked.connect(self.create_new_project)
         main_layout.addWidget(self.user_frame)
         main_layout.addWidget(self.create_button, alignment=QtCore.Qt.AlignRight)
 
@@ -154,7 +154,7 @@ class CreateProject(QtWidgets.QDialog):
         full_path = os.path.join(self.loc_default, full_name)
         self.project_location = full_path
 
-    def create_newproject(self):
+    def create_new_project(self):
         # create the new project
         if self.proj_default != "" and self.exp_default != "" and self.filelist != []:
             self.config = create_new_project(
@@ -170,7 +170,7 @@ class CreateProject(QtWidgets.QDialog):
         else:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setText("Some of the enteries are missing.")
+            msg.setText("Some of the entries are missing.")
             msg.setInformativeText(
                 "Make sure that the task and experimenter name are specified and videos are selected!"
             )

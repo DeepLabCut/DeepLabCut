@@ -93,6 +93,7 @@ class EvaluateNetwork(DefaultTab):
 
         tmp_layout.addWidget(self.plot_predictions)
 
+        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self)
         self.use_all_bodyparts = QtWidgets.QCheckBox("Compare all bodyparts")
         self.use_all_bodyparts.stateChanged.connect(self.update_bodypart_choice)
         self.use_all_bodyparts.setCheckState(Qt.Checked)
@@ -100,7 +101,6 @@ class EvaluateNetwork(DefaultTab):
         tmp_layout.addWidget(self.use_all_bodyparts)
         layout.addLayout(tmp_layout)
 
-        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
         layout.addWidget(self.bodyparts_list_widget, alignment=Qt.AlignLeft)
 
     def update_map_choice(self, state):

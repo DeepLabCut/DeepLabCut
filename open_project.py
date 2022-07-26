@@ -35,7 +35,7 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.textChanged[str].connect(self.open_config_name)
 
         load_button = QtWidgets.QPushButton("Browse")
-        load_button.clicked.connect((self.load_config))
+        load_button.clicked.connect(self.load_config)
 
         label = QtWidgets.QLabel("Optional Attributes:")
 

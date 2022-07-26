@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
+        self.darkmode()
 
     @property
     def cfg(self):
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
         )
 
         logo = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "assets/logo_transparent.png"
+            os.path.dirname(os.path.realpath(__file__)), "assets", "logo_transparent.png"
         )
 
         image_widget = QtWidgets.QLabel(self)
@@ -186,11 +187,11 @@ class MainWindow(QMainWindow):
 
         self.layout_buttons = QtWidgets.QHBoxLayout()
         self.layout_buttons.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
-        self.create_project_button = QtWidgets.QPushButton("CREATE PROJECT")
+        self.create_project_button = QtWidgets.QPushButton("Create New Project")
         self.create_project_button.setFixedWidth(200)
         self.create_project_button.clicked.connect(self._create_project)
 
-        self.load_project_button = QtWidgets.QPushButton("LOAD PROJECT")
+        self.load_project_button = QtWidgets.QPushButton("Load Project")
         self.load_project_button.setFixedWidth(200)
         self.load_project_button.clicked.connect(self._open_project)
 
@@ -301,6 +302,9 @@ class MainWindow(QMainWindow):
 
     def _open_project(self):
         open_project = OpenProject(self)
+        open_project.load_config()
+        if not open_project.config:
+            return
         open_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if open_project.exec_() == QtWidgets.QDialog.Accepted:
             self.loaded = open_project.loaded
