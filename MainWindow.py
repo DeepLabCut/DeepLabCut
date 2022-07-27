@@ -66,7 +66,6 @@ class MainWindow(QMainWindow):
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
-        self.darkmode()
 
     @property
     def cfg(self):
@@ -108,7 +107,7 @@ class MainWindow(QMainWindow):
                 "pose_cfg.yaml",
             )
         except FileNotFoundError:
-            return Path(deeplabcut.__file__).parent / "pose_cfg.yaml"
+            return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
 
     @property
     def inference_cfg_path(self) -> str:
@@ -288,7 +287,6 @@ class MainWindow(QMainWindow):
         self.fileToolBar.removeAction(self.openAction)
         self.fileToolBar.removeAction(self.helpAction)
 
-    @QtCore.Slot()
     def _create_project(self):
         create_project = CreateProject(self)
         create_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -342,52 +340,50 @@ class MainWindow(QMainWindow):
         self.updateMenuBar()
 
     def add_tabs(self):
-        # Add all the other pages
-
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
         self.extract_frames = ExtractFrames(
-            root=self, parent=self, h1_description="DeepLabCut - Step 2. Extract Frames"
+            root=self, parent=None, h1_description="DeepLabCut - Step 2. Extract Frames"
         )
         self.label_frames = LabelFrames(
-            root=self, parent=self, h1_description="DeepLabCut - Step 3. Label Frames"
+            root=self, parent=None, h1_description="DeepLabCut - Step 3. Label Frames"
         )
         self.create_training_dataset = CreateTrainingDataset(
             root=self,
-            parent=self,
+            parent=None,
             h1_description="DeepLabCut - Step 4. Create training dataset",
         )
         self.train_network = TrainNetwork(
-            root=self, parent=self, h1_description="DeepLabCut - Step 5. Train network"
+            root=self, parent=None, h1_description="DeepLabCut - Step 5. Train network"
         )
         self.evaluate_network = EvaluateNetwork(
             root=self,
-            parent=self,
+            parent=None,
             h1_description="DeepLabCut - Step 6. Evaluate Network",
         )
         self.analyze_videos = AnalyzeVideos(
-            root=self, parent=self, h1_description="DeepLabCut - Step 7. Analyze Videos"
+            root=self, parent=None, h1_description="DeepLabCut - Step 7. Analyze Videos"
         )
         self.unsupervised_id_tracking = UnsupervizedIdTracking(
             root=self,
-            parent=self,
+            parent=None,
             h1_description="DeepLabCut - Optional Unsupervised ID Tracking with Transformer",
         )
         self.create_videos = CreateVideos(
             root=self,
-            parent=self,
+            parent=None,
             h1_description="DeepLabCut - Optional Step. Create Videos",
         )
         self.extract_outlier_frames = ExtractOutlierFrames(
             root=self,
-            parent=self,
+            parent=None,
             h1_description="DeepLabCut - Step 8. Extract outlier frame",
         )
         self.refine_tracklets = RefineTracklets(
-            root=self, parent=self, h1_description="DeepLabCut - Step 9. Refine labels"
+            root=self, parent=None, h1_description="DeepLabCut - Step 9. Refine labels"
         )
         self.video_editor = VideoEditor(
-            root=self, parent=self, h1_description="DeepLabCut - Optional Video Editor"
+            root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
         )
 
         self.tab_widget.addTab(self.extract_frames, "Extract frames")
