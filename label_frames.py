@@ -1,18 +1,6 @@
 import napari
-import os
-
-from PySide2.QtWidgets import QWidget
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
-
-
-from deeplabcut.generate_training_dataset import check_labels
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut import check_labels
-
-from pathlib import Path
-
 from components import DefaultTab, _create_horizontal_layout, _create_label_widget
 
 
@@ -29,17 +17,12 @@ class LabelFrames(DefaultTab):
         self.label_frames_btn = QtWidgets.QPushButton("Label Frames")
         self.label_frames_btn.clicked.connect(self.label_frames)
 
-        self.check_labels_btn = QtWidgets.QPushButton("Check Labels")
-        self.check_labels_btn.clicked.connect(self.check_labels)
-        self.check_labels_btn.setEnabled(True)
-
         if self.root.is_multianimal:
             self.layout_multianimal = _create_horizontal_layout()
             self._generate_layout_multianimal(self.layout_multianimal)
             self.main_layout.addLayout(self.layout_multianimal)
 
         self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignRight)
-        self.main_layout.addWidget(self.check_labels_btn, alignment=Qt.AlignRight)
 
     def _generate_layout_multianimal(self, layout):
 
@@ -55,46 +38,5 @@ class LabelFrames(DefaultTab):
     def log_color_by_option(self, choice):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
 
-    def check_labels(self):
-
-        visualizeindividuals = False
-
-        if self.root.is_multianimal:
-            if self.color_by_widget.currentText() == "individual":
-                visualizeindividuals = True
-
-        check_labels(self.root.config, visualizeindividuals=visualizeindividuals)
-
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("Labeled images have been created in project-folder/labeled-data/")
-
-        msg.setWindowTitle("Info")
-        msg.setWindowIcon(QtWidgets.QMessageBox.Information)
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.exec_()
-
     def label_frames(self):
-        if self.root.is_multianimal:
-            # TODO:
-            raise NotImplementedError
-
-            import multiple_individuals_labeling_toolbox
-            # multiple_individuals_labeling_toolbox.show(config, config3d, sourceCam)
-        else:
-            viewer = napari.Viewer()
-            dialog = QtWidgets.QDialog()
-            main_layout = QtWidgets.QVBoxLayout(dialog)
-            main_layout.addWidget(viewer)
-            dialog.show()
-
-            # import labeling_toolbox
-            #
-            # labeling_frame = labeling_toolbox.MainFrame(
-            #     self,
-            #     self.root.config,
-            #     imtypes=["*.png"],
-            #     config3d=None,
-            #     sourceCam=None,
-            # )
-            # labeling_frame.show()
+        _ = napari.Viewer()
