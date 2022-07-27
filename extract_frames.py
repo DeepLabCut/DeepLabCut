@@ -5,9 +5,7 @@ from dlc_params import DLC_Params
 from components import (
     DefaultTab,
     _create_grid_layout,
-    _create_horizontal_layout,
     _create_label_widget,
-    _create_vertical_layout,
 )
 
 from deeplabcut.generate_training_dataset import extract_frames
@@ -28,7 +26,6 @@ class ExtractFrames(DefaultTab):
 
         self.ok_button = QtWidgets.QPushButton("Extract frames")
         self.ok_button.clicked.connect(self.extract_frames)
-
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
@@ -59,19 +56,11 @@ class ExtractFrames(DefaultTab):
         )
 
         # Frame cropping
-        frame_crop_label = QtWidgets.QLabel("Frame Cropping")
+        frame_crop_label = QtWidgets.QLabel("Frame cropping")
         self.frame_cropping_widget = QtWidgets.QComboBox()
         self.frame_cropping_widget.addItems(["disabled", "read from config", "GUI"])
         self.frame_cropping_widget.currentTextChanged.connect(
             self.log_frame_cropping_choice
-        )
-
-        # Use openCV
-        self.use_openCV_checkbox = QtWidgets.QCheckBox("Use openCV")
-        self.use_openCV_checkbox.setCheckState(Qt.Checked)
-        self.use_openCV_checkbox.stateChanged.connect(self.update_opencv_choice)
-        self.use_openCV_checkbox.setToolTip(
-            "Recommended. Uses openCV for managing videos instead of moviepy (legacy)."
         )
 
         # Cluster step
@@ -85,7 +74,6 @@ class ExtractFrames(DefaultTab):
         self.slider_width_widget.setValue(25)
         self.slider_width_widget.setEnabled(False)
 
-        layout.addWidget(self.use_openCV_checkbox, 0, 0)
         layout.addWidget(self.user_feedback_checkbox, 0, 1)
 
         layout.addWidget(ext_method_label, 1, 0)
@@ -132,19 +120,11 @@ class ExtractFrames(DefaultTab):
             self.feedback = False
             self.root.logger.info("Disabling user feedback.")
 
-    def update_opencv_choice(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("Use openCV enabled.")
-        else:
-            self.root.logger.info("Use openCV disabled. Using moviepy..")
-
     def extract_frames(self):
-
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         algo = self.extraction_algorithm_widget.currentText()
         userfeedback = self.user_feedback_checkbox.checkState() == Qt.Checked
-        opencv = self.use_openCV_checkbox.checkState() == Qt.Checked
         clusterstep = self.cluster_step_widget.value()
         slider_width = self.slider_width_widget.value()
 
@@ -164,7 +144,6 @@ class ExtractFrames(DefaultTab):
             cluster_step=clusterstep,
             cluster_resizewidth=30,
             cluster_color=False,
-            opencv=opencv,
             slider_width=slider_width,
         )
 
