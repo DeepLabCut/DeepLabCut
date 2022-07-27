@@ -29,6 +29,7 @@ class OpenProject(QtWidgets.QDialog):
         self.open_frame = QtWidgets.QFrame(self)
         self.open_frame.setFrameShape(self.open_frame.StyledPanel)
         self.open_frame.setLineWidth(0.5)
+        self.open_frame.setMinimumWidth(600)
 
         open_label = QtWidgets.QLabel("Select the config file:", self.open_frame)
         self.open_line = QtWidgets.QLineEdit(self.open_frame)
