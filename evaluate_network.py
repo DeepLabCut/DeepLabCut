@@ -5,7 +5,6 @@ from components import (
     BodypartListWidget,
     DefaultTab,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     _create_horizontal_layout,
     _create_label_widget,
     _create_vertical_layout,
@@ -59,19 +58,11 @@ class EvaluateNetwork(DefaultTab):
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
-        # Shuffle
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
-
-        # Trainingset index
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-
-        layout.addWidget(opt_text)
-        layout.addWidget(self.trainingset)
 
     def open_inferencecfg_editor(self):
         editor = ConfigEditor(self.root.inference_cfg_path)
@@ -130,7 +121,6 @@ class EvaluateNetwork(DefaultTab):
     def evaluate_network(self):
 
         config = self.root.config
-        trainingsetindex = self.trainingset.value()
 
         Shuffles = [self.root.shuffle_value]
         plotting = self.plot_predictions.checkState() == Qt.Checked
@@ -145,7 +135,6 @@ class EvaluateNetwork(DefaultTab):
         deeplabcut.evaluate_network(
             config,
             Shuffles=Shuffles,
-            trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=bodyparts_to_use,

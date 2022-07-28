@@ -8,9 +8,7 @@ from dlc_params import DLC_Params
 from components import (
     DefaultTab,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     _create_grid_layout,
-    _create_horizontal_layout,
     _create_label_widget,
 )
 
@@ -30,7 +28,7 @@ class CreateTrainingDataset(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.ok_button = QtWidgets.QPushButton("Ok")
+        self.ok_button = QtWidgets.QPushButton("Create Training Dataset")
         self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.create_training_dataset)
 
@@ -40,10 +38,6 @@ class CreateTrainingDataset(DefaultTab):
         # Shuffle
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
-
-        # Trainingset index
-        trainingset_label = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         # Augmentation method
         augmentation_label = QtWidgets.QLabel("Augmentation method")
@@ -61,12 +55,10 @@ class CreateTrainingDataset(DefaultTab):
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(trainingset_label, 0, 2)
-        layout.addWidget(self.trainingset, 0, 3)
-        layout.addWidget(nnet_label, 1, 0)
-        layout.addWidget(self.net_choice, 1, 1)
-        layout.addWidget(augmentation_label, 1, 2)
-        layout.addWidget(self.aug_choice, 1, 3)
+        layout.addWidget(nnet_label, 0, 2)
+        layout.addWidget(self.net_choice, 0, 3)
+        layout.addWidget(augmentation_label, 0, 4)
+        layout.addWidget(self.aug_choice, 0, 5)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -77,8 +69,6 @@ class CreateTrainingDataset(DefaultTab):
     def create_training_dataset(self):
         config_file = auxiliaryfunctions.read_config(self.root.config)
         shuffle = self.shuffle.value()
-        trainindex = self.trainingset.value()
-
         userfeedback = self.userfeedback
 
         if self.root.is_multianimal:
@@ -89,7 +79,7 @@ class CreateTrainingDataset(DefaultTab):
                 net_type=self.net_choice.currentText(),
             )
         else:
-            if self.model_comparison == False:
+            if not self.model_comparison:
                 deeplabcut.create_training_dataset(
                     config_file,
                     shuffle,
@@ -120,7 +110,6 @@ class CreateTrainingDataset(DefaultTab):
                 # TODO: finish model_comparison
                 deeplabcut.create_training_model_comparison(
                     config_file,
-                    trainindex=trainindex,
                     num_shuffles=shuffle,
                     userfeedback=userfeedback,
                     net_types=self.net_type,

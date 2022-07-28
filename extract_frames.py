@@ -24,7 +24,7 @@ class ExtractFrames(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.ok_button = QtWidgets.QPushButton("Extract frames")
+        self.ok_button = QtWidgets.QPushButton("Extract Frames")
         self.ok_button.clicked.connect(self.extract_frames)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 

@@ -4,7 +4,6 @@ from PySide2.QtCore import Qt
 from components import (
     DefaultTab,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
@@ -21,7 +20,7 @@ class UnsupervizedIdTracking(DefaultTab):
 
     @property
     def files(self):
-        self.video_selection_widget.files
+        return self.video_selection_widget.files
 
     def set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -42,10 +41,6 @@ class UnsupervizedIdTracking(DefaultTab):
         # Shuffle
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
-
-        # Trainingset index
-        trainingset_label = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
 
         # Tracker Type
         trackingtype_label = QtWidgets.QLabel("Tracking method")
@@ -69,10 +64,8 @@ class UnsupervizedIdTracking(DefaultTab):
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(trainingset_label, 0, 2)
-        layout.addWidget(self.trainingset, 0, 3)
-        layout.addWidget(trackingtype_label, 0, 4)
-        layout.addWidget(self.tracker_type_widget, 0, 5)
+        layout.addWidget(trackingtype_label, 0, 2)
+        layout.addWidget(self.tracker_type_widget, 0, 3)
         layout.addWidget(num_animals_label, 1, 0)
         layout.addWidget(self.num_animals_in_videos, 1, 1)
         layout.addWidget(num_triplets_label, 1, 2)

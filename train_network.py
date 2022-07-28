@@ -6,19 +6,14 @@ from PySide2.QtGui import QIcon
 
 from components import (
     DefaultTab,
-    EditYamlButton,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     _create_grid_layout,
-    _create_horizontal_layout,
     _create_label_widget,
 )
 from widgets import ConfigEditor
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
-
-
 
 
 class TrainNetwork(DefaultTab):
@@ -57,10 +52,6 @@ class TrainNetwork(DefaultTab):
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
-        # Trainingset index
-        trainingset_label = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-
         # Display iterations
         dispiters_label = QtWidgets.QLabel("Display iterations")
         self.display_iters_spin = QtWidgets.QSpinBox()
@@ -95,16 +86,14 @@ class TrainNetwork(DefaultTab):
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(trainingset_label, 0, 2)
-        layout.addWidget(self.trainingset, 0, 3)
-        layout.addWidget(dispiters_label, 1, 0)
-        layout.addWidget(self.display_iters_spin, 1, 1)
-        layout.addWidget(saveiters_label, 1, 2)
-        layout.addWidget(self.save_iters_spin, 1, 3)
-        layout.addWidget(maxiters_label, 1, 4)
-        layout.addWidget(self.max_iters_spin, 1, 5)
-        layout.addWidget(snapkeep_label, 1, 6)
-        layout.addWidget(self.snapshots, 1, 7)
+        layout.addWidget(dispiters_label, 0, 2)
+        layout.addWidget(self.display_iters_spin, 0, 3)
+        layout.addWidget(saveiters_label, 0, 4)
+        layout.addWidget(self.save_iters_spin, 0, 5)
+        layout.addWidget(maxiters_label, 0, 6)
+        layout.addWidget(self.max_iters_spin, 0, 7)
+        layout.addWidget(snapkeep_label, 0, 8)
+        layout.addWidget(self.snapshots, 0, 9)
         # layout.addWidget()
 
     def log_display_iters(self, value):
@@ -127,7 +116,6 @@ class TrainNetwork(DefaultTab):
 
         config = self.root.config
         shuffle = int(self.shuffle.value())
-        trainingsetindex = int(self.trainingset.value())
         max_snapshots_to_keep = int(self.snapshots.value())
         displayiters = int(self.display_iters_spin.value())
         saveiters = int(self.save_iters_spin.value())
@@ -136,7 +124,6 @@ class TrainNetwork(DefaultTab):
         deeplabcut.train_network(
             config,
             shuffle,
-            trainingsetindex,
             gputouse=None,
             max_snapshots_to_keep=max_snapshots_to_keep,
             autotune=None,

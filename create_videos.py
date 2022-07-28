@@ -5,7 +5,6 @@ from components import (
     BodypartListWidget,
     DefaultTab,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_horizontal_layout,
     _create_label_widget,
@@ -24,7 +23,7 @@ class CreateVideos(DefaultTab):
 
     @property
     def files(self):
-        self.video_selection_widget.files
+        return self.video_selection_widget.files
 
     def set_page(self):
 
@@ -75,13 +74,6 @@ class CreateVideos(DefaultTab):
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
-
-        # Trainingset index
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-
-        layout.addWidget(opt_text)
-        layout.addWidget(self.trainingset)
 
         # Overwrite videos
         self.overwrite_videos = QtWidgets.QCheckBox("Overwrite videos")
@@ -231,7 +223,6 @@ class CreateVideos(DefaultTab):
 
         config = self.root.config
         shuffle = self.root.shuffle_value
-        trainingsetindex = self.trainingset.value()
         videos = self.files
         bodyparts = "all"
         videotype = self.videotype_widget.currentText()
@@ -266,7 +257,6 @@ class CreateVideos(DefaultTab):
             videos=videos,
             videotype=videotype,
             shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
             filtered=filtered,
             save_frames=slow_video,
             displayedbodyparts=bodyparts,
@@ -281,7 +271,6 @@ class CreateVideos(DefaultTab):
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 filtered=filtered,
                 displayedbodyparts=bodyparts,
             )

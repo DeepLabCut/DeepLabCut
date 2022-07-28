@@ -5,7 +5,6 @@ from dlc_params import DLC_Params
 from components import (
     DefaultTab,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_horizontal_layout,
     _create_label_widget,
@@ -118,13 +117,6 @@ class ExtractOutlierFrames(DefaultTab):
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
 
-        # Trainingset index
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-
-        layout.addWidget(opt_text)
-        layout.addWidget(self.trainingset)
-
     def _generate_multianimal_options(self, layout):
         opt_text = QtWidgets.QLabel("Tracking method")
         self.tracker_type_widget = QtWidgets.QComboBox()
@@ -162,7 +154,6 @@ class ExtractOutlierFrames(DefaultTab):
 
         config = self.root.config
         shuffle = self.root.shuffle_value
-        trainingsetindex = self.trainingset.value()
         videos = self.files
         videotype = self.video_selection_widget.videotype_widget.currentText()
         outlieralgorithm = self.outlier_algorithm_widget.currentText()
@@ -175,7 +166,6 @@ class ExtractOutlierFrames(DefaultTab):
             f"""Running extract outlier frames with options:
         config: {config},
         shuffle: {shuffle},
-        trainingset index: {trainingsetindex},
         videos: {videos},
         videotype: {videotype},
         outlier algorithm: {outlieralgorithm},
@@ -187,7 +177,6 @@ class ExtractOutlierFrames(DefaultTab):
             videos=videos,
             videotype=videotype,
             shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
             outlieralgorithm=outlieralgorithm,
             track_method=track_method,
         )

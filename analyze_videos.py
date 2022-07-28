@@ -6,7 +6,6 @@ from components import (
     DefaultTab,
     BodypartListWidget,
     ShuffleSpinBox,
-    TrainingSetSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
@@ -25,7 +24,7 @@ class AnalyzeVideos(DefaultTab):
 
     @property
     def files(self):
-        self.video_selection_widget.files
+        return self.video_selection_widget.files
 
     def set_page(self):
 
@@ -111,8 +110,7 @@ class AnalyzeVideos(DefaultTab):
 
         layout.addLayout(tmp_layout)
 
-        # Bodypart list
-        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
+        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self)
         layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
     def _generate_layout_attributes(self, layout):
@@ -122,13 +120,6 @@ class AnalyzeVideos(DefaultTab):
 
         layout.addWidget(opt_text, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-
-        # Trainingset index
-        opt_text = QtWidgets.QLabel("Trainingset index")
-        self.trainingset = TrainingSetSpinBox(root=self.root, parent=self)
-
-        layout.addWidget(opt_text, 1, 0)
-        layout.addWidget(self.trainingset, 1, 1)
 
         # Overwrite analysis files
         self.overwrite_tracks = QtWidgets.QCheckBox("Overwrite tracks")
@@ -291,7 +282,6 @@ class AnalyzeVideos(DefaultTab):
 
         config = self.root.config
         shuffle = self.root.shuffle_value
-        trainingsetindex = self.trainingset.value()
 
         videos = list(self.files)
         save_as_csv = self.save_as_csv.checkState() == Qt.Checked
@@ -333,7 +323,6 @@ class AnalyzeVideos(DefaultTab):
             videos=videos,
             videotype=videotype,
             shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
             gputouse=None,
             save_as_csv=save_as_csv,
             cropping=cropping,
@@ -351,7 +340,6 @@ class AnalyzeVideos(DefaultTab):
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
             )
 
         if self.root.is_multianimal:
@@ -360,7 +348,6 @@ class AnalyzeVideos(DefaultTab):
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 overwrite=overwrite_tracks,
                 calibrate=calibrate_assembly,
                 identity_only=assemble_with_ID_only,
@@ -378,7 +365,6 @@ class AnalyzeVideos(DefaultTab):
                     videos=videos,
                     videotype=videotype,
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
                     n_tracks=num_animals_in_videos,
                     track_method=track_method,
                 )
@@ -389,7 +375,6 @@ class AnalyzeVideos(DefaultTab):
                 videos=videos,
                 videotype=videotype,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 filtertype="median",
                 windowlength=5,
                 save_as_csv=save_as_csv,
@@ -405,7 +390,6 @@ class AnalyzeVideos(DefaultTab):
                 displayedbodyparts=bdpts,
                 videotype=videotype,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,
                 filtered=filter_data,
                 showfigures=showfig,
             )
