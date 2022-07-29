@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
 
     config_loaded = QtCore.Signal()
     video_type_ = QtCore.Signal(str)
+    video_files_ = QtCore.Signal(set)
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -141,8 +142,14 @@ class MainWindow(QMainWindow):
         self.video_type_.emit(ext)
         self.logger.info(f"Video type set to {self.video_type}")
 
-    def update_files(self, files: set):
-        self.files.update(files)
+    @property
+    def video_files(self):
+        return self.files
+
+    @video_files.setter
+    def video_files(self, video_files):
+        self.files = set(video_files)
+        self.video_files_.emit(self.files)
         self.logger.info(f"Videos selected to analyze:\n{self.files}")
 
     def window_set(self):
@@ -434,23 +441,8 @@ class MainWindow(QMainWindow):
                     f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping..."
                 )
 
-        def _attempt_video_widget_update(videotype, selected_videos):
-            # TODO: NOT WORKING
-            try:
-                video_widget = active_tab.video_selection_widget
-                self.logger.debug(
-                    f"Setting videotype={videotype} and videos={active_tab.video_selection_widget.files} in tab '{tab_label}'"
-                )
-                video_widget.videotype_widget.setCurrentText(videotype)
-                video_widget._update_video_selection(selected_videos)
-            except AttributeError:
-                self.logger.debug(
-                    f"Tab '{tab_label}' has no attribute video_selection_widget. Skipping..."
-                )
-
         _attempt_attribute_update("shuffle", self.shuffle_value)
         _attempt_attribute_update("cfg_line", self.config)
-        # _attempt_video_widget_update(self.videotype, self.files)
 
         # Update single/multi animal menus
         # TODO

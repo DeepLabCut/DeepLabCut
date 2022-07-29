@@ -86,9 +86,6 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
-    # TODO: Selected should sync across tabs
-    #       automatically! Probably need a slot
-    #       in main window...
     def __init__(
         self, 
         root: QtWidgets.QMainWindow, 
@@ -98,8 +95,6 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         
         self.root = root
         self.parent = parent
-
-        self.files = self.root.files
         
         self._init_layout()
     
@@ -110,7 +105,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMaximumWidth(100)
         self.videotype_widget.addItems(DLC_Params.VIDEOTYPES)
-        self.videotype_widget.setCurrentText(self.root.videotype)
+        self.videotype_widget.setCurrentText(self.root.video_type)
         self.root.video_type_.connect(self.videotype_widget.setCurrentText)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
@@ -118,6 +113,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(200)
         self.select_video_button.clicked.connect(self.select_videos)
+        self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
         self.selected_videos_text = QtWidgets.QLabel("") #updated when videos are selected
@@ -138,15 +134,13 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.video_type = vtype
 
     def _update_video_selection(self, videopaths):
-        self.files.clear()
-        self.files.update(
-            videopaths
-        )  
-        if len(self.files)>0:
-            self.selected_videos_text.setText("%s videos selected" % len(self.files))
+        n_videos = len(self.root.video_files)
+        if n_videos:
+            self.selected_videos_text.setText(f"{n_videos} videos selected")
             self.select_video_button.setText("Add more videos")
-            # self.select_video_button.adjustSize()
-        self.root.update_files(self.files)
+        else:
+            self.selected_videos_text.setText("")
+            self.select_video_button.setText("Select videos")
 
     def select_videos(self):
         cwd = self.root.project_folder()
@@ -154,20 +148,16 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self,
             "Select video(s) to analyze",
             cwd,
-            f"Video files (*.{self.videotype_widget.currentText()})",
+            f"Videos ({' *.'.join(DLC_Params.VIDEOTYPES)[1:]})",
         )
 
         if filenames[0]:
             # Qt returns a tuple (list of files, filetype)
-            self._update_video_selection(filenames[0]) 
+            self.root.video_files = filenames[0]
             
     def clear_selected_videos(self):
-        self.selected_videos_text.setText("")
-        self.select_video_button.setText("Select videos")
-        self.files.clear()
-        self.root.files.clear()
-        # self.select_video_button.adjustSize()
-        self.root.logger.info(f"Cleared selected videos:\n{self.files}")
+        self.root.video_files = set()
+        self.root.logger.info(f"Cleared selected videos")
 
 
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
