@@ -143,6 +143,9 @@ def train_network(
             keepdeconvweights=True,
         )
     """
+    if allow_growth:
+        os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
     import tensorflow as tf
 
     # reload logger.
