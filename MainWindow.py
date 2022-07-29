@@ -7,16 +7,15 @@ import qdarkstyle
 import deeplabcut
 from deeplabcut import auxiliaryfunctions
 
-from PySide2.QtWidgets import QAction, QMenu, QLabel, QVBoxLayout, QWidget, QMainWindow
+from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
-from PySide2.QtGui import QPixmap, QIcon
+from PySide2.QtGui import QIcon
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
 from components import (
     ShuffleSpinBox,
     TrainingSetSpinBox,
     _create_label_widget,
-    _create_vertical_layout,
 )
 
 from create_project import CreateProject
@@ -37,6 +36,7 @@ from refine_tracklets import RefineTracklets
 class MainWindow(QMainWindow):
 
     config_loaded = QtCore.Signal()
+    video_type_ = QtCore.Signal(str)
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
 
         self.shuffle_value = 1
         self.trainingset_index = 0
-        self.videotype = "avi"
+        self.videotype = ""
         self.files = set()
 
         self.default_set()
@@ -131,13 +131,15 @@ class MainWindow(QMainWindow):
         self.shuffle_value = value
         self.logger.info(f"Shuffle set to {self.shuffle_value}")
 
-    def update_trainingset(self, value):
-        self.trainingset_index = value
-        self.logger.info(f"Trainingset index set to {self.trainingset_index}")
+    @property
+    def video_type(self):
+        return self.videotype
 
-    def update_videotype(self, vtype):
-        self.videotype = vtype
-        self.logger.info(f"Videotype set to {self.videotype}")
+    @video_type.setter
+    def video_type(self, ext):
+        self.videotype = ext
+        self.video_type_.emit(ext)
+        self.logger.info(f"Video type set to {self.video_type}")
 
     def update_files(self, files: set):
         self.files.update(files)
@@ -447,7 +449,6 @@ class MainWindow(QMainWindow):
                 )
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
-        _attempt_attribute_update("trainingset", self.trainingset_index)
         _attempt_attribute_update("cfg_line", self.config)
         # _attempt_video_widget_update(self.videotype, self.files)
 

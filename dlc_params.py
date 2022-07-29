@@ -1,5 +1,6 @@
 class DLC_Params:
     VIDEOTYPES = [
+        "",
         "avi",
         "mp4",
         "mov",

@@ -1,13 +1,8 @@
-import logging
-import os
-from typing import List
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from dlc_params import DLC_Params
 
 from widgets import ConfigEditor
-
-from deeplabcut.utils import auxiliaryfunctions
 
 
 def _create_label_widget(
@@ -116,6 +111,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.videotype_widget.setMaximumWidth(100)
         self.videotype_widget.addItems(DLC_Params.VIDEOTYPES)
         self.videotype_widget.setCurrentText(self.root.videotype)
+        self.root.video_type_.connect(self.videotype_widget.setCurrentText)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
         # Select videos
@@ -139,7 +135,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
     def update_videotype(self, vtype):
         self.clear_selected_videos()
-        self.root.update_videotype(vtype)
+        self.root.video_type = vtype
 
     def _update_video_selection(self, videopaths):
         self.files.clear()
@@ -202,8 +198,8 @@ class DefaultTab(QtWidgets.QWidget):
     def __init__(
         self, 
         root: QtWidgets.QMainWindow, 
-        parent: QtWidgets.QWidget, 
-        h1_description: str
+        parent: QtWidgets.QWidget = None,
+        h1_description: str = "",
     ):
         super(DefaultTab, self).__init__(parent)
 
