@@ -42,15 +42,14 @@ If you cloned the repo onto your Desktop, the command may look like:
 
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 
-(C) Now, in the terminal run:
+- Now, in the terminal run:
 
 ``conda env create -f DEEPLABCUT.yaml``
 
 
-(D) You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
-
-- Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT``)
-- Windows: ``activate nameoftheenv`` (i.e. ``activate DEEPLABCUT``)
+- You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
+     - Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT``)
+     - Windows: ``activate nameoftheenv`` (i.e. ``activate DEEPLABCUT``)
 
 Now you should see (`nameofenv`) on the left of your teminal screen, i.e. ``(DEEPLABCUT) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
