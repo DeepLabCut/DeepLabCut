@@ -50,7 +50,8 @@ def create_new_project(
 
     copy_videos : bool, optional, Default: False.
         If True, the videos are copied to the ``videos`` directory. If False, symlinks
-        of the videos will be created in the ``project/videos`` directory.
+        of the videos will be created in the ``project/videos`` directory; in the event
+        of a failure to create symbolic links, videos will be moved instead.
 
     multianimal: bool, optional. Default: False.
         For creating a multi-animal project (introduced in DLC 2.2)
@@ -171,7 +172,7 @@ def create_new_project(
         p.mkdir(parents=True, exist_ok=True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos == True:
+    if copy_videos:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
             shutil.copy(
@@ -202,7 +203,7 @@ def create_new_project(
                     print("{} moved to {}".format(src, dst))
             videos = destinations
 
-    if copy_videos == True:
+    if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file

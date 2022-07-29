@@ -39,6 +39,7 @@ def find_outliers_in_raw_data(
     percentiles=(5, 95),
     with_annotations=True,
     extraction_algo="kmeans",
+    copy_videos=False,
 ):
     """
     Extract outlier frames from either raw detections or assemblies of multiple animals.
@@ -68,6 +69,10 @@ def find_outliers_in_raw_data(
 
     extraction_algo : string, optional (default="kmeans")
         Outlier detection algorithm. Must be either ``uniform`` or ``kmeans``.
+
+    copy_videos : bool, optional (default=False)
+        If True, newly-added videos (from which outlier frames are extracted) are
+        copied to the project folder. By default, symbolic links are created instead.
 
     """
     if extraction_algo not in ("kmeans", "uniform"):
@@ -108,6 +113,7 @@ def find_outliers_in_raw_data(
         config=config,
         savelabeled=False,
         with_annotations=with_annotations,
+        copy_videos=copy_videos,
     )
 
 
@@ -186,6 +192,7 @@ def extract_outlier_frames(
     cluster_color=False,
     opencv=True,
     savelabeled=False,
+    copy_videos=False,
     destfolder=None,
     modelprefix="",
     track_method="",
@@ -286,6 +293,10 @@ def extract_outlier_frames(
 
     savelabeled: bool, optional, default=False
         If ``True``, frame are saved with predicted labels in each folder.
+
+    copy_videos: bool, optional, default=False
+        If True, newly-added videos (from which outlier frames are extracted) are
+        copied to the project folder. By default, symbolic links are created instead.
 
     destfolder: str or None, optional, default=None
         Specifies the destination folder that was used for storing analysis data. If
@@ -468,6 +479,7 @@ def extract_outlier_frames(
                         cluster_resizewidth,
                         cluster_color,
                         savelabeled,
+                        copy_videos=copy_videos,
                     )
                 else:
                     print(
@@ -603,6 +615,7 @@ def ExtractFramesbasedonPreselection(
     cluster_color=False,
     savelabeled=True,
     with_annotations=True,
+    copy_videos=False,
 ):
     from deeplabcut.create_project import add
 
@@ -729,10 +742,10 @@ def ExtractFramesbasedonPreselection(
         try:
             if cfg["cropping"]:
                 add.add_new_videos(
-                    config, [video], coords=[coords]
+                    config, [video], coords=[coords], copy_videos=copy_videos,
                 )  # make sure you pass coords as a list
             else:
-                add.add_new_videos(config, [video], coords=None)
+                add.add_new_videos(config, [video], coords=None,  copy_videos=copy_videos)
         except:  # can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
             print(
                 "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!"
