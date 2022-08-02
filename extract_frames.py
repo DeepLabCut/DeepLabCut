@@ -1,4 +1,5 @@
-from PySide2 import QtWidgets
+from functools import partial
+from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Qt
 
 from dlc_params import DLC_Params
@@ -7,6 +8,7 @@ from components import (
     _create_grid_layout,
     _create_label_widget,
 )
+from utils import Worker
 
 from deeplabcut.generate_training_dataset import extract_frames
 
@@ -66,7 +68,7 @@ class ExtractFrames(DefaultTab):
         # Cluster step
         cluster_step_label = QtWidgets.QLabel("Cluster step")
         self.cluster_step_widget = QtWidgets.QSpinBox()
-        self.cluster_step_widget.setValue(25)
+        self.cluster_step_widget.setValue(1)
 
         # GUI Slider width
         gui_slider_label = QtWidgets.QLabel("GUI slider width")
@@ -135,7 +137,8 @@ class ExtractFrames(DefaultTab):
         elif self.frame_cropping_widget.currentText() == "read from config":
             crop = True
 
-        extract_frames(
+        func = partial(
+            extract_frames,
             config,
             mode,
             algo,
@@ -146,12 +149,24 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
         )
+        self.thread = QtCore.QThread()
+        self.worker = Worker(func)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(
+            lambda: self.ok_button.setEnabled(True)
+        )
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self._show_success_message)
+        self.thread.start()
+        self.ok_button.setEnabled(False)
 
+    def _show_success_message(self):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("Frames were successfully extracted, for the videos of interest.")
-
         msg.setWindowTitle("Info")
-        msg.setWindowIcon(QtWidgets.QMessageBox.Information)
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
