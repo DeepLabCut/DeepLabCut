@@ -5,7 +5,7 @@ from typing import List
 import qdarkstyle
 
 import deeplabcut
-from deeplabcut import auxiliaryfunctions
+from deeplabcut import auxiliaryfunctions, VERSION
 
 from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
@@ -173,25 +173,37 @@ class MainWindow(QMainWindow):
         self.layout.setAlignment(Qt.AlignCenter | Qt.AlignTop)
         self.layout.setSpacing(30)
 
-        self.layout.addWidget(
-            _create_label_widget(
-                "Welcome to the DeepLabCut Project Manager GUI!",
-                "font:bold; font-size:18px;",
-                margins=(0, 30, 0, 0),
-            )
+        title = _create_label_widget(
+            f"Welcome to the DeepLabCut Project Manager GUI {VERSION}!",
+            "font:bold; font-size:18px;",
+            margins=(0, 30, 0, 0),
         )
+        title.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(title)
 
         logo = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "assets", "logo_transparent.png"
         )
-
         image_widget = QtWidgets.QLabel(self)
+        image_widget.setAlignment(Qt.AlignCenter)
         image_widget.setContentsMargins(0, 0, 0, 0)
-        image_widget.setFixedHeight(400)
-        image_widget.setFixedWidth(400)
         pixmap = QtGui.QPixmap(logo)
-        image_widget.setPixmap(pixmap.scaledToHeight(400))
+        image_widget.setPixmap(
+            pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation)
+        )
         self.layout.addWidget(image_widget)
+
+        description = """
+        DeepLabCut™ is an open source tool for markerless
+        pose estimation of user-defined body parts with deep learning.
+        A. and M.W. Mathis Labs | http://www.deeplabcut.org\n
+        To get started,  please click on the 'Manage Project' 
+        tab to create or load an existing project.
+        """
+        label = QtWidgets.QLabel(description)
+        label.setWordWrap(True)
+        label.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(label)
 
         self.layout_buttons = QtWidgets.QHBoxLayout()
         self.layout_buttons.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
@@ -404,14 +416,16 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(
             self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)"
         )
-        if not self.is_multianimal:
-            self.unsupervised_id_tracking.setEnabled(False)
         self.tab_widget.addTab(self.create_videos, "Create videos")
         self.tab_widget.addTab(
             self.extract_outlier_frames, "Extract outlier frames (*)"
         )
         self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
+
+        if not self.is_multianimal:
+            self.unsupervised_id_tracking.setEnabled(False)
+            self.refine_tracklets.setEnabled(False)
 
         self.setCentralWidget(self.tab_widget)
 
