@@ -366,7 +366,7 @@ class Create_new_project(wx.Panel):
                 )
             else:
                 wx.MessageBox(
-                    "Some of the enteries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!",
+                    "Some of the entries are missing.\n\nMake sure that the task and experimenter name are specified and videos are selected!",
                     "Error",
                     wx.OK | wx.ICON_ERROR,
                 )
