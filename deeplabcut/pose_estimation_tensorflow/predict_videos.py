@@ -153,7 +153,7 @@ def create_tracking_dataset(
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
-    if batchsize == None:
+    if batchsize is None:
         # update batchsize (based on parameters in config.yaml)
         dlc_cfg["batch_size"] = cfg["batch_size"]
     else:
@@ -545,7 +545,7 @@ def analyze_videos(
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
-    if batchsize == None:
+    if batchsize is None:
         # update batchsize (based on parameters in config.yaml)
         dlc_cfg["batch_size"] = cfg["batch_size"]
     else:

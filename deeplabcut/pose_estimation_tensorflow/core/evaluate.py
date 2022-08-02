@@ -20,7 +20,7 @@ from tqdm import tqdm
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
     """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
-    if bodyparts == None:
+    if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
         RMSE = np.sqrt(
             Pointwisesquareddistance.xs("x", level=1, axis=1)
@@ -357,7 +357,7 @@ def return_evaluate_network_data(
     else:
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
-        if Snapindex == None:
+        if Snapindex is None:
             Snapindex = cfg["snapshotindex"]
 
         if Snapindex == -1:

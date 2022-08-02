@@ -117,7 +117,7 @@ def create_new_project(
     day = date.day
     d = str(month[0:3] + str(day))
     date = dt.today().strftime("%Y-%m-%d")
-    if working_directory == None:
+    if working_directory is None:
         working_directory = "."
     wd = Path(working_directory).resolve()
     project_name = "{pn}-{exp}-{date}".format(pn=project, exp=experimenter, date=date)

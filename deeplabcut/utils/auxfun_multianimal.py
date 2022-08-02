@@ -394,7 +394,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (
-                target == None or target == "single"
+                target is None or target == "single"
             ):
                 print("This is a multianimal data set, converting to single...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
@@ -442,7 +442,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                     fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
-            elif target == None or target == "multi":
+            elif target is None or target == "multi":
                 print(
                     "This is a single animal data set, converting to multi...", folder
                 )
