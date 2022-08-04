@@ -1,4 +1,7 @@
-FROM deeplabcut/deeplabcut:latest-gui
+ARG CUDA_VERSION=11.4.0-runtime-ubuntu20.04
+ARG DEEPLABCUT_VERSION=2.2.1.1
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-gui-cuda${CUDA_VERSION}
+
 RUN pip install --no-cache-dir jupyter
 COPY ./examples /app/examples
 CMD ["jupyter", "notebook", \
