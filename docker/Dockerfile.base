@@ -1,5 +1,7 @@
-FROM nvidia/cuda:11.4.0-cudnn8-runtime-ubuntu20.04
+ARG CUDA_VERSION=11.4.0-runtime-ubuntu20.04
+FROM nvidia/cuda:${CUDA_VERSION}
 
+ARG DEEPLABCUT_VERSION=2.2.1.1
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -yy \ 
@@ -9,7 +11,7 @@ RUN apt-get update -yy \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --no-cache-dir --upgrade pip \
- && pip3 install --no-cache-dir --upgrade "deeplabcut>=2.2.0.2" numpy==1.19.5 decorator==4.4.2 tensorflow==2.5.0 \
+ && pip3 install --no-cache-dir --upgrade deeplabcut==${DEEPLABCUT_VERSION} numpy==1.19.5 decorator==4.4.2 tensorflow==2.5.0 \
  && pip3 list
 
 # TODO required to fix permission errors when running the container with limited permission.
