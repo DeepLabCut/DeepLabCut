@@ -86,6 +86,12 @@ class AnalyzeVideos(DefaultTab):
 
         tmp_layout.addWidget(self.save_as_csv)
 
+        self.save_as_nwb = QtWidgets.QCheckBox("Save result(s) as nwb")
+        self.save_as_nwb.setCheckState(Qt.Unchecked)
+        self.save_as_nwb.stateChanged.connect(self.update_nwb_choice)
+
+        tmp_layout.addWidget(self.save_as_csv)
+
         # Filter predictions
         self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
         self.filter_predictions.setCheckState(Qt.Unchecked)
@@ -167,7 +173,7 @@ class AnalyzeVideos(DefaultTab):
         tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 1, 2)
 
         self.use_transformer_tracking_checkbox = QtWidgets.QCheckBox(
-            "Use tranformer tracking"
+            "Use transformer tracking"
         )
         self.use_transformer_tracking_checkbox.setCheckState(Qt.Unchecked)
         self.use_transformer_tracking_checkbox.stateChanged.connect(
@@ -237,6 +243,12 @@ class AnalyzeVideos(DefaultTab):
         else:
             self.root.logger.info("Save results as CSV DISABLED")
 
+    def update_nwb_choice(self, s):
+        if s == Qt.Checked:
+            self.root.logger.info("Save results as NWB ENABLED")
+        else:
+            self.root.logger.info("Save results as NWB DISABLED")
+
     def update_filter_choice(self, s):
         if s == Qt.Checked:
             self.root.logger.info("Filtering predictions ENABLED")
@@ -285,6 +297,7 @@ class AnalyzeVideos(DefaultTab):
 
         videos = list(self.files)
         save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
         calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
@@ -318,17 +331,16 @@ class AnalyzeVideos(DefaultTab):
         if self.dynamic_cropping:
             dynamic_cropping_params = (True, 0.5, 10)
 
-        scorername = deeplabcut.analyze_videos(
+        deeplabcut.analyze_videos(
             config,
             videos=videos,
             videotype=videotype,
             shuffle=shuffle,
-            gputouse=None,
             save_as_csv=save_as_csv,
             cropping=cropping,
             dynamic=dynamic_cropping_params,
             robust_nframes=robustnframes,
-            auto_track=False,
+            auto_track=self.root.is_multianimal,
             n_tracks=num_animals_in_videos,
             calibrate=calibrate_assembly,
             identity_only=assemble_with_ID_only,
@@ -341,33 +353,6 @@ class AnalyzeVideos(DefaultTab):
                 videotype=videotype,
                 shuffle=shuffle,
             )
-
-        if self.root.is_multianimal:
-            deeplabcut.convert_detections2tracklets(
-                config,
-                videos=videos,
-                videotype=videotype,
-                shuffle=shuffle,
-                overwrite=overwrite_tracks,
-                calibrate=calibrate_assembly,
-                identity_only=assemble_with_ID_only,
-                track_method=track_method,
-            )
-
-            if use_transformer_tracking:
-                raise NotImplementedError(
-                    "Transformer has not been integrated to GUI yet"
-                )
-                # TODO: Plug in code, when codebase stable.
-            else:
-                deeplabcut.stitch_tracklets(
-                    config,
-                    videos=videos,
-                    videotype=videotype,
-                    shuffle=shuffle,
-                    n_tracks=num_animals_in_videos,
-                    track_method=track_method,
-                )
 
         if filter_data:
             deeplabcut.filterpredictions(
@@ -382,7 +367,7 @@ class AnalyzeVideos(DefaultTab):
 
         if self.plot_trajectories.checkState() == Qt.Checked:
             bdpts = self.bodyparts_list_widget.selected_bodyparts
-            self.logger.debug(f"Selected bodyparts for plot_trajectories: {bdpts}")
+            self.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
             showfig = self.show_trajectory_plots.checkState() == Qt.Checked
             deeplabcut.plot_trajectories(
                 config,
@@ -392,4 +377,16 @@ class AnalyzeVideos(DefaultTab):
                 shuffle=shuffle,
                 filtered=filter_data,
                 showfigures=showfig,
+            )
+
+        if self.root.is_multianimal and save_as_csv:
+            deeplabcut.analyze_videos_converth5_to_csv(
+                videos, listofvideos=True,
+            )
+
+        if save_as_nwb:
+            deeplabcut.analyze_videos_converth5_to_nwb(
+                config,
+                videos,
+                listofvideos=True,
             )

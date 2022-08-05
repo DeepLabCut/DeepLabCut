@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
@@ -20,10 +21,14 @@ class TrainNetwork(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
 
-        pose_cfg = auxiliaryfunctions.read_plainconfig(self.root.pose_cfg_path)
+        # use the default pose_cfg file for default values
+        default_pose_cfg_path = os.path.join(
+            Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
+        )
+        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
         self.display_iters = str(pose_cfg["display_iters"])
         self.save_iters = str(pose_cfg["save_iters"])
-        self.MAX_ITERS = 10000000
+        self.max_iters = str(pose_cfg["multi_step"][-1][-1])
 
         self.set_page()
 
@@ -56,7 +61,7 @@ class TrainNetwork(DefaultTab):
         dispiters_label = QtWidgets.QLabel("Display iterations")
         self.display_iters_spin = QtWidgets.QSpinBox()
         self.display_iters_spin.setMinimum(1)
-        self.display_iters_spin.setMaximum(int(self.MAX_ITERS))
+        self.display_iters_spin.setMaximum(int(self.max_iters))
         self.display_iters_spin.setValue(1000)
         self.display_iters_spin.valueChanged.connect(self.log_display_iters)
 
@@ -64,7 +69,7 @@ class TrainNetwork(DefaultTab):
         saveiters_label = QtWidgets.QLabel("Save iterations")
         self.save_iters_spin = QtWidgets.QSpinBox()
         self.save_iters_spin.setMinimum(1)
-        self.save_iters_spin.setMaximum(int(self.MAX_ITERS))
+        self.save_iters_spin.setMaximum(int(self.max_iters))
         self.save_iters_spin.setValue(50000)
         self.save_iters_spin.valueChanged.connect(self.log_save_iters)
 
@@ -72,7 +77,7 @@ class TrainNetwork(DefaultTab):
         maxiters_label = QtWidgets.QLabel("Maximum iterations")
         self.max_iters_spin = QtWidgets.QSpinBox()
         self.max_iters_spin.setMinimum(1)
-        self.max_iters_spin.setMaximum(int(self.MAX_ITERS))
+        self.max_iters_spin.setMaximum(int(self.max_iters))
         self.max_iters_spin.setValue(100000)
         self.max_iters_spin.valueChanged.connect(self.log_max_iters)
 
