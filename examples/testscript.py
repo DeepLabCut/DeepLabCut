@@ -127,8 +127,8 @@ if __name__ == "__main__":
     )
 
     # Check the training image paths are correctly stored as arrays of strings
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
+    datafile, _ = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, 0.8, 1, cfg,
     )
     mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]

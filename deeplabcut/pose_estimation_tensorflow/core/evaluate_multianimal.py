@@ -142,7 +142,7 @@ def evaluate_multianimal_full(
         TrainingFractions = [cfg["TrainingFraction"][trainingsetindex]]
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     Data = pd.read_hdf(
         os.path.join(
             cfg["project_path"],
@@ -153,7 +153,7 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     all_bpts = np.asarray(
@@ -169,7 +169,7 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             modelfolder = os.path.join(
@@ -188,7 +188,7 @@ def evaluate_multianimal_full(
                 trainIndices,
                 testIndices,
                 trainFraction,
-            ) = auxiliaryfunctions.LoadMetadata(
+            ) = auxiliaryfunctions.load_metadata(
                 os.path.join(cfg["project_path"], metadatafn)
             )
 
@@ -271,7 +271,7 @@ def evaluate_multianimal_full(
                     ]  # read how many training siterations that corresponds to.
 
                     # name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
@@ -288,7 +288,7 @@ def evaluate_multianimal_full(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,

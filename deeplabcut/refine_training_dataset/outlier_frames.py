@@ -352,7 +352,7 @@ def extract_outlier_frames(
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     if not len(bodyparts):
@@ -360,7 +360,7 @@ def extract_outlier_frames(
 
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
@@ -622,7 +622,7 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(cfg, "all")
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)

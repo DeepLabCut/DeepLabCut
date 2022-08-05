@@ -92,7 +92,7 @@ def extract_maps(
             )
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     Data = pd.read_hdf(
         os.path.join(
             cfg["project_path"],
@@ -112,7 +112,7 @@ def extract_maps(
         ##################################################
         # Load and setup CNN part detector
         ##################################################
-        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
 
@@ -131,7 +131,7 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.LoadMetadata(
+        ) = auxiliaryfunctions.load_metadata(
             os.path.join(cfg["project_path"], metadatafn)
         )
         try:
@@ -419,7 +419,7 @@ def extract_save_all_maps(
         read_config,
         attempttomakefolder,
         get_evaluation_folder,
-        IntersectionofBodyPartsandOnesGivenbyUser,
+        intersection_of_body_parts_and_ones_given_by_user,
     )
     from tqdm import tqdm
 
@@ -428,7 +428,7 @@ def extract_save_all_maps(
         config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
     )
 
-    comparisonbodyparts = IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
 
