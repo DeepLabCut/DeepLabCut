@@ -74,6 +74,14 @@ iterate_build_matrix() {
     done
 }
 
+githash() {
+    git log -1 --pretty=format:"%h"
+}
+
+mkdir -p logs
+logfile=logs/$(date +%y%m%d-%H%M%S)-$(githash)
+echo "Logging to $logdir.*"
+
 for arg in "$@"; do
 case $1 in
     clean)
@@ -82,19 +90,25 @@ case $1 in
           | xargs -I@ -0 bash -c "docker image rm @ |& grep -v 'No such image'"
     ;;
     build)
+        echo "DeepLabCut docker build:: $(git log -1 --oneline)"
         cp -r examples ${DOCKERDIR}
         (
           cd ${DOCKERDIR}
           iterate_build_matrix \
           | tr '\n' '\0' \
           | xargs -I@ -0 bash -c "echo Building @; $DOCKER build @ || exit 255"
-        )
+          echo Successful build.
+        ) |& tee ${logfile}.build
     ;;
     test)
-        iterate_build_matrix test \
-        | grep '\-test\-' \
-        | tr '\n' '\0' \
-        | xargs -0 -I@ bash -c "run_test @ || exit 255"
+        (
+          echo "DeepLabCut docker build:: $(git log -1 --oneline)"
+          iterate_build_matrix test \
+          | grep '\-test\-' \
+          | tr '\n' '\0' \
+          | xargs -0 -I@ bash -c "run_test @ || exit 255"
+          echo Successful test.
+        ) |& tee ${logfile}.test
     ;;
     push)
         iterate_build_matrix push \

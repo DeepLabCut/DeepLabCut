@@ -1,3 +1,5 @@
+# Docker specific
+logs/
 #Jupyter book build directory
 _build/*
 #Data and examples
