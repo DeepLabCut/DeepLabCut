@@ -24,3 +24,5 @@ RUN pip3 install --no-cache-dir protobuf==3.20.1
 # TODO required to fix permission errors when running the container with limited permission.
 RUN chmod a+rwx -R /usr/local/lib/python3.8/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained
 
+ENV CUDA_VERSION=${CUDA_VERSION}
+ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}

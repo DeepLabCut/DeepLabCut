@@ -3,7 +3,6 @@
 # > docker/build.sh [build|test|push]
 
 set -e
-set -x
 
 export DOCKER=${DOCKER:-'docker'}
 export DOCKER_BUILD="$DOCKER build"
@@ -16,16 +15,6 @@ if [[ ! -d ./${DOCKERDIR} ]]; then
     exit 1
 fi
 
-build_test_image() {
-image_id=$1
-${DOCKER_BUILD} -t deeplabcut:tmp - << EOF
-from ${image_id}
-run pip install --no-cache-dir pytest
-run mkdir -p /app
-run chmod a+rwx /app
-EOF
-}
-
 list_images() {
     $DOCKER images \
     | grep '^deeplabcut ' \
@@ -35,29 +24,21 @@ list_images() {
 }
 
 run_test() {
-    echo $@
-    test_image_id="$1"
-    test_image_id=$(build_test_image $test_image_id)
-
     kwargs=(
-        -u $(id -u) --tmpfs /.local --tmpfs /.cache -w /app
-        --env DLClight=True
-        deeplabcut:tmp
+        -u $(id -u) --tmpfs /.local --tmpfs /.cache
+        --tmpfs /test/.pytest_cache
+        --env DLClight=True -t
+        $1
     )
 
     # Unit tests
-    $DOCKER run -v $(pwd)/tests:/app ${kwargs[@]} python3 -m pytest -q . || return 1
-
-    return 0
+    $DOCKER run ${kwargs[@]} python3 -m pytest -v tests || return 255
 
     # Functional tests
-    $DOCKER run \
-     -v $(pwd)/testscript_cli.py:/app/testscript_cli.py:ro \
-     -v $(pwd)/examples:/app/examples:ro \
-     ${kwargs[@]} \
-     python3 testscript_cli.py
+    $DOCKER run ${kwargs[@]} python3 testscript_cli.py || return 255
+
+    return 0
 }
-export -f build_test_image
 export -f run_test
 
 iterate_build_matrix() {
@@ -70,22 +51,22 @@ iterate_build_matrix() {
         11.4.0-runtime-ubuntu20.04 \
         11.7.0-runtime-ubuntu20.04
     do
-            #2.2.0.2 \
         for deeplabcut_version in \
+            2.2.0.6 \
             2.2.1.1
         do
-            for stage in base core gui jupyter; do
+            for stage in base core test gui jupyter; do
                 tag=${deeplabcut_version}-${stage}-cuda${cuda_version}
                 case "$mode" in
                     build)
-                    echo \
+                        echo \
                          --build-arg=CUDA_VERSION=${cuda_version} \
                          --build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
                          "--tag=${BASENAME}:$tag" \
                          -f "Dockerfile.${stage}" \.
                     ;;
-                    *)
-                    echo ${BASENAME}:$tag
+                    clean|test|push)
+                        echo ${BASENAME}:${tag}
                     ;;
                 esac
             done
@@ -95,6 +76,11 @@ iterate_build_matrix() {
 
 for arg in "$@"; do
 case $1 in
+    clean)
+          iterate_build_matrix clean \
+          | tr '\n' '\0' \
+          | xargs -I@ -0 bash -c "docker image rm @ |& grep -v 'No such image'"
+    ;;
     build)
         cp -r examples ${DOCKERDIR}
         (
@@ -106,14 +92,16 @@ case $1 in
     ;;
     test)
         iterate_build_matrix test \
-        | grep '\-core\-' \
+        | grep '\-test\-' \
         | tr '\n' '\0' \
         | xargs -0 -I@ bash -c "run_test @ || exit 255"
     ;;
     push)
-        for tag in base latest-core latest-gui latest-gui-jupyter; do
-            ${DOCKER} push deeplabcut/deeplabcut:${tag}
-        done
+        iterate_build_matrix push \
+        | grep -v '\-test\-' \
+        | tr '\n' '\0' \
+        | xargs -I@ -0 echo ${DOCKER} push @
+    ;;
 esac
 done
 

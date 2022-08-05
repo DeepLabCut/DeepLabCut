@@ -1,0 +1,14 @@
+ARG CUDA_VERSION=11.4.0-runtime-ubuntu20.04
+ARG DEEPLABCUT_VERSION=2.2.1.1
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}
+
+RUN mkdir test/
+WORKDIR test
+RUN apt-get update && apt-get install -yy git
+RUN git config --global advice.detachedHead false
+RUN git clone --depth 1 --branch v${DEEPLABCUT_VERSION} \
+    https://github.com/DeepLabCut/DeepLabCut.git /test
+
+RUN pip3 install --no-cache-dir pytest
+RUN chmod a+rwx -R /test
+
