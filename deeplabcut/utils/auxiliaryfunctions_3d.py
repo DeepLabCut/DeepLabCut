@@ -201,7 +201,7 @@ def Get_list_of_triangulated_and_videoFiles(
         ]
         triangulated_folder = triangulated_folder[0]
 
-        if videofolder == None:
+        if videofolder is None:
             videofolder = str(Path(filepath[0]).parents[0])
         video_list = get_camerawise_videos(videofolder, cam_names, videotype)
 
