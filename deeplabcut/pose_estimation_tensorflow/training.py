@@ -78,7 +78,7 @@ def train_network(
 
     max_snapshots_to_keep: int or None
         Sets how many snapshots are kept, i.e. states of the trained network. Every
-        saving interation many times a snapshot is stored, however only the last
+        saving iteration many times a snapshot is stored, however only the last
         ``max_snapshots_to_keep`` many are kept! If you change this to None, then all
         are kept.
         See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
