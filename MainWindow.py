@@ -39,9 +39,9 @@ class MainWindow(QMainWindow):
     video_type_ = QtCore.Signal(str)
     video_files_ = QtCore.Signal(set)
 
-    def __init__(self):
+    def __init__(self, app):
         super(MainWindow, self).__init__()
-
+        self.app = app
         desktop = QtWidgets.QDesktopWidget().screenGeometry(0)
         self.screen_width = desktop.width()
         self.screen_height = desktop.height()
@@ -339,7 +339,8 @@ class MainWindow(QMainWindow):
         print(f'Project "{self.cfg["Task"]}" successfully loaded.')
 
     def darkmode(self):
-        self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
+        self.app.setStyleSheet(dark_stylesheet)
 
         names = ["new_project2.png", "open2.png", "help2.png"]
         self.remove_action()
@@ -352,7 +353,7 @@ class MainWindow(QMainWindow):
             os.path.dirname(os.path.realpath(__file__)), "style.qss"
         )
         with open(stylefile, "r") as f:
-            self.setStyleSheet(f.read())
+            self.app.setStyleSheet(f.read())
 
         names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
