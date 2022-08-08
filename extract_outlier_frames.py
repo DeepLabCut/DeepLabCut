@@ -1,3 +1,4 @@
+import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -11,51 +12,6 @@ from components import (
 )
 
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
-
-
-
-def refine_labels(config, multianimal=False):
-    """
-    Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.
-
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    Screens : int value of the number of Screens in landscape mode, i.e. if you have 2 screens, enter 2. Default is 1.
-
-    scale_h & scale_w : you can modify how much of the screen the GUI should occupy. The default is .9 and .8, respectively.
-
-    img_scale : if you want to make the plot of the frame larger, consider changing this to .008 or more. Be careful though, too large and you will not see the buttons fully!
-
-    Examples
-    --------
-    >>> deeplabcut.refine_labels('/analysis/project/reaching-task/config.yaml', Screens=2, imag_scale=.0075)
-    --------
-
-    """
-
-    import os
-    from pathlib import Path
-
-    startpath = os.getcwd()
-    wd = Path(config).resolve().parents[0]
-    os.chdir(str(wd))
-    cfg = auxiliaryfunctions.read_config(config)
-    if not multianimal and not cfg.get("multianimalproject", False):
-        from deeplabcut.gui import refinement
-
-        refinement.show(config)
-    else:
-        from deeplabcut.gui import multiple_individuals_refinement_toolbox
-
-        multiple_individuals_refinement_toolbox.show(config)
-
-    os.chdir(startpath)
 
 
 class ExtractOutlierFrames(DefaultTab):
@@ -150,7 +106,7 @@ class ExtractOutlierFrames(DefaultTab):
         )
 
     def extract_outlier_frames(self):
-        self.launch_refinement_gui.setEnabled(True)
+        self.label_outliers_button.setEnabled(True)
 
         config = self.root.config
         shuffle = self.root.shuffle_value
@@ -158,7 +114,6 @@ class ExtractOutlierFrames(DefaultTab):
         videotype = self.video_selection_widget.videotype_widget.currentText()
         outlieralgorithm = self.outlier_algorithm_widget.currentText()
         track_method = ""
-
         if self.root.is_multianimal:
             track_method = self.tracker_type_widget.currentText()
 
@@ -183,9 +138,7 @@ class ExtractOutlierFrames(DefaultTab):
 
     def launch_refinement_gui(self):
         self.merge_data_button.setEnabled(True)
-        # TODO: The refinement GUI is not ported to PyQT yet.
-        raise NotImplementedError
-        refine_labels(self.root.config)
+        _ = napari.Viewer()
 
     def merge_dataset(self):
         msg = QtWidgets.QMessageBox()
