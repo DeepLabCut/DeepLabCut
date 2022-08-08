@@ -18,8 +18,6 @@ class RefineTracklets(DefaultTab):
     # TODO: Add "run tracking" button + function
     def __init__(self, root, parent, h1_description):
         super(RefineTracklets, self).__init__(root, parent, h1_description)
-        # variable initilization
-
         # TODO: rename this to private -> _set_page in all tabs
         self.set_page()
 
@@ -173,8 +171,21 @@ class RefineTracklets(DefaultTab):
         editor.show()
 
     def filter_tracks(self):
-        # TODO:
-        raise NotImplementedError
+        shuffle = self.shuffle.value()
+        window_length = self.window_length_widget.value()
+        if window_length % 2 != 1:
+            raise ValueError("Window length should be odd.")
+
+        videotype = self.video_selection_widget.videotype_widget.currentText()
+        deeplabcut.filterpredictions(
+            self.root.config,
+            self.files,
+            videotype=videotype,
+            shuffle=shuffle,
+            filtertype=self.filter_type_widget.currentText(),
+            windowlength=self.window_length_widget.value(),
+            save_as_csv=True,
+        )
 
     def merge_dataset(self):
         msg = QtWidgets.QMessageBox()
