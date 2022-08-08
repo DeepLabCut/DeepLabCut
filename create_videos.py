@@ -53,6 +53,10 @@ class CreateVideos(DefaultTab):
         self._generate_layout_video_parameters(self.layout_video_parameters)
         self.main_layout.addLayout(self.layout_video_parameters)
 
+        self.sk_button = QtWidgets.QPushButton("Build skeleton")
+        self.sk_button.clicked.connect(self.build_skeleton)
+        self.main_layout.addWidget(self.sk_button, alignment=Qt.AlignRight)
+
         self.run_button = QtWidgets.QPushButton("Create videos")
         self.run_button.clicked.connect(self.create_videos)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
@@ -220,11 +224,9 @@ class CreateVideos(DefaultTab):
             self.draw = False
 
     def create_videos(self):
-
         config = self.root.config
         shuffle = self.root.shuffle_value
         videos = self.files
-        bodyparts = "all"
         videotype = self.videotype_widget.currentText()
         trailpoints = self.trail_points.value()
         color_by = self.color_by_widget.currentText()
@@ -274,3 +276,8 @@ class CreateVideos(DefaultTab):
                 filtered=filtered,
                 displayedbodyparts=bodyparts,
             )
+
+    def build_skeleton(self, *args):
+        from widgets import SkeletonBuilder
+
+        SkeletonBuilder(self.root.config)
