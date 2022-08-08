@@ -206,13 +206,13 @@ class MainWindow(QMainWindow):
         )
         self.layout.addWidget(image_widget)
 
-        description = """
-        DeepLabCut™ is an open source tool for markerless
-        pose estimation of user-defined body parts with deep learning.
-        A.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n
-        To get started,  create a new project or load an existing one.
-        """
-        label = QtWidgets.QLabel(description)
+        description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project or load an existing one."
+        label = _create_label_widget(
+            description,
+            "font-size:12px; text-align: center;",
+            margins=(0, 0, 0, 0),
+        )
+        label.setMinimumWidth(400)
         label.setWordWrap(True)
         label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(label)
