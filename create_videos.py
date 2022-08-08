@@ -230,6 +230,7 @@ class CreateVideos(DefaultTab):
             trailpoints=trailpoints,
             color_by=color_by,
         )
+        self.root.writer.write("Labeled videos created.")
 
         if self.plot_trajectories.checkState():
             deeplabcut.plot_trajectories(

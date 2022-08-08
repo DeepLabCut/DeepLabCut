@@ -177,7 +177,6 @@ class StreamReceiver(QtCore.QThread):
         super(StreamReceiver, self).__init__()
         self.queue = queue
 
-    @QtCore.Slot()
     def run(self):
         while True:
             text = self.queue.get()

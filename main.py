@@ -37,5 +37,6 @@ if __name__ == '__main__':
     logger.addHandler(handler)
 
     window = MainWindow(app)
+    window.receiver.start()
     window.showMaximized()
     sys.exit(app.exec_())

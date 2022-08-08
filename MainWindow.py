@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 from pathlib import Path
 from typing import List
 import qdarkstyle
@@ -31,6 +32,7 @@ from analyze_videos import AnalyzeVideos
 from create_videos import CreateVideos
 from extract_outlier_frames import ExtractOutlierFrames
 from refine_tracklets import RefineTracklets
+from widgets import StreamReceiver, StreamWriter
 
 
 class MainWindow(QMainWindow):
@@ -67,6 +69,18 @@ class MainWindow(QMainWindow):
         self.createActions(names)
         self.createMenuBar()
         self.createToolBars(0)
+
+        # Thread-safe Stdout redirector
+        self.status_bar = self.statusBar()
+        self.status_bar.setObjectName('Status Bar')
+        self.writer = StreamWriter()
+        sys.stdout = self.writer
+        self.receiver = StreamReceiver(self.writer.queue)
+        self.receiver.new_text.connect(self.print_to_status_bar)
+
+    def print_to_status_bar(self, text):
+        self.status_bar.showMessage(text)
+        self.status_bar.repaint()
 
     @property
     def cfg(self):
@@ -468,6 +482,7 @@ class MainWindow(QMainWindow):
                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
                                                 QtWidgets.QMessageBox.Cancel)
         if answer == QtWidgets.QMessageBox.Yes:
+            self.receiver.terminate()
             event.accept()
         else:
             event.ignore()

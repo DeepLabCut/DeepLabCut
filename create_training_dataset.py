@@ -70,15 +70,25 @@ class CreateTrainingDataset(DefaultTab):
         shuffle = self.shuffle.value()
         userfeedback = self.userfeedback
 
-        if self.root.is_multianimal:
-            deeplabcut.create_multianimaltraining_dataset(
-                self.root.config,
-                shuffle,
-                Shuffles=[self.shuffle.value()],
-                net_type=self.net_choice.currentText(),
+        if self.model_comparison:
+            raise NotImplementedError
+            # TODO: finish model_comparison
+            deeplabcut.create_training_model_comparison(
+                config_file,
+                num_shuffles=shuffle,
+                userfeedback=userfeedback,
+                net_types=self.net_type,
+                augmenter_types=self.aug_type,
             )
         else:
-            if not self.model_comparison:
+            if self.root.is_multianimal:
+                deeplabcut.create_multianimaltraining_dataset(
+                    self.root.config,
+                    shuffle,
+                    Shuffles=[self.shuffle.value()],
+                    net_type=self.net_choice.currentText(),
+                )
+            else:
                 deeplabcut.create_training_dataset(
                     self.root.config,
                     shuffle,
@@ -103,14 +113,4 @@ class CreateTrainingDataset(DefaultTab):
                 msg.setWindowIcon(QIcon(self.logo))
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
-
-            else:
-                raise NotImplementedError
-                # TODO: finish model_comparison
-                deeplabcut.create_training_model_comparison(
-                    config_file,
-                    num_shuffles=shuffle,
-                    userfeedback=userfeedback,
-                    net_types=self.net_type,
-                    augmenter_types=self.aug_type,
-                )
+        self.root.writer.write("Training dataset successfully created.")

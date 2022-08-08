@@ -224,3 +224,4 @@ class ExtractFrames(DefaultTab):
         msg.setWindowTitle("Info")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
+        self.root.writer.write("Frames successfully extracted.")
