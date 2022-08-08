@@ -18,15 +18,13 @@ class RefineTracklets(DefaultTab):
     # TODO: Add "run tracking" button + function
     def __init__(self, root, parent, h1_description):
         super(RefineTracklets, self).__init__(root, parent, h1_description)
-        # TODO: rename this to private -> _set_page in all tabs
-        self.set_page()
+        self._set_page()
 
     @property
     def files(self):
         return self.video_selection_widget.files
 
-    def set_page(self):
-
+    def _set_page(self):
         # TODO: Multi video select.... have to change to single video!
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)

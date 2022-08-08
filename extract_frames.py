@@ -71,9 +71,9 @@ class ExtractFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(ExtractFrames, self).__init__(root, parent, h1_description)
 
-        self.set_page()
+        self._set_page()
 
-    def set_page(self):
+    def _set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout(margins=(0, 0, 0, 0))

@@ -20,9 +20,9 @@ class EvaluateNetwork(DefaultTab):
 
         self.bodyparts_to_use = self.root.all_bodyparts
 
-        self.set_page()
+        self._set_page()
 
-    def set_page(self):
+    def _set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_horizontal_layout()

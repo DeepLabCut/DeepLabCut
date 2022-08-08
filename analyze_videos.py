@@ -22,13 +22,13 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(AnalyzeVideos, self).__init__(root, parent, h1_description)
 
-        self.set_page()
+        self._set_page()
 
     @property
     def files(self):
         return self.video_selection_widget.files
 
-    def set_page(self):
+    def _set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)

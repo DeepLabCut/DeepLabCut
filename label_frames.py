@@ -8,9 +8,9 @@ class LabelFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(LabelFrames, self).__init__(root, parent, h1_description)
 
-        self.set_page()
+        self._set_page()
 
-    def set_page(self):
+    def _set_page(self):
 
         self.main_layout.addWidget(_create_label_widget(""))  # dummy text
 

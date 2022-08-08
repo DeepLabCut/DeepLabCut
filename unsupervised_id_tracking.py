@@ -18,13 +18,13 @@ class UnsupervizedIdTracking(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(UnsupervizedIdTracking, self).__init__(root, parent, h1_description)
 
-        self.set_page()
+        self._set_page()
 
     @property
     def files(self):
         return self.root.video_files
 
-    def set_page(self):
+    def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
