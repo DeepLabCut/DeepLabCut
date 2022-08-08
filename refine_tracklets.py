@@ -15,7 +15,6 @@ import deeplabcut
 
 
 class RefineTracklets(DefaultTab):
-    # TODO: Add "run tracking" button + function
     def __init__(self, root, parent, h1_description):
         super(RefineTracklets, self).__init__(root, parent, h1_description)
         self._set_page()
@@ -47,6 +46,10 @@ class RefineTracklets(DefaultTab):
 
         self.main_layout.addLayout(self.container_layout)
 
+        self.stitch_tracklets_btn = QtWidgets.QPushButton("(Re-)run stitching")
+        self.stitch_tracklets_btn.setMinimumWidth(150)
+        self.stitch_tracklets_btn.clicked.connect(self.create_tracks)
+
         self.edit_inferencecfg_btn = QtWidgets.QPushButton("Edit inference_cfg.yaml")
         self.edit_inferencecfg_btn.setMinimumWidth(150)
         self.edit_inferencecfg_btn.clicked.connect(self.open_inferencecfg_editor)
@@ -65,6 +68,7 @@ class RefineTracklets(DefaultTab):
         self.merge_button.setEnabled(False)
 
         self.main_layout.addWidget(self.edit_inferencecfg_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.stitch_tracklets_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.launch_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.filter_tracks_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.merge_button, alignment=Qt.AlignRight)
@@ -168,8 +172,16 @@ class RefineTracklets(DefaultTab):
         editor = ConfigEditor(self.root.inference_cfg_path)
         editor.show()
 
+    def create_tracks(self):
+        deeplabcut.stitch_tracklets(
+            self.root.config,
+            self.files,
+            videotype=self.video_selection_widget.videotype_widget.currentText(),
+            shuffle=self.shuffle.value(),
+            n_tracks=self.num_animals_in_videos.value(),
+        )
+
     def filter_tracks(self):
-        shuffle = self.shuffle.value()
         window_length = self.window_length_widget.value()
         if window_length % 2 != 1:
             raise ValueError("Window length should be odd.")
@@ -179,7 +191,7 @@ class RefineTracklets(DefaultTab):
             self.root.config,
             self.files,
             videotype=videotype,
-            shuffle=shuffle,
+            shuffle=self.shuffle.value(),
             filtertype=self.filter_type_widget.currentText(),
             windowlength=self.window_length_widget.value(),
             save_as_csv=True,
