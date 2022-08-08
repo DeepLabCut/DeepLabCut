@@ -1,15 +1,26 @@
 import ast
 import os
+import warnings
+
+import matplotlib.colors as mcolors
+import numpy as np
+import pandas as pd
+from matplotlib.collections import LineCollection
+from matplotlib.path import Path
 from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT,
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+from matplotlib.widgets import RectangleSelector, Button, LassoSelector
 from queue import Queue
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QCursor
+from scipy.spatial import cKDTree as KDTree
+from skimage import io
 
 from deeplabcut import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 class BaseFrame(QtWidgets.QFrame):
@@ -438,3 +449,60 @@ class ConfigEditor(QtWidgets.QDialog):
     def accept(self):
         auxiliaryfunctions.write_config(self.config, self.cfg)
         super(ConfigEditor, self).accept()
+
+
+class FrameCropper(QtWidgets.QDialog):
+    def __init__(self, video, parent=None):
+        super(FrameCropper, self).__init__(parent)
+        self.clip = VideoWriter(video)
+
+        self.fig = Figure()
+        self.ax = self.fig.add_subplot(111)
+        self.ax_help = self.fig.add_axes([0.9, 0.2, 0.1, 0.1])
+        self.ax_save = self.fig.add_axes([0.9, 0.1, 0.1, 0.1])
+        self.crop_button = Button(self.ax_save, "Crop")
+        self.crop_button.on_clicked(self.validate_crop)
+        self.help_button = Button(self.ax_help, "Help")
+        self.help_button.on_clicked(self.display_help)
+
+        self.canvas = FigureCanvas(self.fig)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+
+        self.bbox = [0, 0, 0, 0]
+
+    def draw_bbox(self):
+        frame = None
+        # Read the video until a frame is successfully read
+        while frame is None:
+            frame = self.clip.read_frame()
+        self.bbox[-2:] = frame.shape[1], frame.shape[0]
+        self.ax.imshow(frame[:, :, ::-1])
+
+        self.rs = RectangleSelector(
+            self.ax,
+            self.line_select_callback,
+            drawtype="box",
+            minspanx=5,
+            minspany=5,
+            interactive=True,
+            spancoords="pixels",
+            rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
+        )
+        self.show()
+        self.fig.canvas.start_event_loop(timeout=-1)
+        return self.bbox
+
+    def line_select_callback(self, eclick, erelease):
+        self.bbox[:2] = int(eclick.xdata), int(eclick.ydata)  # x1, y1
+        self.bbox[2:] = int(erelease.xdata), int(erelease.ydata)  # x2, y2
+
+    def validate_crop(self, *args):
+        self.fig.canvas.stop_event_loop()
+        self.close()
+
+    def display_help(self, *args):
+        print(
+            "1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click "
+        )

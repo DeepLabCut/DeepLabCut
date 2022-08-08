@@ -41,7 +41,7 @@ def _create_vertical_layout(
 
 
 def _create_grid_layout(
-    lignment=None, spacing: int = 20, margins: tuple = None,
+    alignment=None, spacing: int = 20, margins: tuple = None,
 ) -> QtWidgets.QGridLayout():
 
     layout = QtWidgets.QGridLayout()

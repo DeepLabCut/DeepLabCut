@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
         description = """
         DeepLabCut™ is an open source tool for markerless
         pose estimation of user-defined body parts with deep learning.
-        A. and M.W. Mathis Labs | http://www.deeplabcut.org\n
+        A.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n
         To get started,  please click on the 'Manage Project' 
         tab to create or load an existing project.
         """

@@ -13,6 +13,60 @@ from utils import Worker
 from deeplabcut.generate_training_dataset import extract_frames
 
 
+def select_cropping_area(config, videos=None):
+    """
+    Interactively select the cropping area of all videos in the config.
+    A user interface pops up with a frame to select the cropping parameters.
+    Use the left click to draw a box and hit the button 'set cropping parameters'
+    to store the cropping parameters for a video in the config.yaml file.
+
+    Parameters
+    ----------
+    config : string
+        Full path of the config.yaml file as a string.
+
+    videos : optional (default=None)
+        List of videos whose cropping areas are to be defined. Note that full paths are required.
+        By default, all videos in the config are successively loaded.
+
+    Returns
+    -------
+    cfg : dict
+        Updated project configuration
+    """
+    from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+    from widgets import FrameCropper
+
+    cfg = auxiliaryfunctions.read_config(config)
+    if videos is None:
+        videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
+
+    for video in videos:
+        fc = FrameCropper(video)
+        coords = fc.draw_bbox()
+        if coords:
+            temp = {
+                "crop": ", ".join(
+                    map(
+                        str,
+                        [
+                            int(coords[0]),
+                            int(coords[2]),
+                            int(coords[1]),
+                            int(coords[3]),
+                        ],
+                    )
+                )
+            }
+            try:
+                cfg["video_sets"][video] = temp
+            except KeyError:
+                cfg["video_sets_original"][video] = temp
+
+    auxiliaryfunctions.write_config(config, cfg)
+    return cfg
+
+
 class ExtractFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(ExtractFrames, self).__init__(root, parent, h1_description)
@@ -22,7 +76,7 @@ class ExtractFrames(DefaultTab):
     def set_page(self):
 
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
-        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
+        self.layout_attributes = _create_grid_layout(margins=(0, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
@@ -132,8 +186,8 @@ class ExtractFrames(DefaultTab):
 
         crop = False  # default value
         if self.frame_cropping_widget.currentText() == "GUI":
-            # TODO: Plug GUI cropping
-            raise NotImplementedError
+            _ = select_cropping_area(config)
+            crop = True
         elif self.frame_cropping_widget.currentText() == "read from config":
             crop = True
 
