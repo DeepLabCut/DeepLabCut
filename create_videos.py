@@ -150,19 +150,13 @@ class CreateVideos(DefaultTab):
 
         layout.addLayout(tmp_layout, Qt.AlignLeft)
 
-    def update_high_quality_video(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("High quality ENABLED.")
+    def update_high_quality_video(self, state):
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"High quality {s}.")
 
-        else:
-            self.root.logger.info("High quality DISABLED.")
-
-    def update_plot_trajectory_choice(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("Plot trajectories ENABLED.")
-
-        else:
-            self.root.logger.info("Plot trajectories DISABLED.")
+    def update_plot_trajectory_choice(self, state):
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Plot trajectories {s}.")
 
     def update_selected_bodyparts(self):
         selected_bodyparts = [
@@ -185,43 +179,28 @@ class CreateVideos(DefaultTab):
             self.root.logger.info("Plot all bodyparts DISABLED.")
 
     def update_use_filtered_data(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Use filtered data ENABLED")
-        else:
-            self.root.logger.info("Use filtered data DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Use filtered data {s}")
 
     def update_draw_skeleton(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Draw skeleton ENABLED")
-        else:
-            self.root.logger.info("Draw skeleton DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Draw skeleton {s}")
 
     def update_overwrite_videos(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Overwrite videos ENABLED")
-        else:
-            self.root.logger.info("Overwrite videos DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Overwrite videos {s}")
 
     def update_color_by(self, text):
         self.root.logger.info(f"Coloring keypoints in videos by {text}")
 
     def update_filter_choice(self, rb):
-        if rb.text() == "Yes":
-            self.filtered = True
-        else:
-            self.filtered = False
+        self.filtered = rb.text() == "Yes"
 
     def update_video_slow_choice(self, rb):
-        if rb.text() == "Yes":
-            self.slow = True
-        else:
-            self.slow = False
+        self.slow = rb.text() == "Yes"
 
     def update_draw_skeleton_choice(self, rb):
-        if rb.text() == "Yes":
-            self.draw = True
-        else:
-            self.draw = False
+        self.draw = rb.text() == "Yes"
 
     def create_videos(self):
         config = self.root.config
@@ -230,22 +209,7 @@ class CreateVideos(DefaultTab):
         videotype = self.videotype_widget.currentText()
         trailpoints = self.trail_points.value()
         color_by = self.color_by_widget.currentText()
-
-        filtered = True
-        if self.use_filtered_data_checkbox.checkState() == False:
-            filtered = False
-
-        draw_skeleton = True
-        if self.draw_skeleton_checkboxx.checkState() == False:
-            draw_skeleton = False
-
-        slow_video = True
-        if self.create_high_quality_video.checkState() == False:
-            slow_video = False
-
-        plot_trajectories = True
-        if self.plot_trajectories.checkState() == False:
-            plot_trajectories = False
+        filtered = bool(self.use_filtered_data_checkbox.checkState())
 
         bodyparts = "all"
         if (
@@ -260,14 +224,14 @@ class CreateVideos(DefaultTab):
             videotype=videotype,
             shuffle=shuffle,
             filtered=filtered,
-            save_frames=slow_video,
+            save_frames=bool(self.create_high_quality_video.checkState()),
             displayedbodyparts=bodyparts,
-            draw_skeleton=draw_skeleton,
+            draw_skeleton=bool(self.draw_skeleton_checkboxx.checkState()),
             trailpoints=trailpoints,
             color_by=color_by,
         )
 
-        if plot_trajectories:
+        if self.plot_trajectories.checkState():
             deeplabcut.plot_trajectories(
                 config=config,
                 videos=videos,

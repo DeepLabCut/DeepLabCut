@@ -199,78 +199,60 @@ class AnalyzeVideos(DefaultTab):
         layout.addLayout(tmp_layout)
 
     def update_use_transformer_tracking(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Transformer tracking ENABLED")
-        else:
-            self.root.logger.info("Transformer tracking DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Transformer tracking {s}")
 
     def update_robustnframes(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Robust frame reading - use ffprobe ENABLED")
-        else:
-            self.root.logger.info("Robust frame reading - use ffprobe DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Robust frame reading - use ffprobe {s}")
 
     def update_create_video_detections(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Create video with all detections ENABLED")
-        else:
-            self.root.logger.info("Create video with all detections DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Create video with all detections {s}")
 
     def update_overwrite_tracks(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Overwrite tracks ENABLED")
-        else:
-            self.root.logger.info("Overwrite tracks DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Overwrite tracks {s}")
 
     def update_assemble_with_ID_only(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Assembly with ID only ENABLED")
-        else:
-            self.root.logger.info("Assembly with ID only DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Assembly with ID only {s}")
 
     def update_calibrate_assembly(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("Assembly calibration ENABLED")
-        else:
-            self.root.logger.info("Assembly calibration DISABLED")
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Assembly calibration {s}")
 
     def update_tracker_type(self, method):
         self.root.logger.info(f"Using {method.upper()} tracker")
 
-    def update_csv_choice(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("Save results as CSV ENABLED")
-        else:
-            self.root.logger.info("Save results as CSV DISABLED")
+    def update_csv_choice(self, state):
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Save results as CSV {s}")
 
-    def update_nwb_choice(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("Save results as NWB ENABLED")
-        else:
-            self.root.logger.info("Save results as NWB DISABLED")
+    def update_nwb_choice(self, state):
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Save results as NWB {s}")
 
-    def update_filter_choice(self, s):
-        if s == Qt.Checked:
-            self.root.logger.info("Filtering predictions ENABLED")
-        else:
-            self.root.logger.info("Filtering predictions DISABLED")
+    def update_filter_choice(self, state):
+        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        self.root.logger.info(f"Filtering predictions {s}")
 
-    def update_showfigs_choice(self, s):
-        if s == Qt.Checked:
+    def update_showfigs_choice(self, state):
+        if state == Qt.Checked:
             self.root.logger.info("Plots will show as pop ups.")
         else:
             self.root.logger.info("Plots will not show up.")
 
-    def update_crop_choice(self, s):
-        if s == Qt.Checked:
+    def update_crop_choice(self, state):
+        if state == Qt.Checked:
             self.root.logger.info("Dynamic bodypart cropping ENABLED.")
             self.dynamic_cropping = True
         else:
             self.root.logger.info("Dynamic bodypart cropping DISABLED.")
             self.dynamic_cropping = False
 
-    def update_plot_trajectory_choice(self, s):
-        if s == Qt.Checked:
+    def update_plot_trajectory_choice(self, state):
+        if state == Qt.Checked:
             self.bodyparts_list_widget.show()
             self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
