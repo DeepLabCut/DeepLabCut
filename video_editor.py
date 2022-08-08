@@ -7,11 +7,12 @@ from components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
-    _create_horizontal_layout,
     _create_label_widget,
 )
+from widgets import FrameCropper
 
-from deeplabcut import CropVideo, DownSampleVideo, ShortenVideo
+from deeplabcut import DownSampleVideo, ShortenVideo
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 class VideoEditor(DefaultTab):
@@ -37,7 +38,7 @@ class VideoEditor(DefaultTab):
 
         self.trim_button = QtWidgets.QPushButton("Trim")
         self.trim_button.setMinimumWidth(150)
-        self.trim_button.clicked.connect(self.downsample_videos)
+        self.trim_button.clicked.connect(self.trim_videos)
         self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
 
         self.down_button = QtWidgets.QPushButton("Downsample")
@@ -139,7 +140,7 @@ class VideoEditor(DefaultTab):
                     video,
                     width=-1,
                     height=self.video_height.value(),
-                    rotatecw=self.video_rotation.value(),
+                    rotatecw=self.video_rotation.currentData(),
                     angle=self.rotation_angle.value(),
                 )
         else:
@@ -148,6 +149,19 @@ class VideoEditor(DefaultTab):
     def crop_videos(self):
         if self.files:
             for video in self.files:
-                CropVideo(video, useGUI=True)
+                _ = _crop_video(video)
         else:
             self.root.logger.error("No videos selected...")
+
+
+def _crop_video(video_path):
+    fc = FrameCropper(video_path)
+    coords = fc.draw_bbox()
+    if not coords:
+        return
+    origin_x, origin_y = coords[:2]
+    width = int(coords[2]) - int(coords[0])
+    height = int(coords[3]) - int(coords[1])
+    writer = VideoWriter(video_path)
+    writer.set_bbox(origin_x, origin_x + width, origin_y, origin_y + height)
+    return writer.crop("cropped", None)

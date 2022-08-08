@@ -34,7 +34,7 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+    from deeplabcut.utils import auxiliaryfunctions
     from widgets import FrameCropper
 
     cfg = auxiliaryfunctions.read_config(config)

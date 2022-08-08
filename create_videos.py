@@ -206,7 +206,6 @@ class CreateVideos(DefaultTab):
         config = self.root.config
         shuffle = self.root.shuffle_value
         videos = self.files
-        videotype = self.videotype_widget.currentText()
         trailpoints = self.trail_points.value()
         color_by = self.color_by_widget.currentText()
         filtered = bool(self.use_filtered_data_checkbox.checkState())
@@ -221,12 +220,11 @@ class CreateVideos(DefaultTab):
         deeplabcut.create_labeled_video(
             config=config,
             videos=videos,
-            videotype=videotype,
             shuffle=shuffle,
             filtered=filtered,
             save_frames=bool(self.create_high_quality_video.checkState()),
             displayedbodyparts=bodyparts,
-            draw_skeleton=bool(self.draw_skeleton_checkboxx.checkState()),
+            draw_skeleton=bool(self.draw_skeleton_checkbox.checkState()),
             trailpoints=trailpoints,
             color_by=color_by,
         )
@@ -236,7 +234,6 @@ class CreateVideos(DefaultTab):
             deeplabcut.plot_trajectories(
                 config=config,
                 videos=videos,
-                videotype=videotype,
                 shuffle=shuffle,
                 filtered=filtered,
                 displayedbodyparts=bodyparts,
