@@ -349,11 +349,10 @@ class MainWindow(QMainWindow):
         self.createToolBars(1)
 
     def lightmode(self):
-        stylefile = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "style.qss"
-        )
-        with open(stylefile, "r") as f:
-            self.app.setStyleSheet(f.read())
+        from qdarkstyle.light.palette import LightPalette
+
+        style = qdarkstyle.load_stylesheet(palette=LightPalette)
+        self.app.setStyleSheet(style)
 
         names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
