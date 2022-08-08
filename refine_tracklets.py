@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -12,6 +14,8 @@ from components import (
 )
 
 import deeplabcut
+from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.utils.auxiliaryfunctions import GetScorerName
 
 
 class RefineTracklets(DefaultTab):
@@ -58,9 +62,9 @@ class RefineTracklets(DefaultTab):
         self.filter_tracks_button.setMinimumWidth(150)
         self.filter_tracks_button.clicked.connect(self.filter_tracks)
 
-        self.launch_button = QtWidgets.QPushButton("Launch refinement GUI")
+        self.launch_button = QtWidgets.QPushButton("Launch track refinement GUI")
         self.launch_button.setMinimumWidth(150)
-        self.launch_button.clicked.connect(self.refine_labels)
+        self.launch_button.clicked.connect(self.refine_tracks)
 
         self.merge_button = QtWidgets.QPushButton("Merge dataset")
         self.merge_button.setMinimumWidth(150)
@@ -210,6 +214,25 @@ class RefineTracklets(DefaultTab):
         if result == QtWidgets.QMessageBox.Yes:
             deeplabcut.merge_datasets(self.config, forceiterate=None)
 
-    def refine_labels(self):
+    def refine_tracks(self):
+        cfg = self.root.cfg
+        DLCscorer, _ = GetScorerName(
+            cfg,
+            self.shuffle.value(),
+            cfg["TrainingFraction"][-1],
+        )
+        video = list(self.files)[0]
+        track_method = cfg.get("default_track_method", "ellipse")
+        method = trackingutils.TRACK_METHODS[track_method]
+        dest = str(Path(video).parents[0])
+        vname = Path(video).stem
+        datafile = os.path.join(dest, vname + DLCscorer + f"{method}.h5")
+        self.manager, self.viz = deeplabcut.refine_tracklets(
+            self.root.config,
+            datafile,
+            video,
+            min_swap_len=self.swap_length_widget.value(),
+            trail_len=self.trail_length_widget.value(),
+            max_gap=self.max_gap_widget.value(),
+        )
         self.merge_button.setEnabled(True)
-        deeplabcut.refine_labels(self.config)
