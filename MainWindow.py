@@ -139,8 +139,7 @@ class MainWindow(QMainWindow):
 
     def update_cfg(self, text):
         self.root.config = text
-        # Disable transformer_tracking tab if single animal
-        self.unsupervised_id_tracking.setEnabled(True if self.is_multianimal else False)
+        self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
     def update_shuffle(self, value):
         self.shuffle_value = value
@@ -211,8 +210,7 @@ class MainWindow(QMainWindow):
         DeepLabCut™ is an open source tool for markerless
         pose estimation of user-defined body parts with deep learning.
         A.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n
-        To get started,  please click on the 'Manage Project' 
-        tab to create or load an existing project.
+        To get started,  create a new project or load an existing one.
         """
         label = QtWidgets.QLabel(description)
         label.setWordWrap(True)
@@ -438,8 +436,8 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
-            self.unsupervised_id_tracking.setEnabled(False)
             self.refine_tracklets.setEnabled(False)
+        self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
         self.setCentralWidget(self.tab_widget)
 
@@ -474,6 +472,16 @@ class MainWindow(QMainWindow):
 
         # Update single/multi animal menus
         # TODO
+
+    def is_transreid_available(self):
+        if self.is_multianimal:
+            try:
+                from deeplabcut.pose_tracking_pytorch import transformer_reID
+                return True
+            except ModuleNotFoundError:
+                return False
+        else:
+            return False
 
     def closeEvent(self, event):
         print('Exiting...')

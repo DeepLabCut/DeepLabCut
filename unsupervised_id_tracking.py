@@ -1,3 +1,4 @@
+from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -8,6 +9,7 @@ from components import (
     _create_grid_layout,
     _create_label_widget,
 )
+from utils import move_to_separate_thread
 
 import deeplabcut
 
@@ -88,13 +90,20 @@ class UnsupervizedIdTracking(DefaultTab):
         n_tracks = self.num_animals_in_videos.value()
         shuffle = self.shuffle.value()
         track_method = self.tracker_type_widget.currentText()
-        
-        deeplabcut.transformer_reID(
+
+        func = partial(
+            deeplabcut.transformer_reID,
             config=config,
             videos=videos,
-            videotype=videotype, 
+            videotype=videotype,
             n_tracks=n_tracks,
             shuffle=shuffle,
-            track_method=track_method
+            track_method=track_method,
         )
+        self.worker, self.thread = move_to_separate_thread(func)
+        self.worker.finished.connect(
+            lambda: self.run_transformer_button.setEnabled(True)
+        )
+        self.thread.start()
+        self.run_transformer_button.setEnabled(False)
 
