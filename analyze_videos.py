@@ -140,7 +140,7 @@ class AnalyzeVideos(DefaultTab):
 
         opt_text = QtWidgets.QLabel("Tracking method")
         self.tracker_type_widget = QtWidgets.QComboBox()
-        self.tracker_type_widget.addItems(["skeleton", "box", "ellipse"])
+        self.tracker_type_widget.addItems(["ellipse", "box", "skeleton"])
         self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
         tmp_layout.addWidget(opt_text, 0, 0)
         tmp_layout.addWidget(self.tracker_type_widget, 0, 1)

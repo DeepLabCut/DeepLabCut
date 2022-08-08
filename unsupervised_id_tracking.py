@@ -20,7 +20,7 @@ class UnsupervizedIdTracking(DefaultTab):
 
     @property
     def files(self):
-        return self.video_selection_widget.files
+        return self.root.video_files
 
     def set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))

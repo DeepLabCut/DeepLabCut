@@ -67,13 +67,12 @@ class CreateTrainingDataset(DefaultTab):
         self.root.logger.info(f"Image augmentation set to {augmentation.upper()}")
 
     def create_training_dataset(self):
-        config_file = auxiliaryfunctions.read_config(self.root.config)
         shuffle = self.shuffle.value()
         userfeedback = self.userfeedback
 
         if self.root.is_multianimal:
             deeplabcut.create_multianimaltraining_dataset(
-                config_file,
+                self.root.config,
                 shuffle,
                 Shuffles=[self.shuffle.value()],
                 net_type=self.net_choice.currentText(),
@@ -81,7 +80,7 @@ class CreateTrainingDataset(DefaultTab):
         else:
             if not self.model_comparison:
                 deeplabcut.create_training_dataset(
-                    config_file,
+                    self.root.config,
                     shuffle,
                     Shuffles=[self.shuffle.value()],
                     userfeedback=userfeedback,
