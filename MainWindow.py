@@ -461,3 +461,14 @@ class MainWindow(QMainWindow):
         # Update single/multi animal menus
         # TODO
 
+    def closeEvent(self, event):
+        print('Exiting...')
+        answer = QtWidgets.QMessageBox.question(self, 'Quit',
+                                                'Are you sure you want to quit?',
+                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
+                                                QtWidgets.QMessageBox.Cancel)
+        if answer == QtWidgets.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+            print('')
