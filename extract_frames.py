@@ -1,5 +1,5 @@
 from functools import partial
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
 from dlc_params import DLC_Params
@@ -8,7 +8,7 @@ from components import (
     _create_grid_layout,
     _create_label_widget,
 )
-from utils import Worker
+from utils import move_to_separate_thread
 
 from deeplabcut.generate_training_dataset import extract_frames
 
@@ -203,16 +203,10 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
         )
-        self.thread = QtCore.QThread()
-        self.worker = Worker(func)
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
+        self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(
             lambda: self.ok_button.setEnabled(True)
         )
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.worker.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self._show_success_message)
         self.thread.start()
         self.ok_button.setEnabled(False)

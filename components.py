@@ -129,6 +129,10 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
+    @property
+    def files(self):
+        return self.root.video_files
+
     def update_videotype(self, vtype):
         self.clear_selected_videos()
         self.root.video_type = vtype

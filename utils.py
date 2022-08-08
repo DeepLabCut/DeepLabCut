@@ -11,3 +11,14 @@ class Worker(QtCore.QObject):
     def run(self):
         self.func()
         self.finished.emit()
+
+
+def move_to_separate_thread(func):
+    thread = QtCore.QThread()
+    worker = Worker(func)
+    worker.moveToThread(thread)
+    thread.started.connect(worker.run)
+    worker.finished.connect(thread.quit)
+    worker.finished.connect(worker.deleteLater)
+    worker.finished.connect(thread.deleteLater)
+    return worker, thread

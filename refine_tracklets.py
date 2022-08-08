@@ -25,7 +25,7 @@ class RefineTracklets(DefaultTab):
 
     @property
     def files(self):
-        self.video_selection_widget.files
+        return self.video_selection_widget.files
 
     def set_page(self):
 

@@ -1,6 +1,8 @@
+from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
+from utils import move_to_separate_thread
 from widgets import ConfigEditor
 from components import (
     DefaultTab,
@@ -300,7 +302,6 @@ class AnalyzeVideos(DefaultTab):
         num_animals_in_videos = self.num_animals_in_videos.value()
 
         cropping = None
-        dynamic_cropping_params = (False, 0.5, 10)
 
         if self.root.cfg["cropping"] == "True":
             cropping = (
@@ -310,10 +311,15 @@ class AnalyzeVideos(DefaultTab):
                 self.root.cfg["y2"],
             )
 
-        if self.dynamic_cropping:
-            dynamic_cropping_params = (True, 0.5, 10)
+        dynamic_cropping_params = (False, 0.5, 10)
+        try:
+            if self.dynamic_cropping:
+                dynamic_cropping_params = (True, 0.5, 10)
+        except AttributeError:
+            pass
 
-        deeplabcut.analyze_videos(
+        func = partial(
+            deeplabcut.analyze_videos,
             config,
             videos=videos,
             videotype=videotype,
@@ -327,6 +333,13 @@ class AnalyzeVideos(DefaultTab):
             calibrate=calibrate_assembly,
             identity_only=assemble_with_ID_only,
         )
+
+        self.worker, self.thread = move_to_separate_thread(func)
+        self.worker.finished.connect(
+            lambda: self.analyze_videos_btn.setEnabled(True)
+        )
+        self.thread.start()
+        self.analyze_videos_btn.setEnabled(False)
 
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
