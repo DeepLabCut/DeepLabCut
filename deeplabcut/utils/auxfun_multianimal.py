@@ -27,14 +27,14 @@ from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHOD
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
     """
-    Reorders data of df to match the order given in a list 
+    Reorders data of df to match the order given in a list
 
     Parameters:
     ----------
     df: pd.DataFrame
         Data from tracked .h5 file
     order: list of str
-        Desired order of individuals 
+        Desired order of individuals
 
     Return:
     -------
@@ -540,9 +540,7 @@ def form_default_inferencecfg(cfg):
     inferencecfg["minimalnumberofconnections"] = (
         len(cfg["multianimalbodyparts"]) / 2
     )  # reasonable default
-    inferencecfg["topktoretain"] = len(cfg["individuals"]) + 1 * (
-        len(cfg["uniquebodyparts"]) > 0
-    )  # reasonable default
+    inferencecfg["topktoretain"] = len(cfg["individuals"])
     return inferencecfg
 
 
