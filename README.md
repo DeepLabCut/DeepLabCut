@@ -11,7 +11,7 @@ pip install qdarkstyle #will get rid of this
 
 To run:
 ```bash
-python main.py
+python deeplabcut_gui
 ```
 
 ## Missing components:
