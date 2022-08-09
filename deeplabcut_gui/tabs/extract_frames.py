@@ -2,13 +2,13 @@ from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from dlc_params import DLC_Params
-from components import (
+from deeplabcut_gui.dlc_params import DLCParams
+from deeplabcut_gui.components import (
     DefaultTab,
     _create_grid_layout,
     _create_label_widget,
 )
-from utils import move_to_separate_thread
+from deeplabcut_gui.utils import move_to_separate_thread
 
 from deeplabcut.generate_training_dataset import extract_frames
 
@@ -35,7 +35,7 @@ def select_cropping_area(config, videos=None):
         Updated project configuration
     """
     from deeplabcut.utils import auxiliaryfunctions
-    from widgets import FrameCropper
+    from deeplabcut_gui.widgets import FrameCropper
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
@@ -105,7 +105,7 @@ class ExtractFrames(DefaultTab):
         ext_algo_label = QtWidgets.QLabel("Extraction algorithm")
         self.extraction_algorithm_widget = QtWidgets.QComboBox()
         self.extraction_algorithm_widget.addItems(
-            DLC_Params.FRAME_EXTRACTION_ALGORITHMS
+            DLCParams.FRAME_EXTRACTION_ALGORITHMS
         )
         self.extraction_algorithm_widget.currentTextChanged.connect(
             self.log_extraction_algorithm

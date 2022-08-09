@@ -1,6 +1,6 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from dlc_params import DLC_Params
+from dlc_params import DLCParams
 
 from widgets import ConfigEditor
 
@@ -61,7 +61,7 @@ class BodypartListWidget(QtWidgets.QListWidget):
         # all_bodyparts: List 
         # NOTE: Is there a case where a specific list should 
         # have bodyparts other than the root? I don't think so.
-        ):
+    ):
         super(BodypartListWidget, self).__init__()
 
         self.root = root
@@ -104,7 +104,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # Videotype selection
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMaximumWidth(100)
-        self.videotype_widget.addItems(DLC_Params.VIDEOTYPES)
+        self.videotype_widget.addItems(DLCParams.VIDEOTYPES)
         self.videotype_widget.setCurrentText(self.root.video_type)
         self.root.video_type_.connect(self.videotype_widget.setCurrentText)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
@@ -152,7 +152,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self,
             "Select video(s) to analyze",
             cwd,
-            f"Videos ({' *.'.join(DLC_Params.VIDEOTYPES)[1:]})",
+            f"Videos ({' *.'.join(DLCParams.VIDEOTYPES)[1:]})",
         )
 
         if filenames[0]:

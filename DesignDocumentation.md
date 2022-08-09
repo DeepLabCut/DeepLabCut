@@ -11,7 +11,7 @@ Since there is behavior repeated in multiple places of the application, `compone
 For example, 
 
 ```python
-from components import _create_horizontal_layout
+from deeplabcut_gui.components import _create_horizontal_layout
 
 layout = _create_horizontal_layout()
 ```
@@ -48,9 +48,9 @@ Throughout the software, there are repeatedly used values such as supported vide
 
 ```python
 
-from dlc_params import DLC_Params
+from deeplabcut_gui.dlc_params import DLCParams
 
-supported_videotypes = DLC_Params.VIDEOTYPES
+supported_videotypes = DLCParams.VIDEOTYPES
 ```
 
 This reduces code duplication, making the codebase more maintainable and reduces errors. Also, since these are read-only variables, they are declared as constants. 
@@ -62,7 +62,7 @@ The GUI has been written such that any operation being performed (either clickin
 The logging is configured in `main.py`. All the tabs use the same logger object, named `GUI`, which they access from the root widget (Main Window). This can easily be extended to a more fine-grained logging system, where each Tab can use its own logger, for an easier tracing of where each logging message is coming from. For example:
 
 ```python
-from components import DefaultTab
+from deeplabcut_gui.components import DefaultTab
 import logging
 
 class MyNewTab(DefaultTab):

@@ -2,14 +2,14 @@ from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from components import (
+from deeplabcut_gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
-from utils import move_to_separate_thread
+from deeplabcut_gui.utils import move_to_separate_thread
 
 import deeplabcut
 

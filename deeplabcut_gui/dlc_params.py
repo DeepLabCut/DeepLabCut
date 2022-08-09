@@ -1,4 +1,4 @@
-class DLC_Params:
+class DLCParams:
     VIDEOTYPES = [
         "",
         "avi",
@@ -27,4 +27,3 @@ class DLC_Params:
     OUTLIER_EXTRACTION_ALGORITHMS = ["jump", "fitting", "uncertain", "manual"]
 
     TRACKERS = ["ellipse", "box", "skeleton"]
-

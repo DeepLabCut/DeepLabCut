@@ -3,8 +3,8 @@ from pathlib import Path
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from widgets import ConfigEditor
-from components import (
+from deeplabcut_gui.widgets import ConfigEditor
+from deeplabcut_gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     VideoSelectionWidget,

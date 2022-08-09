@@ -3,13 +3,13 @@ import time
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from components import (
+from deeplabcut_gui.components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
-from widgets import FrameCropper
+from deeplabcut_gui.widgets import FrameCropper
 
 from deeplabcut import DownSampleVideo, ShortenVideo
 from deeplabcut.utils.auxfun_videos import VideoWriter

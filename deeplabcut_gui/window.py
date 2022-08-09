@@ -19,20 +19,11 @@ from components import (
     _create_label_widget,
 )
 
-from create_project import CreateProject
-from open_project import OpenProject
-from extract_frames import ExtractFrames
-from label_frames import LabelFrames
-from create_training_dataset import CreateTrainingDataset
-from train_network import TrainNetwork
-from evaluate_network import EvaluateNetwork
-from unsupervised_id_tracking import UnsupervizedIdTracking
-from video_editor import VideoEditor
-from analyze_videos import AnalyzeVideos
-from create_videos import CreateVideos
-from extract_outlier_frames import ExtractOutlierFrames
-from refine_tracklets import RefineTracklets
+from tabs import *
 from widgets import StreamReceiver, StreamWriter
+
+
+BASE_DIR = os.path.dirname(__file__)
 
 
 class MainWindow(QMainWindow):
@@ -66,7 +57,7 @@ class MainWindow(QMainWindow):
         self.default_set()
 
         names = ["new_project.png", "open.png", "help.png"]
-        self.createActions(names)
+        self.create_actions(names)
         self.createMenuBar()
         self.createToolBars(0)
 
@@ -174,9 +165,8 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/assets/logo.png"
-        self.setWindowIcon(QIcon(self.logo))
+        icon = os.path.join(BASE_DIR, 'assets', 'logo.png')
+        self.setWindowIcon(QIcon(icon))
 
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("Status Bar")
@@ -194,12 +184,10 @@ class MainWindow(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
-        logo = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "assets", "logo_transparent.png"
-        )
         image_widget = QtWidgets.QLabel(self)
         image_widget.setAlignment(Qt.AlignCenter)
         image_widget.setContentsMargins(0, 0, 0, 0)
+        logo = os.path.join(BASE_DIR, "assets", "logo_transparent.png")
         pixmap = QtGui.QPixmap(logo)
         image_widget.setPixmap(
             pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation)
@@ -245,19 +233,23 @@ class MainWindow(QMainWindow):
         self.exp_default = ""
         self.loc_default = str(Path.home())
 
-    def createActions(self, names):
+    def create_actions(self, names):
         # Creating action using the first constructor
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon("assets/icons/" + names[0]))
+        self.newAction.setIcon(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0]))
+        )
         self.newAction.setShortcut("Ctrl+N")
 
         self.newAction.triggered.connect(self._create_project)
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon("assets/icons/" + names[1]))
+        self.openAction.setIcon(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1]))
+        )
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.triggered.connect(self._open_project)
 
@@ -270,7 +262,9 @@ class MainWindow(QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon("assets/icons/" + names[2]))
+        self.helpAction.setIcon(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2]))
+        )
 
         self.aboutAction = QAction("&Learn DLC", self)
 
@@ -356,7 +350,7 @@ class MainWindow(QMainWindow):
 
         names = ["new_project2.png", "open2.png", "help2.png"]
         self.remove_action()
-        self.createActions(names)
+        self.create_actions(names)
         self.updateMenuBar()
         self.createToolBars(1)
 
@@ -368,7 +362,7 @@ class MainWindow(QMainWindow):
 
         names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
-        self.createActions(names)
+        self.create_actions(names)
         self.createToolBars(1)
         self.updateMenuBar()
 

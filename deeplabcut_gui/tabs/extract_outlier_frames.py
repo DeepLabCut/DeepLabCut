@@ -2,8 +2,8 @@ import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from dlc_params import DLC_Params
-from components import (
+from deeplabcut_gui.dlc_params import DLCParams
+from deeplabcut_gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     VideoSelectionWidget,
@@ -76,7 +76,7 @@ class ExtractOutlierFrames(DefaultTab):
     def _generate_multianimal_options(self, layout):
         opt_text = QtWidgets.QLabel("Tracking method")
         self.tracker_type_widget = QtWidgets.QComboBox()
-        self.tracker_type_widget.addItems(DLC_Params.TRACKERS)
+        self.tracker_type_widget.addItems(DLCParams.TRACKERS)
         self.tracker_type_widget.currentTextChanged.connect(self.update_tracker_type)
 
         layout.addWidget(opt_text)
@@ -89,7 +89,7 @@ class ExtractOutlierFrames(DefaultTab):
 
         opt_text = QtWidgets.QLabel("Specify the algorithm")
         self.outlier_algorithm_widget = QtWidgets.QComboBox()
-        self.outlier_algorithm_widget.addItems(DLC_Params.OUTLIER_EXTRACTION_ALGORITHMS)
+        self.outlier_algorithm_widget.addItems(DLCParams.OUTLIER_EXTRACTION_ALGORITHMS)
         self.outlier_algorithm_widget.currentTextChanged.connect(
             self.update_outlier_algorithm
         )

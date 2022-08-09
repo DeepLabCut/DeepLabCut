@@ -4,8 +4,8 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
-from dlc_params import DLC_Params
-from components import (
+from deeplabcut_gui.dlc_params import DLCParams
+from deeplabcut_gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
@@ -13,7 +13,6 @@ from components import (
 )
 
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 
 
 class CreateTrainingDataset(DefaultTab):
@@ -42,14 +41,14 @@ class CreateTrainingDataset(DefaultTab):
         # Augmentation method
         augmentation_label = QtWidgets.QLabel("Augmentation method")
         self.aug_choice = QtWidgets.QComboBox()
-        self.aug_choice.addItems(DLC_Params.IMAGE_AUGMENTERS)
+        self.aug_choice.addItems(DLCParams.IMAGE_AUGMENTERS)
         self.aug_choice.setCurrentText("imgaug")
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
-        self.net_choice.addItems(DLC_Params.NNETS)
+        self.net_choice.addItems(DLCParams.NNETS)
         self.net_choice.setCurrentText("resnet_50")
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 

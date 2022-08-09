@@ -1,7 +1,7 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from components import (
+from deeplabcut_gui.components import (
     BodypartListWidget,
     DefaultTab,
     ShuffleSpinBox,
@@ -9,7 +9,7 @@ from components import (
     _create_label_widget,
     _create_vertical_layout,
 )
-from widgets import ConfigEditor
+from deeplabcut_gui.widgets import ConfigEditor
 
 import deeplabcut
 

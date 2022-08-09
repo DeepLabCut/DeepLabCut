@@ -1,7 +1,9 @@
 import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from components import DefaultTab, _create_horizontal_layout, _create_label_widget
+from deeplabcut_gui.components import (
+    DefaultTab, _create_horizontal_layout, _create_label_widget,
+)
 
 
 class LabelFrames(DefaultTab):

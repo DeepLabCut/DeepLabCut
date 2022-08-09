@@ -7,16 +7,14 @@ import PySide2.QtWidgets as QtWidgets
 import qdarkstyle
 from PySide2.QtGui import QIcon
 
-from MainWindow import MainWindow
+from window import MainWindow, BASE_DIR
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QIcon('./assets/logo.png'))
+    app.setWindowIcon(QIcon(os.path.join(BASE_DIR, 'assets', 'logo.png')))
 
-    stylefile = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "style.qss"
-    )
+    stylefile = os.path.join(BASE_DIR, "style.qss")
     with open(stylefile, "r") as f:
         app.setStyleSheet(f.read())
 

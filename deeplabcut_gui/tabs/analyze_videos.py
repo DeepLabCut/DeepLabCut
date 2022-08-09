@@ -2,9 +2,9 @@ from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from utils import move_to_separate_thread
-from widgets import ConfigEditor
-from components import (
+from deeplabcut_gui.utils import move_to_separate_thread
+from deeplabcut_gui.widgets import ConfigEditor
+from deeplabcut_gui.components import (
     DefaultTab,
     BodypartListWidget,
     ShuffleSpinBox,
