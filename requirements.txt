@@ -1,2 +1,0 @@
-PySide2
-qdarkstyle
