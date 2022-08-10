@@ -18,7 +18,7 @@ class OpenProject(QtWidgets.QDialog):
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
 
-        self.ok_button = QtWidgets.QPushButton("Ok")
+        self.ok_button = QtWidgets.QPushButton("Load")
         self.ok_button.setDefault(True)
         self.ok_button.clicked.connect(self.open_project)
 
