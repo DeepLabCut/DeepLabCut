@@ -165,7 +165,7 @@ def create_multianimaltraining_dataset(
 
     paf_graph_degree: int, optional (default=6)
         Degree of paf_graph when automatically pruning it (before training).
-        
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -468,8 +468,7 @@ def create_multianimaltraining_dataset(
             )
             items2change = {
                 "minimalnumberofconnections": int(len(cfg["multianimalbodyparts"]) / 2),
-                "topktoretain": len(cfg["individuals"])
-                + 1 * (len(cfg["uniquebodyparts"]) > 0),
+                "topktoretain": len(cfg["individuals"]),
                 "withid": cfg.get("identity", False),
             }
             MakeInference_yaml(
