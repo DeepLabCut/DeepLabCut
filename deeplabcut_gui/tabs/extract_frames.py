@@ -1,4 +1,6 @@
 from functools import partial
+
+import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -159,10 +161,12 @@ class ExtractFrames(DefaultTab):
         if extraction_method == "manual":
             self.extraction_algorithm_widget.setEnabled(False)
             self.cluster_step_widget.setEnabled(False)
+            self.frame_cropping_widget.setEnabled(False)
             self.slider_width_widget.setEnabled(True)
         else:
             self.extraction_algorithm_widget.setEnabled(True)
             self.cluster_step_widget.setEnabled(True)
+            self.frame_cropping_widget.setEnabled(True)
             self.slider_width_widget.setEnabled(False)
 
     def log_frame_cropping_choice(self, cropping_option):
@@ -179,6 +183,10 @@ class ExtractFrames(DefaultTab):
     def extract_frames(self):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
+        if mode == "manual":
+            _ = napari.Viewer()
+            return
+
         algo = self.extraction_algorithm_widget.currentText()
         userfeedback = self.user_feedback_checkbox.checkState() == Qt.Checked
         clusterstep = self.cluster_step_widget.value()
