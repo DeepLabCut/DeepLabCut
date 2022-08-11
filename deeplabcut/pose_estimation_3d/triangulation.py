@@ -134,7 +134,12 @@ def triangulate(
     for i in range(len(video_list)):
         dataname = []
         for j in range(len(video_list[i])):  # looping over cameras
-            if cam_names[j] in video_list[i][j]:
+            if cam_names[j] not in video_list[i][j]:
+                raise ValueError(
+                    f"Camera name '{cam_names[j]}' "
+                    f"not found in video list '{video_list[i][j]}'."
+                )
+            else:
                 print(
                     "Analyzing video %s using %s"
                     % (video_list[i][j], str("config_file_" + cam_names[j]))
@@ -298,6 +303,7 @@ def triangulate(
                     scorer_name[cam_names[j]] = DLCscorer
                     run_triangulate = True
                     print(destfolder, vname, DLCscorer)
+                    suffix = tr_method_suffix
                     if filterpredictions:
                         filtering.filterpredictions(
                             config_2d,
@@ -308,11 +314,12 @@ def triangulate(
                             filtertype=filtertype,
                             destfolder=destfolder,
                         )
-                        dataname.append(
-                            os.path.join(
-                                destfolder, vname + DLCscorer + tr_method_suffix + "_filtered.h5"
-                            )
+                        suffix += "_filtered"
+                    dataname.append(
+                        os.path.join(
+                            destfolder, vname + DLCscorer + suffix + ".h5"
                         )
+                    )
 
         if run_triangulate:
             #        if len(dataname)>0:
