@@ -543,7 +543,7 @@ def undistort_points(config, dataframe, camera_pair):
     """
     if len(dataframe) != 2:
         raise ValueError(
-            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}".
+            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}."
         )
     for filename in dataframe:
         if not os.path.exists(filename):
