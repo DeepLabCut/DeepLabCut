@@ -548,6 +548,19 @@ def undistort_points(config, dataframe, camera_pair):
         dataFrame_cam2_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam2 + '_undistort.h5'))
     else:
     """
+    if len(dataframe) != 2:
+        raise ValueError(
+            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}."
+        )
+    for filename in dataframe:
+        if not os.path.exists(filename):
+            raise FileNotFoundError(
+                f"Dataframe path '{filename}' could not be found in the filesystem."
+            )
+    if not os.path.exists(path_camera_matrix):
+        raise FileNotFoundError(
+            f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem."
+        )
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     dataframe_cam1 = pd.read_hdf(dataframe[0])
     dataframe_cam2 = pd.read_hdf(dataframe[1])
