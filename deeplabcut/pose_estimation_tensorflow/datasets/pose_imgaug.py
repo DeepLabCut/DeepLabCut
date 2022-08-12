@@ -22,7 +22,7 @@ import pickle
 import imgaug.augmenters as iaa
 import numpy as np
 import scipy.io as sio
-
+from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import robust_split_path
 from .factory import PoseDatasetFactory
@@ -35,6 +35,7 @@ from .utils import DataItem, Batch
 class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(ImgaugPoseDataset, self).__init__(cfg)
+        self._n_kpts = len(cfg["all_joints_names"])
         self.data = self.load_dataset()
         self.batch_size = cfg.get("batch_size", 1)
         self.num_images = len(self.data)
@@ -151,6 +152,20 @@ class ImgaugPoseDataset(BasePoseDataset):
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
+
+        if cfg.get("fliplr", False) and cfg.get("symmetric_pairs"):
+            opt = cfg.get("fliplr", False)
+            if type(opt) == int:
+                p = opt
+            else:
+                p = 0.5
+            pipeline.add(sometimes(
+                augmentation.KeypointFliplr(
+                    cfg["all_joints_names"],
+                    symmetric_pairs=cfg["symmetric_pairs"],
+                    p=p,
+                )
+            ))
 
         if cfg["rotation"] > 0:
             pipeline.add(
@@ -283,6 +298,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         batch_joints = []
         joint_ids = []
         data_items = []
+
         # Scale is sampled only once to transform all of the images of a batch into same size.
         scale = self.sample_scale()
 
@@ -320,11 +336,15 @@ class ImgaugPoseDataset(BasePoseDataset):
             )
 
             if self.has_gt:
-                joints = np.copy(data_item.joints)
-                joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
-                joint_points = [person_joints[:, 1:3] for person_joints in joints]
-                joint_ids.append(joint_id)
-                batch_joints.append(np.array(joint_points)[0])
+                joints = data_item.joints
+                kpts = np.full((self._n_kpts, 2), np.nan)
+                
+                for n, x, y in joints[0]:
+                    kpts[int(n)] = x, y
+
+                joint_ids.append([np.arange(self._n_kpts)])
+                batch_joints.append(kpts)
+
             batch_images.append(image)
         sm_size = np.ceil(target_size / (stride * 2)).astype(int) * 2
         assert len(batch_images) == self.batch_size
@@ -383,12 +403,37 @@ class ImgaugPoseDataset(BasePoseDataset):
                 sm_size,
                 target_size,
             ) = self.get_batch()
+
             pipeline = self.build_augmentation_pipeline(
                 height=target_size[0], width=target_size[1], apply_prob=0.5
             )
+
             batch_images, batch_joints = pipeline(
                 images=batch_images, keypoints=batch_joints
             )
+
+            image_shape = np.array(batch_images).shape[1:3]
+            
+            batch_joints_valid = []
+            joint_ids_valid = []
+            for joints, ids in zip(batch_joints, joint_ids):
+                #invisible joints are represented by nans
+                mask = ~np.isnan(joints[:,0])
+                joints = joints[mask,:]
+                ids = ids[0][mask]
+                inside = np.logical_and.reduce(
+                    (
+                        joints[:, 0] < image_shape[1],
+                        joints[:, 0] > 0,
+                        joints[:, 1] < image_shape[0],
+                        joints[:, 1] > 0,
+                    )
+                )
+
+                batch_joints_valid.append(joints[inside])
+                joint_ids_valid.append([ids[inside]])
+            
+
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
             # import imageio
@@ -398,11 +443,10 @@ class ImgaugPoseDataset(BasePoseDataset):
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
 
-            image_shape = np.array(batch_images).shape[1:3]
             batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
             if self.has_gt:
                 scmap_update = self.get_scmap_update(
-                    joint_ids, batch_joints, data_items, sm_size, image_shape
+                    joint_ids_valid, batch_joints_valid, data_items, sm_size, image_shape
                 )
                 batch.update(scmap_update)
 
