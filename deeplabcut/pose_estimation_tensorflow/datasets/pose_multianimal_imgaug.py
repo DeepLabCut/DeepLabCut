@@ -264,7 +264,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             if self.has_gt:
                 Joints = data_item.joints
-                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
                 
                 for j in range(self._n_animals):
                     for n, x, y in Joints.get(j, []):
