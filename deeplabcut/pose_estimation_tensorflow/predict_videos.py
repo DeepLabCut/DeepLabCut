@@ -84,6 +84,7 @@ def create_tracking_dataset(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
+    tf.compat.v1.disable_eager_execution()
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -475,6 +476,7 @@ def analyze_videos(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
+    tf.compat.v1.disable_eager_execution()
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
@@ -1289,6 +1291,7 @@ def analyze_time_lapse_frames(
     if gputouse is not None:  # gpu selection
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
+    tf.compat.v1.disable_eager_execution()
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 

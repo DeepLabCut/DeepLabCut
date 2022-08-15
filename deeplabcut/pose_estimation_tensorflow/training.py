@@ -157,6 +157,7 @@ def train_network(
 
     from deeplabcut.utils import auxiliaryfunctions
 
+    tf.compat.v1.disable_eager_execution()
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()
 

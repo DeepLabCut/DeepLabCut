@@ -19,7 +19,6 @@ from pathlib import Path
 
 import tensorflow as tf
 
-tf.compat.v1.disable_eager_execution()
 import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -206,6 +205,7 @@ def train(
         max_to_keep=max_to_keep
     )  # selects how many snapshots are stored, see https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
+    tf.compat.v1.disable_eager_execution()
     if allow_growth:
         config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True

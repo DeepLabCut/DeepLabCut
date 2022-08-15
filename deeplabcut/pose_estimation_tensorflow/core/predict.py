@@ -30,6 +30,7 @@ from .openvino.session import OpenVINOSession
 
 def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
     tf.compat.v1.reset_default_graph()
+    tf.compat.v1.disable_eager_execution()
     inputs = tf.compat.v1.placeholder(
         tf.float32, shape=[cfg["batch_size"], None, None, 3]
     )
@@ -216,6 +217,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
+    tf.compat.v1.disable_eager_execution()
     inputs = tf.compat.v1.placeholder(
         tf.float32, shape=[cfg["batch_size"], None, None, 3]
     )

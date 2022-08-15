@@ -123,6 +123,7 @@ def evaluate_multianimal_full(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     tf.compat.v1.reset_default_graph()
+    tf.compat.v1.disable_eager_execution()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     if gputouse is not None:  # gpu selectinon
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
@@ -556,6 +557,7 @@ def evaluate_multianimal_full(
                         )
 
                         tf.compat.v1.reset_default_graph()
+                        tf.compat.v1.disable_eager_execution()
 
                     n_multibpts = len(cfg["multianimalbodyparts"])
                     if n_multibpts == 1:
