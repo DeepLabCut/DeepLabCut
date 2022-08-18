@@ -351,7 +351,6 @@ def triangulate(
             scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
             scorer_cam2 = dataFrame_camera2_undistort.columns.get_level_values(0)[0]
 
-            scorer_3d = scorer_cam1
             bodyparts = dataFrame_camera1_undistort.columns.get_level_values(
                 "bodyparts"
             ).unique()
