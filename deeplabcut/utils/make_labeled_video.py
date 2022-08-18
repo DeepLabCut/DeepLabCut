@@ -88,8 +88,9 @@ def CreateVideo(
         ny, nx = clip.height(), clip.width()
 
     fps = clip.fps()
-    if fps*1000 > 65535:
-        fps = round(fps)
+    if isinstance(fps, float):
+        if fps*1000 > 65535:
+            fps = round(fps)
     nframes = clip.nframes
     duration = nframes / fps
 
