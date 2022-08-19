@@ -8,18 +8,13 @@ import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION
-from deeplabcut_gui import BASE_DIR, utils
+from deeplabcut_gui import BASE_DIR, utils, components
 
 from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
 from PySide2.QtGui import QIcon
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
-from components import (
-    ShuffleSpinBox,
-    TrainingSetSpinBox,
-    _create_label_widget,
-)
 
 from tabs import *
 from widgets import StreamReceiver, StreamWriter
@@ -197,7 +192,7 @@ class MainWindow(QMainWindow):
         self.layout.setAlignment(Qt.AlignCenter | Qt.AlignTop)
         self.layout.setSpacing(30)
 
-        title = _create_label_widget(
+        title = components._create_label_widget(
             f"Welcome to the DeepLabCut Project Manager GUI {VERSION}!",
             "font:bold; font-size:18px;",
             margins=(0, 30, 0, 0),
@@ -216,7 +211,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(image_widget)
 
         description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project or load an existing one."
-        label = _create_label_widget(
+        label = components._create_label_widget(
             description,
             "font-size:12px; text-align: center;",
             margins=(0, 0, 0, 0),
@@ -467,8 +462,8 @@ class MainWindow(QMainWindow):
 
         widget_to_attribute_map = {
             QtWidgets.QSpinBox: "setValue",
-            ShuffleSpinBox: "setValue",
-            TrainingSetSpinBox: "setValue",
+            components.ShuffleSpinBox: "setValue",
+            components.TrainingSetSpinBox: "setValue",
             QtWidgets.QLineEdit: "setText",
         }
 
