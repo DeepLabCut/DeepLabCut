@@ -1,5 +1,6 @@
 import os
 import logging
+import subprocess
 import sys
 from pathlib import Path
 from typing import List
@@ -7,7 +8,7 @@ import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION
-from deeplabcut_gui import BASE_DIR
+from deeplabcut_gui import BASE_DIR, utils
 
 from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
@@ -22,6 +23,28 @@ from components import (
 
 from tabs import *
 from widgets import StreamReceiver, StreamWriter
+
+
+def _check_for_updates():
+    is_latest, latest_version = utils.is_latest_deeplabcut_version()
+    if not is_latest:
+        msg = QtWidgets.QMessageBox(
+            text=f"DeepLabCut {latest_version} available",
+        )
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        update_btn = msg.addButton('Update', msg.AcceptRole)
+        msg.setDefaultButton(update_btn)
+        _ = msg.addButton('Skip', msg.RejectRole)
+        msg.exec_()
+        if msg.clickedButton() is update_btn:
+            subprocess.check_call(
+                [sys.executable, '-m', 'pip', 'install', '-U', 'deeplabcut']
+            )
+    else:
+        msg = QtWidgets.QMessageBox(
+            text=f"DeepLabCut is up-to-date",
+        )
+        msg.exec_()
 
 
 class MainWindow(QMainWindow):
@@ -265,6 +288,8 @@ class MainWindow(QMainWindow):
         )
 
         self.aboutAction = QAction("&Learn DLC", self)
+        self.check_updates = QAction("&Check for Updates...", self)
+        self.check_updates.triggered.connect(_check_for_updates)
 
     def createMenuBar(self):
         menuBar = self.menuBar()
@@ -292,6 +317,7 @@ class MainWindow(QMainWindow):
         menuBar.addMenu(helpMenu)
         helpMenu.addAction(self.helpAction)
         helpMenu.adjustSize()
+        helpMenu.addAction(self.check_updates)
         helpMenu.addAction(self.aboutAction)
 
     def updateMenuBar(self):
