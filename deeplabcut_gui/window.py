@@ -7,6 +7,7 @@ import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION
+from deeplabcut_gui import BASE_DIR
 
 from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
@@ -21,9 +22,6 @@ from components import (
 
 from tabs import *
 from widgets import StreamReceiver, StreamWriter
-
-
-BASE_DIR = os.path.dirname(__file__)
 
 
 class MainWindow(QMainWindow):

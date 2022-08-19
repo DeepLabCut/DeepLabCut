@@ -5,14 +5,17 @@ import logging
 
 import PySide2.QtWidgets as QtWidgets
 import qdarkstyle
-from PySide2.QtGui import QIcon
-
-from window import MainWindow, BASE_DIR
+from deeplabcut_gui import BASE_DIR
+from PySide2.QtGui import QIcon, QPixmap
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(BASE_DIR, 'assets', 'logo.png')))
+
+    pixmap = QPixmap(os.path.join(BASE_DIR, 'assets', 'welcome.png'))
+    splash = QtWidgets.QSplashScreen(pixmap)
+    splash.show()
 
     stylefile = os.path.join(BASE_DIR, "style.qss")
     with open(stylefile, "r") as f:
@@ -34,7 +37,10 @@ if __name__ == '__main__':
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    from window import MainWindow
+
     window = MainWindow(app)
     window.receiver.start()
     window.showMaximized()
+    splash.finish(window)
     sys.exit(app.exec_())
