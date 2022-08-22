@@ -96,20 +96,20 @@ class CreateTrainingDataset(DefaultTab):
                     net_type=self.net_choice.currentText(),
                     augmenter_type=self.aug_choice.currentText(),
                 )
-                msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Information)
-                msg.setText("The training dataset is successfully created.")
-                msg.setInformativeText(
-                    "Use the function 'train_network' to start training. Happy training!"
-                )
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("The training dataset is successfully created.")
+            msg.setInformativeText(
+                "Use the function 'train_network' to start training. Happy training!"
+            )
 
-                msg.setWindowTitle("Info")
-                msg.setMinimumWidth(900)
-                self.logo_dir = (
-                    os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-                )
-                self.logo = self.logo_dir + "/assets/logo.png"
-                msg.setWindowIcon(QIcon(self.logo))
-                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                msg.exec_()
+            msg.setWindowTitle("Info")
+            msg.setMinimumWidth(900)
+            self.logo_dir = (
+                os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            )
+            self.logo = self.logo_dir + "/assets/logo.png"
+            msg.setWindowIcon(QIcon(self.logo))
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.exec_()
         self.root.writer.write("Training dataset successfully created.")
