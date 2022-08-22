@@ -1,6 +1,5 @@
 from functools import partial
 
-import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -11,7 +10,7 @@ from deeplabcut_gui.components import (
     _create_label_widget,
 )
 from deeplabcut_gui.utils import move_to_separate_thread
-
+from deeplabcut_gui.widgets import launch_napari
 from deeplabcut.generate_training_dataset import extract_frames
 
 
@@ -184,7 +183,7 @@ class ExtractFrames(DefaultTab):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
-            _ = napari.Viewer()
+            _ = launch_napari()
             return
 
         algo = self.extraction_algorithm_widget.currentText()

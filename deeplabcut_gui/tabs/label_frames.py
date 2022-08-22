@@ -1,9 +1,9 @@
-import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from deeplabcut_gui.components import (
     DefaultTab, _create_horizontal_layout, _create_label_widget,
 )
+from deeplabcut_gui.widgets import launch_napari
 
 
 class LabelFrames(DefaultTab):
@@ -41,4 +41,4 @@ class LabelFrames(DefaultTab):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
 
     def label_frames(self):
-        _ = napari.Viewer()
+        _ = launch_napari()

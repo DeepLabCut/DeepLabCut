@@ -3,6 +3,7 @@ import os
 import warnings
 
 import matplotlib.colors as mcolors
+import napari
 import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
@@ -21,6 +22,16 @@ from skimage import io
 
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
+
+
+def launch_napari():
+    viewer = napari.Viewer()
+    # Automatically activate the napari-deeplabcut plugin
+    for action in viewer.window.plugins_menu.actions():
+        if "deeplabcut" in action.text():
+            action.trigger()
+            break
+    return viewer
 
 
 class BaseFrame(QtWidgets.QFrame):

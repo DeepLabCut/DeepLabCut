@@ -1,4 +1,3 @@
-import napari
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
@@ -10,6 +9,7 @@ from deeplabcut_gui.components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
+from deeplabcut_gui.widgets import launch_napari
 
 import deeplabcut
 
@@ -138,7 +138,7 @@ class ExtractOutlierFrames(DefaultTab):
 
     def launch_refinement_gui(self):
         self.merge_data_button.setEnabled(True)
-        _ = napari.Viewer()
+        _ = launch_napari()
 
     def merge_dataset(self):
         msg = QtWidgets.QMessageBox()
