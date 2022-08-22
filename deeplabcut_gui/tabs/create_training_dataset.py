@@ -48,7 +48,10 @@ class CreateTrainingDataset(DefaultTab):
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
-        self.net_choice.addItems(DLCParams.NNETS)
+        nets = DLCParams.NNETS.copy()
+        if not self.root.is_multianimal:
+            nets.remove('dlcrnet_ms5')
+        self.net_choice.addItems(nets)
         self.net_choice.setCurrentText("resnet_50")
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
