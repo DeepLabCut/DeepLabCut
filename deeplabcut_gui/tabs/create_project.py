@@ -1,3 +1,4 @@
+from deeplabcut_gui.dlc_params import DLCParams
 from deeplabcut.create_project import create_new_project
 
 from PySide2 import QtCore, QtWidgets
@@ -132,12 +133,18 @@ class CreateProject(QtWidgets.QDialog):
 
     def load_videos(self):
         cwd = os.getcwd()
-        videos_file = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select videos to add to the project", cwd, "", "*.*"
+        videos_file = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            "Select videos to add to the project",
+            cwd,
+            f"Videos ({' *.'.join(DLCParams.VIDEOTYPES)[1:]})",
         )
-        self.videos = videos_file[0]
-        self.filelist.append(self.videos)
-        self.load_button.setText("Total %s Videos selected" % len(self.filelist))
+        self.filelist = videos_file[0]
+        n_videos = len(self.filelist)
+        s = 'video'
+        if n_videos > 1:
+            s += 's'
+        self.load_button.setText(f"{n_videos} {s} selected")
 
     def activate_fbk(self, state):
         # Activates the feedback option
