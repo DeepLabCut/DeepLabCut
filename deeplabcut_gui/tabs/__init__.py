@@ -6,6 +6,7 @@ from deeplabcut_gui.tabs.evaluate_network import EvaluateNetwork
 from deeplabcut_gui.tabs.extract_frames import ExtractFrames
 from deeplabcut_gui.tabs.extract_outlier_frames import ExtractOutlierFrames
 from deeplabcut_gui.tabs.label_frames import LabelFrames
+from deeplabcut_gui.tabs.manage_project import ManageProject
 from deeplabcut_gui.tabs.open_project import OpenProject
 from deeplabcut_gui.tabs.refine_tracklets import RefineTracklets
 from deeplabcut_gui.tabs.train_network import TrainNetwork

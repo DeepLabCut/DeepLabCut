@@ -388,6 +388,9 @@ class MainWindow(QMainWindow):
     def add_tabs(self):
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
+        self.manage_project = ManageProject(
+            root=self, parent=None, h1_description="DeepLabCut - Step 1. Manage Project"
+        )
         self.extract_frames = ExtractFrames(
             root=self, parent=None, h1_description="DeepLabCut - Step 2. Extract Frames"
         )
@@ -432,6 +435,7 @@ class MainWindow(QMainWindow):
             root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
         )
 
+        self.tab_widget.addTab(self.manage_project, "Manage project")
         self.tab_widget.addTab(self.extract_frames, "Extract frames")
         self.tab_widget.addTab(self.label_frames, "Label frames")
         self.tab_widget.addTab(self.create_training_dataset, "Create training dataset")
