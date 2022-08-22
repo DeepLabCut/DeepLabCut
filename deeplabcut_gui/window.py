@@ -480,9 +480,7 @@ class MainWindow(QMainWindow):
                 )
                 method(updated_value)
             except AttributeError:
-                self.logger.debug(
-                    f"Tab '{tab_label}' has no attribute named {widget_name}. Skipping..."
-                )
+                pass
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
         _attempt_attribute_update("cfg_line", self.config)
