@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
 
         self.shuffle_value = 1
         self.trainingset_index = 0
-        self.videotype = ""
+        self.videotype = "mp4"
         self.files = set()
 
         self.default_set()

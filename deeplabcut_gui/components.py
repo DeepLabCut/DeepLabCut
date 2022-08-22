@@ -103,7 +103,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         # Videotype selection
         self.videotype_widget = QtWidgets.QComboBox()
-        self.videotype_widget.setMaximumWidth(100)
+        self.videotype_widget.setMinimumWidth(100)
         self.videotype_widget.addItems(DLCParams.VIDEOTYPES)
         self.videotype_widget.setCurrentText(self.root.video_type)
         self.root.video_type_.connect(self.videotype_widget.setCurrentText)
