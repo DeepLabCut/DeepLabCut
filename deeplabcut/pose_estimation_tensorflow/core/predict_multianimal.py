@@ -260,12 +260,14 @@ def find_local_maxima(scmap, radius, threshold):
 
 
 def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
+    tf.compat.v1.disable_eager_execution()
     pooled = tf.nn.max_pool2d(scmaps, [radius, radius], strides=1, padding="SAME")
     maxima = scmaps * tf.cast(tf.equal(scmaps, pooled), tf.float32)
     return tf.cast(tf.where(maxima >= threshold), tf.int32)
 
 
 def find_local_peak_indices_dilation(scmaps, radius, threshold):
+    tf.compat.v1.disable_eager_execution()
     kernel = np.zeros((radius, radius, 1))
     mid = (radius - 1) // 2
     kernel[mid, mid] = -1
