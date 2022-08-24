@@ -20,7 +20,7 @@ from tqdm import tqdm
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
     """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
-    if bodyparts == None:
+    if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
         RMSE = np.sqrt(
             Pointwisesquareddistance.xs("x", level=1, axis=1)
@@ -77,9 +77,9 @@ def calculatepafdistancebounds(
         ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
         modelfolder = os.path.join(
@@ -97,7 +97,7 @@ def calculatepafdistancebounds(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.LoadMetadata(
+        ) = auxiliaryfunctions.load_metadata(
             os.path.join(cfg["project_path"], metadatafn)
         )
         Data = pd.read_hdf(
@@ -271,18 +271,18 @@ def return_evaluate_network_data(
     cfg = auxiliaryfunctions.read_config(config)
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparisonbodyparts
     )
     ##################################################
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+    datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, trainFraction, shuffle, cfg
     )
     modelfolder = os.path.join(
@@ -295,7 +295,7 @@ def return_evaluate_network_data(
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     # Load meta data
-    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.LoadMetadata(
+    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.load_metadata(
         os.path.join(cfg["project_path"], metadatafn)
     )
 
@@ -357,7 +357,7 @@ def return_evaluate_network_data(
     else:
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
-        if Snapindex == None:
+        if Snapindex is None:
             Snapindex = cfg["snapshotindex"]
 
         if Snapindex == -1:
@@ -383,7 +383,7 @@ def return_evaluate_network_data(
         ]  # read how many training siterations that corresponds to.
 
         # name for deeplabcut net (based on its parameters)
-        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix
         )
         if not returnjustfns:
@@ -398,7 +398,7 @@ def return_evaluate_network_data(
             notanalyzed,
             resultsfilename,
             DLCscorer,
-        ) = auxiliaryfunctions.CheckifNotEvaluated(
+        ) = auxiliaryfunctions.check_if_not_evaluated(
             str(evaluationfolder), DLCscorer, DLCscorerlegacy, Snapshots[snapindex]
         )
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
@@ -650,7 +650,7 @@ def evaluate_network(
                 )
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         Data = pd.read_hdf(
             os.path.join(
                 cfg["project_path"],
@@ -660,7 +660,7 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+        comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
             cfg, comparisonbodyparts
         )
         # Make folder for evaluation
@@ -672,7 +672,7 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+                datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                     trainingsetfolder, trainFraction, shuffle, cfg
                 )
                 modelfolder = os.path.join(
@@ -691,7 +691,7 @@ def evaluate_network(
                     trainIndices,
                     testIndices,
                     trainFraction,
-                ) = auxiliaryfunctions.LoadMetadata(
+                ) = auxiliaryfunctions.load_metadata(
                     os.path.join(cfg["project_path"], metadatafn)
                 )
 
@@ -783,7 +783,7 @@ def evaluate_network(
                     ]  # read how many training siterations that corresponds to.
 
                     # Name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
@@ -800,7 +800,7 @@ def evaluate_network(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,

@@ -209,7 +209,7 @@ class MainFrame(BaseFrame):
         self.firstFrame = 0
         self.Colorscheme = []
 
-        # Read confing file
+        # Read config file
         self.cfg = auxiliaryfunctions.read_config(config)
         self.Task = self.cfg["Task"]
         self.start = self.cfg["start"]

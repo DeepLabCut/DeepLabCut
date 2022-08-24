@@ -165,7 +165,7 @@ def create_multianimaltraining_dataset(
 
     paf_graph_degree: int, optional (default=6)
         Degree of paf_graph when automatically pruning it (before training).
-        
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -196,7 +196,7 @@ def create_multianimaltraining_dataset(
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
 
@@ -331,13 +331,13 @@ def create_multianimaltraining_dataset(
             (
                 datafilename,
                 metadatafilename,
-            ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            ) = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             ################################################################################
             # Saving metadata and data file (Pickle file)
             ################################################################################
-            auxiliaryfunctions.SaveMetadata(
+            auxiliaryfunctions.save_metadata(
                 os.path.join(project_path, metadatafilename),
                 data,
                 trainIndices,
@@ -468,8 +468,7 @@ def create_multianimaltraining_dataset(
             )
             items2change = {
                 "minimalnumberofconnections": int(len(cfg["multianimalbodyparts"]) / 2),
-                "topktoretain": len(cfg["individuals"])
-                + 1 * (len(cfg["uniquebodyparts"]) > 0),
+                "topktoretain": len(cfg["individuals"]),
                 "withid": cfg.get("identity", False),
             }
             MakeInference_yaml(
@@ -527,7 +526,7 @@ def convert_cropped_to_standard_dataset(
 
     datasets_folder = os.path.join(
         project_path,
-        auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        auxiliaryfunctions.get_training_set_folder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),

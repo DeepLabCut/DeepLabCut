@@ -153,7 +153,7 @@ def create_tracking_dataset(
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
-    if batchsize == None:
+    if batchsize is None:
         # update batchsize (based on parameters in config.yaml)
         dlc_cfg["batch_size"] = cfg["batch_size"]
     else:
@@ -175,7 +175,7 @@ def create_tracking_dataset(
         )
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -545,7 +545,7 @@ def analyze_videos(
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
-    if batchsize == None:
+    if batchsize is None:
         # update batchsize (based on parameters in config.yaml)
         dlc_cfg["batch_size"] = cfg["batch_size"]
     else:
@@ -567,7 +567,7 @@ def analyze_videos(
         )
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -1116,7 +1116,7 @@ def AnalyzeVideo(
 
         print(f"Saving results in {destfolder}...")
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
-        auxiliaryfunctions.SaveData(
+        auxiliaryfunctions.save_data(
             PredictedData[:nframes, :],
             metadata,
             dataname,
@@ -1352,7 +1352,7 @@ def analyze_time_lapse_frames(
     dlc_cfg["batch_size"] = cfg["batch_size"]
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -1389,7 +1389,7 @@ def analyze_time_lapse_frames(
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
         vname = Path(directory).stem
-        notanalyzed, dataname, DLCscorer = auxiliaryfunctions.CheckifNotAnalyzed(
+        notanalyzed, dataname, DLCscorer = auxiliaryfunctions.check_if_not_analyzed(
             directory, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
         )
         if notanalyzed:
@@ -1432,7 +1432,7 @@ def analyze_time_lapse_frames(
 
                 print("Saving results in %s..." % (directory))
 
-                auxiliaryfunctions.SaveData(
+                auxiliaryfunctions.save_data(
                     PredictedData[:nframes, :],
                     metadata,
                     dataname,
@@ -1497,7 +1497,7 @@ def _convert_detections_to_tracklets(
         min_affinity=inference_cfg.get("pafthreshold", 0.05),
     )
     if calibrate:
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         train_data_file = os.path.join(
             cfg["project_path"],
             str(trainingsetfolder),
@@ -1711,7 +1711,7 @@ def convert_detections2tracklets(
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
     # Name for scorer:
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -1800,7 +1800,7 @@ def convert_detections2tracklets(
                     identity_only=identity_only,
                 )
                 if calibrate:
-                    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+                    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
                     train_data_file = os.path.join(
                         cfg["project_path"],
                         str(trainingsetfolder),

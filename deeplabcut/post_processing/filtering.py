@@ -192,7 +192,7 @@ def filterpredictions(
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],

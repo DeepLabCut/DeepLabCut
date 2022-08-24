@@ -105,7 +105,7 @@ class ImagePanel(BasePanel):
                     if foundEvent == 1:
                         crop_labelCam = np.int32(re.findall(cropPattern, line))
                         break
-                    if eventSearch.search(line) != None:
+                    if eventSearch.search(line) is not None:
                         foundEvent = 1
             # Get crop params for other camera
             foundEvent = 0
@@ -116,7 +116,7 @@ class ImagePanel(BasePanel):
                     if foundEvent == 1:
                         crop_sourceCam = np.int32(re.findall(cropPattern, line))
                         break
-                    if eventSearch.search(line) != None:
+                    if eventSearch.search(line) is not None:
                         foundEvent = 1
 
             labelCam_offsets = [crop_labelCam[0], crop_labelCam[2]]

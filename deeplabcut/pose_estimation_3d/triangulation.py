@@ -134,7 +134,12 @@ def triangulate(
     for i in range(len(video_list)):
         dataname = []
         for j in range(len(video_list[i])):  # looping over cameras
-            if cam_names[j] in video_list[i][j]:
+            if cam_names[j] not in video_list[i][j]:
+                raise ValueError(
+                    f"Camera name '{cam_names[j]}' "
+                    f"not found in video list '{video_list[i][j]}'."
+                )
+            else:
                 print(
                     "Analyzing video %s using %s"
                     % (video_list[i][j], str("config_file_" + cam_names[j]))
@@ -230,7 +235,7 @@ def triangulate(
                             run_triangulate = True
 
                     # Check for scorer names in the pickle file of 3d output
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg, shuffle, trainFraction, trainingsiterations="unknown"
                     )
 
@@ -298,6 +303,7 @@ def triangulate(
                     scorer_name[cam_names[j]] = DLCscorer
                     run_triangulate = True
                     print(destfolder, vname, DLCscorer)
+                    suffix = tr_method_suffix
                     if filterpredictions:
                         filtering.filterpredictions(
                             config_2d,
@@ -308,11 +314,12 @@ def triangulate(
                             filtertype=filtertype,
                             destfolder=destfolder,
                         )
-                        dataname.append(
-                            os.path.join(
-                                destfolder, vname + DLCscorer + tr_method_suffix + "_filtered.h5"
-                            )
+                        suffix += "_filtered"
+                    dataname.append(
+                        os.path.join(
+                            destfolder, vname + DLCscorer + suffix + ".h5"
                         )
+                    )
 
         if run_triangulate:
             #        if len(dataname)>0:
@@ -344,7 +351,6 @@ def triangulate(
             scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
             scorer_cam2 = dataFrame_camera2_undistort.columns.get_level_values(0)[0]
 
-            scorer_3d = scorer_cam1
             bodyparts = dataFrame_camera1_undistort.columns.get_level_values(
                 "bodyparts"
             ).unique()
@@ -541,6 +547,19 @@ def undistort_points(config, dataframe, camera_pair):
         dataFrame_cam2_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam2 + '_undistort.h5'))
     else:
     """
+    if len(dataframe) != 2:
+        raise ValueError(
+            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}."
+        )
+    for filename in dataframe:
+        if not os.path.exists(filename):
+            raise FileNotFoundError(
+                f"Dataframe path '{filename}' could not be found in the filesystem."
+            )
+    if not os.path.exists(path_camera_matrix):
+        raise FileNotFoundError(
+            f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem."
+        )
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     dataframe_cam1 = pd.read_hdf(dataframe[0])
     dataframe_cam2 = pd.read_hdf(dataframe[1])

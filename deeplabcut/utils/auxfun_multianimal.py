@@ -27,14 +27,14 @@ from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHOD
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
     """
-    Reorders data of df to match the order given in a list 
+    Reorders data of df to match the order given in a list
 
     Parameters:
     ----------
     df: pd.DataFrame
         Data from tracked .h5 file
     order: list of str
-        Desired order of individuals 
+        Desired order of individuals
 
     Return:
     -------
@@ -394,7 +394,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             imindex = Data.index
 
             if "individuals" in Data.columns.names and (
-                target == None or target == "single"
+                target is None or target == "single"
             ):
                 print("This is a multianimal data set, converting to single...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
@@ -442,7 +442,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                     fn + ".h5", "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
-            elif target == None or target == "multi":
+            elif target is None or target == "multi":
                 print(
                     "This is a single animal data set, converting to multi...", folder
                 )
@@ -540,9 +540,7 @@ def form_default_inferencecfg(cfg):
     inferencecfg["minimalnumberofconnections"] = (
         len(cfg["multianimalbodyparts"]) / 2
     )  # reasonable default
-    inferencecfg["topktoretain"] = len(cfg["individuals"]) + 1 * (
-        len(cfg["uniquebodyparts"]) > 0
-    )  # reasonable default
+    inferencecfg["topktoretain"] = len(cfg["individuals"])
     return inferencecfg
 
 

@@ -109,8 +109,8 @@ if __name__ == "__main__":
     print("Train dataset created.")
 
     # Check the training image paths are correctly stored as arrays of strings
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    datafile, _ = auxiliaryfunctions.GetDataandMetaDataFilenames(
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
+    datafile, _ = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, 0.8, 1, cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     print("Video analyzed.")
 
     print("Create video with all detections...")
-    scorer, _ = auxiliaryfunctions.GetScorerName(cfg, 1, TRAIN_SIZE)
+    scorer, _ = auxiliaryfunctions.get_scorer_name(cfg, 1, TRAIN_SIZE)
 
     deeplabcut.create_video_with_all_detections(
         config_path, [new_video_path], shuffle=1, displayedbodyparts=["bodypart1"]

@@ -406,7 +406,7 @@ def cross_validate_paf_graphs(
         paf_inds = best_graphs[0]
 
     if calibrate:
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         calibration_file = os.path.join(
             cfg["project_path"],
             str(trainingsetfolder),
