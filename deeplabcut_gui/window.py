@@ -78,8 +78,6 @@ class MainWindow(QMainWindow):
         self.createToolBars(0)
 
         # Thread-safe Stdout redirector
-        self.status_bar = self.statusBar()
-        self.status_bar.setObjectName('Status Bar')
         self.writer = StreamWriter()
         sys.stdout = self.writer
         self.receiver = StreamReceiver(self.writer.queue)
@@ -174,8 +172,6 @@ class MainWindow(QMainWindow):
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
-        self.statusbar = self.statusBar()
-        self.statusbar.showMessage("www.deeplabcut.org")
 
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
@@ -186,6 +182,7 @@ class MainWindow(QMainWindow):
 
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("Status Bar")
+        self.status_bar.showMessage("www.deeplabcut.org")
 
     def _generate_welcome_page(self):
         self.layout = QtWidgets.QVBoxLayout()

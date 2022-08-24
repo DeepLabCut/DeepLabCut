@@ -22,7 +22,7 @@ class LabelFrames(DefaultTab):
             self._generate_layout_multianimal(self.layout_multianimal)
             self.main_layout.addLayout(self.layout_multianimal)
 
-        self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignLeft)
 
     def _generate_layout_multianimal(self, layout):
 
