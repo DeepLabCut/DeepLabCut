@@ -6,7 +6,7 @@ from widgets import ConfigEditor
 
 
 def _create_label_widget(
-    text: str, style: str = "", margins: tuple = (20, 50, 0, 10),
+    text: str, style: str = "", margins: tuple = (20, 10, 0, 10),
 ) -> QtWidgets.QLabel:
 
     label = QtWidgets.QLabel(text)

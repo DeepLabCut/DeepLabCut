@@ -14,9 +14,6 @@ class LabelFrames(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
-        self.main_layout.addWidget(_create_label_widget(""))  # dummy text
-
         self.label_frames_btn = QtWidgets.QPushButton("Label Frames")
         self.label_frames_btn.clicked.connect(self.label_frames)
 
