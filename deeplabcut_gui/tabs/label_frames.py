@@ -1,3 +1,4 @@
+import os
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from deeplabcut_gui.components import (
@@ -41,4 +42,16 @@ class LabelFrames(DefaultTab):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
 
     def label_frames(self):
-        _ = launch_napari()
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setFileMode(dialog.DirectoryOnly)
+        dialog.setViewMode(dialog.Detail)
+        if dialog.exec_():
+            folder = dialog.selectedFiles()[0]
+            has_h5 = False
+            for file in os.listdir(folder):
+                if file.endswith('.h5'):
+                    has_h5 = True
+                    break
+            if not has_h5:
+                folder = [folder, self.root.config]
+            _ = launch_napari(folder)
