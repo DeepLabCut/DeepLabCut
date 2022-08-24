@@ -1,9 +1,11 @@
 import os
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QPushButton, QFileDialog
+from PySide2.QtWidgets import (
+    QPushButton, QFileDialog, QLabel, QLineEdit,
+)
 from deeplabcut.create_project import add_new_videos
 from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.components import DefaultTab
+from deeplabcut_gui.components import DefaultTab, _create_horizontal_layout
 from deeplabcut_gui.widgets import ConfigEditor
 
 
@@ -14,6 +16,25 @@ class ManageProject(DefaultTab):
         self._videos = []
 
     def _set_page(self):
+        # Add config text field and button
+        project_config_layout = _create_horizontal_layout()
+
+        cfg_text = QLabel("Active config file:")
+
+        self.cfg_line = QLineEdit()
+        self.cfg_line.setText(self.root.config)
+        self.cfg_line.textChanged[str].connect(self.root.update_cfg)
+
+        browse_button = QPushButton("Browse")
+        browse_button.setMaximumWidth(100)
+        browse_button.clicked.connect(self.root._open_project)
+
+        project_config_layout.addWidget(cfg_text)
+        project_config_layout.addWidget(self.cfg_line)
+        project_config_layout.addWidget(browse_button)
+
+        self.main_layout.addLayout(project_config_layout)
+
         self.edit_btn = QPushButton("Edit config.yaml")
         self.edit_btn.setMinimumWidth(150)
         self.edit_btn.clicked.connect(self.open_config_editor)

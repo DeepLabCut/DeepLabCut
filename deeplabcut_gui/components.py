@@ -211,7 +211,7 @@ class DefaultTab(QtWidgets.QWidget):
     def _init_default_layout(self):
         # Add tab header
         self.main_layout.addWidget(
-            _create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10),)
+            _create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10))
         )
 
         # Add separating line
@@ -223,44 +223,6 @@ class DefaultTab(QtWidgets.QWidget):
         self.separatorLine.setMidLineWidth(1)
 
         self.main_layout.addWidget(self.separatorLine)
-        dummy_space = _create_label_widget("", margins=(0, 5, 0, 0))
-        self.main_layout.addWidget(dummy_space)
-
-        # Add config text field and button
-        project_config_layout = _create_horizontal_layout()
-
-        cfg_text = QtWidgets.QLabel("Active config file:")
-
-        self.cfg_line = QtWidgets.QLineEdit()
-        self.cfg_line.setText(self.root.config)
-        self.cfg_line.textChanged[str].connect(self.root.update_cfg)
-
-        browse_button = QtWidgets.QPushButton("Browse")
-        browse_button.setMaximumWidth(100)
-        browse_button.clicked.connect(self.browse_cfg_file)
-
-        project_config_layout.addWidget(cfg_text)
-        project_config_layout.addWidget(self.cfg_line)
-        project_config_layout.addWidget(browse_button)
-
-        self.main_layout.addLayout(project_config_layout)
-
-    def browse_cfg_file(self):
-        cwd = self.root.config
-        config = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a configuration file", cwd, "Config files (*.yaml)"
-        )
-        if not config[0]:
-            warning_dialog = QtWidgets.QMessageBox()
-            warning_dialog.setWindowTitle("Warning!")
-            warning_dialog.setIcon(QtWidgets.QMessageBox.Warning)
-            warning_dialog.setText("No config file selected...")
-            button = warning_dialog.exec_()
-            return
-
-        self.root.config = config[0]
-        self.root.logger.info(f"Changed config file: {self.root.config}")
-        self.cfg_line.setText(self.root.config)
 
 
 class EditYamlButton(QtWidgets.QPushButton):
