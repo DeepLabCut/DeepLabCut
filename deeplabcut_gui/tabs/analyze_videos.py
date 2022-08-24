@@ -338,8 +338,12 @@ class AnalyzeVideos(DefaultTab):
         self.worker.finished.connect(
             lambda: self.analyze_videos_btn.setEnabled(True)
         )
+        self.worker.finished.connect(
+            lambda: self.root._progress_bar.hide()
+        )
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
+        self.root._progress_bar.show()
 
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(

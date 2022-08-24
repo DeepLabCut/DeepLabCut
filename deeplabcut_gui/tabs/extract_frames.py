@@ -214,9 +214,13 @@ class ExtractFrames(DefaultTab):
         self.worker.finished.connect(
             lambda: self.ok_button.setEnabled(True)
         )
+        self.worker.finished.connect(
+            lambda: self.root._progress_bar.hide()
+        )
         self.thread.finished.connect(self._show_success_message)
         self.thread.start()
         self.ok_button.setEnabled(False)
+        self.root._progress_bar.show()
 
     def _show_success_message(self):
         msg = QtWidgets.QMessageBox()

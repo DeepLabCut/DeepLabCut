@@ -83,6 +83,11 @@ class MainWindow(QMainWindow):
         self.receiver = StreamReceiver(self.writer.queue)
         self.receiver.new_text.connect(self.print_to_status_bar)
 
+        self._progress_bar = QtWidgets.QProgressBar()
+        self._progress_bar.setMaximum(0)
+        self._progress_bar.hide()
+        self.status_bar.addPermanentWidget(self._progress_bar)
+
     def print_to_status_bar(self, text):
         self.status_bar.showMessage(text)
         self.status_bar.repaint()
