@@ -6,14 +6,18 @@ import logging
 import PySide2.QtWidgets as QtWidgets
 import qdarkstyle
 from deeplabcut_gui import BASE_DIR
+from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(BASE_DIR, 'assets', 'logo.png')))
-
-    pixmap = QPixmap(os.path.join(BASE_DIR, 'assets', 'welcome.png'))
+    desktop = app.desktop()
+    pixmap = (
+        QPixmap(os.path.join(BASE_DIR, 'assets', 'welcome.png'))
+        .scaledToWidth(int(0.7 * desktop.width()), Qt.SmoothTransformation)
+    )
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
