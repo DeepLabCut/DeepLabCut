@@ -166,7 +166,7 @@ class AnalyzeVideos(DefaultTab):
         self.assemble_with_ID_only_checkbox.stateChanged.connect(
             self.update_assemble_with_ID_only
         )
-        tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 1, 2)
+        tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 0, 3)
 
         self.create_detections_video_checkbox = QtWidgets.QCheckBox(
             "Create video with all detections"
@@ -175,19 +175,9 @@ class AnalyzeVideos(DefaultTab):
         self.create_detections_video_checkbox.stateChanged.connect(
             self.update_create_video_detections
         )
-        tmp_layout.addWidget(self.create_detections_video_checkbox, 1, 3)
-
-        # Use ffprobe
-        self.use_robustnframes = QtWidgets.QCheckBox("Robust frame reading")
-        self.use_robustnframes.setCheckState(Qt.Unchecked)
-        self.use_robustnframes.stateChanged.connect(self.update_robustnframes)
-        tmp_layout.addWidget(self.use_robustnframes, 0, 3)
+        tmp_layout.addWidget(self.create_detections_video_checkbox, 0, 4)
 
         layout.addLayout(tmp_layout)
-
-    def update_robustnframes(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
-        self.root.logger.info(f"Robust frame reading - use ffprobe {s}")
 
     def update_create_video_detections(self, state):
         s = "ENABLED" if state == Qt.Checked else "DISABLED"
@@ -261,7 +251,6 @@ class AnalyzeVideos(DefaultTab):
         save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        robustnframes = self.use_robustnframes.checkState() == Qt.Checked
         create_video_all_detections = (
             self.create_detections_video_checkbox.checkState() == Qt.Checked
         )
@@ -305,7 +294,6 @@ class AnalyzeVideos(DefaultTab):
             save_as_csv=save_as_csv,
             cropping=cropping,
             dynamic=dynamic_cropping_params,
-            robust_nframes=robustnframes,
             auto_track=self.root.is_multianimal,
             n_tracks=num_animals_in_videos,
             calibrate=calibrate_assembly,
