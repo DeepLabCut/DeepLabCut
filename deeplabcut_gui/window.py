@@ -334,7 +334,7 @@ class MainWindow(QMainWindow):
 
         self.recentfiles_menu = self.file_menu.addMenu("Open Recent")
         self.recentfiles_menu.triggered.connect(
-            lambda a: self._update_project_state(a.text(), True, True)
+            lambda a: self._update_project_state(a.text(), True, False)
         )
         self.file_menu.addAction(self.saveAction)
         self.file_menu.addAction(self.exitAction)
@@ -377,14 +377,8 @@ class MainWindow(QMainWindow):
             self.add_tabs()
 
     def _create_project(self):
-        create_project = CreateProject(self)
-        create_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        if create_project.exec_() == QtWidgets.QDialog.Accepted:
-            self._update_project_state(
-                create_project.config,
-                create_project.loaded,
-                create_project.user_fbk,
-            )
+        dlg = ProjectCreator(self)
+        dlg.show()
 
     def _open_project(self):
         open_project = OpenProject(self)

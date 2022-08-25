@@ -1,5 +1,5 @@
 from deeplabcut_gui.tabs.analyze_videos import AnalyzeVideos
-from deeplabcut_gui.tabs.create_project import CreateProject
+from deeplabcut_gui.tabs.create_project import ProjectCreator
 from deeplabcut_gui.tabs.create_training_dataset import CreateTrainingDataset
 from deeplabcut_gui.tabs.create_videos import CreateVideos
 from deeplabcut_gui.tabs.evaluate_network import EvaluateNetwork

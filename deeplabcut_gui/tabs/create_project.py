@@ -1,210 +1,192 @@
+import os
+from datetime import datetime
+
+import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut.create_project import create_new_project
+from deeplabcut_gui.widgets import ClickableLabel, ItemSelectionFrame
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QCheckBox
-import os
 
 
-class CreateProject(QtWidgets.QDialog):
+class ProjectCreator(QtWidgets.QDialog):
     def __init__(self, parent):
-        super(CreateProject, self).__init__(parent)
-
-        self.setWindowTitle("New Project")
-
-        self.name_default = "-".join(("{}", "{}", "newProject"))
-        self.proj_default = ""
-        self.exp_default = ""
-        self.loc_default = ""
-        self.project_location = ""
-
-        self.config = None
-        self.copy = False
-        self.loaded = False
-        self.user_fbk = True
-        self.filelist = []
+        super(ProjectCreator, self).__init__(parent)
+        self.parent = parent
+        self.setWindowTitle('New Project')
+        self.setMinimumWidth(parent.screen_width // 2)
+        today = datetime.today().strftime('%Y-%m-%d')
+        self.name_default = '-'.join(('{}', '{}', today))
+        self.proj_default = ''
+        self.exp_default = ''
+        self.loc_default = parent.project_folder
 
         main_layout = QtWidgets.QVBoxLayout(self)
-        self.layout_user()
-
-        self.create_button = QtWidgets.QPushButton("Create")
+        self.user_frame = self.lay_out_user_frame()
+        self.video_frame = self.lay_out_video_frame()
+        self.create_button = QtWidgets.QPushButton('Create')
         self.create_button.setDefault(True)
-        self.create_button.clicked.connect(self.create_new_project)
+        self.create_button.clicked.connect(self.finalize_project)
         main_layout.addWidget(self.user_frame)
+        main_layout.addWidget(self.video_frame)
         main_layout.addWidget(self.create_button, alignment=QtCore.Qt.AlignRight)
 
-    def layout_user(self):
-        self.user_frame = QtWidgets.QFrame(self)
-        self.user_frame.setFrameShape(self.user_frame.StyledPanel)
-        self.user_frame.setLineWidth(0.5)
+    def lay_out_user_frame(self):
+        user_frame = QtWidgets.QFrame(self)
+        user_frame.setFrameShape(user_frame.StyledPanel)
+        user_frame.setLineWidth(0.5)
 
-        proj_label = QtWidgets.QLabel("Name of the project:", self.user_frame)
-        self.proj_line = QtWidgets.QLineEdit(self.user_frame)
-        self.proj_line.textChanged[str].connect(self.update_project_name)
+        proj_label = QtWidgets.QLabel('Project:', user_frame)
+        self.proj_line = QtWidgets.QLineEdit(self.proj_default, user_frame)
+        self._default_style = self.proj_line.styleSheet()
+        self.proj_line.textEdited.connect(self.update_project_name)
 
-        exp_label = QtWidgets.QLabel("Name of the experimenter:", self.user_frame)
-        self.exp_line = QtWidgets.QLineEdit(self.user_frame)
-        self.exp_line.textChanged[str].connect(self.update_experimenter_name)
+        exp_label = QtWidgets.QLabel('Experimenter:', user_frame)
+        self.exp_line = QtWidgets.QLineEdit(self.exp_default, user_frame)
+        self.exp_line.textEdited.connect(self.update_experimenter_name)
 
-        videos_label = QtWidgets.QLabel("Choose Videos:", self.user_frame)
-        self.load_button = QtWidgets.QPushButton("Load Videos")
-        self.load_button.clicked.connect((self.load_videos))
+        loc_label = ClickableLabel('Location:', parent=user_frame)
+        loc_label.signal.connect(self.on_click)
+        self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
 
-        grid = QtWidgets.QGridLayout(self.user_frame)
-        grid.setSpacing(30)
+        vbox = QtWidgets.QVBoxLayout(user_frame)
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(proj_label, 0, 0)
         grid.addWidget(self.proj_line, 0, 1)
         grid.addWidget(exp_label, 1, 0)
         grid.addWidget(self.exp_line, 1, 1)
-        grid.addWidget(videos_label, 2, 0)
-        grid.addWidget(self.load_button, 2, 1)
+        grid.addWidget(loc_label, 2, 0)
+        grid.addWidget(self.loc_line, 2, 1)
+        vbox.addLayout(grid)
 
-        # Create a layout for the checkboxes
-        label = QtWidgets.QLabel("Optional Attributes:")
-        grid.addWidget(label, 3, 0)
+        self.madlc_box = QtWidgets.QCheckBox('Is it a multi-animal project?')
+        self.madlc_box.setChecked(False)
+        vbox.addWidget(self.madlc_box)
 
-        # Add some checkboxes to the layout
-        ch_box1 = QCheckBox("Select the directory where project will be created")
-        ch_box1.stateChanged.connect(self.activate_browse)
+        return user_frame
 
-        self.browse_button = QtWidgets.QPushButton("Browse")
-        self.browse_button.setEnabled(False)
-        self.browse_button.clicked.connect((self.browse_dir))
+    def lay_out_video_frame(self):
+        video_frame = ItemSelectionFrame([], self)
 
-        grid.addWidget(ch_box1, 4, 0)
-        grid.addWidget(self.browse_button, 4, 1)
+        self.cam_combo = QtWidgets.QComboBox(video_frame)
+        self.cam_combo.addItems(map(str, (1, 2)))
+        self.cam_combo.currentTextChanged.connect(self.check_num_cameras)
+        ncam_label = QtWidgets.QLabel('Number of cameras:')
+        ncam_label.setBuddy(self.cam_combo)
 
-        ch_box2 = QCheckBox("Copy the videos")
-        ch_box2.stateChanged.connect(self.activate_copy_videos)
+        self.copy_box = QtWidgets.QCheckBox('Copy videos to project folder')
+        self.copy_box.setChecked(False)
 
-        ch_box3 = QCheckBox("Is it a multi-animal project?")
-        self.multi_choice = False
+        browse_button = QtWidgets.QPushButton('Browse videos')
+        browse_button.clicked.connect(self.browse_videos)
+        clear_button = QtWidgets.QPushButton('Clear')
+        clear_button.clicked.connect(video_frame.fancy_list.clear)
 
-        ch_box4 = QCheckBox("User feedback")
-        ch_box4.stateChanged.connect(self.activate_fbk)
+        layout1 = QtWidgets.QHBoxLayout()
+        layout1.addWidget(ncam_label)
+        layout1.addWidget(self.cam_combo)
+        layout2 = QtWidgets.QHBoxLayout()
+        layout2.addWidget(browse_button)
+        layout2.addWidget(clear_button)
+        video_frame.layout.insertLayout(0, layout1)
+        video_frame.layout.addLayout(layout2)
+        video_frame.layout.addWidget(self.copy_box)
 
-        grid.addWidget(ch_box2, 5, 0)
-        grid.addWidget(ch_box3, 6, 0)
-        grid.addWidget(ch_box4, 7, 0)
+        return video_frame
 
-        return self.user_frame
+    def browse_videos(self):
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            self, 'Please select a folder', self.loc_default,
+        )
+        if not folder:
+            return
+        for video in auxiliaryfunctions.grab_files_in_folder(
+                folder, relative=False,
+        ):
+            if video.split('.')[1] in DLCParams.VIDEOTYPES[1:]:
+                self.video_frame.fancy_list.add_item(video)
+
+    def finalize_project(self):
+        fields = [self.proj_line, self.exp_line]
+        empty = [i for i, field in enumerate(fields) if not field.text()]
+        for i, field in enumerate(fields):
+            if i in empty:
+                field.setStyleSheet('border: 1px solid red;')
+            else:
+                field.setStyleSheet(self._default_style)
+        if empty:
+            return
+
+        n_cameras = int(self.cam_combo.currentText())
+        try:
+            if n_cameras > 1:
+                _ = deeplabcut.create_new_project_3d(
+                    self.proj_default,
+                    self.exp_default,
+                    n_cameras,
+                    self.loc_default,
+                )
+            else:
+                videos = list(self.video_frame.selected_items)
+                if not len(videos):
+                    print('Add at least a video to the project.')
+                    self.video_frame.fancy_list.setStyleSheet('border: 1px solid red')
+                    return
+                else:
+                    self.video_frame.fancy_list.setStyleSheet(
+                        self.video_frame.fancy_list._default_style
+                    )
+                to_copy = self.copy_box.isChecked()
+                is_madlc = self.madlc_box.isChecked()
+                config = deeplabcut.create_new_project(
+                    self.proj_default,
+                    self.exp_default,
+                    videos,
+                    self.loc_default,
+                    to_copy,
+                    multianimal=is_madlc,
+                )
+                self.parent.load_config(config)
+                self.parent._update_project_state(
+                    config=config,
+                    loaded=True,
+                    user_feedback=False,
+                )
+        except FileExistsError:
+            print('Project "{}" already exists!'.format(self.proj_default))
+            return
+
+        msg = QtWidgets.QMessageBox(text=f"New project created")
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.exec_()
+
+        self.close()
 
     def on_click(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Please select a folder", self.loc_default
-        )
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Please select a folder', self.loc_default)
         if not dirname:
             return
-        dirname = QtCore.QDir.toNativeSeparators(dirname)
         self.loc_default = dirname
+        self.update_project_location()
 
-    def update_project_name(self):
-        text = self.proj_line.text()
+    def check_num_cameras(self, value):
+        val = int(value)
+        for child in self.video_frame.children():
+            if child.isWidgetType() and not isinstance(child, QtWidgets.QComboBox):
+                if val > 1:
+                    child.setDisabled(True)
+                else:
+                    child.setDisabled(False)
+
+    def update_project_name(self, text):
         self.proj_default = text
+        self.update_project_location()
 
-    def update_experimenter_name(self):
-        text = self.exp_line.text()
+    def update_experimenter_name(self, text):
         self.exp_default = text
-
-    def activate_browse(self, state):
-        # Activates the option to change the working directory
-        if state == QtCore.Qt.Checked:
-            self.browse_button.setEnabled(True)
-        else:
-            self.browse_button.setEnabled(False)
-
-    def activate_copy_videos(self, state):
-        # Activates the option to copy videos
-        if state == QtCore.Qt.Checked:
-            self.copy = True
-        else:
-            self.copy = False
-
-    def browse_dir(self):
-        cwd = os.getcwd()
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Choose the directory where your project will be saved:", cwd
-        )
-        if not dirname:
-            return
-        dirname = QtCore.QDir.toNativeSeparators(dirname)
-        self.loc_default = dirname
-
-    def load_videos(self):
-        cwd = os.getcwd()
-        videos_file = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Select videos to add to the project",
-            cwd,
-            f"Videos ({' *.'.join(DLCParams.VIDEOTYPES)[1:]})",
-        )
-        self.filelist = videos_file[0]
-        n_videos = len(self.filelist)
-        s = 'video'
-        if n_videos > 1:
-            s += 's'
-        self.load_button.setText(f"{n_videos} {s} selected")
-
-    def activate_fbk(self, state):
-        # Activates the feedback option
-        if state == QtCore.Qt.Checked:
-            self.user_fbk = True
-        else:
-            self.user_fbk = False
-        # TODO: finish functionality: with user feedback (self.user_fbk = True) / without (self.user_fbk = False)
+        self.update_project_location()
 
     def update_project_location(self):
-        full_name = self.name_default.format(
-            self.proj_line.text(), self.exp_line.text()
-        )
+        full_name = self.name_default.format(self.proj_default, self.exp_default)
         full_path = os.path.join(self.loc_default, full_name)
-        self.project_location = full_path
-
-    def create_new_project(self):
-        # create the new project
-        if self.proj_default != "" and self.exp_default != "" and self.filelist != []:
-            self.config = create_new_project(
-                self.proj_default,
-                self.exp_default,
-                self.filelist,
-                self.loc_default,
-                copy_videos=self.copy,
-            )
-
-            # self.update_project_location()
-
-        else:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setText("Some of the entries are missing.")
-            msg.setInformativeText(
-                "Make sure that the task and experimenter name are specified and videos are selected!"
-            )
-            msg.setWindowTitle("Error")
-            msg.setMinimumWidth(300)
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-            self.config = False
-
-        if self.config:
-            self.loaded = True
-
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("New Project Created")
-
-            msg.setWindowTitle("Info")
-            msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.buttonClicked.connect(self.ok_clicked)
-            msg.exec_()
-
-            self.close()
-
-    def ok_clicked(self):
-        self.loaded = True
-        self.accept()
+        self.loc_line.setText(full_path)

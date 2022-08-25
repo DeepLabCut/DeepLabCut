@@ -156,7 +156,7 @@ class ItemSelectionFrame(QtWidgets.QFrame):
         if state != QtCore.Qt.PartiallyChecked:
             for item in self.fancy_list.items:
                 if item.checkState() != state:
-                    item.setCheckState(state)
+                    item.setCheckState(QtCore.Qt.CheckState(state))
 
 
 class NavigationToolbar(NavigationToolbar2QT):
