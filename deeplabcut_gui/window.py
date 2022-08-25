@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 import sys
+from functools import cached_property
 from pathlib import Path
 from typing import List
 import qdarkstyle
@@ -74,8 +75,10 @@ class MainWindow(QMainWindow):
 
         names = ["new_project.png", "open.png", "help.png"]
         self.create_actions(names)
-        self.createMenuBar()
-        self.createToolBars(0)
+        self.create_menu_bar()
+        self.load_settings()
+        self._toolbar = None
+        self.create_toolbar()
 
         # Thread-safe Stdout redirector
         self.writer = StreamWriter()
@@ -91,6 +94,36 @@ class MainWindow(QMainWindow):
     def print_to_status_bar(self, text):
         self.status_bar.showMessage(text)
         self.status_bar.repaint()
+
+    @property
+    def toolbar(self):
+        if self._toolbar is None:
+            self._toolbar = self.addToolBar("File")
+        return self._toolbar
+
+    @cached_property
+    def settings(self):
+        return QtCore.QSettings()
+
+    def load_settings(self):
+        filenames = self.settings.value("recent_files", [])
+        for filename in filenames:
+            self.add_recent_filename(filename)
+
+    def save_settings(self):
+        recent_files = []
+        for action in self.recentfiles_menu.actions()[::-1]:
+            recent_files.append(action.text())
+        self.settings.setValue("recent_files", recent_files)
+
+    def add_recent_filename(self, filename):
+        actions = self.recentfiles_menu.actions()
+        filenames = [action.text() for action in actions]
+        if filename in filenames:
+            return
+        action = QtWidgets.QAction(filename, self)
+        before_action = actions[0] if actions else None
+        self.recentfiles_menu.insertAction(before_action, action)
 
     @property
     def cfg(self):
@@ -288,63 +321,69 @@ class MainWindow(QMainWindow):
         self.check_updates = QAction("&Check for Updates...", self)
         self.check_updates.triggered.connect(_check_for_updates)
 
-    def createMenuBar(self):
-        menuBar = self.menuBar()
+    def create_menu_bar(self):
+        menu_bar = self.menuBar()
+
         # File menu
-        self.fileMenu = QMenu("&File", self)
-        menuBar.addMenu(self.fileMenu)
+        self.file_menu = QMenu("&File", self)
+        menu_bar.addMenu(self.file_menu)
 
-        self.fileMenu.addAction(self.newAction)
-        self.fileMenu.addAction(self.openAction)
+        self.file_menu.addAction(self.newAction)
+        self.file_menu.addAction(self.openAction)
 
-        findMenu = self.fileMenu.addMenu("Open Recent")
-        findMenu.addAction("File 1")
-        findMenu.addAction("File 2")
-        self.fileMenu.addAction(self.saveAction)
-        self.fileMenu.addAction(self.exitAction)
+        self.recentfiles_menu = self.file_menu.addMenu("Open Recent")
+        self.recentfiles_menu.triggered.connect(
+            lambda a: self._update_project_state(a.text(), True, True)
+        )
+        self.file_menu.addAction(self.saveAction)
+        self.file_menu.addAction(self.exitAction)
+
         # View menu
-        viewMenu = QMenu("&View", self)
-        mode = viewMenu.addMenu("Appearance")
-        menuBar.addMenu(viewMenu)
+        view_menu = QMenu("&View", self)
+        mode = view_menu.addMenu("Appearance")
+        menu_bar.addMenu(view_menu)
         mode.addAction(self.lightmodeAction)
         mode.addAction(self.darkmodeAction)
 
         # Help menu
-        helpMenu = QMenu("&Help", self)
-        menuBar.addMenu(helpMenu)
-        helpMenu.addAction(self.helpAction)
-        helpMenu.adjustSize()
-        helpMenu.addAction(self.check_updates)
-        helpMenu.addAction(self.aboutAction)
+        help_menu = QMenu("&Help", self)
+        menu_bar.addMenu(help_menu)
+        help_menu.addAction(self.helpAction)
+        help_menu.adjustSize()
+        help_menu.addAction(self.check_updates)
+        help_menu.addAction(self.aboutAction)
 
-    def updateMenuBar(self):
-        self.fileMenu.removeAction(self.newAction)
-        self.fileMenu.removeAction(self.openAction)
+    def update_menu_bar(self):
+        self.file_menu.removeAction(self.newAction)
+        self.file_menu.removeAction(self.openAction)
 
-    def createToolBars(self, flag):
-        # File toolbar
-        if flag == 0:
-            self.fileToolBar = self.addToolBar("File")
-
-        self.fileToolBar.addAction(self.newAction)
-        self.fileToolBar.addAction(self.openAction)
-        self.fileToolBar.addAction(self.helpAction)
+    def create_toolbar(self):
+        self.toolbar.addAction(self.newAction)
+        self.toolbar.addAction(self.openAction)
+        self.toolbar.addAction(self.helpAction)
 
     def remove_action(self):
-        self.fileToolBar.removeAction(self.newAction)
-        self.fileToolBar.removeAction(self.openAction)
-        self.fileToolBar.removeAction(self.helpAction)
+        self.toolbar.removeAction(self.newAction)
+        self.toolbar.removeAction(self.openAction)
+        self.toolbar.removeAction(self.helpAction)
+
+    def _update_project_state(self, config, loaded, user_feedback):
+        self.config = config
+        self.loaded = loaded
+        self.user_feedback = user_feedback
+        if loaded:
+            self.add_recent_filename(self.config)
+            self.add_tabs()
 
     def _create_project(self):
         create_project = CreateProject(self)
         create_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if create_project.exec_() == QtWidgets.QDialog.Accepted:
-            self.loaded = create_project.loaded
-            self.config = create_project.config
-            self.user_feedback = create_project.user_fbk
-
-        if create_project.loaded:
-            self.add_tabs()
+            self._update_project_state(
+                create_project.config,
+                create_project.loaded,
+                create_project.user_fbk,
+            )
 
     def _open_project(self):
         open_project = OpenProject(self)
@@ -353,12 +392,11 @@ class MainWindow(QMainWindow):
             return
         open_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         if open_project.exec_() == QtWidgets.QDialog.Accepted:
-            self.loaded = open_project.loaded
-            self.config = open_project.config
-            self.user_feedback = open_project.user_fbk
-
-        if open_project.loaded:
-            self.add_tabs()
+            self._update_project_state(
+                open_project.config,
+                open_project.loaded,
+                open_project.user_fbk,
+            )
 
     def load_config(self, config):
         self.config = config
@@ -372,8 +410,8 @@ class MainWindow(QMainWindow):
         names = ["new_project2.png", "open2.png", "help2.png"]
         self.remove_action()
         self.create_actions(names)
-        self.updateMenuBar()
-        self.createToolBars(1)
+        self.update_menu_bar()
+        self.create_toolbar()
 
     def lightmode(self):
         from qdarkstyle.light.palette import LightPalette
@@ -384,8 +422,8 @@ class MainWindow(QMainWindow):
         names = ["new_project.png", "open.png", "help.png"]
         self.remove_action()
         self.create_actions(names)
-        self.createToolBars(1)
-        self.updateMenuBar()
+        self.create_toolbar()
+        self.update_menu_bar()
 
     def add_tabs(self):
         self.tab_widget = QtWidgets.QTabWidget()
@@ -459,7 +497,6 @@ class MainWindow(QMainWindow):
         self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
         self.setCentralWidget(self.tab_widget)
-
         self.tab_widget.currentChanged.connect(self.refresh_active_tab)
 
     def refresh_active_tab(self):
@@ -487,9 +524,6 @@ class MainWindow(QMainWindow):
         _attempt_attribute_update("shuffle", self.shuffle_value)
         _attempt_attribute_update("cfg_line", self.config)
 
-        # Update single/multi animal menus
-        # TODO
-
     def is_transreid_available(self):
         if self.is_multianimal:
             try:
@@ -509,6 +543,7 @@ class MainWindow(QMainWindow):
         if answer == QtWidgets.QMessageBox.Yes:
             self.receiver.terminate()
             event.accept()
+            self.save_settings()
         else:
             event.ignore()
             print('')
