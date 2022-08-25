@@ -127,7 +127,11 @@ class MainWindow(QMainWindow):
 
     @property
     def cfg(self):
-        return auxiliaryfunctions.read_config(self.config)
+        try:
+            cfg = auxiliaryfunctions.read_config(self.config)
+        except TypeError:
+            cfg = {}
+        return cfg
 
     @property
     def project_folder(self) -> str:
@@ -274,9 +278,6 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
-
-    def project_folder(self):
-        return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
 
     def default_set(self):
         self.name_default = ""
@@ -536,10 +537,12 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         print('Exiting...')
-        answer = QtWidgets.QMessageBox.question(self, 'Quit',
-                                                'Are you sure you want to quit?',
-                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
-                                                QtWidgets.QMessageBox.Cancel)
+        answer = QtWidgets.QMessageBox.question(
+            self, 'Quit',
+            'Are you sure you want to quit?',
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Cancel,
+        )
         if answer == QtWidgets.QMessageBox.Yes:
             self.receiver.terminate()
             event.accept()
