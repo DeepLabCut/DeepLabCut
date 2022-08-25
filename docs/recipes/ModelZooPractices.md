@@ -78,7 +78,7 @@ To initiliaze a new project directory with a pre-trained model from the DeepLabC
 deeplabcut.create_pretrained_project(
     "projectname",
     "experimenter",
-    r"path_for_the_videos",
+    [r"path_for_the_videos"],
     model= "mouse_pupil_vclose",
     working_directory= r"project_directory",
     copy_videos= True,
