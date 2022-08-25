@@ -1,19 +1,22 @@
-# DeepLabCut ModelZoo
+# Using ModelZoo models on your own datasets
 
-<p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been an important tool to study animal behavior precisely. 
+<p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been an important tool to study animal behavior precisely.
 
-Beside providing an open source toolbox to researchers markerlessly track their animals, DeepLabCut also aims to constitute the generalization of models of unseen animals. [Here](http://www.mackenziemathislab.org/dlc-modelzoo) you can check model weights that are trained on specific animals and scenarios. You can analyze your videos directly with these models without training. The models have strong zero-shot performance on unseen out-of-domain data which can be further improved via pseudo-labeling. Please check the first <a href="https://arxiv.org/abs/2203.07436v1" target="_blank">Model Zoo manuscript</a> for further details.
+Beside providing an open source toolbox for researchers to develop customized deep neural networks for markerless pose estimation, we at DeepLabCut also aim to build robust, generalizable models. Part of this effort is via the [DeeplabCut ModelZoo](http://www.mackenziemathislab.org/dlc-modelzoo).
 
-This recipe aims to show a usecase of "**mouse_pupil model**". </p>
+The Zoo hosts user-contributed and #teamDLC developed models that are trained on specific animals and scenarios. You can analyze your videos directly with these models without training. The models have strong zero-shot performance on unseen out-of-domain data which can be further improved via pseudo-labeling. Please check the first [ModelZoo manuscript](https://arxiv.org/abs/2203.07436v1) for further details.
 
-# Mouse_pupil model
+This recipe aims to show a usecase of the **mouse_pupil_vclose** and is contributed by 2022 DLC AI Resident [Neslihan Wittek](https://github.com/neslihanedes) 💜.
+
+## `mouse_pupil_vclose` model
 
 This model was contributed by Jim McBurney-Lin at University of California Riverside, USA.
+The model was trained on images of C57/B6J mice eyes, and also then agumented with mouse eye data from the Mathis Lab at EPFL.
 
-The model was trained on images of C57/B6 mice eyes (exclusively the left eye). 
 
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
 
-![alt-text-1](../images/pupil_one.png) ![alt-text-2](../images/pupil_two.png)
+  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618750-97KC2HW8HH6VOJHLMO46/pupil_two.png?format=300w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
 | Landmark_Number  | Landmark_Name  | Description|
 | --- | --- | --- |
@@ -27,46 +30,46 @@ The model was trained on images of C57/B6 mice eyes (exclusively the left eye).
 | 8 | VLpupil  | Ventral/left aspect of pupil |
 
 
-Since we would like to evaluate the model on out-of-domain data, we will analyze pigeon pupils.
+Since we would like to evaluate the models performance on out-of-domain data, we will analyze pigeon pupils. For more discussions and work on so-called out-of-domain data, see [Mathis, Biasi 2020](http://www.mackenziemathislab.org/horse10).
 
-# Pigeon Pupil
+## Pigeon Pupil
 
 The eye pupil admits and regulates the amount of light entering the retina in order to enable image perception. Beside this curicial role, the pupil also reflects the state of the brain. The systemic behavior of the pupil has not been vastly studied in birds, although researchers from <a href="https://www.sciencedirect.com/science/article/pii/S0960982221013166?via%3Dihub" target="_blank">Max Planck Institute for Ornithology in Seewiesen</a> have shed light on pupil behaviors in pigeons.
 
 The pupils of male pigeons get smaller during courtship behavior. This is in contrast to mammals, for which the pupil size dilates in response to an increase in arousal. In addition, the pupil size of pigeons dilates during non-REM sleep, while they rapidly constrict during REM sleep. Examining these differences and the reason behind them, might be helpful to understand the pupillary behavior in general.
 
-In light of these findings, we wanted to show whether the **Mouse_pupil model** give us an accurate tracking performance for the pigeon pupil as well.
+In light of these findings, we wanted to show whether the **mouse_pupil_vclose** model give us an accurate tracking performance for the pigeon pupil as well.
 
-## Jupyter & Google Colab Notebook
+### Jupyter & Google Colab Notebook
 
 DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need for local installation of DeepLabCut!
 
-Since we are interested in the accuracy of the **Mouse_pupil model** on pigeon pupil data, we will use a video which consits of 7 recordings of pigeon pupils. 
+Since we are interested in the accuracy of the **mouse_pupil_vclose** on pigeon pupil data, we will use a video which consits of 7 recordings of pigeon pupils.
 
-Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab. 
+Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab.
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=twHBa1ZvXM8" target= "_blank"><img src="http://img.youtube.com/vi/twHBa1ZvXM8/0.jpg" alt="IMAGE ALT TEXT"></a>
 </div>
 
 ```{hint}
-You are happy with the model and want to go on analyzing further videos on your local machine or you want to refine the model for your specific usecase? 
+You are happy with the model and want to go on analyzing further videos on your local machine or you want to refine the model for your specific usecase?
 ```html
-!zip -r /content/file.zip /content/pigeon_modelZoo-nessi-2022-08-22 
+!zip -r /content/file.zip /content/pigeon_modelZoo-nessi-2022-08-22
 from google.colab import files
-files.download("/content/file.zip")```
+files.download("/content/file.zip")
 
 ```
 
-## Analyze Videos at Your Local Machine
+### Analyze Videos at Your Local Machine
 
 DeepLabCut host models from the <a href='http://www.mackenziemathislab.org/dlc-modelzoo' target="_blank">DeepLabCut ModelZoo Project</a>.
 
-The `create_pretrained_project` function will create a new project directory with the necessary sub-directories and a basic configuration file. 
+The `create_pretrained_project` function will create a new project directory with the necessary sub-directories and a basic configuration file.
 It will also initiliaze your project with a pre-trained model from the DeepLabCut ModelZoo.
 
-The rest of the code should be run within your DeepLabCut environment. 
-Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="_blank">here</a> for the instructions for the DeepLabCut installation. 
+The rest of the code should be run within your DeepLabCut environment.
+Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="_blank">here</a> for the instructions for the DeepLabCut installation.
 
 
 ```python
@@ -93,23 +96,22 @@ deeplabcut.create_pretrained_project(
 Your videos should be cropped around the eye for better model accuracy! 👁🐭
 ::::
 
-We have been lucky that 6 out of the 7 pigeon pupils tracked nicely:
+Excitingly, 6 out of the 7 pigeon pupils were tracked nicely:
 
-![alt-text-1](../images/pigeon_1.png)![alt-text-2](../images/pigeon_2.png)![alt-text-3](../images/pigeon_3.png)![alt-text-4](../images/pigeon_4.png)![alt-text-5](../images/pigeon_5.png)![alt-text-6](../images/pigeon_6.png)
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/44858d34-dca7-4bb5-a6e5-cd8078b50bec/Screen+Shot+2022-08-25+at+5.39.33+PM.png?format=1500w" width="500" title="DLC" alt="DLC" align="center" vspace = "50">
 
-When we further evaluate the model accuracy by checking the likelihood of tracked points, we see that the tracking fails when the pigeons close their eyelid (which is of course expected).
 
-![fishy](../images/likelihood.png)
+When we further evaluate the model accuracy by checking the likelihood of tracked points, we see that the tracking is low confidience when the pigeons close their eyelid (which is of course expected, and can be leveraged to measure blinking 👁).
 
-But you also might encounter bigger problems than just some small tracking glitches:
 
-```{image} ../images/pigeon_7.png
-:alt: fishy
-:class: bg-primary mb-1
-:width: 350px
-:align: center
-```
-To deal with this, you can extract poorly tracked outlier frames, refine them and feed the training data set with them for re-training. 
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439615047-OVOOMU1Z5NJIWJ1HHNFD/likelihood.png?format=500w" width="600" title="DLC" alt="6 pigeion eyes tracked with deeplabcut" align="center" vspace = "50">
+
+
+But you also might encounter larger problems than small tracking glitches:
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618037-4GNTZD476MJMQX19N0Z4/pigeon_7.png?format=500w" width="250" title="DLC" alt="1eye" align="center" vspace = "5">
+
+To deal with this, you can extract poorly tracked outlier frames, refine them and feed the training data set with them for re-training.
 Be sure that you set the number of frames to label in the `config.yaml` file of your project folder.
 The more problems you encounter, the higher the number of frames you might want to label.
 You should also add the path of the video(s) into the `config.yaml` file, or run the following command to add the videos to your project:
@@ -117,14 +119,14 @@ You should also add the path of the video(s) into the `config.yaml` file, or run
 ```python
 deeplabcut.add_new_videos('/pathofproject/config.yaml', ['/pathofvideos/pigeon.mp4'], copy_videos=False, coords=None, extract_frames=False)
 ```
-The `deeplabcut.extract_outlier_frames` function will check for outliers and ask your feedback on whether to extract these outliers frames. 
+The `deeplabcut.extract_outlier_frames` function will check for outliers and ask your feedback on whether to extract these outliers frames.
 
 ```python
 deeplabcut.extract_outlier_frames('/pathofproject/config.yaml', ['/pathofvideos/pigeon.mp4'], automatic=True)
 ```
-The `deeplabcut.refine_labels` function starts the GUI which allows you to refine the outlier frames manually. 
-You should load the outlier frames directory and corresponding `.h5` file from the previous model. 
-It will ask you to define the `likelihood` threshold: labels under the threshold should be refined at this stage. 
+The `deeplabcut.refine_labels` function starts the GUI which allows you to refine the outlier frames manually.
+You should load the outlier frames directory and corresponding `.h5` file from the previous model.
+It will ask you to define the `likelihood` threshold: labels under the threshold should be refined at this stage.
 
 After refining, you should combine these data with your previous model's data set and create a new training data set.
 ```python
@@ -132,9 +134,9 @@ deeplabcut.refine_labels('/pathofproject/config.yaml')
 deeplabcut.merge_datasets('/pathofproject/config.yaml')
 deeplabcut.create_training_dataset('/pathofproject/config.yaml')
 ```
-Before starting the training of your model, there is one last step left: editing the `init_weights` parameter in your `pose_cfg.yaml` file. 
-Go to your project and check the latest snapshot (e.g., `snapshot-610000`) of your model in `dlc-models/train` directory. 
-Edit the value of the `init_weights` key in the `pose_cfg.yaml` file and start to re-train your model! 
+Before starting the training of your model, there is one last step left: editing the `init_weights` parameter in your `pose_cfg.yaml` file.
+Go to your project and check the latest snapshot (e.g., `snapshot-610000`) of your model in `dlc-models/train` directory.
+Edit the value of the `init_weights` key in the `pose_cfg.yaml` file and start to re-train your model!
 
 
 `init_weights: pathofyourproject\dlc-models\iteration-0\DLCFeb31-trainset95shuffle1\train\snapshot-610000`
