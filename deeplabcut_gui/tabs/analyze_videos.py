@@ -16,6 +16,7 @@ from deeplabcut_gui.components import (
 )
 
 import deeplabcut
+from deeplabcut.utils.auxiliaryfunctions import edit_config
 
 
 class AnalyzeVideos(DefaultTab):
@@ -129,13 +130,6 @@ class AnalyzeVideos(DefaultTab):
         layout.addWidget(opt_text, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
 
-        # Overwrite analysis files
-        self.overwrite_tracks = QtWidgets.QCheckBox("Overwrite tracks")
-        self.overwrite_tracks.setCheckState(Qt.Unchecked)
-        self.overwrite_tracks.stateChanged.connect(self.update_overwrite_tracks)
-
-        layout.addWidget(self.overwrite_tracks, 0, 2)
-
     def _generate_layout_multianimal(self, layout):
 
         tmp_layout = QtWidgets.QGridLayout()
@@ -174,15 +168,6 @@ class AnalyzeVideos(DefaultTab):
         )
         tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 1, 2)
 
-        self.use_transformer_tracking_checkbox = QtWidgets.QCheckBox(
-            "Use transformer tracking"
-        )
-        self.use_transformer_tracking_checkbox.setCheckState(Qt.Unchecked)
-        self.use_transformer_tracking_checkbox.stateChanged.connect(
-            self.update_use_transformer_tracking
-        )
-        tmp_layout.addWidget(self.use_transformer_tracking_checkbox, 0, 3)
-
         self.create_detections_video_checkbox = QtWidgets.QCheckBox(
             "Create video with all detections"
         )
@@ -196,13 +181,9 @@ class AnalyzeVideos(DefaultTab):
         self.use_robustnframes = QtWidgets.QCheckBox("Robust frame reading")
         self.use_robustnframes.setCheckState(Qt.Unchecked)
         self.use_robustnframes.stateChanged.connect(self.update_robustnframes)
-        tmp_layout.addWidget(self.use_robustnframes, 0, 4)
+        tmp_layout.addWidget(self.use_robustnframes, 0, 3)
 
         layout.addLayout(tmp_layout)
-
-    def update_use_transformer_tracking(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
-        self.root.logger.info(f"Transformer tracking {s}")
 
     def update_robustnframes(self, state):
         s = "ENABLED" if state == Qt.Checked else "DISABLED"
@@ -211,10 +192,6 @@ class AnalyzeVideos(DefaultTab):
     def update_create_video_detections(self, state):
         s = "ENABLED" if state == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Create video with all detections {s}")
-
-    def update_overwrite_tracks(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
-        self.root.logger.info(f"Overwrite tracks {s}")
 
     def update_assemble_with_ID_only(self, state):
         s = "ENABLED" if state == Qt.Checked else "DISABLED"
@@ -284,22 +261,23 @@ class AnalyzeVideos(DefaultTab):
         save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
-        assemble_with_ID_only = (
-            self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
-        )
-        overwrite_tracks = self.overwrite_tracks.checkState() == Qt.Checked
+        robustnframes = self.use_robustnframes.checkState() == Qt.Checked
         create_video_all_detections = (
             self.create_detections_video_checkbox.checkState() == Qt.Checked
         )
-        robustnframes = self.use_robustnframes.checkState() == Qt.Checked
-        use_transformer_tracking = (
-            self.use_transformer_tracking_checkbox.checkState() == Qt.Checked
-        )
-        track_method = (
-            self.tracker_type_widget.currentText() if self.root.is_multianimal else ""
-        )
-        num_animals_in_videos = self.num_animals_in_videos.value()
+
+        if self.root.is_multianimal:
+            calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+            assemble_with_ID_only = (
+                self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+            )
+            track_method = self.tracker_type_widget.currentText()
+            edit_config(self.root.config, {"default_track_method": track_method})
+            num_animals_in_videos = self.num_animals_in_videos.value()
+        else:
+            calibrate_assembly = False
+            num_animals_in_videos = None
+            assemble_with_ID_only = False
 
         cropping = None
 
