@@ -9,6 +9,7 @@ parts:
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
   - file: docs/PROJECT_GUI
+  - file: docs/napariGUI
   - file: docs/Overviewof3D
 - caption: Tutorials
   chapters:
