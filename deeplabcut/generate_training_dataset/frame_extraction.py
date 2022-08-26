@@ -64,7 +64,7 @@ def select_cropping_area(config, videos=None):
 def extract_frames(
     config,
     mode="automatic",
-    algo="uniform",
+    algo="kmeans",
     crop=False,
     userfeedback=True,
     cluster_step=1,
