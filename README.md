@@ -34,20 +34,20 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 
 **Latest updates:**
 
-:purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [preprint, Lauer et al 2021](https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
+:purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [paper, Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
+
+:purple_heart: We support mulit-animal re-identification, see [Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0).
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
-# [Installation: how to install DeepLabCut](docs/installation.md)
+# [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
 Very quick start: `pip install "deeplabcut[gui]"` that includes all GUI functions, or `pip install deeplabcut` (headless version).
 * We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker).
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
 
-*New: check out the docs in JupyterBook! https://deeplabcut.github.io/DeepLabCut (or on [github](docs/README.md)).
-
-An overview of the pipeline and workflow for project management. For a step-by-step user guide, please also read the [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0)!
+Our docs walk you through using DeepLabCut, and key API points. For an overview of the toolbox and workflow for project management, see our step-by-step at [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0).
 
 For a deeper understanding and more resources for you to get started with Python and DeepLabCut, please check out our free online course! http://DLCcourse.deeplabcut.org
 
