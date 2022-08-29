@@ -215,14 +215,16 @@ class DefaultTab(QtWidgets.QWidget):
         )
 
         # Add separating line
-        self.separatorLine = QtWidgets.QFrame()
-        self.separatorLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.separatorLine.setFrameShadow(QtWidgets.QFrame.Raised)
-
-        self.separatorLine.setLineWidth(0)
-        self.separatorLine.setMidLineWidth(1)
-
-        self.main_layout.addWidget(self.separatorLine)
+        self.separator = QtWidgets.QFrame()
+        self.separator.setFrameShape(QtWidgets.QFrame.HLine)
+        self.separator.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.separator.setLineWidth(0)
+        self.separator.setMidLineWidth(1)
+        policy = QtWidgets.QSizePolicy()
+        policy.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Fixed)
+        policy.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+        self.separator.setSizePolicy(policy)
+        self.main_layout.addWidget(self.separator)
 
 
 class EditYamlButton(QtWidgets.QPushButton):
