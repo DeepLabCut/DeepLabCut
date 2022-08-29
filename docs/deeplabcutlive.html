@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial &#8212; DeepLabCut</title>
+    <title>DeepLabCut-Live! &#8212; DeepLabCut</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="How to convert a pre-2.2 project for use with DeepLabCut 2.2" href="convert_maDLC.html" />
-    <link rel="prev" title="Technical (Hardware) Considerations" href="recipes/TechHardware.html" />
+    <link rel="next" title="Using ModelZoo models on your own datasets" href="recipes/UsingModelZooPupil.html" />
+    <link rel="prev" title="Helper &amp; Advanced Optional Function Documentation" href="HelperFunctions.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -189,9 +189,9 @@ const thebe_selector_output = ".output, .cell_output"
   DeepLabCut-Live!
  </span>
 </p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="deeplabcutlive.html">
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    DeepLabCut-Live!
   </a>
  </li>
@@ -225,9 +225,9 @@ const thebe_selector_output = ".output, .cell_output"
   Tutorials &amp; Cookbook
  </span>
 </p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="tutorial.html">
    Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
   </a>
  </li>
@@ -374,7 +374,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/tutorial.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/deeplabcutlive.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -402,7 +402,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../_sources/docs/tutorial.md"
+        <a href="../_sources/docs/deeplabcutlive.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -439,70 +439,23 @@ title="Print to PDF"
     </ul>
   </div>
 </div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
-</label>
 
     </div>
 </div>
 
 <!-- Table of contents -->
 <div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#gui">
-   GUI:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#terminal">
-   Terminal:
-  </a>
- </li>
-</ul>
-
-    </nav>
 </div>
     </div>
     <div class="article row">
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</h1>
+                <h1>DeepLabCut-Live!</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
                         
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#gui">
-   GUI:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#terminal">
-   Terminal:
-  </a>
- </li>
-</ul>
-
-                        </nav>
                     </div>
                 </div>
             </div>
@@ -510,132 +463,18 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial">
-<h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial<a class="headerlink" href="#multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial" title="Permalink to this headline">#</a></h1>
-<section id="gui">
-<h2>GUI:<a class="headerlink" href="#gui" title="Permalink to this headline">#</a></h2>
-<p>Full graphical user interface: just follow the tabs in the GUI! <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> launches the GUI.</p>
-</section>
-<section id="terminal">
-<h2>Terminal:<a class="headerlink" href="#terminal" title="Permalink to this headline">#</a></h2>
-<p><strong>Import deeplabcut</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
-</pre></div>
-</div>
-<p><strong>(1) Create a project</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;cutemice&quot;</span>
-<span class="n">experimenter</span> <span class="o">=</span> <span class="s2">&quot;teamdlc&quot;</span>
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;path_to_a_video_file&quot;</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="n">project_name</span><span class="p">,</span>
-    <span class="n">experimenter</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video_paths</span><span class="p">],</span>
-    <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong>  Make sure to specify the absolute path to the video file(s).
-It is quickly obtained on Windows with <kbd>⇧ Shift</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">path</span></code>,
-and on Mac with <kbd>⌥ Option</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">Pathname</span></code>.
-Ubuntu users only need to copy the file and its path gets added to the clipboard.</p>
-</div></blockquote>
-<blockquote>
-<div><p>Next, you can set a variable for the config_path: ‘Full path of the project configuration file*’</p>
-</div></blockquote>
-<p><strong>(2) Edit the config.ymal file to set up your project</strong></p>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> Here is were you will define your key point names and animal IDs. Also you can change the default # of frames to extract for the next step.</p>
-</div></blockquote>
-<p><strong>(3) Extract video frames to annotate</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span>
-    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;kmeans&quot;</span><span class="p">,</span>
-    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> try to extract a few frames from many videos vs. a lot of frames from one video!</p>
-</div></blockquote>
-<p><strong>(4) Annotate Frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(5) Visually check annotated frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(6) Create the training dataset</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;dlcrnet_ms5&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(7) Train the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">saveiters</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-    <span class="n">maxiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
-    <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(8) Evaluate the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(9) Analyze a video (extracts detections and association costs)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code> will complete steps 10-11 for you automatically so you get the “final” H5 file. Use the below steps if you need to change the parameters of tracking based on your dataset.</p>
-</div></blockquote>
-<p><strong>(10) Spatial and (locally) temporal grouping: Track body part assemblies frame-by-frame</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(11) Reconstruct full animal trajectories (tracks from tracklets)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-    <span class="n">min_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(12) Create a pretty video output</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
-    <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</section>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-live">
+<h1>DeepLabCut-Live!<a class="headerlink" href="#deeplabcut-live" title="Permalink to this headline">#</a></h1>
+<p>We provide two additional pip packages that allow you to record and stream camera data and run DeeplabCut models in real-time.
+You can get an indepth overview of this work in <a class="reference external" href="https://elifesciences.org/articles/61909">Kane et al, 2020 eLife</a>.</p>
+<p>Here is information on the DLC-Live! Camera GUI:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live-GUI">DLC-Live! Camera GUI</a></p></li>
+</ul>
+<p>Here is information on the DLC-Live! software SDK:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live">DLC-Live! Software</a></p></li>
+</ul>
 </section>
 
     <script type="text/x-thebe-config">
@@ -665,17 +504,17 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="recipes/TechHardware.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="HelperFunctions.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Technical (Hardware) Considerations</p>
+            <p class="prev-next-title">Helper &amp; Advanced Optional Function Documentation</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="convert_maDLC.html" title="next page">
+    <a class='right-next' id="next-link" href="recipes/UsingModelZooPupil.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">How to convert a pre-2.2 project for use with DeepLabCut 2.2</p>
+        <p class="prev-next-title">Using ModelZoo models on your own datasets</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

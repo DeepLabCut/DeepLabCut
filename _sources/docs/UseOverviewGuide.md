@@ -1,5 +1,5 @@
 (overview)=
-## Documentation Overview:
+## Documentation Overview
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
