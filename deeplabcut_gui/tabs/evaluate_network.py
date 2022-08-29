@@ -1,6 +1,14 @@
+import os
+import matplotlib.image as mpimg
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.figure import Figure
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
+import deeplabcut
+from deeplabcut.utils.auxiliaryfunctions import get_evaluation_folder
 from deeplabcut_gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -11,7 +19,23 @@ from deeplabcut_gui.components import (
 )
 from deeplabcut_gui.widgets import ConfigEditor
 
-import deeplabcut
+
+class GridCanvas(QtWidgets.QDialog):
+    def __init__(self, image_paths, parent=None):
+        super().__init__(parent)
+        self.image_paths = image_paths
+        layout = QtWidgets.QVBoxLayout(self)
+        self.figure = Figure()
+        self.figure.patch.set_facecolor("None")
+        self.grid = self.figure.add_gridspec(3, 3)
+        self.canvas = FigureCanvas(self.figure)
+        layout.addWidget(self.canvas)
+
+        for image_path, gridspec in zip(image_paths[:9], self.grid):
+            ax = self.figure.add_subplot(gridspec)
+            ax.set_axis_off()
+            img = mpimg.imread(image_path)
+            ax.imshow(img)
 
 
 class EvaluateNetwork(DefaultTab):
@@ -68,7 +92,23 @@ class EvaluateNetwork(DefaultTab):
     def plot_maps(self):
         shuffle = self.root.shuffle_value
         config = self.root.config
-        deeplabcut.extract_save_all_maps(config, shuffle=shuffle, Indices=[0, 1, 5])
+        deeplabcut.extract_save_all_maps(config, shuffle=shuffle, Indices=[0, 1, 2])
+
+        # Display all images
+        dest_folder = os.path.join(
+            self.root.project_folder,
+            str(get_evaluation_folder(
+                self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
+            )),
+            "maps",
+        )
+        image_paths = [
+            os.path.join(dest_folder, file)
+            for file in os.listdir(dest_folder)
+            if file.endswith('.png')
+        ]
+        canvas = GridCanvas(image_paths, parent=self)
+        canvas.show()
 
     def _generate_additional_attributes(self, layout):
 
