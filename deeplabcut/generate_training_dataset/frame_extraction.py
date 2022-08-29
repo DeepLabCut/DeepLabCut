@@ -111,10 +111,10 @@ def extract_frames(
         you to delete the ``collectdata(.h5/.csv)`` files before labeling. Use with
         caution!
 
-    algo : string, Either ``"kmeans"`` or ``"uniform"``, Default: `"uniform"`.
+    algo : string, Either ``"kmeans"`` or ``"uniform"``, Default: `"kmeans"`.
         String specifying the algorithm to use for selecting the frames. Currently,
         deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag
-        is only required for ``automatic`` mode and the default is ``uniform``. For
+        is only required for ``automatic`` mode and the default is ``kmeans``. For
         ``"uniform"``, frames are picked in temporally uniform way, ``"kmeans"``
         performs clustering on downsampled frames (see user guide for details).
 
