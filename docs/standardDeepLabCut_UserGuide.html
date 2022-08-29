@@ -1123,9 +1123,9 @@ frames from the second camera, this will overwrite your data. This will require
 you to delete the <code class="docutils literal notranslate"><span class="pre">collectdata(.h5/.csv)</span></code> files before labeling. Use with
 caution!</p>
 </dd>
-<dt><strong>algo</strong><span class="classifier">string, Either <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>, Default: <cite>“uniform”</cite>.</span></dt><dd><p>String specifying the algorithm to use for selecting the frames. Currently,
+<dt><strong>algo</strong><span class="classifier">string, Either <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>, Default: <cite>“kmeans”</cite>.</span></dt><dd><p>String specifying the algorithm to use for selecting the frames. Currently,
 deeplabcut supports either <code class="docutils literal notranslate"><span class="pre">kmeans</span></code> or <code class="docutils literal notranslate"><span class="pre">uniform</span></code> based selection. This flag
-is only required for <code class="docutils literal notranslate"><span class="pre">automatic</span></code> mode and the default is <code class="docutils literal notranslate"><span class="pre">uniform</span></code>. For
+is only required for <code class="docutils literal notranslate"><span class="pre">automatic</span></code> mode and the default is <code class="docutils literal notranslate"><span class="pre">kmeans</span></code>. For
 <code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>, frames are picked in temporally uniform way, <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code>
 performs clustering on downsampled frames (see user guide for details).</p>
 <p>NOTE: Color information is discarded for <code class="docutils literal notranslate"><span class="pre">&quot;kmeans&quot;</span></code>, thus e.g. for
