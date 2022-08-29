@@ -32,7 +32,6 @@ class EvaluateNetwork(DefaultTab):
         self.main_layout.addWidget(_create_label_widget(""))  # dummy text
         self.layout_additional_attributes = _create_vertical_layout()
         self._generate_additional_attributes(self.layout_additional_attributes)
-
         self.main_layout.addLayout(self.layout_additional_attributes)
 
         self.ev_nw_button = QtWidgets.QPushButton("Evaluate Network")
@@ -46,8 +45,6 @@ class EvaluateNetwork(DefaultTab):
         self.edit_inferencecfg_btn = QtWidgets.QPushButton("Edit inference_cfg.yaml")
         self.edit_inferencecfg_btn.setMinimumWidth(150)
         self.edit_inferencecfg_btn.clicked.connect(self.open_inferencecfg_editor)
-
-        self.main_layout.addLayout(self.layout_attributes)
 
         if self.root.is_multianimal:
             self.main_layout.addWidget(
