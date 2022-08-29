@@ -1,7 +1,7 @@
 # Introduction to MegaDetector+DeepLabCut-Live!
 [DeepLabCut-Live](https://github.com/DeepLabCut/DeepLabCut-live) is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check [here](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) for further information. 
 
-In this recipe, we should you how to use MegaDetector to detect animals and run DeepLabCut-Live to get the pose estimation and is contributed by 2022 DLC AI Resident [Nirel Kadzo](https://github.com/Kadzon) 💜.! This has then downstream appications in behavioral analysis and species identifaction. 
+In this recipe, we should you how to use MegaDetector to detect animals and run DeepLabCut-Live to get the pose estimation and is contributed by 2022 DLC AI Resident [Nirel Kadzo](https://github.com/Kadzon) 💜! This has then downstream appications in behavioral analysis and species identifaction. 
 
 **MegaDetector**
 
@@ -132,25 +132,19 @@ DLC-Live allows you to process videos and frames in bulk, however the current re
 ```
 
 
-```{hint} 
+### Developer Mode:
 To run it locally you can `git clone` the repository on your terminal and explore MegaDetector+DeepLabCut-Live for yourself :) 
-```
-Here are the steps:
-```
+
+In your terminal:
+```bash
 git clone git+https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut.git
-```
-```
+
 conda env create --name MegaDLC python=3.8
-conda activate
-MegaDLC
+conda activate MegaDLC
+
 pip install -e .
-```
 
-```
 cd MegaDetector_DeepLabCut 
-```
-
-```
 python3 app.py
 ```
 
