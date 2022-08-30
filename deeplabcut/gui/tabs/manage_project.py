@@ -4,9 +4,9 @@ from PySide2.QtWidgets import (
     QPushButton, QFileDialog, QLabel, QLineEdit,
 )
 from deeplabcut.create_project import add_new_videos
-from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.components import DefaultTab, _create_horizontal_layout
-from deeplabcut_gui.widgets import ConfigEditor
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.components import DefaultTab, _create_horizontal_layout
+from deeplabcut.gui.widgets import ConfigEditor
 
 
 class ManageProject(DefaultTab):

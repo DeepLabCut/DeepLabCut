@@ -1,7 +1,7 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from deeplabcut_gui.components import (
+from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
     ShuffleSpinBox,

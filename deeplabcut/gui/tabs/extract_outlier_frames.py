@@ -1,15 +1,15 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.components import (
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     VideoSelectionWidget,
     _create_horizontal_layout,
     _create_label_widget,
 )
-from deeplabcut_gui.widgets import launch_napari
+from deeplabcut.gui.widgets import launch_napari
 
 import deeplabcut
 

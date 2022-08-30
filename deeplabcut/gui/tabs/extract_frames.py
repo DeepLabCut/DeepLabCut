@@ -3,14 +3,14 @@ from functools import partial
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.components import (
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.components import (
     DefaultTab,
     _create_grid_layout,
     _create_label_widget,
 )
-from deeplabcut_gui.utils import move_to_separate_thread
-from deeplabcut_gui.widgets import launch_napari
+from deeplabcut.gui.utils import move_to_separate_thread
+from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.generate_training_dataset import extract_frames
 
 
@@ -36,7 +36,7 @@ def select_cropping_area(config, videos=None):
         Updated project configuration
     """
     from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut_gui.widgets import FrameCropper
+    from deeplabcut.gui.widgets import FrameCropper
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:

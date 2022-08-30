@@ -1,8 +1,7 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from dlc_params import DLCParams
-
-from widgets import ConfigEditor
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.widgets import ConfigEditor
 
 
 def _create_label_widget(

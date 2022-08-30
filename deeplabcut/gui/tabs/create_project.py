@@ -3,8 +3,8 @@ from datetime import datetime
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.widgets import ClickableLabel, ItemSelectionFrame
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 
 from PySide2 import QtCore, QtWidgets
 

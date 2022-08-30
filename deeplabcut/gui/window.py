@@ -9,16 +9,14 @@ import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION
-from deeplabcut_gui import BASE_DIR, utils, components
-
+from deeplabcut.gui import BASE_DIR, components, utils
+from deeplabcut.gui.tabs import *
+from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
 from PySide2 import QtCore
 from PySide2.QtGui import QIcon
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
-
-from tabs import *
-from widgets import StreamReceiver, StreamWriter
 
 
 def _check_for_updates():

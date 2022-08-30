@@ -1,8 +1,15 @@
 import os
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from deeplabcut_gui.components import DefaultTab
-from deeplabcut_gui.widgets import launch_napari
+from deeplabcut.gui.components import DefaultTab
+from deeplabcut.gui.widgets import launch_napari
+
+
+def label_frames(config_path):
+    _ = launch_napari(config_path)
+
+
+refine_labels = label_frames
 
 
 class LabelFrames(DefaultTab):

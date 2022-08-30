@@ -5,13 +5,13 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
-from deeplabcut_gui.components import (
+from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
 )
-from deeplabcut_gui.widgets import ConfigEditor
+from deeplabcut.gui.widgets import ConfigEditor
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions

@@ -4,8 +4,8 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 
-from deeplabcut_gui.dlc_params import DLCParams
-from deeplabcut_gui.components import (
+from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,

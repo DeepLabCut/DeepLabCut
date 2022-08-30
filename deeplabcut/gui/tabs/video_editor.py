@@ -3,16 +3,14 @@ import time
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from deeplabcut_gui.components import (
+from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
-from deeplabcut_gui.widgets import FrameCropper
-
-from deeplabcut import DownSampleVideo, ShortenVideo
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.gui.widgets import FrameCropper
+from deeplabcut.utils import auxfun_videos
 
 
 class VideoEditor(DefaultTab):
@@ -129,14 +127,14 @@ class VideoEditor(DefaultTab):
         stop = time.strftime("%H:%M:%S", time.gmtime(self.video_stop.value()))
         if self.files:
             for video in self.files:
-                ShortenVideo(video, start, stop)
+                auxfun_videos.ShortenVideo(video, start, stop)
         else:
             self.root.logger.error("No videos selected...")
 
     def downsample_videos(self):
         if self.files:
             for video in self.files:
-                DownSampleVideo(
+                auxfun_videos.DownSampleVideo(
                     video,
                     width=-1,
                     height=self.video_height.value(),
@@ -162,6 +160,6 @@ def _crop_video(video_path):
     origin_x, origin_y = coords[:2]
     width = int(coords[2]) - int(coords[0])
     height = int(coords[3]) - int(coords[1])
-    writer = VideoWriter(video_path)
+    writer = auxfun_videos.VideoWriter(video_path)
     writer.set_bbox(origin_x, origin_x + width, origin_y, origin_y + height)
     return writer.crop("cropped", None)

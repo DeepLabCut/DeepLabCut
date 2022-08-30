@@ -9,7 +9,7 @@ from PySide2.QtCore import Qt
 
 import deeplabcut
 from deeplabcut.utils.auxiliaryfunctions import get_evaluation_folder
-from deeplabcut_gui.components import (
+from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
     ShuffleSpinBox,
@@ -17,7 +17,7 @@ from deeplabcut_gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
-from deeplabcut_gui.widgets import ConfigEditor
+from deeplabcut.gui.widgets import ConfigEditor
 
 
 class GridCanvas(QtWidgets.QDialog):
