@@ -23,6 +23,7 @@ parts:
 - caption: DeepLabCut Model Zoo
   chapters:
   - file: docs/recipes/UsingModelZooPupil
+  - file: docs/recipes/MegaDetectorDLCLive
 - caption: Hardware
   chapters:
   - file: docs/recipes/TechHardware
@@ -36,6 +37,7 @@ parts:
   - file: docs/recipes/BatchProcessing
   - file: docs/recipes/DLCMethods
   - file: docs/recipes/OpenVINO
+
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
