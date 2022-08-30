@@ -1,0 +1,35 @@
+# dlc_m1.yaml
+
+#DeepLabCut2.2 Toolbox (deeplabcut.org)
+#© A. & M. Mathis Labs
+#https://github.com/DeepLabCut/DeepLabCut
+#Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#Licensed under GNU Lesser General Public License v3.0
+#
+# DeepLabCut M1 environment instructions (updated Sept 2022):
+# we recommend having miniforge installed. See here: https://developer.apple.com/metal/tensorflow-plugin/
+
+name: dlc_m1
+channels:
+  - apple
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - tensorflow-deps=2.9.0=0
+  - pytorch
+  - ipython
+  - jupyter
+  - nb_conda
+  - python.app
+  - ffmpeg
+  - pip:
+    - tensorboard==2.9.1
+    - tensorboard-data-server==0.6.1
+    - tensorboard-plugin-wit==1.8.1
+    - tensorflow-estimator==2.9.0
+    - tensorflow-macos==2.9.2
+    - tensorflow-metal==0.5.1
