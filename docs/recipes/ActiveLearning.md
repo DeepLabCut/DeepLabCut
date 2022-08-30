@@ -85,8 +85,8 @@ The scoremaps shown were computed with a not fully-trained model. The overlaid c
 </p>
 
 Mathematically, the MPE metric per bodypart is defined as:
-```{image} ../images/active_learning_uncertainty_eq_1.png
-:alt: active_learning_uncertainty_eq_1
+```{image} ../images/active_learning_uncertainty_eq_2.png
+:alt: active_learning_uncertainty_eq
 :class: bg-primary mb-1
 :width: 300px
 :align: center
