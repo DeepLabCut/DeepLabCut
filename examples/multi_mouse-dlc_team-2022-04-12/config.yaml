@@ -1,0 +1,71 @@
+    # Project definitions (do not edit)
+Task: multi_mouse
+scorer: dlc_team
+date: Apr12
+multianimalproject: true
+identity: true
+
+    # Project path (change when moving around)
+project_path: /Users/Jessy/PycharmProjects/DeepLabCut/examples/multi_mouse-dlc_team-2022-04-12
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  /Users/Jessy/PycharmProjects/DeepLabCut/examples/multi_mouse-dlc_team-2022-04-12/videos/m3v1mp4.mp4:
+    crop: 0, 640, 0, 480
+  /Users/Jessy/PycharmProjects/DeepLabCut/examples/multi_mouse-dlc_team-2022-04-12/videos/m3v1mp4short.mp4:
+    crop: 0, 640, 0, 480
+individuals:
+- individual1
+- individual2
+- individual3
+uniquebodyparts:
+- corner1
+- corner2
+multianimalbodyparts:
+- bodypart1
+- bodypart2
+- bodypart3
+bodyparts: MULTI!
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+start: 0
+stop: 1
+numframes2pick: 5
+
+    # Plotting configuration
+skeleton:
+- - bodypart1
+  - bodypart2
+- - bodypart2
+  - bodypart3
+- - bodypart1
+  - bodypart3
+skeleton_color: black
+pcutoff: 0.6
+dotsize: 12
+alphavalue: 0.7
+colormap: rainbow
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.8
+iteration: 1
+default_net_type: dlcrnet_ms5
+default_augmenter: multi-animal-imgaug
+default_track_method: ellipse
+snapshotindex: -1
+batch_size: 8
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true

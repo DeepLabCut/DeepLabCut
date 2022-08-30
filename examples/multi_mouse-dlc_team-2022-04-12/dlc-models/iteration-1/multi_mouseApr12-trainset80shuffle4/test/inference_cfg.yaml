@@ -1,0 +1,11 @@
+boundingboxslack: 0
+iou_threshold: 0.6
+max_age: 1
+method: m1
+min_hits: 1
+minimalnumberofconnections: 1
+pafthreshold: 0.1
+pcutoff: 0.1
+topktoretain: 4
+variant: 0
+withid: true

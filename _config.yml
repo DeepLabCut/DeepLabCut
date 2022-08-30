@@ -1,0 +1,28 @@
+title: DeepLabCut
+author: The DeepLabCut Team
+logo: docs/images/logo.png
+only_build_toc_files: true
+
+sphinx:
+  config:
+    autodoc_mock_imports: ["wx"]
+  extra_extensions:
+    - numpydoc
+
+execute:
+  execute_notebooks: "off"
+
+html:
+  extra_navbar: ""
+  use_issues_button: true
+  use_repository_button: true
+  extra_footer: |
+    <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+repository:
+  url: https://github.com/DeepLabCut/DeepLabCut
+  path_to_book: docs
+  branch: master
+
+launch_buttons:
+  colab_url: "https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"
