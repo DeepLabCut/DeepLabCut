@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/Jessy/PycharmProjects/DeepLabCut/examples/multi_mouse-dlc_team-2022-04-12/dlc-models/iteration-0/multi_mouseApr12-trainset80shuffle1/train/snapshot-5"
+all_model_checkpoint_paths: "/Users/Jessy/PycharmProjects/DeepLabCut/examples/multi_mouse-dlc_team-2022-04-12/dlc-models/iteration-0/multi_mouseApr12-trainset80shuffle1/train/snapshot-5"

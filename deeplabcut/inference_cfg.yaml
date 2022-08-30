@@ -1,0 +1,40 @@
+# Hyperparameters for combinatorics code to assemble individuals.
+# Mathis et al. xyz
+
+variant: 0
+
+##############################################################################
+#### Assembly of PAFs to individuals
+##############################################################################
+
+# Filtering connections:
+# Least strength of a paf cost (to be included in assembly)
+pafthreshold: 0.1
+
+method: 'm1'
+
+# Assembly:
+#least number of connections (to actually form an animal)
+minimalnumberofconnections: willbeautomaticallyupdatedbycreate_training_datasetcode
+#reasonable default: len(cfg['multianimalbodyparts'])/2
+pcutoff: 0.1
+
+# max. number of objects to keep:
+topktoretain: willbeautomaticallyupdatedbycreate_training_datasetcode
+#reasonable default: len(cfg['individuals'])+1*(len(cfg['uniquebodyparts'])>0)
+
+# Also extract ID:
+withid: False
+
+##############################################################################
+#### Tracker variables (should be crossvalidated)
+##############################################################################
+#p/m pixels in width and height for increasing bounding boxes.
+boundingboxslack : 0
+
+# Intersection over Union (IoU) threshold for linking two bounding boxes
+iou_threshold: .6
+# maximum duration of a lost tracklet before it's considered a "new animal" (in frames)
+max_age: 1
+# minimum number of consecutive frames before a detection is tracked
+min_hits: 1

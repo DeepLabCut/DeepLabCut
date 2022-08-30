@@ -1,0 +1,173 @@
+dataset: willbeautomaticallyupdatedbycreate_training_datasetcode
+metadataset: willbeautomaticallyupdatedbycreate_training_datasetcode
+num_joints: willbeautomaticallyupdatedbycreate_training_datasetcode
+all_joints: willbeautomaticallyupdatedbycreate_training_datasetcode
+all_joints_names: willbeautomaticallyupdatedbycreate_training_datasetcode
+init_weights: willbeautomaticallyupdatedbycreate_training_datasetcode
+project_path: willbeautomaticallyupdatedbycreate_training_datasetcode
+
+# Hyperparameters below worked well for our tasks in
+# Mathis et al. Nature Neuroscience
+# https://www.nature.com/articles/s41593-018-0209-y
+
+# all locations within this distance threshold are considered
+# positive training samples for detector
+pos_dist_thresh: 17
+
+# all images in the dataset will be rescaled by the following
+# scaling factor to be processed by the CNN. You can select the
+# optimal scale by cross-validation
+global_scale: 0.8
+
+##############################################################################
+#### Augmentation variables
+##############################################################################
+
+dataset_type: imgaug
+batch_size: 1
+
+# Probability with which the augmenters will be applied to input images
+# Note some augmentations have their own probability (e.g. claheratio/rotratio/...)
+apply_prob: 0.5
+
+# Resize images prior to augmentation
+pre_resize: []  # Specify [width, height] if pre-resizing is desired
+
+# Smart, on-the-fly image cropping, replacing deeplabcut.cropimagesandlabels
+crop_size: [400, 400]  # width, height
+max_shift: 0.4  # Maximum relative shift of the position of the crop center
+crop_sampling: hybrid  # Sample crop centers either uniformly over the image or based on keypoint neighbor density, at random
+
+# Other crop_sampling variants:
+#- uniform -- spatially uniform sampling of crops (over the image)
+#- keypoints -- keypoint based sampling of crops (over the image)
+#- density -- keypoint based sampling of crops biasing towards regions with more keypoints (over the image)
+#- hybrid -- 50% density and 50% uniform
+
+
+#Data loaders, i.e. with additional data augmentation options (as of 2.0.9+):
+#default with be with no extra dataloaders. Other options: 'tensorpack, deterministic'
+#types of datasets, see factory: deeplabcut/pose_estimation_tensorflow/dataset/factory.py
+#For deterministic, see https://github.com/DeepLabCut/DeepLabCut/pull/324
+#For tensorpack, see https://github.com/DeepLabCut/DeepLabCut/pull/409
+
+#what is the fraction of training samples with cropping? (used for scalecrop)
+cropratio: 0.4
+# see below for cropping variables for tensorpack and scalecrop (these need to be set in pose_cfg.yaml per model)
+# for imagaug strength is modulated by crop_by
+
+#to not apply rotation put False
+rotation: 25  # plus/minus 25 degree rotation; only for imgaug + tensorpack!
+rotratio: 0.4 # fraction of applying rotations
+
+# During training an image will be randomly scaled within the
+# range [scale_jitter_lo; scale_jitter_up] to augment training data,
+scale_jitter_lo: 0.5
+scale_jitter_up: 1.25
+
+# Randomly flips an image horizontally to augment training data
+mirror: False #imgaug & tensorpack do not consider mirror symmetric joints now,
+#i.e. left hand and right hand are not swapped
+
+# Functions from augmenters.contrast
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# Functions from augmenters.convolve,
+# set True to use with default parameters, otherwise give a dictionary for keyword arguments
+# If no ratio value is given, set to 0.4 by default
+
+# dictionary with contrast parameters
+contrast:
+   clahe: True
+   claheratio: 0.1
+   histeq: True
+   histeqratio: 0.1
+   
+# dictionary with convolution parameters
+convolution:
+   sharpen: False
+   sharpenratio: 0.3
+   edge: False
+   emboss:
+      alpha: [0.0, 1.0]
+      strength: [0.5, 1.5]
+   embossratio: 0.1
+
+##############################################################################
+#### Augmentation type: scalecrop + tensorpack variables
+##############################################################################
+
+# Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+#and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
+# Parameters for augmentation with regard to cropping.
+
+# As of 2.2.: (scalecrop is no longer the default!)
+# These parameters are all set in: deeplabcut/pose_estimation_tensorflow/dataset/pose_dataset_scalecrop.py
+
+#minsize: 100 #what is the minimal frames size for cropping plus/minus ie.. [-100,100]^2 for an arb. joint
+#leftwidth: 400
+#rightwidth: 400
+#topheight: 400
+#bottomheight: 400
+#limit width  [-leftwidth*u-100,100+u*rightwidth] x [-bottomwith*u-100,100+u*topwidth] where u is always a (different) random number in unit interval
+
+##############################################################################
+#### Augmentation type: imgaug & tensorpack
+##############################################################################
+
+
+##############################################################################
+#### Networks
+##############################################################################
+
+# NOTE: as of DLC 2.1 these are defined when creating the training set!
+# Type of the CNN to use, currently resnets + mobilenets + efficientnets + our dlcrnet are supported (see docs)
+net_type: resnet_50
+multi_stage: false
+#init_weights: ./snapshot-5000
+
+
+# Location refinement parameters (check https://arxiv.org/abs/1511.06645)
+location_refinement: true
+locref_huber_loss: true
+locref_loss_weight: 0.05
+locref_stdev: 7.2801
+
+# Enabling this adds additional loss layer in the middle of the ConvNet,
+# which helps accuracy (you should set to true for ResNet-101, or 152!).
+intermediate_supervision: false
+intermediate_supervision_layer: 12
+
+# For multi-animal version starting with DLC 2.2
+pairwise_huber_loss: false
+partaffinityfield_predict: false
+pairwise_predict: false
+
+# all images larger with size
+# width * height > max_input_size*max_input_size are not used in training.
+# Prevents training from crashing with out of memory exception for very
+# large images.
+max_input_size: 1500
+# all images smaller than 64*64 will be excluded.
+min_input_size: 64
+
+# Learning rate schedule for the SGD/adam optimizer.
+multi_step:
+- [0.005, 10000]
+- [0.02, 430000]
+- [0.002, 730000]
+- [0.001, 1030000]
+
+# Learning rate parameters for cosine decay scheduler [used for EfficientNet backbones in DLC]
+# See: https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf
+
+lr_init: 0.0005
+decay_steps: 30000
+alpha_r: 0.02
+
+
+# How often display loss
+display_iters: 1000
+# How often to save training snapshot
+save_iters: 50000

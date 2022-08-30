@@ -1,0 +1,87 @@
+DeepLabCut (www.deeplabcut.org) was initially developed by
+Alexander & Mackenzie Mathis in collaboration with Matthias Bethge. 
+It is actively developed by Alexander & Mackenzie Mathis (steering council and owners).
+
+DeepLabCut is an open-source tool and has benefited from suggestions and edits by many
+individuals: DeepLabCut/graphs/contributors
+
+############################################################################################################
+
+DeepLabCut 1.0 Toolbox
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Specific external contributors:
+E Insafutdinov and co-authors of DeeperCut (see README) for feature detectors: https://github.com/eldar
+- Thus, code in this subdirectory at the time of April 2018, deeplabcut/pose_estimation_tensorflow
+was adapted from: https://github.com/eldar/pose-tensorflow.
+
+Products:
+DeepLabCut: markerless pose estimation of user-defined body parts with deep learning. Nature Neuroscience, 2018.
+https://doi.org/10.1038/s41593-018-0209-y
+A. Mathis, P. Mamidanna, K.M. Cury, T. Abe, V.N. Murthy, M.W. Mathis* & M. Bethge*
+
+Contributions:
+Conceptualization: A.M., M.W.M. and M.B.
+Software: A.M. and M.W.M.
+Formal analysis: A.M.
+Experiments: A.M. and V.N.M. (trail-tracking), M.W.M. (mouse reaching), K.M.C. (Drosophila).
+Image Labeling: P.M., K.M.C., T.A., M.W.M., A.M.
+Writing: A.M. and M.W.M. with input from all authors.
+These authors jointly directed this work: M. Mathis, M. Bethge
+
+############################################################################################################
+
+DeepLabCut 2.0 Toolbox
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Products:
+Using DeepLabCut for 3D markerless pose estimation across species and behaviors. Nature Protocols, 2019.
+https://www.nature.com/articles/s41596-019-0176-0
+T. Nath*, A. Mathis*, AC. Chen, A. Patel, M. Bethge, M. Mathis
+
+Contributions:
+Conceptualization: AM, TN, MWM.
+Software: AM, TN and MWM.
+Dataset (cheetah): AP.
+Image Labeling: ACC.
+Formal analysis: ACC, AM and AP analyzed the cheetah data.
+Writing: MWM, AM and TN with inputs from all authors.
+
+############################################################################################################
+
+DeepLabCut 2.1 major additions:
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
+M Yüksekgönül, mertyuksekgonul@gmail.com | https://github.com/mertyg
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Specific external contributors:
+Tensorpack augmentation: https://github.com/DeepLabCut/DeepLabCut/pull/409 by Katie Rupp
+
+Products:
+Pretraining boosts out-of-domain robustness for pose estimation. WACV, 2021.
+http://www.mackenziemathislab.org/horse10
+A. Mathis, T. Biasi, S. Schneider, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
+
+############################################################################################################
+
+DeepLabCut 2.1 - 2.2 additions:
+A Mathis, alexander.mathis@epfl.ch | https://github.com/DeepLabCut/DeepLabCut
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+M Zhou, https://github.com/zhoumu53
+S Ye, https://github.com/yeshaokai
+S Schneider, https://github.com/stes
+T Biasi, https://github.com/tbiasi
+G Kane, https://github.com/gkane26
+M Yüksekgönül, https://github.com/mertyg
+T Nath, https://github.com/meet10may
+
+Preprint:
+Multi-animal pose estimation and tracking with DeepLabCut
+J Lauer,  M Zhou,  S Ye,  W Menegas,  S Schneider, T Nath,  MM Rahman, V Di Santo, 
+D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis
+https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1

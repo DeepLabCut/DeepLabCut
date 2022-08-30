@@ -1,0 +1,37 @@
+all_joints:
+- - 0
+- - 1
+- - 2
+- - 3
+- - 4
+all_joints_names:
+- bodypart1
+- bodypart2
+- bodypart3
+- corner1
+- corner2
+dataset: training-datasets/iteration-1/UnaugmentedDataSet_multi_mouseApr12/multi_mouse_dlc_team80shuffle4.pickle
+dataset_type: multi-animal-imgaug
+global_scale: 0.8
+init_weights: /Users/Jessy/PycharmProjects/DeepLabCut/deeplabcut/pose_estimation_tensorflow/models/pretrained/resnet_v1_50.ckpt
+location_refinement: true
+locref_smooth: false
+locref_stdev: 7.2801
+minconfidence: 0.01
+multi_stage: true
+net_type: resnet_50
+nmsradius: 5.0
+num_idchannel: 3
+num_joints: 5
+num_limbs: 3
+pairwise_predict: false
+partaffinityfield_graph:
+- - 0
+  - 1
+- - 0
+  - 2
+- - 1
+  - 2
+partaffinityfield_predict: true
+scoremap_dir: test
+sigma: 1

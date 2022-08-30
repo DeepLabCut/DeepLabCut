@@ -1,0 +1,14 @@
+scorer,,,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team,dlc_team
+individuals,,,individual1,individual1,individual1,individual1,individual1,individual1,individual2,individual2,individual2,individual2,individual2,individual2,individual3,individual3,individual3,individual3,individual3,individual3,single,single,single,single
+bodyparts,,,bodypart1,bodypart1,bodypart2,bodypart2,bodypart3,bodypart3,bodypart1,bodypart1,bodypart2,bodypart2,bodypart3,bodypart3,bodypart1,bodypart1,bodypart2,bodypart2,bodypart3,bodypart3,corner1,corner1,corner2,corner2
+coords,,,x,y,x,y,x,y,x,y,x,y,x,y,x,y,x,y,x,y,x,y,x,y
+labeled-data,m3v1mp4,img0122.png,50.0,50.0,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0,300.0,300.0,350.0,350.0,400.0,400.0,450.0,450.0,500.0,500.0,550.0,550.0
+labeled-data,m3v1mp4,img0893.png,50.0,50.0,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0,300.0,300.0,350.0,350.0,400.0,400.0,450.0,450.0,500.0,500.0,550.0,550.0
+labeled-data,m3v1mp4,img1004.png,50.0,50.0,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0,300.0,300.0,350.0,350.0,400.0,400.0,450.0,450.0,500.0,500.0,550.0,550.0
+labeled-data,m3v1mp4,img1029.png,50.0,50.0,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0,300.0,300.0,350.0,350.0,400.0,400.0,450.0,450.0,500.0,500.0,550.0,550.0
+labeled-data,m3v1mp4,img1991.png,50.0,50.0,100.0,100.0,150.0,150.0,200.0,200.0,250.0,250.0,300.0,300.0,350.0,350.0,400.0,400.0,450.0,450.0,500.0,500.0,550.0,550.0
+labeled-data,m3v1mp4short,img05.png,,,,,,,,,,,,,,,,,,,116.631,439.004,227.882,221.341
+labeled-data,m3v1mp4short,img11.png,91.092,101.305,212.321,483.963,88.981,467.835,,,,,,,201.113,462.607,105.472,96.161,487.208,71.914,116.435,438.902,244.35,189.202
+labeled-data,m3v1mp4short,img12.png,200.249,462.708,105.077,95.512,73.869,82.577,92.267,100.492,212.476,484.423,89.267,467.221,235.884,206.047,252.1,179.62,487.113,71.877,116.706,439.112,134.37,124.596
+labeled-data,m3v1mp4short,img17.png,107.084,99.903,30.332,465.904,89.651,96.211,200.837,464.029,211.713,484.232,89.458,467.21,267.19,175.253,272.822,180.218,278.245,226.845,116.488,439.336,594.649,435.656
+labeled-data,m3v1mp4short,img26.png,104.605,99.957,212.642,134.388,284.183,225.941,125.572,471.208,211.715,484.489,89.269,466.836,283.352,170.957,115.499,100.634,97.754,84.317,116.579,439.124,305.471,216.146

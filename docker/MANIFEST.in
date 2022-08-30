@@ -1,0 +1,4 @@
+include pyproject.toml
+include PYPI_README.md
+include LICENSE
+include deeplabcut_docker.sh
