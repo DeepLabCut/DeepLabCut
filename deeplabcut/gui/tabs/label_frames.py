@@ -30,6 +30,9 @@ class LabelFrames(DefaultTab):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(dialog.DirectoryOnly)
         dialog.setViewMode(dialog.Detail)
+        dialog.setDirectory(
+            os.path.join(os.path.dirname(self.root.config), "labeled-data")
+        )
         if dialog.exec_():
             folder = dialog.selectedFiles()[0]
             has_h5 = False
