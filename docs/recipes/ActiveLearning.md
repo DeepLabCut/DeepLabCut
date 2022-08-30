@@ -51,7 +51,7 @@ Active learning as a reinforcement learning approach, from Gong et al. 2022. Ima
 
 In the current DeepLabCut implementation, similar strategies are used, for example when sampling from k-means clusters during the frame extraction step, or when doing refinement [[10]](cit_protocols). In this DLC AI Residency project, we explored further whether active learning approaches can be useful to improve the performance of a model on new 'out-of-domain' data. 
 
-We focused on the work by Liu *et al.*, 2017 [[3]](cit_liu2017), in which the authors explored sampling the frames in two ways: first, they use an uncertainty score that assesses how uncertain are the model's predictions in a given image. Next, they consider an 'influence' metric, that measures how representative an image is whithin the set of unlabelled frames. They also consider dynamically combining these two criteria over several active learning iterations, and they find that this improved the model's performance on unseen data, and was more efficient than randomly sampling images from the unlabelled set. In this project, we explored the implementation of these two approaches in DeepLabCut.
+We focused on the work by Liu *et al.*, 2017 [[3]](cit_liu2017), in which the authors explored sampling the frames in two ways: first, they use an uncertainty score that assesses how uncertain are the model's predictions in a given image. Next, they consider an 'influence' metric, that measures how representative an image is within the set of unlabelled frames. They also consider dynamically combining these two criteria over several active learning iterations, and they find that this improved the model's performance on unseen data, and was more efficient than randomly sampling images from the unlabelled set. In this project, we explored the implementation of these two approaches in DeepLabCut.
 
 We used the [Horse-10 dataset](http://horse10.deeplabcut.org/), which contains 8114 frames of 30 diverse thoroughbred horses, with 22 body parts labeled by an expert. We defined three shuffles of the data with the following structure: one horse made up the base training set, 9 other horses made up the active learning set (from which we sample frames with different criteria), and the 20 remaining horses constituted the evaluation set.
 
@@ -107,7 +107,7 @@ Images with top MPE scores for each shuffle
 </p>
 
 ```{image} ../images/active_learning_bottom_mpe.png
-:alt: aactive_learning_bottom_mpe
+:alt: active_learning_bottom_mpe
 :class: bg-primary mb-1
 :width: 800px
 :align: center
@@ -166,14 +166,14 @@ Images with the lowest influence scores for each shuffle
 
 
 ## Preliminary results
-We carried out experiments to inspect whether these active learning strategies allowed us to achieve good performance on the test set (20 unseen horses), with a reduced number of aditionally labelled frames.
+We carried out experiments to inspect whether these active learning strategies allowed us to achieve good performance on the test set (20 unseen horses), with a reduced number of additionally labelled frames.
 
 We considered models trained with 0%, 25%, 50%, 75% and 100% of the active learning frames (9 horses) added to the base training set (1 horse). We sampled the active learning frames based on three criteria: (1) by uniformly sampling across the active learning set, (2) by selecting the ones with highest MPE score, and (3) by selecting the ones with highest influence score. Note that if 100% of the active learning frames are included in the training set, all approaches should be produce very similar results. 
 
 ```{image} ../images/active_learning_biased_results.png
 :alt: active_learning_biased_results
 :class: bg-primary mb-1
-:width: 400px
+:width: 500px
 :align: center
 ```
 
@@ -181,16 +181,37 @@ The figure shows the results from sampling in the active learning set uniformly 
 
 Looking at the uniformly sampled results (blue), we find that just uniformly sampling 25% of the frames from the active learning set we achieve a performance comparable to incorporating 100% of the data. However, neither the uncertainty or the influence approaches produce more efficient results (i.e., better performance with less labelled frames). We also observe that for a given fraction of active learning frames sampled, there is larger spread in the normalised RMSE in the uncertainty or influence based approaches, compared to the uniform sampling. 
 
-We hypothesised these two effects are due to the active learning approaches being biased, compared to the uniform sampling approach. Whereas the uniform sampling 
+We hypothesised these two effects are due to the active learning approaches being biased, compared to the uniform sampling approach. Whereas the uniform sampling will by definition sample across all 9 horses in the active learning train set, the other two approaches may be biased to a reduced number of horses.
 
+To address this, we carried a new set of experiments. This time, to reduce the sampling bias and increase diversity, we computed AlexNet feature vectors for all images in the active learning set, and then clustered them using k-means.  When sampling them based on MPE or influence score, we now ensured we sampled alternatively from each of the clusters. 
+
+```{image} ../images/active_learning_biased_results.png
+:alt: active_learning_biased_results
+:class: bg-primary mb-1
+:width: 500px
+:align: center
+```
+<p align = "center">
+<span style="color:red">TEMP FIGURE, RESULTS COMING SOON!</span>.
+</p>
 
 ## Conclusions and next steps
-Features at keypoints
+In this project, we carried out a short study of active learning approaches using DeepLabCut and the Horse-10 dataset. We focused on two main strategies to identify frames to label: one was based on the model's uncertainty on the estimated bodyparts per image (the MPE metric), and the other one was based on the images' appearance, and how representative they are of the whole unlabelled dataset (the influence metric). <span style="color:red">We found that... (results coming soon)</span>.
+
+Regarding next steps, one aspect that may be relevant to explore is sampling images that show novel poses. We started some work in this direction, inspecting metrics to assess how novel a pose is, compared to the already seen data. We encoded poses as vectors holding the pairwise distances between bodyparts, and then computed how far a given 'novel' pose was from a distribution of already seen poses, using the Mahalanobis distance. 
+
+The encoding of images as feature vectors could also be further explored. For example, only the features around the estimated bodyparts could be considered. We also explored the possibility of using a self-supervised vision transformer model [DINO](https://github.com/facebookresearch/dino) to compute pairs of very dissimilar images. A min-max approach, rather than the ranking approach we use here could be followed: images that are furthest from their nearest neighbour could be the first one to be labelled, for example. 
+
+This work from this project is aligned with the data-efficient efforts already carried out in DeepLabCut. We hope it inspires new contributions to some key steps in the processing pipeline, as are the frame extraction or the refinement steps.
+
+<!-- Features at keypoints
 Novel poses
 Min-max approach
-Produce pairs of dissimilar frames (with DINO)
-Applications to feature extraction or refinement steps
+Produce pairs of dissimilar frames (with [DINO](https://github.com/facebookresearch/dino)) 
+Applications to feature extraction or refinement steps -->
 
+<!-- ## Acknowledgements --rephrase a bit?
+This work was carried out by Sofia Minano, Sabrina Benas and Alex Mathis. We would like to thank Steffen Schneider for very useful discussions regarding DINO, and Jessy Lauer for the help when exploring the computation of novel poses. We would also like to thank the rest of the the DeepLabCut AI residents from 2022 for providing a fantastic and welcoming working environment. -->
 
 ## References
 (cit_primer)=
