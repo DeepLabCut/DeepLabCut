@@ -6,10 +6,11 @@ In this #cookbook recipe, we show you how to use MegaDetector to detect animals 
 
 ### What is MegaDetector?
 
-MegaDetector detects an animal and generates a bounding box around the animal. Thanks to [Sara Beery](https://beerys.github.io/) for visting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. Example results are shown below:
- <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="left" vspace = "15">
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="right" vspace = "5">
+ 
+MegaDetector detects an animal and generates a bounding box around the animal. Thanks to [Sara Beery](https://beerys.github.io/) for visting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:
 
- <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650944-LMNI3G45KXJK8D4XNGH7/anim2.jpeg?format=750w" width="300" title="DLC" alt="DLC" align="right" vspace = "15">
+
 
 ### DeepLabCut-Live
 
