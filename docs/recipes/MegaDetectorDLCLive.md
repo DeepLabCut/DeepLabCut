@@ -1,6 +1,6 @@
 # 💚 MegaDetector+DeepLabCut 💜
 
-[DeepLabCut-Live](https://github.com/DeepLabCut/DeepLabCut-live) is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  [The DeepLabCut-ModelZoo](http://modelzoo.deeplabcut.org/) is our growing collection of pretrained animal models for rapid deployment; no trianing is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check [here](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) for further information.
+[DeepLabCut-Live](https://github.com/DeepLabCut/DeepLabCut-live) is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  [The DeepLabCut-ModelZoo](http://modelzoo.deeplabcut.org/) is our growing collection of pretrained animal models for rapid deployment; no training is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check [here](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) for further information.
 
 In this #cookbook recipe, we show you how to use MegaDetector to detect animals and run DeepLabCut-Live (using ModelZoo models) to get the pose estimation. This doc is contributed by 2022 DLC AI Resident [Nirel Kadzo](https://github.com/Kadzon) 💜!
 
@@ -8,13 +8,13 @@ In this #cookbook recipe, we show you how to use MegaDetector to detect animals 
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="right" vspace = "5">
  
-MegaDetector detects an animal and generates a bounding box around the animal. Thanks to [Sara Beery](https://beerys.github.io/) for visting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:
+MegaDetector detects an animal and generates a bounding box around the animal. Thanks to [Sara Beery](https://beerys.github.io/) for visiting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:
 
 
 
 ### DeepLabCut-Live
 
-DeepLabCut-Live! Is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight pacakge for running DeeplabCut even if you don't need real-time. Its very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the [docs](https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html).
+DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight pacakge for running DeeplabCut even if you don't need real-time. It's very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the [docs](https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html).
 
 ### MegaDetector meets DeepLabCut
 
@@ -24,7 +24,7 @@ The combination of MegaDetector and DeepLabCut now enables animal pose estimatio
 
 ## 🤗 HuggingFace App
 
-We use the [Hugging Face](huggingface.co) spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to [Merve Noyan](https://github.com/merveenoyan) who visted the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the [App page](https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut)).
+We use the [Hugging Face](huggingface.co) spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to [Merve Noyan](https://github.com/merveenoyan) who visited the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the [App page](https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut)).
 
 Let's get into the details of how to use the App:
 
