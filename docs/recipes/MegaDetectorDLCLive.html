@@ -565,16 +565,16 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="megadetector-deeplabcut">
 <h1>💚 MegaDetector+DeepLabCut 💜<a class="headerlink" href="#megadetector-deeplabcut" title="Permalink to this headline">#</a></h1>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live">DeepLabCut-Live</a> is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  <a class="reference external" href="http://modelzoo.deeplabcut.org/">The DeepLabCut-ModelZoo</a> is our growing collection of pretrained animal models for rapid deployment; no trianing is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check <a class="reference external" href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">here</a> for further information.</p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live">DeepLabCut-Live</a> is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  <a class="reference external" href="http://modelzoo.deeplabcut.org/">The DeepLabCut-ModelZoo</a> is our growing collection of pretrained animal models for rapid deployment; no training is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check <a class="reference external" href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">here</a> for further information.</p>
 <p>In this #cookbook recipe, we show you how to use MegaDetector to detect animals and run DeepLabCut-Live (using ModelZoo models) to get the pose estimation. This doc is contributed by 2022 DLC AI Resident <a class="reference external" href="https://github.com/Kadzon">Nirel Kadzo</a> 💜!</p>
 <section id="what-is-megadetector">
 <h2>What is MegaDetector?<a class="headerlink" href="#what-is-megadetector" title="Permalink to this headline">#</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="right" vspace = "5">
-<p>MegaDetector detects an animal and generates a bounding box around the animal. Thanks to <a class="reference external" href="https://beerys.github.io/">Sara Beery</a> for visting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:</p>
+<p>MegaDetector detects an animal and generates a bounding box around the animal. Thanks to <a class="reference external" href="https://beerys.github.io/">Sara Beery</a> for visiting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:</p>
 </section>
 <section id="deeplabcut-live">
 <h2>DeepLabCut-Live<a class="headerlink" href="#deeplabcut-live" title="Permalink to this headline">#</a></h2>
-<p>DeepLabCut-Live! Is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight pacakge for running DeeplabCut even if you don’t need real-time. Its very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html">docs</a>.</p>
+<p>DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight pacakge for running DeeplabCut even if you don’t need real-time. It’s very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html">docs</a>.</p>
 </section>
 <section id="megadetector-meets-deeplabcut">
 <h2>MegaDetector meets DeepLabCut<a class="headerlink" href="#megadetector-meets-deeplabcut" title="Permalink to this headline">#</a></h2>
@@ -583,7 +583,7 @@ title="Print to PDF"
 </section>
 <section id="huggingface-app">
 <h2>🤗 HuggingFace App<a class="headerlink" href="#huggingface-app" title="Permalink to this headline">#</a></h2>
-<p>We use the <span class="xref myst">Hugging Face</span> spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to <a class="reference external" href="https://github.com/merveenoyan">Merve Noyan</a> who visted the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">App page</a>).</p>
+<p>We use the <span class="xref myst">Hugging Face</span> spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to <a class="reference external" href="https://github.com/merveenoyan">Merve Noyan</a> who visited the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">App page</a>).</p>
 <p>Let’s get into the details of how to use the App:</p>
 <ol class="simple">
 <li><p>Click on this link to be redirected to the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">MegaDetector+DeepLabCut application</a> on <strong>Hugging Face</strong>.</p></li>
