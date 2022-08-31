@@ -183,9 +183,9 @@ Looking at the uniformly sampled results (blue), we find that just uniformly sam
 
 We hypothesised these two effects are due to the active learning approaches being biased, compared to the uniform sampling approach. Whereas the uniform sampling will by definition sample across all 9 horses in the active learning train set, the other two approaches may be biased to a reduced number of horses.
 
-To address this, we carried a new set of experiments. This time, to reduce the sampling bias and increase diversity, we computed AlexNet feature vectors for all images in the active learning set, and then clustered them using k-means.  When sampling them based on MPE or influence score, we now ensured we sampled alternatively from each of the clusters. 
+To address this, we propose a new set of experiments. This time, to reduce the sampling bias and increase diversity, we compute AlexNet feature vectors for all images in the active learning set, and then clustered them using k-means.  When sampling them based on MPE or influence score, we now ensure we sampled alternatively from each of the clusters. We are still working on this, but stay tuned for the results!
 
-```{image} ../images/active_learning_biased_results.png
+<!-- ```{image} ../images/active_learning_biased_results.png
 :alt: active_learning_biased_results
 :class: bg-primary mb-1
 :width: 500px
@@ -193,10 +193,11 @@ To address this, we carried a new set of experiments. This time, to reduce the s
 ```
 <p align = "center">
 <span style="color:red">TEMP FIGURE, RESULTS COMING SOON!</span>.
-</p>
+</p> -->
 
 ## Conclusions and next steps
-In this project, we carried out a short study of active learning approaches using DeepLabCut and the Horse-10 dataset. We focused on two main strategies to identify frames to label: one was based on the model's uncertainty on the estimated bodyparts per image (the MPE metric), and the other one was based on the images' appearance, and how representative they are of the whole unlabelled dataset (the influence metric). <span style="color:red">We found that... (results coming soon)</span>.
+In this project, we carried out a short study of active learning approaches using DeepLabCut and the Horse-10 dataset. We focused on two main strategies to identify frames to label: one was based on the model's uncertainty on the estimated bodyparts per image (the MPE metric), and the other one was based on the images' appearance, and how representative they are of the whole unlabelled dataset (the influence metric). On a preliminary analysis, we found the active learning strategies didn't perform better than uniform sampling. We hypothesised this is due to the biased introduced by these methods. We are continuing to work on this to understand fully the mechanisms at play...stay tuned for updates! :)
+<!-- <span style="color:red">We found that... (results coming soon)</span>. -->
 
 Regarding next steps, one aspect that may be relevant to explore is sampling images that show novel poses. We started some work in this direction, inspecting metrics to assess how novel a pose is, compared to the already seen data. We encoded poses as vectors holding the pairwise distances between bodyparts, and then computed how far a given 'novel' pose was from a distribution of already seen poses, using the Mahalanobis distance. 
 
@@ -234,7 +235,7 @@ This work was carried out by Sofia Minano, Sabrina Benas and Alex Mathis. We wou
 [[link]](https://arxiv.org/abs/1708.00489)
 
 (cit_kim2022)=
-[7] Kim, Y., & Shin, B. (2022, August). *In Defense of Core-set: A Density-aware Core-set Selection for Active Learning. *In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (pp. 804-812).[[link]](https://arxiv.org/abs/2206.04838)
+[7] Kim, Y., & Shin, B. (2022, August). *In Defense of Core-set: A Density-aware Core-set Selection for Active Learning.* In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (pp. 804-812).[[link]](https://arxiv.org/abs/2206.04838)
 
 (cit_caramalau2021)=
 [8] Caramalau, R., Bhattarai, B., & Kim, T. K. (2021). *Active learning for bayesian 3d hand pose estimation.* In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (pp. 3419-3428). [[link]](https://openaccess.thecvf.com/content/WACV2021/papers/Caramalau_Active_Learning_for_Bayesian_3D_Hand_Pose_Estimation_WACV_2021_paper.pdf)
