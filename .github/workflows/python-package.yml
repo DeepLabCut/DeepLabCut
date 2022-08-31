@@ -11,10 +11,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.8, 3.9, "3.10"] #3.9 only failing for tables on macos and windows; mwm 6302021
+        python-version: [3.8, 3.9, "3.10"]
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
