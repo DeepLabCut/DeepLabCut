@@ -3,7 +3,9 @@
 <!-- % PROBLEM -->
 One of the main disadvantages of applying supervised learning approaches in real-life scenarios is the need for relatively large amounts of good quality labeled data. For a pose estimation model to achieve good performance, we need to provide to it sufficient labelled examples during training [[1]](cit_primer). 
 
-In DeepLabCut, we do this by manually annotating a subset of frames in the GUI. We know that with enough training samples, that are representative of the data the model will see at inference time, our model will be able to generalise well to new data [[2]](cit_horse10). Although in DeepLabCut typically a few hundred labelled frames provide a good performance on videos that are similar to the training set, we are always interested in approaches that reduce the labelling effort.
+In DeepLabCut, we do this by manually annotating a subset of frames in the GUI. We know that with enough training samples, that are representative of the data the model will see at inference time, our model will be able to generalise well to new data [[2]](cit_horse10). Although in DeepLabCut typically a few hundred labelled frames provide a good performance on videos that are similar to the training set, we are always interested in approaches that reduce the labelling effort. 
+
+One way in which we expand the training set in DeepLabCut without additional labelling work is with data augmentation methods. Most standard data augmentation methods are readily available in DeepLabCut and it is easy to define a customized data augmentation pipeline; see this [this blog post](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/recipes/nn.md#using-custom-image-augmentation) for further details. Here, we discuss a different data-efficient approach based on a method called active learning.
 
 <!-- % FIGURE? -->
 
@@ -197,7 +199,7 @@ To address this, we propose a new set of experiments. This time, to reduce the s
 
 ## Conclusions and next steps
 In this project, we carried out a short study of active learning approaches using DeepLabCut and the Horse-10 dataset. We focused on two main strategies to identify frames to label: one was based on the model's uncertainty on the estimated bodyparts per image (the MPE metric), and the other one was based on the images' appearance, and how representative they are of the whole unlabelled dataset (the influence metric). On a preliminary analysis, we found the active learning strategies didn't perform better than uniform sampling. We hypothesised this is due to the biased introduced by these methods. We are continuing to work on this to understand fully the mechanisms at play...stay tuned for updates! :)
-<!-- <span style="color:red">We found that... (results coming soon)</span>. -->
+<span style="color:red">We found that... (results coming soon)</span>.
 
 Regarding next steps, one aspect that may be relevant to explore is sampling images that show novel poses. We started some work in this direction, inspecting metrics to assess how novel a pose is, compared to the already seen data. We encoded poses as vectors holding the pairwise distances between bodyparts, and then computed how far a given 'novel' pose was from a distribution of already seen poses, using the Mahalanobis distance. 
 
