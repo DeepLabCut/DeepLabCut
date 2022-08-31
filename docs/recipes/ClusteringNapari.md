@@ -16,7 +16,7 @@ User errors can be detrimental to model performance, so beyond just `check_label
 
 The DeepLabCut toolbox supports **active learning** by extracting outlier frames be several methods and allowing the user to correct the frames, then retrain the model. See the [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) for the detailed steps, or in the docs, [here](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#m-optional-active-learning-network-refinement-extract-outlier-frames).  
 
-To facilitate this process, here we propose a new way to detect 'outlier frames', which is planned to be released in Sept 2022. Your contributions and suggestions are welcomed, so test the [PR](https://github.com/DeepLabCut/napari-deeplabcut/pulls) and give us feedback!
+To facilitate this process, here we propose a new way to detect 'outlier frames', which is planned to be released in ~Sept 2022. Your contributions and suggestions are welcomed, so test the [PR](https://github.com/DeepLabCut/napari-deeplabcut/pull/38) and give us feedback!
 
 This #cookbook recipe aims to show a usecase of **clustering in napari** and is contributed by 2022 DLC AI Resident [Sabrina Benas](https://twitter.com/Sabrineiitor) 💜.
 
