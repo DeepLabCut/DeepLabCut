@@ -37,6 +37,8 @@ parts:
   - file: docs/recipes/BatchProcessing
   - file: docs/recipes/DLCMethods
   - file: docs/recipes/OpenVINO
+  - file: docs/recipes/flip_and_rotate_notebook_20220831
+  - file: docs/recipes/blog_post_about_fliplr_augmentation
 
 - caption: Mission & Contribute
   chapters:
