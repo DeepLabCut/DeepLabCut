@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Intel OpenVINO backend &#8212; DeepLabCut</title>
+    <title>Clustering in the napari-DeepLabCut GUI &#8212; DeepLabCut</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
-    <link rel="prev" title="How to write a DLC Methods Section" href="DLCMethods.html" />
+    <link rel="next" title="DeepLabCut-Live!" href="../deeplabcutlive.html" />
+    <link rel="prev" title="napari labeling GUI" href="../napariGUI.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -179,7 +179,7 @@ const thebe_selector_output = ".output, .cell_output"
   Graphical User Interfaces (GUIs)
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../PROJECT_GUI.html">
    Interactive Project Manager GUI
@@ -190,8 +190,8 @@ const thebe_selector_output = ".output, .cell_output"
    napari labeling GUI
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="ClusteringNapari.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Clustering in the napari-DeepLabCut GUI
   </a>
  </li>
@@ -242,7 +242,7 @@ const thebe_selector_output = ".output, .cell_output"
   Tutorials &amp; Cookbook
  </span>
 </p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../tutorial.html">
    Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
@@ -278,8 +278,8 @@ const thebe_selector_output = ".output, .cell_output"
    How to write a DLC Methods Section
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="OpenVINO.html">
    Intel OpenVINO backend
   </a>
  </li>
@@ -391,7 +391,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/OpenVINO.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/ClusteringNapari.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -419,7 +419,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../../_sources/docs/recipes/OpenVINO.md"
+        <a href="../../_sources/docs/recipes/ClusteringNapari.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -456,23 +456,132 @@ title="Print to PDF"
     </ul>
   </div>
 </div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
 
     </div>
 </div>
 
 <!-- Table of contents -->
 <div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#detect-outliers-to-refine-labels">
+   Detect Outliers to Refine Labels
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#open-napari-and-the-deeplabcut-plugin">
+     Open
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       napari
+      </span>
+     </code>
+     and the
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DeepLabCut
+      </span>
+      <span class="pre">
+       plugin
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#clustering">
+     Clustering
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#visualize-refine">
+     Visualize &amp; refine
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#what-s-coming">
+     What’s coming
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </nav>
 </div>
     </div>
     <div class="article row">
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Intel OpenVINO backend</h1>
+                <h1>Clustering in the napari-DeepLabCut GUI</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
                         
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#detect-outliers-to-refine-labels">
+   Detect Outliers to Refine Labels
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#open-napari-and-the-deeplabcut-plugin">
+     Open
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       napari
+      </span>
+     </code>
+     and the
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DeepLabCut
+      </span>
+      <span class="pre">
+       plugin
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#clustering">
+     Clustering
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#visualize-refine">
+     Visualize &amp; refine
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#what-s-coming">
+     What’s coming
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -480,25 +589,68 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="intel-openvino-backend">
-<h1>Intel OpenVINO backend<a class="headerlink" href="#intel-openvino-backend" title="Permalink to this headline">#</a></h1>
-<p>DeepLabCut provides an option to run deep learning model with <a class="reference external" href="https://github.com/openvinotoolkit/openvino">OpenVINO</a> backend.
-To enable OpenVINO in your pipeline, use <code class="docutils literal notranslate"><span class="pre">use_openvino</span></code> flag of <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> method with one of string values indicating device:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="clustering-in-the-napari-deeplabcut-gui">
+<h1>Clustering in the napari-DeepLabCut GUI<a class="headerlink" href="#clustering-in-the-napari-deeplabcut-gui" title="Permalink to this headline">#</a></h1>
+<p>To increase model performance, one can find the errors in the user-defined label (or in output H5 files after video inference). You can correct the errors and add them back into the training dataset, a process called active learning.</p>
+<p>User errors can be detrimental to model performance, so beyond just <code class="docutils literal notranslate"><span class="pre">check_labels</span></code>, this tool allows you to find your mistakes. If you are curious about how errors affect performance, read the paper: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0896627320307170">A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives</a>.</p>
+<p><strong>TL;DR: your data quality matters!</strong></p>
+  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661886442646-A9JAWGH3JU3WTTTPMNCW/swaps.jpg?format=1000w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p><strong>Labeling Pitfalls: How Corruptions Affect Performance</strong>
+(A) Illustration of two types of labeling errors. Top is ground truth, middle is missing a label at the tailbase, and bottom is if the labeler swapped the ear identity (left to right, etc.). (B) Using a small training dataset of 106 frames, how do the corruptions in (A) affect the percent of correct keypoints (PCK) on the test set as the distance to ground truth increases from 0 pixels (perfect prediction) to 20 pixels (larger error)? The x axis denotes the difference in the ground truth to the predicted location (RMSE in pixels), whereas the y axis is the fraction of frames considered accurate (e.g., z80% of frames fall within 9 pixels, even on this small training dataset, for points that are not corrupted, whereas for swapped points this falls to z65%). The fraction of the dataset that is corrupted affects this value. Shown is when missing the tailbase label (top) or swapping the ears in 1%, 5%, 10%, and 20% of frames (of 106 labeled training images). Swapping versus missing labels has a more notable adverse effect on network performance.</p>
+</div>
+<p>The DeepLabCut toolbox supports <strong>active learning</strong> by extracting outlier frames be several methods and allowing the user to correct the frames, then retrain the model. See the <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a> for the detailed steps, or in the docs, <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#m-optional-active-learning-network-refinement-extract-outlier-frames">here</a>.</p>
+<p>To facilitate this process, here we propose a new way to detect ‘outlier frames’, which is planned to be released in ~Sept 2022. Your contributions and suggestions are welcomed, so test the <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/pull/38">PR</a> and give us feedback!</p>
+<p>This #cookbook recipe aims to show a usecase of <strong>clustering in napari</strong> and is contributed by 2022 DLC AI Resident <a class="reference external" href="https://twitter.com/Sabrineiitor">Sabrina Benas</a> 💜.</p>
+<section id="detect-outliers-to-refine-labels">
+<h2>Detect Outliers to Refine Labels<a class="headerlink" href="#detect-outliers-to-refine-labels" title="Permalink to this headline">#</a></h2>
+<section id="open-napari-and-the-deeplabcut-plugin">
+<h3>Open <code class="docutils literal notranslate"><span class="pre">napari</span></code> and the <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span> <span class="pre">plugin</span></code><a class="headerlink" href="#open-napari-and-the-deeplabcut-plugin" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
-<li><p>“CPU” - Use CPU. This is a default value.</p></li>
-<li><p>“GPU” - Use iGPU (requires OpenCL to be installed). First launch might take some time for kernels initialization.</p></li>
-<li><p>“MULTI:CPU,GPU” - Use CPU and GPU simultaneously. In most cases this option provides the best efficiency.</p></li>
+<li><p>Then open your <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file. We used the Horse-30 dataset, presented in <a class="reference external" href="http://horse10.deeplabcut.org/">Mathis, Biasi et al. WACV 2022</a>, as our demo and development set. Here is an example of what it should look like:</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">analyze_videos</span><span class="p">(</span>
-    <span class="o">...</span>
-    <span class="n">use_openvino</span><span class="o">=</span><span class="s2">&quot;MULTI:CPU,GPU&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
+  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885256863-M67UV06P8JHAR1243K1F/1.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+</section>
+<section id="clustering">
+<h3>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">#</a></h3>
+<ul>
+<li><p>Click on the button <code class="docutils literal notranslate"><span class="pre">cluster</span></code> and wait a few seconds until it displays a new layer with the cluster:</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885257126-HRBHYJNJHE0TFH42L034/2.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+</li>
+</ul>
+<p>You can click on a point and see the image on the right with the keypoints:</p>
+  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255947-G8PFQC41KDMV6JH75RSO/2_b.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+</section>
+<section id="visualize-refine">
+<h3>Visualize &amp; refine<a class="headerlink" href="#visualize-refine" title="Permalink to this headline">#</a></h3>
+<p>If you decided to refine that frame (we moved the points to make outliers obvious), click <code class="docutils literal notranslate"><span class="pre">show</span> <span class="pre">img</span></code> and refine them using the plugin features and instructions:</p>
+  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255421-B9QEUDOJANXWYX4K649G/3.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>When you’re done, you need to click <code class="docutils literal notranslate"><span class="pre">ctl-s</span></code> to save it.</p>
 </div>
-<p>OpenVINO is an optional dependency. You can install it with DeepLabCut bu the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install deeplabcut<span class="o">[</span>openvino<span class="o">]</span>
-</pre></div>
+<ul class="simple">
+<li><p>You can go back to the cluster layer by clicking on <code class="docutils literal notranslate"><span class="pre">close</span> <span class="pre">img</span></code> and refine another image. Reminder, when you’re done editing you need to click <code class="docutils literal notranslate"><span class="pre">ctl-s</span></code> to save your work. And now you can take the updated <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> file, create and <strong>new training shuffle</strong>, and train the network! Read more about how to <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#f-create-training-dataset-s">create a training dataset</a>.</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>If you want to change the clustering method, you can modify the file <a class="reference external" href="https://github.com/DeepLabCutAIResidency/napari-deeplabcut/blob/cluster1/src/napari_deeplabcut/kmeans.py">kmeans.py</a></p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>You have to keep the way the file is opened (pandas dataframe) and the output has to be the cluster points, the points colors in the cluster colors and the frame names (in this order).</p>
 </div>
+</div>
+</section>
+<section id="what-s-coming">
+<h3>What’s coming<a class="headerlink" href="#what-s-coming" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p>Right now we demo the feature with user-labels, which are always worth checking and correcting for the best models!</p></li>
+<li><p>Next, we will support the machine-labeled.h5 files for full active learning support.</p></li>
+</ul>
+<p>Happy Hacking!</p>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -528,17 +680,17 @@ To enable OpenVINO in your pipeline, use <code class="docutils literal notransla
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="DLCMethods.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../napariGUI.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">How to write a DLC Methods Section</p>
+            <p class="prev-next-title">napari labeling GUI</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../MISSION_AND_VALUES.html" title="next page">
+    <a class='right-next' id="next-link" href="../deeplabcutlive.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Mission and Values of DeepLabCut</p>
+        <p class="prev-next-title">DeepLabCut-Live!</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
