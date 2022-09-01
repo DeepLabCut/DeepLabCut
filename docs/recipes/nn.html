@@ -634,6 +634,7 @@ more information). Although data augmentation is automatically accomplished
 by DeepLabCut, default values (see the augmentation variables in the
 <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml#L23-L74">default pose_cfg.yaml</a> file)
 can be readily overwritten prior to training.</p>
+<p>Another option we discuss is a different data-efficient approach based on a method called active learning. See this <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/recipes/nn.md#using-custom-image-augmentation">this blog post</a> for further details.</p>
 <p>When you <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset">you have several options</a> on what types of augmentation to use.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">configpath</span><span class="p">,</span> <span class="n">augmenter_type</span><span class="o">=</span><span class="s1">&#39;imgaug&#39;</span><span class="p">)</span>
 </pre></div>
