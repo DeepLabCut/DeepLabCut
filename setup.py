@@ -48,8 +48,9 @@ setuptools.setup(
     extras_require={
         "gui": [
             "PySide2==5.15.2.1",
+            "napari[pyside2]",
             "qdarkstyle==3.1",
-            "napari-deeplabcut>=0.0.3",
+            "napari-deeplabcut>=0.0.6",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
