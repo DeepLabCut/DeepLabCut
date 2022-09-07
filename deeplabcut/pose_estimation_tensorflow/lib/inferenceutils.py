@@ -13,8 +13,10 @@ import multiprocessing
 import networkx as nx
 import numpy as np
 import operator
+import os
 import pandas as pd
 import pickle
+import shelve
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
@@ -220,6 +222,42 @@ class Assembly:
         return pdist(self.xy, metric="sqeuclidean")
 
 
+class _Shelf(shelve.DbfilenameShelf):
+
+    def __setitem__(self, key, value):
+        return super().__setitem__(str(key), value)
+
+    def __getitem__(self, key):
+        return super().__getitem__(str(key))
+
+    def get(self, key, default=None):
+        return super().get(str(key), default)
+
+
+class _NestedShelf(shelve.DbfilenameShelf):
+
+    @staticmethod
+    def stringify(key):
+        if isinstance(key, tuple):
+            key = ','.join(map(str, key))
+        return str(key)
+
+    @staticmethod
+    def split(key):
+        if isinstance(key, tuple):
+            return key
+        return key.split(",")
+
+    def __setitem__(self, key, value):
+        return super().__setitem__(self.stringify(key), value)
+
+    def __getitem__(self, key):
+        return super().__getitem__(self.stringify(key))
+
+    def get(self, key, default=None):
+        return super().get(self.stringify(key), default)
+
+
 class Assembler:
     def __init__(
         self,
@@ -240,6 +278,7 @@ class Assembler:
         add_discarded=False,
         window_size=0,
         method="m1",
+        shelf_path="",
     ):
         self.data = data
         self.metadata = self.parse_metadata(self.data)
@@ -262,17 +301,31 @@ class Assembler:
         self.add_discarded = add_discarded
         self.window_size = window_size
         self.method = method
+        self.shelf_path = shelf_path
         self.graph = graph or self.metadata["paf_graph"]
         self.paf_inds = paf_inds or self.metadata["paf"]
         self._gamma = 0.01
         self._trees = dict()
         self.safe_edge = False
         self._kde = None
-        self.assemblies = dict()
-        self.unique = dict()
+        self._init_storage()
 
     def __getitem__(self, item):
         return self.data[self.metadata["imnames"][item]]
+
+    @property
+    def assemblies(self):
+        return self._iter_data("assemblies")
+
+    @property
+    def unique(self):
+        return self._iter_data("unique")
+
+    def _iter_data(self, attr):
+        for k, v in self._assemblies.items():
+            group, ind = _NestedShelf.split(k)
+            if group == attr:
+                yield int(ind), v
 
     @property
     def n_keypoints(self):
@@ -773,9 +826,21 @@ class Assembler:
 
         return assemblies, unique
 
+    def _init_storage(self):
+        if self.shelf_path:
+            self._assemblies = _NestedShelf(self.shelf_path, "n")
+        else:
+            self._assemblies = dict()
+
+    def _store_data(self, key, ind, value):
+        k = (key, ind)
+        if self.shelf_path:
+            self._assemblies[k] = value
+        else:
+            self._assemblies[_NestedShelf.stringify(k)] = value
+
     def assemble(self, chunk_size=1, n_processes=None):
-        self.assemblies = dict()
-        self.unique = dict()
+        self._init_storage()
         # Spawning (rather than forking) multiple processes does not
         # work nicely with the GUI or interactive sessions.
         # In that case, we fall back to the serial assembly.
@@ -783,9 +848,9 @@ class Assembler:
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
-                    self.assemblies[i] = assemblies
+                    self._store_data("assemblies", i, unique)
                 if unique is not None:
-                    self.unique[i] = unique
+                    self._store_data("unique", i, unique)
         else:
             global wrapped  # Hack to make the function pickable
 
@@ -799,9 +864,9 @@ class Assembler:
                         wrapped, range(n_frames), chunksize=chunk_size
                     ):
                         if assemblies:
-                            self.assemblies[i] = assemblies
+                            self._store_data("assemblies", i, assemblies)
                         if unique is not None:
-                            self.unique[i] = unique
+                            self._store_data("unique", i, unique)
                         pbar.update()
 
     @staticmethod
