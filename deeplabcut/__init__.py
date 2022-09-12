@@ -15,22 +15,18 @@ import tensorflow as tf
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
-from deeplabcut import DEBUG
 from deeplabcut.version import __version__, VERSION
 
 print(f"Loading DLC {VERSION}...")
 
 try:
-    from deeplabcut import generate_training_dataset
-    from deeplabcut import refine_training_dataset
-
-    from deeplabcut.gui import select_crop_parameters
-    from deeplabcut.gui.launch_script import launch_dlc
-    from deeplabcut.gui.label_frames import label_frames
-    from deeplabcut.gui.refine_labels import refine_labels
     from deeplabcut.gui.tracklet_toolbox import refine_tracklets
-
-    from deeplabcut.utils.skeleton import SkeletonBuilder
+    from deeplabcut.gui.launch_script import launch_dlc
+    from deeplabcut.gui.tabs.label_frames import (
+        label_frames,
+        refine_labels,
+    )
+    from deeplabcut.gui.widgets import SkeletonBuilder
 except (ModuleNotFoundError, ImportError):
     print(
         "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
