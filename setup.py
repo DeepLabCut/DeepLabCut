@@ -67,8 +67,15 @@ setuptools.setup(
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
-                "deeplabcut/gui/assets/*.png",
-                "deeplabcut/gui/assets/icons/*.png"
+                "deeplabcut/gui/assets/logo.png",
+                "deeplabcut/gui/assets/logo_transparent.png",
+                "deeplabcut/gui/assets/welcome.png",
+                "deeplabcut/gui/assets/icons/help.png",
+                "deeplabcut/gui/assets/icons/help2.png",
+                "deeplabcut/gui/assets/icons/new_project.png",
+                "deeplabcut/gui/assets/icons/new_project2.png",
+                "deeplabcut/gui/assets/icons/open.png",
+                "deeplabcut/gui/assets/icons/open2.png"
             ],
         )
     ],
