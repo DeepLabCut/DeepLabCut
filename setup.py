@@ -39,6 +39,7 @@ setuptools.setup(
         "statsmodels>=0.11",
         "tables>=3.7.0",
         "tensorflow>=2.0",
+        "torch",
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
         "tqdm",
@@ -49,6 +50,7 @@ setuptools.setup(
         "gui": [
             "PySide2==5.15.2.1",
             "napari[pyside2]",
+            "opencv-python-headless",
             "qdarkstyle==3.1",
             "napari-deeplabcut>=0.0.6",
         ],
