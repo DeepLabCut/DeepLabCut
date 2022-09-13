@@ -358,8 +358,8 @@ class TensorpackPoseDataset(BasePoseDataset):
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
-                j_x = np.asscalar(joint_pt[0])
-                j_y = np.asscalar(joint_pt[1])
+                j_x = np.asarray(joint_pt[0]).item()
+                j_y = np.asarray(joint_pt[1]).item()
 
                 # don't loop over entire heatmap, but just relevant locations
                 j_x_sm = round((j_x - half_stride) / stride)

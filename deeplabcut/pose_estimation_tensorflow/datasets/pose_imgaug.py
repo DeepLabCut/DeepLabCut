@@ -338,7 +338,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             if self.has_gt:
                 joints = data_item.joints
                 kpts = np.full((self._n_kpts, 2), np.nan)
-                
+
                 for n, x, y in joints[0]:
                     kpts[int(n)] = x, y
 
@@ -413,7 +413,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             )
 
             image_shape = np.array(batch_images).shape[1:3]
-            
+
             batch_joints_valid = []
             joint_ids_valid = []
             for joints, ids in zip(batch_joints, joint_ids):
@@ -432,7 +432,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
                 batch_joints_valid.append(joints[inside])
                 joint_ids_valid.append([ids[inside]])
-            
+
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
@@ -492,9 +492,9 @@ class ImgaugPoseDataset(BasePoseDataset):
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
-                j_x = np.asscalar(joint_pt[0])
+                j_x = np.asarray(joint_pt[0]).item()
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
-                j_y = np.asscalar(joint_pt[1])
+                j_y = np.asarray(joint_pt[1]).item()
                 j_y_sm = round((j_y - self.half_stride) / self.stride)
                 map_j = grid.copy()
                 # Distance between the joint point and each coordinate
@@ -539,9 +539,9 @@ class ImgaugPoseDataset(BasePoseDataset):
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
-                j_x = np.asscalar(joint_pt[0])
+                j_x = np.asarray(joint_pt[0]).item()
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
-                j_y = np.asscalar(joint_pt[1])
+                j_y = np.asarray(joint_pt[1]).item()
                 j_y_sm = round((j_y - self.half_stride) / self.stride)
                 min_x = round(max(j_x_sm - dist_thresh - 1, 0))
                 max_x = round(min(j_x_sm + dist_thresh + 1, width - 1))
