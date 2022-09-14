@@ -41,15 +41,16 @@ def launch_dlc():
     # Set up a logger and add an stdout handler.
     # A single logger can have many handlers:
     # https://docs.python.org/3/howto/logging.html#handler-basic
-    logger = logging.getLogger("GUI")
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(stream=sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S"
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    # TODO Dump to log file instead
+    # logger = logging.getLogger("GUI")
+    # logger.setLevel(logging.DEBUG)
+    # handler = logging.StreamHandler(stream=sys.stdout)
+    # handler.setLevel(logging.DEBUG)
+    # formatter = logging.Formatter(
+    #     "%(asctime)s - %(name)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S"
+    # )
+    # handler.setFormatter(formatter)
+    # logger.addHandler(handler)
 
     from deeplabcut.gui.window import MainWindow
 
