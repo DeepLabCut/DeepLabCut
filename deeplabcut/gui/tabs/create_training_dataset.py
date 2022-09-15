@@ -23,7 +23,6 @@ class CreateTrainingDataset(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(CreateTrainingDataset, self).__init__(root, parent, h1_description)
 
-        self.userfeedback = False
         self.model_comparison = False
 
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
@@ -74,7 +73,6 @@ class CreateTrainingDataset(DefaultTab):
 
     def create_training_dataset(self):
         shuffle = self.shuffle.value()
-        userfeedback = self.userfeedback
 
         if self.model_comparison:
             raise NotImplementedError
@@ -82,7 +80,6 @@ class CreateTrainingDataset(DefaultTab):
             deeplabcut.create_training_model_comparison(
                 config_file,
                 num_shuffles=shuffle,
-                userfeedback=userfeedback,
                 net_types=self.net_type,
                 augmenter_types=self.aug_type,
             )
@@ -99,7 +96,6 @@ class CreateTrainingDataset(DefaultTab):
                     self.root.config,
                     shuffle,
                     Shuffles=[self.shuffle.value()],
-                    userfeedback=userfeedback,
                     net_type=self.net_choice.currentText(),
                     augmenter_type=self.aug_choice.currentText(),
                 )

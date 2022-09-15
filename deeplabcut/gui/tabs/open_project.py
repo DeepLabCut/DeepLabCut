@@ -13,7 +13,6 @@ class OpenProject(QtWidgets.QDialog):
 
         self.config = None
         self.loaded = False
-        self.user_fbk = True
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.layout_open()
@@ -38,18 +37,11 @@ class OpenProject(QtWidgets.QDialog):
         load_button = QtWidgets.QPushButton("Browse")
         load_button.clicked.connect(self.load_config)
 
-        label = QtWidgets.QLabel("Optional Attributes:")
-
-        ch_box = QCheckBox("User feedback")
-        ch_box.stateChanged.connect(self.activate_fbk)
-
         grid = QtWidgets.QGridLayout(self.open_frame)
         grid.setSpacing(30)
         grid.addWidget(open_label, 0, 0)
         grid.addWidget(self.open_line, 0, 1)
         grid.addWidget(load_button, 1, 1)
-        grid.addWidget(label, 2, 0)
-        grid.addWidget(ch_box, 2, 1)
 
         return self.open_frame
 
@@ -66,14 +58,6 @@ class OpenProject(QtWidgets.QDialog):
         self.config = config[0]
         self.open_line.setText(self.config)
         self.ok_button.setFocus()
-
-    def activate_fbk(self, state):
-        # Activates the feedback option
-        # TODO: finish functionality: with user feedback (self.user_fbk = True) / without (self.user_fbk = False)
-        if state == QtCore.Qt.Checked:
-            self.user_fbk = True
-        else:
-            self.user_fbk = False
 
     def open_project(self):
         if self.config == "":

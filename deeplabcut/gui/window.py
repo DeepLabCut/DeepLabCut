@@ -58,7 +58,6 @@ class MainWindow(QMainWindow):
 
         self.config = None
         self.loaded = False
-        self.user_feedback = False
 
         self.shuffle_value = 1
         self.trainingset_index = 0
@@ -332,7 +331,7 @@ class MainWindow(QMainWindow):
 
         self.recentfiles_menu = self.file_menu.addMenu("Open Recent")
         self.recentfiles_menu.triggered.connect(
-            lambda a: self._update_project_state(a.text(), True, False)
+            lambda a: self._update_project_state(a.text(), True)
         )
         self.file_menu.addAction(self.saveAction)
         self.file_menu.addAction(self.exitAction)
@@ -366,10 +365,9 @@ class MainWindow(QMainWindow):
         self.toolbar.removeAction(self.openAction)
         self.toolbar.removeAction(self.helpAction)
 
-    def _update_project_state(self, config, loaded, user_feedback):
+    def _update_project_state(self, config, loaded):
         self.config = config
         self.loaded = loaded
-        self.user_feedback = user_feedback
         if loaded:
             self.add_recent_filename(self.config)
             self.add_tabs()
@@ -388,7 +386,6 @@ class MainWindow(QMainWindow):
             self._update_project_state(
                 open_project.config,
                 open_project.loaded,
-                open_project.user_fbk,
             )
 
     def load_config(self, config):

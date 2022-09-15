@@ -96,12 +96,6 @@ class ExtractFrames(DefaultTab):
             self.log_extraction_method
         )
 
-        # User feedback
-        self.user_feedback_checkbox = QtWidgets.QCheckBox("User feedback")
-        self.user_feedback_checkbox.setCheckState(Qt.Unchecked)
-        self.user_feedback_checkbox.stateChanged.connect(self.log_user_feedback_choice)
-        self.user_feedback_checkbox.hide()  # NOTE: Not sure what feedback should be doing
-
         # Frame extraction algorithm
         ext_algo_label = QtWidgets.QLabel("Extraction algorithm")
         self.extraction_algorithm_widget = QtWidgets.QComboBox()
@@ -131,8 +125,6 @@ class ExtractFrames(DefaultTab):
         self.slider_width_widget.setValue(25)
         self.slider_width_widget.setEnabled(False)
 
-        layout.addWidget(self.user_feedback_checkbox, 0, 1)
-
         layout.addWidget(ext_method_label, 1, 0)
         layout.addWidget(self.extraction_method_widget, 1, 1)
         layout.addWidget(gui_slider_label, 1, 2)
@@ -145,12 +137,6 @@ class ExtractFrames(DefaultTab):
 
         layout.addWidget(frame_crop_label, 3, 0)
         layout.addWidget(self.frame_cropping_widget, 3, 1)
-
-    def log_user_feedback_choice(self, state):
-        if state == Qt.Checked:
-            self.root.logger.info("User feedback ENABLED")
-        else:
-            self.root.logger.info("User feedback DISABLED")
 
     def log_extraction_algorithm(self, extraction_algorithm):
         self.root.logger.info(f"Extraction method set to {extraction_algorithm}")
@@ -171,14 +157,6 @@ class ExtractFrames(DefaultTab):
     def log_frame_cropping_choice(self, cropping_option):
         self.root.logger.info(f"Cropping set to '{cropping_option}'")
 
-    def update_feedback_choice(self, s):
-        if s == Qt.Checked:
-            self.feedback = True
-            self.root.logger.info("Enabling user feedback.")
-        else:
-            self.feedback = False
-            self.root.logger.info("Disabling user feedback.")
-
     def extract_frames(self):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
@@ -187,7 +165,6 @@ class ExtractFrames(DefaultTab):
             return
 
         algo = self.extraction_algorithm_widget.currentText()
-        userfeedback = self.user_feedback_checkbox.checkState() == Qt.Checked
         clusterstep = self.cluster_step_widget.value()
         slider_width = self.slider_width_widget.value()
 
@@ -204,7 +181,6 @@ class ExtractFrames(DefaultTab):
             mode,
             algo,
             crop=crop,
-            userfeedback=userfeedback,
             cluster_step=clusterstep,
             cluster_resizewidth=30,
             cluster_color=False,

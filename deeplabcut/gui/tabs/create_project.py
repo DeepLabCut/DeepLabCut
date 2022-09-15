@@ -150,7 +150,6 @@ class ProjectCreator(QtWidgets.QDialog):
                 self.parent._update_project_state(
                     config=config,
                     loaded=True,
-                    user_feedback=False,
                 )
         except FileExistsError:
             print('Project "{}" already exists!'.format(self.proj_default))
