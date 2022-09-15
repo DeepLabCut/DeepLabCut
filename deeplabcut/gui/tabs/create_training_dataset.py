@@ -13,6 +13,10 @@ from deeplabcut.gui.components import (
 )
 
 import deeplabcut
+from deeplabcut.utils.auxiliaryfunctions import (
+    get_data_and_metadata_filenames,
+    get_training_set_folder,
+)
 
 
 class CreateTrainingDataset(DefaultTab):
@@ -99,20 +103,47 @@ class CreateTrainingDataset(DefaultTab):
                     net_type=self.net_choice.currentText(),
                     augmenter_type=self.aug_choice.currentText(),
                 )
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("The training dataset is successfully created.")
-            msg.setInformativeText(
-                "Use the function 'train_network' to start training. Happy training!"
-            )
+            # Check that training data files were indeed created.
+            trainingsetfolder = get_training_set_folder(self.root.cfg)
+            filenames = list(get_data_and_metadata_filenames(
+                trainingsetfolder,
+                self.root.cfg["TrainingFraction"][0],
+                self.shuffle.value(),
+                self.root.cfg,
+            ))
+            if self.root.is_multianimal:
+                filenames[0] = filenames[0].replace("mat", "pickle")
+            if all(
+                os.path.exists(os.path.join(self.root.project_folder, file))
+                for file in filenames
+            ):
+                msg = _create_message_box(
+                    "The training dataset is successfully created.",
+                    "Use the function 'train_network' to start training. Happy training!",
+                )
+                msg.exec_()
+                self.root.writer.write("Training dataset successfully created.")
+            else:
+                msg = _create_message_box(
+                    "The training dataset could not be created.",
+                    "Make sure there are annotated data under labeled-data.",
+                )
+                msg.exec_()
+                self.root.writer.write("Training dataset creation failed.")
 
-            msg.setWindowTitle("Info")
-            msg.setMinimumWidth(900)
-            self.logo_dir = (
-                os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            )
-            self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-        self.root.writer.write("Training dataset successfully created.")
+
+def _create_message_box(text, info_text):
+    msg = QtWidgets.QMessageBox()
+    msg.setIcon(QtWidgets.QMessageBox.Information)
+    msg.setText(text)
+    msg.setInformativeText(info_text)
+
+    msg.setWindowTitle("Info")
+    msg.setMinimumWidth(900)
+    logo_dir = (
+            os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+    )
+    logo = logo_dir + "/assets/logo.png"
+    msg.setWindowIcon(QIcon(logo))
+    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    return msg
