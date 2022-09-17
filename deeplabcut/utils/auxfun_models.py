@@ -44,9 +44,17 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
         # Exit the function early if an unknown modeltype is provided.
         return parent_path, -1
 
+    exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
+    try:
+        for file in os.listdir(model_path.parent):
+            if model_path.name in file:
+                exists = True
+                break
+    except FileNotFoundError:
+        pass
 
-    if not model_path.exists():
+    if not exists:
         if "efficientnet" in modeltype:
             download_weights(modeltype, model_path.parent)
         else:
