@@ -130,12 +130,13 @@ Please check out the following references for more details:
         year      = {2021},
         pages     = {1859-1868}}
         
-    @article{Lauer2021MultianimalPE,
-        title = {Multi-animal pose estimation and tracking with DeepLabCut},
-        author = {Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Tanmay Nath and Mohammed Mostafizur Rahman and V. Di Santo and Daniel Soberanes and         Guoping Feng and V. Murthy and G. Lauder and C. Dulac and M. Mathis and Alexander Mathis},
-        journal = {bioRxiv},
-        year = {2021}
-        url = {https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1}}
+    @article{Lauer2022MultianimalPE,
+        title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
+        author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
+        journal={Nature Methods},
+        year={2022},
+        volume={19},
+        pages={496 - 504}}
 
     @article{insafutdinov2016eccv,
         title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
@@ -171,8 +172,7 @@ Other open-access pre-prints related to our work on DeepLabCut:
         publisher = {Cold Spring Harbor Laboratory},
         URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
         eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
-        journal = {bioRxiv}
-        }
+        journal = {bioRxiv}}
 
 ## License:
 
@@ -180,7 +180,7 @@ This project is licensed under the GNU Lesser General Public License v3.0. Note 
 
 ## Versions:
 
-VERSION 2.2: Multi-animal pose estimation and tracking with DeepLabCut.
+VERSION 2.2: Multi-animal pose estimation and tracking with DeepLabCut is supported (as well as single-animal projects).
 
 VERSION 2.0-2.1: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that was originally released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
 This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and data augmentation tools that improve network performance, especially in challenging cases (see [panel b](https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077)).
