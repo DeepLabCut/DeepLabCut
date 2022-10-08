@@ -2,6 +2,7 @@ ipython
 filterpy
 ruamel.yaml>=0.15.0
 intel-openmp
+imageio-ffmpeg
 imgaug==0.4.0
 numba>=0.54.0
 matplotlib
