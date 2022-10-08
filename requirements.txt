@@ -5,7 +5,7 @@ intel-openmp
 imageio-ffmpeg
 imgaug==0.4.0
 numba>=0.54.0
-matplotlib
+matplotlib<=3.5.2
 napari-deeplabcut>=0.0.6
 networkx>=2.6
 numpy>=1.18.5
