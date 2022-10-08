@@ -28,6 +28,7 @@ setuptools.setup(
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
+        "imageio-ffmpeg",
         "numba>=0.54",
         "matplotlib>=3.3",
         "networkx>=2.6",
