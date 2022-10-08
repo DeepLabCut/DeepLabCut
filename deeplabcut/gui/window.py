@@ -419,13 +419,13 @@ class MainWindow(QMainWindow):
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
         self.manage_project = ManageProject(
-            root=self, parent=None, h1_description="DeepLabCut - Step 1. Manage Project"
+            root=self, parent=None, h1_description="DeepLabCut - Manage Project"
         )
         self.extract_frames = ExtractFrames(
-            root=self, parent=None, h1_description="DeepLabCut - Step 2. Extract Frames"
+            root=self, parent=None, h1_description="DeepLabCut - Extract Frames"
         )
         self.label_frames = LabelFrames(
-            root=self, parent=None, h1_description="DeepLabCut - Step 3. Label Frames"
+            root=self, parent=None, h1_description="DeepLabCut - Label Frames"
         )
         self.create_training_dataset = CreateTrainingDataset(
             root=self,
@@ -433,15 +433,15 @@ class MainWindow(QMainWindow):
             h1_description="DeepLabCut - Step 4. Create training dataset",
         )
         self.train_network = TrainNetwork(
-            root=self, parent=None, h1_description="DeepLabCut - Step 5. Train network"
+            root=self, parent=None, h1_description="DeepLabCut - Train network"
         )
         self.evaluate_network = EvaluateNetwork(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Step 6. Evaluate Network",
+            h1_description="DeepLabCut - Evaluate Network",
         )
         self.analyze_videos = AnalyzeVideos(
-            root=self, parent=None, h1_description="DeepLabCut - Step 7. Analyze Videos"
+            root=self, parent=None, h1_description="DeepLabCut - Analyze Videos"
         )
         self.unsupervised_id_tracking = UnsupervizedIdTracking(
             root=self,
@@ -451,15 +451,15 @@ class MainWindow(QMainWindow):
         self.create_videos = CreateVideos(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Optional Step. Create Videos",
+            h1_description="DeepLabCut - Create Videos",
         )
         self.extract_outlier_frames = ExtractOutlierFrames(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Step 8. Extract outlier frame",
+            h1_description="DeepLabCut - Step 8. Extract outlier frames",
         )
         self.refine_tracklets = RefineTracklets(
-            root=self, parent=None, h1_description="DeepLabCut - Step 9. Refine labels"
+            root=self, parent=None, h1_description="DeepLabCut - Refine labels"
         )
         self.video_editor = VideoEditor(
             root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
