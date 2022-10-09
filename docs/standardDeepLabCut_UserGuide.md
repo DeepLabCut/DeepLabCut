@@ -480,7 +480,7 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
-##### API Docs
+#### API Docs
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
