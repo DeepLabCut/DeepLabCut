@@ -284,7 +284,7 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate_notebook_20220831.html">
+  <a class="reference internal" href="recipes/flip_and_rotate.html">
    Improving network performance on unbalanced data via augmentation 🦇
   </a>
  </li>
@@ -484,12 +484,21 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
-   *
+  <a class="reference internal nav-link" href="#attention-our-code-base-in-this-repo-assumes-you">
    <strong>
-    If you need more than 2 camera support:
+    ATTENTION: Our code base in this repo assumes you:
    </strong>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
+     *
+     <strong>
+      If you need more than 2 camera support:
+     </strong>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#jump-in-with-direct-deeplabcut-2-camera-support">
@@ -548,12 +557,21 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
-   *
+  <a class="reference internal nav-link" href="#attention-our-code-base-in-this-repo-assumes-you">
    <strong>
-    If you need more than 2 camera support:
+    ATTENTION: Our code base in this repo assumes you:
    </strong>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-you-need-more-than-2-camera-support">
+     *
+     <strong>
+      If you need more than 2 camera support:
+     </strong>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#jump-in-with-direct-deeplabcut-2-camera-support">
@@ -606,12 +624,13 @@ title="Print to PDF"
 <span id="d-overview"></span><h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Permalink to this headline">#</a></h1>
 <p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
-<p><strong>ATTENTION: Our code base in this repo assumes you:</strong></p>
+<section id="attention-our-code-base-in-this-repo-assumes-you">
+<h2><strong>ATTENTION: Our code base in this repo assumes you:</strong><a class="headerlink" href="#attention-our-code-base-in-this-repo-assumes-you" title="Permalink to this headline">#</a></h2>
 <p>A. You have 2D videos and a DeepLabCut network to analyze them as described in the <a class="reference internal" href="UseOverviewGuide.html#overview"><span class="std std-ref">main documentation</span></a>. This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See <a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">Nath*, Mathis* et al., 2019</a>). We also support multi-animal 3D with this code (please see <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>).</p>
 <p>B. You are using 2 cameras, in a <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223">stereo configuration</a>, for 3D*.</p>
 <p>C. You have calibration images taken (see details below!).</p>
 <section id="if-you-need-more-than-2-camera-support">
-<h2>*<strong>If you need more than 2 camera support:</strong><a class="headerlink" href="#if-you-need-more-than-2-camera-support" title="Permalink to this headline">#</a></h2>
+<h3>*<strong>If you need more than 2 camera support:</strong><a class="headerlink" href="#if-you-need-more-than-2-camera-support" title="Permalink to this headline">#</a></h3>
 <p>Here are other excellent options for you to use that extend DeepLabCut:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
 <ul class="simple">
@@ -619,6 +638,7 @@ title="Print to PDF"
 <li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut that provides &gt;3 camera support and is built to work directly with DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
 <li><p><strong>Argus, easywand or DLTdv</strong> w/DeepLabCut see <a class="reference external" href="https://github.com/haliaetus13/DLCconverterDLT">https://github.com/haliaetus13/DLCconverterDLT</a>; this can be used with the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
 </ul>
+</section>
 </section>
 <section id="jump-in-with-direct-deeplabcut-2-camera-support">
 <h2>Jump in with direct DeepLabCut 2-camera support:<a class="headerlink" href="#jump-in-with-direct-deeplabcut-2-camera-support" title="Permalink to this headline">#</a></h2>

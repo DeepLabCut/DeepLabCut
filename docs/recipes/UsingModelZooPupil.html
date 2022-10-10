@@ -284,7 +284,7 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="flip_and_rotate_notebook_20220831.html">
+  <a class="reference internal" href="flip_and_rotate.html">
    Improving network performance on unbalanced data via augmentation 🦇
   </a>
  </li>
@@ -575,7 +575,7 @@ title="Print to PDF"
 <section id="mouse-pupil-vclose-model">
 <h2><code class="docutils literal notranslate"><span class="pre">mouse_pupil_vclose</span></code> model<a class="headerlink" href="#mouse-pupil-vclose-model" title="Permalink to this headline">#</a></h2>
 <p>This model was contributed by Jim McBurney-Lin at University of California Riverside, USA.
-The model was trained on images of C57/B6J mice eyes, and also then agumented with mouse eye data from the Mathis Lab at EPFL.</p>
+The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at EPFL.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
   <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618750-97KC2HW8HH6VOJHLMO46/pupil_two.png?format=300w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 <table class="colwidths-auto table">
@@ -630,7 +630,7 @@ The model was trained on images of C57/B6J mice eyes, and also then agumented wi
 <section id="jupyter-google-colab-notebook">
 <h3>Jupyter &amp; Google Colab Notebook<a class="headerlink" href="#jupyter-google-colab-notebook" title="Permalink to this headline">#</a></h3>
 <p>DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need for local installation of DeepLabCut!</p>
-<p>Since we are interested in the accuracy of the <strong>mouse_pupil_vclose</strong> on pigeon pupil data, we will use a video which consits of 7 recordings of pigeon pupils.</p>
+<p>Since we are interested in the accuracy of the <strong>mouse_pupil_vclose</strong> on pigeon pupil data, we will use a video which consists of 7 recordings of pigeon pupils.</p>
 <p>Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab.</p>
 <div align="center">
   <a href="https://www.youtube.com/watch?v=twHBa1ZvXM8" target= "_blank"><img src="http://img.youtube.com/vi/twHBa1ZvXM8/0.jpg" alt="IMAGE ALT TEXT"></a>
@@ -649,13 +649,13 @@ files.download(&quot;/content/file.zip&quot;)
 <h3>Analyze Videos at Your Local Machine<a class="headerlink" href="#analyze-videos-at-your-local-machine" title="Permalink to this headline">#</a></h3>
 <p>DeepLabCut host models from the <a href='http://www.mackenziemathislab.org/dlc-modelzoo' target="_blank">DeepLabCut ModelZoo Project</a>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">create_pretrained_project</span></code> function will create a new project directory with the necessary sub-directories and a basic configuration file.
-It will also initiliaze your project with a pre-trained model from the DeepLabCut ModelZoo.</p>
+It will also initialize your project with a pre-trained model from the DeepLabCut ModelZoo.</p>
 <p>The rest of the code should be run within your DeepLabCut environment.
 Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="_blank">here</a> for the instructions for the DeepLabCut installation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
 </pre></div>
 </div>
-<p>To initiliaze a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.</p>
+<p>To initialize a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_pretrained_project</span><span class="p">(</span>
     <span class="s2">&quot;projectname&quot;</span><span class="p">,</span>
     <span class="s2">&quot;experimenter&quot;</span><span class="p">,</span>

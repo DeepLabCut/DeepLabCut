@@ -284,7 +284,7 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate_notebook_20220831.html">
+  <a class="reference internal" href="recipes/flip_and_rotate.html">
    Improving network performance on unbalanced data via augmentation 🦇
   </a>
  </li>
@@ -484,18 +484,13 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#there-are-additional-functions-that-are-not-required-but-can-be-extremely-helpful">
-   There are additional functions that are not required, but can be extremely helpful.
+  <a class="reference internal nav-link" href="#model-export-function">
+   Model Export function:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#new-model-export-function">
-   New! Model Export function:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#new-advanced-labeling-across-cameras">
-   New! Advanced Labeling across Cameras:
+  <a class="reference internal nav-link" href="#advanced-labeling-across-cameras">
+   Advanced Labeling across Cameras:
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -525,18 +520,13 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#there-are-additional-functions-that-are-not-required-but-can-be-extremely-helpful">
-   There are additional functions that are not required, but can be extremely helpful.
+  <a class="reference internal nav-link" href="#model-export-function">
+   Model Export function:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#new-model-export-function">
-   New! Model Export function:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#new-advanced-labeling-across-cameras">
-   New! Advanced Labeling across Cameras:
+  <a class="reference internal nav-link" href="#advanced-labeling-across-cameras">
+   Advanced Labeling across Cameras:
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -556,10 +546,9 @@ title="Print to PDF"
                 
               <div>
                 
-  <section id="helper-advanced-optional-function-documentation">
-<h1>Helper &amp; Advanced Optional Function Documentation<a class="headerlink" href="#helper-advanced-optional-function-documentation" title="Permalink to this headline">#</a></h1>
-<section id="there-are-additional-functions-that-are-not-required-but-can-be-extremely-helpful">
-<h2>There are additional functions that are not required, but can be extremely helpful.<a class="headerlink" href="#there-are-additional-functions-that-are-not-required-but-can-be-extremely-helpful" title="Permalink to this headline">#</a></h2>
+  <section class="tex2jax_ignore mathjax_ignore" id="helper-advanced-optional-function-documentation">
+<span id="helper-functions"></span><h1>Helper &amp; Advanced Optional Function Documentation<a class="headerlink" href="#helper-advanced-optional-function-documentation" title="Permalink to this headline">#</a></h1>
+<p>There are additional functions that are not required, but can be extremely helpful.</p>
 <p>First off, if you are new to Python, you might not know this handy trick: you can see
 ALL the functions in deeplabcut by typing <code class="docutils literal notranslate"><span class="pre">deeplabcut.</span></code> then hitting “tab.” You will see a massive list!</p>
 <p align="center">
@@ -573,12 +562,12 @@ ALL the functions in deeplabcut by typing <code class="docutils literal notransl
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype=&#39;.avi&#39;)
 Docstring:
 By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
-    
+
 This functions converts hdf (h5) files to the comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
-    
+
  Parameters
 ----------
-    
+
     videopath : string
         A strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
 
@@ -589,7 +578,7 @@ Only videos with this extension are analyzed. The default is ``.avi``
  Examples
 -----------
 
-    Converts all pose-output files belonging to mp4 videos in the folder &#39;/media/alex/experimentaldata/cheetahvideos&#39; to csv files. 
+    Converts all pose-output files belonging to mp4 videos in the folder &#39;/media/alex/experimentaldata/cheetahvideos&#39; to csv files.
     deeplabcut.analyze_videos_converth5_to_csv(&#39;/media/alex/experimentaldata/cheetahvideos&#39;,&#39;.mp4&#39;)  
 </pre></div>
 </div>
@@ -616,7 +605,7 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">comparevideolistsanddatafolders</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">dropannotationfileentriesduetodeletedimages</span>
- 
+
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">dropduplicatesinannotatinfiles</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">load_demo_data</span>
@@ -627,9 +616,8 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 
 </pre></div>
 </div>
-</section>
-<section id="new-model-export-function">
-<h2>New! Model Export function:<a class="headerlink" href="#new-model-export-function" title="Permalink to this headline">#</a></h2>
+<section id="model-export-function">
+<h2>Model Export function:<a class="headerlink" href="#model-export-function" title="Permalink to this headline">#</a></h2>
 <p>This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of <a class="reference external" href="https://elifesciences.org/articles/61909">Kane et al, 2020 eLife</a>. Please see the paper and related code-base on how to use this utility.</p>
 <ul class="simple">
 <li><p>Another example use case is with the <a class="reference external" href="https://github.com/bonsai-rx/deeplabcut">Bonsai-DeepLabCut</a> plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.</p></li>
@@ -638,8 +626,8 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 </pre></div>
 </div>
 </section>
-<section id="new-advanced-labeling-across-cameras">
-<h2>New! Advanced Labeling across Cameras:<a class="headerlink" href="#new-advanced-labeling-across-cameras" title="Permalink to this headline">#</a></h2>
+<section id="advanced-labeling-across-cameras">
+<h2>Advanced Labeling across Cameras:<a class="headerlink" href="#advanced-labeling-across-cameras" title="Permalink to this headline">#</a></h2>
 <section id="if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui">
 <h3>If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:<a class="headerlink" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui" title="Permalink to this headline">#</a></h3>
 <p>If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera’s image that could match the labeled point in the first camera’s image. A correctly labeled point will fall somewhere along this projected line.</p>

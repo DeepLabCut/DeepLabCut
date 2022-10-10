@@ -284,7 +284,7 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate_notebook_20220831.html">
+  <a class="reference internal" href="recipes/flip_and_rotate.html">
    Improving network performance on unbalanced data via augmentation 🦇
   </a>
  </li>
@@ -632,7 +632,7 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="napari-labeling-gui">
 <h1>napari labeling GUI<a class="headerlink" href="#napari-labeling-gui" title="Permalink to this headline">#</a></h1>
-<p>We are replacing wxPython with a PySide2 + napari GUI! Here is how to use the napari-aspects of the new GUI. It is available in napari-hub, and at currently at <a class="reference external" href="https://github.com/DeepLabCut/DLCGUIdev">https://github.com/DeepLabCut/DLCGUIdev</a>, with a merge into-DeepLabCut date of Sept. 1, 2022.</p>
+<p>We replaced wxPython with a PySide2 + as of version 2.3rc1. Here is how to use the napari-aspects of the new GUI. It is available in napari-hub as a stand alone GUI as well as integrated into our main GUI.</p>
 <p><a class="reference external" href="https://www.gnu.org/licenses/bsd3"><img alt="License: BSD-3" src="https://img.shields.io/badge/License-BSD3-blue.svg" /></a>
 <a class="reference external" href="https://pypi.org/project/napari-deeplabcut"><img alt="PyPI" src="https://img.shields.io/pypi/v/napari-deeplabcut.svg?color=green" /></a>
 <a class="reference external" href="https://python.org"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/napari-deeplabcut.svg?color=green" /></a>
@@ -642,21 +642,20 @@ title="Print to PDF"
 <p>A napari plugin for keypoint annotation with DeepLabCut.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
-<p>You can install <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install napari-deeplabcut
-</pre></div>
-</div>
-<p>To install latest development version :</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install git+https://github.com/DeepLabCut/napari-deeplabcut.git
-</pre></div>
-</div>
+<p>You can install the full DeepLabCut napari-based GUI via <a class="reference external" href="https://pypi.org/project/pip/">pip</a> by running this in your conda env:</p>
+<p><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'==2.3rc1</span></code></p>
+<p>*please note, rc1 is currently up, but this will rapidly change. The stable release will be 2.3.</p>
+<p>You can install the stand-alone <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
+<p><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-deeplabcut</span></code></p>
+<p>To install latest development version:</p>
+<p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/DeepLabCut/napari-deeplabcut.git</span></code></p>
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">#</a></h2>
-<p>To use the plugin, please run:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>napari
-</pre></div>
-</div>
+<p>To use the full GUI, please run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
+<p>To use the stand-alone napari plugin, please launch napari:</p>
+<p><code class="docutils literal notranslate">&#160;&#160; <span class="pre">napari</span></code></p>
 <p>Then, activate the plugin in Plugins &gt; napari-deeplabcut: Keypoint controls.</p>
 <p>All accepted files (config.yaml, images, h5 data files) can be loaded
 either by dropping them directly onto the canvas or via the File menu.</p>

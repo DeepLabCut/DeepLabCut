@@ -284,7 +284,7 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate_notebook_20220831.html">
+  <a class="reference internal" href="recipes/flip_and_rotate.html">
    Improving network performance on unbalanced data via augmentation 🦇
   </a>
  </li>
@@ -1306,65 +1306,6 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 <h4>API Docs<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see API Docs</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.gui.label_frames.label_frames">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.gui.label_frames.</span></span><span class="sig-name descname"><span class="pre">label_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple_individualsGUI</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['*.png']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sourceCam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump_unlabeled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.gui.label_frames.label_frames" title="Permalink to this definition">#</a></dt>
-<dd><p>Manually label/annotate the extracted frames.</p>
-<p>Update the list of body parts you want to localize in the config.yaml file first.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>config: str</strong></dt><dd><p>Full path of the config.yaml file.</p>
-</dd>
-<dt><strong>multiple_individualsGUI: bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, a user can label multiple individuals. Note for
-<code class="docutils literal notranslate"><span class="pre">&quot;multianimalproject=True&quot;</span></code> this is automatically used.</p>
-</dd>
-<dt><strong>imtypes: list[str], optional, default=[“*.png”]</strong></dt><dd><p>Image types to look for in the folder. By default only png images are labeled.</p>
-</dd>
-<dt><strong>config3d: str or None, optional, default=None</strong></dt><dd><p>Full path of the config file in the 3D project. Include when epipolar lines
-would be helpful for labeling additional camera angles.</p>
-</dd>
-<dt><strong>sourceCam: str or None, optional, default=None</strong></dt><dd><p>The camera name from which to pull labeling data to generate epipolar lines.
-This must match the pattern in <code class="docutils literal notranslate"><span class="pre">'camera_names'</span></code> in the 3D config file.
-If no value is entered, data will be pulled from either cam1 or cam2.</p>
-</dd>
-<dt><strong>jump_unlabeled: bool, optional, default=False</strong></dt><dd><p>Aumatically jump to the next folder containing unlabeled images.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt>None</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>Standard use case</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="s1">&#39;/myawesomeproject/reaching4thestars/config.yaml&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>To label multiple individuals (without having a multiple individuals project);
-otherwise this GUI is loaded automatically</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        multiple_individualsGUI=True,</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>To label non-default image types</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">label_frames</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">imtypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.jpg&#39;</span><span class="p">,</span><span class="s1">&#39;*.jpeg&#39;</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>To label with epipolar lines projected from labels in another camera angle.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">label_frames</span><span class="p">(</span>
-<span class="go">    config,</span>
-<span class="go">    config3d=&#39;/analysis/project/reaching-task/reaching-task-3d/config.yaml&#39;,</span>
-<span class="go">    sourceCam=&#39;cam1&#39;,</span>
-<span class="go">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 </div>
 </section>
 </section>
@@ -2775,32 +2716,6 @@ automatically done).</p>
 <h4>API Docs for deeplabcut.refine_labels<a class="headerlink" href="#api-docs-for-deeplabcut-refine-labels" title="Permalink to this headline">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see API Docs</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.gui.refine_labels.refine_labels">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.gui.refine_labels.</span></span><span class="sig-name descname"><span class="pre">refine_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multianimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump_unlabeled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.gui.refine_labels.refine_labels" title="Permalink to this definition">#</a></dt>
-<dd><p>Refines the labels of the outlier frames extracted from the analyzed videos.</p>
-<p>Helps in augmenting the training dataset. Use <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> to
-analyze a video and extracts the outlier frames using
-<code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_outlier_frames</span></code> before refining the labels.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>config: str</strong></dt><dd><p>Full path of the config.yaml file.</p>
-</dd>
-<dt><strong>multianimal, bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, a user can label multiple individuals. Note for
-<code class="docutils literal notranslate"><span class="pre">&quot;multianimalproject=True&quot;</span></code> this is automatically used.</p>
-</dd>
-<dt><strong>jump_unlabeled: bool, optional, default=False</strong></dt><dd><p>Aumatically jump to the next folder containing unlabeled images.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="s1">&#39;/analysis/project/reaching-task/config.yaml&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 </div>
 </section>
 <section id="api-docs-for-deeplabcut-merge-datasets">

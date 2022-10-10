@@ -365,7 +365,7 @@ title="Toggle navigation"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="https://mybinder.org/v2/gh/DeepLabCut/DeepLabCut/master?urlpath=tree/docs/docs/recipes/flip_and_rotate_notebook_20220831.ipynb"
+        <a href="https://mybinder.org/v2/gh/DeepLabCut/DeepLabCut/master?urlpath=tree/docs/docs/recipes/flip_and_rotate.ipynb"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -383,7 +383,7 @@ title="Launch on Binder"
       </li>
       
       <li>
-        <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb/github/DeepLabCut/DeepLabCut/blob/master/docs/docs/recipes/flip_and_rotate_notebook_20220831.ipynb"
+        <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb/github/DeepLabCut/DeepLabCut/blob/master/docs/docs/recipes/flip_and_rotate.ipynb"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -443,7 +443,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/flip_and_rotate_notebook_20220831.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/flip_and_rotate.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -471,7 +471,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../../_sources/docs/recipes/flip_and_rotate_notebook_20220831.ipynb"
+        <a href="../../_sources/docs/recipes/flip_and_rotate.ipynb"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -983,8 +983,8 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="improving-network-performance-on-unbalanced-data-via-augmentation">
 <h1>Improving network performance on unbalanced data via augmentation 🦇<a class="headerlink" href="#improving-network-performance-on-unbalanced-data-via-augmentation" title="Permalink to this headline">#</a></h1>
-<p><strong>Author:</strong> Jonas Bengt Carina Håkansson</p>
-<p><strong>Date:</strong> 20220831</p>
+<p>By Jonas Bengt Carina Håkansson</p>
+<p>Part of the 2022 AI Residency Program</p>
 <section id="background">
 <h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">#</a></h2>
 <p>Read the <a class="reference external" href="https://deeplabcut.medium.com/balancing-bats-d3c5bcfb71e1">DeepLabCut Blog post</a> about how one can solve unbalanced data with flipping-keypoint augmentation, then see below for the process and code to do so!</p>
@@ -1006,13 +1006,7 @@ title="Print to PDF"
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
 
 <span class="n">project_folder</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/&quot;</span> <span class="c1">#the folder in which the DLC project will be created</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-            <span class="n">project</span><span class="o">=</span><span class="s1">&#39;bat_augmentation_austin_2020_bat_data&#39;</span><span class="p">,</span>
-            <span class="n">experimenter</span><span class="o">=</span><span class="s1">&#39;DLC&#39;</span><span class="p">,</span>
-            <span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/home/user/dummyVideos/&#39;</span><span class="p">],</span>
-            <span class="n">working_directory</span><span class="o">=</span><span class="n">project_folder</span>
-
-        <span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s1">&#39;bat_augmentation_austin_2020_bat_data&#39;</span><span class="p">,</span><span class="n">experimenter</span><span class="o">=</span><span class="s1">&#39;DLC&#39;</span><span class="p">,</span><span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/home/user/dummyVideos/&#39;</span><span class="p">],</span><span class="n">working_directory</span><span class="o">=</span><span class="n">project_folder</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1058,7 +1052,7 @@ title="Print to PDF"
 <section id="convert-training-data-to-dlc-format">
 <h2>Convert training data to DLC format<a class="headerlink" href="#convert-training-data-to-dlc-format" title="Permalink to this headline">#</a></h2>
 <p>Since this data was labeled outside of DeepLabCut, we first used our own code to convert it into csv formatted csv files, we then use the function <code class="docutils literal notranslate"><span class="pre">convertcsv2h5</span></code> to convert these csv:s into h5 files that DeepLabCut can read.</p>
-<p>After doing this, I like to use the functgion <code class="docutils literal notranslate"><span class="pre">check_labels</span></code> to make sure that the conversion was succesful.</p>
+<p>After doing this, I like to use the function <code class="docutils literal notranslate"><span class="pre">check_labels</span></code> to make sure that the conversion was successful.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert training data into the DeepLabCut format</span>
@@ -1077,7 +1071,7 @@ title="Print to PDF"
 <section id="structuring-the-project-for-testing">
 <h2>Structuring the project for testing<a class="headerlink" href="#structuring-the-project-for-testing" title="Permalink to this headline">#</a></h2>
 <p>Since bats are such a challenging animal to automatcially digitize, in my lab, we’ve been relying on what I call “refining” to improve DLC accuracy. This just means that for each video that we want to analyze, we first digitize a few frames from it and include those frames as training data for the DeepLabCut network.</p>
-<p>We typically digitize approximately one frame per wingbeat. For a wingbeat frequency of 15 and a framerate of 800, this means approximately every 50th frame. For a lower framerate, say 400, we instead need to digitize every 50th frame. This is obviously less labour than digitizing every frame, but the workflow still scales poorly with increased aquisition. Therefore, I want to reduce the required amount of manual digitization. The challenge I’ve set myself is therefore this - <strong>to use augmentation to match or beat the accuracy of refining</strong>.</p>
+<p>We typically digitize approximately one frame per wingbeat. For a wingbeat frequency of 15 and a framerate of 800, this means approximately every 50th frame. For a lower framerate, say 400, we instead need to digitize every 50th frame. This is obviously less labour than digitizing every frame, but the workflow still scales poorly with increased acquisition. Therefore, I want to reduce the required amount of manual digitization. The challenge I’ve set myself is therefore this - <strong>to use augmentation to match or beat the accuracy of refining</strong>.</p>
 <section id="test-data">
 <h3>Test data<a class="headerlink" href="#test-data" title="Permalink to this headline">#</a></h3>
 <p>I randomly chose seven digitized triplets of videos for testing. Every 50th frame of these will be used for testing.</p>
@@ -1095,24 +1089,12 @@ title="Print to PDF"
 <p>This treatment might not seem relevant for figuring out how augmentation affects performance, and in truth, I chose to perform this test to answer another question, but you will see that the results of this test are very relevant to the challenge written in bold above.</p>
 <p>I will refer to training data from the 19 videos not tested on as “base training data”.</p>
 <p><em>Table 1: The two treatments result in four permutations, organized in four shuffles.</em></p>
-<table class="colwidths-auto table">
-<thead>
-<tr class="row-odd"><th class="head"><p></p></th>
-<th class="head"><p><strong>Half</strong></p></th>
-<th class="head"><p><strong>Full</strong></p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>OOD</strong></p></td>
-<td><p>shuffle1</p></td>
-<td><p>shuffle2</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Ref</strong></p></td>
-<td><p>shuffle3</p></td>
-<td><p>shuffle4</p></td>
-</tr>
-</tbody>
-</table>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>       <span class="o">|**</span><span class="n">Half</span><span class="o">**|**</span><span class="n">Full</span><span class="o">**|</span>
+<span class="o">|-------|--------|--------|</span>
+<span class="o">|**</span><span class="n">OOD</span><span class="o">**|</span><span class="n">shuffle1</span><span class="o">|</span><span class="n">shuffle2</span><span class="o">|</span>
+<span class="o">|**</span><span class="n">Ref</span><span class="o">**|</span><span class="n">shuffle3</span><span class="o">|</span><span class="n">shuffle4</span><span class="o">|</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="training-data-indices">
@@ -1280,26 +1262,6 @@ title="Print to PDF"
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Documentation_data-bat_augmentation_austin_2020_bat_data_88shuffle51.pickle
-bat_augmentation_austin_2020_bat_data_DLC88shuffle3.mat
-bat_augmentation_austin_2020_bat_data_DLC80shuffle1.mat
-bat_augmentation_austin_2020_bat_data_DLC88shuffle52.mat
-Documentation_data-bat_augmentation_austin_2020_bat_data_80shuffle1.pickle
-CollectedData_DLC.h5
-CollectedData_DLC.csv
-bat_augmentation_austin_2020_bat_data_DLC89shuffle4.mat
-Documentation_data-bat_augmentation_austin_2020_bat_data_88shuffle3.pickle
-bat_augmentation_austin_2020_bat_data_DLC84shuffle2.mat
-Documentation_data-bat_augmentation_austin_2020_bat_data_84shuffle2.pickle
-Documentation_data-bat_augmentation_austin_2020_bat_data_89shuffle4.pickle
-bat_augmentation_austin_2020_bat_data_DLC95shuffle99.mat
-Documentation_data-bat_augmentation_austin_2020_bat_data_88shuffle52.pickle
-bat_augmentation_austin_2020_bat_data_DLC88shuffle51.mat
-Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
-</pre></div>
-</div>
-</div>
 </div>
 <p>I’ve worked a bit on other stuff in this project, so there is some stuff here we need not consider (51 and 52)- But we see files related to shuffles 1 to 4. Let’s focus on the .mat files:</p>
 <ul class="simple">
@@ -1310,7 +1272,7 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 </ul>
 <p>Not that “DLC” here refers to the scorer for the training data, so if you used the scorer name “StephinMerritt”, your shuffle1 file name could be “crocodiles_galloping_2023_StephinMerritt95shuffle1.mat”.</p>
 <p>Anyway, we see that there are numbers between the scorer name and the shuffle name, these represent the fraction of the training data compared to the training data plus the testing data.</p>
-<p>So for shuffle 1, of the data used, 80% is used as training data, for shuffle 2, that number is insead 84%, and so on. These numbers are called training fractions.</p>
+<p>So for shuffle 1, of the data used, 80% is used as training data, for shuffle 2, that number is instead 84%, and so on. These numbers are called training fractions.</p>
 <p>In config.yaml, there is a property called <code class="docutils literal notranslate"><span class="pre">TrainingFraction</span></code>. This is a list of the training fractions used in the project. In this project, that list needs to be changed to look like this:</p>
 <p><img alt="TrainingFraction" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950855466-W5BOH6B4JJCO4M6RNVFG/config002_TrainingFraction.png?format=1000w" /></p>
 <p>When we then reference a shuffle, we also need to reference the corresponding training fraction, this is used by specifying the parameter <code class="docutils literal notranslate"><span class="pre">trainingsetindex</span></code>, and note that we start counting from zero. So for each of our shuffles, the index of the training fraction is one smaller than the shuffle number.</p>
@@ -1461,7 +1423,7 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="perform-evaluation">
 <h1>Perform evaluation<a class="headerlink" href="#perform-evaluation" title="Permalink to this headline">#</a></h1>
-<p>Aftrer training the networks, we need to test how they perform. To do that, we first need to evaluate them using the buil-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
+<p>After training the networks, we need to test how they perform. To do that, we first need to evaluate them using the buil-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
@@ -1494,7 +1456,7 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 </div>
 <section id="get-data-for-plotting-and-statistical-comparison">
 <h2>Get data for plotting and statistical comparison<a class="headerlink" href="#get-data-for-plotting-and-statistical-comparison" title="Permalink to this headline">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> function calculates the euclidian distances between predicted points and groundtruth (i.e. human labels), but it only shows the average for that snapshot and shuffle over all the test data. What we want are long lists of the distances between ground truth points and predicted points. That way, on top of calculating the average, we can also perform stastistical testing.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> function calculates the euclidean distances between predicted points and groundtruth (i.e. human labels), but it only shows the average for that snapshot and shuffle over all the test data. What we want are long lists of the distances between ground truth points and predicted points. That way, on top of calculating the average, we can also perform stastistical testing.</p>
 <p>We will use a function I wrote called <code class="docutils literal notranslate"><span class="pre">getErrorDistribution</span></code> to get the list mentioned above. We will do this for each shuffle.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -1511,7 +1473,7 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent forlder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent folder as I&#39;m running this</span>
 <span class="kn">from</span> <span class="nn">getErrorDistribution</span> <span class="kn">import</span> <span class="n">getErrorDistribution</span> <span class="c1">#import the getErrorDistribution function</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -1589,17 +1551,12 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Error (px)&#39;)
-</pre></div>
 </div>
-<img alt="../../_images/flip_and_rotate_notebook_20220831_30_1.png" src="../../_images/flip_and_rotate_notebook_20220831_30_1.png" />
-</div>
-</div>
+<p><img alt="download.png" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950856669-RVS6GMR4411BUVXY74FN/pre_aug_performance.png?format=750w" /></p>
 </section>
 <section id="interpret-plot">
 <h2>Interpret plot<a class="headerlink" href="#interpret-plot" title="Permalink to this headline">#</a></h2>
-<p>Just looking at the plot, a few things seem clear, let’s start with the obvious and least surprising. By training a network on a subset of frames of the videos to be analyzed, we really improve accuracy. When doing this, i.e. when refining, increasing the ammount of training data, i.e. frames not belonging to the videos to be analyzed, has little effect on accuracy.</p>
+<p>Just looking at the plot, a few things seem clear, let’s start with the obvious and least surprising. By training a network on a subset of frames of the videos to be analyzed, we really improve accuracy. When doing this, i.e. when refining, increasing the amount of training data, i.e. frames not belonging to the videos to be analyzed, has little effect on accuracy.</p>
 <p>But surprisingly, when not refining, it appears that increasing the amount of training data can worsen performance. What’s going on? We will get back to this later, but for now, let’s just confirm my points here with some statistical testing.</p>
 <p>For the statistical comparison, we’ll use a paired Wilcoxon ranked sum test, since we can’t assume the data to be normally distributed. We’ll do this for the set of errors with P-cut filter applied since doing it on both would be tedious and I assume most users will use some form of P-cut on their data. Furthermore, I will do the statistical comparison only on  the last snapshot since, again, doing it on all three would be tedious.</p>
 <div class="cell docutils container">
@@ -1616,14 +1573,6 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
         <span class="n">_</span><span class="p">,</span> <span class="n">p_value</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">wilcoxon</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">y</span> <span class="o">=</span> <span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span><span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[           nan 5.59096117e-09 2.88311009e-05 2.50433310e-28]
- [           nan            nan 9.02769266e-15 6.51936856e-10]
- [           nan            nan            nan 5.65209499e-39]
- [           nan            nan            nan            nan]]
 </pre></div>
 </div>
 </div>
@@ -1648,7 +1597,7 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent forlder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent folder as I&#39;m running this</span>
 <span class="kn">from</span> <span class="nn">getErrorDistribution</span> <span class="kn">import</span> <span class="n">getErrorDistribution</span> <span class="c1">#import the getErrorDistribution function</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -1785,23 +1734,12 @@ Documentation_data-bat_augmentation_austin_2020_bat_data_95shuffle99.pickle
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-</pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f7b0e855e20&gt;
-</pre></div>
-</div>
-<img alt="../../_images/flip_and_rotate_notebook_20220831_34_2.png" src="../../_images/flip_and_rotate_notebook_20220831_34_2.png" />
-</div>
-</div>
+<p><img alt="download2.png" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950857302-7FYQ87AQ5OKGV6D8D9DF/pre_aug_per_video.png?format=500w" /></p>
 </section>
 <section id="interpret-per-video-plot">
 <h2>Interpret per video plot<a class="headerlink" href="#interpret-per-video-plot" title="Permalink to this headline">#</a></h2>
-<p>The first thing that becomes clear to me from inspecting this plot is that there are some videos on which all shuffles perform well no matter refining. These would be video 3, 6 and 7. The second thing is that there are instances where “half, ref” does better than “full, ref” and vice versa, which could explain why they are significantly different according to the statistical test performed above, despite their overal means being relatively similar according to the plot of the mean errors on the full error distributions.</p>
+<p>The first thing that becomes clear to me from inspecting this plot is that there are some videos on which all shuffles perform well no matter refining. These would be video 3, 6 and 7. The second thing is that there are instances where “half, ref” does better than “full, ref” and vice versa, which could explain why they are significantly different according to the statistical test performed above, despite their overall means being relatively similar according to the plot of the mean errors on the full error distributions.</p>
 </section>
 <section id="compare-easy-and-difficult-videos">
 <h2>Compare “easy” and “difficult” videos<a class="headerlink" href="#compare-easy-and-difficult-videos" title="Permalink to this headline">#</a></h2>
@@ -1926,7 +1864,7 @@ This net has already been evaluated!
 <h2>Edit pose_cfg.yaml for fliplr augmentation<a class="headerlink" href="#edit-pose-cfg-yaml-for-fliplr-augmentation" title="Permalink to this headline">#</a></h2>
 <p>As before, we will edit the settings for this network to use the adam optimizer. More importantly, though, we will apply the <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> augmentation.</p>
 <p>This randomly flips some training frames left and right during training. Now, this alone would lead to worse performance, since we would be training the network to think that the left wing is the right wing, and vice versa. But this augmentation method takes that into account, and in addition to mirroring the image, it also swaps the labels from left to right and vice versa. To accomlish this, we need to supply the pose_cfg.yaml file with a list of which points should be swapped.</p>
-<p>The image of a bat outline above shows he locations of the labels/bodyparts on the bats, and from it, it’s clear which points should be swapped, all points that arent on the bilateral have a name and end in eithr R or L. So t3R should be swapped with t3L when flipping, and so on.</p>
+<p>The image of a bat outline above shows he locations of the labels/bodyparts on the bats, and from it, it’s clear which points should be swapped, all points that aren’t on the bilateral have a name and end in eithr R or L. So t3R should be swapped with t3L when flipping, and so on.</p>
 <p>The labels are these, and in this order:
 0. ‘t3L’</p>
 <ol class="simple">
@@ -2067,7 +2005,7 @@ This net has already been evaluated!
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent forlder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent folder as I&#39;m running this</span>
 <span class="kn">from</span> <span class="nn">getErrorDistribution</span> <span class="kn">import</span> <span class="n">getErrorDistribution</span> <span class="c1">#import the getErrorDistribution function</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -2125,20 +2063,6 @@ This net has already been evaluated!
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Error (px)&#39;)
-</pre></div>
-</div>
-<img alt="../../_images/flip_and_rotate_notebook_20220831_46_2.png" src="../../_images/flip_and_rotate_notebook_20220831_46_2.png" />
 </div>
 </div>
 </section>
@@ -2342,7 +2266,7 @@ This net has already been evaluated!
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent forlder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent folder as I&#39;m running this</span>
 <span class="kn">from</span> <span class="nn">getErrorDistribution</span> <span class="kn">import</span> <span class="n">getErrorDistribution</span> <span class="c1">#import the getErrorDistribution function</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -2408,13 +2332,8 @@ This net has already been evaluated!
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Error (px)&#39;)
-</pre></div>
 </div>
-<img alt="../../_images/flip_and_rotate_notebook_20220831_54_1.png" src="../../_images/flip_and_rotate_notebook_20220831_54_1.png" />
-</div>
-</div>
+<p><img alt="download3.png" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950856089-7I0IXOS1G0D2YUJ9GNSB/flip_rot180.png?format=1500w" /></p>
 <p>With this, it appears that we have reached our goal, which was <strong>to use augmentation to match or beat the accuracy of refining</strong>. But let’s also take a look at the accuracy per video. I will also plot the baseline, un-refined full network accuracy here to highlight how much the augmentation has improved the performance of the network.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -2432,7 +2351,7 @@ This net has already been evaluated!
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent forlder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="c1">#my python file for this function is stored in the parent folder as I&#39;m running this</span>
 <span class="kn">from</span> <span class="nn">getErrorDistribution</span> <span class="kn">import</span> <span class="n">getErrorDistribution</span> <span class="c1">#import the getErrorDistribution function</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -2572,17 +2491,6 @@ This net has already been evaluated!
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>This net has already been evaluated!
-This net has already been evaluated!
-This net has already been evaluated!
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f7b12efbfd0&gt;
-</pre></div>
-</div>
-<img alt="../../_images/flip_and_rotate_notebook_20220831_56_2.png" src="../../_images/flip_and_rotate_notebook_20220831_56_2.png" />
-</div>
 </div>
 </section>
 <section id="interpret-performance-of-network-after-fliplr-and-180-rotation-augmentation">
@@ -2595,7 +2503,7 @@ This net has already been evaluated!
 <p>What follows are some of my conclusions from using augmentation to improve performance when tracking wing movement of bats using DeepLabCut.</p>
 <section id="where-scalability-is-not-important-consider-refining">
 <h2>Where scalability is not important, consider refining<a class="headerlink" href="#where-scalability-is-not-important-consider-refining" title="Permalink to this headline">#</a></h2>
-<p>We saw from our baseline accuracy tests that when refining, there was no gain from increasing the ammount of base training data. In practical terms this means that if you know which videos you want to analyze, and when you do not plan on using the network for analyzing other videos in the future, then it makes sense to prioritize digitizing frames from the videos to be analyzed.</p>
+<p>We saw from our baseline accuracy tests that when refining, there was no gain from increasing the amount of base training data. In practical terms this means that if you know which videos you want to analyze, and when you do not plan on using the network for analyzing other videos in the future, then it makes sense to prioritize digitizing frames from the videos to be analyzed.</p>
 </section>
 <section id="inspect-bodypart-predictions-and-augment-with-purpose">
 <h2>Inspect bodypart predictions and augment with purpose<a class="headerlink" href="#inspect-bodypart-predictions-and-augment-with-purpose" title="Permalink to this headline">#</a></h2>
@@ -2612,16 +2520,16 @@ This net has already been evaluated!
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "python"
+            mode: "conda-env-DEEPLABCUT_newGUI-py"
         },
         kernelOptions: {
-            kernelName: "python3",
+            kernelName: "conda-env-DEEPLABCUT_newGUI-py",
             path: "./docs/recipes"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python3'</script>
+    <script>kernelName = 'conda-env-DEEPLABCUT_newGUI-py'</script>
 
               </div>
               
