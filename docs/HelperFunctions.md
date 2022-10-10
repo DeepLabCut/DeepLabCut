@@ -1,10 +1,10 @@
 (helper-functions)=
-## Helper & Advanced Optional Function Documentation
+# Helper & Advanced Optional Function Documentation
 
-### There are additional functions that are not required, but can be extremely helpful. 
+There are additional functions that are not required, but can be extremely helpful.
 
-First off, if you are new to Python, you might not know this handy trick: you can see 
-ALL the functions in deeplabcut by typing ``deeplabcut.`` then hitting "tab." You will see a massive list! 
+First off, if you are new to Python, you might not know this handy trick: you can see
+ALL the functions in deeplabcut by typing ``deeplabcut.`` then hitting "tab." You will see a massive list!
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1567907875609-57X4S1LVZWTRJ8GPM34T/ke17ZwdGBToddI8pDm48kKLvSvW2qdCTCjZZgzhLzasUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKc0_818bg8q0aD7_W_W22OLw0yYD6y1fnQ3mVB6beYNdnbXafewWM7FbBaWqQqcLy-/options.png?format=1000w" width="90%">
@@ -23,12 +23,12 @@ Now, for any of these functions, you type ``deeplabcut.analyze_videos_converth5_
 Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype='.avi')
 Docstring:
 By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
-    
+
 This functions converts hdf (h5) files to the comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
-    
+
  Parameters
 ----------
-    
+
     videopath : string
         A strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
 
@@ -39,13 +39,13 @@ Only videos with this extension are analyzed. The default is ``.avi``
  Examples
 -----------
 
-    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files. 
+    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')  
 ```
 
-While some of the names are ridiculously long, we wanted them to be "self-explanatory." Here is a list 
+While some of the names are ridiculously long, we wanted them to be "self-explanatory." Here is a list
 (that is bound to be continually updated)
-of currently available helper functions. To see information about any of them, including HOW 
+of currently available helper functions. To see information about any of them, including HOW
 to use them, use the ``?`` at the end of the call, as described above.
 
 
@@ -69,7 +69,7 @@ deeplabcut.adddatasetstovideolistandviceversa
 deeplabcut.comparevideolistsanddatafolders
 
 deeplabcut.dropannotationfileentriesduetodeletedimages
- 
+
 deeplabcut.dropduplicatesinannotatinfiles
 
 deeplabcut.load_demo_data
@@ -80,7 +80,7 @@ deeplabcut.export_model
 
 ```
 
-### New! Model Export function:
+## Model Export function:
 
 This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of [Kane et al, 2020 eLife](https://elifesciences.org/articles/61909). Please see the paper and related code-base on how to use this utility.
 
@@ -90,9 +90,10 @@ This function allows you to export a well-trained single animal model for real-t
 deeplabcut.export_model(cfg_path, iteration=None, shuffle=1, trainingsetindex=0, snapshotindex=None, TFGPUinference=True, overwrite=False, make_tar=True)
 ```
 
-### New! Advanced Labeling across Cameras:
+## Advanced Labeling across Cameras:
 
-#### If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:
+### If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:
+
 If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera's image that could match the labeled point in the first camera's image. A correctly labeled point will fall somewhere along this projected line.
 
 In order to label with epipolar lines, you must complete two additional sets of steps **prior to labeling.**
@@ -104,7 +105,7 @@ In order to label with epipolar lines, you must complete two additional sets of 
 ```python
 deeplabcut.extract_frames(config_path, mode = 'match', config3d=config_path3d, extracted_cam=0)
 ```
-You can set `extracted_cam=0` to match all other camera images to the frame numbers in the `camera_1` folder, or change this to match to other cameras. If you `deeplabcut.extract_frames` with `mode='automatic'` before, it shouldn't matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for `camera_2`. 
+You can set `extracted_cam=0` to match all other camera images to the frame numbers in the `camera_1` folder, or change this to match to other cameras. If you `deeplabcut.extract_frames` with `mode='automatic'` before, it shouldn't matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for `camera_2`.
 
 - Three, now you can label with epipolar lines:
 
