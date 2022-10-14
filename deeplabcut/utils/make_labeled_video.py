@@ -363,6 +363,7 @@ def create_labeled_video(
     displaycropped=False,
     color_by="bodypart",
     modelprefix="",
+    init_weights = "",
     track_method="",
 ):
     """Labels the bodyparts in a video.
@@ -466,6 +467,8 @@ def create_labeled_video(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    init_weights: str,
+        Checkpoint path to the super model
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.
         Empty by default (corresponding to a single animal project).
@@ -521,12 +524,21 @@ def create_labeled_video(
         )
     """
     cfg = auxiliaryfunctions.read_config(config)
-    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
-
+    if track_method != "":
+        # will otherwise always return ellipse
+        track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+    
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix
-    )  # automatically loads corresponding model (even training iteration based on snapshot index)
+
+
+    if init_weights == "":
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+            cfg, shuffle, trainFraction, modelprefix=modelprefix
+        )  # automatically loads corresponding model (even training iteration based on snapshot index)
+    else:
+        DLCscorer = ''
+        DLCscorerlegacy = DLCscorer
+    
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
@@ -574,6 +586,7 @@ def create_labeled_video(
         displaycropped,
         fastmode,
         keypoints_only,
+        init_weights = init_weights
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
@@ -605,6 +618,7 @@ def proc_video(
     fastmode,
     keypoints_only,
     video,
+    init_weights = ''
 ):
     """Helper function for create_videos
 
@@ -623,6 +637,12 @@ def proc_video(
     print("Starting to process video: {}".format(video))
     vname = str(Path(video).stem)
 
+
+    if init_weights!="":
+        DLCscorer = Path(init_weights).stem
+        DLCscorerlegacy = Path(init_weights).stem        
+
+    
     if filtered:
         videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
@@ -651,7 +671,7 @@ def proc_video(
                 return
 
             if all(individuals):
-                df = df.loc(axis=1)[:, individuals]
+                df = df.loc(axis=1)[:, individuals]            
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [
