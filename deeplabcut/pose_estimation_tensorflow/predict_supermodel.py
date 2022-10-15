@@ -7,38 +7,44 @@ import time
 from pathlib import Path
 
 import cv2
+import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
 from skimage.util import img_as_ubyte
-from tqdm import tqdm
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
-from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-import imgaug.augmenters as iaa
-from deeplabcut.utils.auxfun_videos import VideoWriter
 from sklearn.metrics.pairwise import cosine_similarity
+from tqdm import tqdm
+
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.core import \
+    predict as single_predict
+from deeplabcut.pose_estimation_tensorflow.core import \
+    predict_multianimal as predict
+from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoWriter
+
 
 # instead of having these in a lengthy function, I made this a separate function
 def get_nuances(
-        config,
-        videos,
-        videotype="avi",
-        shuffle=1,
-        trainingsetindex=0,
-        destfolder=None,
-        batchsize=None,
-        TFGPUinference=True,
-        modelprefix="",
-        robust_nframes=False,
-        allow_growth=False,
-        init_weights="",
-        save_frames = False,
-        ):
-                
+    config,
+    videos,
+    videotype="avi",
+    shuffle=1,
+    trainingsetindex=0,
+    destfolder=None,
+    batchsize=None,
+    TFGPUinference=True,
+    modelprefix="",
+    robust_nframes=False,
+    allow_growth=False,
+    init_weights="",
+    save_frames=False,
+):
+
     cfg = auxiliaryfunctions.read_config(config)
-    trainFraction = cfg["TrainingFraction"][trainingsetindex]    
+    trainFraction = cfg["TrainingFraction"][trainingsetindex]
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
@@ -46,52 +52,57 @@ def get_nuances(
                 trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
         ),
-    )    
+    )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     # called test_cfg instead of dlc_cfg to avoid confusion
     test_cfg = load_config(str(path_test_config))
 
     if init_weights:
         # this is for loading a stand alone supermodel checkpoint
-        test_cfg['init_weights'] = init_weights    
+        test_cfg["init_weights"] = init_weights
 
     # no more part affinity
-    test_cfg['partaffinityfield_graph'] = []
-    test_cfg['partaffinityfield_predict'] = False                    
+    test_cfg["partaffinityfield_graph"] = []
+    test_cfg["partaffinityfield_predict"] = False
 
-
-    if init_weights == '':
+    if init_weights == "":
         Snapshots = np.array(
             [
                 fn.split(".")[0]
                 for fn in os.listdir(os.path.join(modelfolder, "train"))
                 if "index" in fn
             ]
-        )        
+        )
         snapshotindex = cfg["snapshotindex"]
-    
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])    
+
+        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
 
         test_cfg["init_weights"] = os.path.join(
             modelfolder, "train", Snapshots[snapshotindex]
         )
-        trainingsiterations = (test_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
-        
+        trainingsiterations = (test_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+            -1
+        ]
+
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
             cfg,
             shuffle,
             trainFraction,
             trainingsiterations=trainingsiterations,
             modelprefix=modelprefix,
-        )        
+        )
     else:
         Snapshots = [0]
         snapshotindex = 0
-        DLCscorer = f'{modelprefix}_{Path(init_weights).stem}' if modelprefix else Path(init_weights).stem
-        DLCscorerlegacy = DLCscorer        
+        DLCscorer = (
+            f"{modelprefix}_{Path(init_weights).stem}"
+            if modelprefix
+            else Path(init_weights).stem
+        )
+        DLCscorerlegacy = DLCscorer
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)                
+    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
     trainingsiterations = (test_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     # Update number of output and batchsize
@@ -117,57 +128,59 @@ def get_nuances(
         xyz_labs = [x + s for s in suffix for x in xyz_labs_orig]
     else:
         xyz_labs = ["x", "y", "likelihood"]
- 
-    sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg,allow_growth=allow_growth)
+
+    sess, inputs, outputs = single_predict.setup_pose_prediction(
+        test_cfg, allow_growth=allow_growth
+    )
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], test_cfg["all_joints_names"], xyz_labs],
         names=["scorer", "bodyparts", "coords"],
-    )    
+    )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     ret = {}
 
-    ret['cfg'] = cfg
-    ret['videos'] = Videos
-    ret['DLCscorer'] = DLCscorer
-    ret['trainFraction'] = trainFraction
-    ret['test_cfg'] = test_cfg
-    ret['sess'] = sess
-    ret['inputs'] = inputs
-    ret['outputs'] = outputs
-    ret['destfolder'] = destfolder
-    ret['save_frames'] = save_frames
-    ret['init_weights'] = init_weights
-    
+    ret["cfg"] = cfg
+    ret["videos"] = Videos
+    ret["DLCscorer"] = DLCscorer
+    ret["trainFraction"] = trainFraction
+    ret["test_cfg"] = test_cfg
+    ret["sess"] = sess
+    ret["inputs"] = inputs
+    ret["outputs"] = outputs
+    ret["destfolder"] = destfolder
+    ret["save_frames"] = save_frames
+    ret["init_weights"] = init_weights
+
     return ret
-        
-def get_multi_scale_frames(frame, scale_list = []):
+
+
+def get_multi_scale_frames(frame, scale_list=[]):
     augs = []
     shapes = []
     for scale in scale_list:
-        aug = iaa.Resize({"width": "keep-aspect-ratio", "height": scale})        
+        aug = iaa.Resize({"width": "keep-aspect-ratio", "height": scale})
         augs.append(aug)
-        
 
     frames = []
     for i in range(len(scale_list)):
-        resized_frame = augs[i](image = frame)
+        resized_frame = augs[i](image=frame)
         frames.append(resized_frame)
         shapes.append(frames[-1].shape)
-    
+
     return frames, shapes
+
 
 def _project_pred_to_original_size(pred, old_shape, new_shape):
 
     old_h, old_w, _ = old_shape
     new_h, new_w, _ = new_shape
-    ratio_h, ratio_w = old_h/ new_h, old_w/ new_w
+    ratio_h, ratio_w = old_h / new_h, old_w / new_w
 
-
-    coordinate = pred['coordinates'][0]
-    confidence = pred['confidence']    
+    coordinate = pred["coordinates"][0]
+    confidence = pred["confidence"]
     for kpt_id, coord_list in enumerate(coordinate):
         if len(coord_list) == 0:
             continue
@@ -177,7 +190,7 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
         max_pred = coordinate[kpt_id][max_idx] * ratio_h
 
         # only keep the max
-        
+
         confidence[kpt_id] = confidence_list[max_idx]
         coordinate[kpt_id] = max_pred
     return pred
@@ -186,82 +199,94 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
 def _average_multiple_scale_preds(preds, scale_list):
 
     ret_pred = {}
-    num_kpts = len(preds[0]['coordinates'][0])
+    num_kpts = len(preds[0]["coordinates"][0])
     # PrediteData is a complicate multi dimensional python list
-    ret_pred['coordinates'] = [[[]] * num_kpts]
-    ret_pred['confidence'] = [[]] * num_kpts
+    ret_pred["coordinates"] = [[[]] * num_kpts]
+    ret_pred["confidence"] = [[]] * num_kpts
 
-    
-    for scale_id, pred in enumerate(preds):        
-        coordinate = pred['coordinates'][0]        
-        confidence = pred['confidence']
-                   
+    for scale_id, pred in enumerate(preds):
+        # better handle the case where the pred is empty
+        if pred == []:
+            coordinate = [[]] * num_kpts
+            confidence = [[]] * num_kpts
+        else:
+            coordinate = pred["coordinates"][0]
+            confidence = pred["confidence"]
+
         for kpt_id, coord_list in enumerate(coordinate):
-            
-            if len(ret_pred['coordinates'][0][kpt_id]) == 0:
-                ret_pred['coordinates'][0][kpt_id] = [[]] * len(scale_list)
-                ret_pred['confidence'][kpt_id] = [[]]* len(scale_list)
 
-            temp_coord = np.expand_dims(coord_list, axis = 0)
-            ret_pred['coordinates'][0][kpt_id][scale_id] = temp_coord            
-            temp_confidence = np.expand_dims(confidence[kpt_id], axis = 0)
-            ret_pred['confidence'][kpt_id][scale_id] = temp_confidence
-            
+            if len(ret_pred["coordinates"][0][kpt_id]) == 0:
+                ret_pred["coordinates"][0][kpt_id] = [[]] * len(scale_list)
+                ret_pred["confidence"][kpt_id] = [[]] * len(scale_list)
+
+            temp_coord = np.expand_dims(coord_list, axis=0)
+            ret_pred["coordinates"][0][kpt_id][scale_id] = temp_coord
+            temp_confidence = np.expand_dims(confidence[kpt_id], axis=0)
+            ret_pred["confidence"][kpt_id][scale_id] = temp_confidence
 
     for kpt_id in range(num_kpts):
 
         remove_indices = []
-        for idx, ele in enumerate(ret_pred['coordinates'][0][kpt_id]):
-            if len(ele[0])==0 :
+        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
+            if len(ele[0]) == 0:
                 remove_indices.append(idx)
 
-        for idx, ele in enumerate(ret_pred['coordinates'][0][kpt_id]):
+        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
             if idx in remove_indices:
-                ret_pred['coordinates'][0][kpt_id][idx] = np.array([[0, 0]])
-                ret_pred['confidence'][kpt_id][idx] = np.array([[0]])
-                
-        mean_vec = np.nanmedian(np.array(ret_pred['coordinates'][0][kpt_id]), axis = 0)
-        candidates = np.array(ret_pred['coordinates'][0][kpt_id])
+                # using [0,0] instead of [nan,nan] for cosine similarity to correctly pick up distances
+                ret_pred["coordinates"][0][kpt_id][idx] = np.array([[0, 0]])
+                ret_pred["confidence"][kpt_id][idx] = np.array([[0]])
+
+        mean_vec = np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
+        candidates = np.array(ret_pred["coordinates"][0][kpt_id])
         dist = []
-        
+
         for i in range(len(candidates)):
             dist.append(cosine_similarity(candidates[i], mean_vec))
 
-
         filter_indices = []
 
-        for idx, ele in enumerate(ret_pred['coordinates'][0][kpt_id]):
-            if dist[idx] < 0.997 or ret_pred['confidence'][kpt_id][idx]< 0.1:
-                filter_indices.append(idx)        
-        
-        for idx, ele in enumerate(ret_pred['coordinates'][0][kpt_id]):
+        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
+            if dist[idx] < 0.997 or ret_pred["confidence"][kpt_id][idx] < 0.1:
+                filter_indices.append(idx)
+
+        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
             if idx in filter_indices:
-                ret_pred['coordinates'][0][kpt_id][idx] = np.array([[np.nan, np.nan]])
-                ret_pred['confidence'][kpt_id][idx] = np.array([[np.nan]])            
-        
-        ret_pred['coordinates'][0][kpt_id] = np.concatenate(ret_pred['coordinates'][0][kpt_id], axis = 0)
-        ret_pred['confidence'][kpt_id] = np.concatenate(ret_pred['confidence'][kpt_id], axis = 0)
+                ret_pred["coordinates"][0][kpt_id][idx] = np.array([[np.nan, np.nan]])
+                ret_pred["confidence"][kpt_id][idx] = np.array([[np.nan]])
+
+        ret_pred["coordinates"][0][kpt_id] = np.concatenate(
+            ret_pred["coordinates"][0][kpt_id], axis=0
+        )
+        ret_pred["confidence"][kpt_id] = np.concatenate(
+            ret_pred["confidence"][kpt_id], axis=0
+        )
 
         # format for multi animal
-        
-        ret_pred['coordinates'][0][kpt_id] = [np.nanmedian(np.array(ret_pred['coordinates'][0][kpt_id]), axis = 0)]
-        ret_pred['confidence'][kpt_id] = np.array([np.nanmedian(np.array(ret_pred['confidence'][kpt_id]), axis = 0)])
 
+        ret_pred["coordinates"][0][kpt_id] = [
+            np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
+        ]
+        ret_pred["confidence"][kpt_id] = np.array(
+            [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
+        )
 
     return ret_pred
+
+
 def video_inference(
-        cfg,
-        test_cfg,
-        sess,
-        inputs,
-        outputs,
-        cap,
-        nframes,
-        batchsize,
-        invert_color = False,
-        scale_list = [],
+    cfg,
+    test_cfg,
+    sess,
+    inputs,
+    outputs,
+    cap,
+    nframes,
+    batchsize,
+    invert_color=False,
+    scale_list=[],
 ):
-    
+
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
 
@@ -270,7 +295,7 @@ def video_inference(
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
-    print ('scale list', scale_list)
+    print("scale list", scale_list)
     PredicteData = {}
     # len(frames) -> (n_scale,)
     # frames[0].shape - > (batchsize, h, w, 3)
@@ -283,19 +308,22 @@ def video_inference(
             frame = img_as_ubyte(_frame)
 
             if invert_color:
-                frame = 255 - frame            
-            
-            old_shape = frame.shape            
-            frames,frame_shapes = get_multi_scale_frames(frame, scale_list)
+                frame = 255 - frame
+
+            old_shape = frame.shape
+            frames, frame_shapes = get_multi_scale_frames(frame, scale_list)
 
             if multi_scale_batched_frames == None:
-                multi_scale_batched_frames = [np.empty(
-                    (batchsize, frame.shape[0], frame.shape[1], 3),
-                    dtype = 'ubyte') for frame in frames]
-            
+                multi_scale_batched_frames = [
+                    np.empty(
+                        (batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte"
+                    )
+                    for frame in frames
+                ]
+
             for scale_id, frame in enumerate(frames):
                 multi_scale_batched_frames[scale_id][batch_ind] = frame
-            inds.append(counter)                
+            inds.append(counter)
             if batch_ind == batchsize - 1:
                 preds = []
                 for scale_id, batched_frames in enumerate(multi_scale_batched_frames):
@@ -310,18 +338,19 @@ def video_inference(
                 for i in range(batchsize):
                     ind = ind_start + i
                     PredicteData["frame" + str(ind).zfill(strwidth)] = []
-                    
+
                     for scale_id in range(len(scale_list)):
                         if i >= len(preds[scale_id]):
                             pred = []
                         else:
-                            pred = preds[scale_id][i]                        
-                        if pred != []:                            
-                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])
-                        
+                            pred = preds[scale_id][i]
+                        if pred != []:
+                            pred = _project_pred_to_original_size(
+                                pred, old_shape, frame_shapes[scale_id]
+                            )
+
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
 
-                    
                 batch_ind = 0
                 inds.clear()
             else:
@@ -332,8 +361,12 @@ def video_inference(
                 preds = []
                 for scale_id, batched_frames in enumerate(multi_scale_batched_frames):
                     D = predict.predict_batched_peaks_and_costs(
-                        test_cfg, batched_frames, sess, inputs, outputs,
-                    )                    
+                        test_cfg,
+                        batched_frames,
+                        sess,
+                        inputs,
+                        outputs,
+                    )
 
                     preds.append(D)
 
@@ -342,35 +375,35 @@ def video_inference(
                     ind = ind_start + i
                     if ind >= nframes:
                         break
-                    PredicteData["frame" + str(ind).zfill(strwidth)] = []            
+                    PredicteData["frame" + str(ind).zfill(strwidth)] = []
                     for scale_id in range(len(scale_list)):
                         if i >= len(preds[scale_id]):
                             pred = []
                         else:
-                            pred = preds[scale_id][i]                        
-                        if pred !=[]:
-                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])                        
+                            pred = preds[scale_id][i]
+                        if pred != []:
+                            pred = _project_pred_to_original_size(
+                                pred, old_shape, frame_shapes[scale_id]
+                            )
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
-                    
+
             break
-        
-        counter+=1
+
+        counter += 1
         pbar.update(1)
-                                    
+
     cap.close()
     pbar.close()
 
     for k, v in PredicteData.items():
         if v != []:
-            PredicteData[k] = _average_multiple_scale_preds(v, scale_list)            
+            PredicteData[k] = _average_multiple_scale_preds(v, scale_list)
 
-    
-            
     PredicteData["metadata"] = {
         "nms radius": test_cfg.get("nmsradius", None),
         "minimal confidence": test_cfg.get("minconfidence", None),
         "sigma": test_cfg.get("sigma", 1),
-        "PAFgraph": test_cfg.get("partaffinityfield_graph",None),
+        "PAFgraph": test_cfg.get("partaffinityfield_graph", None),
         "PAFinds": test_cfg.get(
             "paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))
         ),
@@ -380,15 +413,15 @@ def video_inference(
         ],
         "nframes": nframes,
     }
-       
+
     return PredicteData, nframes
-    
+
 
 def video_inference_supermodel(
     config,
     videos,
-    scale_list = [],
-    invert_color = False,
+    scale_list=[],
+    invert_color=False,
     videotype="avi",
     shuffle=1,
     trainingsetindex=0,
@@ -399,8 +432,7 @@ def video_inference_supermodel(
     robust_nframes=False,
     allow_growth=False,
     init_weights="",
-    save_frames = False,
-
+    save_frames=False,
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -409,7 +441,7 @@ def video_inference_supermodel(
 
     Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
             in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. 
+            in the same directory, where the video is stored.
 
     Parameters
     ----------
@@ -460,7 +492,6 @@ def video_inference_supermodel(
 
     """
 
-    
     setting = get_nuances(
         config,
         videos,
@@ -474,21 +505,19 @@ def video_inference_supermodel(
         robust_nframes=robust_nframes,
         allow_growth=allow_growth,
         init_weights=init_weights,
-        save_frames = save_frames,
-
+        save_frames=save_frames,
     )
-            
 
-    test_cfg = setting['test_cfg']
-    cfg = setting['cfg']
-    videos = setting['videos']
-    destfolder = setting['destfolder']
-    DLCscorer = setting['DLCscorer']
-    sess = setting['sess']
-    inputs = setting['inputs']
-    outputs = setting['outputs']
-    trainFraction = setting['trainFraction']
-            
+    test_cfg = setting["test_cfg"]
+    cfg = setting["cfg"]
+    videos = setting["videos"]
+    destfolder = setting["destfolder"]
+    DLCscorer = setting["DLCscorer"]
+    sess = setting["sess"]
+    inputs = setting["inputs"]
+    outputs = setting["outputs"]
+    trainFraction = setting["trainFraction"]
+
     for video in videos:
         vname = Path(video).stem
 
@@ -496,16 +525,18 @@ def video_inference_supermodel(
 
             # if the scale_list is empty, by default we use the original one
             vid = cv2.VideoCapture(video)
-            h,w = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h, w = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
+                vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+            )
             scale_list = [h]
-            
+
         videofolder = str(Path(video).parents[0])
         if destfolder is None:
             destfolder = videofolder
             auxiliaryfunctions.attempttomakefolder(destfolder)
 
-        dataname = os.path.join(destfolder, vname + DLCscorer + '.h5')
-        
+        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+
         if os.path.isfile(dataname):
             print("Video already analyzed!", dataname)
         else:
@@ -522,17 +553,19 @@ def video_inference_supermodel(
                 nframes = len(vid)
                 duration = vid.calc_duration(robust=False)
                 fps = vid.fps
-                        
+
             if save_frames:
                 if not os.path.exists(os.path.join(videofolder, vname)):
-                    auxiliaryfunctions.attempttomakefolder(os.path.join(videofolder,vname))
+                    auxiliaryfunctions.attempttomakefolder(
+                        os.path.join(videofolder, vname)
+                    )
 
                     for n in range(nframes):
-                        print(f'Writing frame {n + 1}|{nframes}')
+                        print(f"Writing frame {n + 1}|{nframes}")
                         frame = writer.read_frame()
-                        writer.write_frame(frame,
-                                        os.path.join(videofolder, vname,f'frame_{n}.png')
-                                        )
+                        writer.write_frame(
+                            frame, os.path.join(videofolder, vname, f"frame_{n}.png")
+                        )
                     writer.close()
 
             nx, ny = vid.dimensions
@@ -553,9 +586,9 @@ def video_inference_supermodel(
             start = time.time()
 
             print("Starting to extract posture")
-        
+
             # extra data
-            print ('before inference')
+            print("before inference")
             PredicteData, nframes = video_inference(
                 cfg,
                 test_cfg,
@@ -565,20 +598,19 @@ def video_inference_supermodel(
                 vid,
                 nframes,
                 int(test_cfg["batch_size"]),
-                invert_color = invert_color,
-                scale_list = scale_list,
+                invert_color=invert_color,
+                scale_list=scale_list,
             )
-            
+
             stop = time.time()
 
             coords = [0, nx, 0, ny]
 
-
             if cfg["cropping"] == True:
                 coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
             else:
-                coords = [0, nx, 0, ny]            
-            
+                coords = [0, nx, 0, ny]
+
             dictionary = {
                 "start": start,
                 "stop": stop,
@@ -590,17 +622,16 @@ def video_inference_supermodel(
                 "frame_dimensions": (ny, nx),
                 "nframes": nframes,
                 "iteration (active-learning)": cfg["iteration"],
-                "cropping": cfg["cropping"],                
+                "cropping": cfg["cropping"],
                 "training set fraction": trainFraction,
-                "cropping_parameters": coords
+                "cropping_parameters": coords,
             }
             metadata = {"data": dictionary}
             print("Saving results in %s..." % (destfolder))
 
-            metadata_path = dataname.split('.h5')[0] + '_meta.pickle'
-            
-            
-            with open(metadata_path, 'wb') as f:
+            metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+
+            with open(metadata_path, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             xyz_labs = ["x", "y", "likelihood"]
@@ -608,45 +639,35 @@ def video_inference_supermodel(
             scorer = DLCscorer
 
             keypoint_names = test_cfg["all_joints_names"]
-            
-            columnindex = pd.MultiIndex.from_product([
-                [scorer],
-                keypoint_names,
-                xyz_labs
-            ],names = ['scorer',  'bodyparts', 'coords'])
-                                                      
-            
-            imagenames = [k for k in  PredicteData.keys() if k !='metadata']
+
+            columnindex = pd.MultiIndex.from_product(
+                [[scorer], keypoint_names, xyz_labs],
+                names=["scorer", "bodyparts", "coords"],
+            )
+
+            imagenames = [k for k in PredicteData.keys() if k != "metadata"]
 
             data = np.zeros((len(imagenames), len(columnindex))) * np.nan
-                                    
+
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
-            
+
             for imagename in imagenames:
 
                 if PredicteData[imagename] == []:
 
                     for kpt_id, kpt_name in enumerate(keypoint_names):
-                        df.loc[imagename][scorer,  kpt_name, 'x'] = np.nan
-                        df.loc[imagename][scorer,  kpt_name, 'y'] = np.nan
-                        df.loc[imagename][scorer,  kpt_name, 'likelihood'] = 0
+                        df.loc[imagename][scorer, kpt_name, "x"] = np.nan
+                        df.loc[imagename][scorer, kpt_name, "y"] = np.nan
+                        df.loc[imagename][scorer, kpt_name, "likelihood"] = 0
                     continue
-                keypoints = PredicteData[imagename]['coordinates'][0]
+                keypoints = PredicteData[imagename]["coordinates"][0]
                 for kpt_id, kpt_name in enumerate(keypoint_names):
 
-                    confidence = PredicteData[imagename]['confidence']
-                    df.loc[imagename][scorer,  kpt_name, 'x'] = keypoints[kpt_id][0][0]
-                    df.loc[imagename][scorer,  kpt_name, 'y'] = keypoints[kpt_id][0][1]
-                    df.loc[imagename][scorer,  kpt_name, 'likelihood'] = confidence[kpt_id]
+                    confidence = PredicteData[imagename]["confidence"]
+                    df.loc[imagename][scorer, kpt_name, "x"] = keypoints[kpt_id][0][0]
+                    df.loc[imagename][scorer, kpt_name, "y"] = keypoints[kpt_id][0][1]
+                    df.loc[imagename][scorer, kpt_name, "likelihood"] = confidence[
+                        kpt_id
+                    ]
 
-                
-            df.to_hdf(dataname, 'df_with_missing', format = 'table', mode = 'w')
-            
-
-            
-
-
-
-            
-
-            
+            df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
