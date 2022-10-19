@@ -6,7 +6,7 @@ In this repo we directly support 2-camera based 3D pose estimation. If you want 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
 
-**ATTENTION: Our code base in this repo assumes you:**
+## **ATTENTION: Our code base in this repo assumes you:**
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the [main documentation](overview). This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See [Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)). We also support multi-animal 3D with this code (please see [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0)).
 
@@ -20,7 +20,7 @@ Here are other excellent options for you to use that extend DeepLabCut:
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
 
-- **[AcinoSet](https://github.com/African-Robotics-Unit/AcinoSet)**; **n**-camera support with triangulation, extended Kalman filtering, and trajectory optimization code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to work directly with DeepLabCut (but currently tailored to cheetah's, thus some coding skills are required at this time). 
+- **[AcinoSet](https://github.com/African-Robotics-Unit/AcinoSet)**; **n**-camera support with triangulation, extended Kalman filtering, and trajectory optimization code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to work directly with DeepLabCut (but currently tailored to cheetah's, thus some coding skills are required at this time).
 
 
 - **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut that provides >3 camera support and is built to work directly with DeepLabCut. You can `pip install anipose` into your DLC conda environment.

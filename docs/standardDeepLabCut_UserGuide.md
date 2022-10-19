@@ -439,7 +439,7 @@ It creates a folder called ``plot-poses`` (in the directory of the video). The p
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
 ```python
-deeplabcut.create_labeled_video(config_path['fullpath/analysis/project/videos/reachingvideo1.avi','fullpath/analysis/project/videos/reachingvideo2.avi'], save_frames = True/False)
+deeplabcut.create_labeled_video(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi','fullpath/analysis/project/videos/reachingvideo2.avi'], save_frames = True/False)
 ```       
  Optionally, if you want to use the filtered data for a video or directory of filtered videos pass ``filtered=True``, i.e.:
 ```python       
@@ -480,7 +480,7 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
-##### API Docs
+#### API Docs
 ```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}

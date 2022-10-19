@@ -13,7 +13,7 @@ def analyze_videos(
 )
 ```
 
-OpenVINO is an optional dependency. You can install it with DeepLabCut bu the following command:
+OpenVINO is an optional dependency. You can install it with DeepLabCut by the following command:
 
 ```bash
 pip install deeplabcut[openvino]

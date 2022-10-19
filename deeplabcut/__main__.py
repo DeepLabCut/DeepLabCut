@@ -8,7 +8,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 try:
-    import wx
+    import PySide2
 
     lite = False
 except ModuleNotFoundError:
@@ -17,9 +17,9 @@ except ModuleNotFoundError:
 # if module is executed directly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
 if not lite:
     print("Starting GUI...")
-    import deeplabcut
+    from deeplabcut.gui.launch_script import launch_dlc
 
-    deeplabcut.launch_dlc()
+    launch_dlc()
 else:
     print(
         "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install 'deeplabcut[gui]''"

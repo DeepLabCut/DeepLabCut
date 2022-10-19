@@ -4,17 +4,17 @@
 
 In this #cookbook recipe, we show you how to use MegaDetector to detect animals and run DeepLabCut-Live (using ModelZoo models) to get the pose estimation. This doc is contributed by 2022 DLC AI Resident [Nirel Kadzo](https://github.com/Kadzon) 💜!
 
-### What is MegaDetector?
+## What is MegaDetector?
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="right" vspace = "5">
- 
+
 MegaDetector detects an animal and generates a bounding box around the animal. Thanks to [Sara Beery](https://beerys.github.io/) for visiting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:
 
 
 
-### DeepLabCut-Live
+## DeepLabCut-Live
 
-DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight pacakge for running DeeplabCut even if you don't need real-time. It's very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the [docs](https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html).
+DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight package for running DeeplabCut even if you don't need real-time. It's very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the [docs](https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html).
 
 ### MegaDetector meets DeepLabCut
 
@@ -22,7 +22,7 @@ The combination of MegaDetector and DeepLabCut now enables animal pose estimatio
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853652273-KG8FYHYDVJ5IBPY0UDVS/monkmddlc.png?format=500w" width="600" title="DLC" alt="DLC" align="center" vspace = "5">
 
-## 🤗 HuggingFace App
+# 🤗 HuggingFace App
 
 We use the [Hugging Face](huggingface.co) spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to [Merve Noyan](https://github.com/merveenoyan) who visited the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the [App page](https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut)).
 
@@ -94,7 +94,7 @@ To experiment with more camera trap images, check out [Lila Science!](https://li
 
 Examples have also been added to the Hugging Face interface where you can try out a variety of animals to get a feel of things and also add your own.
 
-### Examples
+## Examples
 
 We encourage you to try out and experiment on your camera trap or other animal images. Indeed, we found it is not only limited to camera trap images you can test it out with photos taken from your camera. Have a look at a 🦊picture Mackenzie took in Geneva and used the MegaDetector+DeepLabCut [Hugging Face](huggingface.co).
 
@@ -109,7 +109,7 @@ DLC-Live allows you to process videos and frames in bulk, however the current re
 ```
 
 
-#### Developer Mode:
+### Developer Mode:
 To run it locally you can `git clone` the repository on your terminal and explore MegaDetector+DeepLabCut for yourself :)
 
 In your terminal run each line:

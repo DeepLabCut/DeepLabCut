@@ -20,8 +20,7 @@ from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
-from deeplabcut.utils.auxiliaryfunctions import read_config
-from deeplabcut.utils.auxfun_multianimal import extractindividualsandbodyparts
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
@@ -31,10 +30,12 @@ from math import sqrt
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
-        self.main_cfg = read_config(
+        self.main_cfg = auxiliaryfunctions.read_config(
             os.path.join(self.cfg["project_path"], "config.yaml")
         )
-        animals, unique, multi = extractindividualsandbodyparts(self.main_cfg)
+        animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(
+            self.main_cfg
+        )
         self._n_kpts = len(multi) + len(unique)
         self._n_animals = len(animals)
         self.data = self.load_dataset()

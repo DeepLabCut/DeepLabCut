@@ -416,18 +416,10 @@ def extract_outlier_frames(
                     ind = np.argsort(d)[::-1][: cfg["numframes2pick"] * 2]
                 Indices.extend(ind)
             elif outlieralgorithm == "manual":
-                wd = Path(config).resolve().parents[0]
-                os.chdir(str(wd))
-                from deeplabcut.gui import outlier_frame_extraction_toolbox
+                from deeplabcut.gui.widgets import launch_napari
 
-                outlier_frame_extraction_toolbox.show(
-                    config,
-                    video,
-                    shuffle,
-                    df,
-                    savelabeled,
-                    cfg.get("multianimalproject", False),
-                )
+                _ = launch_napari()
+                return
 
             # Run always except when the outlieralgorithm == manual.
             if not outlieralgorithm == "manual":

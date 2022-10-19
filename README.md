@@ -84,17 +84,18 @@ DLC code was originally developed by [Alexander Mathis](https://github.com/AlexE
 
 This is an actively developed package and we welcome community development and involvement.
 
-## Community Support, Developers, & Help:
+## Be part of the DLC Community✨:
 
-- We are a community partner on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut). Please post help and support questions on the forum with the tag DeepLabCut. Check out their mission statement [Scientific Community Image Forum: A discussion forum for scientific image software](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3000340).
+| 🚉 Platform                                                 | 🎯 Goal                                                                      | ⏱️ Estimated Response Time | 📢 Support Squad                        |
+|------------------------------------------------------------|-----------------------------------------------------------------------------|---------------------------|----------------------------------------|
+| [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut) <br /> 🐭Tag: DeepLabCut | To ask help and support questions👋                                          | Promptly🔥                 | DLC Team and The DLC Community |
+| GitHub DeepLabCut/[Issues](https://github.com/DeepLabCut/DeepLabCut/issues)                                  | To report bugs and code issues🐛   (we encourage you to search issues first) | 2-3 days                  | DLC Team                               |
+|[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)                               | To discuss with other users,  share ideas and collaborate💡                  | 2 days                    | The DLC Community                      |
+| GitHub DeepLabCut/[Contributing](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md)                          | To contribute your expertise and experience🙏💯                               | Promptly🔥                 | DLC Team                               |
+| 🚧 GitHub DeepLabCut/[Roadmap](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)                             | To learn more about our journey✈️                                            | N/A                       | N/A                                    |
+| [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)                                                   | To keep up with our latest news and updates 📢                               | Daily                     | DLC Team                               |
+| The DeepLabCut [AI Residency Program](https://www.deeplabcutairesidency.org/)                        | To come and work with us next summer👏                                       | Annually                  | DLC Team                               |
 
-- If you encounter a previously unreported bug/code issue, please post here (we encourage you to search issues first): https://github.com/DeepLabCut/DeepLabCut/issues
-
-- For quick discussions amongst users, please see here: [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-- If you want to contribute to the code, please read our guide [here!](CONTRIBUTING.md)
-
-- The project [road map](docs/roadmap.md). Get in touch with us if you want to help!
 
 ## References:
 
@@ -130,12 +131,13 @@ Please check out the following references for more details:
         year      = {2021},
         pages     = {1859-1868}}
         
-    @article{Lauer2021MultianimalPE,
-        title = {Multi-animal pose estimation and tracking with DeepLabCut},
-        author = {Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Tanmay Nath and Mohammed Mostafizur Rahman and V. Di Santo and Daniel Soberanes and         Guoping Feng and V. Murthy and G. Lauder and C. Dulac and M. Mathis and Alexander Mathis},
-        journal = {bioRxiv},
-        year = {2021}
-        url = {https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1}}
+    @article{Lauer2022MultianimalPE,
+        title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
+        author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
+        journal={Nature Methods},
+        year={2022},
+        volume={19},
+        pages={496 - 504}}
 
     @article{insafutdinov2016eccv,
         title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
@@ -171,8 +173,7 @@ Other open-access pre-prints related to our work on DeepLabCut:
         publisher = {Cold Spring Harbor Laboratory},
         URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
         eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
-        journal = {bioRxiv}
-        }
+        journal = {bioRxiv}}
 
 ## License:
 
@@ -180,7 +181,7 @@ This project is licensed under the GNU Lesser General Public License v3.0. Note 
 
 ## Versions:
 
-VERSION 2.2: Multi-animal pose estimation and tracking with DeepLabCut.
+VERSION 2.2: Multi-animal pose estimation and tracking with DeepLabCut is supported (as well as single-animal projects).
 
 VERSION 2.0-2.1: This is the **Python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) that was originally released with our [Nature Protocols](https://doi.org/10.1038/s41596-019-0176-0) paper (preprint [here](https://www.biorxiv.org/content/10.1101/476531v1)).
 This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and data augmentation tools that improve network performance, especially in challenging cases (see [panel b](https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077)).

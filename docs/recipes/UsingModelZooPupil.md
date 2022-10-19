@@ -11,7 +11,7 @@ This recipe aims to show a usecase of the **mouse_pupil_vclose** and is contribu
 ## `mouse_pupil_vclose` model
 
 This model was contributed by Jim McBurney-Lin at University of California Riverside, USA.
-The model was trained on images of C57/B6J mice eyes, and also then agumented with mouse eye data from the Mathis Lab at EPFL.
+The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at EPFL.
 
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
@@ -44,7 +44,7 @@ In light of these findings, we wanted to show whether the **mouse_pupil_vclose**
 
 DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need for local installation of DeepLabCut!
 
-Since we are interested in the accuracy of the **mouse_pupil_vclose** on pigeon pupil data, we will use a video which consits of 7 recordings of pigeon pupils.
+Since we are interested in the accuracy of the **mouse_pupil_vclose** on pigeon pupil data, we will use a video which consists of 7 recordings of pigeon pupils.
 
 Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab.
 
@@ -66,7 +66,7 @@ files.download("/content/file.zip")
 DeepLabCut host models from the <a href='http://www.mackenziemathislab.org/dlc-modelzoo' target="_blank">DeepLabCut ModelZoo Project</a>.
 
 The `create_pretrained_project` function will create a new project directory with the necessary sub-directories and a basic configuration file.
-It will also initiliaze your project with a pre-trained model from the DeepLabCut ModelZoo.
+It will also initialize your project with a pre-trained model from the DeepLabCut ModelZoo.
 
 The rest of the code should be run within your DeepLabCut environment.
 Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="_blank">here</a> for the instructions for the DeepLabCut installation.
@@ -75,7 +75,7 @@ Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="
 ```python
 import deeplabcut
 ```
-To initiliaze a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.
+To initialize a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.
 
 ```python
 deeplabcut.create_pretrained_project(

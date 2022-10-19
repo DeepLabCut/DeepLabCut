@@ -9,9 +9,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 import os
-from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
 
-DLC_PATH = get_deeplabcut_path()
-MEDIA_PATH = os.path.join(DLC_PATH, "gui", "media")
-LOGO_PATH = os.path.join(MEDIA_PATH, "logo.png")
+BASE_DIR = os.path.dirname(__file__)
