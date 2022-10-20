@@ -451,7 +451,7 @@ def video_inference_supermodel(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     scale_list: list
-        A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are adviced to try a wide range of scale list when the super model does not give reasonable results
+        A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
 
     videotype: string, optional
