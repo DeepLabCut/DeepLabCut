@@ -200,7 +200,6 @@ def _average_multiple_scale_preds(preds, scale_list):
 
     ret_pred = {}
     num_kpts = len(preds[0]["coordinates"][0])
-    # PrediteData is a complicate multi dimensional python list
     ret_pred["coordinates"] = [[[]] * num_kpts]
     ret_pred["confidence"] = [[]] * num_kpts
 
