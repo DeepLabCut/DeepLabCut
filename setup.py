@@ -49,11 +49,9 @@ setuptools.setup(
     ],
     extras_require={
         "gui": [
-            "PySide2==5.15.2.1",
-            "napari[pyside2]",
-            "opencv-python-headless",
+            "pyside6<6.3.2",
+            "napari-deeplabcut @ git+https://github.com/DeepLabCut/napari-deeplabcut.git@42ee6259e1f2f6ad7037d99c693950b66d690841",
             "qdarkstyle==3.1",
-            "napari-deeplabcut>=0.0.6",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
