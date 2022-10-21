@@ -13,7 +13,7 @@ import pandas as pd
 from skimage.util import img_as_ubyte
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
-
+import json
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import \
     predict as single_predict
@@ -174,6 +174,7 @@ def video_inference_topdown(
 def get_nuances(
     config,
     videos,
+    bbox_file = '',
     videotype="avi",
     shuffle=1,
     trainingsetindex=0,
@@ -185,6 +186,7 @@ def get_nuances(
     allow_growth=False,
     init_weights="",
     save_frames=False,
+    
 ):
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -259,6 +261,12 @@ def get_nuances(
         test_cfg["batch_size"] = batchsize
         cfg["batch_size"] = batchsize
 
+    if bbox_file !='':
+        # only supporting single batch topdown inference
+        test_cfg['batch_size'] = 1
+        cfg['batch_size'] = 1
+                
+        
     if test_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
@@ -676,6 +684,7 @@ def video_inference_supermodel(
         allow_growth=allow_growth,
         init_weights=init_weights,
         save_frames=save_frames,
+        bbox_file = bbox_file
     )
 
     test_cfg = setting["test_cfg"]
