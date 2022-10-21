@@ -460,6 +460,11 @@ def video_inference_superanimal(
         batchsize=batchsize,
         allow_growth=allow_growth,
         init_weights=init_weights,
+<<<<<<< 19ee9288b3a6ec7199d453f3fb074e9c75d92891
+=======
+        save_frames=save_frames,
+        bbox_file = bbox_file
+>>>>>>> Fixed previous commit
     )
 
     videos = setting["videos"]
