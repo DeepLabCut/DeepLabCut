@@ -26,6 +26,150 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
+
+def extract_bbox_from_file(filename):
+
+    with open(filename, 'rb') as f:
+        json_obj = json.load(f)
+    bboxs = json_obj['bbox']
+
+    return bboxs
+
+
+def _topdown_reverse_transformation(preds, bbox):
+    ret = {}
+
+    num_kpts = len(preds[0]['coordinates'][0])
+    ret['coordinates'] = [[[]]* num_kpts]
+    ret['confidence'] = [[]] * num_kpts
+                          
+    for instance_id, pred in enumerate(preds):
+        coordinate = pred['coordinates'][0]
+        confidence = pred['confidence']
+        
+        for kpt_id, coord_list in enumerate(coordinate):
+
+            if len(ret['coordinates'][0][kpt_id]) == 0:
+                ret['coordinates'][0][kpt_id] = [[]] * len(preds)
+                ret['confidence'][kpt_id] = [[]]* len(preds)
+                
+            if len(coord_list) == 0:                
+                ret['coordinates'][0][kpt_id][instance_id] = np.array([np.nan, np.nan])
+                ret['confidence'][kpt_id][instance_id] = np.array([np.nan])
+                continue
+            confidence_list = confidence[kpt_id]
+            max_idx = np.argmax(confidence_list)
+            # shifting the prediction
+            x1,y1 = bbox[instance_id][:2]
+            
+            max_pred = coordinate[kpt_id][max_idx] + np.array([x1, y1])
+
+            # only keep the max        
+            confidence[kpt_id] = confidence_list[max_idx]
+            coordinate[kpt_id] = max_pred
+
+        
+            ret['coordinates'][0][kpt_id][instance_id] = coordinate[kpt_id]
+            ret['confidence'][kpt_id][instance_id] = confidence[kpt_id]
+            
+    return ret
+
+
+
+def video_inference_topdown(
+        cfg,
+        test_cfg,
+        sess,
+        inputs,
+        outputs,
+        cap,
+        nframes,
+        batchsize,
+        bboxs,
+        invert_color = False,
+
+):
+
+    strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
+    batch_ind = 0  # keeps track of which image within a batch should be written to
+
+    nx, ny = cap.dimensions
+
+    pbar = tqdm(total=nframes)
+    counter = 0
+    inds = []
+    PredicteData = {}
+    # len(frames) -> (n_scale,)
+    # frames[0].shape - > (batchsize, h, w, 3)
+    
+    while cap.video.isOpened():
+        # no crop needed
+        _frame = cap.read_frame()
+        if _frame is not None:
+            frame = img_as_ubyte(_frame)
+            h,w,_ = frame.shape 
+
+            bbox = bboxs[counter]
+            preds = []
+            _bbox = []
+            black_mean = None
+            for i in range(len(bbox)):
+
+                x1, y1, x2, y2 = bbox[i]
+
+                if x1<= 1.0 and x2<= 1.0 and y1<=1.0 and y2<=1.0:
+                    # normalized bounding box
+                    y1,y2 = int(h*y1), int(h*y2)
+                    x1,x2 = int(w*x1), int(w*x2)
+                    
+                _bbox.append([x1,y1,x2,y2])
+                    
+                cropped_frame = frame[y1:y2, x1:x2]
+                # hardcoded rule for cal database
+                if i == 1:
+                    cropped_frame = 255 - cropped_frame 
+                cropped_frame = np.array(cropped_frame)
+                cropped_frame = np.expand_dims(cropped_frame, axis = 0)
+                    # batch full, start true inferencing
+                D = predict.predict_batched_peaks_and_costs(
+                    test_cfg, cropped_frame, sess, inputs, outputs
+                )
+                # stripping the batch dimension
+                preds.append(D[0])
+
+                    # only do this when animal is detected                                
+            preds = _topdown_reverse_transformation(preds, _bbox)
+                        
+            PredicteData["frame" + str(counter).zfill(strwidth)] = preds 
+
+        if counter>= nframes:
+            break
+        counter+=1
+        pbar.update(1)
+                                    
+    cap.close()
+    pbar.close()
+
+            
+    PredicteData["metadata"] = {
+        "nms radius": test_cfg.get("nmsradius", None),
+        "minimal confidence": test_cfg.get("minconfidence", None),
+        "sigma": test_cfg.get("sigma", 1),
+        "PAFgraph": test_cfg.get("partaffinityfield_graph",None),
+        "PAFinds": test_cfg.get(
+            "paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))
+        ),
+        "all_joints": [[i] for i in range(len(test_cfg["all_joints"]))],
+        "all_joints_names": [
+            test_cfg["all_joints_names"][i] for i in range(len(test_cfg["all_joints"]))
+        ],
+        "nframes": nframes,
+    }
+       
+    return PredicteData, nframes
+    
+
+
 # instead of having these in a lengthy function, I made this a separate function
 def get_nuances(
     config,
@@ -196,7 +340,7 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
     return pred
 
 
-def _average_multiple_scale_preds(preds, scale_list):
+def _average_multiple_scale_preds(preds, scale_list, cos_dist_threshold = 0.997, confidence_threshold = 0.1):
 
     ret_pred = {}
     num_kpts = len(preds[0]["coordinates"][0])
@@ -246,7 +390,7 @@ def _average_multiple_scale_preds(preds, scale_list):
         filter_indices = []
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if dist[idx] < 0.997 or ret_pred["confidence"][kpt_id][idx] < 0.1:
+            if dist[idx] < cos_dist_threshold or ret_pred["confidence"][kpt_id][idx] < confidence_threshold:
                 filter_indices.append(idx)
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
@@ -261,11 +405,10 @@ def _average_multiple_scale_preds(preds, scale_list):
             ret_pred["confidence"][kpt_id], axis=0
         )
 
-        # format for multi animal
-
-        ret_pred["coordinates"][0][kpt_id] = [
+        # need np.array for wrapping the list for evaluation code to work correctly
+        ret_pred["coordinates"][0][kpt_id] = np.array([
             np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
-        ]
+        ])
         ret_pred["confidence"][kpt_id] = np.array(
             [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
         )
@@ -432,6 +575,7 @@ def video_inference_supermodel(
     allow_growth=False,
     init_weights="",
     save_frames=False,
+    bbox_file = ''        
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -489,6 +633,33 @@ def video_inference_supermodel(
     init_weights: string, default empty
         The path to the tensorflow checkpoint of the super model. Make sure you don't include the suffix of the snapshot file.
 
+    bbox_file: string, default empty
+        The path to a json file that contains bounding box
+
+    Examples:
+
+    Given a list of scales for spatial pyramid, i.e. [600, 700]
+
+    scale_list = range(600,800,100)
+
+    init_weights = PATH_TO_SUPERMODEL
+
+    deeplabcut.video_inference_supermodel(config_path,
+                                      [video_path],
+                                      videotype=videotype,
+                                      init_weights = init_weights,
+                                      scale_list = scale_list,
+                                      invert_color = False,   
+                                      bbox_file = bbox_file)
+    
+
+    deeplabcut.create_labeled_video(config_path,
+                                [video_path],
+                                videotype = videotype,
+                                init_weights = init_weights,
+                                )
+
+
     """
 
     setting = get_nuances(
@@ -529,6 +700,10 @@ def video_inference_supermodel(
             )
             scale_list = [h]
 
+        if bbox_file!='':
+            bboxs = extract_bbox_from_file(bbox_file)        
+            
+        
         videofolder = str(Path(video).parents[0])
         if destfolder is None:
             destfolder = videofolder
@@ -588,18 +763,35 @@ def video_inference_supermodel(
 
             # extra data
             print("before inference")
-            PredicteData, nframes = video_inference(
-                cfg,
-                test_cfg,
-                sess,
-                inputs,
-                outputs,
-                vid,
-                nframes,
-                int(test_cfg["batch_size"]),
-                invert_color=invert_color,
-                scale_list=scale_list,
-            )
+            if bbox_file == '':
+                PredicteData, nframes = video_inference(
+                    cfg,
+                    test_cfg,
+                    sess,
+                    inputs,
+                    outputs,
+                    vid,
+                    nframes,
+                    int(test_cfg["batch_size"]),
+                    invert_color=invert_color,
+                    scale_list=scale_list,
+                )
+
+            else:
+                PredicteData, nframes = video_inference_topdown(
+                    cfg,
+                    test_cfg,
+                    sess,
+                    inputs,
+                    outputs,
+                    vid,
+                    nframes,
+                    int(test_cfg["batch_size"]),
+                    bboxs,                    
+                    invert_color = invert_color,
+
+                )
+                
 
             stop = time.time()
 
@@ -637,18 +829,23 @@ def video_inference_supermodel(
 
             scorer = DLCscorer
 
+
             keypoint_names = test_cfg["all_joints_names"]
 
-            columnindex = pd.MultiIndex.from_product(
-                [[scorer], keypoint_names, xyz_labs],
-                names=["scorer", "bodyparts", "coords"],
-            )
-
-            imagenames = [k for k in PredicteData.keys() if k != "metadata"]
+            if bbox_file !='':
+                num_individuals = len(bboxs[0])
+                individuals = [f'individual{id}' for id in range(num_individuals)]
+            
+            product = [ [scorer], keypoint_names, xyz_labs] if bbox_file == "" else [ [scorer], individuals, keypoint_names, xyz_labs]
+            names = ['scorer', 'bodyparts', 'coords'] if bbox_file == "" else ['scorer', 'individuals', 'bodyparts', 'coords']
+            
+            columnindex = pd.MultiIndex.from_product(product,names = names)                                                                  
+            imagenames = [k for k in  PredicteData.keys() if k !='metadata']
 
             data = np.zeros((len(imagenames), len(columnindex))) * np.nan
-
+                                    
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
+
 
             for imagename in imagenames:
 
@@ -663,10 +860,20 @@ def video_inference_supermodel(
                 for kpt_id, kpt_name in enumerate(keypoint_names):
 
                     confidence = PredicteData[imagename]["confidence"]
-                    df.loc[imagename][scorer, kpt_name, "x"] = keypoints[kpt_id][0][0]
-                    df.loc[imagename][scorer, kpt_name, "y"] = keypoints[kpt_id][0][1]
-                    df.loc[imagename][scorer, kpt_name, "likelihood"] = confidence[
-                        kpt_id
-                    ]
+
+                    if bbox_file == '':
+                    
+                        df.loc[imagename][scorer,  kpt_name, 'x'] = keypoints[kpt_id][0][0]
+                        df.loc[imagename][scorer,  kpt_name, 'y'] = keypoints[kpt_id][0][1]
+                        df.loc[imagename][scorer,  kpt_name, 'likelihood'] = confidence[kpt_id]
+
+                    else:
+                        for individual_id in range(len(individuals)):
+                            
+                            
+                            df.loc[imagename][scorer, f'individual{individual_id}',  kpt_name, 'x'] = keypoints[kpt_id][individual_id][0]
+                            df.loc[imagename][scorer, f'individual{individual_id}', kpt_name, 'y' ] = keypoints[kpt_id][individual_id][1]
+                            df.loc[imagename][scorer, f'individual{individual_id}',  kpt_name, 'likelihood'] = confidence[kpt_id][individual_id]
+                    
 
             df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
