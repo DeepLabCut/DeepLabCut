@@ -205,7 +205,7 @@ def _average_multiple_scale_preds(preds, scale_list):
 
     for scale_id, pred in enumerate(preds):
         # better handle the case where the pred is empty
-        if pred == []:
+        if not len(pred):
             coordinate = [[]] * num_kpts
             confidence = [[]] * num_kpts
         else:
