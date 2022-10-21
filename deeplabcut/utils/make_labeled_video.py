@@ -536,9 +536,8 @@ def create_labeled_video(
             cfg, shuffle, trainFraction, modelprefix=modelprefix
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
-        DLCscorer = ''
-        DLCscorerlegacy = DLCscorer
-    
+        DLCscorer = Path(init_weights).stem
+        DLCscorerlegacy = Path(init_weights).stem            
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
