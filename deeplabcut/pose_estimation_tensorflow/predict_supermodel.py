@@ -312,7 +312,7 @@ def video_inference(
             old_shape = frame.shape
             frames, frame_shapes = get_multi_scale_frames(frame, scale_list)
 
-            if multi_scale_batched_frames == None:
+            if multi_scale_batched_frames is None:
                 multi_scale_batched_frames = [
                     np.empty(
                         (batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte"
