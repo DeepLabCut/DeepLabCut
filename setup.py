@@ -39,7 +39,6 @@ setuptools.setup(
         "scipy>=1.4",
         "statsmodels>=0.11",
         "tables>=3.7.0",
-        "tensorflow>=2.0",
         "torch",
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
@@ -50,7 +49,7 @@ setuptools.setup(
     extras_require={
         "gui": [
             "pyside6<6.3.2",
-            "napari-deeplabcut @ git+https://github.com/DeepLabCut/napari-deeplabcut.git@42ee6259e1f2f6ad7037d99c693950b66d690841",
+            "napari-deeplabcut @ git+https://github.com/DeepLabCut/napari-deeplabcut.git@42ee625",
             "qdarkstyle==3.1",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
