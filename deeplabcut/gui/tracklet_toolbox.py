@@ -9,7 +9,7 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
-from PySide2.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 
 class DraggablePoint:

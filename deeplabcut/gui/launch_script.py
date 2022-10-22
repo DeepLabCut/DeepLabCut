@@ -10,23 +10,22 @@ Licensed under GNU Lesser General Public License v3.0
 """
 import sys
 import os
-os.environ['QT_MAC_WANTS_LAYER'] = '1'
 import logging
 
-import PySide2.QtWidgets as QtWidgets
+import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
 from deeplabcut.gui import BASE_DIR
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon, QPixmap
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QPixmap
 
 
 def launch_dlc():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(BASE_DIR, 'assets', 'logo.png')))
-    desktop = app.desktop()
+    screen_size = app.screens()[0].size()
     pixmap = (
         QPixmap(os.path.join(BASE_DIR, 'assets', 'welcome.png'))
-        .scaledToWidth(int(0.7 * desktop.width()), Qt.SmoothTransformation)
+        .scaledToWidth(int(0.7 * screen_size.width()), Qt.SmoothTransformation)
     )
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
