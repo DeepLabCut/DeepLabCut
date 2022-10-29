@@ -15,7 +15,6 @@ benchmark reporistory:
 https://github.com/DeepLabCut/benchmark
 """
 
-import benchmark
 import deeplabcut.benchmark.base
 
 
