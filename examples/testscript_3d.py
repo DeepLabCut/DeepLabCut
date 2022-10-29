@@ -1,13 +1,5 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+""" This script tests various functionalities in an automatic way.
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-
-This script tests various functionalities in an automatic way.
 It produces nothing of interest scientifically.
 """
 import os, deeplabcut
