@@ -10,6 +10,7 @@
 import json
 import os
 from typing import Container
+from typing import Literal
 
 from deeplabcut.benchmark.base import Benchmark, Result, ResultCollection
 
@@ -98,12 +99,18 @@ def savecache(results: ResultCollection):
         json.dump(results.todicts(), fh, indent=2)
 
 
-def loadcache() -> ResultCollection:
-    if not os.path.exists(CACHE):
+def loadcache(
+    cache=CACHE, on_missing: Literal["raise", "ignore"] = "ignore"
+) -> ResultCollection:
+    if not os.path.exists(cache):
+        if on_missing == "raise":
+            raise FileNotFoundError(cache)
         return ResultCollection()
-    with open(CACHE, "r") as fh:
+    with open(cache, "r") as fh:
         try:
             data = json.load(fh)
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
+            if on_missing == "raise":
+                raise e
             return ResultCollection()
     return ResultCollection.fromdicts(data)
