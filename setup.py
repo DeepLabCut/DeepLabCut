@@ -41,19 +41,25 @@ setuptools.setup(
         "tables>=3.7.0",
         "torch",
         "tensorpack>=0.11",
-        "tf_slim>=1.1.0",
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
     ],
+
     extras_require={
         "gui": [
             "pyside6<6.3.2",
-            "napari-deeplabcut @ git+https://github.com/DeepLabCut/napari-deeplabcut.git@42ee625",
+            "napari-deeplabcut
+            "napari[pyside2]",
             "qdarkstyle==3.1",
+            "napari-deeplabcut>=0.0.7",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
+        "windows": ["tensorflow>=2.0"],
+        "liux": ["tensorflow>=2.0"],
+        "darwin": ["tensorflow>=2.0"],
+        "apple_m1": [],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
