@@ -13,11 +13,9 @@ Benchmarks subclass the abstract ``Benchmark`` class and are defined by ``name``
 Right now, the metrics to compute and report for each of the multi-animal benchmarks is the
 root mean-squared-error (RMSE) and the mean average precision (mAP).
 
-Note for contributors:
----------------------
-
-If you decide to contribute a benchmark which does not fit into this evaluation framework,
-please feel free to extend the base classes (e.g. to support additional metrics).
+Note for contributors: If you decide to contribute a benchmark which does not fit
+into this evaluation framework, please feel free to extend the base classes
+(e.g. to support additional metrics).
 """
 
 import abc

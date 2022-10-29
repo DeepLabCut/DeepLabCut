@@ -1,3 +1,11 @@
+# DeepLabCut2.0 Toolbox (deeplabcut.org)
+# © A. & M. Mathis Labs
+# https://github.com/AlexEMG/DeepLabCut
+# Please see AUTHORS for contributors.
+#
+# https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+# Licensed under GNU Lesser General Public License v3.0
+
 """Helper functions in this file are not affected by the main repositories
 license. They are independent from the remainder of the benchmarking code. 
 """

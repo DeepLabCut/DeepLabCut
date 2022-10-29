@@ -1,4 +1,20 @@
-"""The actual benchmark definitions."""
+# DeepLabCut2.0 Toolbox (deeplabcut.org)
+# © A. & M. Mathis Labs
+# https://github.com/AlexEMG/DeepLabCut
+# Please see AUTHORS for contributors.
+#
+# https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+# Licensed under GNU Lesser General Public License v3.0
+
+"""Definition for official DeepLabCut benchmark tasks.
+
+See benchmark.deeplabcut.org for a current leaderboard with models and metrics
+for each of these benchmarks. Submissions can be done by opening a PR in the
+benchmark reporistory:
+
+https://github.com/DeepLabCut/benchmark
+"""
+
 import benchmark
 import deeplabcut.benchmark.base
 
