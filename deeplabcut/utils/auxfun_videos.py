@@ -21,8 +21,7 @@ import warnings
 
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
-SUPPORTED_VIDEOS = 'avi', 'mp4', 'mov', 'mpeg', 'mpg', 'mpv', 'mkv', 'flv', 'qt', 'yuv'
-
+SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
 
 
 class VideoReader:
@@ -354,9 +353,10 @@ def check_video_integrity(video_path):
     vid.check_integrity()
     vid.check_integrity_robust()
 
+
 def imread(image_path, mode="skimage"):
-    ''' Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels. '''
+    """ Read image either with skimage or cv2.
+    Returns frame in uint with 3 color channels. """
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:
@@ -366,8 +366,10 @@ def imread(image_path, mode="skimage"):
 
         return img_as_ubyte(image)
 
-    elif mode=="cv2":
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
+    elif mode == "cv2":
+        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[
+            ..., ::-1
+        ]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121

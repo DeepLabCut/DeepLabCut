@@ -91,7 +91,7 @@ def CreateVideo(
 
     fps = clip.fps()
     if isinstance(fps, float):
-        if fps*1000 > 65535:
+        if fps * 1000 > 65535:
             fps = round(fps)
     nframes = clip.nframes
     duration = nframes / fps
@@ -774,14 +774,7 @@ def _create_labeled_video(
         sw = ""
         sh = ""
 
-    clip = vp(
-        fname=video,
-        sname=output_path,
-        codec=codec,
-        sw=sw,
-        sh=sh,
-        fps=fps,
-    )
+    clip = vp(fname=video, sname=output_path, codec=codec, sw=sw, sh=sh, fps=fps,)
     df = pd.read_hdf(h5file)
     try:
         animals = df.columns.get_level_values("individuals").unique().to_list()
@@ -967,7 +960,9 @@ def create_video_with_all_detections(
             print("Creating labeled video for ", str(Path(video).stem))
             h5file = full_pickle.replace("_full.pickle", ".h5")
             data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
-            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
+            data = dict(
+                data
+            )  # Cast to dict (making a copy) so items can safely be popped
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
