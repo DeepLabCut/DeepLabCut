@@ -1,7 +1,7 @@
 (how-to-install)=
 # How To Install DeepLabCut
 
-DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out [installation ProTips](installTips)).
+DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 
 ## PIP:
 
