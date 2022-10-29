@@ -361,7 +361,9 @@ def get_list_of_videos(
         if in_random_order:
             from random import shuffle
 
-            shuffle(videos) # this is useful so multiple nets can be used to analyze simultaneously
+            shuffle(
+                videos
+            )  # this is useful so multiple nets can be used to analyze simultaneously
         else:
             videos.sort()
 
@@ -620,7 +622,9 @@ def get_scorer_name(
     return scorer, scorer_legacy
 
 
-def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
+def check_if_post_processing(
+    folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"
+):
     """ Checks if filtered/bone lengths were already calculated. If not, figures
     out if data was already analyzed (either with legacy scorer name or new one!) """
     outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
@@ -727,9 +731,8 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = (
-            file.startswith(videoname + scorer)
-            or file.startswith(videoname + scorer_legacy)
+        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(
+            videoname + scorer_legacy
         )
         if tracker:
             matches_tracker = stem.endswith(tracker)
@@ -800,9 +803,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
     cfg = read_config(config_path)
     base_folder = Path(os.path.join(cfg["project_path"], "labeled-data"))
     h5files = sorted(
-        base_folder.rglob("*.h5"),
-        key=lambda p: p.lstat().st_mtime,
-        reverse=True,
+        base_folder.rglob("*.h5"), key=lambda p: p.lstat().st_mtime, reverse=True,
     )
     folders = sorted(f for f in base_folder.iterdir() if f.is_dir())
     most_recent_folder = h5files[0].parent
@@ -820,6 +821,7 @@ def find_next_unlabeled_folder(config_path, verbose=False):
                 print(f"{folder.name} | {int(100 * frac)} %")
     return next_folder
 
+
 # aliases for backwards-compatibility.
 SaveData = save_data
 SaveMetadata = save_metadata
@@ -827,7 +829,9 @@ LoadMetadata = load_metadata
 GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
-IntersectionofBodyPartsandOnesGivenbyUser = intersection_of_body_parts_and_ones_given_by_user
+IntersectionofBodyPartsandOnesGivenbyUser = (
+    intersection_of_body_parts_and_ones_given_by_user
+)
 GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed

@@ -34,9 +34,7 @@ def main():
     else:
         results = None
     results = deeplabcut.benchmark.evaluate(
-        include_benchmarks=args.include,
-        results=results,
-        on_error=args.onerror,
+        include_benchmarks=args.include, results=results, on_error=args.onerror,
     )
     if not args.nocache:
         deeplabcut.benchmark.savecache(results)
