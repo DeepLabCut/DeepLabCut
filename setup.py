@@ -49,7 +49,6 @@ setuptools.setup(
     extras_require={
         "gui": [
             "pyside6<6.3.2",
-            "napari-deeplabcut
             "napari[pyside2]",
             "qdarkstyle==3.1",
             "napari-deeplabcut>=0.0.7",
