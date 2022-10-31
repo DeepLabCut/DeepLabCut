@@ -241,11 +241,7 @@ def get_nuances(
     else:
         Snapshots = [0]
         snapshotindex = 0
-        DLCscorer = (
-            f"{modelprefix}_{Path(init_weights).stem}"
-            if modelprefix
-            else Path(init_weights).stem
-        )
+        DLCscorer = 'DLC_' + Path(init_weights).stem        
         DLCscorerlegacy = DLCscorer
 
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
