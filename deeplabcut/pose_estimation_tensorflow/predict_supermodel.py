@@ -36,19 +36,23 @@ def extract_bbox_from_file(filename):
     return bboxs
 
 
-def _topdown_reverse_transformation(preds, bbox):
+def _topdown_reverse_transformation(preds, bbox, num_kpts):
     ret = {}
-
-    num_kpts = len(preds[0]['coordinates'][0])
+        
     ret['coordinates'] = [[[]]* num_kpts]
     ret['confidence'] = [[]] * num_kpts
-                          
-    for instance_id, pred in enumerate(preds):
-        coordinate = pred['coordinates'][0]
-        confidence = pred['confidence']
-        
-        for kpt_id, coord_list in enumerate(coordinate):
 
+    for instance_id, pred in enumerate(preds):
+
+        if len(pred) == 0:
+            coordinate =  [[]] * num_kpts
+            confidence = [[]] * num_kpts
+        else:
+            coordinate = pred['coordinates'][0]
+            confidence = pred['confidence']        
+        
+        for kpt_id, coord_list in enumerate(coordinate):            
+            
             if len(ret['coordinates'][0][kpt_id]) == 0:
                 ret['coordinates'][0][kpt_id] = [[]] * len(preds)
                 ret['confidence'][kpt_id] = [[]]* len(preds)
@@ -101,7 +105,7 @@ def video_inference_topdown(
     PredicteData = {}
     # len(frames) -> (n_scale,)
     # frames[0].shape - > (batchsize, h, w, 3)
-    
+    num_kpts = len(cfg['bodyparts']) if 'individuals' not in cfg else len(cfg['multianimalbodyparts'])    
     while cap.video.isOpened():
         # no crop needed
         _frame = cap.read_frame()
@@ -134,11 +138,13 @@ def video_inference_topdown(
                 D = predict.predict_batched_peaks_and_costs(
                     test_cfg, cropped_frame, sess, inputs, outputs
                 )
+                if len(D) != 0:
                 # stripping the batch dimension
-                preds.append(D[0])
-
+                    preds.append(D[0])
+                else:
+                    preds.append([])
                     # only do this when animal is detected                                
-            preds = _topdown_reverse_transformation(preds, _bbox)
+            preds = _topdown_reverse_transformation(preds, _bbox, num_kpts)
                         
             PredicteData["frame" + str(counter).zfill(strwidth)] = preds 
 
@@ -854,7 +860,7 @@ def video_inference_supermodel(
 
             for imagename in imagenames:
 
-                if PredicteData[imagename] == []:
+                if PredicteData[imagename] == [] or (PredicteData[imagename] == [[]]):
 
                     for kpt_id, kpt_name in enumerate(keypoint_names):
                         df.loc[imagename][scorer, kpt_name, "x"] = np.nan
