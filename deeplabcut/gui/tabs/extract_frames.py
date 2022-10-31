@@ -185,6 +185,7 @@ class ExtractFrames(DefaultTab):
             cluster_resizewidth=30,
             cluster_color=False,
             slider_width=slider_width,
+            userfeedback=False,
         )
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(
