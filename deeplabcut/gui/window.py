@@ -381,12 +381,12 @@ class MainWindow(QMainWindow):
         open_project.load_config()
         if not open_project.config:
             return
-        open_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        if open_project.exec_() == QtWidgets.QDialog.Accepted:
-            self._update_project_state(
-                open_project.config,
-                open_project.loaded,
-            )
+
+        open_project.loaded = True
+        self._update_project_state(
+            open_project.config,
+            open_project.loaded,
+        )
 
     def load_config(self, config):
         self.config = config
