@@ -56,7 +56,7 @@ setuptools.setup(
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
         "windows": ["tensorflow>=2.0"],
-        "liux": ["tensorflow>=2.0"],
+        "linux": ["tensorflow>=2.0"],
         "darwin": ["tensorflow>=2.0"],
         "apple_m1": [],
     },
