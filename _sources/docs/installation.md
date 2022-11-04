@@ -5,9 +5,9 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considera
 
 ## PIP:
 
-- Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support) or without: `pip install deeplabcut`.
+- Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut[tf]'`.
 
-- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **Anaconda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
+- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
 ## CONDA: The installation process is as easy as this figure! -->
 
@@ -15,9 +15,24 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considera
 
 ### Step 1: You need to have Python installed
 
-#### Simply download the appropriate files here: https://www.anaconda.com/distribution/
+#### Install [anaconda](https://www.anaconda.com/distribution/) or use miniconda3 (ideal for MacOS users)!
 
-- Anaconda is perhaps the easiest way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine.
+- Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine.
+
+```{Hint}
+Download anaconda for your operating system: https://www.anaconda.com/distribution/.
+```
+
+
+- IF you use a M1 or M2 chip in your MacBook (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
+
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
+bash ~/miniconda.sh -b -p $HOME/miniconda
+source ~/miniconda/bin/activate
+conda init zsh
+```
+
 
 #### We recommend having a GPU. 
 
@@ -25,33 +40,34 @@ DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considera
 
   - **CPU?** Great, jump to the next section below!
 
-  - **GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. **Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!**
+  - **NVIDIA GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of tensorflow you want to use. So, please check "GPU Support" below carefully. **Note, DeepLabCut is up to date with the latest CUDA and tensorflow versions!**
+  
+  - **Apple M1/M2 GPU?** Be sure to install miniconda3, and your GPU will be used by default.
 
-### Step 2: please use our supplied Anaconda environment
+### Step 2: please use our supplied conda environment
 
-- **Click [HERE](https://www.mackenziemathislab.org/s/DEEPLABCUT.yaml) to download the conda file!**
-(or you can grab from github: git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
-To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine)
+- **Windows/Linux/MacBooks:** git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
+To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine.)
 
--  Now, in Terminal (or Anaconda Command Prompt for windows users), go to the folder where you downloaded the file.
-For example, if you downloaded it from The CLICK HERE above, it likely went into your downloads folder: ``cd C:\Users\YourUserName\Downloads``
-
-If you cloned the repo onto your Desktop, the command may look like:
+-  Now, in Terminal (or Anaconda Command Prompt for Windows users), go to the DeepLabCut folder. If you cloned the repo onto your Desktop, the command may look like:
 
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
 
 To get the location right, a cool trick is to drag the folder and drop it into Terminal. Alternatively, you can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 
-- Now, in the terminal run:
+- Now, in the terminal run (Windows/Linux/MacBook Intel chip):
 
 ``conda env create -f DEEPLABCUT.yaml``
 
+- or for Apple M1 / M2 chips:
 
-- You can now use this environment from anywhere on your comptuer (i.e. no need to go back into the conda- folder). Just enter your environment by running:
-     - Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT``)
+``conda env create -f DEEPLABCUT_M1.yaml``
+
+- You can now use this environment from anywhere on your comptuer (i.e., no need to go back into the conda- folder). Just enter your environment by running:
+     - Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT`` or ``conda activate DEEPLABCUT_M1``)
      - Windows: ``activate nameoftheenv`` (i.e. ``activate DEEPLABCUT``)
 
-Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DEEPLABCUT) YourName-MacBook...``
+Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DEEPLABCUT_M1) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 **Great, that's it! DeepLabCut is installed!**
