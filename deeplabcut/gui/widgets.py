@@ -433,7 +433,13 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        self.cfg = auxiliaryfunctions.read_config(config)
+        if config.endswith('config.yaml'):
+            self.read_func = auxiliaryfunctions.read_config
+            self.write_func = auxiliaryfunctions.write_config
+        else:
+            self.read_func = auxiliaryfunctions.read_plainconfig
+            self.write_func = auxiliaryfunctions.write_plainconfig
+        self.cfg = self.read_func(config)
         self.parent = parent
         self.setWindowTitle('Configuration Editor')
         if parent is not None:
@@ -459,7 +465,7 @@ class ConfigEditor(QtWidgets.QDialog):
             self.close()
 
     def accept(self):
-        auxiliaryfunctions.write_config(self.config, self.cfg)
+        self.write_func(self.config, self.cfg)
         super(ConfigEditor, self).accept()
 
 
