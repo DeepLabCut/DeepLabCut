@@ -1,0 +1,3 @@
+from deeplabcut.pose_estimation_pytorch.solvers.logger import LOGGER
+from deeplabcut.pose_estimation_pytorch.solvers.single_animal import SINGLE_ANIMAL_SOLVER
+

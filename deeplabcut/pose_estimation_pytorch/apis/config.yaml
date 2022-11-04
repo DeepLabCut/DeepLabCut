@@ -1,0 +1,44 @@
+project_root: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20'
+pose_cfg_path: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20/dlc-models/iteration-0/openfieldAug20-trainset95shuffle0/train/pose_cfg.yaml'
+cfg_path: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20/config.yaml'
+
+seed: 42
+device: 'cuda:0'
+model:
+  backbone:
+    type: 'ResNet'
+    pretrained: 'https://download.pytorch.org/models/resnet50-19c8e357.pth'
+  heatmap_head:
+    type: 'SimpleHead'
+    channels: [ 2048, 1024, 4 ]
+    kernel_size: [ 2, 2 ]
+    strides: [ 2, 2 ]
+  locref_head:
+    type: 'SimpleHead'
+    channels: [ 2048, 1024, 8 ]
+    kernel_size: [ 2, 2 ]
+    strides: [ 2, 2 ]
+  pose_model:
+    stride: 8
+    heatmap_type: 'gaussian'
+optimizer:
+  type: 'Adam'
+  params:
+    lr: 0.0001
+scheduler:
+  type: "StepLR"
+  params:
+    step_size: 30
+    gamma: 0.1
+criterion:
+  type: 'PoseLoss'
+  loss_weight_locref: 0.1
+  locref_huber_loss: False
+#logger:
+#  type: 'WandbLogger'
+#  project_name: 'deeplabcut'
+#  run_name: 'tmp'
+solver:
+  type: 'BottomUpSingleAnimalSolver'
+batch_size: 1
+epochs: 1
