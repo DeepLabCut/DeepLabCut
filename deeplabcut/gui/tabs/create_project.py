@@ -6,7 +6,7 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 
 class ProjectCreator(QtWidgets.QDialog):
@@ -96,14 +96,18 @@ class ProjectCreator(QtWidgets.QDialog):
 
     def browse_videos(self):
         folder = QtWidgets.QFileDialog.getExistingDirectory(
-            self, 'Please select a folder', self.loc_default,
+            self,
+            'Please select a folder',
+            self.loc_default,
+            QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if not folder:
             return
+
         for video in auxiliaryfunctions.grab_files_in_folder(
-                folder, relative=False,
+            folder, relative=False,
         ):
-            if video.split('.')[1] in DLCParams.VIDEOTYPES[1:]:
+            if os.path.splitext(video)[1][1:] in DLCParams.VIDEOTYPES[1:]:
                 self.video_frame.fancy_list.add_item(video)
 
     def finalize_project(self):

@@ -23,4 +23,4 @@ tf_slim==1.1.0
 torch
 tqdm
 Pillow>=7.1
-PySide2==5.15.2.1
+PySide6<6.3.2

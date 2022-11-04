@@ -1,7 +1,7 @@
 from functools import partial
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
@@ -185,6 +185,7 @@ class ExtractFrames(DefaultTab):
             cluster_resizewidth=30,
             cluster_color=False,
             slider_width=slider_width,
+            userfeedback=False,
         )
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(

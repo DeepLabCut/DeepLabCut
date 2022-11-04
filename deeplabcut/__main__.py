@@ -8,7 +8,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 try:
-    import PySide2
+    import PySide6
 
     lite = False
 except ModuleNotFoundError:

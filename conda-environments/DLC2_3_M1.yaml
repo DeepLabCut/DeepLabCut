@@ -1,4 +1,4 @@
-# DEEPLABCUT_M1.yaml
+# DLC2_3_M1.yaml
 
 #DeepLabCut2.0 Toolbox (deeplabcut.org)
 #© A. & M. Mathis Labs
@@ -25,7 +25,7 @@
 #
 # Next, activate the environment, and launch DLC with pythonw -m deeplabcut
 
-name: DEEPLABCUT_M1
+name: DLC2_3_M1
 channels:
   - conda-forge
   - defaults

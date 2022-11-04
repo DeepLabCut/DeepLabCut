@@ -1,6 +1,6 @@
 import os
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 from deeplabcut.gui.components import DefaultTab
 from deeplabcut.gui.widgets import launch_napari
 
@@ -28,7 +28,7 @@ class LabelFrames(DefaultTab):
 
     def label_frames(self):
         dialog = QtWidgets.QFileDialog(self)
-        dialog.setFileMode(dialog.DirectoryOnly)
+        dialog.setFileMode(dialog.Directory)
         dialog.setViewMode(dialog.Detail)
         dialog.setDirectory(
             os.path.join(os.path.dirname(self.root.config), "labeled-data")

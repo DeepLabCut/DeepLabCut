@@ -1,6 +1,6 @@
 from functools import partial
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -110,4 +110,3 @@ class UnsupervizedIdTracking(DefaultTab):
         self.thread.start()
         self.run_transformer_button.setEnabled(False)
         self.root._progress_bar.show()
-
