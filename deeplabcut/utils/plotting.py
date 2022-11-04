@@ -351,21 +351,18 @@ def _plot_paf_performance(
 
     bins = np.linspace(0, 1, nbins)
     if colors is None:
-        colors = '#EFC9AF', '#1F8AC0'
+        colors = "#EFC9AF", "#1F8AC0"
     if ax is None:
         fig, ax = plt.subplots(tight_layout=True, figsize=(3, 3))
-    sns.histplot(within, kde=kde, ax=ax, stat='probability',
-                 color=colors[0], bins=bins)
-    sns.histplot(between, kde=kde, ax=ax, stat='probability',
-                 color=colors[1], bins=bins)
+    sns.histplot(within, kde=kde, ax=ax, stat="probability", color=colors[0], bins=bins)
+    sns.histplot(
+        between, kde=kde, ax=ax, stat="probability", color=colors[1], bins=bins
+    )
     return ax
 
 
 def plot_edge_affinity_distributions(
-    eval_pickle_file,
-    include_bodyparts="all",
-    output_name="",
-    figsize=(10, 7),
+    eval_pickle_file, include_bodyparts="all", output_name="", figsize=(10, 7),
 ):
     """
     Display the distribution of affinity costs of within- and between-animal edges.
@@ -388,25 +385,25 @@ def plot_edge_affinity_distributions(
 
     """
 
-    with open(eval_pickle_file, 'rb') as file:
+    with open(eval_pickle_file, "rb") as file:
         data = pickle.load(file)
-    meta_pickle_file = eval_pickle_file.replace('_full.', '_meta.')
-    with open(meta_pickle_file, 'rb') as file:
+    meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")
+    with open(meta_pickle_file, "rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
         data, metadata, train_set_only=True,
     )
-    data.pop('metadata', None)
+    data.pop("metadata", None)
     nonempty = set(i for i, vals in w_train.items() if vals)
-    meta = metadata['data']['DLC-model-config file']
-    bpts = list(map(str.lower, meta['all_joints_names']))
-    inds_multi = set(b for edge in meta['partaffinityfield_graph'] for b in edge)
-    if include_bodyparts == 'all':
+    meta = metadata["data"]["DLC-model-config file"]
+    bpts = list(map(str.lower, meta["all_joints_names"]))
+    inds_multi = set(b for edge in meta["partaffinityfield_graph"] for b in edge)
+    if include_bodyparts == "all":
         include_bodyparts = inds_multi
     else:
         include_bodyparts = set(bpts.index(bpt) for bpt in include_bodyparts)
     edges_to_keep = set()
-    graph = meta['partaffinityfield_graph']
+    graph = meta["partaffinityfield_graph"]
     for n, edge in enumerate(graph):
         if not any(i in include_bodyparts for i in edge):
             continue
@@ -419,14 +416,20 @@ def plot_edge_affinity_distributions(
     )
     axes = axes_.flatten()
     for ax in axes:
-        ax.axis('off')
+        ax.axis("off")
     for n, ind in enumerate(edge_inds):
         i1, i2 = graph[ind]
         w_tr = w_train[ind]
         b_tr = b_train[ind]
-        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric='auc')
-        axes[n].text(0.5, 0.8, f'{bpts[i1]}–{bpts[i2]}\n{sep:.2f}', size=8,
-                     ha='center', transform=axes[n].transAxes)
+        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric="auc")
+        axes[n].text(
+            0.5,
+            0.8,
+            f"{bpts[i1]}–{bpts[i2]}\n{sep:.2f}",
+            size=8,
+            ha="center",
+            transform=axes[n].transAxes,
+        )
         _plot_paf_performance(w_tr, b_tr, ax=axes[n], kde=False)
     axes[0].set_xticks([])
     axes[0].set_yticks([])

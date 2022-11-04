@@ -1,7 +1,7 @@
 (how-to-install)=
 # How To Install DeepLabCut
 
-DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out [installation ProTips](installTips)).
+DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 
 ## PIP:
 
@@ -96,7 +96,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matchi
 
 #### The most common "new user" hurdle is installing and using your GPU, so don't get discouraged!
 
-**CRITICAL:** If you have a GPU, you should FIRST then **install the NVIDIA CUDA package and an appropriate driver for your specific GPU**, then you can use the supplied conda file. Please follow the instructions found here https://www.tensorflow.org/install/gpu, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.
+**CRITICAL:** If you have a GPU, you should FIRST **install the NVIDIA CUDA package and an appropriate driver for your specific GPU**, then you can use the supplied conda file. Please follow the instructions found here https://www.tensorflow.org/install/gpu, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.
 
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.
 
