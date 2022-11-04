@@ -9,7 +9,7 @@ matplotlib<=3.5.2
 napari-deeplabcut>=0.0.6
 networkx>=2.6
 numpy>=1.18.5
-pandas>=1.0.1
+pandas>=1.0.1,!=1.5.0
 pyyaml
 qdarkstyle==3.1
 scikit-image>=0.17
