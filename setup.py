@@ -51,7 +51,7 @@ setuptools.setup(
         "gui": [
             "pyside6<6.3.2",
             "qdarkstyle==3.1",
-            "napari-deeplabcut @ git+https://github.com/DeepLabCut/napari-deeplabcut.git@42ee625",
+            "napari-deeplabcut",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
