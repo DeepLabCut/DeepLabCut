@@ -41,6 +41,7 @@ setuptools.setup(
         "tables>=3.7.0",
         "torch",
         "tensorpack>=0.11",
+        "tf_slim>=1.1.0",
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
