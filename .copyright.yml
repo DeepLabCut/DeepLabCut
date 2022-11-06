@@ -83,3 +83,5 @@
     limitations under the License.
   include:
     - deeplabcut/pose_estimation_tensorflow/nnets/conv_blocks.py
+    - deeplabcut/pose_estimation_tensorflow/backbones/mobilenet.py
+    - deeplabcut/pose_estimation_tensorflow/backbones/mobilenet_v2.py
