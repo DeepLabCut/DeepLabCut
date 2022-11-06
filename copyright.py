@@ -15,6 +15,11 @@ def load_config():
 def walk_directory(entry):
     """Talk the directory"""
 
+    if 'header' not in entry:
+        raise ValueError("Current entry does not have a header.")
+    if 'include' not in entry:
+        raise ValueError("Current entry does not have an include list.")
+
     def _list_include():
         """List all files specified in the include list."""
         for include_pattern in entry['include']:
@@ -27,7 +32,7 @@ def walk_directory(entry):
     def _filter_exclude(iterable):
         """Filter filenames from an iterator by the exclude patterns."""
         for filename in iterable:
-            for exclude_pattern in entry['exclude']:
+            for exclude_pattern in entry.get('exclude', []):
                 if fnmatch.fnmatch(filename, exclude_pattern):
                     break
             else:
