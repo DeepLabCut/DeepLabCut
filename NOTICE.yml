@@ -1,3 +1,14 @@
+# This notice file contains license headers for all code files
+# in the repositiry (currently all *.py files).
+# 
+# When updating headers, lower entries take precedence over higher
+# entries. For each header, include/exclude statements can be used
+# to define files to apply them to.
+#
+# When adding code from an external repo, make sure to cover the 
+# added code files with the correct license header.
+
+# Main repository license
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
     © A. & M. Mathis Labs
@@ -11,8 +22,10 @@
     - 'deeplabcut/**/*.py'
     - 'tests/**/*.py' 
     - 'examples/**/*.py'
-  exclude:
-    - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py
+
+# License for files adapted from DeeperCut by Eldar Insafutdinov
+# https://github.com/eldar/pose-tensorflow
+# Applies to most files in deeplabcut.pose_estimation_tensorflow
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
     © A. & M. Mathis Labs
@@ -50,6 +63,8 @@
     - deeplabcut/pose_estimation_tensorflow/nnets/resnet.py
     - deeplabcut/pose_estimation_tensorflow/__init__.py
   exclude: []
+
+# Tensorflow licenses
 - header: |
     Copyright 2019 The TensorFlow Authors. All Rights Reserved.
     
@@ -67,6 +82,7 @@
   include:
     - deeplabcut/pose_estimation_tensorflow/backbones/*.py
     - deeplabcut/pose_estimation_tensorflow/nnets/utils.py
+
 - header: |
     Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
@@ -85,3 +101,24 @@
     - deeplabcut/pose_estimation_tensorflow/nnets/conv_blocks.py
     - deeplabcut/pose_estimation_tensorflow/backbones/mobilenet.py
     - deeplabcut/pose_estimation_tensorflow/backbones/mobilenet_v2.py
+
+# TIMM license
+- header: |
+    Copyright 2019 Ross Wightman
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Hacked together by / Copyright 2020 Ross Wightman
+    https://github.com/rwightman/pytorch-image-models/blob/main/timm/scheduler/scheduler_factory.py
+  include:
+    - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py

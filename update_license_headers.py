@@ -1,4 +1,7 @@
-"""
+"""Apply copyright headers to all code files in the repository.
+
+This file can be called as a python script without arguments. For
+configuration, see the instructions in NOTICE.yml.
 """
 
 import tempfile
@@ -7,8 +10,8 @@ import yaml
 import fnmatch
 import subprocess
 
-def load_config():
-    with open('.copyright.yml', 'r') as fh:
+def load_config(filename):
+    with open(filename, 'r') as fh:
         config = yaml.safe_load(fh)
     return config
 
@@ -40,16 +43,20 @@ def walk_directory(entry):
 
     files = _filter_exclude(set(_list_include()))
     return list(files)
-            
-config = load_config()
-for entry in config:
-    filelist = list(walk_directory(entry))
-    with tempfile.NamedTemporaryFile(mode='w') as header_file:
-        header_file.write(entry['header'])
-        header_file.flush()
-        header_file.seek(0)
-        command = ["licenseheaders", "-t", str(header_file.name), "-f"] + filelist
-        result = subprocess.run(command, capture_output=True)
-        if result.returncode != 0:
-            print(result.stdout.decode())
-            print(result.stderr.decode())
+
+def main(input_file = "NOTICE.yml"):
+    config = load_config(input_file)
+    for entry in config:
+        filelist = list(walk_directory(entry))
+        with tempfile.NamedTemporaryFile(mode='w') as header_file:
+            header_file.write(entry['header'])
+            header_file.flush()
+            header_file.seek(0)
+            command = ["licenseheaders", "-t", str(header_file.name), "-f"] + filelist
+            result = subprocess.run(command, capture_output=True)
+            if result.returncode != 0:
+                print(result.stdout.decode())
+                print(result.stderr.decode())
+
+if __name__ == '__main__':
+    main()
