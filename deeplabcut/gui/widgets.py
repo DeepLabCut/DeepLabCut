@@ -15,8 +15,8 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector, Button, LassoSelector
 from queue import Queue
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QCursor
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QCursor, QAction
 from scipy.spatial import cKDTree as KDTree
 from skimage import io
 
@@ -251,14 +251,14 @@ class ContextMenu(QtWidgets.QMenu):
         super(ContextMenu, self).__init__(parent)
         self.parent = parent
         self.current_item = parent.tree.currentItem()
-        insert = QtWidgets.QAction('Insert', self)
+        insert = QAction('Insert', self)
         insert.triggered.connect(self.create_item)
-        delete = QtWidgets.QAction('Delete', self)
+        delete = QAction('Delete', self)
         delete.triggered.connect(parent.remove_items)
         self.addAction(insert)
         self.addAction(delete)
         if self.current_item.text(0) == 'project_path':
-            fix_path = QtWidgets.QAction('Fix Path', self)
+            fix_path = QAction('Fix Path', self)
             fix_path.triggered.connect(self.fix_path)
             self.addAction(fix_path)
 
@@ -433,7 +433,13 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        self.cfg = auxiliaryfunctions.read_config(config)
+        if config.endswith('config.yaml'):
+            self.read_func = auxiliaryfunctions.read_config
+            self.write_func = auxiliaryfunctions.write_config
+        else:
+            self.read_func = auxiliaryfunctions.read_plainconfig
+            self.write_func = auxiliaryfunctions.write_plainconfig
+        self.cfg = self.read_func(config)
         self.parent = parent
         self.setWindowTitle('Configuration Editor')
         if parent is not None:
@@ -459,7 +465,7 @@ class ConfigEditor(QtWidgets.QDialog):
             self.close()
 
     def accept(self):
-        auxiliaryfunctions.write_config(self.config, self.cfg)
+        self.write_func(self.config, self.cfg)
         super(ConfigEditor, self).accept()
 
 

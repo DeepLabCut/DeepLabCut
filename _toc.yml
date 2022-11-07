@@ -28,6 +28,9 @@ parts:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
+- caption: DeepLabCut Benchmark
+  chapters:
+  - file: docs/benchmark
 - caption: Hardware
   chapters:
   - file: docs/recipes/TechHardware

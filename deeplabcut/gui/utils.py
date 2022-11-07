@@ -1,4 +1,4 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 
 class Worker(QtCore.QObject):
@@ -16,11 +16,15 @@ class Worker(QtCore.QObject):
 def move_to_separate_thread(func):
     thread = QtCore.QThread()
     worker = Worker(func)
+    worker.finished.connect(worker.deleteLater)
     worker.moveToThread(thread)
     thread.started.connect(worker.run)
-    worker.finished.connect(thread.quit)
-    worker.finished.connect(worker.deleteLater)
-    worker.finished.connect(thread.deleteLater)
+
+    def stop_thread():
+        thread.quit()
+        thread.wait()
+
+    worker.finished.connect(stop_thread)
     return worker, thread
 
 

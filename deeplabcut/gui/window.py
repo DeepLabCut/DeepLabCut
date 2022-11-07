@@ -12,11 +12,11 @@ from deeplabcut import auxiliaryfunctions, VERSION
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from PySide2.QtWidgets import QAction, QMenu, QWidget, QMainWindow
-from PySide2 import QtCore
-from PySide2.QtGui import QIcon
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QMenu, QWidget, QMainWindow
+from PySide6 import QtCore
+from PySide6.QtGui import QIcon, QAction
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtCore import Qt
 
 
 def _check_for_updates():
@@ -50,9 +50,9 @@ class MainWindow(QMainWindow):
     def __init__(self, app):
         super(MainWindow, self).__init__()
         self.app = app
-        desktop = QtWidgets.QDesktopWidget().screenGeometry(0)
-        self.screen_width = desktop.width()
-        self.screen_height = desktop.height()
+        screen_size = app.screens()[0].size()
+        self.screen_width = screen_size.width()
+        self.screen_height = screen_size.height()
 
         self.logger = logging.getLogger("GUI")
 
@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
         filenames = [action.text() for action in actions]
         if filename in filenames:
             return
-        action = QtWidgets.QAction(filename, self)
+        action = QAction(filename, self)
         before_action = actions[0] if actions else None
         self.recentfiles_menu.insertAction(before_action, action)
 
@@ -213,7 +213,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("DeepLabCut")
 
         palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Background, QtGui.QColor("#ffffff"))
+        palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
         icon = os.path.join(BASE_DIR, 'assets', 'logo.png')
@@ -381,12 +381,12 @@ class MainWindow(QMainWindow):
         open_project.load_config()
         if not open_project.config:
             return
-        open_project.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        if open_project.exec_() == QtWidgets.QDialog.Accepted:
-            self._update_project_state(
-                open_project.config,
-                open_project.loaded,
-            )
+
+        open_project.loaded = True
+        self._update_project_state(
+            open_project.config,
+            open_project.loaded,
+        )
 
     def load_config(self, config):
         self.config = config

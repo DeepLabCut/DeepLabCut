@@ -1,5 +1,5 @@
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
 
@@ -54,11 +54,11 @@ def _create_grid_layout(
 
 class BodypartListWidget(QtWidgets.QListWidget):
     def __init__(
-        self, 
-        root: QtWidgets.QMainWindow, 
-        parent: QtWidgets.QWidget, 
-        # all_bodyparts: List 
-        # NOTE: Is there a case where a specific list should 
+        self,
+        root: QtWidgets.QMainWindow,
+        parent: QtWidgets.QWidget,
+        # all_bodyparts: List
+        # NOTE: Is there a case where a specific list should
         # have bodyparts other than the root? I don't think so.
     ):
         super(BodypartListWidget, self).__init__()
@@ -71,7 +71,7 @@ class BodypartListWidget(QtWidgets.QListWidget):
         self.setMaximumWidth(600)
         self.setMaximumHeight(500)
         self.hide()
-        
+
         self.addItems(self.root.all_bodyparts)
         self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
 
@@ -86,17 +86,17 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 class VideoSelectionWidget(QtWidgets.QWidget):
     def __init__(
-        self, 
-        root: QtWidgets.QMainWindow, 
+        self,
+        root: QtWidgets.QMainWindow,
         parent: QtWidgets.QWidget
     ):
         super(VideoSelectionWidget, self).__init__(parent)
-        
+
         self.root = root
         self.parent = parent
-        
+
         self._init_layout()
-    
+
     def _init_layout(self):
         layout = _create_horizontal_layout()
 
@@ -157,7 +157,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         if filenames[0]:
             # Qt returns a tuple (list of files, filetype)
             self.root.video_files = filenames[0]
-            
+
     def clear_selected_videos(self):
         self.root.video_files = set()
         self.root.logger.info(f"Cleared selected videos")
@@ -166,7 +166,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
         super(TrainingSetSpinBox, self).__init__(parent)
-        
+
         self.root = root
         self.parent = parent
 
@@ -178,7 +178,7 @@ class TrainingSetSpinBox(QtWidgets.QSpinBox):
 class ShuffleSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
         super(ShuffleSpinBox, self).__init__(parent)
-        
+
         self.root = root
         self.parent = parent
 
@@ -189,8 +189,8 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
 
 class DefaultTab(QtWidgets.QWidget):
     def __init__(
-        self, 
-        root: QtWidgets.QMainWindow, 
+        self,
+        root: QtWidgets.QMainWindow,
         parent: QtWidgets.QWidget = None,
         h1_description: str = "",
     ):
@@ -228,9 +228,9 @@ class DefaultTab(QtWidgets.QWidget):
 
 class EditYamlButton(QtWidgets.QPushButton):
     def __init__(
-        self, 
-        button_label: str, 
-        filepath: str, 
+        self,
+        button_label: str,
+        filepath: str,
         parent: QtWidgets.QWidget = None
     ):
         super(EditYamlButton, self).__init__(button_label)

@@ -3,14 +3,14 @@
 
 As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.
 
-**Release notes:** As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide2 with napari support.
+**Release notes:** As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide6 with napari support.
 
 ## Get Started:
 
 (1) Install DeepLabCut using the simple-install with Anaconda found [here!](how-to-install)*.
 Now that you have deeplabcut installed, just go into your env (activate DEEPLABCUT) then run:
 
-` pip install --upgrade --force-reinstall 'deeplabcut[gui]'==2.3rc1 `
+` pip install --upgrade --force-reinstall 'deeplabcut[gui]'==2.3rc2 `
 
 *Note, currently the latest GUI is a release candidate, so you need to specifically install the `rc` version. This will change once v2.3 is stable.
 

@@ -1,6 +1,6 @@
 from functools import partial
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ConfigEditor
