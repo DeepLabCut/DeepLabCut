@@ -138,8 +138,9 @@ def video_inference_topdown(
                 D = predict.predict_batched_peaks_and_costs(
                     test_cfg, cropped_frame, sess, inputs, outputs
                 )
+
                 if len(D) != 0:
-                # stripping the batch dimension
+                    # stripping the batch dimension
                     preds.append(D[0])
                 else:
                     preds.append([])
@@ -147,7 +148,6 @@ def video_inference_topdown(
             preds = _topdown_reverse_transformation(preds, _bbox, num_kpts)
                         
             PredicteData["frame" + str(counter).zfill(strwidth)] = preds 
-
         if counter>= nframes:
             break
         counter+=1
@@ -311,7 +311,7 @@ def get_nuances(
     return ret
 
 
-def get_multi_scale_frames(frame, scale_list=[]):
+def get_multi_scale_frames(frame, scale_list):
     augs = []
     shapes = []
     for scale in scale_list:
@@ -458,7 +458,6 @@ def video_inference(
         _frame = cap.read_frame()
         if _frame is not None:
             frame = img_as_ubyte(_frame)
-
             if invert_color:
                 frame = 255 - frame
 
