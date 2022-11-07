@@ -14,7 +14,7 @@ test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our
 
 ### To use our model in DeepLabCut, please use following API
 
-``{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.video_inference_superanimal.rst
