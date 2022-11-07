@@ -857,57 +857,49 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
-    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    ny = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    nx = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
-    pose_tensor = predict.extract_GPUprediction(
-        outputs, dlc_cfg
-    )  # extract_output_tensor(outputs, dlc_cfg)
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    # Flip x, y, confidence and reshape
+    pose_tensor = predict.extract_GPUprediction(outputs, dlc_cfg)
+    pose_tensor = tf.gather(pose_tensor, [1, 0, 2], axis=1)
+    pose_tensor = tf.reshape(pose_tensor, (batchsize, -1))
+
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")
     pbar = tqdm(total=nframes)
-    counter = 0
-    step = max(10, int(nframes / 100))
+    counter = -1
     inds = []
-    while cap.isOpened():
-        if counter != 0 and counter % step == 0:
-            pbar.update(step)
+    while cap.isOpened() and counter < nframes - 1:
         ret, frame = cap.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            if cfg["cropping"]:
-                frames[batch_ind] = img_as_ubyte(
-                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )
-            else:
-                frames[batch_ind] = img_as_ubyte(frame)
-            inds.append(counter)
-            if batch_ind == batchsize - 1:
-                # pose = predict.getposeNP(frames,dlc_cfg, sess, inputs, outputs)
-                pose = sess.run(pose_tensor, feed_dict={inputs: frames})
-                pose[:, [0, 1, 2]] = pose[
-                    :, [1, 0, 2]
-                ]  # change order to have x,y,confidence
-                pose = np.reshape(
-                    pose, (batchsize, -1)
-                )  # bring into batchsize times x,y,conf etc.
-                PredictedData[inds] = pose
-                batch_ind = 0
-                inds.clear()
-                batch_num += 1
-            else:
-                batch_ind += 1
-        elif counter >= nframes:
-            if batch_ind > 0:
-                # pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs) #process the whole batch (some frames might be from previous batch!)
-                pose = sess.run(pose_tensor, feed_dict={inputs: frames})
-                pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
-                pose = np.reshape(pose, (batchsize, -1))
-                PredictedData[inds[:batch_ind]] = pose[:batch_ind]
-            break
         counter += 1
+        if not ret:
+            warnings.warn(f"Could not decode frame #{counter}.")
+            continue
+
+        if cfg["cropping"]:
+            frame = img_as_ubyte(
+                frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
+            )
+        else:
+            frame = img_as_ubyte(frame)
+        frames[batch_ind] = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        inds.append(counter)
+        if batch_ind == batchsize - 1:
+            pose = sess.run(pose_tensor, feed_dict={inputs: frames})
+            PredictedData[inds] = pose
+            batch_ind = 0
+            batch_num += 1
+            inds.clear()
+            pbar.update(batchsize)
+        else:
+            batch_ind += 1
+
+    if batch_ind > 0:
+        pose = sess.run(pose_tensor, feed_dict={inputs: frames})
+        PredictedData[inds[:batch_ind]] = pose[:batch_ind]
+        pbar.update(batch_ind)
 
     pbar.close()
     return PredictedData, nframes
