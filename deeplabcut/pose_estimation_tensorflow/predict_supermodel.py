@@ -568,7 +568,7 @@ def video_inference(
     return PredicteData, nframes
 
 
-def video_inference_supermodel(
+def video_inference_superanimal(
     config,
     videos,
     scale_list=[],
@@ -645,7 +645,8 @@ def video_inference_supermodel(
     bbox_file: string, default empty
         The path to a json file that contains bounding box
 
-    Examples:
+    Examples
+    -------- 
 
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
@@ -653,7 +654,7 @@ def video_inference_supermodel(
 
     init_weights = PATH_TO_SUPERMODEL
 
-    deeplabcut.video_inference_supermodel(config_path,
+    >>> deeplabcut.video_inference_supermodel(config_path,
                                       [video_path],
                                       videotype=videotype,
                                       init_weights = init_weights,
@@ -662,7 +663,7 @@ def video_inference_supermodel(
                                       bbox_file = bbox_file)
     
 
-    deeplabcut.create_labeled_video(config_path,
+    >>> deeplabcut.create_labeled_video(config_path,
                                 [video_path],
                                 videotype = videotype,
                                 init_weights = init_weights,

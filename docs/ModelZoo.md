@@ -11,6 +11,15 @@ Started in 2020, the model zoo is four things:
 test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut) app!
 - (4) new methods to make SuperAnimal Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
+
+### To use our model in DeepLabCut, please use following API
+
+``{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.video_inference_superanimal.rst
+```
+
 ### To see the list of available models, check out the [Home page](http://modelzoo.deeplabcut.org/). 
 
 **Coming soon:** The DeepLabCut Project Manager GUI will allow you to use the SuperAnimal Models. You can run the model and do ``active learning" to improve performance on your data. 
