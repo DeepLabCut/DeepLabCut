@@ -1,6 +1,15 @@
-  
-# Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
-# You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+Please see AUTHORS for contributors.
+
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
+You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
+"""
 
 import argparse
 import os

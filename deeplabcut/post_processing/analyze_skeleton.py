@@ -1,5 +1,14 @@
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+Please see AUTHORS for contributors.
 
-# Written by Federico Claudi - https://github.com/FedeClaudi
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+
+Written by Federico Claudi - https://github.com/FedeClaudi
+"""
 
 import argparse
 from math import atan2, degrees
