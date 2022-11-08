@@ -1,5 +1,5 @@
 # This notice file contains license headers for all code files
-# in the repositiry (currently all *.py files).
+# in the repository (currently all *.py files).
 # 
 # When updating headers, lower entries take precedence over higher
 # entries. For each header, include/exclude statements can be used
@@ -11,7 +11,7 @@
 # Main repository license
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
-    © A. & M. Mathis Labs
+    © A. & M.W. Mathis Labs
     https://github.com/DeepLabCut/DeepLabCut
 
     Please see AUTHORS for contributors.
@@ -22,13 +22,15 @@
     - 'deeplabcut/**/*.py'
     - 'tests/**/*.py' 
     - 'examples/**/*.py'
+    - 'docs/**/*.py'
+    - 'conda-environments/**/*.yaml'
 
 # License for files adapted from DeeperCut by Eldar Insafutdinov
 # https://github.com/eldar/pose-tensorflow
 # Applies to most files in deeplabcut.pose_estimation_tensorflow
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
-    © A. & M. Mathis Labs
+    © A. & M.W. Mathis Labs
     https://github.com/DeepLabCut/DeepLabCut
 
     Please see AUTHORS for contributors.
@@ -43,23 +45,15 @@
     # find deeplabcut/pose_estimation_tensorflow -iname '*.py' | xargs grep 'Eldar Insafutdinov'
     # from the repo base directory.
     - deeplabcut/pose_estimation_tensorflow/config.py
-    - deeplabcut/pose_estimation_tensorflow/datasets/pose_scalecrop.py
-    - deeplabcut/pose_estimation_tensorflow/datasets/pose_tensorpack.py
     - deeplabcut/pose_estimation_tensorflow/datasets/factory.py
-    - deeplabcut/pose_estimation_tensorflow/datasets/pose_deterministic.py
-    - deeplabcut/pose_estimation_tensorflow/datasets/pose_imgaug.py
     - deeplabcut/pose_estimation_tensorflow/vis_dataset.py
     - deeplabcut/pose_estimation_tensorflow/core/train.py
     - deeplabcut/pose_estimation_tensorflow/core/predict.py
-    - deeplabcut/pose_estimation_tensorflow/core/train_multianimal.py
-    - deeplabcut/pose_estimation_tensorflow/core/predict_multianimal.py
     - deeplabcut/pose_estimation_tensorflow/core/test.py
     - deeplabcut/pose_estimation_tensorflow/default_config.py
     - deeplabcut/pose_estimation_tensorflow/util/visualize.py
     - deeplabcut/pose_estimation_tensorflow/util/__init__.py
     - deeplabcut/pose_estimation_tensorflow/util/logging.py
-    - deeplabcut/pose_estimation_tensorflow/nnets/efficientnet.py
-    - deeplabcut/pose_estimation_tensorflow/nnets/multi.py
     - deeplabcut/pose_estimation_tensorflow/nnets/resnet.py
     - deeplabcut/pose_estimation_tensorflow/__init__.py
   exclude: []
