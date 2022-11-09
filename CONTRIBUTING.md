@@ -65,6 +65,10 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - Please run black on the code to conform to our Black code style (see more at https://pypi.org/project/black/). 
 - Please assign a reviewer, typically @AlexEMG, @mmathislab, or @jeylau (i/e. the [core-developers](https://github.com/orgs/DeepLabCut/teams/core-developers/members))
 
+**Code headers**
+
+- The code headers can be standardized by running `python tools/update_license_headers.py`
+- Edit `NOTICE.yml` to update the header. 
 
 **DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
 
