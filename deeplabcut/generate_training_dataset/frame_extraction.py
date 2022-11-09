@@ -290,9 +290,9 @@ def extract_frames(
             videos = cfg.get("video_sets_original") or cfg["video_sets"]
         else: #filter video_list by the ones in the config file
             videos = [v for v in cfg["video_sets"] if v in videos_list]
-            
+
         if opencv:
-            from deeplabcut.utils.auxfun_videos import VideoReader
+            from deeplabcut.utils.auxfun_videos import VideoWriter
         else:
             from moviepy.editor import VideoFileClip
 
@@ -318,7 +318,7 @@ def extract_frames(
             ):  # multilanguage support :)
 
                 if opencv:
-                    cap = VideoReader(video)
+                    cap = VideoWriter(video)
                     nframes = len(cap)
                 else:
                     # Moviepy:
@@ -355,14 +355,17 @@ def extract_frames(
                 except KeyError:
                     coords = cfg["video_sets_original"][video]["crop"].split(",")
 
-                if crop and not opencv:
-                    clip = clip.crop(
-                        y1=int(coords[2]),
-                        y2=int(coords[3]),
-                        x1=int(coords[0]),
-                        x2=int(coords[1]),
-                    )
-                elif not crop:
+                if crop:
+                    if opencv:
+                        cap.set_bbox(*map(int, coords))
+                    else:
+                        clip = clip.crop(
+                            y1=int(coords[2]),
+                            y2=int(coords[3]),
+                            x1=int(coords[0]),
+                            x2=int(coords[1]),
+                        )
+                else:
                     coords = None
 
                 print("Extracting frames based on %s ..." % algo)
@@ -382,8 +385,6 @@ def extract_frames(
                             numframes2pick,
                             start,
                             stop,
-                            crop,
-                            coords,
                             step=cluster_step,
                             resizewidth=cluster_resizewidth,
                             color=cluster_color,
@@ -415,7 +416,7 @@ def extract_frames(
                 if opencv:
                     for index in frames2pick:
                         cap.set_to_frame(index)  # extract a particular frame
-                        frame = cap.read_frame()
+                        frame = cap.read_frame(crop=True)
                         if frame is not None:
                             image = img_as_ubyte(frame)
                             img_name = (
@@ -424,17 +425,7 @@ def extract_frames(
                                 + str(index).zfill(indexlength)
                                 + ".png"
                             )
-                            if crop:
-                                io.imsave(
-                                    img_name,
-                                    image[
-                                        int(coords[2]) : int(coords[3]),
-                                        int(coords[0]) : int(coords[1]),
-                                        :,
-                                    ],
-                                )  # y1 = int(coords[2]),y2 = int(coords[3]),x1 = int(coords[0]), x2 = int(coords[1]
-                            else:
-                                io.imsave(img_name, image)
+                            io.imsave(img_name, image)
                             is_valid.append(True)
                         else:
                             print("Frame", index, " not found!")
