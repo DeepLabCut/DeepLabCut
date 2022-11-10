@@ -644,14 +644,21 @@ def ExtractFramesbasedonPreselection(
     else:
         coords = None
 
+    print("Cropping coords:", coords)
     print("Duration of video [s]: ", duration, ", recorded @ ", fps, "fps!")
     print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ")
     if extractionalgorithm == "uniform":
         if opencv:
+            if coords is not None:
+                vid.set_bbox(*coords)
             frames2pick = frameselectiontools.UniformFramescv2(
                 vid, numframes2extract, start, stop, Index
             )
         else:
+            if coords is not None:
+                clip = clip.crop(
+                    y1=coords[2], y2=coords[3], x1=coords[0], x2=coords[1],
+                )
             frames2pick = frameselectiontools.UniformFrames(
                 clip, numframes2extract, start, stop, Index
             )
