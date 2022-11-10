@@ -350,10 +350,10 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
     return pred
 
 
-def _average_multiple_scale_preds(preds, scale_list, cos_dist_threshold = 0.997, confidence_threshold = 0.1):
+def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_threshold = 0.997, confidence_threshold = 0.1):
 
     ret_pred = {}
-    num_kpts = len(preds[0]["coordinates"][0])
+
     ret_pred["coordinates"] = [[[]] * num_kpts]
     ret_pred["confidence"] = [[]] * num_kpts
 
@@ -453,6 +453,8 @@ def video_inference(
     # frames[0].shape - > (batchsize, h, w, 3)
     multi_scale_batched_frames = None
     frame_shapes = None
+
+    num_kpts = len(cfg['bodyparts']) if 'individuals' not in cfg else len(cfg['multianimalbodyparts'])    
     while cap.video.isOpened():
         # no crop needed
         _frame = cap.read_frame()
@@ -548,7 +550,7 @@ def video_inference(
 
     for k, v in PredicteData.items():
         if v != []:
-            PredicteData[k] = _average_multiple_scale_preds(v, scale_list)
+            PredicteData[k] = _average_multiple_scale_preds(v, scale_list, num_kpts)
 
     PredicteData["metadata"] = {
         "nms radius": test_cfg.get("nmsradius", None),
