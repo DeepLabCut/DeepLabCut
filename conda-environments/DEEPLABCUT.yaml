@@ -25,4 +25,4 @@ dependencies:
   - nb_conda
   - ffmpeg
   - pip:
-    - "deeplabcut[tf]"
+    - "deeplabcut[gui,tf]"
