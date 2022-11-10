@@ -180,6 +180,7 @@ def extract_outlier_frames(
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
+    frames2use=None,
     comparisonbodyparts="all",
     epsilon=20,
     p_bound=0.01,
@@ -237,6 +238,10 @@ def extract_outlier_frames(
         * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
         * ``'uncertain'`` looks for frames with confidence below p_bound
         * ``'manual'`` launches a GUI from which the user can choose the frames
+        * ``'list'`` looks for user to provide a list of frame numbers to use, 'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
+    
+    frames2use: list[str], optional, default=None
+        If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
 
     comparisonbodyparts: list[str] or str, optional, default="all"
         This selects the body parts for which the comparisons with the outliers are
@@ -420,8 +425,20 @@ def extract_outlier_frames(
 
                 _ = launch_napari()
                 return
+            elif outlieralgorithm == "list":
+                if frames2use is not None:
+                    try:
+                        frames2use = np.array(frames2use).astype('int')
+                    except ValueError() as e:
+                        print('Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!')
+                        raise
+                    Indices.extend(frames2use)
+                else:
+                    raise ValueError('Expected list of frames2use for outlieralgorithm "list"!')
+            else:
+                raise ValueError(f'outlieralgorithm {outlieralgorithm} not recognized!')
 
-            # Run always except when the outlieralgorithm == manual.
+            # Run always except when the outlieralgorithm == manual. 
             if not outlieralgorithm == "manual":
                 Indices = np.sort(list(set(Indices)))  # remove repetitions.
                 print(
