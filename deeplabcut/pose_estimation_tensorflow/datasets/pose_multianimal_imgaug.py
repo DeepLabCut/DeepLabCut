@@ -252,7 +252,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         batch_images = []
         batch_joints = []
         joint_ids = []
-        inds_visible = []
         data_items = []
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
@@ -266,19 +265,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             if self.has_gt:
                 Joints = data_item.joints
-                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
                 for j in range(self._n_animals):
                     for n, x, y in Joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
-                joint_id = [
-                    Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
-                ]
-                joint_ids.append(joint_id)
-                batch_joints.append(kpts)
-                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
 
+                joint_id = np.array(list(range(self._n_kpts))*self._n_animals)
+                joint_ids.append(joint_id)
             batch_images.append(image)
-        return batch_images, joint_ids, batch_joints, inds_visible, data_items
+        return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
         self, joint_ids, joints, data_items, sm_size, scale,
@@ -344,7 +339,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch()
+            batch_images, joint_ids, batch_joints, data_items = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -358,8 +353,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
             # Discard keypoints whose coordinates lie outside the cropped image
             batch_joints_valid = []
             joint_ids_valid = []
-            for joints, ids, visible in zip(batch_joints, joint_ids, inds_visible):
-                joints = joints[visible]
+
+            for joints, ids in zip(batch_joints, joint_ids):
+                #invisible joints are represented by nans
+                mask = ~np.isnan(joints[:,0])
+                joints = joints[mask,:]
+                ids = ids[:][mask]
                 inside = np.logical_and.reduce(
                     (
                         joints[:, 0] < image_shape[1],
@@ -369,13 +368,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     )
                 )
                 batch_joints_valid.append(joints[inside])
-                temp = []
-                start = 0
-                for array in ids:
-                    end = start + array.size
-                    temp.append(array[inside[start:end]])
-                    start = end
-                joint_ids_valid.append(temp)
+
+                joint_ids_valid.append([ids[inside]])
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
