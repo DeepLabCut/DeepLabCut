@@ -13,7 +13,7 @@
 #
 # install: conda env create -f DEEPLABCUT.yaml
 # update:  conda env update -f DEEPLABCUT.yaml
-name: DEEPLABCUT
+name: DEEPLABCUT_dev
 channels:
   - conda-forge
   - defaults
@@ -24,5 +24,3 @@ dependencies:
   - jupyter
   - nb_conda
   - ffmpeg
-  - pip:
-    - "deeplabcut[tf]"
