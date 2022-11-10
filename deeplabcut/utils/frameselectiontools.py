@@ -208,8 +208,6 @@ def KmeansbasedFrameselectioncv2(
     numframes2pick,
     start,
     stop,
-    crop,
-    coords,
     Index=None,
     step=1,
     resizewidth=30,
@@ -262,16 +260,8 @@ def KmeansbasedFrameselectioncv2(
             if color:
                 for counter, index in tqdm(enumerate(Index)):
                     cap.set_to_frame(index)  # extract a particular frame
-                    frame = cap.read_frame()
+                    frame = cap.read_frame(crop=True)
                     if frame is not None:
-                        if crop:
-                            frame = frame[
-                                int(coords[2]) : int(coords[3]),
-                                int(coords[0]) : int(coords[1]),
-                                :,
-                            ]
-
-                        # image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image = img_as_ubyte(
                             cv2.resize(
                                 frame,
@@ -294,15 +284,8 @@ def KmeansbasedFrameselectioncv2(
             else:
                 for counter, index in tqdm(enumerate(Index)):
                     cap.set_to_frame(index)  # extract a particular frame
-                    frame = cap.read_frame()
+                    frame = cap.read_frame(crop=True)
                     if frame is not None:
-                        if crop:
-                            frame = frame[
-                                int(coords[2]) : int(coords[3]),
-                                int(coords[0]) : int(coords[1]),
-                                :,
-                            ]
-                        # image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image = img_as_ubyte(
                             cv2.resize(
                                 frame,
@@ -324,16 +307,8 @@ def KmeansbasedFrameselectioncv2(
             print("Extracting and downsampling...", nframes, " frames from the video.")
             if color:
                 for counter, index in tqdm(enumerate(Index)):
-                    frame = cap.read_frame()
+                    frame = cap.read_frame(crop=True)
                     if frame is not None:
-                        if crop:
-                            frame = frame[
-                                int(coords[2]) : int(coords[3]),
-                                int(coords[0]) : int(coords[1]),
-                                :,
-                            ]
-
-                        # image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image = img_as_ubyte(
                             cv2.resize(
                                 frame,
@@ -355,15 +330,8 @@ def KmeansbasedFrameselectioncv2(
                         )
             else:
                 for counter, index in tqdm(enumerate(Index)):
-                    frame = cap.read_frame()
+                    frame = cap.read_frame(crop=True)
                     if frame is not None:
-                        if crop:
-                            frame = frame[
-                                int(coords[2]) : int(coords[3]),
-                                int(coords[0]) : int(coords[1]),
-                                :,
-                            ]
-                        # image=img_as_ubyte(cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),None,fx=ratio,fy=ratio))
                         image = img_as_ubyte(
                             cv2.resize(
                                 frame,

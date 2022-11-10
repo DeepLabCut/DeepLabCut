@@ -638,7 +638,9 @@ def ExtractFramesbasedonPreselection(
         duration = clip.duration
 
     if cfg["cropping"]:  # one might want to adjust
-        coords = (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+        coords = cfg["video_sets"].get(video, {}).get("crop")
+        if coords is not None:
+            coords = list(map(int, coords.split(", ")))
     else:
         coords = None
 
@@ -655,20 +657,22 @@ def ExtractFramesbasedonPreselection(
             )
     elif extractionalgorithm == "kmeans":
         if opencv:
+            if coords is not None:
+                vid.set_bbox(*coords)
             frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(
                 vid,
                 numframes2extract,
                 start,
                 stop,
-                cfg["cropping"],
-                coords,
                 Index,
                 resizewidth=cluster_resizewidth,
                 color=cluster_color,
             )
         else:
-            if cfg["cropping"]:
-                clip = clip.crop(y1=cfg["y1"], y2=cfg["x2"], x1=cfg["x1"], x2=cfg["x2"])
+            if coords is not None:
+                clip = clip.crop(
+                    y1=coords[2], y2=coords[3], x1=coords[0], x2=coords[1],
+                )
             frames2pick = frameselectiontools.KmeansbasedFrameselection(
                 clip,
                 numframes2extract,
@@ -693,8 +697,6 @@ def ExtractFramesbasedonPreselection(
         if opencv:
             PlottingSingleFramecv2(
                 vid,
-                cfg["cropping"],
-                coords,
                 data,
                 bodyparts,
                 tmpfolder,
@@ -732,7 +734,7 @@ def ExtractFramesbasedonPreselection(
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick) > 0:
         try:
-            if cfg["cropping"]:
+            if coords is not None:
                 add.add_new_videos(
                     config, [video], coords=[coords], copy_videos=copy_videos,
                 )  # make sure you pass coords as a list
@@ -899,8 +901,6 @@ def PlottingSingleFrame(
 
 def PlottingSingleFramecv2(
     cap,
-    crop,
-    coords,
     Dataframe,
     bodyparts2plot,
     tmpfolder,
@@ -925,16 +925,11 @@ def PlottingSingleFramecv2(
     ):
         plt.axis("off")
         cap.set_to_frame(index)
-        frame = cap.read_frame()
+        frame = cap.read_frame(crop=True)
         if frame is None:
             print("Frame could not be read.")
             return
         image = img_as_ubyte(frame)
-        if crop:
-            image = image[
-                int(coords[2]) : int(coords[3]), int(coords[0]) : int(coords[1]), :
-            ]
-
         io.imsave(imagename1, image)
 
         if savelabeled:
