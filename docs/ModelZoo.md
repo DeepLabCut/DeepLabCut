@@ -37,7 +37,6 @@ To provide the community with easy access to such high performance models across
 
 IMPORTANT:  we currently only support single animal scenarios
 
-
 ### Our perspective.
 
 Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.

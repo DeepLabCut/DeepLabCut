@@ -358,7 +358,6 @@ def video_inference_superanimal(
 
     superanimal_name: str
         The name of the superanimal model. We currently only support supertopview and superquadruped
-
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
@@ -391,7 +390,7 @@ def video_inference_superanimal(
 
     scale_list = range(600,800,100)
 
-    superanimal_name = 'superanimal_mouse_topview'
+    superanimal_name = 'superanimal_topviewmouse'
     videotype = 'mp4'
     >>>  init_weights = deeplabcut.video_inference_superanimal(
                                       [video_path],
@@ -399,7 +398,6 @@ def video_inference_superanimal(
                                       videotype=videotype,
                                       scale_list = scale_list,
                                      )
-
     Note we do not need to pass a config in this case
     >>> deeplabcut.create_labeled_video("",
                                 [video_path],
