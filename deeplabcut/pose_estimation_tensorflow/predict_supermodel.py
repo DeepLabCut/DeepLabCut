@@ -574,12 +574,11 @@ def video_inference_superanimal(
 
     Parameters
     ----------
-    config: string
-        Full path of the config.yaml file as a string.
-
     videos: list
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
+    superanimal_name: str
+        The name of the superanimal model. We currently only support supertopview and superquadruped
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
@@ -624,14 +623,18 @@ def video_inference_superanimal(
 
     init_weights = PATH_TO_SUPERMODEL
 
-    >>> deeplabcut.video_inference_supermodel(config_path,
+    >>> deeplabcut.video_inference_supermodel(
                                       [video_path],
+                                      'supertopview',
                                       videotype=videotype,
                                       init_weights = init_weights,
                                       scale_list = scale_list,
                                       invert_color = False,   
                                       bbox_file = bbox_file)
     
+    Note after calling video_inference, a config.yaml is created in your working directory
+
+    config_path = os.path.join(os.getcwd(), 'config.yaml') 
 
     >>> deeplabcut.create_labeled_video(config_path,
                                 [video_path],

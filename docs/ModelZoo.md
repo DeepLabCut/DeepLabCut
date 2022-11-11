@@ -12,6 +12,33 @@ test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our
 - (4) new methods to make SuperAnimal Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
 
+### About SuperAnimal Models.
+
+Our newest generation models act as a paradigm shift of using pre-trained model. It aims to provide a plug and play solution that works without training.
+
+IMPORTANT:  we currently only support single animal scenarios
+
+We now introduce two SuperAnimal members, namely, superquadruped and supertopview.
+
+superquadruped model aim to work across a large range of quadruped animals. Note since quadrupeds are mostly side viewed, it is important to tune the pcutoff to help model remove keypoints are occluded.
+
+supertopview model aims to work across labmice in different cage settings.
+
+
+### Potential failure modes for SuperAnimal Models.
+
+Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of scale_list in the API (details in the API docs). For superquadruped, we empirically observe that if your video is larger than 1500 pixels, it is better to pass scale_list in the range within 1000.
+
+Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or
+fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). We are currently developing new models and new methods to counter that.
+
+
+### Our perspective.
+
+Via DeepLabCut ModelZoo, we aim to provide plug and play models that do not need any labeling and will just work decently in novel videos. If the predictions are not great enough due to
+failure modes described above, please give us feedbacks and we are rapidly improving our models and adaptation methods.
+
+
 ### To use our model in DeepLabCut, please use following API
 
 ```{admonition} Click the button to see API Docs
