@@ -5,7 +5,7 @@ import pickle
 import re
 import time
 from pathlib import Path
-
+import yaml
 import cv2
 import imgaug.augmenters as iaa
 import numpy as np
@@ -24,7 +24,48 @@ from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
+import deeplabcut
 
+
+class SingleDLC_config:
+    def __init__(self):
+        Task = '' # could be dataset name
+        project_path = ''
+        scorer = '' # random stuff
+        date  = '' #random stuff
+        video_sets = '' #has to be used for labeled data
+        skeleton = '' # could be arbitrary
+        bodyparts = '' # either single or multi
+        start = 0 # not sure
+        stop = 1 # not sure
+        numframes2pick = 42 # does not matter
+        skeleton_color = 'black'
+        pcutoff = 0.6
+        dotsize = 8
+        alphavalue = 0.7
+        colormap = 'rainbow'
+        TrainingFraction = '' # need to be filled correctly
+        iteration = 0
+        default_net_type = 'resnet_50'
+        default_augmenter = 'imgaug'
+        snapshotindex = -1
+        batch_size = 8
+        cropping = False
+        croppedtraining = False
+        multianimalproject = False
+        uniquebodyparts = []
+        x1 = 0
+        x2 = 640
+        y1 = 277
+        y2 = 624
+        corer2move2 = [50,50]
+        move2corner = True
+        identity = False
+        self.cfg = { k: v for k,v in vars().items() if '__' not in k and 'self' not in k}
+    def create_cfg(self, proj_root, kwargs):
+        self.cfg.update(kwargs)
+        with open(os.path.join(proj_root,'config.yaml'), 'w') as f:
+            yaml.dump(self.cfg, f)                    
 
 
 def extract_bbox_from_file(filename):
@@ -178,12 +219,11 @@ def video_inference_topdown(
 
 # instead of having these in a lengthy function, I made this a separate function
 def get_nuances(
-    config,
     videos,
+    test_cfg,
+    superanimal_name,
     bbox_file = '',
     videotype="avi",
-    shuffle=1,
-    trainingsetindex=0,
     destfolder=None,
     batchsize=None,
     TFGPUinference=True,
@@ -195,79 +235,17 @@ def get_nuances(
     
 ):
 
-    cfg = auxiliaryfunctions.read_config(config)
-    trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
-    )
-    path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-    # called test_cfg instead of dlc_cfg to avoid confusion
-    test_cfg = load_config(str(path_test_config))
-
-    if init_weights:
-        # this is for loading a stand alone supermodel checkpoint
-        test_cfg["init_weights"] = init_weights
-
-    # no more part affinity
-    test_cfg["partaffinityfield_graph"] = []
-    test_cfg["partaffinityfield_predict"] = False
-
-    if init_weights == "":
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(modelfolder, "train"))
-                if "index" in fn
-            ]
-        )
-        snapshotindex = cfg["snapshotindex"]
-
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-
-        test_cfg["init_weights"] = os.path.join(
-            modelfolder, "train", Snapshots[snapshotindex]
-        )
-        trainingsiterations = (test_cfg["init_weights"].split(os.sep)[-1]).split("-")[
-            -1
-        ]
-
-        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
-            cfg,
-            shuffle,
-            trainFraction,
-            trainingsiterations=trainingsiterations,
-            modelprefix=modelprefix,
-        )
-    else:
-        Snapshots = [0]
-        snapshotindex = 0
-        DLCscorer = 'DLC_' + Path(init_weights).stem        
-        DLCscorerlegacy = DLCscorer
-
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
-
-    trainingsiterations = (test_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     # Update number of output and batchsize
-    test_cfg["num_outputs"] = cfg.get("num_outputs", test_cfg.get("num_outputs", 1))
-
-    if batchsize == None:
-        # update batchsize (based on parameters in config.yaml)
-        test_cfg["batch_size"] = cfg["batch_size"]
-    else:
-        test_cfg["batch_size"] = batchsize
-        cfg["batch_size"] = batchsize
-
+    test_cfg["num_outputs"] = 1    
+        
     if bbox_file !='':
         # only supporting single batch topdown inference
         test_cfg['batch_size'] = 1
         cfg['batch_size'] = 1
                 
+    else:
+        test_cfg['batch_size'] = batchsize
+        cfg['batch_size'] = batchsize
         
     if test_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -286,20 +264,18 @@ def get_nuances(
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
-
+    DLCscorer = 'DLC_' + Path(init_weights).stem
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], test_cfg["all_joints_names"], xyz_labs],
         names=["scorer", "bodyparts", "coords"],
     )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
-
     ret = {}
 
-    ret["cfg"] = cfg
     ret["videos"] = Videos
     ret["DLCscorer"] = DLCscorer
-    ret["trainFraction"] = trainFraction
+
     ret["test_cfg"] = test_cfg
     ret["sess"] = sess
     ret["inputs"] = inputs
@@ -571,13 +547,11 @@ def video_inference(
 
 
 def video_inference_superanimal(
-    config,
     videos,
+    superanimal_name,
     scale_list=[],
     invert_color=False,
     videotype="avi",
-    shuffle=1,
-    trainingsetindex=0,
     destfolder=None,
     batchsize=None,
     TFGPUinference=True,
@@ -586,7 +560,8 @@ def video_inference_superanimal(
     allow_growth=False,
     init_weights="",
     save_frames=False,
-    bbox_file = ''        
+    bbox_file = '',
+    
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -608,15 +583,8 @@ def video_inference_superanimal(
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
-
     videotype: string, optional
         Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
-
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
 
     destfolder: string, optional
         Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
@@ -674,12 +642,30 @@ def video_inference_superanimal(
 
     """
 
+    
+    dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
+
+    name_dict = {'supertopview': 'supertopview.yaml',
+                 'superquadruped':'superquadruped.yaml'}
+    
+    test_cfg = load_config(os.path.join(
+        dlc_root_path,
+        'pose_estimation_tensorflow',
+        'superanimal_configs',
+        name_dict[superanimal_name]
+    ))
+    test_cfg["partaffinityfield_graph"] = []
+    test_cfg["partaffinityfield_predict"] = False
+
+    
+    if init_weights!='':
+        test_cfg['init_weights'] = init_weights
+    
     setting = get_nuances(
-        config,
         videos,
+        test_cfg,
+        superanimal_name,
         videotype=videotype,
-        shuffle=shuffle,
-        trainingsetindex=trainingsetindex,
         destfolder=destfolder,
         batchsize=batchsize,
         TFGPUinference=TFGPUinference,
@@ -691,16 +677,41 @@ def video_inference_superanimal(
         bbox_file = bbox_file
     )
 
-    test_cfg = setting["test_cfg"]
-    cfg = setting["cfg"]
+    #test_cfg = setting["test_cfg"]
+    # get dlc root path
+
+    
     videos = setting["videos"]
     destfolder = setting["destfolder"]
     DLCscorer = setting["DLCscorer"]
     sess = setting["sess"]
     inputs = setting["inputs"]
     outputs = setting["outputs"]
-    trainFraction = setting["trainFraction"]
 
+
+    if  os.path.exists(os.path.join(os.getcwd(),
+                                    'config.yaml')):
+        cfg = auxiliaryfunctions.read_config(os.path.join(os.getcwd(),
+                                                          'config.yaml'))
+    
+    else:
+        cfg_template = SingleDLC_config()
+        
+        modify_dict = dict(Task = 'zeroshot',
+                           project_path = os.getcwd(),
+                           scorer = DLCscorer,
+                           TrainingFraction = [70],
+                           bodyparts = test_cfg['all_joints_names']
+                   )
+        
+
+        cfg_template.create_cfg(os.getcwd(),
+                                modify_dict)
+
+        cfg = auxiliaryfunctions.read_config(os.path.join(os.getcwd(),
+                                                          'config.yaml'))        
+
+    
     for video in videos:
         vname = Path(video).stem
 
@@ -827,7 +838,7 @@ def video_inference_superanimal(
                 "nframes": nframes,
                 "iteration (active-learning)": cfg["iteration"],
                 "cropping": cfg["cropping"],
-                "training set fraction": trainFraction,
+                "training set fraction": 70,
                 "cropping_parameters": coords,
             }
             metadata = {"data": dictionary}

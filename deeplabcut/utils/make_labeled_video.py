@@ -109,6 +109,8 @@ def CreateVideo(
     print("Generating frames and creating video.")
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
+
+
     if cropping and not displaycropped:
         df_x += x1
         df_y += y1
@@ -159,6 +161,7 @@ def CreateVideo(
                             int(np.clip(df_x[bpt2, index], 1, nx - 1)),
                         )
                         image[rr, cc] = color_for_skeleton
+
 
             for ind, num_bp, num_ind in bpts2color:
                 if df_likelihood[ind, index] > pcutoff:
