@@ -237,16 +237,13 @@ def get_nuances(
 
     # Update number of output and batchsize
     test_cfg["num_outputs"] = 1    
-        
+
+    test_cfg['batch_size'] = batchsize
+    
     if bbox_file !='':
         # only supporting single batch topdown inference
-        test_cfg['batch_size'] = 1
-        cfg['batch_size'] = 1
-                
-    else:
-        test_cfg['batch_size'] = batchsize
-        cfg['batch_size'] = batchsize
-        
+        test_cfg['batch_size'] = 1                        
+    
     if test_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
@@ -553,7 +550,7 @@ def video_inference_superanimal(
     invert_color=False,
     videotype="avi",
     destfolder=None,
-    batchsize=None,
+    batchsize=1,
     TFGPUinference=True,
     modelprefix="",
     robust_nframes=False,
@@ -712,10 +709,11 @@ def video_inference_superanimal(
                                 modify_dict)
 
         cfg = auxiliaryfunctions.read_config(os.path.join(os.getcwd(),
-                                                          'config.yaml'))        
-
-    
+                                                          'config.yaml'))
+    print ('videos')
+    print (videos)
     for video in videos:
+
         vname = Path(video).stem
 
         if len(scale_list) == 0:
