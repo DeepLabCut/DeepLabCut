@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
         return QtCore.QSettings()
 
     def load_settings(self):
-        filenames = self.settings.value("recent_files", [])
+        filenames = self.settings.value("recent_files") or []
         for filename in filenames:
             self.add_recent_filename(filename)
 
