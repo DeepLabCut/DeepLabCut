@@ -251,9 +251,6 @@ class AnalyzeVideos(DefaultTab):
         save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        create_video_all_detections = (
-            self.create_detections_video_checkbox.checkState() == Qt.Checked
-        )
 
         if self.root.is_multianimal:
             calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
@@ -263,10 +260,14 @@ class AnalyzeVideos(DefaultTab):
             track_method = self.tracker_type_widget.currentText()
             edit_config(self.root.config, {"default_track_method": track_method})
             num_animals_in_videos = self.num_animals_in_videos.value()
+            create_video_all_detections = (
+                self.create_detections_video_checkbox.checkState() == Qt.Checked
+            )
         else:
             calibrate_assembly = False
             num_animals_in_videos = None
             assemble_with_ID_only = False
+            create_video_all_detections = False
 
         cropping = None
 
