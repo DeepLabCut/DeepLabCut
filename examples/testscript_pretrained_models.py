@@ -9,6 +9,7 @@ import numpy as np
 
 Task = "human_dancing"
 YourName = "teamDLC"
+MODEL_NAME = "horse_sideview" #full_human"
 
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
@@ -29,7 +30,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
     Task,
     YourName,
     video,
-    model="full_human",
+    model=MODEL_NAME,
     videotype="avi",
     analyzevideo=True,
     createlabeledvideo=True,
