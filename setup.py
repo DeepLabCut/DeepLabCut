@@ -57,6 +57,7 @@ setuptools.setup(
         "docs": ["numpydoc"],
         "tf": ["tensorflow>=2.0"],
         "apple_mchips": [],
+        "modelzoo": ["huggingface_hub"],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),

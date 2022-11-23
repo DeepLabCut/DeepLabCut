@@ -38,6 +38,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
 )  # must leave copy_videos=True
 
 
+'''
 lastvalue = 5
 DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
 pretrainedDeeperCutweights = DLC_config["init_weights"]
@@ -170,3 +171,4 @@ DLC_config = deeplabcut.auxiliaryfunctions.edit_config(path_train_config, edits)
 
 # deeplabcut.train_network(configfile,shuffle=1) #>> fails one body part too much!
 deeplabcut.train_network(configfile, shuffle=1, keepdeconvweights=False)
+'''
