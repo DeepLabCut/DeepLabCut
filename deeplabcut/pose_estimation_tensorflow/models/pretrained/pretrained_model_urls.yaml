@@ -42,8 +42,3 @@ horse_sideview_commit: fd0329b2ffc8fe7a5e6eb3d4850ebca75987e92c
 
 full_macaque: mwmathis/DeepLabCutModelZoo-macaque_full/DLC_macaque_full_resnet50.tar.gz
 full_macaque_commit: 4c7ebf2628d5b7eb0483356595256fb01b7e1a9e
-
-
-#MISSING:
-#full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
-#full_cat: http://deeplabcut.rowland.harvard.edu/models/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
