@@ -8,5 +8,5 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-__version__ = "2.3rc2"
+__version__ = "2.3rc3"
 VERSION = __version__
