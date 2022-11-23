@@ -18,6 +18,15 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_models
 
 Modeloptions = [
     "full_human",
+    "primate_face",
+    "mouse_pupil_vclose",
+    "horse_sideview",
+    "full_macaque",
+]  # just expand this list with new projects
+
+'''
+Modeloptions = [
+    "full_human",
     "full_cat",
     "full_dog",
     "primate_face",
@@ -26,7 +35,7 @@ Modeloptions = [
     "full_macaque",
     "full_cheetah",
 ]  # just expand this list with new projects
-
+'''
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     raw = open(defaultconfigfile).read()
