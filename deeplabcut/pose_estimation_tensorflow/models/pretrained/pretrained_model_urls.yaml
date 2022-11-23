@@ -12,12 +12,33 @@ mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobil
 #Source: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
 efficientnet: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/ckptsaug/
 
+
+##Harvard server down.
+
 #Model Zoo from where the Charles flow(s)
-full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
-full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
-full_cat: http://deeplabcut.rowland.harvard.edu/models/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
-primate_face: http://deeplabcut.rowland.harvard.edu/models/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
-mouse_pupil_vclose: http://deeplabcut.rowland.harvard.edu/models/DLC_mouse_pupil_vclose_resnet_50_iteration-0_shuffle-1.tar.gz
-horse_sideview: http://deeplabcut.rowland.harvard.edu/models/DLC_Horses_resnet_50_iteration-1_shuffle-1.tar.gz
-full_macaque: http://deeplabcut.rowland.harvard.edu/models/DLC_macaque_full_resnet50.tar.gz
-full_cheetah: http://deeplabcut.rowland.harvard.edu/models/DLC_full_cheetah_resnet_152.tar.gz
+#full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
+#full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
+#full_cat: http://deeplabcut.rowland.harvard.edu/models/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
+#primate_face: http://deeplabcut.rowland.harvard.edu/models/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
+#mouse_pupil_vclose: http://deeplabcut.rowland.harvard.edu/models/DLC_mouse_pupil_vclose_resnet_50_iteration-0_shuffle-1.tar.gz
+#horse_sideview: http://deeplabcut.rowland.harvard.edu/models/DLC_Horses_resnet_50_iteration-1_shuffle-1.tar.gz
+#full_macaque: http://deeplabcut.rowland.harvard.edu/models/DLC_macaque_full_resnet50.tar.gz
+#full_cheetah: http://deeplabcut.rowland.harvard.edu/models/DLC_full_cheetah_resnet_152.tar.gz
+
+
+
+#Model Zoo from HuggingFace
+full_human: mwmathis/DeepLabCutModelZoo-DLC_human_fullbody_resnet_101/DLC_human_fullbody_resnet_101.tar.gz
+full_human_commit: 7438131c2ee7754a9732bef6fbf46b8189a16c48
+
+primate_face: mwmathis/DeepLabCutModelZoo-primate_face/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
+primate_face_commit: df7e8f6ad38899489758e5a890b58905cfb4d893
+
+mouse_pupil_vclose: mwmathis/DeepLabCutModelZoo-mouse_pupil_vclose/DLC_mouse_pupil_vclose_resnet_50_iteration-0_shuffle-1.tar.gz
+mouse_pupil_vclose_commit: 93557f0e74390596a2b9fddaab7628a1cc79fb2d
+
+horse_sideview: mwmathis/DeepLabCutModelZoo-horse_sideview/DLC_Horses_resnet_50_iteration-1_shuffle-1.tar.gz
+horse_sideview_commit: fd0329b2ffc8fe7a5e6eb3d4850ebca75987e92c
+
+full_macaque: mwmathis/DeepLabCutModelZoo-macaque_full/DLC_macaque_full_resnet50.tar.gz
+full_macaque_commit: 4c7ebf2628d5b7eb0483356595256fb01b7e1a9e
