@@ -27,7 +27,7 @@ efficientnet: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/
 
 
 
-#Model Zoo from Huggingface
+#Model Zoo from HuggingFace
 full_human: mwmathis/DeepLabCutModelZoo-DLC_human_fullbody_resnet_101/DLC_human_fullbody_resnet_101.tar.gz
 full_human_commit: 7438131c2ee7754a9732bef6fbf46b8189a16c48
 
