@@ -24,8 +24,7 @@ Download anaconda for your operating system: https://www.anaconda.com/distributi
 ```
 
 
-- IF you use a M1 or M2 chip in your MacBook (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda.
-<b>Keep in mind, the supplied env file installation works for MacOS versions 12.5.1 and higher.</b> This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
+- IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
 
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
