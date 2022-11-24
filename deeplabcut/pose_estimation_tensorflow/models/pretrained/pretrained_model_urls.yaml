@@ -32,7 +32,7 @@ full_human: mwmathis/DeepLabCutModelZoo-DLC_human_fullbody_resnet_101/DLC_human_
 full_human_commit: 7438131c2ee7754a9732bef6fbf46b8189a16c48
 full_cat: AlexEMG/DeepLabCutModelZoo-cat/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
 full_cat_commit: 972f82dc575c820ce556e140465495a32d18ee9b
-full_dog: AlexEMG/DeepLabCutModelZoo-dog/Upload DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
+full_dog: AlexEMG/DeepLabCutModelZoo-dog/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
 full_cat_commit: 3d7cae9dff2625fadffb11e25190119c9ff936a1
 primate_face: mwmathis/DeepLabCutModelZoo-primate_face/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
 primate_face_commit: df7e8f6ad38899489758e5a890b58905cfb4d893
