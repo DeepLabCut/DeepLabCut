@@ -27,47 +27,6 @@ from deeplabcut.utils.auxfun_videos import VideoWriter
 import deeplabcut
 
 
-class SingleDLC_config:
-    def __init__(self):
-        Task = '' # could be dataset name
-        project_path = ''
-        scorer = '' # random stuff
-        date  = '' #random stuff
-        video_sets = '' #has to be used for labeled data
-        skeleton = '' # could be arbitrary
-        bodyparts = '' # either single or multi
-        start = 0 # not sure
-        stop = 1 # not sure
-        numframes2pick = 42 # does not matter
-        skeleton_color = 'black'
-        pcutoff = 0.6
-        dotsize = 8
-        alphavalue = 0.7
-        colormap = 'rainbow'
-        TrainingFraction = '' # need to be filled correctly
-        iteration = 0
-        default_net_type = 'resnet_50'
-        default_augmenter = 'imgaug'
-        snapshotindex = -1
-        batch_size = 8
-        cropping = False
-        croppedtraining = False
-        multianimalproject = False
-        uniquebodyparts = []
-        x1 = 0
-        x2 = 640
-        y1 = 277
-        y2 = 624
-        corer2move2 = [50,50]
-        move2corner = True
-        identity = False
-        self.cfg = { k: v for k,v in vars().items() if '__' not in k and 'self' not in k}
-    def create_cfg(self, proj_root, kwargs):
-        self.cfg.update(kwargs)
-        with open(os.path.join(proj_root,'config.yaml'), 'w') as f:
-            yaml.dump(self.cfg, f)                    
-
-
 def extract_bbox_from_file(filename):
 
     with open(filename, 'rb') as f:
@@ -122,7 +81,6 @@ def _topdown_reverse_transformation(preds, bbox, num_kpts):
 
 
 def video_inference_topdown(
-        cfg,
         test_cfg,
         sess,
         inputs,
@@ -146,7 +104,8 @@ def video_inference_topdown(
     PredicteData = {}
     # len(frames) -> (n_scale,)
     # frames[0].shape - > (batchsize, h, w, 3)
-    num_kpts = len(cfg['bodyparts']) if 'individuals' not in cfg else len(cfg['multianimalbodyparts'])    
+    num_kpts = len(test_cfg['all_joints_names'])
+    
     while cap.video.isOpened():
         # no crop needed
         _frame = cap.read_frame()
@@ -340,7 +299,6 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
             confidence = pred["confidence"]
 
         for kpt_id, coord_list in enumerate(coordinate):
-
             if len(ret_pred["coordinates"][0][kpt_id]) == 0:
                 ret_pred["coordinates"][0][kpt_id] = [[]] * len(scale_list)
                 ret_pred["confidence"][kpt_id] = [[]] * len(scale_list)
@@ -354,7 +312,7 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
 
         remove_indices = []
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if len(ele[0]) == 0:
+            if len(ele) == 0 or len(ele[0]) == 0:
                 remove_indices.append(idx)
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
@@ -368,12 +326,14 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
         dist = []
 
         for i in range(len(candidates)):
+            # In case where the the predictions do not exist
             dist.append(cosine_similarity(candidates[i], mean_vec))
 
         filter_indices = []
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
             if dist[idx] < cos_dist_threshold or ret_pred["confidence"][kpt_id][idx] < confidence_threshold:
+                
                 filter_indices.append(idx)
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
@@ -381,26 +341,29 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
                 ret_pred["coordinates"][0][kpt_id][idx] = np.array([[np.nan, np.nan]])
                 ret_pred["confidence"][kpt_id][idx] = np.array([[np.nan]])
 
-        ret_pred["coordinates"][0][kpt_id] = np.concatenate(
-            ret_pred["coordinates"][0][kpt_id], axis=0
-        )
-        ret_pred["confidence"][kpt_id] = np.concatenate(
-            ret_pred["confidence"][kpt_id], axis=0
-        )
+        if len(ret_pred['coordinates'][0][kpt_id]) != 0:
+                    
+            ret_pred["coordinates"][0][kpt_id] = np.concatenate(
+                ret_pred["coordinates"][0][kpt_id], axis=0
+            )
+            ret_pred["confidence"][kpt_id] = np.concatenate(
+                ret_pred["confidence"][kpt_id], axis=0
+            )
 
-        # need np.array for wrapping the list for evaluation code to work correctly
-        ret_pred["coordinates"][0][kpt_id] = np.array([
-            np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
-        ])
-        ret_pred["confidence"][kpt_id] = np.array(
-            [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
-        )
-
+            # need np.array for wrapping the list for evaluation code to work correctly
+            ret_pred["coordinates"][0][kpt_id] = np.array([
+                np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
+            ])
+            ret_pred["confidence"][kpt_id] = np.array(
+                [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
+            )
+        else:            
+            ret_pred["coordinates"][0][kpt_id] = np.array([[np.nan, np.nan]])
+            ret_pred["confidence"][kpt_id] = np.array([[np.nan]])
     return ret_pred
 
 
 def video_inference(
-    cfg,
     test_cfg,
     sess,
     inputs,
@@ -426,8 +389,9 @@ def video_inference(
     # frames[0].shape - > (batchsize, h, w, 3)
     multi_scale_batched_frames = None
     frame_shapes = None
-
-    num_kpts = len(cfg['bodyparts']) if 'individuals' not in cfg else len(cfg['multianimalbodyparts'])    
+    
+    num_kpts = len(test_cfg['all_joints_names'])
+    
     while cap.video.isOpened():
         # no crop needed
         _frame = cap.read_frame()
@@ -558,6 +522,7 @@ def video_inference_superanimal(
     init_weights="",
     save_frames=False,
     bbox_file = '',
+    customized_test_config = ''
     
 ):
     """
@@ -618,9 +583,9 @@ def video_inference_superanimal(
 
     scale_list = range(600,800,100)
 
-    init_weights = PATH_TO_SUPERMODEL
+    init_weights = PATH_TO_SUPER_ANIMAL_MODEL
 
-    >>> deeplabcut.video_inference_supermodel(
+    >>> deeplabcut.video_inference_superanimal(
                                       [video_path],
                                       'supertopview',
                                       videotype=videotype,
@@ -647,13 +612,16 @@ def video_inference_superanimal(
 
     name_dict = {'supertopview': 'supertopview.yaml',
                  'superquadruped':'superquadruped.yaml'}
-    
-    test_cfg = load_config(os.path.join(
-        dlc_root_path,
-        'pose_estimation_tensorflow',
-        'superanimal_configs',
-        name_dict[superanimal_name]
-    ))
+
+    if customized_test_config == "":
+        test_cfg = load_config(os.path.join(
+            dlc_root_path,
+            'pose_estimation_tensorflow',
+            'superanimal_configs',
+            name_dict[superanimal_name]
+        ))
+    else:
+        test_cfg = load_config(customized_test_config)
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
@@ -689,29 +657,6 @@ def video_inference_superanimal(
     outputs = setting["outputs"]
 
 
-    if  os.path.exists(os.path.join(os.getcwd(),
-                                    'config.yaml')):
-        cfg = auxiliaryfunctions.read_config(os.path.join(os.getcwd(),
-                                                          'config.yaml'))
-    
-    else:
-        cfg_template = SingleDLC_config()
-        
-        modify_dict = dict(Task = 'zeroshot',
-                           project_path = os.getcwd(),
-                           scorer = DLCscorer,
-                           TrainingFraction = [70],
-                           bodyparts = test_cfg['all_joints_names']
-                   )
-        
-
-        cfg_template.create_cfg(os.getcwd(),
-                                modify_dict)
-
-        cfg = auxiliaryfunctions.read_config(os.path.join(os.getcwd(),
-                                                          'config.yaml'))
-    print ('videos')
-    print (videos)
     for video in videos:
 
         vname = Path(video).stem
@@ -790,7 +735,6 @@ def video_inference_superanimal(
             print("before inference")
             if bbox_file == '':
                 PredicteData, nframes = video_inference(
-                    cfg,
                     test_cfg,
                     sess,
                     inputs,
@@ -804,7 +748,6 @@ def video_inference_superanimal(
 
             else:
                 PredicteData, nframes = video_inference_topdown(
-                    cfg,
                     test_cfg,
                     sess,
                     inputs,
@@ -822,11 +765,6 @@ def video_inference_superanimal(
 
             coords = [0, nx, 0, ny]
 
-            if cfg["cropping"] == True:
-                coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
-            else:
-                coords = [0, nx, 0, ny]
-
             dictionary = {
                 "start": start,
                 "stop": stop,
@@ -837,8 +775,8 @@ def video_inference_superanimal(
                 "batch_size": test_cfg["batch_size"],
                 "frame_dimensions": (ny, nx),
                 "nframes": nframes,
-                "iteration (active-learning)": cfg["iteration"],
-                "cropping": cfg["cropping"],
+                "iteration (active-learning)": 0,
+                "cropping": False,
                 "training set fraction": 70,
                 "cropping_parameters": coords,
             }

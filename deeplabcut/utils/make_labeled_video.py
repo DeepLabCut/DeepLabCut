@@ -368,6 +368,7 @@ def create_labeled_video(
     modelprefix="",
     init_weights = "",
     track_method="",
+    customized_test_config = ""        
 ):
     """Labels the bodyparts in a video.
 
@@ -526,13 +527,15 @@ def create_labeled_video(
             videotype='mp4',
         )
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    if config == "":
+        pass
+    else:
+        cfg = auxiliaryfunctions.read_config(config)
+        trainFraction = cfg["TrainingFraction"][trainingsetindex]        
     if track_method != "":
         # will otherwise always return ellipse
         track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
     
-    trainFraction = cfg["TrainingFraction"][trainingsetindex]
-
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
@@ -546,9 +549,23 @@ def create_labeled_video(
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
 
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, displayedbodyparts
-    )
+    if customized_test_config != "":
+        import deeplabcut
+        test_cfg = deeplabcut.pose_estimation_tensorflow.config.load_config(customized_test_config)
+        bodyparts = test_cfg['all_joints_names']
+        # WIP. All these should go into input parmeters
+        cfg = {'skeleton': [],
+               'skeleton_color': 'white',
+               'pcutoff' : 0.3,
+               'dotsize' : 8,
+               'alphavalue' : 0.5,
+               'colormap' : 'rainbow'}
+    
+    else:    
+        bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, displayedbodyparts
+        )
+        
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
