@@ -20,7 +20,9 @@ class SpatiotemporalAdaptation:
                  videotype = 'mp4',
                  adapt_iterations = 1000,
                  modelfolder = "",
-                 customized_pose_config = ''
+                 customized_pose_config = '',
+                 pcutoff = 0.3,
+                 pseudo_threshold = 0.3
                  ):        
         
         assert supermodel_name in ['superquadruped', 'supertopview']
@@ -42,7 +44,9 @@ class SpatiotemporalAdaptation:
         self.adapt_iterations = adapt_iterations
         # if there is no project, use this as a light weight project
         self.modelfolder = modelfolder
-
+        self.pcutoff = pcutoff
+        self.pseudo_threshold = pseudo_threshold
+        
         if modelfolder !="":
             os.makedirs(modelfolder, exist_ok = True)
 
@@ -81,7 +85,8 @@ class SpatiotemporalAdaptation:
                                         filtered = False,
                                         init_weights = self.init_weights,
                                         draw_skeleton = True,
-                                        superanimal_name = self.supermodel_name)
+                                        superanimal_name = self.supermodel_name,
+                                        pcutoff = self.pcutoff)
         
         
     def train_from_existing_project(self,pseudo_label_path):
@@ -110,7 +115,7 @@ class SpatiotemporalAdaptation:
                                  saveiters = 1000,
                                  init_weights = self.init_weights,
                                  load_pseudo_label = pseudo_label_path,
-                                 pseudo_threshold = 0.3,
+                                 pseudo_threshold = self.pseudo_threshold,
                                  max_snapshots_to_keep = 100,
                                  modelprefix = modelprefix,
                                  maxiters = self.adapt_iterations)        
@@ -194,5 +199,6 @@ class SpatiotemporalAdaptation:
                                         filtered = False,
                                         init_weights = adapt_weights,
                                         draw_skeleton = True,
-                                        superanimal_name = self.supermodel_name)
+                                        superanimal_name = self.supermodel_name,
+                                        pcutoff = self.pcutoff)
         
