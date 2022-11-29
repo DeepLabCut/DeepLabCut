@@ -6,16 +6,10 @@ import shutil
 import glob
 
 class SpatiotemporalAdaptation:
-    '''
-    Minimal example how to perform 
-    Drafting what a full pipeline will look like in the future
-    '''
-
     def __init__(self,
                  video_path,
                  init_weights,
                  supermodel_name,
-                 ref_proj_root = "",                 
                  scale_list = [],
                  videotype = 'mp4',
                  adapt_iterations = 1000,
@@ -24,25 +18,43 @@ class SpatiotemporalAdaptation:
                  pcutoff = 0.3,
                  pseudo_threshold = 0.3
                  ):        
-        
+
+        """
+        This class supports video adaptation to a super model.
+
+        Parameters
+        ----------
+        video_path: string
+           The string to the path of the video 
+        init_weights: string
+           The path to a superanimal model's checkpoint
+        supermodel_name: string
+           Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
+        scale_list: list
+           A list of different resolutions for the spatial pyramid
+        videotype: string
+           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``                   
+        adapt_iterations: int
+           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse performance depending whether there is occlusion in the video
+        modelfolder: string, optional
+           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and otherwise model is saved to the current work place
+        customized_pose_config: string, optional
+           For future support of non modelzoo model
+        pcutoff: float, optional
+           below the confidence of pcutoff the keypoints won't be shown in the video
+        pseudo_threshold: float, optional
+           predictions that are under this threshold won't be used for video adaptation. Setting it higher reduces the false positive but might cause removal of true positive
+
+        """
         assert supermodel_name in ['superquadruped', 'supertopview']
-        # TODO, make it accept a list. But I haven't tested multi video adaptation
         self.video_path = video_path
-        # init weights is required for any model zoo project
         self.init_weights = init_weights
-        # names need to be updated when there is a new model
         self.supermodel_name = supermodel_name
-        # ref_proj_root if there is an existing dlc project
-        self.ref_proj_root = ref_proj_root
-        # scale list is required for spatial pyramid
         self.scale_list = scale_list
-        # need video type for video inference
         self.videotype = videotype
         vname = str(Path(self.video_path).stem)
         self.adapt_modelprefix = vname + '_video_adaptation'
-        # for how long video adaptation is trained
         self.adapt_iterations = adapt_iterations
-        # if there is no project, use this as a light weight project
         self.modelfolder = modelfolder
         self.pcutoff = pcutoff
         self.pseudo_threshold = pseudo_threshold
@@ -89,36 +101,6 @@ class SpatiotemporalAdaptation:
                                         pcutoff = self.pcutoff)
         
         
-    def train_from_existing_project(self,pseudo_label_path):
-        # just a naming convention for the adaptation model
-        vname = str(Path(self.video_path).stem)
-        
-        modelprefix = vname + '_video_adaptation'
-        config_path = os.path.join(self.ref_proj_root, 'config.yaml')
-        
-        if os.path.exists(os.path.join(self.ref_proj_root, 'template-dlc-models')):
-            template_folder = 'template-dlc-models'
-        else:
-            template_folder = 'dlc-models'
-                
-        shutil.copytree(os.path.join(self.ref_proj_root,
-                                     template_folder),
-                        os.path.join(
-                            self.ref_proj_root,
-                            modelprefix,
-                            'dlc-models'
-                        ),
-                        dirs_exist_ok = True
-                        )
-
-        deeplabcut.train_network(config_path,
-                                 saveiters = 1000,
-                                 init_weights = self.init_weights,
-                                 load_pseudo_label = pseudo_label_path,
-                                 pseudo_threshold = self.pseudo_threshold,
-                                 max_snapshots_to_keep = 100,
-                                 modelprefix = modelprefix,
-                                 maxiters = self.adapt_iterations)        
 
     def train_without_project(self, pseudo_label_path):
 
@@ -150,33 +132,12 @@ class SpatiotemporalAdaptation:
         _, pseudo_label_path, _,  _ = deeplabcut.auxiliaryfunctions.load_analyzed_data(
             video_root, vname, DLCscorer, False, '')    
 
-        if self.ref_proj_root == "":
-            self.train_without_project(pseudo_label_path)
-        else:
-            self.train_from_existing_project(pseudo_label_path)
-            
+        self.train_without_project(pseudo_label_path)            
             
     def after_adapt_inference(self):
-
-
-        if self.ref_proj_root !="":
-            ref_proj_config_path = os.path.join(self.ref_proj_root,
-                                                'config.yaml')
-
-
-            deeplabcut.auxiliaryfunctions.read_config(ref_proj_config_path)
-
-            # because the adaptation is not really attached to the dataset, we can't se aux function to get shuffle or something. In this case the model is just saved to the modelprefix so we just use glob to grap it
-
-            pattern = os.path.join(self.ref_proj_root, self.adapt_modelprefix, f'*/*/*/train/snapshot-{self.adapt_iterations}.index')
-
-        else:
-
-            # make it empty
                         
-            pattern = os.path.join(self.modelfolder,  f'*/snapshot-{self.adapt_iterations}.index')
-
-            ref_proj_config_path = ''
+        pattern = os.path.join(self.modelfolder,  f'*/snapshot-{self.adapt_iterations}.index')
+        ref_proj_config_path = ''
                                    
         files = glob.glob(pattern)
         

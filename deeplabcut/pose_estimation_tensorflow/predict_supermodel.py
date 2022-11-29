@@ -405,6 +405,8 @@ def video_inference_superanimal(
                                 [video_path],
                                 videotype = videotype,
                                 init_weights = init_weights,
+                                superanimal_name = 'supertopview',
+                                pcutoff = 0.6
                                 )
 
 
