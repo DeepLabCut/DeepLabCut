@@ -575,6 +575,8 @@ def video_inference_superanimal(
 
     bbox_file: string, default empty
         The path to a json file that contains bounding box
+    customized_test_config: string, default empty
+        Customize the pose config if you want to inference older modelzoo models.
 
     Examples
     -------- 
@@ -594,14 +596,14 @@ def video_inference_superanimal(
                                       invert_color = False,   
                                       bbox_file = bbox_file)
     
-    Note after calling video_inference, a config.yaml is created in your working directory
 
-    config_path = os.path.join(os.getcwd(), 'config.yaml') 
-
-    >>> deeplabcut.create_labeled_video(config_path,
+    Note we make the first parameter empty because we do not need a dlc project in this case
+    >>> deeplabcut.create_labeled_video('',
                                 [video_path],
                                 videotype = videotype,
                                 init_weights = init_weights,
+                                superanimal_name = 'supertopview',
+                                pcutoff = 0.6
                                 )
 
 
