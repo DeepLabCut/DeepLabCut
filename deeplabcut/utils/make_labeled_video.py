@@ -32,7 +32,7 @@ from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa
 from skimage.util import img_as_ubyte
 from tqdm import trange
-
+from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
@@ -368,7 +368,13 @@ def create_labeled_video(
     modelprefix="",
     init_weights = "",
     track_method="",
-    customized_test_config = ""        
+    superanimal_name = "",
+    pcutoff = 0.6,
+    skeleton = [],
+    skeleton_color = "white",
+    dotsize = 8,
+    colormap = "rainbow",
+    alphavalue = 0.5
 ):
     """Labels the bodyparts in a video.
 
@@ -549,18 +555,29 @@ def create_labeled_video(
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
 
-    if customized_test_config != "":
+    if superanimal_name != "":
         import deeplabcut
-        test_cfg = deeplabcut.pose_estimation_tensorflow.config.load_config(customized_test_config)
+
+        dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
+
+        name_dict = {'supertopview': 'supertopview.yaml',
+                     'superquadruped':'superquadruped.yaml'}
+        
+
+        test_cfg = load_config(os.path.join(
+            dlc_root_path,
+            'pose_estimation_tensorflow',
+            'superanimal_configs',
+            name_dict[superanimal_name]
+        ))
+        
         bodyparts = test_cfg['all_joints_names']
-        # WIP. All these should go into input parmeters
-        cfg = {'skeleton': [],
-               'skeleton_color': 'white',
-               'pcutoff' : 0.3,
-               'dotsize' : 8,
-               'alphavalue' : 0.5,
-               'colormap' : 'rainbow'}
-    
+        cfg = {'skeleton': skeleton,
+               'skeleton_color': skeleton_color,
+               'pcutoff' : pcutoff,
+               'dotsize' : dotsize,
+               'alphavalue' : alphavalue,
+               'colormap' : colormap}                   
     else:    
         bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
             cfg, displayedbodyparts
