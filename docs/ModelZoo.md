@@ -50,7 +50,7 @@ failure modes described above, please give us feedbacks and we are rapidly impro
 ### To see the list of available models, check out the [Home page](http://modelzoo.deeplabcut.org/). 
 
 **Coming soon:** The DeepLabCut Project Manager GUI will allow you to use the SuperAnimal Models. You can run the model and do ``active learning" to improve performance on your data. 
-Spefically, we have *new* video adaptation methods to make your tracking extra smooth and robust!
+Specifically, we have *new* video adaptation methods to make your tracking extra smooth and robust!
 
 ### To see our first preprint on the work, check out [our paper](https://arxiv.org/abs/2203.07436v1):
 
