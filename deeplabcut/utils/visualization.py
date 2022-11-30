@@ -17,7 +17,7 @@ from matplotlib.collections import LineCollection
 from skimage import io, color
 from tqdm import trange
 
-from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def get_cmap(n, name="hsv"):
@@ -301,7 +301,7 @@ def make_labeled_images_from_dataframe(
     if not destfolder:
         destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"
-    attempttomakefolder(tmpfolder)
+    auxiliaryfunctions.attempttomakefolder(tmpfolder)
     ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]
