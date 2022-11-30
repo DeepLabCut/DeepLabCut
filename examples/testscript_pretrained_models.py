@@ -9,6 +9,7 @@ import numpy as np
 
 Task = "human_dancing"
 YourName = "teamDLC"
+MODEL_NAME = "horse_sideview" #full_human"
 
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
@@ -29,7 +30,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
     Task,
     YourName,
     video,
-    model="full_human",
+    model=MODEL_NAME,
     videotype="avi",
     analyzevideo=True,
     createlabeledvideo=True,
@@ -37,6 +38,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
 )  # must leave copy_videos=True
 
 
+'''
 lastvalue = 5
 DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
 pretrainedDeeperCutweights = DLC_config["init_weights"]
@@ -169,3 +171,4 @@ DLC_config = deeplabcut.auxiliaryfunctions.edit_config(path_train_config, edits)
 
 # deeplabcut.train_network(configfile,shuffle=1) #>> fails one body part too much!
 deeplabcut.train_network(configfile, shuffle=1, keepdeconvweights=False)
+'''

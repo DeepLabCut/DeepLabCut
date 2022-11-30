@@ -146,7 +146,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.select_video_button.setText("Select videos")
 
     def select_videos(self):
-        cwd = self.root.project_folder()
+        cwd = self.root.project_folder
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
             self,
             "Select video(s) to analyze",

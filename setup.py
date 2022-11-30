@@ -17,7 +17,7 @@ with open("README.md", encoding="utf-8", errors="replace") as fh:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.3rc2",
+    version="2.3rc3",
     author="A. & M. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -57,6 +57,7 @@ setuptools.setup(
         "docs": ["numpydoc"],
         "tf": ["tensorflow>=2.0"],
         "apple_mchips": [],
+        "modelzoo": ["huggingface_hub"],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),

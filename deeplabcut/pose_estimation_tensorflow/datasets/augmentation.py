@@ -92,6 +92,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             else:
                 h, w = batch.images[n].shape[:2]
                 kpts = batch.keypoints[n].to_xy_array()
+                kpts = kpts[~np.isnan(kpts).all(axis=1)]
                 n_kpts = kpts.shape[0]
                 inds = np.arange(n_kpts)
                 if sampling == "density":
