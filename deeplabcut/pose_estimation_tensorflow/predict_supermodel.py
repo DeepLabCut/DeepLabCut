@@ -3,13 +3,14 @@ import os.path
 import pickle
 import time
 from pathlib import Path
-import cv2
+
 import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
 from skimage.util import img_as_ubyte
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import \
     predict as single_predict
@@ -17,7 +18,6 @@ from deeplabcut.pose_estimation_tensorflow.core import \
     predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
-import deeplabcut
 
 
 # instead of having these in a lengthy function, I made this a separate function
@@ -34,13 +34,12 @@ def get_nuances(
     allow_growth=False,
     init_weights="",
     save_frames=False,
-
 ):
 
     # Update number of output and batchsize
     test_cfg["num_outputs"] = 1
 
-    test_cfg['batch_size'] = batchsize
+    test_cfg["batch_size"] = batchsize
 
     if test_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -59,7 +58,7 @@ def get_nuances(
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
-    DLCscorer = 'DLC_' + Path(init_weights).stem
+    DLCscorer = "DLC_" + Path(init_weights).stem
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], test_cfg["all_joints_names"], xyz_labs],
         names=["scorer", "bodyparts", "coords"],
@@ -121,7 +120,9 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
     return pred
 
 
-def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_threshold = 0.997, confidence_threshold = 0.1):
+def _average_multiple_scale_preds(
+    preds, scale_list, num_kpts, cos_dist_threshold=0.997, confidence_threshold=0.1
+):
 
     ret_pred = {}
 
@@ -171,7 +172,10 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
         filter_indices = []
 
         for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if dist[idx] < cos_dist_threshold or ret_pred["confidence"][kpt_id][idx] < confidence_threshold:
+            if (
+                dist[idx] < cos_dist_threshold
+                or ret_pred["confidence"][kpt_id][idx] < confidence_threshold
+            ):
 
                 filter_indices.append(idx)
 
@@ -180,7 +184,7 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
                 ret_pred["coordinates"][0][kpt_id][idx] = np.array([[np.nan, np.nan]])
                 ret_pred["confidence"][kpt_id][idx] = np.array([[np.nan]])
 
-        if len(ret_pred['coordinates'][0][kpt_id]) != 0:
+        if len(ret_pred["coordinates"][0][kpt_id]) != 0:
 
             ret_pred["coordinates"][0][kpt_id] = np.concatenate(
                 ret_pred["coordinates"][0][kpt_id], axis=0
@@ -190,9 +194,9 @@ def _average_multiple_scale_preds(preds, scale_list, num_kpts,  cos_dist_thresho
             )
 
             # need np.array for wrapping the list for evaluation code to work correctly
-            ret_pred["coordinates"][0][kpt_id] = np.array([
-                np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
-            ])
+            ret_pred["coordinates"][0][kpt_id] = np.array(
+                [np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)]
+            )
             ret_pred["confidence"][kpt_id] = np.array(
                 [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
             )
@@ -229,7 +233,7 @@ def video_inference(
     multi_scale_batched_frames = None
     frame_shapes = None
 
-    num_kpts = len(test_cfg['all_joints_names'])
+    num_kpts = len(test_cfg["all_joints_names"])
 
     while cap.video.isOpened():
         # no crop needed
@@ -360,7 +364,7 @@ def video_inference_superanimal(
     allow_growth=False,
     init_weights="",
     save_frames=False,
-    customized_test_config = '',
+    customized_test_config="",
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -440,27 +444,29 @@ def video_inference_superanimal(
 
     """
 
-
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
-    name_dict = {'supertopview': 'supertopview.yaml',
-                 'superquadruped':'superquadruped.yaml'}
+    name_dict = {
+        "supertopview": "supertopview.yaml",
+        "superquadruped": "superquadruped.yaml",
+    }
 
     if customized_test_config == "":
-        test_cfg = load_config(os.path.join(
-            dlc_root_path,
-            'pose_estimation_tensorflow',
-            'superanimal_configs',
-            name_dict[superanimal_name]
-        ))
+        test_cfg = load_config(
+            os.path.join(
+                dlc_root_path,
+                "pose_estimation_tensorflow",
+                "superanimal_configs",
+                name_dict[superanimal_name],
+            )
+        )
     else:
         test_cfg = load_config(customized_test_config)
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
-
-    if init_weights!='':
-        test_cfg['init_weights'] = init_weights
+    if init_weights != "":
+        test_cfg["init_weights"] = init_weights
 
     setting = get_nuances(
         videos,
@@ -477,9 +483,8 @@ def video_inference_superanimal(
         save_frames=save_frames,
     )
 
-    #test_cfg = setting["test_cfg"]
+    # test_cfg = setting["test_cfg"]
     # get dlc root path
-
 
     videos = setting["videos"]
     destfolder = setting["destfolder"]
@@ -487,7 +492,6 @@ def video_inference_superanimal(
     sess = setting["sess"]
     inputs = setting["inputs"]
     outputs = setting["outputs"]
-
 
     for video in videos:
 
@@ -598,19 +602,17 @@ def video_inference_superanimal(
 
             scorer = DLCscorer
 
-
             keypoint_names = test_cfg["all_joints_names"]
 
             product = [[scorer], keypoint_names, xyz_labs]
-            names = ['scorer', 'bodyparts', 'coords']
+            names = ["scorer", "bodyparts", "coords"]
 
-            columnindex = pd.MultiIndex.from_product(product,names = names)
-            imagenames = [k for k in  PredicteData.keys() if k !='metadata']
+            columnindex = pd.MultiIndex.from_product(product, names=names)
+            imagenames = [k for k in PredicteData.keys() if k != "metadata"]
 
             data = np.zeros((len(imagenames), len(columnindex))) * np.nan
 
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
-
 
             for imagename in imagenames:
 
@@ -625,8 +627,10 @@ def video_inference_superanimal(
                 for kpt_id, kpt_name in enumerate(keypoint_names):
 
                     confidence = PredicteData[imagename]["confidence"]
-                    df.loc[imagename][scorer,  kpt_name, 'x'] = keypoints[kpt_id][0][0]
-                    df.loc[imagename][scorer,  kpt_name, 'y'] = keypoints[kpt_id][0][1]
-                    df.loc[imagename][scorer,  kpt_name, 'likelihood'] = confidence[kpt_id]
+                    df.loc[imagename][scorer, kpt_name, "x"] = keypoints[kpt_id][0][0]
+                    df.loc[imagename][scorer, kpt_name, "y"] = keypoints[kpt_id][0][1]
+                    df.loc[imagename][scorer, kpt_name, "likelihood"] = confidence[
+                        kpt_id
+                    ]
 
             df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
