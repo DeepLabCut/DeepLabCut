@@ -95,9 +95,4 @@ deeplabcut.video_inference_superanimal(
     videotype='avi',
     init_weights = pretrainedDeeperCutweights,
     scale_list = scale_list,
-    save_frames = False)
-
-
-
-
-
+)
