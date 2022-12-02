@@ -177,7 +177,7 @@ def _average_multiple_scale_preds(
     return ret_pred
 
 
-def video_inference(
+def _video_inference(
     test_cfg,
     sess,
     inputs,
@@ -500,7 +500,7 @@ def video_inference_superanimal(
 
             # extra data
             print("before inference")
-            PredicteData, nframes = video_inference(
+            PredicteData, nframes = _video_inference(
                 test_cfg,
                 sess,
                 inputs,
