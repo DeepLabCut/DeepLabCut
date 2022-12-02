@@ -441,7 +441,7 @@ def video_inference_superanimal(
     """
 
 
-    dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
+    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     name_dict = {'supertopview': 'supertopview.yaml',
                  'superquadruped':'superquadruped.yaml'}
@@ -493,15 +493,6 @@ def video_inference_superanimal(
 
         vname = Path(video).stem
 
-        if len(scale_list) == 0:
-
-            # if the scale_list is empty, by default we use the original one
-            vid = cv2.VideoCapture(video)
-            h, w = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
-                vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-            )
-            scale_list = [h]
-
         videofolder = str(Path(video).parents[0])
         if destfolder is None:
             destfolder = videofolder
@@ -514,6 +505,9 @@ def video_inference_superanimal(
         else:
             print("Loading ", video)
             vid = VideoWriter(video)
+            if len(scale_list) == 0:
+                # if the scale_list is empty, by default we use the original one
+                scale_list = [vid.height]
             # need a separate writer for writing frames
             # otherwise it interrupts the prediction
             writer = VideoWriter(video)
