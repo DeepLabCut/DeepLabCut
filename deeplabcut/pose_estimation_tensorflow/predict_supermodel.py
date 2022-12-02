@@ -24,52 +24,26 @@ from deeplabcut.utils.auxfun_videos import VideoWriter
 def get_nuances(
     videos,
     test_cfg,
-    superanimal_name,
     videotype="avi",
     destfolder=None,
     batchsize=None,
-    TFGPUinference=True,
-    modelprefix="",
-    robust_nframes=False,
     allow_growth=False,
     init_weights="",
     save_frames=False,
 ):
-
-    # Update number of output and batchsize
     test_cfg["num_outputs"] = 1
-
     test_cfg["batch_size"] = batchsize
-
-    if test_cfg["num_outputs"] > 1:
-        if TFGPUinference:
-            print(
-                "Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently."
-            )
-            TFGPUinference = False
-        print("Extracting ", test_cfg["num_outputs"], "instances per bodypart")
-        xyz_labs_orig = ["x", "y", "likelihood"]
-        suffix = [str(s + 1) for s in range(test_cfg["num_outputs"])]
-        suffix[0] = ""  # first one has empty suffix for backwards compatibility
-        xyz_labs = [x + s for s in suffix for x in xyz_labs_orig]
-    else:
-        xyz_labs = ["x", "y", "likelihood"]
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
     DLCscorer = "DLC_" + Path(init_weights).stem
-    pdindex = pd.MultiIndex.from_product(
-        [[DLCscorer], test_cfg["all_joints_names"], xyz_labs],
-        names=["scorer", "bodyparts", "coords"],
-    )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
-    ret = {}
 
+    ret = {}
     ret["videos"] = Videos
     ret["DLCscorer"] = DLCscorer
-
     ret["test_cfg"] = test_cfg
     ret["sess"] = sess
     ret["inputs"] = inputs
@@ -77,7 +51,6 @@ def get_nuances(
     ret["destfolder"] = destfolder
     ret["save_frames"] = save_frames
     ret["init_weights"] = init_weights
-
     return ret
 
 
@@ -471,20 +444,13 @@ def video_inference_superanimal(
     setting = get_nuances(
         videos,
         test_cfg,
-        superanimal_name,
         videotype=videotype,
         destfolder=destfolder,
         batchsize=batchsize,
-        TFGPUinference=TFGPUinference,
-        modelprefix=modelprefix,
-        robust_nframes=robust_nframes,
         allow_growth=allow_growth,
         init_weights=init_weights,
         save_frames=save_frames,
     )
-
-    # test_cfg = setting["test_cfg"]
-    # get dlc root path
 
     videos = setting["videos"]
     destfolder = setting["destfolder"]
