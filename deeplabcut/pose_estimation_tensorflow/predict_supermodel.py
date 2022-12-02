@@ -29,7 +29,6 @@ def get_nuances(
     batchsize=None,
     allow_growth=False,
     init_weights="",
-    save_frames=False,
 ):
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
@@ -49,7 +48,6 @@ def get_nuances(
     ret["inputs"] = inputs
     ret["outputs"] = outputs
     ret["destfolder"] = destfolder
-    ret["save_frames"] = save_frames
     ret["init_weights"] = init_weights
     return ret
 
@@ -331,12 +329,9 @@ def video_inference_superanimal(
     videotype="avi",
     destfolder=None,
     batchsize=1,
-    TFGPUinference=True,
-    modelprefix="",
     robust_nframes=False,
     allow_growth=False,
     init_weights="",
-    save_frames=False,
     customized_test_config="",
 ):
     """
@@ -355,6 +350,7 @@ def video_inference_superanimal(
 
     superanimal_name: str
         The name of the superanimal model. We currently only support supertopview and superquadruped
+
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
@@ -380,9 +376,6 @@ def video_inference_superanimal(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
-
-    save_frames: bool, default false.
-        If video adaptation is needed later, this flag should be set as True
 
     init_weights: string, default empty
         The path to the tensorflow checkpoint of the super model. Make sure you don't include the suffix of the snapshot file.
@@ -449,7 +442,6 @@ def video_inference_superanimal(
         batchsize=batchsize,
         allow_growth=allow_growth,
         init_weights=init_weights,
-        save_frames=save_frames,
     )
 
     videos = setting["videos"]
@@ -478,9 +470,6 @@ def video_inference_superanimal(
             if len(scale_list) == 0:
                 # if the scale_list is empty, by default we use the original one
                 scale_list = [vid.height]
-            # need a separate writer for writing frames
-            # otherwise it interrupts the prediction
-            writer = VideoWriter(video)
             if robust_nframes:
                 nframes = vid.get_n_frames(robust=True)
                 duration = vid.calc_duration(robust=True)
@@ -489,20 +478,6 @@ def video_inference_superanimal(
                 nframes = len(vid)
                 duration = vid.calc_duration(robust=False)
                 fps = vid.fps
-
-            if save_frames:
-                if not os.path.exists(os.path.join(videofolder, vname)):
-                    auxiliaryfunctions.attempttomakefolder(
-                        os.path.join(videofolder, vname)
-                    )
-
-                    for n in range(nframes):
-                        print(f"Writing frame {n + 1}|{nframes}")
-                        frame = writer.read_frame()
-                        writer.write_frame(
-                            frame, os.path.join(videofolder, vname, f"frame_{n}.png")
-                        )
-                    writer.close()
 
             nx, ny = vid.dimensions
             print(
