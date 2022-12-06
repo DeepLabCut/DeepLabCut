@@ -217,7 +217,7 @@ class CreateVideos(DefaultTab):
         ):
             bodyparts = self.bodyparts_to_use
 
-        deeplabcut.create_labeled_video(
+        videos_created = deeplabcut.create_labeled_video(
             config=config,
             videos=videos,
             shuffle=shuffle,
@@ -228,7 +228,16 @@ class CreateVideos(DefaultTab):
             trailpoints=trailpoints,
             color_by=color_by,
         )
-        self.root.writer.write("Labeled videos created.")
+        if all(videos_created):
+            self.root.writer.write("Labeled videos created.")
+        else:
+            failed_videos = [
+                video for success, video in zip(videos_created, videos) if not success
+            ]
+            failed_videos_str = (
+                failed_videos[0] if len(failed_videos) == 1 else ", ".join(failed_videos)
+            )
+            self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
         if self.plot_trajectories.checkState():
             deeplabcut.plot_trajectories(

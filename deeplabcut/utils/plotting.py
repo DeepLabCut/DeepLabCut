@@ -274,7 +274,7 @@ def plot_trajectories(
         )
         return
 
-    failed = []
+    failures, multianimal_errors = [], []
     for video in Videos:
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
@@ -287,7 +287,6 @@ def plot_trajectories(
             df, _, _, suffix = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, filtered, track_method
             )
-            failed.append(False)
             tmpfolder = os.path.join(videofolder, "plot-poses", vname)
             auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
             # Keep only the individuals and bodyparts that were labeled
@@ -315,32 +314,39 @@ def plot_trajectories(
                     linewidth=linewidth,
                 )
         except FileNotFoundError as e:
-            failed.append(True)
             print(e)
-            try:
-                _ = auxiliaryfunctions.load_detection_data(
-                    video, DLCscorer, track_method
-                )
-                print(
-                    'Call "deeplabcut.stitch_tracklets()"'
-                    " prior to plotting the trajectories."
-                )
-            except FileNotFoundError as e:
-                print(e)
-                print(
-                    f"Make sure {video} was previously analyzed, and that "
-                    f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
-                    f'and "deeplabcut.stitch_tracklets()".'
-                )
+            failures.append(video)
+            if track_method != "":
+                # In a multi animal scenario, show more verbose errors.
+                try:
+                    _ = auxiliaryfunctions.load_detection_data(
+                        video, DLCscorer, track_method
+                    )
+                    error_message = 'Call "deeplabcut.stitch_tracklets() prior to plotting the trajectories.'
+                except FileNotFoundError as e:
+                    print(e)
+                    error_message = (
+                        f"Make sure {video} was previously analyzed, and that "
+                        "detections were successively converted to tracklets using "
+                        '"deeplabcut.convert_detections2tracklets()" and "deeplabcut.stitch_tracklets()".'
+                    )
+                multianimal_errors.append(error_message)
 
-    if not all(failed):
+    if len(failures) > 0:
+        # Some vidoes were not evaluated.
+        failed_videos = failures[0] if len(failures) == 0 else ",".join(failures)
+        if len(multianimal_errors) > 0:
+            verbose_error = ": " + " ".join(multianimal_errors)
+        else:
+            verbose_error = "."
         print(
-            'Plots created! Please check the directory "plot-poses" within the video directory'
+            f"Plots could not be created for {failed_videos}. "
+            f"Videos were not evaluated with the current scorer {DLCscorer}"
+            + verbose_error
         )
     else:
         print(
-            f"Plots could not be created! "
-            f"Videos were not evaluated with the current scorer {DLCscorer}."
+            'Plots created! Please check the directory "plot-poses" within the video directory'
         )
 
 

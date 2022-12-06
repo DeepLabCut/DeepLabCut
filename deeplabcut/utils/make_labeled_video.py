@@ -474,7 +474,8 @@ def create_labeled_video(
 
     Returns
     -------
-    None
+        results : list[bool]
+        ``True`` if the video is successfully created for each item in ``videos``.
 
     Examples
     --------
@@ -549,7 +550,7 @@ def create_labeled_video(
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     if not Videos:
-        return
+        return []
 
     func = partial(
         proc_video,
@@ -577,9 +578,10 @@ def create_labeled_video(
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
-        pool.map(func, Videos)
+        results = pool.map(func, Videos)
 
     os.chdir(start_path)
+    return results
 
 
 def proc_video(
@@ -612,6 +614,10 @@ def proc_video(
     ----------
 
 
+    Returns
+    -------
+        result : bool
+        ``True`` if a video is successfully created.
     """
     videofolder = Path(video).parents[0]
     if destfolder is None:
@@ -632,6 +638,7 @@ def proc_video(
 
     if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
         print("Labeled video {} already created.".format(vname))
+        return True
     else:
         print("Loading {} and data.".format(video))
         try:
@@ -735,9 +742,11 @@ def proc_video(
                     trailpoints=trailpoints,
                     fps=outputframerate,
                 )
+            return True
 
         except FileNotFoundError as e:
             print(e)
+            return False
 
 
 def _create_labeled_video(
