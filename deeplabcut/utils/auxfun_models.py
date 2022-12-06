@@ -148,9 +148,8 @@ def download_hugginface_model(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project from Hugging Face
     """
-    from huggingface_hub import hf_hub_download
     import tarfile
-    from tqdm import tqdm
+    from huggingface_hub import hf_hub_download
 
     def tarfilenamecutting(tarf):
         """' auxfun to extract folder path
@@ -186,18 +185,19 @@ def download_hugginface_model(modelname, target_dir):
         #creates a new subfolder as indicated below, unzipping from there and deleting this folder
 
         # Hack to get hf path ...
-        hf_path = 'models--'+url[0]+'--'+url[1]+'/snapshots/'+str(neturls[modelname+"_commit"])+'/'+targzfn
-
-
-
-        filename = os.path.join(target_dir,hf_path)
-
+        hf_folder = 'models--'+url[0]+'--'+url[1]
+        filename = os.path.join(
+            target_dir, hf_folder, "snapshots", str(neturls[modelname+"_commit"]), targzfn,
+        )
         with tarfile.open(filename, mode="r:gz") as tar:
             tar.extractall(target_dir, members=tarfilenamecutting(tar))
 
-        #print('removing hf dir')
+        # Move the weights to target_dir and clean the remaining temporary folders
         import shutil
-        shutil.rmtree(Path(os.path.join(target_dir,'models--'+url[0]+'--'+url[1])))
+        weights_folder = os.path.join(target_dir, targzfn.replace(".tar.gz", ""))
+        shutil.copytree(weights_folder, target_dir, dirs_exist_ok=True)
+        shutil.rmtree(os.path.join(target_dir, hf_folder))
+        shutil.rmtree(weights_folder)
 
     else:
         models = [
