@@ -186,8 +186,9 @@ def download_hugginface_model(modelname, target_dir):
 
         # Hack to get hf path ...
         hf_folder = 'models--'+url[0]+'--'+url[1]
-        hf_path = hf_folder +'/snapshots/'+str(neturls[modelname+"_commit"])+'/'+targzfn
-        filename = os.path.join(target_dir, hf_path)
+        filename = os.path.join(
+            target_dir, hf_folder, "snapshots", str(neturls[modelname+"_commit"]), targzfn,
+        )
         with tarfile.open(filename, mode="r:gz") as tar:
             tar.extractall(target_dir, members=tarfilenamecutting(tar))
 
