@@ -207,7 +207,14 @@ class CreateVideos(DefaultTab):
         shuffle = self.root.shuffle_value
         videos = self.files
         trailpoints = self.trail_points.value()
-        color_by = self.color_by_widget.currentText()
+        if hasattr(self, "color_by_widget"):
+            # Multianimal scenario.
+            # Color is based on individual or bodypart.
+            color_by = self.color_by_widget.currentText()
+        else:
+            # Single animal scenario.
+            # Color is based on bodypart.
+            color_by = "bodypart"
         filtered = bool(self.use_filtered_data_checkbox.checkState())
 
         bodyparts = "all"
@@ -240,6 +247,6 @@ class CreateVideos(DefaultTab):
             )
 
     def build_skeleton(self, *args):
-        from widgets import SkeletonBuilder
+        from deeplabcut.gui.widgets import SkeletonBuilder
 
         SkeletonBuilder(self.root.config)
