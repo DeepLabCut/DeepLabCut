@@ -57,8 +57,8 @@ class SpatiotemporalAdaptation:
 
         adapter.before_adapt_inference()
         adapter.adaptation_training()
-        adapter.after_adapt_inference()
-
+        adapter.after_adapt_inference()    
+        
 
         """
         supermodels = parse_available_supermodels()
@@ -89,14 +89,31 @@ class SpatiotemporalAdaptation:
                 supermodels[self.supermodel_name],
             )
 
-    def before_adapt_inference(self, **kwargs):
-        self.init_weights = deeplabcut.video_inference_superanimal(
-            [self.video_path],
-            self.supermodel_name,
-            videotype=self.videotype,
-            scale_list=self.scale_list,
-            customized_test_config=self.customized_pose_config,
-        )
+        if customized_pose_config != "":
+        # if it's an old modelzoo model, this is also required
+            self.customized_pose_config = customized_pose_config 
+
+        
+    def before_adapt_inference(self):
+
+        # save frames have to be on 
+        deeplabcut.video_inference_superanimal([self.video_path],
+                                               self.supermodel_name,
+                                               videotype = self.videotype,
+                                               scale_list = self.scale_list,
+                                               init_weights = self.init_weights,
+                                               customized_test_config = self.customized_pose_config)
+
+
+        deeplabcut.create_labeled_video('',
+                                        [self.video_path],
+                                        videotype = self.videotype,
+                                        filtered = False,
+                                        init_weights = self.init_weights,
+                                        draw_skeleton = True,
+                                        superanimal_name = self.supermodel_name,
+                                        pcutoff = self.pcutoff)
+            
 
         deeplabcut.create_labeled_video(
             "",
@@ -113,20 +130,18 @@ class SpatiotemporalAdaptation:
     def train_without_project(self, pseudo_label_path):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
-        print("self.customized_pose_config", self.customized_pose_config)
-        print ('init_weights', self.init_weights)
-        train(
-            self.customized_pose_config,
-            500,  # displayiters
-            1000,  # saveiters,
-            self.adapt_iterations,  # maxiters
-            modelfolder=self.modelfolder,
-            init_weights=self.init_weights,
-            pseudo_labels=pseudo_label_path,
-            video_path=self.video_path,
-            pseudo_threshold=self.pseudo_threshold,
-        )
-
+        print ('self.customized_pose_config', self.customized_pose_config)
+        
+        train(self.customized_pose_config,
+              500, # displayiters
+              1000, # saveiters,
+              self.adapt_iterations, # maxiters
+              modelfolder = self.modelfolder,
+              init_weights = self.init_weights,
+              load_pseudo_label = pseudo_label_path,
+              video_path = self.video_path,
+              pseudo_threshold = 0.3)        
+        
     def adaptation_training(self):
         """
         There should be two choices, either taking a config, with is then assuming there is a DLC project.

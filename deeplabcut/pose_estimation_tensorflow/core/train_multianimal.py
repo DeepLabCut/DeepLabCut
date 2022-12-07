@@ -38,11 +38,11 @@ def train(
     max_to_keep=5,
     keepdeconvweights=True,
     allow_growth=True,
-    pseudo_labels="",
-    init_weights="",
-    pseudo_threshold=0,
-    modelfolder="",
-    video_path="",
+    load_pseudo_label = None,
+    init_weights = '',
+    pseudo_threshold = 0,
+    modelfolder = "",
+    video_path = ''
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -59,12 +59,12 @@ def train(
 
     cfg = load_config(config_yaml)
 
-    cfg["pseudo_threshold"] = pseudo_threshold
-    cfg["video_path"] = video_path
-
-    if modelfolder != "":
-        cfg["log_dir"] = modelfolder
-        cfg["project_path"] = modelfolder
+    cfg['pseudo_threshold'] = pseudo_threshold
+    cfg['video_path'] = video_path
+    
+    if modelfolder !="":
+        cfg['log_dir'] = modelfolder
+        cfg['project_path'] = modelfolder
         # have to overwrite this
         cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
 

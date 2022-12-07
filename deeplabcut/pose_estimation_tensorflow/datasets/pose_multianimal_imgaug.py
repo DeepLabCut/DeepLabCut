@@ -27,6 +27,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
+from pathlib import Path
 from math import sqrt
 
 
@@ -329,7 +330,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         batch_joints = []
         joint_ids = []
         inds_visible = []
-        data_items = []
+        data_items = []        
         img_idx = np.random.choice(num_images, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
@@ -339,7 +340,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
             logging.debug("image %s", im_file)
             self.vid.set_to_frame(img_idx[i])
             image = self.vid.read_frame()
-
             if self.has_gt:
                 Joints = data_item.joints
                 kpts = np.zeros((self._n_kpts * self._n_animals, 2))
