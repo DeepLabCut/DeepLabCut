@@ -25,6 +25,7 @@ parts:
   - file: docs/deeplabcutlive
 - caption: DeepLabCut Model Zoo
   chapters:
+  - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
 - caption: DeepLabCut Benchmark
