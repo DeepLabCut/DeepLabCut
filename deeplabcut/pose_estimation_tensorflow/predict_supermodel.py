@@ -540,38 +540,25 @@ def video_inference_superanimal(
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             xyz_labs = ["x", "y", "likelihood"]
-
             scorer = DLCscorer
-
             keypoint_names = test_cfg["all_joints_names"]
-
             product = [[scorer], keypoint_names, xyz_labs]
             names = ["scorer", "bodyparts", "coords"]
-
             columnindex = pd.MultiIndex.from_product(product, names=names)
+
             imagenames = [k for k in PredicteData.keys() if k != "metadata"]
 
-            data = np.zeros((len(imagenames), len(columnindex))) * np.nan
-
+            data = np.full((len(imagenames), len(columnindex)), np.nan)
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
-
             for imagename in imagenames:
-
-                if PredicteData[imagename] == [] or (PredicteData[imagename] == [[]]):
-
-                    for kpt_id, kpt_name in enumerate(keypoint_names):
-                        df.loc[imagename][scorer, kpt_name, "x"] = np.nan
-                        df.loc[imagename][scorer, kpt_name, "y"] = np.nan
-                        df.loc[imagename][scorer, kpt_name, "likelihood"] = 0
-                    continue
-                keypoints = PredicteData[imagename]["coordinates"][0]
-                for kpt_id, kpt_name in enumerate(keypoint_names):
-
+                if PredicteData[imagename] == [] or PredicteData[imagename] == [[]]:
+                    df.loc[imagename, pd.IndexSlice[scorer, keypoint_names, "likelihood"]] = 0
+                else:
+                    keypoints = PredicteData[imagename]["coordinates"][0]
                     confidence = PredicteData[imagename]["confidence"]
-                    df.loc[imagename][scorer, kpt_name, "x"] = keypoints[kpt_id][0][0]
-                    df.loc[imagename][scorer, kpt_name, "y"] = keypoints[kpt_id][0][1]
-                    df.loc[imagename][scorer, kpt_name, "likelihood"] = confidence[
-                        kpt_id
-                    ]
-
+                    temp = np.full((len(keypoints), 3), np.nan)
+                    for n, (xy, c) in enumerate(zip(keypoints, confidence)):
+                        temp[n, :2] = xy[0]
+                        temp[n, 2] = c[0]
+                    df.loc[imagename, pd.IndexSlice[scorer, keypoint_names]] = temp.flatten()
             df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
