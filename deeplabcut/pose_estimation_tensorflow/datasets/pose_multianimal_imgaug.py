@@ -24,7 +24,9 @@ from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDat
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
+from pathlib import Path
 from math import sqrt
 
 
@@ -54,6 +56,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
+        if cfg.get('pseudo_label', False):
+            if cfg['pseudo_label'].endswith('.h5'):
+                assert cfg['video_path']
+                print ('loading video for image source', cfg['video_path'])
+                self.vid = VideoReader(cfg['video_path'])
 
     @property
     def default_size(self):
@@ -316,6 +323,44 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         return pipeline
 
+
+    def get_batch_from_video(self):
+        num_images = len(self.vid)
+        size = self.batch_size
+        batch_images = []
+        batch_joints = []
+        joint_ids = []
+        inds_visible = []
+        data_items = []        
+        img_idx = np.random.choice(num_images, size=self.batch_size, replace=True)
+        for i in range(self.batch_size):
+            data_item = self.data[img_idx[i]]
+            data_items.append(data_item)
+            im_file = data_item.im_path
+
+            logging.debug("image %s", im_file)
+            self.vid.set_to_frame(img_idx[i])
+            image = self.vid.read_frame()
+             
+            if self.has_gt:
+                Joints = data_item.joints
+                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                for j in range(self._n_animals):
+                    for n, x, y in Joints.get(j, []):
+                        kpts[j * self._n_kpts + int(n)] = x, y
+                joint_id = [
+                    Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
+                ]
+                joint_ids.append(joint_id)
+                batch_joints.append(kpts)
+                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
+
+            batch_images.append(image)
+
+        return batch_images, joint_ids, batch_joints, inds_visible, data_items
+        
+
+        
     def get_batch(self):
         img_idx = np.random.choice(self.num_images, size=self.batch_size, replace=True)
         batch_images = []
@@ -414,7 +459,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch()
+            if self.vid:
+                batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch_from_video()
+            else:                    
+                batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()

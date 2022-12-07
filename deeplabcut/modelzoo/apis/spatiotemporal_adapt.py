@@ -45,6 +45,25 @@ class SpatiotemporalAdaptation:
         pseudo_threshold: float, optional
            predictions that are under this threshold won't be used for video adaptation. Setting it higher reduces the false positive but might cause removal of true positive
 
+        Examples
+        --------
+
+        from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation    
+        video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
+        init_weights = '/mnt/md0/shaokai/DLC-ModelZoo/ma_supertopview/dlc-models/iteration-0/ma_supertopviewMarch30-trainset95shuffle1/train/snapshot-200000'
+        
+        videotype = 'mp4'
+        >>> adapter = SpatiotemporalAdaptation(video_path,
+                                       init_weights,
+                                       'supertopview',
+                                       modelfolder = "temp_topview",                                       
+                                       videotype = videotype)
+
+        adapter.before_adapt_inference()
+        adapter.adaptation_training()
+        adapter.after_adapt_inference()    
+        
+
         """
         assert supermodel_name in ['superquadruped', 'supertopview']
         self.video_path = video_path
@@ -85,7 +104,6 @@ class SpatiotemporalAdaptation:
         deeplabcut.video_inference_superanimal([self.video_path],
                                                self.supermodel_name,
                                                videotype = self.videotype,
-                                               save_frames = True,
                                                scale_list = self.scale_list,
                                                init_weights = self.init_weights,
                                                customized_test_config = self.customized_pose_config)
@@ -115,6 +133,7 @@ class SpatiotemporalAdaptation:
               modelfolder = self.modelfolder,
               init_weights = self.init_weights,
               load_pseudo_label = pseudo_label_path,
+              video_path = self.video_path,
               pseudo_threshold = 0.3)
         
         

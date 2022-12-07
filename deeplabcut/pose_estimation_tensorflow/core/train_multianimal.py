@@ -42,7 +42,8 @@ def train(
     load_pseudo_label = None,
     init_weights = '',
     pseudo_threshold = 0,
-    modelfolder = ""        
+    modelfolder = "",
+    video_path = ''
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -60,9 +61,9 @@ def train(
 
     cfg = load_config(config_yaml)
 
-
     cfg['pseudo_threshold'] = pseudo_threshold
-
+    cfg['video_path'] = video_path
+    
     if modelfolder !="":
         cfg['log_dir'] = modelfolder
         cfg['project_path'] = modelfolder
