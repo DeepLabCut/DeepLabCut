@@ -234,9 +234,7 @@ class CreateVideos(DefaultTab):
             failed_videos = [
                 video for success, video in zip(videos_created, videos) if not success
             ]
-            failed_videos_str = (
-                failed_videos[0] if len(failed_videos) == 1 else ", ".join(failed_videos)
-            )
+            failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
         if self.plot_trajectories.checkState():
