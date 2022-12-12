@@ -169,7 +169,8 @@ class SpatiotemporalAdaptation:
 
         files = glob.glob(pattern)
 
-        assert len(files) > 0
+        if not len(files):
+            raise ValueError("Weights were not found.")
 
         adapt_weights = files[0].replace(".index", "")
 
