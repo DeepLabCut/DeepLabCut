@@ -67,7 +67,8 @@ class SpatiotemporalAdaptation:
 
 
         """
-        assert supermodel_name in ["superquadruped", "supertopview"]
+        if supermodel_name not in ["superquadruped", "supertopview"]:
+            raise ValueError("`supermodel_name` should be either 'superquadruped' or 'supertopview'")
         self.video_path = video_path
         self.init_weights = init_weights
         self.supermodel_name = supermodel_name
