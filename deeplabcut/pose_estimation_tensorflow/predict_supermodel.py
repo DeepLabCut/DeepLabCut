@@ -545,20 +545,20 @@ def video_inference_superanimal(
             product = [[scorer], keypoint_names, xyz_labs]
             names = ["scorer", "bodyparts", "coords"]
             columnindex = pd.MultiIndex.from_product(product, names=names)
-
             imagenames = [k for k in PredicteData.keys() if k != "metadata"]
 
             data = np.full((len(imagenames), len(columnindex)), np.nan)
-            df = pd.DataFrame(data, columns=columnindex, index=imagenames)
-            for imagename in imagenames:
-                if PredicteData[imagename] == [] or PredicteData[imagename] == [[]]:
-                    df.loc[imagename, pd.IndexSlice[scorer, keypoint_names, "likelihood"]] = 0
+            for i, imagename in enumerate(imagenames):
+                dict_ = PredicteData[imagename]
+                if dict_ == [] or dict_ == [[]]:
+                    data[i, 2::3] = 0
                 else:
-                    keypoints = PredicteData[imagename]["coordinates"][0]
-                    confidence = PredicteData[imagename]["confidence"]
+                    keypoints = dict_["coordinates"][0]
+                    confidence = dict_["confidence"]
                     temp = np.full((len(keypoints), 3), np.nan)
                     for n, (xy, c) in enumerate(zip(keypoints, confidence)):
                         temp[n, :2] = xy[0]
                         temp[n, 2] = c[0]
-                    df.loc[imagename, pd.IndexSlice[scorer, keypoint_names]] = temp.flatten()
-            df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
+                    data[i] = temp.flatten()
+            df = pd.DataFrame(data, columns=columnindex, index=imagenames)
+            df.to_hdf(dataname, key="df_with_missing")
