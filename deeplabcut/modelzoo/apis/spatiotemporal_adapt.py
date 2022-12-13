@@ -79,6 +79,7 @@ class SpatiotemporalAdaptation:
         self.adapt_modelprefix = vname + "_video_adaptation"
         self.adapt_iterations = adapt_iterations
         self.modelfolder = modelfolder
+        self.customized_pose_config = customized_pose_config
         self.pcutoff = pcutoff
         self.pseudo_threshold = pseudo_threshold
 
@@ -94,13 +95,7 @@ class SpatiotemporalAdaptation:
                 supermodels[self.supermodel_name],
             )
 
-        if customized_pose_config != "":
-            # if it's an old modelzoo model, this is also required
-            self.customized_pose_config = customized_pose_config
-
     def before_adapt_inference(self):
-
-        # save frames have to be on
         deeplabcut.video_inference_superanimal(
             [self.video_path],
             self.supermodel_name,
@@ -122,7 +117,6 @@ class SpatiotemporalAdaptation:
         )
 
     def train_without_project(self, pseudo_label_path):
-
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
         print("self.customized_pose_config", self.customized_pose_config)
