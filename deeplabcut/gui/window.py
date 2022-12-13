@@ -461,6 +461,9 @@ class MainWindow(QMainWindow):
         self.refine_tracklets = RefineTracklets(
             root=self, parent=None, h1_description="DeepLabCut - Refine labels"
         )
+        self.modelzoo = ModelZoo(
+            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
+        )
         self.video_editor = VideoEditor(
             root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
         )
@@ -480,6 +483,7 @@ class MainWindow(QMainWindow):
             self.extract_outlier_frames, "Extract outlier frames (*)"
         )
         self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
+        self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:

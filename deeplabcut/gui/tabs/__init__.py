@@ -7,6 +7,7 @@ from deeplabcut.gui.tabs.extract_frames import ExtractFrames
 from deeplabcut.gui.tabs.extract_outlier_frames import ExtractOutlierFrames
 from deeplabcut.gui.tabs.label_frames import LabelFrames
 from deeplabcut.gui.tabs.manage_project import ManageProject
+from deeplabcut.gui.tabs.modelzoo import ModelZoo
 from deeplabcut.gui.tabs.open_project import OpenProject
 from deeplabcut.gui.tabs.refine_tracklets import RefineTracklets
 from deeplabcut.gui.tabs.train_network import TrainNetwork
