@@ -1,8 +1,6 @@
 import deeplabcut
 import os
-import sys
 from pathlib import Path
-import shutil
 import glob
 
 
