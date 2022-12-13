@@ -148,7 +148,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sparse_joints = []
 
             for coord in joints:
-                if coord[1] != 0 and coord[3] > 0:
+                if coord[1] != 0 and coord[3] > threshold:
                     sparse_joints.append(coord[:3])
 
             temp = np.array(sparse_joints)
