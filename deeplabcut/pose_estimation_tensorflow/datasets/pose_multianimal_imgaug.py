@@ -54,11 +54,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
-        if cfg.get("pseudo_label", False):
-            if cfg["pseudo_label"].endswith(".h5"):
-                assert cfg["video_path"]
-                print("loading video for image source", cfg["video_path"])
-                self.vid = VideoReader(cfg["video_path"])
+        if cfg.get("pseudo_label", "").endswith(".h5"):
+            assert cfg["video_path"]
+            print("loading video for image source", cfg["video_path"])
+            self.vid = VideoReader(cfg["video_path"])
+        else:
+            self.vid = None
 
     @property
     def default_size(self):
