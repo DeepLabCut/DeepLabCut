@@ -1,10 +1,10 @@
 import json
 import os
-from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def parse_available_supermodels():
-    dlc_path = get_deeplabcut_path()
+    dlc_path = auxiliaryfunctions.get_deeplabcut_path()
     json_path = os.path.join(
         dlc_path, "modelzoo", "models.json"
     )
