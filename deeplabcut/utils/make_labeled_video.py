@@ -32,6 +32,7 @@ from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa
 from skimage.util import img_as_ubyte
 from tqdm import trange
+from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import (
@@ -537,11 +538,11 @@ def create_labeled_video(
         pass
     else:
         cfg = auxiliaryfunctions.read_config(config)
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]        
+        trainFraction = cfg["TrainingFraction"][trainingsetindex]
     if track_method != "":
         # will otherwise always return ellipse
         track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
-    
+
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
@@ -549,7 +550,7 @@ def create_labeled_video(
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
         DLCscorer = 'DLC_' + Path(init_weights).stem
-        DLCscorerlegacy = 'DLC_' + Path(init_weights).stem            
+        DLCscorerlegacy = 'DLC_' + Path(init_weights).stem
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
@@ -560,29 +561,26 @@ def create_labeled_video(
 
         dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
 
-        name_dict = {'supertopview': 'supertopview.yaml',
-                     'superquadruped':'superquadruped.yaml'}
-        
-
+        supermodels = parse_available_supermodels()
         test_cfg = load_config(os.path.join(
             dlc_root_path,
             'pose_estimation_tensorflow',
             'superanimal_configs',
-            name_dict[superanimal_name]
+            supermodels[superanimal_name]
         ))
-        
+
         bodyparts = test_cfg['all_joints_names']
         cfg = {'skeleton': skeleton,
                'skeleton_color': skeleton_color,
                'pcutoff' : pcutoff,
                'dotsize' : dotsize,
                'alphavalue' : alphavalue,
-               'colormap' : colormap}                   
-    else:    
+               'colormap' : colormap}
+    else:
         bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
             cfg, displayedbodyparts
         )
-        
+
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
@@ -676,9 +674,8 @@ def proc_video(
 
     if init_weights!="":
         DLCscorer = 'DLC_' + Path(init_weights).stem
-        DLCscorerlegacy = 'DLC_' + Path(init_weights).stem        
+        DLCscorerlegacy = 'DLC_' + Path(init_weights).stem
 
-    
     if filtered:
         videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
@@ -707,7 +704,7 @@ def proc_video(
                 return
 
             if all(individuals):
-                df = df.loc(axis=1)[:, individuals]            
+                df = df.loc(axis=1)[:, individuals]
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [

@@ -1,7 +1,8 @@
 import deeplabcut
-import os
-from pathlib import Path
 import glob
+import os
+from deeplabcut.modelzoo.utils import parse_available_supermodels
+from pathlib import Path
 
 
 class SpatiotemporalAdaptation:
@@ -65,8 +66,10 @@ class SpatiotemporalAdaptation:
 
 
         """
-        if supermodel_name not in ["superquadruped", "supertopview"]:
-            raise ValueError("`supermodel_name` should be either 'superquadruped' or 'supertopview'")
+        supermodels = parse_available_supermodels()
+        if supermodel_name not in supermodels:
+            raise ValueError(f"`supermodel_name` should be one of: {', '.join(supermodels)}.")
+
         self.video_path = video_path
         self.init_weights = init_weights
         self.supermodel_name = supermodel_name
@@ -84,16 +87,11 @@ class SpatiotemporalAdaptation:
 
             dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
 
-            name_dict = {
-                "supertopview": "supertopview.yaml",
-                "superquadruped": "superquadruped.yaml",
-            }
-
             self.customized_pose_config = os.path.join(
                 dlc_root_path,
                 "pose_estimation_tensorflow",
                 "superanimal_configs",
-                name_dict[self.supermodel_name],
+                supermodels[self.supermodel_name],
             )
 
         if customized_pose_config != "":

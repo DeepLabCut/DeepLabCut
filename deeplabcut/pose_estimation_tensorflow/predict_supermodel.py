@@ -11,6 +11,7 @@ from skimage.util import img_as_ubyte
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
+from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import \
     predict as single_predict
@@ -414,18 +415,14 @@ def video_inference_superanimal(
 
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
-    name_dict = {
-        "supertopview": "supertopview.yaml",
-        "superquadruped": "superquadruped.yaml",
-    }
-
     if customized_test_config == "":
+        supermodels = parse_available_supermodels()
         test_cfg = load_config(
             os.path.join(
                 dlc_root_path,
                 "pose_estimation_tensorflow",
                 "superanimal_configs",
-                name_dict[superanimal_name],
+                supermodels[superanimal_name],
             )
         )
     else:
