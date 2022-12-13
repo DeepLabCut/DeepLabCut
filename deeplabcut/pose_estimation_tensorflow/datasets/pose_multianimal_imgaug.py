@@ -12,12 +12,11 @@ import logging
 import os
 import pickle
 import imageio
-from functools import lru_cache
 import imgaug.augmenters as iaa
-from PIL import Image
 import numpy as np
 import pandas as pd
 from imgaug.augmentables import Keypoint, KeypointsOnImage
+from deeplabcut.generate_training_dataset import read_image_shape_fast
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
@@ -26,7 +25,6 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
-from pathlib import Path
 from math import sqrt
 
 
@@ -121,13 +119,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    @lru_cache(maxsize=None)
-    def read_image_shape_fast(self, path):
-        # Blazing fast and does not load the image into memory
-        with Image.open(path) as img:
-            width, height = img.size
-            return len(img.getbands()), height, width
-
     def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
         gt_file = cfg["pseudo_label"]
 
@@ -148,7 +139,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
             item.im_path = os.path.join(video_root, frame_name)
-            item.im_size = self.read_image_shape_fast(
+            item.im_size = read_image_shape_fast(
                 os.path.join(video_root, frame_name)
             )
             item.joints = {}
