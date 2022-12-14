@@ -145,29 +145,6 @@ def download_model(modelname, target_dir):
         print("Pick one of the following: ", models)
 
 
-def download_mpii_weights(wd):
-    """ Downloads weights pretrained on human data from DeeperCut. """
-    import urllib.request
-    from pathlib import Path
-
-    url = [
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001",
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta",
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index",
-    ]
-    for i in url:
-        file = str(Path(i).name)
-        filename = file.replace("mpii-single-resnet-101", "snapshot-103000")
-        filename = os.path.join(wd, filename)
-        if os.path.isfile(filename):
-            print("Weights already present!")
-            break  # not checking all the 3 files.
-        else:
-            urllib.request.urlretrieve(i, filename)
-
-    return filename
-
-
 # Aliases for backwards-compatibility
 Check4Weights = check_for_weights
 Downloadweights = download_weights
