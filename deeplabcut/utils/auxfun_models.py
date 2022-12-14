@@ -144,69 +144,6 @@ def download_model(modelname, target_dir):
         print("Model does not exist: ", modelname)
         print("Pick one of the following: ", models)
 
-def download_hugginface_model(modelname, target_dir):
-    """
-    Downloads a DeepLabCut Model Zoo Project from Hugging Face
-    """
-    import tarfile
-    from huggingface_hub import hf_hub_download
-
-    def tarfilenamecutting(tarf):
-        """' auxfun to extract folder path
-        ie. /xyz-trainsetxyshufflez/
-        """
-        for memberid, member in enumerate(tarf.getmembers()):
-            if memberid == 0:
-                parent = str(member.path)
-                l = len(parent) + 1
-            if member.path.startswith(parent):
-                member.path = member.path[l:]
-                yield member
-
-    # Loading urls of models
-    dlc_path = auxiliaryfunctions.get_deeplabcut_path()
-    neturls = auxiliaryfunctions.read_plainconfig(
-        os.path.join(
-            dlc_path,
-            "pose_estimation_tensorflow",
-            "models",
-            "pretrained",
-            "pretrained_model_urls.yaml",
-        )
-    )
-    url = neturls[modelname]
-
-    if modelname in neturls.keys():
-        print("Loading....", modelname)
-        url = neturls[modelname].split('/')
-        repo_id,targzfn=url[0]+'/'+url[1],str(url[-1])
-
-        hf_hub_download(repo_id,targzfn,cache_dir = str(target_dir))
-        #creates a new subfolder as indicated below, unzipping from there and deleting this folder
-
-        # Hack to get hf path ...
-        hf_folder = 'models--'+url[0]+'--'+url[1]
-        filename = os.path.join(
-            target_dir, hf_folder, "snapshots", str(neturls[modelname+"_commit"]), targzfn,
-        )
-        with tarfile.open(filename, mode="r:gz") as tar:
-            tar.extractall(target_dir, members=tarfilenamecutting(tar))
-
-        # Move the weights to target_dir and clean the remaining temporary folders
-        import shutil
-        weights_folder = os.path.join(target_dir, targzfn.replace(".tar.gz", ""))
-        shutil.copytree(weights_folder, target_dir, dirs_exist_ok=True)
-        shutil.rmtree(os.path.join(target_dir, hf_folder))
-        shutil.rmtree(weights_folder)
-
-    else:
-        models = [
-            fn
-            for fn in neturls.keys()
-            if "resnet_" not in fn and "efficientnet" not in fn and "mobilenet_" not in fn
-        ]
-        print("Model does not exist: ", modelname)
-        print("Pick one of the following: ", models)
 
 def download_mpii_weights(wd):
     """ Downloads weights pretrained on human data from DeeperCut. """
