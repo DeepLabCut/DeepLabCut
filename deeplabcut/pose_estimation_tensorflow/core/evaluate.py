@@ -275,8 +275,10 @@ def return_evaluate_network_data(
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts
+    comparisonbodyparts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
+        )
     )
     ##################################################
     # Load data...
@@ -660,8 +662,10 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempttomakefolder(
@@ -954,9 +958,6 @@ def evaluate_network(
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False
                             ).T
-                            print(
-                                "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
-                            )
                             foldername = os.path.join(
                                 str(evaluationfolder),
                                 "LabeledImages_"
@@ -964,15 +965,23 @@ def evaluate_network(
                                 + "_"
                                 + Snapshots[snapindex],
                             )
-                            auxiliaryfunctions.attempttomakefolder(foldername)
-                            Plotting(
-                                cfg,
-                                comparisonbodyparts,
-                                DLCscorer,
-                                trainIndices,
-                                DataCombined * 1.0 / scale,
-                                foldername,
-                            )
+                            if not os.path.exists(foldername):
+                                print(
+                                    "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
+                                )
+                                auxiliaryfunctions.attempttomakefolder(foldername)
+                                Plotting(
+                                    cfg,
+                                    comparisonbodyparts,
+                                    DLCscorer,
+                                    trainIndices,
+                                    DataCombined * 1.0 / scale,
+                                    foldername,
+                                )
+                            else:
+                                print(
+                                    "Plots already exist for this snapshot... Skipping to the next one."
+                                )
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
