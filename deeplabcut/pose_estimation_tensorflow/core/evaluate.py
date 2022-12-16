@@ -1019,7 +1019,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     output_path = os.path.join(str(evaluationfolder), DLCscorer + "-results.csv")
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
-        df = pd.concat((df, temp)).reset_index(drop=True)
+        df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
 
@@ -1031,7 +1031,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     )
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
-        df = pd.concat((df, temp)).reset_index(drop=True)
+        df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
 
