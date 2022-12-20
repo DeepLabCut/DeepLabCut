@@ -58,6 +58,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             assert cfg["video_path"]
             print("loading video for image source", cfg["video_path"])
             self.vid = VideoReader(cfg["video_path"])
+            self.video_image_size  = (3, self.vid.height, self.vid.width)
         else:
             self.vid = None
 
@@ -140,9 +141,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
             item.im_path = os.path.join(video_root, frame_name)
-            item.im_size = read_image_shape_fast(
-                os.path.join(video_root, frame_name)
-            )
+            '''
+            if self.vid:
+                item.im_size = self.video_image_size
+            else:
+                item.im_size = read_image_shape_fast(
+                    os.path.join(video_root, frame_name)
+                )
+            '''
             item.joints = {}
             joints = np.concatenate([joint_ids, kpts], axis=1)
             joints = np.nan_to_num(joints, nan=0)
