@@ -9,5 +9,5 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-__version__ = "2.3rc3"
+__version__ = "2.3.0"
 VERSION = __version__
