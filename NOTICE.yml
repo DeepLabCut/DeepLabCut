@@ -1,11 +1,11 @@
 # This notice file contains license headers for all code files
 # in the repository (currently all *.py files).
-# 
+#
 # When updating headers, lower entries take precedence over higher
 # entries. For each header, include/exclude statements can be used
 # to define files to apply them to.
 #
-# When adding code from an external repo, make sure to cover the 
+# When adding code from an external repo, make sure to cover the
 # added code files with the correct license header.
 
 # Main repository license
@@ -20,7 +20,7 @@
     Licensed under GNU Lesser General Public License v3.0
   include:
     - 'deeplabcut/**/*.py'
-    - 'tests/**/*.py' 
+    - 'tests/**/*.py'
     - 'examples/**/*.py'
     - 'docs/**/*.py'
     - 'conda-environments/**/*.yaml'
@@ -61,13 +61,13 @@
 # Tensorflow licenses
 - header: |
     Copyright 2019 The TensorFlow Authors. All Rights Reserved.
-    
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-    
+
         http://www.apache.org/licenses/LICENSE-2.0
-    
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -85,7 +85,7 @@
     You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
-    
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -116,3 +116,23 @@
     https://github.com/rwightman/pytorch-image-models/blob/main/timm/scheduler/scheduler_factory.py
   include:
     - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py
+    - deeplabcut/pose_tracking_pytorch/model/backones/vit_pytorch.py
+
+# Reranking
+- header: |
+    """
+    CVPR2017 paper:Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding[J]. 2017.
+    url:http://openaccess.thecvf.com/content_cvpr_2017/papers/Zhong_Re-Ranking_Person_Re-Identification_CVPR_2017_paper.pdf
+    Matlab version: https://github.com/zhunzhong07/person-re-ranking
+
+    API
+
+    probFea: all feature vectors of the query set (torch tensor)
+    probFea: all feature vectors of the gallery set (torch tensor)
+    k1,k2,lambda: parameters, the original paper is (k1=20,k2=6,lambda=0.3)
+    MemorySave: set to 'True' when using MemorySave mode
+    Minibatch: available when 'MemorySave' is 'True'
+    """
+
+  include:
+    - deeplabcut/pose_tracking_pytorch/trackingutils/reranking.py

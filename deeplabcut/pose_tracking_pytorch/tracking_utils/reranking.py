@@ -1,18 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri, 25 May 2018 20:29:09
-
-
-"""
-
 """
 CVPR2017 paper:Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding[J]. 2017.
 url:http://openaccess.thecvf.com/content_cvpr_2017/papers/Zhong_Re-Ranking_Person_Re-Identification_CVPR_2017_paper.pdf
 Matlab version: https://github.com/zhunzhong07/person-re-ranking
-"""
 
-"""
 API
 
 probFea: all feature vectors of the query set (torch tensor)
