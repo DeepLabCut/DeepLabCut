@@ -25,6 +25,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
+        "dlclibrary",
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
@@ -55,7 +56,7 @@ setuptools.setup(
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
-        "tf": ["tensorflow>=2.0"],
+        "tf": ["tensorflow>=2.0,<=2.10"],  # Last supported TF version on Windows Native
         "apple_mchips": [],
         "modelzoo": ["huggingface_hub"],
     },
