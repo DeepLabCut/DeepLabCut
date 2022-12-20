@@ -9,15 +9,14 @@ class SpatiotemporalAdaptation:
     def __init__(
         self,
         video_path,
-        init_weights,
         supermodel_name,
         scale_list=[],
         videotype="mp4",
         adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
-        pcutoff=0.3,
-        pseudo_threshold=0.3,
+        pcutoff=0.1,
+        pseudo_threshold=0.1,
     ):
 
         """
@@ -27,8 +26,6 @@ class SpatiotemporalAdaptation:
         ----------
         video_path: string
            The string to the path of the video
-        init_weights: string
-           The path to a superanimal model's checkpoint
         supermodel_name: string
            Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
         scale_list: list
@@ -51,12 +48,10 @@ class SpatiotemporalAdaptation:
 
         from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
         video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
-        init_weights = '/mnt/md0/shaokai/DLC-ModelZoo/ma_supertopview/dlc-models/iteration-0/ma_supertopviewMarch30-trainset95shuffle1/train/snapshot-200000'
-
+        superanimal_name = 'superanimal_mouse_topview'
         videotype = 'mp4'
         >>> adapter = SpatiotemporalAdaptation(video_path,
-                                       init_weights,
-                                       'supertopview',
+                                       superanimal_name,
                                        modelfolder = "temp_topview",
                                        videotype = videotype)
 
@@ -71,7 +66,6 @@ class SpatiotemporalAdaptation:
             raise ValueError(f"`supermodel_name` should be one of: {', '.join(supermodels)}.")
 
         self.video_path = video_path
-        self.init_weights = init_weights
         self.supermodel_name = supermodel_name
         self.scale_list = scale_list
         self.videotype = videotype
@@ -96,12 +90,11 @@ class SpatiotemporalAdaptation:
             )
 
     def before_adapt_inference(self):
-        deeplabcut.video_inference_superanimal(
+        self.init_weights = deeplabcut.video_inference_superanimal(
             [self.video_path],
             self.supermodel_name,
             videotype=self.videotype,
             scale_list=self.scale_list,
-            init_weights=self.init_weights,
             customized_test_config=self.customized_pose_config,
         )
 
@@ -120,7 +113,7 @@ class SpatiotemporalAdaptation:
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
         print("self.customized_pose_config", self.customized_pose_config)
-
+        print ('init_weights', self.init_weights)
         train(
             self.customized_pose_config,
             500,  # displayiters
@@ -130,7 +123,7 @@ class SpatiotemporalAdaptation:
             init_weights=self.init_weights,
             load_pseudo_label=pseudo_label_path,
             video_path=self.video_path,
-            pseudo_threshold=0.3,
+            pseudo_threshold=self.pseudo_threshold,
         )
 
     def adaptation_training(self):
