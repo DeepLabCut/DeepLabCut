@@ -80,7 +80,8 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
         print("Attempting to create a symbolic link of the video ...")
         for src, dst in zip(videos, destinations):
             if dst.exists():
-                pass
+                print(f"Video {dst} already exists. Skipping...")
+                continue
             try:
                 src = str(src)
                 dst = str(dst)
