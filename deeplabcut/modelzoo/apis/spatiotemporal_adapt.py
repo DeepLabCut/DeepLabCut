@@ -89,7 +89,7 @@ class SpatiotemporalAdaptation:
                 supermodels[self.supermodel_name],
             )
 
-    def before_adapt_inference(self):
+    def before_adapt_inference(self, **kwargs):
         self.init_weights = deeplabcut.video_inference_superanimal(
             [self.video_path],
             self.supermodel_name,
@@ -107,6 +107,7 @@ class SpatiotemporalAdaptation:
             draw_skeleton=True,
             superanimal_name=self.supermodel_name,
             pcutoff=self.pcutoff,
+            **kwargs
         )
 
     def train_without_project(self, pseudo_label_path):
@@ -143,7 +144,7 @@ class SpatiotemporalAdaptation:
 
         self.train_without_project(pseudo_label_path)
 
-    def after_adapt_inference(self):
+    def after_adapt_inference(self, **kwargs):
 
         pattern = os.path.join(
             self.modelfolder,  f"snapshot-{self.adapt_iterations}.index"
@@ -176,4 +177,5 @@ class SpatiotemporalAdaptation:
             draw_skeleton=True,
             superanimal_name=self.supermodel_name,
             pcutoff=self.pcutoff,
+            **kwargs
         )
