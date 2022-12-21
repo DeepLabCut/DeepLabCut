@@ -55,7 +55,6 @@ class ExtractOutlierFrames(DefaultTab):
         self.label_outliers_button.setMinimumWidth(150)
 
         self.merge_data_button = QtWidgets.QPushButton("Merge data")
-        self.merge_data_button.setEnabled(False)
         self.merge_data_button.clicked.connect(self.merge_dataset)
         self.merge_data_button.setMinimumWidth(150)
 
@@ -134,6 +133,7 @@ class ExtractOutlierFrames(DefaultTab):
             shuffle=shuffle,
             outlieralgorithm=outlieralgorithm,
             track_method=track_method,
+            automatic=True,
         )
 
     def launch_refinement_gui(self):
@@ -147,8 +147,7 @@ class ExtractOutlierFrames(DefaultTab):
             "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
         )
         msg.setWindowTitle("Warning")
-        msg.setWindowIcon(QtWidgets.QMessageBox.Warning)
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config, forceiterate=None)
