@@ -146,7 +146,7 @@ class SpatiotemporalAdaptation:
     def after_adapt_inference(self):
 
         pattern = os.path.join(
-            self.modelfolder, "*", f"snapshot-{self.adapt_iterations}.index"
+            self.modelfolder,  f"snapshot-{self.adapt_iterations}.index"
         )
         ref_proj_config_path = ""
 
