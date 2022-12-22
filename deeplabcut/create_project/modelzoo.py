@@ -1,12 +1,13 @@
-"""
-DeepLabCut 2.1.8 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCu/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import os
 from pathlib import Path
@@ -14,30 +15,12 @@ from pathlib import Path
 import yaml
 
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions, auxfun_models
+from deeplabcut.utils import auxiliaryfunctions
+from dlclibrary.dlcmodelzoo.modelzoo_download import (
+    download_huggingface_model,
+    MODELOPTIONS,
+)
 
-Modeloptions = [
-    "full_human",
-    "full_cat",
-    "full_dog",
-    "primate_face",
-    "mouse_pupil_vclose",
-    "horse_sideview",
-    "full_macaque",
-]  # just expand this list with new projects
-
-'''
-Modeloptions = [
-    "full_human",
-    "full_cat",
-    "full_dog",
-    "primate_face",
-    "mouse_pupil_vclose",
-    "horse_sideview",
-    "full_macaque",
-    "full_cheetah",
-]  # just expand this list with new projects
-'''
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     raw = open(defaultconfigfile).read()
@@ -176,7 +159,7 @@ def create_pretrained_project(
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
 
     """
-    if model in globals()["Modeloptions"]:
+    if model in MODELOPTIONS:
         cwd = os.getcwd()
 
         cfg = deeplabcut.create_new_project(
@@ -273,11 +256,7 @@ def create_pretrained_project(
 
         # Download the weights and put then in appropriate directory
         print("Downloading weights...")
-
-        # AM: Rowland server down...
-        #auxfun_models.download_model(model, train_dir)
-        auxfun_models.download_hugginface_model(model, train_dir)
-
+        download_huggingface_model(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
         print(path_train_config)

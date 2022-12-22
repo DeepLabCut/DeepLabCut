@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import numpy as np
 import os
 import pickle
@@ -42,15 +44,15 @@ def save_train_triplets(feature_fname, triplets, out_name):
         anchor_coord, anchor_frame = anchor
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
-               
-        
+
+
         anchor_frame = "frame" + str(anchor_frame).zfill(zfill_width)
         pos_frame = "frame" + str(pos_frame).zfill(zfill_width)
         neg_frame = "frame" + str(neg_frame).zfill(zfill_width)
 
         if anchor_frame in feature_dict and pos_frame in feature_dict and neg_frame in feature_dict:
             # only try to find these features if they are in the dictionary
-            
+
             anchor_vec = query_feature_by_coord_in_img_space(
                 feature_dict, anchor_frame, anchor_coord
             )

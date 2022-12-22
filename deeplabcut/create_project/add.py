@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 
 def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
@@ -74,7 +75,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             else:
                 print("Copying the videos")
                 shutil.copy(os.fspath(src), os.fspath(dst))
-  
+
     else:
         # creates the symlinks of the video and puts it in the videos directory.
         print("Attempting to create a symbolic link of the video ...")
@@ -101,7 +102,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
                     print("{} moved to {}".format(src, dst))
             videos = destinations
 
-    
+
 
     if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file

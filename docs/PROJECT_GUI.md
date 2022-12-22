@@ -10,7 +10,7 @@ As some users may be more comfortable working with an interactive interface, we 
 (1) Install DeepLabCut using the simple-install with Anaconda found [here!](how-to-install)*.
 Now that you have deeplabcut installed, just go into your env (activate DEEPLABCUT) then run:
 
-` pip install --upgrade --force-reinstall 'deeplabcut[gui,tf]'==2.3rc3`
+` pip install --upgrade --force-reinstall 'deeplabcut[gui,tf]'`
 
 *Note, currently the latest GUI is a release candidate, so you need to specifically install the `rc` version. This will change once v2.3 is stable.
 
