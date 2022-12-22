@@ -117,9 +117,9 @@ def CreateVideo(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -248,9 +248,9 @@ def CreateVideoSlow(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -315,14 +315,14 @@ def CreateVideoSlow(
                             ax.scatter(
                                 df_x[ind][max(0, index - trailpoints) : index],
                                 df_y[ind][max(0, index - trailpoints) : index],
-                                s=dotsize ** 2,
+                                s=dotsize**2,
                                 color=color,
                                 alpha=alphavalue * 0.75,
                             )
                         ax.scatter(
                             df_x[ind, index],
                             df_y[ind, index],
-                            s=dotsize ** 2,
+                            s=dotsize**2,
                             color=color,
                             alpha=alphavalue,
                         )
@@ -364,6 +364,7 @@ def create_labeled_video(
     color_by="bodypart",
     modelprefix="",
     track_method="",
+    overwrite=False,
 ):
     """Labels the bodyparts in a video.
 
@@ -472,6 +473,9 @@ def create_labeled_video(
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
 
+    overwrite: bool, optional, default=False
+        If ``True`` overwrites existing labeled videos.
+
     Returns
     -------
     None
@@ -574,6 +578,7 @@ def create_labeled_video(
         displaycropped,
         fastmode,
         keypoints_only,
+        overwrite,
     )
 
     with Pool(min(os.cpu_count(), len(Videos))) as pool:
@@ -604,6 +609,7 @@ def proc_video(
     displaycropped,
     fastmode,
     keypoints_only,
+    overwrite,
     video,
 ):
     """Helper function for create_videos
@@ -630,7 +636,9 @@ def proc_video(
         videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
 
-    if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
+    if (
+        os.path.isfile(videooutname1) or os.path.isfile(videooutname2)
+    ) and not overwrite:
         print("Labeled video {} already created.".format(vname))
     else:
         print("Loading {} and data.".format(video))
@@ -646,7 +654,7 @@ def proc_video(
             else:
                 s = ""
             videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
-            if os.path.isfile(videooutname):
+            if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
 
@@ -774,7 +782,14 @@ def _create_labeled_video(
         sw = ""
         sh = ""
 
-    clip = vp(fname=video, sname=output_path, codec=codec, sw=sw, sh=sh, fps=fps,)
+    clip = vp(
+        fname=video,
+        sname=output_path,
+        codec=codec,
+        sw=sw,
+        sh=sh,
+        fps=fps,
+    )
     df = pd.read_hdf(h5file)
     try:
         animals = df.columns.get_level_values("individuals").unique().to_list()
@@ -852,7 +867,7 @@ def create_video_with_keypoints_only(
     plt.switch_backend("agg")
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
-    scat = ax.scatter([], [], s=dotsize ** 2, alpha=alpha)
+    scat = ax.scatter([], [], s=dotsize**2, alpha=alpha)
     coords = xyp[0, :, :2]
     coords[xyp[0, :, 2] < pcutoff] = np.nan
     scat.set_offsets(coords)
