@@ -396,20 +396,19 @@ def video_inference_superanimal(
 
     superanimal_name = 'superanimal_mouse_topview'
     videotype = 'mp4'
-    >>> deeplabcut.video_inference_superanimal(
+    >>>  init_weights = deeplabcut.video_inference_superanimal(
                                       [video_path],
                                       superanimal_name,
                                       videotype=videotype,
                                       scale_list = scale_list,
-                                      invert_color = False)
+                                     )
 
-    Note after calling video_inference, a config.yaml is created in your working directory
-
-    config_path = os.path.join(os.getcwd(), 'config.yaml')
-    >>> deeplabcut.create_labeled_video(config_path,
+    Note we do not need to pass a config in this case
+    >>> deeplabcut.create_labeled_video("",
                                 [video_path],
                                 videotype = videotype,
                                 superanimal_name = superanimal_name,
+                                init_weights = init_weights,
                                 pcutoff = 0.6
                                 )
 
