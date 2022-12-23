@@ -52,7 +52,7 @@ setuptools.setup(
         "gui": [
             "pyside6<6.3.2",
             "qdarkstyle==3.1",
-            "napari-deeplabcut",
+            "napari-deeplabcut>=0.0.9",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
