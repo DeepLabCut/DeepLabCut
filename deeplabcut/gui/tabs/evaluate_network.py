@@ -107,15 +107,17 @@ class EvaluateNetwork(DefaultTab):
         # Display all images
         dest_folder = os.path.join(
             self.root.project_folder,
-            str(get_evaluation_folder(
-                self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
-            )),
+            str(
+                get_evaluation_folder(
+                    self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
+                )
+            ),
             "maps",
         )
         image_paths = [
             os.path.join(dest_folder, file)
             for file in os.listdir(dest_folder)
-            if file.endswith('.png')
+            if file.endswith(".png")
         ]
         canvas = GridCanvas(image_paths, parent=self)
         canvas.show()

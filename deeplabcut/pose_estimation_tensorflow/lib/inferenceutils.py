@@ -355,7 +355,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length ** 2 - mu) / sigma
+        z = (link.length**2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
@@ -856,7 +856,11 @@ class Assembler:
 
 
 def calc_object_keypoint_similarity(
-    xy_pred, xy_true, sigma, margin=0, symmetric_kpts=None,
+    xy_pred,
+    xy_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
 ):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
@@ -917,7 +921,11 @@ def match_assemblies(
                 xy_true = ass_true[ind_true].xy
                 oks.append(
                     calc_object_keypoint_similarity(
-                        xy_pred, xy_true, sigma, margin, symmetric_kpts,
+                        xy_pred,
+                        xy_true,
+                        sigma,
+                        margin,
+                        symmetric_kpts,
                     )
                 )
             if np.all(np.isnan(oks)):
@@ -934,7 +942,11 @@ def match_assemblies(
         for i, a_pred in enumerate(ass_pred):
             for j, a_true in enumerate(ass_true):
                 oks = calc_object_keypoint_similarity(
-                    a_pred.xy, a_true.xy, sigma, margin, symmetric_kpts,
+                    a_pred.xy,
+                    a_true.xy,
+                    sigma,
+                    margin,
+                    symmetric_kpts,
                 )
                 if ~np.isnan(oks):
                     mat[i, j] = oks
@@ -1015,7 +1027,12 @@ def evaluate_assembly(
     for ind, ass_true in tqdm(ass_true_dict.items()):
         ass_pred = ass_pred_dict.get(ind, [])
         matched, unmatched = match_assemblies(
-            ass_pred, ass_true, oks_sigma, margin, symmetric_kpts, greedy_matching,
+            ass_pred,
+            ass_true,
+            oks_sigma,
+            margin,
+            symmetric_kpts,
+            greedy_matching,
         )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)

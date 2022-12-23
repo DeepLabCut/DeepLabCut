@@ -61,7 +61,7 @@ class DLCTrans:
 
     def __call__(self, inp_a, inp_b, zfill_width, feature_dict, return_features=False):
         # tracklets
-        device = default_device('cuda')
+        device = default_device("cuda")
 
         _tuple = self._get_vec(inp_a, inp_b, zfill_width, feature_dict)
         if _tuple is None:

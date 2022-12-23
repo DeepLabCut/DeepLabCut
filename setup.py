@@ -47,7 +47,6 @@ setuptools.setup(
         "pyyaml",
         "Pillow>=7.1",
     ],
-
     extras_require={
         "gui": [
             "pyside6<6.3.2",
@@ -81,7 +80,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project.png",
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
-                "deeplabcut/gui/assets/icons/open2.png"
+                "deeplabcut/gui/assets/icons/open2.png",
             ],
         )
     ],

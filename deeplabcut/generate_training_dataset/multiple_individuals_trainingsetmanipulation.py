@@ -34,6 +34,7 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 
+
 def format_multianimal_training_data(
     df,
     train_inds,
@@ -239,7 +240,8 @@ def create_multianimaltraining_dataset(
         # see Suppl. Fig S9c in Lauer et al., 2022.
         if n_edges_orig >= n_edges_threshold:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                partaffinityfield_graph, average_degree=paf_graph_degree,
+                partaffinityfield_graph,
+                average_degree=paf_graph_degree,
             )
     else:
         if paf_graph == "config":

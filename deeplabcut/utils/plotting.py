@@ -55,7 +55,7 @@ def PlottingResults(
     resolution=100,
     linewidth=1.0,
 ):
-    """ Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
+    """Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -355,7 +355,12 @@ def plot_trajectories(
 
 
 def _plot_paf_performance(
-    within, between, nbins=51, kde=True, colors=None, ax=None,
+    within,
+    between,
+    nbins=51,
+    kde=True,
+    colors=None,
+    ax=None,
 ):
     import seaborn as sns
 
@@ -372,7 +377,10 @@ def _plot_paf_performance(
 
 
 def plot_edge_affinity_distributions(
-    eval_pickle_file, include_bodyparts="all", output_name="", figsize=(10, 7),
+    eval_pickle_file,
+    include_bodyparts="all",
+    output_name="",
+    figsize=(10, 7),
 ):
     """
     Display the distribution of affinity costs of within- and between-animal edges.
@@ -401,7 +409,9 @@ def plot_edge_affinity_distributions(
     with open(meta_pickle_file, "rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
-        data, metadata, train_set_only=True,
+        data,
+        metadata,
+        train_set_only=True,
     )
     data.pop("metadata", None)
     nonempty = set(i for i, vals in w_train.items() if vals)
@@ -422,7 +432,11 @@ def plot_edge_affinity_distributions(
     nrows = int(np.ceil(np.sqrt(len(edge_inds))))
     ncols = int(np.ceil(len(edge_inds) / nrows))
     fig, axes_ = plt.subplots(
-        nrows, ncols, figsize=figsize, tight_layout=True, squeeze=False,
+        nrows,
+        ncols,
+        figsize=figsize,
+        tight_layout=True,
+        squeeze=False,
     )
     axes = axes_.flatten()
     for ax in axes:

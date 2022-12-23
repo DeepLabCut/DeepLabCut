@@ -12,7 +12,7 @@ import numpy as np
 
 
 def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
-    ''' extract the deep feature at the location of the keypoint (x,y) '''
+    """extract the deep feature at the location of the keypoint (x,y)"""
     if valid_mask_for_fish:
 
         mask = np.array([1, 2, 6])
@@ -34,14 +34,14 @@ def load_features_from_coord(feature, coords, valid_mask_for_fish=False):
 
 def convert_coord_from_img_space_to_feature_space(arr, stride):
 
-    '''
+    """
     if stride ==8:
         stride = stride * 2
     elif stride == 4:
         stride = stride *4
     elif stride ==2:
         stride = stride *8
-    '''
+    """
     # More elegantly one can simply define:
     stride = 16
 
@@ -49,7 +49,7 @@ def convert_coord_from_img_space_to_feature_space(arr, stride):
 
     # take care of difference between feature map space and original image space
 
-    arr = (arr - (stride//2) ) // stride
+    arr = (arr - (stride // 2)) // stride
 
     return arr.astype(np.int64)
 

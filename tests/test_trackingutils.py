@@ -114,7 +114,8 @@ def test_tracking_box(real_assemblies, real_tracklets):
 
 
 def test_tracking_montblanc(
-    real_assemblies_montblanc, real_tracklets_montblanc,
+    real_assemblies_montblanc,
+    real_tracklets_montblanc,
 ):
     tracklets_ref = real_tracklets_montblanc.copy()
     _ = tracklets_ref.pop("header", None)

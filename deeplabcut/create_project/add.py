@@ -10,7 +10,9 @@
 #
 
 
-def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
+def add_new_videos(
+    config, videos, copy_videos=False, coords=None, extract_frames=False
+):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -102,8 +104,6 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
                     print("{} moved to {}".format(src, dst))
             videos = destinations
 
-
-
     if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
@@ -127,7 +127,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             cfg["video_sets_original"].update(params)
     videos_str = [str(video) for video in videos]
     if extract_frames:
-        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
+        frame_extraction.extract_frames(
+            config, userfeedback=False, videos_list=videos_str
+        )
         print(
             "New videos were added to the project and frames have been extracted for labeling!"
         )

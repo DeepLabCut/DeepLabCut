@@ -118,7 +118,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
             pipeline.add(iaa.PadToFixedSize(*self.default_size))
             pipeline.add(
                 augmentation.KeypointAwareCropToFixedSize(
-                    *self.default_size, cfg.get("max_shift", 0.4), crop_sampling,
+                    *self.default_size,
+                    cfg.get("max_shift", 0.4),
+                    crop_sampling,
                 )
             )
 
@@ -128,13 +130,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 p = opt
             else:
                 p = 0.5
-            pipeline.add(sometimes(
-                augmentation.KeypointFliplr(
-                    cfg["all_joints_names"],
-                    symmetric_pairs=cfg["symmetric_pairs"],
-                    p=p,
+            pipeline.add(
+                sometimes(
+                    augmentation.KeypointFliplr(
+                        cfg["all_joints_names"],
+                        symmetric_pairs=cfg["symmetric_pairs"],
+                        p=p,
+                    )
                 )
-            ))
+            )
         if cfg.get("rotation", False):
             opt = cfg.get("rotation", False)
             if type(opt) == int:
@@ -283,7 +287,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         return batch_images, joint_ids, batch_joints, inds_visible, data_items
 
     def get_targetmaps_update(
-        self, joint_ids, joints, data_items, sm_size, scale,
+        self,
+        joint_ids,
+        joints,
+        data_items,
+        sm_size,
+        scale,
     ):
         part_score_targets = []
         part_score_weights = []
@@ -346,7 +355,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            batch_images, joint_ids, batch_joints, inds_visible, data_items = self.get_batch()
+            (
+                batch_images,
+                joint_ids,
+                batch_joints,
+                inds_visible,
+                data_items,
+            ) = self.get_batch()
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -454,7 +469,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_size = *size, num_joints * 2
         locref_map = np.zeros(locref_size)
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh ** 2
+        dist_thresh_sq = dist_thresh**2
 
         partaffinityfield_shape = *size, self.cfg["num_limbs"] * 2
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
@@ -480,7 +495,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         dx_ = dx * locref_scale
         dy = coords[:, 1] - yy * stride - half_stride
         dy_ = dy * locref_scale
-        dist = dx ** 2 + dy ** 2
+        dist = dx**2 + dy**2
         mask1 = dist <= dist_thresh_sq
         mask2 = (xx >= mins[:, 0]) & (xx <= maxs[:, 0])
         mask3 = (yy >= mins[:, 1]) & (yy <= maxs[:, 1])
@@ -584,7 +599,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh ** 2
+        dist_thresh_sq = dist_thresh**2
 
         partaffinityfield_shape = np.concatenate(
             [size, np.array([self.cfg["num_limbs"] * 2])]
@@ -616,7 +631,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             map_j = grid.copy()
             # Distance between the joint point and each coordinate
             dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
-            scmap_j = np.exp(-dist / (2 * (std ** 2)))
+            scmap_j = np.exp(-dist / (2 * (std**2)))
             scmap[..., j_id] = scmap_j
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 0] = 1
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 1] = 1

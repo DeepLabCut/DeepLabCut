@@ -59,7 +59,13 @@ def extract_cnn_outputmulti(outputs_np, cfg):
 
 
 def compute_edge_costs(
-    pafs, peak_inds_in_batch, graph, paf_inds, n_bodyparts, n_points=10, n_decimals=3,
+    pafs,
+    peak_inds_in_batch,
+    graph,
+    paf_inds,
+    n_bodyparts,
+    n_points=10,
+    n_decimals=3,
 ):
     # Clip peak locations to PAFs dimensions
     h, w = pafs.shape[1:3]
@@ -237,7 +243,13 @@ def predict_batched_peaks_and_costs(
     )
     if peaks_gt is not None and graph:
         costs_gt = compute_edge_costs(
-            pafs, peaks_gt, graph, limbs, pose_cfg["num_joints"], n_points, n_decimals,
+            pafs,
+            peaks_gt,
+            graph,
+            limbs,
+            pose_cfg["num_joints"],
+            n_points,
+            n_decimals,
         )
         for i, costs in enumerate(costs_gt):
             preds[i]["groundtruth_costs"] = costs
@@ -274,13 +286,19 @@ def find_local_peak_indices_dilation(scmaps, radius, threshold):
     width = tf.shape(scmaps)[2]
     depth = tf.shape(scmaps)[3]
     scmaps_flat = tf.reshape(
-        tf.transpose(scmaps, [0, 3, 1, 2]), [-1, height, width, 1],
+        tf.transpose(scmaps, [0, 3, 1, 2]),
+        [-1, height, width, 1],
     )
     scmaps_dil = tf.nn.dilation2d(
-        scmaps_flat, kernel, strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME",
+        scmaps_flat,
+        kernel,
+        strides=[1, 1, 1, 1],
+        rates=[1, 1, 1, 1],
+        padding="SAME",
     )
     scmaps_dil = tf.transpose(
-        tf.reshape(scmaps_dil, [-1, depth, height, width]), [0, 2, 3, 1],
+        tf.reshape(scmaps_dil, [-1, depth, height, width]),
+        [0, 2, 3, 1],
     )
     argmax_and_thresh_img = (scmaps > scmaps_dil) & (scmaps > threshold)
     return tf.cast(tf.where(argmax_and_thresh_img), tf.int32)
@@ -299,7 +317,10 @@ def find_local_peak_indices_skimage(scmaps, radius, threshold):
 
 
 def calc_peak_locations(
-    locrefs, peak_inds_in_batch, stride, n_decimals=3,
+    locrefs,
+    peak_inds_in_batch,
+    stride,
+    n_decimals=3,
 ):
     s, r, c, b = peak_inds_in_batch.T
     off = locrefs[s, r, c, b]

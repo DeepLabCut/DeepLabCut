@@ -72,9 +72,17 @@ class PoseMobileNet(BasePoseNet):
         return net, end_points
 
     def prediction_layers(
-        self, features, end_points, scope="pose", reuse=None,
+        self,
+        features,
+        end_points,
+        scope="pose",
+        reuse=None,
     ):
-        out = super(PoseMobileNet, self).prediction_layers(features, scope, reuse,)
+        out = super(PoseMobileNet, self).prediction_layers(
+            features,
+            scope,
+            reuse,
+        )
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg["intermediate_supervision"]:
                 out["part_pred_interm"] = prediction_layer(

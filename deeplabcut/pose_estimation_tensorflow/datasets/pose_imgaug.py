@@ -158,13 +158,15 @@ class ImgaugPoseDataset(BasePoseDataset):
                 p = opt
             else:
                 p = 0.5
-            pipeline.add(sometimes(
-                augmentation.KeypointFliplr(
-                    cfg["all_joints_names"],
-                    symmetric_pairs=cfg["symmetric_pairs"],
-                    p=p,
+            pipeline.add(
+                sometimes(
+                    augmentation.KeypointFliplr(
+                        cfg["all_joints_names"],
+                        symmetric_pairs=cfg["symmetric_pairs"],
+                        p=p,
+                    )
                 )
-            ))
+            )
 
         if cfg["rotation"] > 0:
             pipeline.add(
@@ -416,9 +418,9 @@ class ImgaugPoseDataset(BasePoseDataset):
             batch_joints_valid = []
             joint_ids_valid = []
             for joints, ids in zip(batch_joints, joint_ids):
-                #invisible joints are represented by nans
-                mask = ~np.isnan(joints[:,0])
-                joints = joints[mask,:]
+                # invisible joints are represented by nans
+                mask = ~np.isnan(joints[:, 0])
+                joints = joints[mask, :]
                 ids = ids[0][mask]
                 inside = np.logical_and.reduce(
                     (
@@ -432,7 +434,6 @@ class ImgaugPoseDataset(BasePoseDataset):
                 batch_joints_valid.append(joints[inside])
                 joint_ids_valid.append([ids[inside]])
 
-
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
             # import imageio
@@ -445,7 +446,11 @@ class ImgaugPoseDataset(BasePoseDataset):
             batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
             if self.has_gt:
                 scmap_update = self.get_scmap_update(
-                    joint_ids_valid, batch_joints_valid, data_items, sm_size, image_shape
+                    joint_ids_valid,
+                    batch_joints_valid,
+                    data_items,
+                    sm_size,
+                    image_shape,
                 )
                 batch.update(scmap_update)
 
@@ -482,7 +487,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         width = size[1]
         height = size[0]
         dist_thresh = float((width + height) / 6)
-        dist_thresh_sq = dist_thresh ** 2
+        dist_thresh_sq = dist_thresh**2
 
         std = dist_thresh / 4
         # Grid of coordinates
@@ -498,7 +503,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 map_j = grid.copy()
                 # Distance between the joint point and each coordinate
                 dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
-                scmap_j = np.exp(-dist / (2 * (std ** 2)))
+                scmap_j = np.exp(-dist / (2 * (std**2)))
                 scmap[..., j_id] = scmap_j
                 locref_mask[dist <= dist_thresh_sq, j_id * 2 + 0] = 1
                 locref_mask[dist <= dist_thresh_sq, j_id * 2 + 1] = 1
@@ -523,7 +528,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         self, joint_id, coords, data_item, size, scale
     ):
         dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
-        dist_thresh_sq = dist_thresh ** 2
+        dist_thresh_sq = dist_thresh**2
         num_joints = self.cfg["num_joints"]
 
         scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
@@ -550,7 +555,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 y = grid.copy()[:, :, 0]
                 dx = j_x - x * self.stride - self.half_stride
                 dy = j_y - y * self.stride - self.half_stride
-                dist = dx ** 2 + dy ** 2
+                dist = dx**2 + dy**2
                 mask1 = dist <= dist_thresh_sq
                 mask2 = (x >= min_x) & (x <= max_x)
                 mask3 = (y >= min_y) & (y <= max_y)

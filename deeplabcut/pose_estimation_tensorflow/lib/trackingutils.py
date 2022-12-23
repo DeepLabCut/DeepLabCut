@@ -55,7 +55,12 @@ class BaseTracker:
     n_trackers = 0
 
     def __init__(self, dim, dim_z):
-        self.kf = kinematic_kf(dim, 1, dim_z=dim_z, order_by_dim=False,)
+        self.kf = kinematic_kf(
+            dim,
+            1,
+            dim_z=dim_z,
+            order_by_dim=False,
+        )
         self.id = self.__class__.n_trackers
         self.__class__.n_trackers += 1
         self.time_since_update = 0
