@@ -46,7 +46,11 @@ class KeypointFliplr(iaa.Fliplr):
 
 class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
     def __init__(
-        self, width, height, max_shift=0.4, crop_sampling="hybrid",
+        self,
+        width,
+        height,
+        max_shift=0.4,
+        crop_sampling="hybrid",
     ):
         """
         Parameters
@@ -69,7 +73,9 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             or "hybrid" (alternating randomly between "uniform" and "density").
         """
         super(KeypointAwareCropToFixedSize, self).__init__(
-            width, height, name="kptscrop",
+            width,
+            height,
+            name="kptscrop",
         )
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.

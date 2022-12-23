@@ -14,13 +14,24 @@ import pytest
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 
 
-@pytest.mark.parametrize("width, height", [(200, 200), (300, 300), (400, 400),])
+@pytest.mark.parametrize(
+    "width, height",
+    [
+        (200, 200),
+        (300, 300),
+        (400, 400),
+    ],
+)
 def test_keypoint_aware_cropping(
-    sample_image, sample_keypoints, width, height,
+    sample_image,
+    sample_keypoints,
+    width,
+    height,
 ):
     aug = augmentation.KeypointAwareCropToFixedSize(width=width, height=height)
     images_aug, keypoints_aug = aug(
-        images=[sample_image], keypoints=[sample_keypoints],
+        images=[sample_image],
+        keypoints=[sample_keypoints],
     )
     assert len(images_aug) == len(keypoints_aug) == 1
     assert all(im.shape[:2] == (height, width) for im in images_aug)
@@ -30,14 +41,25 @@ def test_keypoint_aware_cropping(
     # Test passing in a batch of frames
     n_samples = 8
     images_aug, keypoints_aug = aug(
-        images=[sample_image] * n_samples, keypoints=[sample_keypoints] * n_samples,
+        images=[sample_image] * n_samples,
+        keypoints=[sample_keypoints] * n_samples,
     )
     assert len(images_aug) == len(keypoints_aug) == n_samples
 
 
-@pytest.mark.parametrize("width, height", [(200, 200), (300, 300), (400, 400),])
+@pytest.mark.parametrize(
+    "width, height",
+    [
+        (200, 200),
+        (300, 300),
+        (400, 400),
+    ],
+)
 def test_sequential(
-    sample_image, sample_keypoints, width, height,
+    sample_image,
+    sample_keypoints,
+    width,
+    height,
 ):
     # Guarantee that images smaller than crop size are handled fine
     very_small_image = sample_image[:50, :50]
@@ -48,7 +70,8 @@ def test_sequential(
         ]
     )
     images_aug, keypoints_aug = aug(
-        images=[very_small_image], keypoints=[sample_keypoints],
+        images=[very_small_image],
+        keypoints=[sample_keypoints],
     )
     assert len(images_aug) == len(keypoints_aug) == 1
     assert all(im.shape[:2] == (height, width) for im in images_aug)
@@ -58,13 +81,15 @@ def test_sequential(
     # Test passing in a batch of frames
     n_samples = 8
     images_aug, keypoints_aug = aug(
-        images=[very_small_image] * n_samples, keypoints=[sample_keypoints] * n_samples,
+        images=[very_small_image] * n_samples,
+        keypoints=[sample_keypoints] * n_samples,
     )
     assert len(images_aug) == len(keypoints_aug) == n_samples
 
 
 def test_keypoint_horizontal_flip(
-    sample_image, sample_keypoints,
+    sample_image,
+    sample_keypoints,
 ):
     keypoints_flipped = sample_keypoints.copy()
     keypoints_flipped[:, 0] = sample_image.shape[1] - keypoints_flipped[:, 0]
@@ -73,9 +98,9 @@ def test_keypoint_horizontal_flip(
         keypoints=list(map(str, range(12))),
         symmetric_pairs=pairs,
     )
-    keypoints_aug = aug(
-        images=[sample_image], keypoints=[sample_keypoints],
-    )[1][0]
+    keypoints_aug = aug(images=[sample_image], keypoints=[sample_keypoints],)[
+        1
+    ][0]
     temp = keypoints_aug.reshape((3, 12, 2))
     for pair in pairs:
         temp[:, pair] = temp[:, pair[::-1]]

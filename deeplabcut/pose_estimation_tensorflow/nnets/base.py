@@ -86,7 +86,10 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         return self.add_inference_layers(heads)
 
     def prediction_layers(
-        self, features, scope="pose", reuse=None,
+        self,
+        features,
+        scope="pose",
+        reuse=None,
     ):
         out = {}
         n_joints = self.cfg["num_joints"]
@@ -99,21 +102,30 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             )
             if self.cfg["location_refinement"]:
                 out["locref"] = prediction_layer(
-                    self.cfg, features, "locref_pred", n_joints * 2,
+                    self.cfg,
+                    features,
+                    "locref_pred",
+                    n_joints * 2,
                 )
             if (
                 self.cfg["pairwise_predict"]
                 and "multi-animal" not in self.cfg["dataset_type"]
             ):
                 out["pairwise_pred"] = prediction_layer(
-                    self.cfg, features, "pairwise_pred", n_joints * (n_joints - 1) * 2,
+                    self.cfg,
+                    features,
+                    "pairwise_pred",
+                    n_joints * (n_joints - 1) * 2,
                 )
             if (
                 self.cfg["partaffinityfield_predict"]
                 and "multi-animal" in self.cfg["dataset_type"]
             ):
                 out["pairwise_pred"] = prediction_layer(
-                    self.cfg, features, "pairwise_pred", self.cfg["num_limbs"] * 2,
+                    self.cfg,
+                    features,
+                    "pairwise_pred",
+                    self.cfg["num_limbs"] * 2,
                 )
         out["features"] = features
         return out
@@ -188,16 +200,22 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
         scmaps = tf.gather(prob, tf.range(self.cfg["num_joints"]), axis=3)
         kernel = make_2d_gaussian_kernel(
-            sigma=self.cfg.get("sigma", 1), size=nms_radius * 2 + 1,
+            sigma=self.cfg.get("sigma", 1),
+            size=nms_radius * 2 + 1,
         )
         kernel = kernel[:, :, tf.newaxis, tf.newaxis]
 
         kernel_sc = tf.tile(kernel, [1, 1, tf.shape(scmaps)[3], 1])
         scmaps = tf.nn.depthwise_conv2d(
-            scmaps, kernel_sc, strides=[1, 1, 1, 1], padding="SAME",
+            scmaps,
+            kernel_sc,
+            strides=[1, 1, 1, 1],
+            padding="SAME",
         )
         peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
-            scmaps, nms_radius, self.cfg.get("minconfidence", 0.01),
+            scmaps,
+            nms_radius,
+            self.cfg.get("minconfidence", 0.01),
         )
         outputs = {"part_prob": prob, "peak_inds": peak_inds}
         if self.cfg["location_refinement"]:
@@ -205,7 +223,10 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             if self.cfg.get("locref_smooth", False):
                 kernel_loc = tf.tile(kernel, [1, 1, tf.shape(locref)[3], 1])
                 locref = tf.nn.depthwise_conv2d(
-                    locref, kernel_loc, strides=[1, 1, 1, 1], padding="SAME",
+                    locref,
+                    kernel_loc,
+                    strides=[1, 1, 1, 1],
+                    padding="SAME",
                 )
             outputs["locref"] = locref
 

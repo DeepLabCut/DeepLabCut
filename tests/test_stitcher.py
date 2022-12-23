@@ -202,7 +202,10 @@ def test_stitcher_real(tmpdir_factory, real_tracklets):
 
 
 def test_stitcher_montblanc(real_tracklets_montblanc):
-    stitcher = TrackletStitcher.from_dict_of_dict(real_tracklets_montblanc, n_tracks=3,)
+    stitcher = TrackletStitcher.from_dict_of_dict(
+        real_tracklets_montblanc,
+        n_tracks=3,
+    )
     assert len(stitcher) == 5
     assert all(tracklet.is_continuous for tracklet in stitcher.tracklets)
     assert all(tracklet.identity == -1 for tracklet in stitcher.tracklets)

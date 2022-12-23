@@ -58,7 +58,7 @@ from deeplabcut.generate_training_dataset import (
     dropimagesduetolackofannotation,
     adddatasetstovideolistandviceversa,
     dropduplicatesinannotatinfiles,
-    dropunlabeledframes
+    dropunlabeledframes,
 )
 from deeplabcut.utils import (
     create_labeled_video,
@@ -76,6 +76,7 @@ try:
     from deeplabcut.pose_tracking_pytorch import transformer_reID
 except ModuleNotFoundError as e:
     import warnings
+
     warnings.warn(
         """
         As PyTorch is not installed, unsupervised identity learning will not be available.

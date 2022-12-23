@@ -401,7 +401,7 @@ def extract_outlier_frames(
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
                 sum_ = temp_dt.sum(axis=1, level=1)
-                ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
+                ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":
                 d, o = compute_deviations(
@@ -616,7 +616,9 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        cfg, "all"
+    )
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)
@@ -673,7 +675,10 @@ def ExtractFramesbasedonPreselection(
         else:
             if coords is not None:
                 clip = clip.crop(
-                    y1=coords[2], y2=coords[3], x1=coords[0], x2=coords[1],
+                    y1=coords[2],
+                    y2=coords[3],
+                    x1=coords[0],
+                    x2=coords[1],
                 )
             frames2pick = frameselectiontools.KmeansbasedFrameselection(
                 clip,
@@ -738,10 +743,15 @@ def ExtractFramesbasedonPreselection(
         try:
             if coords is not None:
                 add.add_new_videos(
-                    config, [video], coords=[coords], copy_videos=copy_videos,
+                    config,
+                    [video],
+                    coords=[coords],
+                    copy_videos=copy_videos,
                 )  # make sure you pass coords as a list
             else:
-                add.add_new_videos(config, [video], coords=None,  copy_videos=copy_videos)
+                add.add_new_videos(
+                    config, [video], coords=None, copy_videos=copy_videos
+                )
         except:  # can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
             print(
                 "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!"
@@ -755,15 +765,27 @@ def ExtractFramesbasedonPreselection(
             )
             if isinstance(data, pd.DataFrame):
                 df = data.loc[frames2pick]
-                df.index = pd.MultiIndex.from_tuples([
-                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
-                    for index in df.index
-                ])  # exchange index number by file names.
+                df.index = pd.MultiIndex.from_tuples(
+                    [
+                        (
+                            "labeled-data",
+                            vname,
+                            "img" + str(index).zfill(strwidth) + ".png",
+                        )
+                        for index in df.index
+                    ]
+                )  # exchange index number by file names.
             elif isinstance(data, dict):
-                idx = pd.MultiIndex.from_tuples([
-                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
-                    for index in frames2pick
-                ])
+                idx = pd.MultiIndex.from_tuples(
+                    [
+                        (
+                            "labeled-data",
+                            vname,
+                            "img" + str(index).zfill(strwidth) + ".png",
+                        )
+                        for index in frames2pick
+                    ]
+                )
                 filename = os.path.join(
                     str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
                 )
@@ -888,7 +910,7 @@ def PlottingSingleFrame(
                     plt.scatter(
                         df_x[ind, index],
                         df_y[ind, index],
-                        s=dotsize ** 2,
+                        s=dotsize**2,
                         color=colors(map2bp[i]),
                         alpha=alphavalue,
                     )
@@ -960,7 +982,7 @@ def PlottingSingleFramecv2(
                     plt.scatter(
                         df_x[ind, index],
                         df_y[ind, index],
-                        s=dotsize ** 2,
+                        s=dotsize**2,
                         color=colors(map2bp[i]),
                         alpha=alphavalue,
                     )

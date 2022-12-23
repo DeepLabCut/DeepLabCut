@@ -289,7 +289,7 @@ def extract_frames(
             )
         if videos_list is None:
             videos = cfg.get("video_sets_original") or cfg["video_sets"]
-        else: #filter video_list by the ones in the config file
+        else:  # filter video_list by the ones in the config file
             videos = [v for v in cfg["video_sets"] if v in videos_list]
 
         if opencv:
@@ -544,10 +544,7 @@ def extract_frames(
                     raise ValueError(f"Video {video_name} not found...")
 
                 cap = cv2.VideoCapture(vid)
-                print(
-                    "\n extracting matched frames from "
-                    + video_name
-                )
+                print("\n extracting matched frames from " + video_name)
                 for img in extracted_images:
                     imgNum = re.findall(imgPattern, os.path.basename(img))[0]
                     cap.set(1, int(imgNum))

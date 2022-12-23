@@ -29,7 +29,7 @@ from tqdm import tqdm
 
 
 def UniformFrames(clip, numframes2pick, start, stop, Index=None):
-    """ Temporally uniformly sampling frames in interval (start,stop).
+    """Temporally uniformly sampling frames in interval (start,stop).
     Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
     when behavioral videos naturally covers many states.
 
@@ -72,7 +72,7 @@ def UniformFrames(clip, numframes2pick, start, stop, Index=None):
 
 # uses openCV
 def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
-    """ Temporally uniformly sampling frames in interval (start,stop).
+    """Temporally uniformly sampling frames in interval (start,stop).
     Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
     when behavioral videos naturally covers many states.
 
@@ -122,7 +122,7 @@ def KmeansbasedFrameselection(
     max_iter=50,
     color=False,
 ):
-    """ This code downsamples the video to a width of resizewidth.
+    """This code downsamples the video to a width of resizewidth.
 
     The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
     Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
@@ -225,7 +225,7 @@ def KmeansbasedFrameselectioncv2(
     max_iter=50,
     color=False,
 ):
-    """ This code downsamples the video to a width of resizewidth.
+    """This code downsamples the video to a width of resizewidth.
     The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
     Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
     i.e. different postures etc. On large videos this code is slow.

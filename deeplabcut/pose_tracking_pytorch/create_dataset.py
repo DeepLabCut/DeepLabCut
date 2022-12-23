@@ -45,12 +45,15 @@ def save_train_triplets(feature_fname, triplets, out_name):
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
 
-
         anchor_frame = "frame" + str(anchor_frame).zfill(zfill_width)
         pos_frame = "frame" + str(pos_frame).zfill(zfill_width)
         neg_frame = "frame" + str(neg_frame).zfill(zfill_width)
 
-        if anchor_frame in feature_dict and pos_frame in feature_dict and neg_frame in feature_dict:
+        if (
+            anchor_frame in feature_dict
+            and pos_frame in feature_dict
+            and neg_frame in feature_dict
+        ):
             # only try to find these features if they are in the dictionary
 
             anchor_vec = query_feature_by_coord_in_img_space(
@@ -78,7 +81,9 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
     save_train_triplets(feature_fname, triplets, out_name)
 
 
-def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000, destfolder=None):
+def create_triplets_dataset(
+    videos, dlcscorer, track_method, n_triplets=1000, destfolder=None
+):
 
     # 1) reference to video folder and get the proper bpt_feature file for feature table
     # 2) get either the path to gt or the path to track pickle

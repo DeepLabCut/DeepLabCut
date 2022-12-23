@@ -49,7 +49,7 @@ def make_labeled_image(
     scaling=1,
     ax=None,
 ):
-    """Creating a labeled image with the original human labels, as well as the DeepLabCut's! """
+    """Creating a labeled image with the original human labels, as well as the DeepLabCut's!"""
 
     alphavalue = cfg["alphavalue"]  # .5
     dotsize = cfg["dotsize"]  # =15

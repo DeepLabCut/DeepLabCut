@@ -29,7 +29,8 @@ def test_prune_paf_graph():
 
     for degree in (4, 6, 8):
         pruned_edges = auxfun_multianimal.prune_paf_graph(
-            edges, average_degree=degree,
+            edges,
+            average_degree=degree,
         )
         G = nx.Graph(pruned_edges)
         assert np.mean(list(dict(G.degree).values())) == degree
@@ -43,7 +44,9 @@ def test_reorder_individuals_in_df():
     individuals = df.columns.get_level_values("individuals").unique().to_list()
 
     # Generate a random permutation and reorder data. Ignore the unique bodypart
-    permutation_indices = random.sample(range(len(individuals[:-1])), k=len(individuals[:-1]))
+    permutation_indices = random.sample(
+        range(len(individuals[:-1])), k=len(individuals[:-1])
+    )
     permutation = [individuals[i] for i in permutation_indices]
     permutation.append("single")
     df_reordered = auxfun_multianimal.reorder_individuals_in_df(df, permutation)

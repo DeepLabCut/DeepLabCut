@@ -139,7 +139,10 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     datafile, _ = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]
     num_images = mlab.shape[1]
@@ -374,7 +377,10 @@ if __name__ == "__main__":
     print("will be used for 3D testscript...")
     # TENSORPACK could fail in WINDOWS...
     deeplabcut.create_training_dataset(
-        path_config_file, Shuffles=[2], net_type=NET, augmenter_type=augmenter_type3,
+        path_config_file,
+        Shuffles=[2],
+        net_type=NET,
+        augmenter_type=augmenter_type3,
     )
 
     posefile = os.path.join(

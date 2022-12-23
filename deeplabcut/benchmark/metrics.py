@@ -115,7 +115,8 @@ def calc_prediction_errors(preds, gt):
                 if ~np.any(found):
                     continue
                 min_dists = np.linalg.norm(
-                    xy_gt_[visible][found] - xy_pred_[neighbors[found]], axis=1,
+                    xy_gt_[visible][found] - xy_pred_[neighbors[found]],
+                    axis=1,
                 )
                 conf_pred_ = conf_pred[map_[i]]
                 errors[n, visible[found], i, 0] = min_dists
@@ -201,7 +202,10 @@ def calc_map_from_obj(
 
 
 def calc_rmse_from_obj(
-    eval_results_obj, h5_file, metadata_file, drop_kpts=None,
+    eval_results_obj,
+    h5_file,
+    metadata_file,
+    drop_kpts=None,
 ):
     """Calc prediction errors for submissions."""
     gt = _format_gt_data(h5_file)

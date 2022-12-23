@@ -10,6 +10,7 @@
 #
 
 import random
+
 try:
     import torch
 except ModuleNotFoundError:

@@ -100,7 +100,10 @@ def _calc_separability(
 
 
 def _calc_within_between_pafs(
-    data, metadata, per_edge=True, train_set_only=True,
+    data,
+    metadata,
+    per_edge=True,
+    train_set_only=True,
 ):
     data = deepcopy(data)
     train_inds = set(metadata["data"]["trainIndices"])
@@ -323,7 +326,9 @@ def _get_n_best_paf_graphs(
         raise ValueError('`which` must be either "best" or "worst"')
 
     (within_train, _), (between_train, _) = _calc_within_between_pafs(
-        data, metadata, train_set_only=True,
+        data,
+        metadata,
+        train_set_only=True,
     )
     # Handle unlabeled bodyparts...
     existing_edges = set(k for k, v in within_train.items() if v)
@@ -401,7 +406,11 @@ def cross_validate_paf_graphs(
         cfg, params["paf_graph"]
     )
     best_graphs = _get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], ignore_inds=to_ignore, n_graphs=n_graphs,
+        data,
+        metadata,
+        params["paf_graph"],
+        ignore_inds=to_ignore,
+        n_graphs=n_graphs,
     )
     paf_scores = best_graphs[1]
     if paf_inds is None:
@@ -428,7 +437,10 @@ def cross_validate_paf_graphs(
         margin=margin,
         symmetric_kpts=symmetric_kpts,
         calibration_file=calibration_file,
-        split_inds=[metadata["data"]["trainIndices"], metadata["data"]["testIndices"],],
+        split_inds=[
+            metadata["data"]["trainIndices"],
+            metadata["data"]["testIndices"],
+        ],
     )
     # Select optimal PAF graph
     df = results[1]

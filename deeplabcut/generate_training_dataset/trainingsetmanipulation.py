@@ -245,6 +245,7 @@ def dropimagesduetolackofannotation(config):
             len(imagelist),
         )
 
+
 def dropunlabeledframes(config):
     """
     Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files
@@ -262,14 +263,14 @@ def dropunlabeledframes(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file =  os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
-            print("Skipping ",folder,"...")
+            print("Skipping ", folder, "...")
             continue
         before_len = len(DC.index)
-        DC = DC.dropna(how='all') # drop rows where all values are missing(NaN)
+        DC = DC.dropna(how="all")  # drop rows where all values are missing(NaN)
         after_len = len(DC.index)
         dropped = before_len - after_len
         if dropped:
@@ -278,9 +279,10 @@ def dropunlabeledframes(config):
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
             )
 
-            print("Dropped ", dropped, "entries in ",folder)
+            print("Dropped ", dropped, "entries in ", folder)
 
     print("Done.")
+
 
 def check_labels(
     config,
@@ -833,7 +835,7 @@ def create_training_dataset(
                 "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
         else:
-            print("Reloading pose_cfg parameters from " + posecfg_template +'\n')
+            print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
             prior_cfg = read_plainconfig(posecfg_template)

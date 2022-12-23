@@ -153,7 +153,10 @@ def triangulate(
                 track_method = auxfun_multianimal.get_track_method(
                     cfg, track_method=track_method
                 )
-                if len(cfg.get("multianimalbodyparts", [])) == 1 and track_method != "box":
+                if (
+                    len(cfg.get("multianimalbodyparts", [])) == 1
+                    and track_method != "box"
+                ):
                     warnings.warn(
                         "Switching to `box` tracker for single point tracking..."
                     )
@@ -286,9 +289,7 @@ def triangulate(
                             suffix += "_filtered"
 
                         dataname.append(
-                            os.path.join(
-                                destfolder, vname + DLCscorer + suffix + ".h5"
-                            )
+                            os.path.join(destfolder, vname + DLCscorer + suffix + ".h5")
                         )
 
                 else:  # need to do the whole jam.
@@ -317,9 +318,7 @@ def triangulate(
                         )
                         suffix += "_filtered"
                     dataname.append(
-                        os.path.join(
-                            destfolder, vname + DLCscorer + suffix + ".h5"
-                        )
+                        os.path.join(destfolder, vname + DLCscorer + suffix + ".h5")
                     )
 
         if run_triangulate:
@@ -479,8 +478,15 @@ def triangulate(
             if cfg.get("multianimalproject"):
                 df_2d_view2 = pd.read_hdf(dataname[1])
                 individuals_order = [individuals[i] for i in list(voting.values())]
-                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(df_2d_view2, individuals_order)
-                df_2d_view2.to_hdf(dataname[1], "tracks", format="table", mode="w",)
+                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(
+                    df_2d_view2, individuals_order
+                )
+                df_2d_view2.to_hdf(
+                    dataname[1],
+                    "tracks",
+                    format="table",
+                    mode="w",
+                )
 
             auxiliaryfunctions_3d.SaveMetadata3d(
                 str(output_filename + "_meta.pickle"), metadata
@@ -567,7 +573,8 @@ def undistort_points(config, dataframe, camera_pair):
     path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
     dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
-        [(dataframe_cam1, dataframe_cam2)], stereo_file,
+        [(dataframe_cam1, dataframe_cam2)],
+        stereo_file,
     )[0]
 
     return (

@@ -88,7 +88,8 @@ def load_and_enqueue(sess, enqueue_op, coord, dataset, placeholders):
 def start_preloading(sess, enqueue_op, dataset, placeholders):
     coord = tf.compat.v1.train.Coordinator()
     t = threading.Thread(
-        target=load_and_enqueue, args=(sess, enqueue_op, coord, dataset, placeholders),
+        target=load_and_enqueue,
+        args=(sess, enqueue_op, coord, dataset, placeholders),
     )
     t.start()
     return coord, t
