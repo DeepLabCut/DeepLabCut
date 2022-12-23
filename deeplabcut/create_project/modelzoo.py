@@ -261,6 +261,7 @@ def create_pretrained_project(
         download_huggingface_model(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
+        pose_cfg["dataset_type"] = "imgaug"
         print(path_train_config)
         # Updating config file:
         dict_ = {
