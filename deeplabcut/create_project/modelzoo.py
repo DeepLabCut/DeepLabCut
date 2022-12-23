@@ -1,12 +1,13 @@
-"""
-DeepLabCut 2.1.8 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCu/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import os
 from pathlib import Path
@@ -19,6 +20,8 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
     MODELOPTIONS,
 )
+
+Modeloptions = MODELOPTIONS  # backwards compatability for COLAB NOTEBOOK
 
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
@@ -258,6 +261,7 @@ def create_pretrained_project(
         download_huggingface_model(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
+        pose_cfg["dataset_type"] = "imgaug"
         print(path_train_config)
         # Updating config file:
         dict_ = {
