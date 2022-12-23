@@ -36,13 +36,16 @@ We now introduce two SuperAnimal members, namely, superquadruped and supertopvie
 Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.
 
 
-### To use our model in DeepLabCut, please use following API
+### To use our models in DeepLabCut, please use the following API
 
-```{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.video_inference_superanimal.rst
+```python
+video_path = 'demo-video.mp4'
+superanimal_name = 'superquadruped'
+scale_list = range(200, 600, 50)  # image height pixel size range and increment
+
+deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
 ```
+
 
 ### To see the list of available models, check out the [Home page](http://modelzoo.deeplabcut.org/). 
 
