@@ -265,6 +265,7 @@ def create_pretrained_project(
         pose_cfg["nmsradius"] = 5.0
         pose_cfg["sigma"] = 1
         pose_cfg["minconfidence"] = 0.01
+        pose_cfg["partaffinityfield_graph"] = []
         print(path_train_config)
         # Updating config file:
         dict_ = {
@@ -302,6 +303,7 @@ def create_pretrained_project(
             "nmsradius",
             "sigma",
             "minconfidence",
+            "partaffinityfield_graph",
         ]
 
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
