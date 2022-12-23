@@ -264,6 +264,7 @@ def create_pretrained_project(
         # Add some multi-animal defaults
         pose_cfg["nmsradius"] = 5.0
         pose_cfg["sigma"] = 1
+        pose_cfg["minconfidence"] = 0.01
         print(path_train_config)
         # Updating config file:
         dict_ = {
@@ -300,6 +301,7 @@ def create_pretrained_project(
             "locref_stdev",
             "nmsradius",
             "sigma",
+            "minconfidence",
         ]
 
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
