@@ -12,6 +12,10 @@ test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our
 - (4) new methods to make SuperAnimal Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
 ## Quick Start:
+```
+pip install deeplabcut[tf,gui,modelzoo]
+```
+
 
 ```
 pip install deeplabcut[tf,gui,modelzoo]
