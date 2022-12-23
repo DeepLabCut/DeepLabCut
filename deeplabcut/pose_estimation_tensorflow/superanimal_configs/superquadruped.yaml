@@ -80,7 +80,7 @@ all_joints_names:
 - body_middle_left
 alpha_r: 0.02
 apply_prob: 0.5
-batch_size: 4
+batch_size: 1
 clahe: true
 claheratio: 0.1
 crop_sampling: hybrid

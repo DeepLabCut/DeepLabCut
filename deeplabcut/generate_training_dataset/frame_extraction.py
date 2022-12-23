@@ -483,6 +483,8 @@ def extract_frames(
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
         videos = sorted(cfg["video_sets"].keys())
+        if videos_list is not None:  # filter video_list by the ones in the config file
+            videos = [v for v in videos if v in videos_list]
         project_path = Path(config).parents[0]
         labels_path = os.path.join(project_path, "labeled-data/")
         video_dir = os.path.join(project_path, "videos/")
@@ -502,7 +504,7 @@ def extract_frames(
         # select crop method
         crop_list = []
         for video in videos:
-            if extCam_name not in video:
+            if extCam_name in video:
                 if crop == "GUI":
                     cfg = select_cropping_area(config, [video])
                     print("in gui code")
@@ -518,7 +520,6 @@ def extract_frames(
                 elif not crop:
                     coords = None
                 crop_list.append(coords)
-        print(crop_list)
 
         for coords, dirPath in zip(crop_list, label_dirs):
             extracted_images = glob.glob(os.path.join(dirPath, "*png"))
@@ -531,12 +532,21 @@ def extract_frames(
                     if fname.endswith(".png"):
                         os.remove(os.path.join(output_path, fname))
 
-                vid = os.path.join(video_dir, os.path.basename(output_path)) + ".avi"
+                # Find the matching video from the config `video_sets`,
+                # as it may be stored elsewhere than in the `videos` directory.
+                video_name = os.path.basename(output_path)
+                vid = ""
+                for video in cfg["video_sets"]:
+                    if video_name in video:
+                        vid = video
+                        break
+                if not vid:
+                    raise ValueError(f"Video {video_name} not found...")
+
                 cap = cv2.VideoCapture(vid)
                 print(
                     "\n extracting matched frames from "
-                    + os.path.basename(output_path)
-                    + ".avi"
+                    + video_name
                 )
                 for img in extracted_images:
                     imgNum = re.findall(imgPattern, os.path.basename(img))[0]
@@ -544,7 +554,7 @@ def extract_frames(
                     ret, frame = cap.read()
                     if ret:
                         image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                        img_name = str(output_path) + "/img" + imgNum + ".png"
+                        img_name = os.path.join(output_path, "img" + imgNum + ".png")
                         if crop:
                             io.imsave(
                                 img_name,

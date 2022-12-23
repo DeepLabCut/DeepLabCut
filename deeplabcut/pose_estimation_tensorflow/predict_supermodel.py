@@ -11,6 +11,7 @@ from skimage.util import img_as_ubyte
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
+from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import \
     predict as single_predict
@@ -18,6 +19,13 @@ from deeplabcut.pose_estimation_tensorflow.core import \
     predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
+from dlclibrary.dlcmodelzoo.modelzoo_download import (
+    download_huggingface_model,
+    MODELOPTIONS,
+)
+
+import glob
+
 
 
 # instead of having these in a lengthy function, I made this a separate function
@@ -331,7 +339,7 @@ def video_inference_superanimal(
     batchsize=1,
     robust_nframes=False,
     allow_growth=False,
-    init_weights="",
+    init_weights = "",
     customized_test_config="",
 ):
     """
@@ -376,9 +384,8 @@ def video_inference_superanimal(
     allow_growth: bool, default false.
         For some smaller GPUs the memory issues happen. If true, the memory allocator does not pre-allocate the entire specified
         GPU memory region, instead starting small and growing as needed. See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
-
-    init_weights: string, default empty
-        The path to the tensorflow checkpoint of the super model. Make sure you don't include the suffix of the snapshot file.
+    init_weights: str, default "".
+        Customized path for inference
 
     Examples
     --------
@@ -387,24 +394,22 @@ def video_inference_superanimal(
 
     scale_list = range(600,800,100)
 
-    init_weights = PATH_TO_SUPER_ANIMAL_MODEL
-
-    >>> deeplabcut.video_inference_superanimal(
+    superanimal_name = 'superanimal_mouse_topview'
+    videotype = 'mp4'
+    >>>  init_weights = deeplabcut.video_inference_superanimal(
                                       [video_path],
-                                      'supertopview',
+                                      superanimal_name,
                                       videotype=videotype,
-                                      init_weights = init_weights,
                                       scale_list = scale_list,
-                                      invert_color = False)
+                                     )
 
-    Note after calling video_inference, a config.yaml is created in your working directory
-
-    config_path = os.path.join(os.getcwd(), 'config.yaml')
-
-    >>> deeplabcut.create_labeled_video(config_path,
+    Note we do not need to pass a config in this case
+    >>> deeplabcut.create_labeled_video("",
                                 [video_path],
                                 videotype = videotype,
+                                superanimal_name = superanimal_name,
                                 init_weights = init_weights,
+                                pcutoff = 0.6
                                 )
 
 
@@ -412,22 +417,35 @@ def video_inference_superanimal(
 
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
-    name_dict = {
-        "supertopview": "supertopview.yaml",
-        "superquadruped": "superquadruped.yaml",
-    }
-
     if customized_test_config == "":
+        supermodels = parse_available_supermodels()
         test_cfg = load_config(
             os.path.join(
                 dlc_root_path,
                 "pose_estimation_tensorflow",
                 "superanimal_configs",
-                name_dict[superanimal_name],
+                supermodels[superanimal_name],
             )
         )
     else:
         test_cfg = load_config(customized_test_config)
+
+
+    # add a temp folder for checkpoint
+
+    weight_folder = superanimal_name + '_weights'
+    
+    if not os.path.exists(weight_folder):
+        download_huggingface_model(superanimal_name, weight_folder)
+    else:
+        print (f"{weight_folder} exists, using the downloaded weights")
+    
+    snapshots = glob.glob(
+        os.path.join(weight_folder, 'snapshot-*.index')
+    )
+    if init_weights == "":
+        init_weights = os.path.abspath(snapshots[0]).replace('.index', '')
+            
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
@@ -562,3 +580,5 @@ def video_inference_superanimal(
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
             df.to_hdf(dataname, key="df_with_missing")
+            
+    return init_weights

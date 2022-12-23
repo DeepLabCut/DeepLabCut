@@ -7,12 +7,10 @@ imageio-ffmpeg
 imgaug==0.4.0
 numba>=0.54.0
 matplotlib<=3.5.2
-napari-deeplabcut>=0.0.6
 networkx>=2.6
 numpy>=1.18.5
 pandas>=1.0.1,!=1.5.0
 pyyaml
-qdarkstyle==3.1
 scikit-image>=0.17
 scikit-learn>=1.0
 scipy>=1.4
@@ -24,4 +22,3 @@ tf_slim==1.1.0
 torch
 tqdm
 Pillow>=7.1
-PySide6<6.3.2

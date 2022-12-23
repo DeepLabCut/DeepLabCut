@@ -56,7 +56,7 @@ setuptools.setup(
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
-        "tf": ["tensorflow>=2.0"],
+        "tf": ["tensorflow>=2.0,<=2.10"],  # Last supported TF version on Windows Native
         "apple_mchips": [],
         "modelzoo": ["huggingface_hub"],
     },
