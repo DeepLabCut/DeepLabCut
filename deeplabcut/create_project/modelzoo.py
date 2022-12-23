@@ -261,6 +261,9 @@ def create_pretrained_project(
         download_huggingface_model(model, train_dir)
 
         pose_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_train_config)
+        # Add some multi-animal defaults
+        pose_cfg["nmsradius"] = 5.0
+        pose_cfg["sigma"] = 1
         print(path_train_config)
         # Updating config file:
         dict_ = {
@@ -295,6 +298,8 @@ def create_pretrained_project(
             "global_scale",
             "location_refinement",
             "locref_stdev",
+            "nmsradius",
+            "sigma",
         ]
 
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
