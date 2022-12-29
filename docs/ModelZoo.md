@@ -1,10 +1,10 @@
 # The DeepLabCut Model Zoo! 
 
-🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖
+🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖 🐿 🦍 🦥
 
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
 
-Started in 2020, the model zoo is four things: 
+Started in 2020 and expanded in 2022, the model zoo is four things: 
 - (1) a collection of models that are trained on diverse data across (typically) large datsets, which means you do not need to train models yourself
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models in part 1!
 - (3) a no-install DeepLabCut that you can use on ♾[Google Colab](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb), 
@@ -18,17 +18,19 @@ pip install deeplabcut[tf,gui,modelzoo]
 ```
 
 
-### About SuperAnimal Models.
+## About the SuperAnimal Models
 
-Our newest generation models act as a paradigm shift of using pre-trained models across species and settings. We aim to provide a plug and play solution that works without training.
+Animal pose estimation is critical in applications ranging from neuroscience to veterinary medicine. However, reliable inference of animal poses currently requires domain knowledge and labeling effort. To ease access to high-performance animal pose estimation models across diverse environments and species, we present a new paradigm for pre-training and fine-tuning that provides excellent zero-shot (no training required) performance on two major classes of animal pose data: quadrupeds and lab mice. 
 
-We now introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
+To provide the community with easy access to such high performance models across diverse environments and species, we present a new paradigm for building pre-trained animal pose models -- which we call SuperAnimal models -- and the ability to use them for transfer learning (e.g., fine-tune them if needed).
 
-- `superanimal_quadruped` model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is ortholonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:
+### We now  introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
+
+#### `superanimal_quadruped` model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is ortholonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:
 
 ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
 
-- `superanimal_topviewmouse` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:
+#### `superanimal_topviewmouse` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:
 
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
