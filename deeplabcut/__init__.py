@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -12,11 +12,22 @@
 
 import os
 
-# Suppress tensorflow warning messages
-import tensorflow as tf
+try:
+    import tensorflow as tf
+    # Suppress tensorflow warning messages
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
+except ModuleNotFoundError as e:
+    import warnings
 
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
+    warnings.warn(
+        """
+        Tensorflow is not installed! You will not be able to train models, evaluate, or run video inference. 
+        Please install tensorflow based on your GPU and system needs https://www.tensorflow.org/install/pip, or ignore this warning
+        if you truly don't need any deep learning aspects of DeepLabCut...
+        """
+    )
+
 from deeplabcut.version import __version__, VERSION
 
 print(f"Loading DLC {VERSION}...")
