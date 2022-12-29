@@ -20,15 +20,20 @@ pip install deeplabcut[tf,gui,modelzoo]
 
 ### About SuperAnimal Models.
 
-Our newest generation models act as a paradigm shift of using pre-trained model. It aims to provide a plug and play solution that works without training.
-
-IMPORTANT:  we currently only support single animal scenarios
+Our newest generation models act as a paradigm shift of using pre-trained models across species and settings. We aim to provide a plug and play solution that works without training.
 
 We now introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
 
-- superquadruped model aim to work across a large range of quadruped animals. Note since quadrupeds are mostly side viewed, it is important to tune the pcutoff to help model remove keypoints are occluded.
+- `superanimal_quadruped` model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is ortholonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:
 
-- supertopview model aims to work across labmice in different cage settings.
+![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
+
+- `superanimal_topviewmouse` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:
+
+![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
+
+
+IMPORTANT:  we currently only support single animal scenarios
 
 
 ### Our perspective.
@@ -36,7 +41,11 @@ We now introduce two SuperAnimal members, namely, `superanimal_quadruped` and `s
 Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.
 
 
-### To use our models in DeepLabCut, please use the following API
+### To use our models in DeepLabCut (versions 2.3+), please use the following API
+
+```
+pip install deeplabcut[tf,modelzoo]
+```
 
 ```python
 video_path = 'demo-video.mp4'
@@ -52,12 +61,11 @@ deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_lis
 **Coming soon:** The DeepLabCut Project Manager GUI will allow you to use the SuperAnimal Models. You can run the model and do ``active learning" to improve performance on your data. 
 Specifically, we have *new* video adaptation methods to make your tracking extra smooth and robust!
 
-### Potential failure modes for SuperAnimal Models.
+### Potential failure modes for SuperAnimal Models and how to fix it.
 
-Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of scale_list in the API (details in the API docs). For superquadruped, we empirically observe that if your video is larger than 1500 pixels, it is better to pass `scale_list` in the range within 1000.
+Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of `scale_list` in the API (details in the API docs). For `superanimal_quadruped`, we empirically observe that if your video is larger than 1500 pixels, it is better to pass `scale_list` in the range within 1000.
 
-Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or
-fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). We are currently developing new models and new methods to counter that.
+Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). You can use our "video adaptation" model (released soon) to counter this.
 
 ### To see our first preprint on the work, check out [our paper](https://arxiv.org/abs/2203.07436v1):
 
