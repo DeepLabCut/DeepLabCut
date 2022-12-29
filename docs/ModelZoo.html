@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Interactive Project Manager GUI &#8212; DeepLabCut</title>
+    <title>The DeepLabCut Model Zoo! &#8212; DeepLabCut</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="napari labeling GUI" href="napariGUI.html" />
-    <link rel="prev" title="Helper &amp; Advanced Optional Function Documentation" href="HelperFunctions.html" />
+    <link rel="next" title="Using ModelZoo models on your own datasets" href="recipes/UsingModelZooPupil.html" />
+    <link rel="prev" title="DeepLabCut-Live!" href="deeplabcutlive.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -179,9 +179,9 @@ const thebe_selector_output = ".output, .cell_output"
   Graphical User Interfaces (GUIs)
  </span>
 </p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="PROJECT_GUI.html">
    Interactive Project Manager GUI
   </a>
  </li>
@@ -213,9 +213,9 @@ const thebe_selector_output = ".output, .cell_output"
   DeepLabCut Model Zoo
  </span>
 </p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="ModelZoo.html">
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    The DeepLabCut Model Zoo!
   </a>
  </li>
@@ -413,7 +413,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/PROJECT_GUI.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/ModelZoo.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -441,7 +441,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../_sources/docs/PROJECT_GUI.md"
+        <a href="../_sources/docs/ModelZoo.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -501,31 +501,46 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#get-started">
-   Get Started:
+  <a class="reference internal nav-link" href="#home-page">
+   🏠 Home page
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#video-demos-how-to-launch-and-run-the-project-manager-gui">
-   VIDEO DEMOS: How to launch and run the Project Manager GUI:
+  <a class="reference internal nav-link" href="#quick-start">
+   Quick Start:
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down">
-     Using the Project Manager GUI with the latest DLC code (single animals, plus objects): :arrow_down:
+    <a class="reference internal nav-link" href="#about-superanimal-models">
+     About SuperAnimal Models.
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">
-     Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):
+    <a class="reference internal nav-link" href="#our-perspective">
+     Our perspective.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-please-use-the-following-api">
+     To use our models in DeepLabCut, please use the following API
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-see-the-list-of-available-models-check-out-the-home-page">
+     To see the list of available models, check out the Home page.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models">
+     Potential failure modes for SuperAnimal Models.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper">
+     To see our first preprint on the work, check out our paper:
     </a>
    </li>
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
-   VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:
-  </a>
  </li>
 </ul>
 
@@ -536,7 +551,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Interactive Project Manager GUI</h1>
+                <h1>The DeepLabCut Model Zoo!</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -547,31 +562,46 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#get-started">
-   Get Started:
+  <a class="reference internal nav-link" href="#home-page">
+   🏠 Home page
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#video-demos-how-to-launch-and-run-the-project-manager-gui">
-   VIDEO DEMOS: How to launch and run the Project Manager GUI:
+  <a class="reference internal nav-link" href="#quick-start">
+   Quick Start:
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down">
-     Using the Project Manager GUI with the latest DLC code (single animals, plus objects): :arrow_down:
+    <a class="reference internal nav-link" href="#about-superanimal-models">
+     About SuperAnimal Models.
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">
-     Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):
+    <a class="reference internal nav-link" href="#our-perspective">
+     Our perspective.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-please-use-the-following-api">
+     To use our models in DeepLabCut, please use the following API
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-see-the-list-of-available-models-check-out-the-home-page">
+     To see the list of available models, check out the Home page.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models">
+     Potential failure modes for SuperAnimal Models.
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper">
+     To see our first preprint on the work, check out our paper:
     </a>
    </li>
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
-   VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:
-  </a>
  </li>
 </ul>
 
@@ -583,50 +613,74 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="interactive-project-manager-gui">
-<span id="project-manager-gui"></span><h1>Interactive Project Manager GUI<a class="headerlink" href="#interactive-project-manager-gui" title="Permalink to this headline">#</a></h1>
-<p>As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.</p>
-<p><strong>Release notes:</strong> As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide6 with napari support.</p>
-<section id="get-started">
-<h2>Get Started:<a class="headerlink" href="#get-started" title="Permalink to this headline">#</a></h2>
-<p>(1) Install DeepLabCut using the simple-install with Anaconda found <a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">here!</span></a>*.
-Now that you have deeplabcut installed, just go into your env (activate DEEPLABCUT) then run:</p>
-<p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">--force-reinstall</span> <span class="pre">'deeplabcut[gui,tf]'</span></code></p>
-<p>*Note, currently the latest GUI is a release candidate, so you need to specifically install the <code class="docutils literal notranslate"><span class="pre">rc</span></code> version. This will change once v2.3 is stable.</p>
-<p>(2) Open the terminal and run: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/07ae2633-dc3e-4b6d-beec-27c08d9f8531/ezgif.com-gif-maker+%284%29.gif?format=2500w" width="80%">
-</p>
-<p>Start at the Project Management Tab and work your way through the tabs to built your customized model and deploy it on new data.
-We recommend to keep the terminal visible (as well as the GUI) so you can see the ongoing processes as you step through your project, or any errors that might arise.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="the-deeplabcut-model-zoo">
+<h1>The DeepLabCut Model Zoo!<a class="headerlink" href="#the-deeplabcut-model-zoo" title="Permalink to this headline">#</a></h1>
+<p>🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖</p>
+<section id="home-page">
+<h2>🏠 <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a><a class="headerlink" href="#home-page" title="Permalink to this headline">#</a></h2>
+<p>Started in 2020, the model zoo is four things:</p>
 <ul class="simple">
-<li><p>For specific napari-based labeling features, see the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/napariGUI.html#usage">“napari gui” docs</a>.</p></li>
-<li><p>To change from dark to light mode, set appearance at the top:</p></li>
+<li><p>(1) a collection of models that are trained on diverse data across (typically) large datsets, which means you do not need to train models yourself</p></li>
+<li><p>(2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models in part 1!</p></li>
+<li><p>(3) a no-install DeepLabCut that you can use on ♾<a class="reference external" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb">Google Colab</a>,
+test our models in 🕸<a class="reference external" href="https://contrib.deeplabcut.org/">the browser</a>, or on our 🤗<a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">HuggingFace</a> app!</p></li>
+<li><p>(4) new methods to make SuperAnimal Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!</p></li>
 </ul>
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/5e41b01d-3101-40b2-9c53-129d8988370f/Screen+Shot+2022-10-09+at+3.45.46+PM.png?format=2500w
-" width="30%">
-</p>
 </section>
-<section id="video-demos-how-to-launch-and-run-the-project-manager-gui">
-<h2>VIDEO DEMOS: How to launch and run the Project Manager GUI:<a class="headerlink" href="#video-demos-how-to-launch-and-run-the-project-manager-gui" title="Permalink to this headline">#</a></h2>
-<p><strong>Click on the images!</strong></p>
-<p>Note that currently the video demo is the wxPython version, but the logic is the same!</p>
-<p><a class="reference external" href="https://youtu.be/KcXogR-p5Ak"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" /></a></p>
-<section id="using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down">
-<h3>Using the Project Manager GUI with the latest DLC code (single animals, plus objects): :arrow_down:<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down" title="Permalink to this headline">#</a></h3>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=JDsa8R5J0nQ"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589046800303-OV1CCNZINWDMF1PZWCWE/ke17ZwdGBToddI8pDm48kB4PVlRPKDmSlQNbUD3wvXgUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcaja1QZ1SznGf7WzFOi-J6zLusnaF2VdeZcKivwxvFiDfGDqVYuwbAlftad9hfoui/dlc_gui_22.png?format=1000w" /></a></p>
-<p><a class="reference internal" href="UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">READ MORE HERE</span></a></p>
+<section id="quick-start">
+<h2>Quick Start:<a class="headerlink" href="#quick-start" title="Permalink to this headline">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="p">[</span><span class="n">tf</span><span class="p">,</span><span class="n">gui</span><span class="p">,</span><span class="n">modelzoo</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="about-superanimal-models">
+<h3>About SuperAnimal Models.<a class="headerlink" href="#about-superanimal-models" title="Permalink to this headline">#</a></h3>
+<p>Our newest generation models act as a paradigm shift of using pre-trained model. It aims to provide a plug and play solution that works without training.</p>
+<p>IMPORTANT:  we currently only support single animal scenarios</p>
+<p>We now introduce two SuperAnimal members, namely, superquadruped and supertopview.</p>
+<ul class="simple">
+<li><p>superquadruped model aim to work across a large range of quadruped animals. Note since quadrupeds are mostly side viewed, it is important to tune the pcutoff to help model remove keypoints are occluded.</p></li>
+<li><p>supertopview model aims to work across labmice in different cage settings.</p></li>
+</ul>
 </section>
-<section id="using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">
-<h3>Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects" title="Permalink to this headline">#</a></h3>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=Kp-stcTm77g"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589047147498-G1KTFA5BXR4PVHOOR7OG/ke17ZwdGBToddI8pDm48kJDij24pM2COisBTLIGjR1pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIel60EThn7SDFlTiSprUhmjQQHn9bhdY9dnQSKs8bCCo/Untitled.png?format=1000w" /></a></p>
-<p><a class="reference internal" href="UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">READ MORE HERE</span></a></p>
+<section id="our-perspective">
+<h3>Our perspective.<a class="headerlink" href="#our-perspective" title="Permalink to this headline">#</a></h3>
+<p>Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.</p>
 </section>
+<section id="to-use-our-models-in-deeplabcut-please-use-the-following-api">
+<h3>To use our models in DeepLabCut, please use the following API<a class="headerlink" href="#to-use-our-models-in-deeplabcut-please-use-the-following-api" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;demo-video.mp4&#39;</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s1">&#39;superquadruped&#39;</span>
+<span class="n">scale_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>  <span class="c1"># image height pixel size range and increment</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span> <span class="n">superanimal_name</span><span class="p">,</span> <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
-<section id="video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
-<h2>VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:<a class="headerlink" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines" title="Permalink to this headline">#</a></h2>
-<p><a class="reference external" href="https://youtu.be/WXCVr6xAcCA">Watch the video</a></p>
+<section id="to-see-the-list-of-available-models-check-out-the-home-page">
+<h3>To see the list of available models, check out the <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a>.<a class="headerlink" href="#to-see-the-list-of-available-models-check-out-the-home-page" title="Permalink to this headline">#</a></h3>
+<p><strong>Coming soon:</strong> The DeepLabCut Project Manager GUI will allow you to use the SuperAnimal Models. You can run the model and do ``active learning” to improve performance on your data.
+Specifically, we have <em>new</em> video adaptation methods to make your tracking extra smooth and robust!</p>
+</section>
+<section id="potential-failure-modes-for-superanimal-models">
+<h3>Potential failure modes for SuperAnimal Models.<a class="headerlink" href="#potential-failure-modes-for-superanimal-models" title="Permalink to this headline">#</a></h3>
+<p>Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of scale_list in the API (details in the API docs). For superquadruped, we empirically observe that if your video is larger than 1500 pixels, it is better to pass <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the range within 1000.</p>
+<p>Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or
+fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). We are currently developing new models and new methods to counter that.</p>
+</section>
+<section id="to-see-our-first-preprint-on-the-work-check-out-our-paper">
+<h3>To see our first preprint on the work, check out <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">our paper</a>:<a class="headerlink" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper" title="Permalink to this headline">#</a></h3>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Here is the citation:
+&#64;article{Ye2022PanopticAP,
+title={Panoptic animal pose estimators are zero-shot performers},
+author={Shaokai Ye and Alexander Mathis and Mackenzie W. Mathis},
+journal={ArXiv},
+year={2022},
+volume={abs/2203.07436}
+}</p>
+</div>
+</section>
 </section>
 </section>
 
@@ -657,17 +711,17 @@ We recommend to keep the terminal visible (as well as the GUI) so you can see th
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="HelperFunctions.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="deeplabcutlive.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Helper &amp; Advanced Optional Function Documentation</p>
+            <p class="prev-next-title">DeepLabCut-Live!</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="napariGUI.html" title="next page">
+    <a class='right-next' id="next-link" href="recipes/UsingModelZooPupil.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">napari labeling GUI</p>
+        <p class="prev-next-title">Using ModelZoo models on your own datasets</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

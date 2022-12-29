@@ -214,6 +214,11 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="docs/ModelZoo.html">
+   The DeepLabCut Model Zoo!
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="docs/recipes/UsingModelZooPupil.html">
    Using ModelZoo models on your own datasets
   </a>
@@ -537,8 +542,8 @@ title="Print to PDF"
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#versions">
-     Versions:
+    <a class="reference internal nav-link" href="#major-versions">
+     Major Versions:
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
@@ -610,8 +615,8 @@ title="Print to PDF"
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#versions">
-     Versions:
+    <a class="reference internal nav-link" href="#major-versions">
+     Major Versions:
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
@@ -650,7 +655,7 @@ title="Print to PDF"
     <a href="https://www.mousemotorlab.org/deeplabcut/">www.deeplabcut.org</a>
 </p>
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/5d90cb67886fb8184560c3ef/1569773279570-XQAKFA299I0YGMZI129U/ke17ZwdGBToddI8pDm48kAsfLZj9Z3cwME2xx-GVPktZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVFduml12xzze87D3uxh5wWTU2EfgWtpp0j_eVfs7Ce7Qib8BodarTVrzIWCp72ioWw/MATHIS_2018_odortrail.gif?format=300w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=300w" height="150">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=300w" height="150">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=300w" height="150">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="150">
@@ -658,6 +663,7 @@ title="Print to PDF"
 <p>DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks. <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut">Read a short development and application summary below</a>. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic.</p>
 <p><strong>Quick start</strong> read the docs: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">https://deeplabcut.github.io/DeepLabCut</a></p>
 <p><strong>Latest updates:</strong></p>
+<p>:purple_heart: The DeepLabCut Model Zoo launches SuperAnimals, see more <a class="reference external" href="http://www.mackenziemathislab.org/dlc-modelzoo/">here</a>.</p>
 <p>:purple_heart: <strong>DeepLabCut supports multi-animal pose estimation!</strong> maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">new <code class="docutils literal notranslate"><span class="pre">2.2+</span></code> releases</a> for what’s new &amp; how to install it, please see our new <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">paper, Lauer et al 2022</a>, and the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">new docs</a> on how to use it!</p>
 <p>:purple_heart: We support multi-animal re-identification, see <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al 2022</a>.</p>
 <p>:purple_heart: We have a <strong>real-time</strong> package available! <a class="reference external" href="http://DLClive.deeplabcut.org">http://DLClive.deeplabcut.org</a></p>
@@ -829,9 +835,14 @@ title="Print to PDF"
 <section id="license">
 <h2>License:<a class="headerlink" href="#license" title="Permalink to this headline">#</a></h2>
 <p>This project is primarily licensed under the GNU Lesser General Public License v3.0. Note that the software is provided “as is”, without warranty of any kind, express or implied. If you use the code or data, please cite us! Note, artwork (DeepLabCut logo) and images are copyrighted; please do not take or use these images without written permission.</p>
+<p>SuperAnimal models are provided for research use only (non-commerical use).</p>
 </section>
-<section id="versions">
-<h2>Versions:<a class="headerlink" href="#versions" title="Permalink to this headline">#</a></h2>
+<section id="major-versions">
+<h2>Major Versions:<a class="headerlink" href="#major-versions" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p>For all versions, please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">here</a>.</p></li>
+</ul>
+<p>VERSION 2.3: Model Zoo SuperAnimals, and a whole new GUI experience.</p>
 <p>VERSION 2.2: Multi-animal pose estimation, identification, and tracking with DeepLabCut is supported (as well as single-animal projects).</p>
 <p>VERSION 2.0-2.1: This is the <strong>Python package</strong> of <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">DeepLabCut</a> that was originally released in Oct 2018 with our <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nature Protocols</a> paper (preprint <a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">here</a>).
 This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects, and data augmentation tools that improve network performance, especially in challenging cases (see <a class="reference external" href="https://camo.githubusercontent.com/77c92f6b89d44ca758d815bdd7e801247437060b/68747470733a2f2f737461746963312e73717561726573706163652e636f6d2f7374617469632f3537663664353163396637343536366635356563663237312f742f3563336663316336373538643436393530636537656563372f313534373638323338333539352f636865657461682e706e673f666f726d61743d37353077">panel b</a>).</p>
@@ -840,6 +851,7 @@ This package includes graphical user interfaces to label your data, and take you
 <section id="news-and-in-the-news">
 <h2>News (and in the news):<a class="headerlink" href="#news-and-in-the-news" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
+<li><p>December 2022: DeepLabCut hits 450,000 downloads and 2.3 is the new stable release!</p></li>
 <li><p>August 2022: DeepLabCut hit 400,000 downloads!</p></li>
 <li><p>August 2021: 2.2 becomes the new stable release for DeepLabCut.</p></li>
 <li><p>July 2021: Docs are now at <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">https://deeplabcut.github.io/DeepLabCut</a> and we now include TensorFlow 2 support!</p></li>
