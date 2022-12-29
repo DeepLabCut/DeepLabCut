@@ -24,7 +24,7 @@ Our newest generation models act as a paradigm shift of using pre-trained model.
 
 IMPORTANT:  we currently only support single animal scenarios
 
-We now introduce two SuperAnimal members, namely, superquadruped and supertopview.
+We now introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
 
 - superquadruped model aim to work across a large range of quadruped animals. Note since quadrupeds are mostly side viewed, it is important to tune the pcutoff to help model remove keypoints are occluded.
 
@@ -40,7 +40,7 @@ Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not nee
 
 ```python
 video_path = 'demo-video.mp4'
-superanimal_name = 'superquadruped'
+superanimal_name = 'superanimal_quadruped'
 scale_list = range(200, 600, 50)  # image height pixel size range and increment
 
 deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
