@@ -13,8 +13,8 @@ mobilenet_v2_0.35: https://storage.googleapis.com/mobilenet_v2/checkpoints/mobil
 efficientnet: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/ckptsaug/
 
 ### DEPRECIATED 2023 -- customized models are banked on HuggingFace and the dlclibrary hosts downloading.
-##Harvard server down.
-#Model Zoo from where the Charles flow(s)
+##Harvard server down since Nov 2022
+#Previous Model Zoo URLs from where the Charles flow(s)
 #full_human: http://deeplabcut.rowland.harvard.edu/models/DLC_human_fullbody_resnet_101.tar.gz
 #full_dog: http://deeplabcut.rowland.harvard.edu/models/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
 #full_cat: http://deeplabcut.rowland.harvard.edu/models/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
@@ -24,20 +24,4 @@ efficientnet: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/
 #full_macaque: http://deeplabcut.rowland.harvard.edu/models/DLC_macaque_full_resnet50.tar.gz
 #full_cheetah: http://deeplabcut.rowland.harvard.edu/models/DLC_full_cheetah_resnet_152.tar.gz
 
-
-
-#Model Zoo from HuggingFace
-#full_human: mwmathis/DeepLabCutModelZoo-DLC_human_fullbody_resnet_101/DLC_human_fullbody_resnet_101.tar.gz
-#full_human_commit: 7438131c2ee7754a9732bef6fbf46b8189a16c48
-#full_cat: AlexEMG/DeepLabCutModelZoo-cat/DLC_Cat_resnet_50_iteration-0_shuffle-0.tar.gz
-#full_cat_commit: 972f82dc575c820ce556e140465495a32d18ee9b
-#full_dog: AlexEMG/DeepLabCutModelZoo-dog/DLC_Dog_resnet_50_iteration-0_shuffle-0.tar.gz
-#full_dog_commit: 3d7cae9dff2625fadffb11e25190119c9ff936a1
-#primate_face: mwmathis/DeepLabCutModelZoo-primate_face/DLC_primate_face_resnet_50_iteration-1_shuffle-1.tar.gz
-#primate_face_commit: df7e8f6ad38899489758e5a890b58905cfb4d893
-#mouse_pupil_vclose: mwmathis/DeepLabCutModelZoo-mouse_pupil_vclose/DLC_mouse_pupil_vclose_resnet_50_iteration-0_shuffle-1.tar.gz
-#mouse_pupil_vclose_commit: 93557f0e74390596a2b9fddaab7628a1cc79fb2d
-#horse_sideview: mwmathis/DeepLabCutModelZoo-horse_sideview/DLC_Horses_resnet_50_iteration-1_shuffle-1.tar.gz
-#horse_sideview_commit: fd0329b2ffc8fe7a5e6eb3d4850ebca75987e92c
-#full_macaque: mwmathis/DeepLabCutModelZoo-macaque_full/DLC_macaque_full_resnet50.tar.gz
-#full_macaque_commit: 4c7ebf2628d5b7eb0483356595256fb01b7e1a9e
+# Current HuggingFace URLs at: https://github.com/DeepLabCut/DLClibrary/blob/main/dlclibrary/modelzoo_urls.yaml
