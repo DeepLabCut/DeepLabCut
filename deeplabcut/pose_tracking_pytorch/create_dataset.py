@@ -45,6 +45,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
 
+
         anchor_frame = "frame" + str(anchor_frame).zfill(zfill_width)
         pos_frame = "frame" + str(pos_frame).zfill(zfill_width)
         neg_frame = "frame" + str(neg_frame).zfill(zfill_width)

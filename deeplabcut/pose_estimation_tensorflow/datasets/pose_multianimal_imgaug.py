@@ -16,14 +16,16 @@ import pickle
 import imageio
 import imgaug.augmenters as iaa
 import numpy as np
-
+import pandas as pd
 from imgaug.augmentables import Keypoint, KeypointsOnImage
+from deeplabcut.generate_training_dataset import read_image_shape_fast
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
+from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
 from math import sqrt
 
@@ -32,14 +34,20 @@ from math import sqrt
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
-        self.main_cfg = auxiliaryfunctions.read_config(
-            os.path.join(self.cfg["project_path"], "config.yaml")
-        )
-        animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(
-            self.main_cfg
-        )
-        self._n_kpts = len(multi) + len(unique)
-        self._n_animals = len(animals)
+
+        if cfg.get("pseudo_label", False):
+            self._n_kpts = len(cfg["all_joints_names"])
+            self._n_animals = 1
+
+        else:
+            self.main_cfg = auxiliaryfunctions.read_config(
+                os.path.join(self.cfg["project_path"], "config.yaml")
+            )
+            animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(
+                self.main_cfg
+            )
+            self._n_kpts = len(multi) + len(unique)
+            self._n_animals = len(animals)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
@@ -48,6 +56,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
+        if cfg.get("pseudo_label", "").endswith(".h5"):
+            assert cfg["video_path"]
+            print("loading video for image source", cfg["video_path"])
+            self.vid = VideoReader(cfg["video_path"])
+            self.video_image_size  = (3, self.vid.height, self.vid.width)
+        else:
+            self.vid = None
 
     @property
     def default_size(self):
@@ -59,6 +74,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
+
+        pseudo_threshold = cfg.get("pseudo_threshold", 0)
+        print("threshold for pseudo labeling is: ", pseudo_threshold)
+
+        if cfg.get("pseudo_label", False):
+            if cfg["pseudo_label"].endswith(".h5"):
+                print("finish loading all pseudo label")
+                return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)
+
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
             # Pickle the 'data' dictionary using the highest protocol available.
@@ -98,6 +122,51 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         self.has_gt = has_gt
         return data
+
+    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
+        gt_file = cfg["pseudo_label"]
+
+        assert os.path.exists(gt_file)
+        print("Using gt file:", gt_file.split("/")[-1])
+
+        df = pd.read_hdf(gt_file)
+        video_name = gt_file.split("/")[-1].split("DLC")[0]
+        video_root = os.path.join("/".join(gt_file.split("/")[:-1]), video_name)
+
+        itemlist = []
+        for image_id, imagename in enumerate(df.index):
+            item = DataItem()
+            data = df.loc[imagename]
+            # 3 for likelihood
+            kpts = data.to_numpy().reshape(-1, 3)
+            item.num_joints = kpts.shape[0]
+            joint_ids = np.arange(item.num_joints)[..., np.newaxis]
+            frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
+            item.im_path = os.path.join(video_root, frame_name)
+            '''
+            if self.vid:
+                item.im_size = self.video_image_size
+            else:
+                item.im_size = read_image_shape_fast(
+                    os.path.join(video_root, frame_name)
+                )
+            '''
+            item.joints = {}
+            joints = np.concatenate([joint_ids, kpts], axis=1)
+            joints = np.nan_to_num(joints, nan=0)
+            sparse_joints = []
+
+            for coord in joints:
+                if coord[1] != 0 and coord[3] > threshold:
+                    sparse_joints.append(coord[:3])
+
+            temp = np.array(sparse_joints)
+            # we only do single animal here
+            item.joints.update({0: temp})
+            itemlist.append(item)
+
+        self.has_gt = True
+        return itemlist
 
     def build_augmentation_pipeline(self, apply_prob=0.5):
         cfg = self.cfg
@@ -253,6 +322,41 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         return pipeline
 
+    def get_batch_from_video(self):
+        num_images = len(self.vid)
+        size = self.batch_size
+        batch_images = []
+        batch_joints = []
+        joint_ids = []
+        inds_visible = []
+        data_items = []
+        img_idx = np.random.choice(num_images, size=self.batch_size, replace=True)
+        for i in range(self.batch_size):
+            data_item = self.data[img_idx[i]]
+            data_items.append(data_item)
+            im_file = data_item.im_path
+
+            logging.debug("image %s", im_file)
+            self.vid.set_to_frame(img_idx[i])
+            image = self.vid.read_frame()
+
+            if self.has_gt:
+                Joints = data_item.joints
+                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                for j in range(self._n_animals):
+                    for n, x, y in Joints.get(j, []):
+                        kpts[j * self._n_kpts + int(n)] = x, y
+                joint_id = [
+                    Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
+                ]
+                joint_ids.append(joint_id)
+                batch_joints.append(kpts)
+                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
+
+            batch_images.append(image)
+
+        return batch_images, joint_ids, batch_joints, inds_visible, data_items
+
     def get_batch(self):
         img_idx = np.random.choice(self.num_images, size=self.batch_size, replace=True)
         batch_images = []
@@ -284,6 +388,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
 
             batch_images.append(image)
+
         return batch_images, joint_ids, batch_joints, inds_visible, data_items
 
     def get_targetmaps_update(
@@ -355,13 +460,24 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def next_batch(self, plotting=False):
         while True:
-            (
-                batch_images,
-                joint_ids,
-                batch_joints,
-                inds_visible,
-                data_items,
-            ) = self.get_batch()
+
+            if self.vid:
+                (
+                    batch_images,
+                    joint_ids,
+                    batch_joints,
+                    inds_visible,
+                    data_items,
+                ) = self.get_batch_from_video()
+            else:
+                (
+                    batch_images,
+                    joint_ids,
+                    batch_joints,
+                    inds_visible,
+                    data_items,
+                ) = self.get_batch()
+
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -527,53 +643,56 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         coordinateoffset = 0  # the offset based on
         y, x = np.rollaxis(grid * stride + half_stride, 2)
-        for person_id in range(len(joint_id)):
-            joint_ids = joint_id[person_id].tolist()
-            if len(joint_ids) >= 2:  # there is a possible edge
-                for l, (bp1, bp2) in enumerate(self.cfg["partaffinityfield_graph"]):
-                    try:
-                        ind1 = joint_ids.index(bp1)
-                    except ValueError:
-                        continue
-                    try:
-                        ind2 = joint_ids.index(bp2)
-                    except ValueError:
-                        continue
-                    j_x, j_y = coords[ind1 + coordinateoffset]
-                    linkedj_x, linkedj_y = coords[ind2 + coordinateoffset]
-                    dist = sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
-                    if dist > 0:
-                        Dx = (linkedj_x - j_x) / dist  # x-axis UNIT VECTOR
-                        Dy = (linkedj_y - j_y) / dist
-                        d1 = [
-                            Dx * j_x + Dy * j_y,
-                            Dx * linkedj_x + Dy * linkedj_y,
-                        ]  # in-line with direct axis
-                        d1lowerboundary = min(d1)
-                        d1upperboundary = max(d1)
-                        d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
+        if self.cfg["partaffinityfield_graph"]:
+            for person_id in range(len(joint_id)):
+                joint_ids = joint_id[person_id].tolist()
+                if len(joint_ids) >= 2:  # there is a possible edge
+                    for l, (bp1, bp2) in enumerate(self.cfg["partaffinityfield_graph"]):
+                        try:
+                            ind1 = joint_ids.index(bp1)
+                        except ValueError:
+                            continue
+                        try:
+                            ind2 = joint_ids.index(bp2)
+                        except ValueError:
+                            continue
+                        j_x, j_y = coords[ind1 + coordinateoffset]
+                        linkedj_x, linkedj_y = coords[ind2 + coordinateoffset]
+                        dist = sqrt((linkedj_x - j_x) ** 2 + (linkedj_y - j_y) ** 2)
+                        if dist > 0:
+                            Dx = (linkedj_x - j_x) / dist  # x-axis UNIT VECTOR
+                            Dy = (linkedj_y - j_y) / dist
+                            d1 = [
+                                Dx * j_x + Dy * j_y,
+                                Dx * linkedj_x + Dy * linkedj_y,
+                            ]  # in-line with direct axis
+                            d1lowerboundary = min(d1)
+                            d1upperboundary = max(d1)
+                            d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
-                        distance_along = Dx * x + Dy * y
-                        distance_across = (
-                            ((y * Dx - x * Dy) - d2mid)
-                            * 1.0
-                            / self.cfg["pafwidth"]
-                            * scale
-                        )
+                            distance_along = Dx * x + Dy * y
+                            distance_across = (
+                                ((y * Dx - x * Dy) - d2mid)
+                                * 1.0
+                                / self.cfg["pafwidth"]
+                                * scale
+                            )
 
-                        mask1 = (distance_along >= d1lowerboundary) & (
-                            distance_along <= d1upperboundary
-                        )
-                        distance_across_abs = np.abs(distance_across)
-                        mask2 = distance_across_abs <= 1
-                        mask = mask1 & mask2
-                        temp = 1 - distance_across_abs[mask]
-                        if self.cfg["weigh_only_present_joints"]:
-                            partaffinityfield_mask[mask, [l * 2 + 0, l * 2 + 1]] = 1.0
-                        partaffinityfield_map[mask, l * 2 + 0] = Dx * temp
-                        partaffinityfield_map[mask, l * 2 + 1] = Dy * temp
+                            mask1 = (distance_along >= d1lowerboundary) & (
+                                distance_along <= d1upperboundary
+                            )
+                            distance_across_abs = np.abs(distance_across)
+                            mask2 = distance_across_abs <= 1
+                            mask = mask1 & mask2
+                            temp = 1 - distance_across_abs[mask]
+                            if self.cfg["weigh_only_present_joints"]:
+                                partaffinityfield_mask[
+                                    mask, [l * 2 + 0, l * 2 + 1]
+                                ] = 1.0
+                            partaffinityfield_map[mask, l * 2 + 0] = Dx * temp
+                            partaffinityfield_map[mask, l * 2 + 1] = Dy * temp
 
-            coordinateoffset += len(joint_ids)  # keeping track of the blocks
+                coordinateoffset += len(joint_ids)  # keeping track of the blocks
 
         weights = self.compute_scmap_weights(scmap.shape, joint_id)
         return (

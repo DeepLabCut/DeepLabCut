@@ -13,6 +13,7 @@
 def add_new_videos(
     config, videos, copy_videos=False, coords=None, extract_frames=False
 ):
+
     """
     Add new videos to the config file at any stage of the project.
 
@@ -103,6 +104,7 @@ def add_new_videos(
                     shutil.move(os.fspath(src), os.fspath(dst))
                     print("{} moved to {}".format(src, dst))
             videos = destinations
+
 
     if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
