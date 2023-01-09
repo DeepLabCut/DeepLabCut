@@ -29,7 +29,7 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
 from pathlib import Path
 from math import sqrt
-
+from functools import lru_cache
 
 @PoseDatasetFactory.register("multi-animal-imgaug")
 class MAImgaugPoseDataset(BasePoseDataset):

@@ -37,16 +37,15 @@ def get_nuances(
     destfolder=None,
     batchsize=None,
     allow_growth=False,
-    init_weights="",
+
 ):
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
-
+    
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
-    DLCscorer = "DLC_" + Path(init_weights).stem
-
+    DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     ret = {}
@@ -57,7 +56,6 @@ def get_nuances(
     ret["inputs"] = inputs
     ret["outputs"] = outputs
     ret["destfolder"] = destfolder
-    ret["init_weights"] = init_weights
     return ret
 
 
@@ -194,7 +192,6 @@ def _video_inference(
     cap,
     nframes,
     batchsize,
-    invert_color=False,
     scale_list=[],
     apply_filter = False
 ):
@@ -221,8 +218,6 @@ def _video_inference(
         _frame = cap.read_frame()
         if _frame is not None:
             frame = img_as_ubyte(_frame)
-            if invert_color:
-                frame = 255 - frame
 
             old_shape = frame.shape
             frames, frame_shapes = get_multi_scale_frames(frame, scale_list)
@@ -335,7 +330,6 @@ def video_inference_superanimal(
     videos,
     superanimal_name,
     scale_list=[],
-    invert_color=False,
     videotype="avi",
     destfolder=None,
     batchsize=1,
@@ -432,26 +426,27 @@ def video_inference_superanimal(
     # add a temp folder for checkpoint
 
     weight_folder = superanimal_name + '_weights'
+
     if superanimal_name in MODELOPTIONS:
         if not os.path.exists(weight_folder):
             download_huggingface_model(superanimal_name, weight_folder)
         else:
             print (f"{weight_folder} exists, using the downloaded weights")
     else:
-        print ('do not have that weight yet')
+        print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
     
     snapshots = glob.glob(
         os.path.join(weight_folder, 'snapshot-*.index')
     )
-    if init_weights == "":
-        init_weights = os.path.abspath(snapshots[0]).replace('.index', '')
             
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
     if init_weights != "":
         test_cfg["init_weights"] = init_weights
-
+    else:
+        init_weights = snapshots[0].replace('.index', '')
+        test_cfg['init_weights'] = init_weights
     setting = get_nuances(
         videos,
         test_cfg,
@@ -459,7 +454,7 @@ def video_inference_superanimal(
         destfolder=destfolder,
         batchsize=batchsize,
         allow_growth=allow_growth,
-        init_weights=init_weights,
+
     )
 
     videos = setting["videos"]
@@ -526,7 +521,6 @@ def video_inference_superanimal(
                 vid,
                 nframes,
                 int(test_cfg["batch_size"]),
-                invert_color=invert_color,
                 scale_list=scale_list,
                 apply_filter = apply_filter
             )
