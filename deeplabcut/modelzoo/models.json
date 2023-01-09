@@ -1,4 +1,4 @@
 {
-    "superquadruped": "superquadruped.yaml",
-    "superanimal_mouse_topview": "supertopview.yaml"
+    "superanimal_quadruped": "superquadruped.yaml",
+    "superanimal_topviewmouse": "supertopview.yaml"
 }
