@@ -23,6 +23,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
     MODELOPTIONS,
 )
+from scipy import signal
 
 import glob
 
@@ -195,6 +196,7 @@ def _video_inference(
     batchsize,
     invert_color=False,
     scale_list=[],
+    apply_filter = False
 ):
 
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -341,6 +343,7 @@ def video_inference_superanimal(
     allow_growth=False,
     init_weights = "",
     customized_test_config="",
+    apply_filter = False,
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -429,11 +432,13 @@ def video_inference_superanimal(
     # add a temp folder for checkpoint
 
     weight_folder = superanimal_name + '_weights'
-    
-    if not os.path.exists(weight_folder):
-        download_huggingface_model(superanimal_name, weight_folder)
+    if superanimal_name in MODELOPTIONS:
+        if not os.path.exists(weight_folder):
+            download_huggingface_model(superanimal_name, weight_folder)
+        else:
+            print (f"{weight_folder} exists, using the downloaded weights")
     else:
-        print (f"{weight_folder} exists, using the downloaded weights")
+        print ('do not have that weight yet')
     
     snapshots = glob.glob(
         os.path.join(weight_folder, 'snapshot-*.index')
@@ -523,6 +528,7 @@ def video_inference_superanimal(
                 int(test_cfg["batch_size"]),
                 invert_color=invert_color,
                 scale_list=scale_list,
+                apply_filter = apply_filter
             )
 
             stop = time.time()
@@ -574,6 +580,17 @@ def video_inference_superanimal(
                         temp[n, 2] = c[0]
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
+
+            if apply_filter:
+                data = df.copy()
+                
+                mask = df.columns.get_level_values("coords") != "likelihood"
+                data.loc[:, mask] = df.loc[:, mask].apply(
+                        signal.medfilt, args=(41,), axis=0
+                ).to_numpy()
+                df = data
+                
+                
             df.to_hdf(dataname, key="df_with_missing")
             
     return init_weights

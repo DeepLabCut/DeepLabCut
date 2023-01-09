@@ -174,8 +174,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
-
+        
         pre_resize = cfg.get("pre_resize")
+
+        if cfg.get('traintime_resize', False):
+            # let's hard code it
+            print ('using traintime resize')
+            pipeline.add(iaa.Resize({'height': 400, 'width': 'keep-aspect-ratio'}))
+
+        
         crop_sampling = cfg.get("crop_sampling", "hybrid")
         if pre_resize:
             width, height = pre_resize
