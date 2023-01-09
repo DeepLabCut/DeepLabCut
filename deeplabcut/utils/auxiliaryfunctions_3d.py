@@ -30,7 +30,7 @@ import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):
-    """ Definitions of subfolders in 3D projects """
+    """Definitions of subfolders in 3D projects"""
 
     img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
@@ -281,7 +281,7 @@ def _reconstruct_tracks_as_tracklets(df):
     """
     Parameters:
     -----------
-    df: DataFrame 
+    df: DataFrame
         loaded from an .h5 tracks file (obtained from `stitch_tracklets()`)
     """
     from deeplabcut.refine_training_dataset.stitch import Tracklet
@@ -298,7 +298,7 @@ def _reconstruct_tracks_as_tracklets(df):
 
 def _associate_paired_view_tracks(tracklets1, tracklets2, F):
     """
-    Computes the optimal matching between tracks in two cameras 
+    Computes the optimal matching between tracks in two cameras
     using the xFx'=0 epipolar constraint equation.
 
     Parameters:

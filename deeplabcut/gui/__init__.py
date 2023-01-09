@@ -10,7 +10,8 @@
 #
 
 import os
-os.environ['QT_API'] = 'pyside6'
+
+os.environ["QT_API"] = "pyside6"
 import qtpy  # Necessary unused import to properly store the env variable
 
 BASE_DIR = os.path.dirname(__file__)

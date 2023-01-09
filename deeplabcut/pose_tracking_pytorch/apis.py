@@ -20,7 +20,7 @@ def transformer_reID(
     n_tracks=None,
     n_triplets=1000,
     train_epochs=100,
-    train_frac = 0.8,
+    train_frac=0.8,
     modelprefix="",
     destfolder=None,
 ):

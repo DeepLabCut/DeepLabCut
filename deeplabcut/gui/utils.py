@@ -43,7 +43,7 @@ def is_latest_deeplabcut_version():
     import urllib.request
     from deeplabcut import VERSION
 
-    url = 'https://pypi.org/pypi/deeplabcut/json'
+    url = "https://pypi.org/pypi/deeplabcut/json"
     contents = urllib.request.urlopen(url).read()
-    latest_version = json.loads(contents)['info']['version']
+    latest_version = json.loads(contents)["info"]["version"]
     return VERSION == latest_version, latest_version

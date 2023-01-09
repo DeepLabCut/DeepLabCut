@@ -44,7 +44,7 @@ MODELTYPE_FILEPATH_MAP = {
 
 
 def check_for_weights(modeltype, parent_path, num_shuffles):
-    """ gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org """
+    """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
         print(
@@ -149,7 +149,9 @@ def download_model(modelname, target_dir):
         models = [
             fn
             for fn in neturls.keys()
-            if "resnet_" not in fn and "efficientnet" not in fn and "mobilenet_" not in fn
+            if "resnet_" not in fn
+            and "efficientnet" not in fn
+            and "mobilenet_" not in fn
         ]
         print("Model does not exist: ", modelname)
         print("Pick one of the following: ", models)

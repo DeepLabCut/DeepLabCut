@@ -95,7 +95,10 @@ def prediction_layer(cfg, input, name, num_outputs):
     ):
         with tf.compat.v1.variable_scope(name):
             pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2,
+                input,
+                num_outputs,
+                kernel_size=[3, 3],
+                stride=2,
             )
             return pred
 
@@ -139,7 +142,12 @@ class PoseMultiNet(BasePoseNet):
         return net, end_points
 
     def prediction_layers(
-        self, features, end_points, input_shape, scope="pose", reuse=None,
+        self,
+        features,
+        end_points,
+        input_shape,
+        scope="pose",
+        reuse=None,
     ):
         net_type = self.cfg["net_type"]
         if self.cfg["multi_stage"]:  # MuNet! (multi_stage decoder + multi_fusion)
@@ -397,7 +405,11 @@ class PoseMultiNet(BasePoseNet):
                         scope="block4",
                     )
             net = tf.concat([bank_3, upsampled_features], 3)
-            out = super(PoseMultiNet, self).prediction_layers(net, scope, reuse,)
+            out = super(PoseMultiNet, self).prediction_layers(
+                net,
+                scope,
+                reuse,
+            )
             with tf.compat.v1.variable_scope(scope, reuse=reuse):
                 if (
                     self.cfg["intermediate_supervision"]

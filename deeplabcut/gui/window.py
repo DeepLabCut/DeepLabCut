@@ -36,13 +36,13 @@ def _check_for_updates():
             text=f"DeepLabCut {latest_version} available",
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton('Update', msg.AcceptRole)
+        update_btn = msg.addButton("Update", msg.AcceptRole)
         msg.setDefaultButton(update_btn)
-        _ = msg.addButton('Skip', msg.RejectRole)
+        _ = msg.addButton("Skip", msg.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call(
-                [sys.executable, '-m', 'pip', 'install', '-U', 'deeplabcut']
+                [sys.executable, "-m", "pip", "install", "-U", "deeplabcut"]
             )
     else:
         msg = QtWidgets.QMessageBox(
@@ -226,7 +226,7 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        icon = os.path.join(BASE_DIR, 'assets', 'logo.png')
+        icon = os.path.join(BASE_DIR, "assets", "logo.png")
         self.setWindowIcon(QIcon(icon))
 
         self.status_bar = self.statusBar()
@@ -532,6 +532,7 @@ class MainWindow(QMainWindow):
         if self.is_multianimal:
             try:
                 from deeplabcut.pose_tracking_pytorch import transformer_reID
+
                 return True
             except ModuleNotFoundError:
                 return False
@@ -539,10 +540,11 @@ class MainWindow(QMainWindow):
             return False
 
     def closeEvent(self, event):
-        print('Exiting...')
+        print("Exiting...")
         answer = QtWidgets.QMessageBox.question(
-            self, 'Quit',
-            'Are you sure you want to quit?',
+            self,
+            "Quit",
+            "Are you sure you want to quit?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
             QtWidgets.QMessageBox.Cancel,
         )
@@ -552,4 +554,4 @@ class MainWindow(QMainWindow):
             self.save_settings()
         else:
             event.ignore()
-            print('')
+            print("")

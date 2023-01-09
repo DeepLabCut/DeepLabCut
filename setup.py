@@ -47,12 +47,11 @@ setuptools.setup(
         "pyyaml",
         "Pillow>=7.1",
     ],
-
     extras_require={
         "gui": [
             "pyside6<6.3.2",
             "qdarkstyle==3.1",
-            "napari-deeplabcut",
+            "napari-deeplabcut>=0.0.9",
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
@@ -81,7 +80,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project.png",
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
-                "deeplabcut/gui/assets/icons/open2.png"
+                "deeplabcut/gui/assets/icons/open2.png",
             ],
         )
     ],

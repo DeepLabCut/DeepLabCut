@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/5d90cb67886fb8184560c3ef/1569773279570-XQAKFA299I0YGMZI129U/ke17ZwdGBToddI8pDm48kAsfLZj9Z3cwME2xx-GVPktZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVFduml12xzze87D3uxh5wWTU2EfgWtpp0j_eVfs7Ce7Qib8BodarTVrzIWCp72ioWw/MATHIS_2018_odortrail.gif?format=300w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=300w" height="150">
 
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=300w" height="150">
@@ -35,6 +35,8 @@ DeepLabCut is a toolbox for markerless pose estimation of animals performing var
 **Quick start** read the docs: https://deeplabcut.github.io/DeepLabCut
 
 **Latest updates:**
+
+:purple_heart: The DeepLabCut Model Zoo launches SuperAnimals, see more [here](http://www.mackenziemathislab.org/dlc-modelzoo/).
 
 :purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [paper, Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
 
@@ -182,7 +184,13 @@ Other open-access pre-prints related to our work on DeepLabCut:
 
 This project is primarily licensed under the GNU Lesser General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. If you use the code or data, please cite us! Note, artwork (DeepLabCut logo) and images are copyrighted; please do not take or use these images without written permission.
 
-## Versions:
+SuperAnimal models are provided for research use only (non-commerical use).
+
+## Major Versions:
+
+- For all versions, please see [here](https://github.com/DeepLabCut/DeepLabCut/releases).
+
+VERSION 2.3: Model Zoo SuperAnimals, and a whole new GUI experience.
 
 VERSION 2.2: Multi-animal pose estimation, identification, and tracking with DeepLabCut is supported (as well as single-animal projects).
 
@@ -192,6 +200,8 @@ This package includes graphical user interfaces to label your data, and take you
 VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y) can be found in the history of git, or here: https://github.com/DeepLabCut/DeepLabCut/releases/tag/1.11
 
 ## News (and in the news):
+
+- December 2022: DeepLabCut hits 450,000 downloads and 2.3 is the new stable release!
 
 - August 2022: DeepLabCut hit 400,000 downloads!
 

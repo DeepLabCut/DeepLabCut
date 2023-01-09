@@ -39,14 +39,25 @@ class PoseResnet(BasePoseNet):
         im_centered = self.center_inputs(inputs)
         with slim.arg_scope(resnet_v1.resnet_arg_scope()):
             net, end_points = net_fun(
-                im_centered, global_pool=False, output_stride=16, is_training=False,
+                im_centered,
+                global_pool=False,
+                output_stride=16,
+                is_training=False,
             )
         return net, end_points
 
     def prediction_layers(
-        self, features, end_points, scope="pose", reuse=None,
+        self,
+        features,
+        end_points,
+        scope="pose",
+        reuse=None,
     ):
-        out = super(PoseResnet, self).prediction_layers(features, scope, reuse,)
+        out = super(PoseResnet, self).prediction_layers(
+            features,
+            scope,
+            reuse,
+        )
         out["features"] = features
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg["intermediate_supervision"]:

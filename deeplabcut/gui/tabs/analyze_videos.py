@@ -263,7 +263,9 @@ class AnalyzeVideos(DefaultTab):
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
         if self.root.is_multianimal:
-            calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+            calibrate_assembly = (
+                self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+            )
             assemble_with_ID_only = (
                 self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
             )
@@ -312,12 +314,8 @@ class AnalyzeVideos(DefaultTab):
         )
 
         self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(
-            lambda: self.analyze_videos_btn.setEnabled(True)
-        )
-        self.worker.finished.connect(
-            lambda: self.root._progress_bar.hide()
-        )
+        self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
+        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
@@ -357,7 +355,8 @@ class AnalyzeVideos(DefaultTab):
 
         if self.root.is_multianimal and save_as_csv:
             deeplabcut.analyze_videos_converth5_to_csv(
-                videos, listofvideos=True,
+                videos,
+                listofvideos=True,
             )
 
         if save_as_nwb:

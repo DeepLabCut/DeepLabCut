@@ -365,8 +365,8 @@ def check_video_integrity(video_path):
 
 
 def imread(image_path, mode="skimage"):
-    """ Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels. """
+    """Read image either with skimage or cv2.
+    Returns frame in uint with 3 color channels."""
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:

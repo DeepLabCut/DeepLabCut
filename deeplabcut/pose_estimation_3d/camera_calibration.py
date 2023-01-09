@@ -470,12 +470,14 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
             plt.savefig(os.path.join(str(path_undistort), "undistorted_points.png"))
 
             # Triangulate
-            triangulate = auxiliaryfunctions_3d.compute_triangulation_calibration_images(
-                stereo_params[pair[0] + "-" + pair[1]],
-                cam1_undistort,
-                cam2_undistort,
-                path_undistort,
-                cfg_3d,
-                plot=True,
+            triangulate = (
+                auxiliaryfunctions_3d.compute_triangulation_calibration_images(
+                    stereo_params[pair[0] + "-" + pair[1]],
+                    cam1_undistort,
+                    cam2_undistort,
+                    path_undistort,
+                    cfg_3d,
+                    plot=True,
+                )
             )
             auxiliaryfunctions.write_pickle("triangulate.pickle", triangulate)

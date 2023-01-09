@@ -3,9 +3,12 @@
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 
+We recommend using our supplied CONDA environment.
+
 ## PIP:
 
-- Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut[tf]'`.
+- Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut[tf]'`.
+- If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,tf,modelzoo]'`. 
 
 - Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
@@ -98,8 +101,9 @@ In the terminal type:
 
 `conda create -n DLC python=3.8`
 
+**Current version:** The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut[tf]`) or `pip install 'deeplabcut[gui,tf]'` which has a pyside/napari based GUI.
 
-The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
+**Pre-version2.3 (Dec 2022):** The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 We have some tips for linux users here, as the latest Ubuntu doesn't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
@@ -190,7 +194,7 @@ If you perform the system-wide installation, and the computer has other Python p
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
      - `pip install deeplabcut`
      - TensorFlow
-       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
+       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers)
 

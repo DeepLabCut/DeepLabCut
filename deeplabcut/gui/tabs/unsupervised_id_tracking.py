@@ -114,9 +114,7 @@ class UnsupervizedIdTracking(DefaultTab):
         self.worker.finished.connect(
             lambda: self.run_transformer_button.setEnabled(True)
         )
-        self.worker.finished.connect(
-            lambda: self.root._progress_bar.hide()
-        )
+        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()
         self.run_transformer_button.setEnabled(False)
         self.root._progress_bar.show()

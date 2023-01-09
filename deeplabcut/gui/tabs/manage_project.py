@@ -11,7 +11,10 @@
 import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QPushButton, QFileDialog, QLabel, QLineEdit,
+    QPushButton,
+    QFileDialog,
+    QLabel,
+    QLineEdit,
 )
 from deeplabcut.create_project import add_new_videos
 from deeplabcut.gui.dlc_params import DLCParams

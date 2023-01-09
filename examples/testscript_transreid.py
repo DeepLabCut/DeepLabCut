@@ -123,7 +123,10 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     datafile, _ = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     datafile = datafile.split(".mat")[0] + ".pickle"
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
@@ -207,7 +210,10 @@ if __name__ == "__main__":
     print("Creating triplet dataset")
 
     deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
-        config_path, [new_video_path], TESTTRACKER, videotype="mp4",
+        config_path,
+        [new_video_path],
+        TESTTRACKER,
+        videotype="mp4",
     )
 
     train_epochs = 10
@@ -307,24 +313,24 @@ if __name__ == "__main__":
     print("MERGING")
     deeplabcut.merge_datasets(config_path)  # iteration + 1
 
-    print('CREATING TRAININGSET UPDATED TRAINING SET')
+    print("CREATING TRAININGSET UPDATED TRAINING SET")
     deeplabcut.create_training_dataset(config_path, Shuffles=[3], net_type=NET)
 
-    print('TRAINING NETWORK...')
+    print("TRAINING NETWORK...")
     deeplabcut.train_network(config_path, shuffle=3, maxiters=N_ITER)
     print("NETWORK TRAINED!")
 
-    print('EVALUATING NETWORK...')
+    print("EVALUATING NETWORK...")
     deeplabcut.evaluate_network(config_path, Shuffles=[3], plotting=True)
 
-    print('NETWORK EVALUATED....')
+    print("NETWORK EVALUATED....")
 
-    print('ANALYZING VIDEO WITH AUTO_TRACK....')
+    print("ANALYZING VIDEO WITH AUTO_TRACK....")
     deeplabcut.analyze_videos(
         config_path,
         [new_video_path],
         shuffle=3,
-        videotype='mp4',
+        videotype="mp4",
         save_as_csv=True,
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
@@ -335,12 +341,12 @@ if __name__ == "__main__":
 
     n_tracks = 3
 
-    print('TESTING THE UNIFIED API FOR TRANSFORMER')
+    print("TESTING THE UNIFIED API FOR TRANSFORMER")
 
     deeplabcut.transformer_reID(
         config_path,
         [new_video_path],
-        videotype='mp4',
+        videotype="mp4",
         shuffle=3,
         n_tracks=n_tracks,
         track_method=TESTTRACKER,
@@ -349,12 +355,12 @@ if __name__ == "__main__":
         destfolder=DESTFOLDER,
     )
 
-    print('CREATING LABELED VIDEOS (FOR ELLIPSE AND TRANSFORMER)...')
+    print("CREATING LABELED VIDEOS (FOR ELLIPSE AND TRANSFORMER)...")
 
     deeplabcut.create_labeled_video(
         config_path,
         [new_video_path],
-        videotype = 'mp4',
+        videotype="mp4",
         shuffle=3,
         track_method="ellipse",
         destfolder=DESTFOLDER,
@@ -363,11 +369,10 @@ if __name__ == "__main__":
     deeplabcut.create_labeled_video(
         config_path,
         [new_video_path],
-        videotype = 'mp4',
+        videotype="mp4",
         shuffle=3,
         track_method="transformer",
         destfolder=DESTFOLDER,
     )
-
 
     print("ALL DONE!!! - default multianimal cases are functional.")
