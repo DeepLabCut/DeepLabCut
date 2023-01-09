@@ -575,7 +575,7 @@ title="Print to PDF"
 <span class="kn">import</span> <span class="nn">deeplabcut</span>
 
 <span class="k">def</span> <span class="nf">getsubfolders</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; returns list of subfolders &#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; returns list of subfolders &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span><span class="n">p</span><span class="p">))]</span>
 
 <span class="n">project</span><span class="o">=</span><span class="s1">&#39;ComplexWheelD3-12-Fumi-2019-01-28&#39;</span>

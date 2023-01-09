@@ -980,13 +980,13 @@ For more examples and ideas, visit:
 <p>If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU acceleration for inference, with an installation that is consistent between devices. This method uses <a class="reference external" href="https://github.com/microsoft/tensorflow-directml">Tensorflow-directml</a> which uses DirectML instead of Cuda for ML training and inference.</p>
 <p>To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.</p>
 <p>The following instructions are using conda and pip for environment management, executing within the Anaconda prompt program that was installed along with Anaconda python. The # lines are not to be typed, they are for guidance.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda create --name dlc_dml <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
-conda activate dlc_dml
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>dlc_dml<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+conda<span class="w"> </span>activate<span class="w"> </span>dlc_dml
 <span class="c1">#specific versions noted that are validated as of DLC 2.2.0.6, but other versions may work:</span>
-pip install <span class="s1">&#39;deeplabcut[gui]&#39;</span><span class="o">==</span><span class="m">2</span>.2.0.6
-pip install tensorflow-directml<span class="o">==</span><span class="m">1</span>.15.5
-pip install pip install <span class="nv">imageio</span><span class="o">==</span><span class="m">2</span>.9.0
-conda install <span class="nv">ffmpeg</span><span class="o">==</span><span class="m">4</span>.2.2
+pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;deeplabcut[gui]&#39;</span><span class="o">==</span><span class="m">2</span>.2.0.6
+pip<span class="w"> </span>install<span class="w"> </span>tensorflow-directml<span class="o">==</span><span class="m">1</span>.15.5
+pip<span class="w"> </span>install<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">imageio</span><span class="o">==</span><span class="m">2</span>.9.0
+conda<span class="w"> </span>install<span class="w"> </span><span class="nv">ffmpeg</span><span class="o">==</span><span class="m">4</span>.2.2
 </pre></div>
 </div>
 <p>Attention: Please note the order of execution of these commands are important, as pip’s dependency manager may change package versions to incorrect ones if done in the wrong version.</p>

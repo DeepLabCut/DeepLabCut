@@ -607,7 +607,7 @@ title="Print to PDF"
 <span id="docker-containers"></span><h1>DeepLabCut Docker containers<a class="headerlink" href="#deeplabcut-docker-containers" title="Permalink to this headline">#</a></h1>
 <p>For DeepLabCut 2.2.0.2 and onwards, we provide container containers on <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>. Using Docker is an alternative approach to using DeepLabCut, which only requires the user to install <a class="reference external" href="https://www.docker.com/">Docker</a> on your machine, vs. following the step-by-step installation guide for a Anaconda setup. All dependencies needed to run DeepLabCut in terminal or GUI mode, or running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided Docker images.</p>
 <p>Advanced users can directly head to <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> and use the provided images there. To get started with using the images, we however also provide a helper tool, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, which makes the transition to docker images particularly convenient; to install the tool, run</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install deeplabcut-docker
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>deeplabcut-docker
 </pre></div>
 </div>
 <p>on your machine (potentially in a virtual environment, or an existing Anaconda environment).
@@ -627,7 +627,7 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 <section id="gui-mode">
 <h3>GUI mode<a class="headerlink" href="#gui-mode" title="Permalink to this headline">#</a></h3>
 <p>To run DeepLabCut in GUI mode and start the DeepLabCut GUI, simply run</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ deeplabcut-docker gui
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>gui
 </pre></div>
 </div>
 <p>which will pull the latest DeepLabCut version along with all dependencies, and afterwards opens the DeepLabCut GUI.</p>
@@ -636,13 +636,13 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 <section id="terminal-mode">
 <h3>Terminal mode<a class="headerlink" href="#terminal-mode" title="Permalink to this headline">#</a></h3>
 <p>If you not need the GUI, you can run the light version of DeepLabCut and open a terminal by running</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ deeplabcut-docker bash
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash
 </pre></div>
 </div>
 <p>Inside the terminal, you can confirm that DeepLabCut is correctly installed by running</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ipython
-&gt;&gt;&gt; import deeplabcut
-&gt;&gt;&gt; print<span class="o">(</span>deeplabcut.__version__<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ipython
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>deeplabcut
+&gt;&gt;&gt;<span class="w"> </span>print<span class="o">(</span>deeplabcut.__version__<span class="o">)</span>
 <span class="m">2</span>.2.0.2
 </pre></div>
 </div>
@@ -650,7 +650,7 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 <section id="jupyter-notebook-mode">
 <h3>Jupyter Notebook mode<a class="headerlink" href="#jupyter-notebook-mode" title="Permalink to this headline">#</a></h3>
 <p>Finally, you can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ deeplabcut-docker notebook 
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>notebook<span class="w"> </span>
 </pre></div>
 </div>
 <p>which will start a Jupyter notebook server. Follow the terminal instructions to open the notebook, by entering <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8888</span></code> in your favorite browser. When prompted for a password, use <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>, which is the pre-set option in the container.</p>
