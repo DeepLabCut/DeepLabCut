@@ -122,7 +122,7 @@ class SpatiotemporalAdaptation:
             self.adapt_iterations,  # maxiters
             modelfolder=self.modelfolder,
             init_weights=self.init_weights,
-            load_pseudo_label=pseudo_label_path,
+            pseudo_labels=pseudo_label_path,
             video_path=self.video_path,
             pseudo_threshold=self.pseudo_threshold,
         )

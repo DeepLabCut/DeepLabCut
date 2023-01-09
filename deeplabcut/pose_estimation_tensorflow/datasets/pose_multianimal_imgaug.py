@@ -35,7 +35,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
 
-        if cfg.get("pseudo_label", False):
+        if cfg.get("pseudo_label", ""):
             self._n_kpts = len(cfg["all_joints_names"])
             self._n_animals = 1
 
@@ -78,7 +78,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         pseudo_threshold = cfg.get("pseudo_threshold", 0)
         print("threshold for pseudo labeling is: ", pseudo_threshold)
 
-        if cfg.get("pseudo_label", False):
+        if cfg.get("pseudo_label", ""):
             if cfg["pseudo_label"].endswith(".h5"):
                 print("finish loading all pseudo label")
                 return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)

@@ -38,7 +38,7 @@ def train(
     max_to_keep=5,
     keepdeconvweights=True,
     allow_growth=True,
-    load_pseudo_label=None,
+    pseudo_labels="",
     init_weights="",
     pseudo_threshold=0,
     modelfolder="",
@@ -50,7 +50,7 @@ def train(
     start_path = os.getcwd()
     if modelfolder == "":
         os.chdir(
-            str(Path(train_config_path).parents[0])
+            str(Path(config_yaml).parents[0])
         )  # switch to folder of config_yaml (for logging)
     else:
         os.chdir(modelfolder)
@@ -68,8 +68,8 @@ def train(
         # have to overwrite this
         cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
 
-    if load_pseudo_label != "":
-        cfg["pseudo_label"] = load_pseudo_label
+    if pseudo_labels != "":
+        cfg["pseudo_label"] = pseudo_labels
 
     if cfg["optimizer"] != "adam":
         print(
