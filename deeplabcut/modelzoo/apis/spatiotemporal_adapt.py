@@ -4,13 +4,10 @@ import os
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 from pathlib import Path
 
-
-
 class SpatiotemporalAdaptation:
     def __init__(
         self,
         video_path,
-        init_weights,
         supermodel_name,
         scale_list=[],
         videotype="mp4",
@@ -18,7 +15,6 @@ class SpatiotemporalAdaptation:
         modelfolder="",
         customized_pose_config="",
         init_weights = "",
-        pseudo_threshold=0.1,
     ):
 
         """
@@ -42,8 +38,6 @@ class SpatiotemporalAdaptation:
            Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and otherwise model is saved to the current work place
         customized_pose_config: string, optional
            For future support of non modelzoo model
-        pseudo_threshold: float, optional
-           predictions that are under this threshold won't be used for video adaptation. Setting it higher reduces the false positive but might cause removal of true positive
 
         Examples
         --------
@@ -76,7 +70,6 @@ class SpatiotemporalAdaptation:
         self.adapt_iterations = adapt_iterations
         self.modelfolder = modelfolder
         self.customized_pose_config = customized_pose_config
-        self.pseudo_threshold = pseudo_threshold
         self.init_weights = init_weights
         if modelfolder != "":
             os.makedirs(modelfolder, exist_ok=True)
@@ -90,23 +83,6 @@ class SpatiotemporalAdaptation:
                 supermodels[self.supermodel_name],
             )
 
-<<<<<<< 0b709196a944519a91ffc0d37e356af3cde65375
-        if customized_pose_config != "":
-            # if it's an old modelzoo model, this is also required
-            self.customized_pose_config = customized_pose_config
-
-    def before_adapt_inference(self):
-        # save frames have to be on
-        deeplabcut.video_inference_superanimal(
-            [self.video_path],
-            self.supermodel_name,
-            videotype=self.videotype,
-            scale_list=self.scale_list,
-            init_weights=self.init_weights,
-            customized_test_config=self.customized_pose_config,
-        )
-
-=======
     def before_adapt_inference(self, **kwargs):
         if self.init_weights!="":
             deeplabcut.video_inference_superanimal(
@@ -125,7 +101,6 @@ class SpatiotemporalAdaptation:
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
->>>>>>> allow more custom changes
         deeplabcut.create_labeled_video(
             "",
             [self.video_path],
@@ -134,29 +109,11 @@ class SpatiotemporalAdaptation:
             init_weights=self.init_weights,
             draw_skeleton=True,
             superanimal_name=self.supermodel_name,
-<<<<<<< 0b709196a944519a91ffc0d37e356af3cde65375
-            pcutoff=self.pcutoff,
-        )
-
-        deeplabcut.create_labeled_video(
-            "",
-            [self.video_path],
-            videotype=self.videotype,
-            filtered=False,
-            init_weights=self.init_weights,
-            draw_skeleton=True,
-            superanimal_name=self.supermodel_name,
-            pcutoff=self.pcutoff,
-=======
->>>>>>> allow more custom changes
             **kwargs
         )
 
     def train_without_project(self, pseudo_label_path, **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
-
-        print("self.customized_pose_config", self.customized_pose_config)
-
         train(
             self.customized_pose_config,
             500,  # displayiters
@@ -166,12 +123,7 @@ class SpatiotemporalAdaptation:
             init_weights=self.init_weights,
             load_pseudo_label=pseudo_label_path,
             video_path=self.video_path,
-<<<<<<< 0b709196a944519a91ffc0d37e356af3cde65375
-            pseudo_threshold=0.3,
-=======
-            pseudo_threshold=self.pseudo_threshold,
             **kwargs
->>>>>>> allow more custom changes
         )
 
     def adaptation_training(self, **kwargs):
@@ -191,11 +143,7 @@ class SpatiotemporalAdaptation:
 
         self.train_without_project(pseudo_label_path, **kwargs)
 
-<<<<<<< 0b709196a944519a91ffc0d37e356af3cde65375
-    def after_adapt_inference(self):
-=======
     def after_adapt_inference(self, apply_filter = False, **kwargs):
->>>>>>> allow more custom changes
 
         pattern = os.path.join(
             self.modelfolder, f"*/snapshot-{self.adapt_iterations}.index"

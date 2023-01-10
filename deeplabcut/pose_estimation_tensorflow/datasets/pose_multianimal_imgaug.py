@@ -36,7 +36,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
 
-        if cfg.get("pseudo_label", False):
+        if cfg.get("pseudo_label", "")!="":
             self._n_kpts = len(cfg["all_joints_names"])
             self._n_animals = 1
 
@@ -49,6 +49,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             self._n_kpts = len(multi) + len(unique)
             self._n_animals = len(animals)
+
+        if cfg.get("pseudo_label", "").endswith(".h5"):
+            assert cfg["video_path"]
+            print("loading video for image source", cfg["video_path"])
+            self.vid = VideoReader(cfg["video_path"])
+            self.video_image_size  = (3, self.vid.height, self.vid.width)
+        else:
+            self.vid = None
+            
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
@@ -57,11 +66,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
-        if cfg.get("pseudo_label", False):
-            if cfg["pseudo_label"].endswith(".h5"):
-                assert cfg["video_path"]
-                print("loading video for image source", cfg["video_path"])
-                self.vid = VideoReader(cfg["video_path"])
 
     @property
     def default_size(self):
@@ -77,7 +81,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         pseudo_threshold = cfg.get("pseudo_threshold", 0)
         print("threshold for pseudo labeling is: ", pseudo_threshold)
 
-        if cfg.get("pseudo_label", False):
+        if cfg.get("pseudo_label", ""):
             if cfg["pseudo_label"].endswith(".h5"):
                 print("finish loading all pseudo label")
                 return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)
@@ -122,13 +126,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    @lru_cache(maxsize=None)
-    def read_image_shape_fast(self, path):
-        # Blazing fast and does not load the image into memory
-        with Image.open(path) as img:
-            width, height = img.size
-            return len(img.getbands()), height, width
-
+    
     def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
         gt_file = cfg["pseudo_label"]
 
@@ -149,9 +147,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
             item.im_path = os.path.join(video_root, frame_name)
-            item.im_size = self.read_image_shape_fast(
-                os.path.join(video_root, frame_name)
-            )
+
+            if self.vid:
+                item.im_size = self.video_image_size
+            else:
+                item.im_size = read_image_shape_fast(
+                    os.path.join(video_root, frame_name)
+                )
+
             item.joints = {}
             joints = np.concatenate([joint_ids, kpts], axis=1)
             joints = np.nan_to_num(joints, nan=0)
@@ -343,12 +346,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
             data_item = self.data[img_idx[i]]
             data_items.append(data_item)
             im_file = data_item.im_path
-
+            
             logging.debug("image %s", im_file)
             self.vid.set_to_frame(img_idx[i])
             image = self.vid.read_frame()
             if self.has_gt:
                 Joints = data_item.joints
+                if len(Joints[0]) == 0:
+                    # empty prediction for this frame
+                    return None, None, None, None, None
                 kpts = np.zeros((self._n_kpts * self._n_animals, 2))
                 for j in range(self._n_animals):
                     for n, x, y in Joints.get(j, []):
@@ -483,7 +489,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     inds_visible,
                     data_items,
                 ) = self.get_batch()
-
+            # in case it's empty prediction
+            if batch_joints == None:
+                continue
+                
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
             scale = np.mean(target_size / self.default_size)

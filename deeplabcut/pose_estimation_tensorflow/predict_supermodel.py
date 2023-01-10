@@ -47,7 +47,6 @@ def get_nuances(
     )
     DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
-
     ret = {}
     ret["videos"] = Videos
     ret["DLCscorer"] = DLCscorer
@@ -241,7 +240,6 @@ def _video_inference(
                         test_cfg, batched_frames, sess, inputs, outputs
                     )
                     preds.append(D)
-
                     # only do this when animal is detected
                 ind_start = inds[0]
                 for i in range(batchsize):
@@ -445,7 +443,7 @@ def video_inference_superanimal(
     if init_weights != "":
         test_cfg["init_weights"] = init_weights
     else:
-        init_weights = snapshots[0].replace('.index', '')
+        init_weights = os.path.abspath(snapshots[0]).replace('.index', '')
         test_cfg['init_weights'] = init_weights
     setting = get_nuances(
         videos,
@@ -512,7 +510,6 @@ def video_inference_superanimal(
             print("Starting to extract posture")
 
             # extra data
-            print("before inference")
             PredicteData, nframes = _video_inference(
                 test_cfg,
                 sess,
@@ -525,6 +522,8 @@ def video_inference_superanimal(
                 apply_filter = apply_filter
             )
 
+            
+            
             stop = time.time()
 
             coords = [0, nx, 0, ny]

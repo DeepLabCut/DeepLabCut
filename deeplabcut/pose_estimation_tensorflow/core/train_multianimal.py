@@ -152,7 +152,7 @@ def train(
 
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
-
+    
     restorer.restore(sess, cfg["init_weights"])
     if maxiters is None:
         max_iter = int(cfg["multi_step"][-1][1])

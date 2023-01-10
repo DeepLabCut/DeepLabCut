@@ -1,5 +1,5 @@
 """
-Testscript human network
+Testscript for super animal inference
 
 """
 import os, subprocess, deeplabcut
