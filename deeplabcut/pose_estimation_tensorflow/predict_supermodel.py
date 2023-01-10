@@ -24,38 +24,8 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     MODELOPTIONS,
 )
 from scipy import signal
-
 import glob
 
-
-
-# instead of having these in a lengthy function, I made this a separate function
-def get_nuances(
-    videos,
-    test_cfg,
-    videotype="avi",
-    destfolder=None,
-    batchsize=None,
-    allow_growth=False,
-
-):
-    test_cfg["num_outputs"] = 1
-    test_cfg["batch_size"] = batchsize
-    
-    sess, inputs, outputs = single_predict.setup_pose_prediction(
-        test_cfg, allow_growth=allow_growth
-    )
-    DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
-    ret = {}
-    ret["videos"] = Videos
-    ret["DLCscorer"] = DLCscorer
-    ret["test_cfg"] = test_cfg
-    ret["sess"] = sess
-    ret["inputs"] = inputs
-    ret["outputs"] = outputs
-    ret["destfolder"] = destfolder
-    return ret
 
 
 def get_multi_scale_frames(frame, scale_list):
@@ -324,6 +294,8 @@ def _video_inference(
     return PredicteData, nframes
 
 
+
+
 def video_inference_superanimal(
     videos,
     superanimal_name,
@@ -445,22 +417,16 @@ def video_inference_superanimal(
     else:
         init_weights = os.path.abspath(snapshots[0]).replace('.index', '')
         test_cfg['init_weights'] = init_weights
-    setting = get_nuances(
-        videos,
-        test_cfg,
-        videotype=videotype,
-        destfolder=destfolder,
-        batchsize=batchsize,
-        allow_growth=allow_growth,
 
+    test_cfg["num_outputs"] = 1
+    test_cfg["batch_size"] = batchsize
+    
+    sess, inputs, outputs = single_predict.setup_pose_prediction(
+        test_cfg, allow_growth=allow_growth
     )
-
-    videos = setting["videos"]
-    destfolder = setting["destfolder"]
-    DLCscorer = setting["DLCscorer"]
-    sess = setting["sess"]
-    inputs = setting["inputs"]
-    outputs = setting["outputs"]
+    DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
+    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)    
+        
 
     for video in videos:
 
