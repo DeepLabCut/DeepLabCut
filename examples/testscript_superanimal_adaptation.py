@@ -1,7 +1,6 @@
 """
 Test script for super animal adaptation
 """
-
 import os, subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
@@ -13,32 +12,36 @@ video =  os.path.join(
     basepath, "openfield-Pranav-2018-10-30", "videos", videoname + ".mp4"
 )
 
-print ('testing superanimal_topviewmouse')
+print ('adaptation training for superanimal_topviewmouse')
 
-from deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
 
 superanimal_name = 'superanimal_topviewmouse'
 
 videotype = '.mp4'
 
+scale_list = [200, 300, 400]
 
-adapter = SpatiotemporalAdaptation(video,
-                                   superanimal_name,
-                                   modelfolder = "adapt_topview",
-                                   videotype = videotype)
+deeplabcut.video_inference_superanimal(
+    [video],
+    superanimal_name,
+    videotype = '.mp4',
+    video_adapt = True,
+    scale_list = scale_list,
+    pcutoff = 0.1
+)
 
-adapter.before_adapt_inference(pcutoff = 0.1)
-adapter.adaptation_training()
-adapter.after_adapt_inference(pcutoff = 0.1)
 
+print ('adaptation training for superanimal_quadruped')
 
 superanimal_name = 'superanimal_quadruped'
 
-adapter = SpatiotemporalAdaptation(video,
-                                   superanimal_name,
-                                   modelfolder = "adapt_quadruped",
-                                   videotype = videotype)
 
-adapter.before_adapt_inference(pcutoff = 0.1)
-adapter.adaptation_training()#pseudo_threshold = 0.0)
-adapter.after_adapt_inference(pcutoff = 0.1)
+deeplabcut.video_inference_superanimal(
+    [video],
+    superanimal_name,
+    videotype = '.mp4',
+    video_adapt = True,
+    scale_list = scale_list,
+    pcutoff = 0.3
+)
+

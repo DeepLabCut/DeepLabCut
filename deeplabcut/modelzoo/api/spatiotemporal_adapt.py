@@ -2,6 +2,7 @@ import deeplabcut
 import glob
 import os
 from deeplabcut.modelzoo.utils import parse_available_supermodels
+from . import superanimal_inference
 from pathlib import Path
 
 class SpatiotemporalAdaptation:
@@ -83,9 +84,11 @@ class SpatiotemporalAdaptation:
                 supermodels[self.supermodel_name],
             )
 
-    def before_adapt_inference(self, **kwargs):
+    def before_adapt_inference(self,
+                               make_video = False,
+                               **kwargs):
         if self.init_weights!="":
-            deeplabcut.video_inference_superanimal(
+            superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -94,23 +97,24 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )   
         else:
-            self.init_weights = deeplabcut.video_inference_superanimal(
+            self.init_weights = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
-        deeplabcut.create_labeled_video(
-            "",
-            [self.video_path],
-            videotype=self.videotype,
-            filtered=False,
-            init_weights=self.init_weights,
-            draw_skeleton=True,
-            superanimal_name=self.supermodel_name,
-            **kwargs
-        )
+        if make_video:
+            deeplabcut.create_labeled_video(
+                "",
+                [self.video_path],
+                videotype=self.videotype,
+                filtered=False,
+                init_weights=self.init_weights,
+                draw_skeleton=True,
+                superanimal_name=self.supermodel_name,
+                **kwargs
+            )
 
     def train_without_project(self, pseudo_label_path, **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
@@ -143,7 +147,9 @@ class SpatiotemporalAdaptation:
 
         self.train_without_project(pseudo_label_path, **kwargs)
 
-    def after_adapt_inference(self, apply_filter = False, **kwargs):
+    def after_adapt_inference(self,
+                              apply_filter = False,
+                              **kwargs):
 
         pattern = os.path.join(
             self.modelfolder, f"*/snapshot-{self.adapt_iterations}.index"
@@ -160,7 +166,7 @@ class SpatiotemporalAdaptation:
         # spatial pyramid is not for adapted model
 
         
-        deeplabcut.video_inference_superanimal(
+        superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,
             videotype=self.videotype,

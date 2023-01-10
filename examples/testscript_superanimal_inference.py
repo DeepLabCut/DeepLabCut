@@ -22,7 +22,7 @@ scale_list = [200, 300, 400]
 deeplabcut.video_inference_superanimal(
     video,
     superanimal_name,
-    videotype='avi',
+    videotype = '.avi',
     scale_list = scale_list,
 )
 
@@ -31,6 +31,6 @@ superanimal_name = 'superanimal_quadruped'
 deeplabcut.video_inference_superanimal(
     video,
     superanimal_name,
-    videotype='avi',
+    videotype = '.avi',
     scale_list = scale_list,
 )
