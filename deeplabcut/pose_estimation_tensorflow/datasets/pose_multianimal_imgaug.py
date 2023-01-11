@@ -31,6 +31,7 @@ from pathlib import Path
 from math import sqrt
 from functools import lru_cache
 
+
 @PoseDatasetFactory.register("multi-animal-imgaug")
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
@@ -54,10 +55,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
             assert cfg["video_path"]
             print("loading video for image source", cfg["video_path"])
             self.vid = VideoReader(cfg["video_path"])
-            self.video_image_size  = (3, self.vid.height, self.vid.width)
+            self.video_image_size = (3, self.vid.height, self.vid.width)
         else:
             self.vid = None
-            
+
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
@@ -126,7 +127,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    
     def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
         gt_file = cfg["pseudo_label"]
 
@@ -177,15 +177,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
         pipeline = iaa.Sequential(random_order=False)
-        
+
         pre_resize = cfg.get("pre_resize")
 
-        if cfg.get('traintime_resize', False):
+        if cfg.get("traintime_resize", False):
             # let's hard code it
-            print ('using traintime resize')
-            pipeline.add(iaa.Resize({'height': 400, 'width': 'keep-aspect-ratio'}))
+            print("using traintime resize")
+            pipeline.add(iaa.Resize({"height": 400, "width": "keep-aspect-ratio"}))
 
-        
         crop_sampling = cfg.get("crop_sampling", "hybrid")
         if pre_resize:
             width, height = pre_resize
@@ -346,7 +345,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             data_item = self.data[img_idx[i]]
             data_items.append(data_item)
             im_file = data_item.im_path
-            
+
             logging.debug("image %s", im_file)
             self.vid.set_to_frame(img_idx[i])
             image = self.vid.read_frame()
@@ -492,7 +491,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             # in case it's empty prediction
             if batch_joints == None:
                 continue
-                
+
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
             scale = np.mean(target_size / self.default_size)
@@ -599,7 +598,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_size = *size, num_joints * 2
         locref_map = np.zeros(locref_size)
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = *size, self.cfg["num_limbs"] * 2
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
@@ -625,7 +624,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         dx_ = dx * locref_scale
         dy = coords[:, 1] - yy * stride - half_stride
         dy_ = dy * locref_scale
-        dist = dx**2 + dy**2
+        dist = dx ** 2 + dy ** 2
         mask1 = dist <= dist_thresh_sq
         mask2 = (xx >= mins[:, 0]) & (xx <= maxs[:, 0])
         mask3 = (yy >= mins[:, 1]) & (yy <= maxs[:, 1])
@@ -732,7 +731,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = np.concatenate(
             [size, np.array([self.cfg["num_limbs"] * 2])]
@@ -764,7 +763,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             map_j = grid.copy()
             # Distance between the joint point and each coordinate
             dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
-            scmap_j = np.exp(-dist / (2 * (std**2)))
+            scmap_j = np.exp(-dist / (2 * (std ** 2)))
             scmap[..., j_id] = scmap_j
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 0] = 1
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 1] = 1

@@ -7,13 +7,14 @@ import glob
 import deeplabcut
 from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
 
+
 def video_inference_superanimal(
     videos,
     superanimal_name,
-    scale_list = [],
-    videotype = '.mp4',
-    video_adapt = False,
-    pcutoff = 0.1
+    scale_list=[],
+    videotype=".mp4",
+    video_adapt=False,
+    pcutoff=0.1,
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -41,7 +42,7 @@ def video_inference_superanimal(
         Set True if you want to apply video adaptation to make the resulted video less jittering and better. However, adaptation training takes more time than usual video inference
 
     pcutoff: float, optional
-        Keypoints confidence that are under pcutoff will not be shown in the resulted video 
+        Keypoints confidence that are under pcutoff will not be shown in the resulted video
 
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
@@ -56,24 +57,25 @@ def video_inference_superanimal(
          videotype = '.avi',
          scale_list = scale_list,
     )
-    >>>  
+    >>>
 
 
     """
-    
+
     for video in videos:
-        vname = Path(video).stem        
-        modelfolder = superanimal_name + '_' + vname + '_weights'
-        adapter = SpatiotemporalAdaptation(video,
-                                           superanimal_name,
-                                           modelfolder = modelfolder,
-                                           videotype = videotype,
-                                           scale_list = scale_list)
+        vname = Path(video).stem
+        modelfolder = superanimal_name + "_" + vname + "_weights"
+        adapter = SpatiotemporalAdaptation(
+            video,
+            superanimal_name,
+            modelfolder=modelfolder,
+            videotype=videotype,
+            scale_list=scale_list,
+        )
 
         if not video_adapt:
-            adapter.before_adapt_inference(make_video = True,
-                                           pcutoff = pcutoff)
+            adapter.before_adapt_inference(make_video=True, pcutoff=pcutoff)
         else:
-            adapter.before_adapt_inference(make_video = False)
+            adapter.before_adapt_inference(make_video=False)
             adapter.adaptation_training()
-            adapter.after_adapt_inference(pcutoff = pcutoff)
+            adapter.after_adapt_inference(pcutoff=pcutoff)

@@ -42,7 +42,7 @@ def train(
     init_weights="",
     pseudo_threshold=0,
     modelfolder="",
-    traintime_resize = False,        
+    traintime_resize=False,
     video_path="",
 ):
     # in case there was already a graph
@@ -62,17 +62,16 @@ def train(
 
     cfg["pseudo_threshold"] = pseudo_threshold
     cfg["video_path"] = video_path
-    cfg['traintime_resize'] = traintime_resize
+    cfg["traintime_resize"] = traintime_resize
 
-    if pseudo_labels !="":
+    if pseudo_labels != "":
         cfg["pseudo_label"] = pseudo_labels
-    
+
     if modelfolder != "":
         cfg["log_dir"] = modelfolder
         cfg["project_path"] = modelfolder
         # have to overwrite this
         cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
-
 
     if cfg["optimizer"] != "adam":
         print(
@@ -152,7 +151,7 @@ def train(
 
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
-    
+
     restorer.restore(sess, cfg["init_weights"])
     if maxiters is None:
         max_iter = int(cfg["multi_step"][-1][1])
