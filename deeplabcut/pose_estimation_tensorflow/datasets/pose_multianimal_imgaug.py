@@ -36,7 +36,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
         super(MAImgaugPoseDataset, self).__init__(cfg)
 
-        if cfg.get("pseudo_label", "")!="":
+        if cfg.get("pseudo_label", ""):
             self._n_kpts = len(cfg["all_joints_names"])
             self._n_animals = 1
 

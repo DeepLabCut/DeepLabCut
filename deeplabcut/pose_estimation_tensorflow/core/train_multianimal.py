@@ -38,7 +38,7 @@ def train(
     max_to_keep=5,
     keepdeconvweights=True,
     allow_growth=True,
-    load_pseudo_label=None,
+    pseudo_labels=None,
     init_weights="",
     pseudo_threshold=0,
     modelfolder="",
@@ -64,6 +64,8 @@ def train(
     cfg["video_path"] = video_path
     cfg['traintime_resize'] = traintime_resize
 
+    if pseudo_labels !="":
+        cfg["pseudo_label"] = pseudo_labels
     
     if modelfolder != "":
         cfg["log_dir"] = modelfolder
@@ -71,8 +73,6 @@ def train(
         # have to overwrite this
         cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
 
-    if load_pseudo_label != "":
-        cfg["pseudo_label"] = load_pseudo_label
 
     if cfg["optimizer"] != "adam":
         print(

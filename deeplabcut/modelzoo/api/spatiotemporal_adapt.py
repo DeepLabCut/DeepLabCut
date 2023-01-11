@@ -125,7 +125,7 @@ class SpatiotemporalAdaptation:
             self.adapt_iterations,  # maxiters
             modelfolder=self.modelfolder,
             init_weights=self.init_weights,
-            load_pseudo_label=pseudo_label_path,
+            pseudo_labels=pseudo_label_path,
             video_path=self.video_path,
             **kwargs
         )
@@ -165,18 +165,16 @@ class SpatiotemporalAdaptation:
 
         # spatial pyramid is not for adapted model
 
-        
+        scale_list = kwargs.pop('scale_list', [])        
         superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,
             videotype=self.videotype,
             init_weights=adapt_weights,
-            scale_list = kwargs['scale_list'] if 'scale_list' in kwargs else [],
+            scale_list = scale_list,
             customized_test_config=self.customized_pose_config,
             apply_filter = apply_filter
         )
-        if 'scale_list' in kwargs:
-            kwargs.pop('scale_list')
 
         deeplabcut.create_labeled_video(
             ref_proj_config_path,
