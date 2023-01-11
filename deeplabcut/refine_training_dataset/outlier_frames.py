@@ -420,7 +420,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "manual":
                 from deeplabcut.gui.widgets import launch_napari
 
-                _ = launch_napari()
+                _ = launch_napari([video, dataname])
                 return
 
             # Run always except when the outlieralgorithm == manual.
