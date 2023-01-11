@@ -1,6 +1,6 @@
 # The DeepLabCut Model Zoo! 
 
-🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖
+🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖 🐿 🦍 🦥
 
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
 
@@ -15,12 +15,6 @@ test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our
 ```
 pip install deeplabcut[tf,gui,modelzoo]
 ```
-
-
-```
-pip install deeplabcut[tf,gui,modelzoo]
-```
-
 
 ## About the SuperAnimal Models
 
