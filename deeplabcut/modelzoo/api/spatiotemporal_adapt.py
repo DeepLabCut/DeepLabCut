@@ -2,7 +2,7 @@ import deeplabcut
 import glob
 import os
 from deeplabcut.modelzoo.utils import parse_available_supermodels
-from . import superanimal_inference
+from deeplabcut.modelzoo.api import superanimal_inference
 from pathlib import Path
 
 class SpatiotemporalAdaptation:
