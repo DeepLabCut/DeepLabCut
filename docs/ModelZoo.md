@@ -16,12 +16,6 @@ test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our
 pip install deeplabcut[tf,gui,modelzoo]
 ```
 
-
-```
-pip install deeplabcut[tf,gui,modelzoo]
-```
-
-
 ## About the SuperAnimal Models
 
 Animal pose estimation is critical in applications ranging from neuroscience to veterinary medicine. However, reliable inference of animal poses currently requires domain knowledge and labeling effort. To ease access to high-performance animal pose estimation models across diverse environments and species, we present a new paradigm for pre-training and fine-tuning that provides excellent zero-shot (no training required) performance on two major classes of animal pose data: quadrupeds and lab mice. 
