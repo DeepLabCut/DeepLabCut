@@ -15,7 +15,7 @@ class SpatiotemporalAdaptation:
         adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
-        init_weights = "",
+        init_weights="",
     ):
 
         """
