@@ -15,7 +15,7 @@ class SpatiotemporalAdaptation:
         adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
-        init_weights = "",
+        init_weights="",
     ):
 
         """
@@ -85,7 +85,7 @@ class SpatiotemporalAdaptation:
             )
 
     def before_adapt_inference(self,
-                               make_video = False,
+                               make_video=False,
                                **kwargs):
         if self.init_weights!="":
             superanimal_inference.video_inference(
@@ -171,9 +171,9 @@ class SpatiotemporalAdaptation:
             self.supermodel_name,
             videotype=self.videotype,
             init_weights=adapt_weights,
-            scale_list = scale_list,
+            scale_list=scale_list,
             customized_test_config=self.customized_pose_config,
-            apply_filter = apply_filter
+            apply_filter=apply_filter
         )
 
         deeplabcut.create_labeled_video(
