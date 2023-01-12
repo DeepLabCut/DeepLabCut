@@ -38,7 +38,7 @@ def train(
     max_to_keep=5,
     keepdeconvweights=True,
     allow_growth=True,
-    pseudo_labels=None,
+    pseudo_labels="",
     init_weights="",
     pseudo_threshold=0,
     modelfolder="",
@@ -71,7 +71,7 @@ def train(
         cfg["log_dir"] = modelfolder
         cfg["project_path"] = modelfolder
         # have to overwrite this
-        cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
+        cfg["snapshot_prefix"] = os.path.join("snapshot")
 
     if cfg["optimizer"] != "adam":
         print(
