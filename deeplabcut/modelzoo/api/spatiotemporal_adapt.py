@@ -85,7 +85,7 @@ class SpatiotemporalAdaptation:
             )
 
     def before_adapt_inference(self,
-                               make_video = False,
+                               make_video=False,
                                **kwargs):
         if self.init_weights!="":
             superanimal_inference.video_inference(
