@@ -171,7 +171,7 @@ class SpatiotemporalAdaptation:
             self.supermodel_name,
             videotype=self.videotype,
             init_weights=adapt_weights,
-            scale_list = scale_list,
+            scale_list=scale_list,
             customized_test_config=self.customized_pose_config,
             apply_filter=apply_filter
         )
