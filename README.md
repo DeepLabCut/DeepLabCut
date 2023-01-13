@@ -184,7 +184,7 @@ Other open-access pre-prints related to our work on DeepLabCut:
 
 This project is primarily licensed under the GNU Lesser General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. If you use the code or data, please cite us! Note, artwork (DeepLabCut logo) and images are copyrighted; please do not take or use these images without written permission.
 
-SuperAnimal models are provided for research use only (non-commerical use).
+SuperAnimal models are provided for research use only (non-commercial use).
 
 ## Major Versions:
 
