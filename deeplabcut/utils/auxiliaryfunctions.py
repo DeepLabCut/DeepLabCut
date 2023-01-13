@@ -848,3 +848,5 @@ GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated
+GetEvaluationFolder = get_evaluation_folder
+GetModelFolder = get_model_folder
