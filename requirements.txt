@@ -1,3 +1,6 @@
+# novel for pytorch DLC:
+albumentations
+# old:
 dlclibrary
 ipython
 filterpy

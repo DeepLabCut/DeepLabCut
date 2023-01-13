@@ -1119,6 +1119,21 @@ def create_training_dataset(
                     "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
                 )
 
+                # Populate the pytorch config yaml file
+                pytorch_config_path = os.path.join(
+                    dlcparent_path,
+                    "pose_estimation_pytorch",
+                    "apis",
+                    "pytorch_config.yaml",
+                )
+                pytorch_cfg = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+                pytorch_cfg["project_root"] = os.path.dirname(config)
+                pytorch_cfg["pose_cfg_path"] = path_train_config
+                pytorch_cfg["cfg_path"] = config
+                auxiliaryfunctions.write_plainconfig(
+                    path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml"),
+                    pytorch_cfg,
+                )
         return splits
 
 

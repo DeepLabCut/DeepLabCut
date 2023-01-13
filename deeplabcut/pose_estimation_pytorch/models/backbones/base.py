@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import validators
 import torch.nn as nn
 import torch
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
@@ -29,7 +28,7 @@ class BaseBackbone(ABC, nn.Module):
         """
         if not pretrained:
             pass
-        elif validators.url(pretrained):
+        elif pretrained.startswith("http") or pretrained.startswith("ftp"):
             state_dict = torch.hub.load_state_dict_from_url(pretrained)
             self.model.load_state_dict(state_dict, strict=False)
         else:

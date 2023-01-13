@@ -1,6 +1,6 @@
-project_root: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20'
-pose_cfg_path: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20/dlc-models/iteration-0/openfieldAug20-trainset95shuffle0/train/pose_cfg.yaml'
-cfg_path: '/mnt/md0/anastasiia/ModelZoo/data/all_topview/openfield-Pranav-2018-08-20/config.yaml'
+project_root: willbeautomaticallyupdatedbycreate_training_datasetcode
+pose_cfg_path: willbeautomaticallyupdatedbycreate_training_datasetcode
+cfg_path: willbeautomaticallyupdatedbycreate_training_datasetcode
 
 seed: 42
 device: 'cuda:0'
