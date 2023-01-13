@@ -11,8 +11,7 @@ epochs = config['epochs']
 
 transform = None
 dlc.fix_seeds(config['seed'])
-project = dlc.Project(proj_root=config['project_root'])
-project.train_test_split()
+project = dlc.DLCProject(proj_root=config['project_root'])
 
 train_dataset = dlc.PoseDataset(project,
                                 transform=transform,
