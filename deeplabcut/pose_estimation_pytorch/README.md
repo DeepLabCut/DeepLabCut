@@ -7,8 +7,7 @@
 [Apis](#apis)   
 
 ## Data
-
-- [data](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/project.py#L7):
+- [data](data/project.py#L7):
 The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch dataset creation and test/train splitting.
     - `Project` class provides train and test splitting and converts dataset to required format. For intance, to [COCO]() format.
 
@@ -51,14 +50,14 @@ The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pyt
     > **Warning**
     > By now supports only [albumentations](https://albumentations.ai), will be extended in the future.
 ## Models
-- [models](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):
+- [models](models):
 The `deeplabcut.pose_estimations_pytorch.models` package contains all related to building a model with `backbone`, `neck` (optional) and `head`.
 
 ## Solvers
-- [solvers](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models): The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model training and validation.
+- [solvers](solvers): The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model training and validation.
 
 ## Apis
-- [apis]
+- [apis](apis): The `deeplabcut.pose_estimations_pytorch.apis` contains functionalities for training and testing as well as the corresponding configuration file [config.yaml](apis/config.yaml).
 
 ## Registry
 
