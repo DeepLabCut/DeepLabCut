@@ -10,6 +10,7 @@ from tqdm import tqdm
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
 from .utils import *
+from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
 
 
 class Solver(ABC):
@@ -51,6 +52,7 @@ class Solver(ABC):
         if self.logger:
             logger.log_config(cfg)
         self.model.to(device)
+        self.stride = 8  # TODO: stride from config?
 
     def fit(
             self,
@@ -147,7 +149,8 @@ class Solver(ABC):
             else:
                 item = item
             item = item.to(self.device)
-            pose = self.model.predict(item)
+            output = self.model(item)
+            pose = get_prediction(self.cfg, output, self.stride)
             predicted_poses.append(pose)
         predicted_poses = np.concatenate(predicted_poses)
         return predicted_poses

@@ -38,6 +38,8 @@ class PoseModel(nn.Module):
         -------
 
         """
+        if x.dim() == 3:
+            x = x[None, :]
         features = self.backbone(x)
         if self.neck:
             features = self.neck(features)
@@ -85,32 +87,32 @@ class PoseModel(nn.Module):
         return target
 
 
-    @torch.no_grad()
-    def predict(self, x):
-        """
+    # @torch.no_grad()
+    # def predict(self, x):
+    #     """
 
-        Parameters
-        ----------
-        x: input image tensor
+    #     Parameters
+    #     ----------
+    #     x: input image tensor
 
-        Returns
-        -------
-        pose: predicted keypoints coordinates
-        """
+    #     Returns
+    #     -------
+    #     pose: predicted keypoints coordinates
+    #     """
 
-        self.eval()
-        poses = []
-        if x.dim() == 3:
-            x = x[None, :]
-        heatmaps, locref = self.forward(x)
-        heatmaps = self.sigmoid(heatmaps)
-        heatmaps = heatmaps.permute(0, 2, 3, 1).detach().cpu().numpy()
-        locref = locref.permute(0, 2, 3, 1).detach().cpu().numpy()
-        for i in range(x.shape[0]):
-            shape = locref[i].shape
-            locref_i = np.reshape(locref, (shape[0], shape[1], -1, 2))
-            if self.cfg['location_refinement']:
-                locref_i = locref_i * self.cfg['locref_stdev']
-            pose = multi_pose_predict(heatmaps[i], locref_i, self.stride, 1)
-            poses.append(pose)
-        return np.stack(poses, axis=0)
+    #     self.eval()
+    #     poses = []
+    #     if x.dim() == 3:
+    #         x = x[None, :]
+    #     heatmaps, locref = self.forward(x)
+    #     heatmaps = self.sigmoid(heatmaps)
+    #     heatmaps = heatmaps.permute(0, 2, 3, 1).detach().cpu().numpy()
+    #     locref = locref.permute(0, 2, 3, 1).detach().cpu().numpy()
+    #     for i in range(x.shape[0]):
+    #         shape = locref[i].shape
+    #         locref_i = np.reshape(locref, (shape[0], shape[1], -1, 2))
+    #         if self.cfg['location_refinement']:
+    #             locref_i = locref_i * self.cfg['locref_stdev']
+    #         pose = multi_pose_predict(heatmaps[i], locref_i, self.stride, 1)
+    #         poses.append(pose)
+    #     return np.stack(poses, axis=0)
