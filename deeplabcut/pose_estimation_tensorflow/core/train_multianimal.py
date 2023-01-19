@@ -42,6 +42,7 @@ def train(
     init_weights="",
     pseudo_threshold=0,
     modelfolder="",
+    traintime_resize=False,
     video_path="",
 ):
     # in case there was already a graph
@@ -61,15 +62,16 @@ def train(
 
     cfg["pseudo_threshold"] = pseudo_threshold
     cfg["video_path"] = video_path
+    cfg["traintime_resize"] = traintime_resize
+
+    if pseudo_labels != "":
+        cfg["pseudo_label"] = pseudo_labels
 
     if modelfolder != "":
         cfg["log_dir"] = modelfolder
         cfg["project_path"] = modelfolder
         # have to overwrite this
-        cfg["snapshot_prefix"] = os.path.join(modelfolder, "snapshot")
-
-    if pseudo_labels != "":
-        cfg["pseudo_label"] = pseudo_labels
+        cfg["snapshot_prefix"] = os.path.join("snapshot")
 
     if cfg["optimizer"] != "adam":
         print(

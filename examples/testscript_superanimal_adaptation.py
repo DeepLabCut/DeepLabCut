@@ -1,6 +1,5 @@
 """
-Testscript for super animal inference
-
+Test script for super animal adaptation
 """
 import os, subprocess, deeplabcut
 from pathlib import Path
@@ -8,29 +7,41 @@ import pandas as pd
 import numpy as np
 
 basepath = os.path.dirname(os.path.realpath(__file__))
-videoname = "reachingvideo1"
-video = [
-    os.path.join(
-        basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-    )
-]
+videoname = "m3v1mp4"
+video =  os.path.join(
+    basepath, "openfield-Pranav-2018-10-30", "videos", videoname + ".mp4"
+)
+
+print ('adaptation training for superanimal_topviewmouse')
 
 
-print ('testing superanimal_topviewmouse')
 superanimal_name = 'superanimal_topviewmouse'
+
+videotype = '.mp4'
+
 scale_list = [200, 300, 400]
+
 deeplabcut.video_inference_superanimal(
-    video,
+    [video],
     superanimal_name,
-    videotype = '.avi',
+    videotype = '.mp4',
+    video_adapt = True,
     scale_list = scale_list,
+    pcutoff = 0.1
 )
 
-print ('testing superanimal_topviewmouse')
+
+print ('adaptation training for superanimal_quadruped')
+
 superanimal_name = 'superanimal_quadruped'
+
+
 deeplabcut.video_inference_superanimal(
-    video,
+    [video],
     superanimal_name,
-    videotype = '.avi',
+    videotype = '.mp4',
+    video_adapt = True,
     scale_list = scale_list,
+    pcutoff = 0.3
 )
+

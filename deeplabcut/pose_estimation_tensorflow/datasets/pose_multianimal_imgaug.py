@@ -27,7 +27,9 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
+from pathlib import Path
 from math import sqrt
+from functools import lru_cache
 
 
 @PoseDatasetFactory.register("multi-animal-imgaug")
@@ -48,6 +50,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
             self._n_kpts = len(multi) + len(unique)
             self._n_animals = len(animals)
+
+        if cfg.get("pseudo_label", "").endswith(".h5"):
+            assert cfg["video_path"]
+            print("loading video for image source", cfg["video_path"])
+            self.vid = VideoReader(cfg["video_path"])
+            self.video_image_size = (3, self.vid.height, self.vid.width)
+        else:
+            self.vid = None
+
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
@@ -56,13 +67,6 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
         )
-        if cfg.get("pseudo_label", "").endswith(".h5"):
-            assert cfg["video_path"]
-            print("loading video for image source", cfg["video_path"])
-            self.vid = VideoReader(cfg["video_path"])
-            self.video_image_size  = (3, self.vid.height, self.vid.width)
-        else:
-            self.vid = None
 
     @property
     def default_size(self):
@@ -143,14 +147,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
             item.im_path = os.path.join(video_root, frame_name)
-            '''
+
             if self.vid:
                 item.im_size = self.video_image_size
             else:
                 item.im_size = read_image_shape_fast(
                     os.path.join(video_root, frame_name)
                 )
-            '''
+
             item.joints = {}
             joints = np.concatenate([joint_ids, kpts], axis=1)
             joints = np.nan_to_num(joints, nan=0)
@@ -175,6 +179,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         pipeline = iaa.Sequential(random_order=False)
 
         pre_resize = cfg.get("pre_resize")
+
+        if cfg.get("traintime_resize", False):
+            # let's hard code it
+            print("using traintime resize")
+            pipeline.add(iaa.Resize({"height": 400, "width": "keep-aspect-ratio"}))
+
         crop_sampling = cfg.get("crop_sampling", "hybrid")
         if pre_resize:
             width, height = pre_resize
@@ -339,9 +349,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             logging.debug("image %s", im_file)
             self.vid.set_to_frame(img_idx[i])
             image = self.vid.read_frame()
-
             if self.has_gt:
                 Joints = data_item.joints
+                if len(Joints[0]) == 0:
+                    # empty prediction for this frame
+                    return None, None, None, None, None
                 kpts = np.zeros((self._n_kpts * self._n_animals, 2))
                 for j in range(self._n_animals):
                     for n, x, y in Joints.get(j, []):
@@ -476,6 +488,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     inds_visible,
                     data_items,
                 ) = self.get_batch()
+            # in case it's empty prediction
+            if batch_joints == None:
+                continue
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
@@ -583,7 +598,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_size = *size, num_joints * 2
         locref_map = np.zeros(locref_size)
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = *size, self.cfg["num_limbs"] * 2
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
@@ -609,7 +624,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         dx_ = dx * locref_scale
         dy = coords[:, 1] - yy * stride - half_stride
         dy_ = dy * locref_scale
-        dist = dx**2 + dy**2
+        dist = dx ** 2 + dy ** 2
         mask1 = dist <= dist_thresh_sq
         mask2 = (xx >= mins[:, 0]) & (xx <= maxs[:, 0])
         mask3 = (yy >= mins[:, 1]) & (yy <= maxs[:, 1])
@@ -716,7 +731,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = np.concatenate(
             [size, np.array([self.cfg["num_limbs"] * 2])]
@@ -748,7 +763,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             map_j = grid.copy()
             # Distance between the joint point and each coordinate
             dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
-            scmap_j = np.exp(-dist / (2 * (std**2)))
+            scmap_j = np.exp(-dist / (2 * (std ** 2)))
             scmap[..., j_id] = scmap_j
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 0] = 1
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 1] = 1
