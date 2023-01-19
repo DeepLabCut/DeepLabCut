@@ -1,4 +1,3 @@
-(installation-tips)=
 # Installation Tips
 
 ## How to use the latest updates directly from GitHub
@@ -363,6 +362,254 @@ conda env update -f DEEPLABCUT_M1.yaml
 GUI will open!
 
 Note: Based on issues  #1380 and #2011, thanks!
+
+## Installation on Ubuntu 22.04.1 LTS (Jammy Jellyfish)
+
+Hello! Another cookbook entry on how to install your freshly installed 22.04 LTS system for DLC use. Namely, CUDA, drivers, Docker, and anaconda!
+
+### Let's start with CUDA support for your GPU:
+Get update:
+
+`sudo apt update`
+
+Install git (distributed version control system):
+
+`sudo apt install git`
+
+Install gcc (compiler):
+
+`sudo apt install gcc`
+
+Install CUDA:
+
+```python
+
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+wget https://developer.download.nvidia.com/compute/cuda/11.3.1/local_installers/cuda-repo-ubuntu2004-11-3-local_11.3.1-465.19.01-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu2004-11-3-local_11.3.1-465.19.01-1_amd64.deb
+sudo apt-key add /var/cuda-repo-ubuntu2004-11-3-local/7fa2af80.pub
+sudo apt-get update
+sudo apt-get -y install cuda
+
+```
+
+Install nvidia driver for GPU. DEEPLABCUT currently is on CUDA version 11. NOTE: CUDA 11 only supports certain nvida drivers. Installation of the latest driver may not be suppported by the CUDA version. See (here)[https://docs.nvidia.com/deploy/cuda-compatibility/index.html]
+
+Example: the RTX 3080 has a nvidia driver version (525.60) that is unsupported by CUDA 11. But nvidia version 510 is. Therefore this is sufficient:
+
+`sudo apt install nvidia-driver-510`
+
+then:
+
+`reboot -n`
+
+re-open terminal and check gcc version:
+
+`gcc --version`
+
+output:
+```python
+gcc --version
+gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
+Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+Then finish installation:
+
+`sudo apt install nvidia-cuda-toolkit gcc-9`
+
+Then check:
+
+`nvcc --version`
+
+If error messages, read them carefully as they often tell you how to fix it, or what to google :D
+
+Now you can see CUDA, DRIVER, GPU(s):
+
+`nvidia-smi`
+
+output:
+
+```python
+$ nvidia-smi
+Sun Jan  1 10:14:06 2023       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 510.108.03   Driver Version: 510.108.03   CUDA Version: 11.6     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
+|  0%   49C    P8    17W / 350W |      5MiB / 24576MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|    0   N/A  N/A      1275      G   /usr/lib/xorg/Xorg                  4MiB |
++-----------------------------------------------------------------------------+
+
+```
+
+Sweet!
+
+
+### Next, Anaconda!
+
+Click here to get the ubuntu/linux package: https://www.anaconda.com/products/individual#linux
+
+this downloads a file, save it somewhere. (~/Downloads is OK)
+
+then enter the folder:
+
+`cd Downloads`
+
+and run:
+
+`bash Anaconda3-2021.05-Linux-x86_64.sh`
+
+and you get:
+```python
+Welcome to Anaconda3 2021.05
+
+In order to continue the installation process, please review the license
+agreement.
+Please, press ENTER to continue
+>>>
+```
+
+Follow prompts, so many prompts!
+
+### Next, DeepLabCut!
+
+Given this is a totally fresh install, here are a few things that also needed: 
+
+`sudo apt install libcanberra-gtk-module libcanberra-gtk3-module`
+
+DeepLabCut can be installed via:
+* Docker: We strongly recommend for Ubuntu users to use Docker (https://hub.docker.com/r/deeplabcut/deeplabcut) - it's a much more reproducible environment.
+* A conda file provided via the DeepLabCut website. This may be a bit more advanced in the development
+* A simple installation through pip: either full GUI (recommeneded) or without GUI (called: DLCLite)
+
+#### For pip instillation (GUI): 
+
+Create an enviroment: 
+
+`conda create --name DLCenvGUI python=3.8`
+
+Activate the enviroment: 
+
+`conda activate DLCenvGUI`
+
+Install DLC: 
+
+`pip install 'deeplabcut[gui,tf]'`
+
+Start the GUI with: 
+
+`python -m deeplabcut`
+
+**[Do DeepLabCut stuff.](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html)**
+
+Force quit: 
+
+Close the GUI or *control c* in the terminal
+
+Jump out of your enviroment: 
+
+`conda deactivate`
+
+#### Or pip install DLC Lite (no GUI): 
+Create an enviroment: 
+
+`conda create --name DLCenv python=3.8`
+
+Activate the enviroment: 
+
+`conda activate DLCenv`
+
+Install DLC: 
+
+`pip install 'deeplabcut[tf]'`
+
+Start python: 
+
+`ipython`
+
+Import DLC: 
+
+`import deeplabcut`
+
+Verify installation: 
+
+`deeplabcut.__version__`
+
+Sweet.
+
+
+**[Do DeepLabCut stuff.](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html)**
+
+Exit ipython: 
+
+`exit`
+
+Jump out of your enviroment: 
+
+`conda deactivate`
+
+#### For conda installation:
+If no git yet: 
+
+`sudo apt install git-all`
+
+Enter Documents: 
+
+`cd Documents`
+
+
+Get DLC: 
+
+`git clone https://github.com/DeepLabCut/DeepLabCut.git`
+
+(If you want:) edit the name of the enviroment in the conda file (to something like DLCenvConda): 
+
+`nano DeepLabCut/conda-environments/DEEPLABCUT.yaml` 
+
+Save file and exit nano with: *control x, y, enter*
+
+Enter the folder: 
+
+`cd DeepLabCut/conda-enviroments`
+
+Create the conda enviroment based on the conda file from DeepLabCut: 
+
+`conda env create -f DEEPLABCUT.yaml`
+
+Go back to Documents: 
+
+`cd ~/Documents`
+
+Enter the enviroment: 
+
+`conda activate DLCenvConda`
+
+Start the GUI with: 
+
+`python -m deeplabcut`
+
+**[Do DeepLabCut stuff.](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html)**
+
+Force quit: Close the GUI or *control c* in the terminal
+
+Jump out of your enviroment: 
+
+`conda deactivate`
 
 ## How to confirm that your GPU is being used by DeepLabCut
 
