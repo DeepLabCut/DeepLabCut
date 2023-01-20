@@ -72,8 +72,6 @@ class SpatiotemporalAdaptation:
         self.adapt_iterations = adapt_iterations
         self.modelfolder = modelfolder
         self.init_weights = init_weights
-        if modelfolder != "":
-            os.makedirs(modelfolder, exist_ok=True)
 
         if not customized_pose_config:
             dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
@@ -146,6 +144,8 @@ class SpatiotemporalAdaptation:
         _, pseudo_label_path, _, _ = deeplabcut.auxiliaryfunctions.load_analyzed_data(
             video_root, vname, DLCscorer, False, ""
         )
+        if self.modelfolder != "":
+            os.makedirs(self.modelfolder, exist_ok=True)
 
         self.train_without_project(pseudo_label_path, **kwargs)
 
