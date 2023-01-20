@@ -29,7 +29,6 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.conversioncode import robust_split_path
 from pathlib import Path
 from math import sqrt
-from functools import lru_cache
 
 
 @PoseDatasetFactory.register("multi-animal-imgaug")
@@ -79,12 +78,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def load_dataset(self):
         cfg = self.cfg
 
-        pseudo_threshold = cfg.get("pseudo_threshold", 0)
-        print("threshold for pseudo labeling is: ", pseudo_threshold)
-
         if cfg.get("pseudo_label", ""):
             if cfg["pseudo_label"].endswith(".h5"):
-                print("finish loading all pseudo label")
+                pseudo_threshold = cfg.get("pseudo_threshold", 0)
+                print(f"Loading pseudo labels with threshold > {pseudo_threshold}")
                 return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)
 
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
@@ -129,13 +126,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
         gt_file = cfg["pseudo_label"]
-
         assert os.path.exists(gt_file)
-        print("Using gt file:", gt_file.split("/")[-1])
+        path_ = Path(gt_file)
+        print("Using gt file:", path_.name)
 
         df = pd.read_hdf(gt_file)
-        video_name = gt_file.split("/")[-1].split("DLC")[0]
-        video_root = os.path.join("/".join(gt_file.split("/")[:-1]), video_name)
+        video_name = path_.name.split("DLC")[0]
+        video_root = str(path_.parents[0] / video_name)
 
         itemlist = []
         for image_id, imagename in enumerate(df.index):
