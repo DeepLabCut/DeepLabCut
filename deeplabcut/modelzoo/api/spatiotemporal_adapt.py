@@ -149,9 +149,7 @@ class SpatiotemporalAdaptation:
 
         self.train_without_project(pseudo_label_path, **kwargs)
 
-    def after_adapt_inference(self,
-                              apply_filter = False,
-                              **kwargs):
+    def after_adapt_inference(self, **kwargs):
 
         pattern = os.path.join(
             self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
@@ -175,7 +173,6 @@ class SpatiotemporalAdaptation:
             init_weights=adapt_weights,
             scale_list=scale_list,
             customized_test_config=self.customized_pose_config,
-            apply_filter=apply_filter
         )
 
         deeplabcut.create_labeled_video(

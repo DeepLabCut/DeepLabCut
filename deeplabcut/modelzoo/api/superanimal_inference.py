@@ -161,7 +161,6 @@ def _video_inference(
     nframes,
     batchsize,
     scale_list=[],
-    apply_filter = False
 ):
 
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -304,7 +303,6 @@ def video_inference(
     allow_growth=False,
     init_weights="",
     customized_test_config="",
-    apply_filter = False,
 ):
 
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
@@ -415,10 +413,7 @@ def video_inference(
                 nframes,
                 int(test_cfg["batch_size"]),
                 scale_list=scale_list,
-                apply_filter = apply_filter
             )
-
-
 
             stop = time.time()
 
@@ -469,17 +464,6 @@ def video_inference(
                         temp[n, 2] = c[0]
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
-
-            if apply_filter:
-                data = df.copy()
-
-                mask = df.columns.get_level_values("coords") != "likelihood"
-                data.loc[:, mask] = df.loc[:, mask].apply(
-                        signal.medfilt, args=(41,), axis=0
-                ).to_numpy()
-                df = data
-
-
             df.to_hdf(dataname, key="df_with_missing")
 
     return init_weights
