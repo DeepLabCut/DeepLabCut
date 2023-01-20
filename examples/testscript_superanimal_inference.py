@@ -25,7 +25,7 @@ if __name__ == "__main__":
         scale_list=scale_list,
     )
 
-    print("testing superanimal_topviewmouse")
+    print("testing superanimal_quadruped")
     superanimal_name = "superanimal_quadruped"
     deeplabcut.video_inference_superanimal(
         video,
