@@ -118,10 +118,13 @@ class SpatiotemporalAdaptation:
 
     def train_without_project(self, pseudo_label_path, **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
+
+        displayiters = kwargs.pop("displayiters", 500)
+        saveiters = kwargs.pop("saveiters", 1000)
         train(
             self.customized_pose_config,
-            displayiters=500,
-            saveiters=1000,
+            displayiters=displayiters,
+            saveiters=saveiters,
             maxiters=self.adapt_iterations,
             modelfolder=self.modelfolder,
             init_weights=self.init_weights,
@@ -130,7 +133,7 @@ class SpatiotemporalAdaptation:
             **kwargs
         )
 
-    def adaptation_training(self, **kwargs):
+    def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
         """
         There should be two choices, either taking a config, with is then assuming there is a DLC project.
         Or we make up a fake one, then we use a light way convention to do adaptation
@@ -147,7 +150,12 @@ class SpatiotemporalAdaptation:
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
-        self.train_without_project(pseudo_label_path, **kwargs)
+        self.train_without_project(
+            pseudo_label_path,
+            displayiters=displayiters,
+            saveiters=saveiters,
+            **kwargs,
+        )
 
     def after_adapt_inference(self, **kwargs):
 
