@@ -71,30 +71,31 @@ class SpatiotemporalAdaptation:
         self.adapt_modelprefix = vname + "_video_adaptation"
         self.adapt_iterations = adapt_iterations
         self.modelfolder = modelfolder
-        self.customized_pose_config = customized_pose_config
         self.init_weights = init_weights
         if modelfolder != "":
             os.makedirs(modelfolder, exist_ok=True)
 
+        if not customized_pose_config:
             dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
-
             self.customized_pose_config = os.path.join(
                 dlc_root_path,
                 "pose_estimation_tensorflow",
                 "superanimal_configs",
                 supermodels[self.supermodel_name],
             )
+        else:
+            self.customized_pose_config = customized_pose_config
 
     def before_adapt_inference(self,
                                make_video=False,
                                **kwargs):
-        if self.init_weights!="":
+        if self.init_weights != "":
             superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
                 scale_list=self.scale_list,
-                init_weights = self.init_weights,
+                init_weights=self.init_weights,
                 customized_test_config=self.customized_pose_config,
             )
         else:
@@ -121,9 +122,9 @@ class SpatiotemporalAdaptation:
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
         train(
             self.customized_pose_config,
-            500,  # displayiters
-            1000,  # saveiters,
-            self.adapt_iterations,  # maxiters
+            displayiters=500,
+            saveiters=1000,
+            maxiters=self.adapt_iterations,
             modelfolder=self.modelfolder,
             init_weights=self.init_weights,
             pseudo_labels=pseudo_label_path,

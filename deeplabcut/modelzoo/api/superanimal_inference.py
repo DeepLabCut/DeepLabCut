@@ -292,6 +292,7 @@ def _video_inference(
 
     return PredicteData, nframes
 
+
 def video_inference(
     videos,
     superanimal_name,
@@ -301,7 +302,7 @@ def video_inference(
     batchsize=1,
     robust_nframes=False,
     allow_growth=False,
-    init_weights = "",
+    init_weights="",
     customized_test_config="",
     apply_filter = False,
 ):
