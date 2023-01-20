@@ -8,7 +8,7 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
 )
 from deeplabcut.gui.widgets import ClickableLabel
-from deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
+from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
@@ -26,7 +26,6 @@ class ModelZoo(DefaultTab):
         super().__init__(root, parent, h1_description)
         self._val_pattern = "(\d{3,5},\s*)+\d{3,5}"
         self._set_page()
-        self.weights_loc = ""
 
     @property
     def files(self):
@@ -43,11 +42,6 @@ class ModelZoo(DefaultTab):
             "Supermodel Settings", "font:bold", (0, 50, 0, 0)
         )
 
-        weights_label = ClickableLabel('Model weights', parent=self)
-        weights_label.signal.connect(self._select_file)
-        self.weights_line = QtWidgets.QLineEdit("", parent=self)
-        self.weights_line.setPlaceholderText("Click on `Model weights` to select a file...")
-
         model_combo_text = QtWidgets.QLabel("Supermodel name")
         self.model_combo = QtWidgets.QComboBox()
         supermodels = parse_available_supermodels()
@@ -61,12 +55,10 @@ class ModelZoo(DefaultTab):
         self.scales_line.setValidator(validator)
 
         model_settings_layout.addWidget(section_title, 0, 0)
-        model_settings_layout.addWidget(weights_label, 1, 0)
-        model_settings_layout.addWidget(self.weights_line, 1, 1)
-        model_settings_layout.addWidget(model_combo_text, 2, 0)
-        model_settings_layout.addWidget(self.model_combo, 2, 1)
-        model_settings_layout.addWidget(scales_label, 3, 0)
-        model_settings_layout.addWidget(self.scales_line, 3, 1)
+        model_settings_layout.addWidget(model_combo_text, 1, 0)
+        model_settings_layout.addWidget(self.model_combo, 1, 1)
+        model_settings_layout.addWidget(scales_label, 2, 0)
+        model_settings_layout.addWidget(self.scales_line, 2, 1)
         self.main_layout.addLayout(model_settings_layout)
 
         self.run_button = QtWidgets.QPushButton("Run")
@@ -82,15 +74,6 @@ class ModelZoo(DefaultTab):
             color = 'lime'
         self.scales_line.setStyleSheet(f'border: 1px solid {color}')
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(''))
-
-    def _select_file(self):
-        filename = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select a model", filter="Model Weights (*.meta *.index *.data-*)",
-        )[0]
-        if not filename:
-            return
-        self.weights_loc = filename.split(".")[0]
-        self.weights_line.setText(self.weights_loc)
 
     def run_video_adaptation(self):
         videos = list(self.files)
@@ -113,7 +96,6 @@ class ModelZoo(DefaultTab):
         videotype = self.video_selection_widget.videotype_widget.currentText()
         adapter = SpatiotemporalAdaptation(
             videos[0],
-            self.weights_loc,
             supermodel_name,
             videotype=videotype,
             scale_list=scales,
