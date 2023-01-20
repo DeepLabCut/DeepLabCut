@@ -27,7 +27,6 @@ from scipy import signal
 import glob
 
 
-
 def get_multi_scale_frames(frame, scale_list):
     augs = []
     shapes = []
@@ -334,11 +333,11 @@ def video_inference(
             print (f"{weight_folder} exists, using the downloaded weights")
     else:
         print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
-    
+
     snapshots = glob.glob(
         os.path.join(weight_folder, 'snapshot-*.index')
     )
-            
+
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
@@ -350,13 +349,13 @@ def video_inference(
 
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
-    
+
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
     DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)    
-        
+    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+
 
     for video in videos:
 
@@ -418,8 +417,8 @@ def video_inference(
                 apply_filter = apply_filter
             )
 
-            
-            
+
+
             stop = time.time()
 
             coords = [0, nx, 0, ny]
@@ -472,14 +471,14 @@ def video_inference(
 
             if apply_filter:
                 data = df.copy()
-                
+
                 mask = df.columns.get_level_values("coords") != "likelihood"
                 data.loc[:, mask] = df.loc[:, mask].apply(
                         signal.medfilt, args=(41,), axis=0
                 ).to_numpy()
                 df = data
-                
-                
+
+
             df.to_hdf(dataname, key="df_with_missing")
-            
+
     return init_weights

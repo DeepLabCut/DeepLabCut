@@ -1,10 +1,4 @@
-import os
-import os.path
-import pickle
-import time
 from pathlib import Path
-import glob
-import deeplabcut
 from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
 
 

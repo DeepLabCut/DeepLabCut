@@ -5,6 +5,7 @@ from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.modelzoo.api import superanimal_inference
 from pathlib import Path
 
+
 class SpatiotemporalAdaptation:
     def __init__(
         self,
@@ -95,7 +96,7 @@ class SpatiotemporalAdaptation:
                 scale_list=self.scale_list,
                 init_weights = self.init_weights,
                 customized_test_config=self.customized_pose_config,
-            )   
+            )
         else:
             self.init_weights = superanimal_inference.video_inference(
                 [self.video_path],
@@ -165,7 +166,7 @@ class SpatiotemporalAdaptation:
 
         # spatial pyramid is not for adapted model
 
-        scale_list = kwargs.pop('scale_list', [])        
+        scale_list = kwargs.pop('scale_list', [])
         superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,

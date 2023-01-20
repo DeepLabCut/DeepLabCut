@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
-from deeplabcut.pose_estimation_tensorflow import predict_supermodel
+from deeplabcut.modelzoo.api import superanimal_inference
 
 
 def test_get_multi_scale_frames():
     fake_img = (255 * np.random.rand(600, 800, 3)).astype(np.uint8)
     ar = fake_img.shape[1] / fake_img.shape[0]
     heights = list(range(100, 1000, 100))
-    frames, shapes = predict_supermodel.get_multi_scale_frames(
+    frames, shapes = superanimal_inference.get_multi_scale_frames(
         fake_img, heights,
     )
     assert len(frames) == len(shapes) == len(heights)
@@ -26,7 +26,7 @@ def test_project_pred_to_original_size(scale):
         "coordinates": coords,
         "confidence": conf,
     }
-    preds_orig = predict_supermodel._project_pred_to_original_size(
+    preds_orig = superanimal_inference._project_pred_to_original_size(
         preds, old_shape, new_shape,
     )
     coords_orig = preds_orig["coordinates"][0]
