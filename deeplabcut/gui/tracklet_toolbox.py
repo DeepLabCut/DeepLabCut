@@ -92,12 +92,11 @@ class DraggablePoint:
             message = f"Do you want to remove the label {self.bodyParts}?"
             if self.likelihood is not None:
                 message += " You cannot undo this step!"
-            msg = QMessageBox(
-                title="Remove!",
-                text=message,
-            )
+            msg = QMessageBox()
+            msg.setText(message)
             msg.setStandardButtons(msg.Yes | msg.No)
-            if msg == 2:
+            msg.exec()
+            if msg.Yes:
                 self.delete_data()
 
     def delete_data(self):
