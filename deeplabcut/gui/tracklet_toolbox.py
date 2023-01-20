@@ -93,10 +93,10 @@ class DraggablePoint:
             if self.likelihood is not None:
                 message += " You cannot undo this step!"
             msg = QMessageBox()
+            msg.setWindowTitle("Warning!")
             msg.setText(message)
             msg.setStandardButtons(msg.Yes | msg.No)
-            msg.exec()
-            if msg.Yes:
+            if msg.exec() == msg.Yes:
                 self.delete_data()
 
     def delete_data(self):
