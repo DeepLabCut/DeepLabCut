@@ -11,6 +11,12 @@ if __name__ == "__main__":
     video = os.path.join(
         basepath, "openfield-Pranav-2018-10-30", "videos", videoname + ".mp4"
     )
+    video = deeplabcut.ShortenVideo(
+        video,
+        start="00:00:00",
+        stop="00:00:01",
+        outsuffix="short",
+    )
 
     print("adaptation training for superanimal_topviewmouse")
 
