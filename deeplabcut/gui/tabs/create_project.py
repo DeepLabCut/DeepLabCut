@@ -58,6 +58,7 @@ class ProjectCreator(QtWidgets.QDialog):
         loc_label = ClickableLabel("Location:", parent=user_frame)
         loc_label.signal.connect(self.on_click)
         self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
+        self.loc_line.textEdited.connect(self.on_text)
 
         vbox = QtWidgets.QVBoxLayout(user_frame)
         grid = QtWidgets.QGridLayout()
@@ -193,7 +194,11 @@ class ProjectCreator(QtWidgets.QDialog):
                     child.setDisabled(True)
                 else:
                     child.setDisabled(False)
-
+    
+    def on_text(self, text): #can this be done recursively?
+        self.loc_default = text
+        self.update_project_location()
+    
     def update_project_name(self, text):
         self.proj_default = text
         self.update_project_location()
