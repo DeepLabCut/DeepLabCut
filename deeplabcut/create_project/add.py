@@ -25,7 +25,8 @@ def add_new_videos(
         A list of strings containing the full paths of the videos to include in the project.
 
     copy_videos : bool, optional
-        If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
+        If this is set to True, the videos will be copied to your project/videos directory. If False, the symlink of the 
+        videos will be copied instead. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
 
     coords: list, optional
