@@ -69,89 +69,44 @@ def _project_pred_to_original_size(pred, old_shape, new_shape):
 
 
 def _average_multiple_scale_preds(
-    preds, scale_list, num_kpts, cos_dist_threshold=0.997, confidence_threshold=0.1
+    preds,
+    scale_list,
+    num_kpts,
+    cos_dist_threshold=0.997,
+    confidence_threshold=0.1,
 ):
+    if len(scale_list) < 2:
+        return preds[0]
 
-    ret_pred = {}
-
-    ret_pred["coordinates"] = [[[]] * num_kpts]
-    ret_pred["confidence"] = [[]] * num_kpts
-
+    xyp = np.zeros((len(scale_list), num_kpts, 3))
     for scale_id, pred in enumerate(preds):
-        # better handle the case where the pred is empty
-        if not len(pred):
-            coordinate = [[]] * num_kpts
-            confidence = [[]] * num_kpts
-        else:
-            coordinate = pred["coordinates"][0]
-            confidence = pred["confidence"]
+        coordinates = pred["coordinates"][0]
+        confidence = pred["confidence"]
+        for i, (coords, conf) in enumerate(zip(coordinates, confidence)):
+            if not np.any(coords):
+                continue
+            xyp[scale_id, i, :2] = coords
+            xyp[scale_id, i, 2] = conf
+    xy = xyp[..., :2]
 
-        for kpt_id, coord_list in enumerate(coordinate):
-            if len(ret_pred["coordinates"][0][kpt_id]) == 0:
-                ret_pred["coordinates"][0][kpt_id] = [[]] * len(scale_list)
-                ret_pred["confidence"][kpt_id] = [[]] * len(scale_list)
+    # Compute cosine similarity
+    mean_vec = np.nanmedian(xy, axis=0)
+    dist_ = np.einsum('ijk,jk->ij', xy, mean_vec)
+    n = np.linalg.norm(xy, axis=2) * np.linalg.norm(mean_vec, axis=1)
+    dist = np.nan_to_num(dist_ / n)
 
-            temp_coord = np.expand_dims(coord_list, axis=0)
-            ret_pred["coordinates"][0][kpt_id][scale_id] = temp_coord
-            temp_confidence = np.expand_dims(confidence[kpt_id], axis=0)
-            ret_pred["confidence"][kpt_id][scale_id] = temp_confidence
-
-    for kpt_id in range(num_kpts):
-
-        remove_indices = []
-        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if len(ele) == 0 or len(ele[0]) == 0:
-                remove_indices.append(idx)
-
-        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if idx in remove_indices:
-                # using [0,0] instead of [nan,nan] for cosine similarity to correctly pick up distances
-                ret_pred["coordinates"][0][kpt_id][idx] = np.array([[0, 0]])
-                ret_pred["confidence"][kpt_id][idx] = np.array([[0]])
-
-        mean_vec = np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)
-        candidates = np.array(ret_pred["coordinates"][0][kpt_id])
-        dist = []
-
-        for i in range(len(candidates)):
-            # In case where the the predictions do not exist
-            dist.append(cosine_similarity(candidates[i], mean_vec))
-
-        filter_indices = []
-
-        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if (
-                dist[idx] < cos_dist_threshold
-                or ret_pred["confidence"][kpt_id][idx] < confidence_threshold
-            ):
-
-                filter_indices.append(idx)
-
-        for idx, ele in enumerate(ret_pred["coordinates"][0][kpt_id]):
-            if idx in filter_indices:
-                ret_pred["coordinates"][0][kpt_id][idx] = np.array([[np.nan, np.nan]])
-                ret_pred["confidence"][kpt_id][idx] = np.array([[np.nan]])
-
-        if len(ret_pred["coordinates"][0][kpt_id]) != 0:
-
-            ret_pred["coordinates"][0][kpt_id] = np.concatenate(
-                ret_pred["coordinates"][0][kpt_id], axis=0
-            )
-            ret_pred["confidence"][kpt_id] = np.concatenate(
-                ret_pred["confidence"][kpt_id], axis=0
-            )
-
-            # need np.array for wrapping the list for evaluation code to work correctly
-            ret_pred["coordinates"][0][kpt_id] = np.array(
-                [np.nanmedian(np.array(ret_pred["coordinates"][0][kpt_id]), axis=0)]
-            )
-            ret_pred["confidence"][kpt_id] = np.array(
-                [np.nanmedian(np.array(ret_pred["confidence"][kpt_id]), axis=0)]
-            )
-        else:
-            ret_pred["coordinates"][0][kpt_id] = np.array([[np.nan, np.nan]])
-            ret_pred["confidence"][kpt_id] = np.array([[np.nan]])
-    return ret_pred
+    mask = np.logical_or(
+        xyp[..., 2] < confidence_threshold,
+        dist < cos_dist_threshold,
+    )
+    xyp[mask] = np.nan
+    coords = np.nanmedian(xyp[..., :2], axis=0)
+    conf = np.nanmedian(xyp[..., 2], axis=0)
+    dict_ = {
+        'coordinates': [list(coords[:, None])],
+        'confidence': list(conf[:, None].astype(np.float32)),
+    }
+    return dict_
 
 
 def _video_inference(
@@ -462,8 +417,8 @@ def video_inference(
                     confidence = dict_["confidence"]
                     temp = np.full((len(keypoints), 3), np.nan)
                     for n, (xy, c) in enumerate(zip(keypoints, confidence)):
-                        temp[n, :2] = xy[0]
-                        temp[n, 2] = c[0]
+                        temp[n, :2] = xy
+                        temp[n, 2] = c
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
             df.to_hdf(dataname, key="df_with_missing")
