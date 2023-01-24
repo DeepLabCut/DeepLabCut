@@ -638,10 +638,11 @@ def create_labeled_video(
 
     if get_start_method() == "fork":
         with Pool(min(os.cpu_count(), len(Videos))) as pool:
-            pool.map(func, Videos)
+            results = pool.map(func, Videos)
     else:
+        results = []
         for video in Videos:
-            func(video)
+            results.append(func(video))
 
     os.chdir(start_path)
     return results
