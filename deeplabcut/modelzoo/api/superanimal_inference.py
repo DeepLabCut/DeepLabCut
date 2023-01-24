@@ -23,8 +23,10 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
     MODELOPTIONS,
 )
-from scipy import signal
 import glob
+import warnings
+
+warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
 def get_multi_scale_frames(frame, scale_list):
