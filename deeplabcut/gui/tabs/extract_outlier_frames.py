@@ -60,7 +60,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.extract_outlierframes_button.setMinimumWidth(150)
 
         self.label_outliers_button = QtWidgets.QPushButton("Labeling GUI")
-        self.label_outliers_button.setEnabled(False)
+        self.label_outliers_button.setEnabled(True)
         self.label_outliers_button.clicked.connect(self.launch_refinement_gui)
         self.label_outliers_button.setMinimumWidth(150)
 
@@ -115,7 +115,6 @@ class ExtractOutlierFrames(DefaultTab):
         )
 
     def extract_outlier_frames(self):
-        self.label_outliers_button.setEnabled(True)
 
         config = self.root.config
         shuffle = self.root.shuffle_value
