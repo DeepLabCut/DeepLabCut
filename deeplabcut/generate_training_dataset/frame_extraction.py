@@ -263,11 +263,9 @@ def extract_frames(
     from deeplabcut.utils import auxiliaryfunctions
 
     if mode == "manual":
-        wd = Path(config).resolve().parents[0]
-        os.chdir(str(wd))
-        from deeplabcut.gui import frame_extraction_toolbox
-
-        frame_extraction_toolbox.show(config, slider_width)
+        from deeplabcut.gui.widgets import launch_napari
+        _ = launch_napari()
+        return
 
     elif mode == "automatic":
         config_file = Path(config).resolve()
