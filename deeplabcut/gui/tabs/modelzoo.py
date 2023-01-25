@@ -1,3 +1,4 @@
+import deeplabcut
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QRegularExpressionValidator
@@ -7,8 +8,6 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_grid_layout,
 )
-from deeplabcut.gui.widgets import ClickableLabel
-from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
@@ -94,12 +93,11 @@ class ModelZoo(DefaultTab):
                 scales = list(map(int, scales_.split(",")))
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        adapter = SpatiotemporalAdaptation(
-            videos[0],
+
+        deeplabcut.video_inference_superanimal(
+            videos,
             supermodel_name,
             videotype=videotype,
+            video_adapt=True,
             scale_list=scales,
         )
-        adapter.before_adapt_inference()
-        adapter.adaptation_training()
-        adapter.after_adapt_inference()
