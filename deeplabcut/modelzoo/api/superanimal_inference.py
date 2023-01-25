@@ -417,8 +417,9 @@ def video_inference(
                     confidence = dict_["confidence"]
                     temp = np.full((len(keypoints), 3), np.nan)
                     for n, (xy, c) in enumerate(zip(keypoints, confidence)):
-                        temp[n, :2] = xy
-                        temp[n, 2] = c
+                        if xy.size and c.size:
+                            temp[n, :2] = xy
+                            temp[n, 2] = c
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
             df.to_hdf(dataname, key="df_with_missing")
