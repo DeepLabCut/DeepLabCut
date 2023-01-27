@@ -70,11 +70,6 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - The code headers can be standardized by running `python tools/update_license_headers.py`
 - Edit `NOTICE.yml` to update the header. 
 
-**DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
-
-- the [authors](/AUTHORS)
-- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
-
 **Add yourself as a contributor ✨**
     
 DeepLabCut follows the All-Contributors specification to ensure that every contribution is recognized ✨!
@@ -87,3 +82,7 @@ Comment on Issue or Pull Request, asking @all-contributors to add a contributor:
     
 You can find the table with the contribution type references and their respective 🗝 keywords [HERE](https://allcontributors.org/docs/en/emoji-key).
 
+**DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
+
+- the [authors](/AUTHORS)
+- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
