@@ -70,7 +70,7 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - The code headers can be standardized by running `python tools/update_license_headers.py`
 - Edit `NOTICE.yml` to update the header. 
 
-**Add yourself as a contributor ✨**
+**ADD YOURSELF AS A CONTRIBUTOR ✨**
     
 DeepLabCut follows the All-Contributors specification to ensure that every contribution is recognized ✨!
     
