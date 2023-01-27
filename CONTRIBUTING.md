@@ -75,7 +75,7 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - the [authors](/AUTHORS)
 - [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
 
-**Add yourself as a contributor
+**Add yourself as a contributor**
     
 DeepLabCut follows the All-Contributors specification to ensure that every contribution is recognized ✨!
     
@@ -83,7 +83,7 @@ To add yourself to the table of contributors, follow the 🤖 bot usage instruct
     
 Comment on Issue or Pull Request, asking @all-contributors to add a contributor:
     
-  `@all-contributors please add @<username> for <contributions>`
+`@all-contributors please add @<username> for <contributions>`
     
 You can find the table with the contribution type references and their respective 🗝 keywords [HERE](https://allcontributors.org/docs/en/emoji-key).
 
