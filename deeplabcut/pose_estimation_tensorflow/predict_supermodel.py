@@ -8,7 +8,7 @@ def video_inference_superanimal(
     scale_list=[],
     videotype=".mp4",
     video_adapt=False,
-    plot_predictions=True,
+    plot_trajectories=True,
     pcutoff=0.1,
 ):
     """
@@ -35,6 +35,9 @@ def video_inference_superanimal(
 
     video_adapt: bool, optional
         Set True if you want to apply video adaptation to make the resulted video less jittering and better. However, adaptation training takes more time than usual video inference
+
+    plot_trajectories: bool, optional (default=True)
+        By default, plot the trajectories of various body parts across the video.
 
     pcutoff: float, optional
         Keypoints confidence that are under pcutoff will not be shown in the resulted video
@@ -74,5 +77,5 @@ def video_inference_superanimal(
             adapter.before_adapt_inference(make_video=False)
             adapter.adaptation_training()
             adapter.after_adapt_inference(
-                pcutoff=pcutoff, plot_predictions=plot_predictions,
+                pcutoff=pcutoff, plot_trajectories=plot_trajectories,
             )
