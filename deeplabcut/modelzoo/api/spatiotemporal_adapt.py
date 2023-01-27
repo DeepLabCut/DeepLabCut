@@ -3,6 +3,7 @@ import glob
 import os
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.modelzoo.api import superanimal_inference
+from deeplabcut.utils.plotting import _plot_trajectories
 from pathlib import Path
 
 
@@ -88,7 +89,7 @@ class SpatiotemporalAdaptation:
                                make_video=False,
                                **kwargs):
         if self.init_weights != "":
-            superanimal_inference.video_inference(
+            _ = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -97,7 +98,7 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )
         else:
-            self.init_weights = superanimal_inference.video_inference(
+            self.init_weights, _ = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -174,7 +175,7 @@ class SpatiotemporalAdaptation:
         # spatial pyramid is not for adapted model
 
         scale_list = kwargs.pop('scale_list', [])
-        superanimal_inference.video_inference(
+        _, datafiles = superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,
             videotype=self.videotype,
@@ -193,3 +194,5 @@ class SpatiotemporalAdaptation:
             superanimal_name=self.supermodel_name,
             **kwargs
         )
+        if kwargs.pop('plot_trajectories', True):
+            _plot_trajectories(datafiles[0])

@@ -8,6 +8,7 @@ def video_inference_superanimal(
     scale_list=[],
     videotype=".mp4",
     video_adapt=False,
+    plot_predictions=True,
     pcutoff=0.1,
 ):
     """
@@ -72,4 +73,6 @@ def video_inference_superanimal(
         else:
             adapter.before_adapt_inference(make_video=False)
             adapter.adaptation_training()
-            adapter.after_adapt_inference(pcutoff=pcutoff)
+            adapter.after_adapt_inference(
+                pcutoff=pcutoff, plot_predictions=plot_predictions,
+            )

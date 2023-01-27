@@ -312,7 +312,7 @@ def video_inference(
     DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
-
+    datafiles = []
     for video in videos:
 
         vname = Path(video).stem
@@ -323,6 +323,7 @@ def video_inference(
             auxiliaryfunctions.attempttomakefolder(destfolder)
 
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+        datafiles.append(dataname)
 
         if os.path.isfile(dataname):
             print("Video already analyzed!", dataname)
@@ -424,4 +425,4 @@ def video_inference(
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
             df.to_hdf(dataname, key="df_with_missing")
 
-    return init_weights
+    return init_weights, datafiles
