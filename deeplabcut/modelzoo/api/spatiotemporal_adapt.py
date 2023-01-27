@@ -184,6 +184,9 @@ class SpatiotemporalAdaptation:
             customized_test_config=self.customized_pose_config,
         )
 
+        if kwargs.pop('plot_trajectories', True):
+            _plot_trajectories(datafiles[0])
+
         deeplabcut.create_labeled_video(
             ref_proj_config_path,
             [self.video_path],
@@ -194,5 +197,3 @@ class SpatiotemporalAdaptation:
             superanimal_name=self.supermodel_name,
             **kwargs
         )
-        if kwargs.pop('plot_trajectories', True):
-            _plot_trajectories(datafiles[0])
