@@ -75,7 +75,7 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - the [authors](/AUTHORS)
 - [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
 
-**Add yourself as a contributor**
+**Add yourself as a contributor ✨**
     
 DeepLabCut follows the All-Contributors specification to ensure that every contribution is recognized ✨!
     
