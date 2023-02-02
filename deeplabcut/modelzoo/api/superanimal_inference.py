@@ -73,7 +73,7 @@ def _average_multiple_scale_preds(
     scale_list,
     num_kpts,
     cos_dist_threshold=0.997,
-    confidence_threshold=0.1,
+    confidence_threshold=0.00,
 ):
     if len(scale_list) < 2:
         return preds[0]
@@ -282,13 +282,14 @@ def video_inference(
 
     weight_folder = superanimal_name + '_weights'
 
-    if superanimal_name in MODELOPTIONS:
-        if not os.path.exists(weight_folder):
-            download_huggingface_model(superanimal_name, weight_folder)
+    if init_weights=="":
+        if superanimal_name in MODELOPTIONS:
+            if not os.path.exists(weight_folder):
+                download_huggingface_model(superanimal_name, weight_folder)
+            else:
+                print (f"{weight_folder} exists, using the downloaded weights")
         else:
-            print (f"{weight_folder} exists, using the downloaded weights")
-    else:
-        print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
+            print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
 
     snapshots = glob.glob(
         os.path.join(weight_folder, 'snapshot-*.index')

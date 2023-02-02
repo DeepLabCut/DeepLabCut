@@ -40,7 +40,7 @@ def train(
     allow_growth=True,
     pseudo_labels="",
     init_weights="",
-    pseudo_threshold=0,
+    pseudo_threshold=0.1,
     modelfolder="",
     traintime_resize=False,
     video_path="",

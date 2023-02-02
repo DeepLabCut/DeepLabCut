@@ -705,6 +705,7 @@ def proc_video(
         videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
 
+
     if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
         print("Labeled video {} already created.".format(vname))
         return True

@@ -10,6 +10,8 @@ def video_inference_superanimal(
     video_adapt=False,
     plot_trajectories=True,
     pcutoff=0.1,
+    init_weights = '',
+    adapt_iterations = 1000
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -42,6 +44,12 @@ def video_inference_superanimal(
     pcutoff: float, optional
         Keypoints confidence that are under pcutoff will not be shown in the resulted video
 
+    init_weights: str, optional:
+        Path to customized weights. Only for developing purpose
+
+    adapt_iterations: int, optional:
+        Number of iterations for adaptation training
+
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
     scale_list = range(600,800,100)
@@ -69,13 +77,14 @@ def video_inference_superanimal(
             modelfolder=modelfolder,
             videotype=videotype,
             scale_list=scale_list,
+            init_weights = init_weights
         )
 
         if not video_adapt:
             adapter.before_adapt_inference(make_video=True, pcutoff=pcutoff)
         else:
             adapter.before_adapt_inference(make_video=False)
-            adapter.adaptation_training()
+            adapter.adaptation_training(adapt_iterations = adapt_iterations)
             adapter.after_adapt_inference(
                 pcutoff=pcutoff, plot_trajectories=plot_trajectories,
             )

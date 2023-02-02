@@ -379,7 +379,6 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-
     # filter list of videos
     videos = [
         v
@@ -389,7 +388,6 @@ def get_list_of_videos(
         and "_labeled." not in v
         and "_full." not in v
     ]
-
     return videos
 
 
