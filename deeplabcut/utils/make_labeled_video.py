@@ -73,7 +73,6 @@ def CreateVideo(
     colormap,
     bodyparts2plot,
     trailpoints,
-    cropping,
     x1,
     x2,
     y1,
@@ -119,7 +118,7 @@ def CreateVideo(
     print("Generating frames and creating video.")
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
-    if cropping and not displaycropped:
+    if not displaycropped:
         df_x += x1
         df_y += y1
     colorclass = plt.cm.ScalarMappable(cmap=colormap)
@@ -731,16 +730,14 @@ def proc_video(
                 )
                 clip.close()
             else:
-                if displaycropped:  # then the cropped video + the labels is depicted
-                    bbox = x1, x2, y1, y2
-                else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    bbox = None
+                bbox = x1, x2, y1, y2
                 _create_labeled_video(
                     video,
                     filepath,
+                    bbox,
                     keypoints2show=labeled_bpts,
                     animals2show=individuals,
-                    bbox=bbox,
+                    display_cropped=displaycropped,
                     codec=codec,
                     output_path=videooutname,
                     pcutoff=cfg["pcutoff"],
@@ -762,6 +759,7 @@ def proc_video(
 def _create_labeled_video(
     video,
     h5file,
+    bbox,
     keypoints2show="all",
     animals2show="all",
     skeleton_edges=None,
@@ -771,7 +769,7 @@ def _create_labeled_video(
     color_by="bodypart",
     skeleton_color="k",
     trailpoints=0,
-    bbox=None,
+    display_cropped=False,
     codec="mp4v",
     fps=None,
     output_path="",
@@ -782,14 +780,11 @@ def _create_labeled_video(
     if not output_path:
         s = "_id" if color_by == "individual" else "_bp"
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
-    try:
-        x1, x2, y1, y2 = bbox
-        display_cropped = True
+    x1, x2, y1, y2 = bbox
+    if display_cropped:
         sw = x2 - x1
         sh = y2 - y1
-    except TypeError:
-        x1 = x2 = y1 = y2 = 0
-        display_cropped = False
+    else:
         sw = ""
         sh = ""
 
@@ -820,7 +815,6 @@ def _create_labeled_video(
         cmap,
         kpts,
         trailpoints,
-        False,
         x1,
         x2,
         y1,
