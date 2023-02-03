@@ -1,11 +1,10 @@
 import glob
+import numpy as np
 import os
 import pandas as pd
+from deeplabcut import auxiliaryfunctions
 from typing import List
 
-import numpy as np
-
-from deeplabcut import auxiliaryfunctions
 from ..utils import create_folder
 
 
@@ -66,7 +65,7 @@ def get_result_filename(evaluation_folder,
 
 
 def get_model_path(model_folder: str,
-                   load_epoch: int = -1):
+                   load_epoch: int):
     model_paths = glob.glob(f'{model_folder}/train/snapshot*')
     sorted_paths = sort_paths(model_paths)
     model_path = sorted_paths[load_epoch]
@@ -78,19 +77,71 @@ def sort_paths(paths: list):
     return sorted_paths
 
 
-def get_rmse(prediction,
-             target: pd.DataFrame,
-             pcutoff: int=-1,
-             bodyparts: List[str] =None):
-    scorer_pred = prediction.columns[0][0]
-    scorer_target = target.columns[0][0]
-    mask = prediction[scorer_pred].xs("likelihood", level=1, axis=1) >= pcutoff
-    if bodyparts:
-        diff = (target[scorer_target][bodyparts] - prediction[scorer_pred][bodyparts]) ** 2
-    else:
-        diff = (target[scorer_target] - prediction[scorer_pred]) ** 2
-    mse = diff.xs("x", level=1, axis=1) + diff.xs("y", level=1, axis=1)
-    rmse = np.sqrt(mse)
-    rmse_p = np.sqrt(mse[mask])
+def save_predictions(names, cfg, data_index,
+                     predicted_poses,
+                     results_filename):
+    if not os.path.exists(names['evaluation_folder']):
+        os.makedirs(names['evaluation_folder'])
 
-    return rmse, rmse_p
+    results_path = f'{results_filename}'
+    index = pd.MultiIndex.from_product(
+        [
+            [names['dlc_scorer']],
+            cfg["all_joints_names"],
+            ["x", "y", "likelihood"],
+        ],
+        names=["scorer", "bodyparts", "coords"],
+    )
+
+    predicted_data = pd.DataFrame(
+        predicted_poses, columns=index, index=data_index
+    )
+
+    predicted_data.to_hdf(
+        results_path, "df_with_missing", format="table", mode="w"
+    )
+
+    return predicted_data
+
+
+def get_paths(train_fraction: float = 0.95,
+              shuffle: int = 0,
+              model_prefix: str = "",
+              cfg: dict = None,
+              train_iterations: int = 99):
+    dlc_scorer, dlc_scorer_legacy = get_dlc_scorer(train_fraction,
+                                                   shuffle,
+                                                   model_prefix,
+                                                   cfg,
+                                                   train_iterations)
+    evaluation_folder = get_evaluation_folder(train_fraction,
+                                              shuffle,
+                                              model_prefix,
+                                              cfg)
+
+    model_folder = get_model_folder(train_fraction,
+                                    shuffle,
+                                    model_prefix,
+                                    cfg)
+
+    model_path = get_model_path(model_folder, train_iterations)
+
+    return {
+        'dlc_scorer': dlc_scorer,
+        'dlc_scorer_legacy': dlc_scorer_legacy,
+        'evaluation_folder': evaluation_folder,
+        'model_folder': model_folder,
+        'model_path': model_path
+    }
+
+
+def get_results_filename(evaluation_folder,
+                         dlc_scorer,
+                         dlc_scorer_legacy,
+                         model_path):
+    results_filename = get_result_filename(evaluation_folder,
+                                           dlc_scorer,
+                                           dlc_scorer_legacy,
+                                           model_path)
+
+    return results_filename

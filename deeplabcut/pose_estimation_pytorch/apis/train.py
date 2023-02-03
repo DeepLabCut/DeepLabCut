@@ -1,19 +1,17 @@
 import argparse
-import os
-from torch.utils.data import DataLoader
-
 import deeplabcut.pose_estimation_pytorch as dlc
+import os
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver
+from torch.utils.data import DataLoader
 from typing import Union
 
 
 def train_network(
-    config_path: str,
-    shuffle: int = 1,
-    training_set_index: Union[int, str] = 0,
-    model_prefix: str = "",
-):
+        config_path: str,
+        shuffle: int = 1,
+        training_set_index: Union[int, str] = 0,
+        model_prefix: str = ""):
     cfg = auxiliaryfunctions.read_config(config_path)
     if training_set_index == "all":
         train_fraction = cfg["TrainingFraction"]

@@ -91,20 +91,6 @@ class Solver(ABC):
                   f'train loss {train_loss}, '
                   f'valid loss {valid_loss}')
 
-    def get_scores(self,
-                   prediction: pd.DataFrame,
-                   target: pd.DataFrame,
-                   bodyparts: List = None):
-        if self.cfg.get( 'pcutoff'):
-            pcutoff = self.cfg['pcutoff']
-            rmse, rmse_p = get_rmse(prediction, target, pcutoff,
-                                    bodyparts = bodyparts)
-        else:
-            rmse, rmse_p = get_rmse(prediction, target,
-                                    bodyparts = bodyparts)
-
-        return np.nanmean(rmse), np.nanmean(rmse_p)
-
     def epoch(self,
               loader: torch.utils.data.DataLoader,
               mode: str = 'train') -> np.array:
@@ -154,51 +140,6 @@ class Solver(ABC):
             predicted_poses.append(pose)
         predicted_poses = np.concatenate(predicted_poses)
         return predicted_poses
-
-    @staticmethod
-    def _get_paths(train_fraction: float = 0.95,
-                   shuffle: int = 0,
-                   model_prefix: str = "",
-                   cfg: dict = None,
-                   train_iterations: int = 9):
-
-        dlc_scorer, dlc_scorer_legacy = get_dlc_scorer(train_fraction,
-                                                       shuffle,
-                                                       model_prefix,
-                                                       cfg,
-                                                       train_iterations)
-        evaluation_folder = get_evaluation_folder(train_fraction,
-                                                  shuffle,
-                                                  model_prefix,
-                                                  cfg)
-
-        model_folder = get_model_folder(train_fraction,
-                                        shuffle,
-                                        model_prefix,
-                                        cfg)
-
-        model_path = get_model_path(model_folder, train_iterations)
-
-        return {
-            'dlc_scorer': dlc_scorer,
-            'dlc_scorer_legacy': dlc_scorer_legacy,
-            'evaluation_folder': evaluation_folder,
-            'model_folder': model_folder,
-            'model_path': model_path
-        }
-
-    @staticmethod
-    def _get_results_filename(evaluation_folder,
-                              dlc_scorer,
-                              dlc_scorer_legacy,
-                              model_path):
-
-        results_filename = get_result_filename(evaluation_folder,
-                                               dlc_scorer,
-                                               dlc_scorer_legacy,
-                                               model_path)
-
-        return results_filename
 
 
 class BottomUpSolver(Solver):

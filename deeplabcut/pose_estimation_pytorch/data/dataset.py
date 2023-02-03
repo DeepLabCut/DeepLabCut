@@ -32,6 +32,7 @@ class PoseDataset(Dataset, BaseDataset):
         self.cfg = self.project.cfg
         self.shuffle = self.project.shuffle
         self.project.convert2dict(mode)
+        self.dataframe = self.project.dataframe
 
     def __len__(self):
         return len(self.project.images)
