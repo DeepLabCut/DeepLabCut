@@ -103,7 +103,7 @@ This is an actively developed package and we welcome community development and i
 
 ## References:
 
-If you use this code or data we kindly as that you please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNetV2s or EfficientNets please cite [Mathis, Biasi et al. 2021](https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf). If you use versions 2.2beta+ or 2.2rc1+, please cite [Lauer et al. 2022](https://www.nature.com/articles/s41592-022-01443-0).
+If you use this code or data we kindly ask that you please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNetV2s or EfficientNets please cite [Mathis, Biasi et al. 2021](https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf). If you use versions 2.2beta+ or 2.2rc1+, please cite [Lauer et al. 2022](https://www.nature.com/articles/s41592-022-01443-0).
 
 DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.org](http://citeas.org/)!):
 
