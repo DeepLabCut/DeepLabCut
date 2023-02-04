@@ -295,6 +295,10 @@ class Assembler:
         frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
         # Only keeps skeletons that are more than 90% complete
         xy = xy[frac_valid >= 0.9]
+        if not xy.size:
+            warnings.warn("No complete poses were found. Skipping calibration...")
+            return
+
         # TODO Normalize dists by longest length?
         # TODO Smarter imputation technique (Bayesian? Grassmann averages?)
         dists = np.vstack([pdist(data, "sqeuclidean") for data in xy])
