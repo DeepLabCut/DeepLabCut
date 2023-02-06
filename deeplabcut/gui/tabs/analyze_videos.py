@@ -331,7 +331,7 @@ class AnalyzeVideos(DefaultTab):
         if filter_data:
             deeplabcut.filterpredictions(
                 config,
-                videos=videos,
+                video=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 filtertype="median",
