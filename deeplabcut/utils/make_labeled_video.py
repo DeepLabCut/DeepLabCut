@@ -739,16 +739,12 @@ def proc_video(
                 )
                 clip.close()
             else:
-                if displaycropped:  # then the cropped video + the labels is depicted
-                    bbox = x1, x2, y1, y2
-                else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    bbox = None
                 _create_labeled_video(
                     video,
                     filepath,
                     keypoints2show=labeled_bpts,
                     animals2show=individuals,
-                    bbox=bbox,
+                    bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
                     pcutoff=cfg["pcutoff"],
@@ -759,6 +755,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     trailpoints=trailpoints,
                     fps=outputframerate,
+                    display_cropped=displaycropped
                 )
             return True
 
@@ -780,6 +777,7 @@ def _create_labeled_video(
     skeleton_color="k",
     trailpoints=0,
     bbox=None,
+    display_cropped=False,
     codec="mp4v",
     fps=None,
     output_path="",
@@ -790,16 +788,13 @@ def _create_labeled_video(
     if not output_path:
         s = "_id" if color_by == "individual" else "_bp"
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
-    try:
-        x1, x2, y1, y2 = bbox
-        display_cropped = True
+
+    x1, x2, y1, y2 = bbox
+    if display_cropped:
         sw = x2 - x1
         sh = y2 - y1
-    except TypeError:
-        x1 = x2 = y1 = y2 = 0
-        display_cropped = False
-        sw = ""
-        sh = ""
+    else:
+        sw = sh = ""
 
     clip = vp(
         fname=video,
@@ -809,6 +804,7 @@ def _create_labeled_video(
         sh=sh,
         fps=fps,
     )
+    cropping = bbox != (0, clip.w, 0, clip.h)
     df = pd.read_hdf(h5file)
     try:
         animals = df.columns.get_level_values("individuals").unique().to_list()
@@ -828,7 +824,7 @@ def _create_labeled_video(
         cmap,
         kpts,
         trailpoints,
-        False,
+        cropping,
         x1,
         x2,
         y1,
