@@ -11,7 +11,9 @@ def video_inference_superanimal(
     plot_trajectories=True,
     pcutoff=0.1,
     init_weights = '',
-    adapt_iterations = 1000
+    adapt_iterations = 1000,
+    pseudo_threshold = 0.1,
+    trim_ends = None
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -84,7 +86,9 @@ def video_inference_superanimal(
             adapter.before_adapt_inference(make_video=True, pcutoff=pcutoff)
         else:
             adapter.before_adapt_inference(make_video=False)
-            adapter.adaptation_training(adapt_iterations = adapt_iterations)
+            adapter.adaptation_training(adapt_iterations = adapt_iterations,
+                                        pseudo_threshold = pseudo_threshold,
+                                        trim_ends = trim_ends)
             adapter.after_adapt_inference(
                 pcutoff=pcutoff, plot_trajectories=plot_trajectories,
             )

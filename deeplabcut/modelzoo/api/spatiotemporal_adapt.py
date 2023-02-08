@@ -117,7 +117,9 @@ class SpatiotemporalAdaptation:
                 **kwargs
             )
 
-    def train_without_project(self, pseudo_label_path, **kwargs):
+    def train_without_project(self,
+                              pseudo_label_path,
+                              **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
         displayiters = kwargs.pop("displayiters", 500)
@@ -137,7 +139,10 @@ class SpatiotemporalAdaptation:
             **kwargs
         )
 
-    def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
+    def adaptation_training(self,
+                            displayiters=500,
+                            saveiters=1000,
+                            **kwargs):
         """
         There should be two choices, either taking a config, with is then assuming there is a DLC project.
         Or we make up a fake one, then we use a light way convention to do adaptation
@@ -168,6 +173,7 @@ class SpatiotemporalAdaptation:
                 displayiters=displayiters,
                 saveiters=saveiters,
                 **kwargs,
+                
             )
         else:
             print (f'snapshot-{adapt_iterations} exists. Skip training')            

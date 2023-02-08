@@ -82,7 +82,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if cfg["pseudo_label"].endswith(".h5"):
                 pseudo_threshold = cfg.get("pseudo_threshold", 0)
                 print(f"Loading pseudo labels with threshold > {pseudo_threshold}")
-                return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold, topview = cfg.get('topview', False))
+                return self._load_pseudo_data_from_h5(cfg,
+                                                      threshold=pseudo_threshold,
+                                                      topview = cfg.get('topview', False))
+
+                                                      
 
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
@@ -153,19 +157,24 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 )
 
             item.joints = {}
-            joints = np.concatenate([joint_ids, kpts], axis=1)
+
             if not topview:
+                joints = np.concatenate([joint_ids, kpts], axis=1)                
                 joints = np.nan_to_num(joints, nan=0)
             else:
-                joints = np.nan_to_num(joints, nan=-1)                
-                joints[:,-1] = 1
-
+                # for topview, it's safe to mask keypoints under threshold
+                for kpt_id, kpt in enumerate(kpts):
+                    if kpt[-1] < threshold:
+                        kpts[kpt_id][:-1] = -1
+                    if np.isnan(kpt[0]):
+                        kpts[kpt_id][:-1] = -1
+                        kpts[kpt_id][-1] = 1
+                joints = np.concatenate([joint_ids, kpts], axis=1)
             sparse_joints = []
 
             for coord in joints:
                 if coord[1] != 0 and coord[3] > threshold:
                     sparse_joints.append(coord[:3])
-
             temp = np.array(sparse_joints)
             # we only do single animal here
             item.joints.update({0: temp})
@@ -342,14 +351,22 @@ class MAImgaugPoseDataset(BasePoseDataset):
         joint_ids = []
         inds_visible = []
         data_items = []
-        img_idx = np.random.choice(num_images, size=self.batch_size, replace=True)
+
+        trim_ends = self.cfg.get('trim_ends', None)
+        if trim_ends is None:
+            trim_ends = 0
+        
+        img_idx = np.random.choice(num_images - trim_ends *2, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
-            data_item = self.data[img_idx[i]]
+            index = img_idx[i]
+            offset = trim_ends
+
+            data_item = self.data[index + offset]
             data_items.append(data_item)
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            self.vid.set_to_frame(img_idx[i])
+            self.vid.set_to_frame(index + offset)
             image = self.vid.read_frame()
             if self.has_gt:
                 Joints = data_item.joints
