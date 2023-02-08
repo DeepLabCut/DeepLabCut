@@ -44,6 +44,7 @@ def train(
     modelfolder="",
     traintime_resize=False,
     video_path="",
+    topview = False
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -63,7 +64,7 @@ def train(
     cfg["pseudo_threshold"] = pseudo_threshold
     cfg["video_path"] = video_path
     cfg["traintime_resize"] = traintime_resize
-
+    cfg["topview"] = topview
     if pseudo_labels != "":
         cfg["pseudo_label"] = pseudo_labels
 

@@ -82,7 +82,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if cfg["pseudo_label"].endswith(".h5"):
                 pseudo_threshold = cfg.get("pseudo_threshold", 0)
                 print(f"Loading pseudo labels with threshold > {pseudo_threshold}")
-                return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)
+                return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold, topview = cfg.get('topview', False))
 
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
@@ -124,12 +124,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
+    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, topview = False):
         gt_file = cfg["pseudo_label"]
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
-
+        num_kpts = len(cfg['all_joints_names'])
         df = pd.read_hdf(gt_file)
         video_name = path_.name.split("DLC")[0]
         video_root = str(path_.parents[0] / video_name)
@@ -154,7 +154,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
             item.joints = {}
             joints = np.concatenate([joint_ids, kpts], axis=1)
-            joints = np.nan_to_num(joints, nan=0)
+            if not topview:
+                joints = np.nan_to_num(joints, nan=0)
+            else:
+                joints = np.nan_to_num(joints, nan=-1)                
+                joints[:,-1] = 1
+
             sparse_joints = []
 
             for coord in joints:

@@ -311,6 +311,7 @@ def video_inference(
         test_cfg, allow_growth=allow_growth
     )
     DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
+    
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     datafiles = []

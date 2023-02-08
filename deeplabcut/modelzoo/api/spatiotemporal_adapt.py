@@ -133,6 +133,7 @@ class SpatiotemporalAdaptation:
             init_weights=self.init_weights,
             pseudo_labels=pseudo_label_path,
             video_path=self.video_path,
+            topview = 'topview' in self.supermodel_name,
             **kwargs
         )
 
