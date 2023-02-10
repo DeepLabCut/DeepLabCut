@@ -501,6 +501,7 @@ def evaluate_network(
     gputouse=None,
     rescale=False,
     modelprefix="",
+    test_only=False
 ):
     """Evaluates the network.
 
@@ -554,6 +555,9 @@ def evaluate_network(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    test_only: bool, optional, default=False
+        Evaluate the model only on its test indexes.
+
     Returns
     -------
     None
@@ -606,6 +610,7 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
+            test_only=test_only
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -695,6 +700,9 @@ def evaluate_network(
                     os.path.join(cfg["project_path"], metadatafn)
                 )
 
+                if test_only:
+                    Data = Data.iloc[testIndices]
+
                 try:
                     dlc_cfg = load_config(str(path_test_config))
                 except FileNotFoundError:
@@ -765,6 +773,10 @@ def evaluate_network(
                         )
                         * scale
                     )
+
+                    if test_only:
+                        Data = Data.iloc[testIndices]
+
                 else:
                     scale = 1
 
@@ -873,16 +885,22 @@ def evaluate_network(
                             cfg["pcutoff"],
                             comparisonbodyparts,
                         )
-                        testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
-                        trainerror = np.nanmean(
-                            RMSE.iloc[trainIndices].values.flatten()
-                        )
-                        testerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[testIndices].values.flatten()
-                        )
-                        trainerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[trainIndices].values.flatten()
-                        )
+
+                        if test_only:
+                            trainerror, trainerrorpcutoff = np.nan, np.nan
+                            testerror = np.nanmean(RMSE.values.flatten())
+                            testerrorpcutoff = np.nanmean(RMSEpcutoff.values.flatten())
+                        else:
+                            testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
+                            trainerror = np.nanmean(
+                                RMSE.iloc[trainIndices].values.flatten()
+                            )
+                            testerrorpcutoff = np.nanmean(
+                                RMSEpcutoff.iloc[testIndices].values.flatten()
+                            )
+                            trainerrorpcutoff = np.nanmean(
+                                RMSEpcutoff.iloc[trainIndices].values.flatten()
+                            )
                         results = [
                             trainingsiterations,
                             int(100 * trainFraction),

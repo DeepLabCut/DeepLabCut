@@ -105,6 +105,7 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
+    test_only=False
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -191,6 +192,9 @@ def evaluate_multianimal_full(
             ) = auxiliaryfunctions.load_metadata(
                 os.path.join(cfg["project_path"], metadatafn)
             )
+
+            if test_only:
+                Data = Data.iloc[testIndices]
 
             try:
                 dlc_cfg = load_config(str(path_test_config))
@@ -309,7 +313,6 @@ def evaluate_multianimal_full(
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-
                         (sess, inputs, outputs,) = predict.setup_pose_prediction(
                             dlc_cfg
                         )
@@ -474,10 +477,15 @@ def evaluate_multianimal_full(
                             >= cfg["pcutoff"]
                         )
                         error_masked = error[mask]
-                        error_train = np.nanmean(error.iloc[trainIndices])
-                        error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
-                        error_test = np.nanmean(error.iloc[testIndices])
-                        error_test_cut = np.nanmean(error_masked.iloc[testIndices])
+                        if test_only:
+                            error_train, error_train_cut = np.nan, np.nan
+                            error_test = np.nanmean(error)
+                            error_test_cut = np.nanmean(error_masked)
+                        else:
+                            error_train = np.nanmean(error.iloc[trainIndices])
+                            error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
+                            error_test = np.nanmean(error.iloc[testIndices])
+                            error_test_cut = np.nanmean(error_masked.iloc[testIndices])
                         results = [
                             trainingsiterations,
                             int(100 * trainFraction),
@@ -503,23 +511,41 @@ def evaluate_multianimal_full(
                             print(
                                 "Average Euclidean distance to GT per individual (in pixels; test-only)"
                             )
-                            print(
-                                error_masked.iloc[testIndices]
-                                .groupby("individuals", axis=1)
-                                .mean()
-                                .mean()
-                                .to_string()
-                            )
+                            if test_only:
+                                print(
+                                    error_masked
+                                    .groupby("individuals", axis=1)
+                                    .mean()
+                                    .mean()
+                                    .to_string()
+                                )
+                            else:
+                                print(
+                                    error_masked.iloc[testIndices]
+                                    .groupby("individuals", axis=1)
+                                    .mean()
+                                    .mean()
+                                    .to_string()
+                                )
                             print(
                                 "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
                             )
-                            print(
-                                error_masked.iloc[testIndices]
-                                .groupby("bodyparts", axis=1)
-                                .mean()
-                                .mean()
-                                .to_string()
-                            )
+                            if test_only:
+                                print(
+                                    error_masked
+                                    .groupby("bodyparts", axis=1)
+                                    .mean()
+                                    .mean()
+                                    .to_string()
+                                )
+                            else:
+                                print(
+                                    error_masked.iloc[testIndices]
+                                    .groupby("bodyparts", axis=1)
+                                    .mean()
+                                    .mean()
+                                    .to_string()
+                                )
 
                         PredicteData["metadata"] = {
                             "nms radius": dlc_cfg["nmsradius"],
