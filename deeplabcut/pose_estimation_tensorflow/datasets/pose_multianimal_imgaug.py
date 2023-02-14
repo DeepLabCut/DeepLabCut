@@ -134,7 +134,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
         num_kpts = len(cfg['all_joints_names'])
-        df = pd.read_hdf(gt_file)
+        df = pd.read_hdf(gt_file)               
         video_name = path_.name.split("DLC")[0]
         video_root = str(path_.parents[0] / video_name)
 
@@ -355,12 +355,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         trim_ends = self.cfg.get('trim_ends', None)
         if trim_ends is None:
             trim_ends = 0
+
         
         img_idx = np.random.choice(num_images - trim_ends *2, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
-
             data_item = self.data[index + offset]
             data_items.append(data_item)
             im_file = data_item.im_path

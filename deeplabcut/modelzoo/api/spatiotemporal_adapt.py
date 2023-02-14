@@ -88,7 +88,7 @@ class SpatiotemporalAdaptation:
                                **kwargs):
         if self.init_weights != "":
             print ('using customized weights', self.init_weights)
-            _ = superanimal_inference.video_inference(
+            _, datafiles = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -97,7 +97,7 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )
         else:
-            self.init_weights, _ = superanimal_inference.video_inference(
+            self.init_weights, datafiles = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -105,6 +105,9 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )
 
+        if kwargs.pop('plot_trajectories', True):
+            _plot_trajectories(datafiles[0])        
+            
         if make_video:
             deeplabcut.create_labeled_video(
                 "",

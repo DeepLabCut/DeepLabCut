@@ -220,13 +220,14 @@ def train(
     train_writer = tf.compat.v1.summary.FileWriter(cfg["log_dir"], sess.graph)
 
     # Auto-switch to Adam on M1/M2 chips, as the momentum optimizer crashes
+    '''
+    Commented for modelzoo
     from tensorflow.python.platform import build_info
-
     info = build_info.build_info
     if not info["is_cuda_build"]:  # Apple Silicon is not built with CUDA
         warnings.warn("Switching to Adam, as SGD crashes on Apple Silicon.")
         cfg["optimizer"] = "adam"
-
+    '''
     if cfg.get("freezeencoder", False):
         if "efficientnet" in net_type:
             print("Freezing ONLY supported MobileNet/ResNet currently!!")

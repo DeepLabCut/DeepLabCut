@@ -35,10 +35,11 @@ def get_multi_scale_frames(frame, scale_list):
     for scale in scale_list:
         aug = iaa.Resize({"width": "keep-aspect-ratio", "height": scale})
         augs.append(aug)
+        
 
     frames = []
     for i in range(len(scale_list)):
-        resized_frame = augs[i](image=frame)
+        resized_frame = augs[i](image=frame)        
         frames.append(resized_frame)
         shapes.append(frames[-1].shape)
 

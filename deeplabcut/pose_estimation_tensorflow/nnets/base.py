@@ -206,12 +206,14 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         kernel = kernel[:, :, tf.newaxis, tf.newaxis]
 
         kernel_sc = tf.tile(kernel, [1, 1, tf.shape(scmaps)[3], 1])
+
         scmaps = tf.nn.depthwise_conv2d(
             scmaps,
             kernel_sc,
             strides=[1, 1, 1, 1],
             padding="SAME",
         )
+
         peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
             scmaps,
             nms_radius,
@@ -229,7 +231,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                     padding="SAME",
                 )
             outputs["locref"] = locref
-
+            
         if self.cfg["pairwise_predict"] or self.cfg["partaffinityfield_predict"]:
             outputs["pairwise_pred"] = heads["pairwise_pred"]
 

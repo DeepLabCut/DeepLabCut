@@ -83,7 +83,9 @@ def video_inference_superanimal(
         )
 
         if not video_adapt:
-            adapter.before_adapt_inference(make_video=True, pcutoff=pcutoff)
+            adapter.before_adapt_inference(make_video=True,
+                                           pcutoff=pcutoff,
+                                           plot_trajectories = plot_trajectories)
         else:
             adapter.before_adapt_inference(make_video=False)
             adapter.adaptation_training(adapt_iterations = adapt_iterations,
