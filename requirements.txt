@@ -19,6 +19,6 @@ tensorflow>=2.0
 tables==3.7.0
 tensorpack==0.11
 tf_slim==1.1.0
-torch
+torch==1.12
 tqdm
 Pillow>=7.1
