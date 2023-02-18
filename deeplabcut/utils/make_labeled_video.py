@@ -68,6 +68,7 @@ def get_segment_indices(bodyparts2connect, all_bpts):
 def CreateVideo(
     clip,
     Dataframe,
+    pcutoff_mode,
     pcutoff,
     dotsize,
     colormap,
@@ -171,11 +172,13 @@ def CreateVideo(
                         image[rr, cc] = color_for_skeleton
 
             for ind, num_bp, num_ind in bpts2color:
-                if df_likelihood[ind, index] > pcutoff:
+                if df_likelihood[ind, index] > pcutoff or pcutoff_mode == "darken":
                     if color_by == "bodypart":
                         color = colors[num_bp]
                     else:
                         color = colors[num_ind]
+                    if df_likelihood[ind, index] <= pcutoff:
+                        color = np.ceil(color * .2).astype(int)
                     if trailpoints > 0:
                         for k in range(1, min(trailpoints, index + 1)):
                             rr, cc = disk(
@@ -201,6 +204,7 @@ def CreateVideoSlow(
     dotsize,
     colormap,
     alphavalue,
+    pcutoff_mode,
     pcutoff,
     trailpoints,
     cropping,
@@ -316,11 +320,13 @@ def CreateVideoSlow(
                             )
 
                 for ind, num_bp, num_ind in bpts2color:
-                    if df_likelihood[ind, index] > pcutoff:
+                    if df_likelihood[ind, index] > pcutoff or pcutoff_mode == "darken":
                         if color_by == "bodypart":
                             color = colors(num_bp)
                         else:
                             color = colors(num_ind)
+                        if df_likelihood[ind, index] <= pcutoff:
+                            color = np.ceil(color * .2).astype(int)
                         if trailpoints > 0:
                             ax.scatter(
                                 df_x[ind][max(0, index - trailpoints) : index],
@@ -374,6 +380,9 @@ def create_labeled_video(
     color_by="bodypart",
     modelprefix="",
     track_method="",
+    pcutoff_mode="hide",
+    pcutoff=None,
+    dotsize=None,
     overwrite=False,
 ):
     """Labels the bodyparts in a video.
@@ -482,6 +491,24 @@ def create_labeled_video(
         Empty by default (corresponding to a single animal project).
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
+    
+    pcutoff_mode: str, optional, default="hide"
+        Specifies the method used for representing pose estimates in cases where
+        likelihood <= pcutoff.
+        Must be either "hide" (legacy behavior where pose estimate label is omitted)
+        or "darken" (pose estimate label is still plotted but with darkened color).
+    
+    pcutoff: float or None, optional, default=None
+        When float, overrides pcutoff parameter from config.yaml, which specifies the
+        likelihood threshold below which pose estimate labels are either hidden or
+        darkened.
+        If float, must be between [0, 1).
+        None (default) uses value from config.yaml.
+    
+    dotsize: float or None, optional, default=None
+        When float, overrides dotsize parameter from config.yaml, which specifies the
+        size of label markers.
+        None (default) uses value from config.yaml.
 
     overwrite: bool, optional, default=False
         If ``True`` overwrites existing labeled videos.
@@ -559,6 +586,11 @@ def create_labeled_video(
     else:
         bodyparts2connect = None
         skeleton_color = None
+    cfg["pcutoff_mode"] = pcutoff_mode
+    if pcutoff:
+        cfg["pcutoff"] = pcutoff
+    if dotsize:
+        cfg["dotsize"] = dotsize
 
     start_path = os.getcwd()
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
@@ -720,6 +752,7 @@ def proc_video(
                     cfg["dotsize"],
                     cfg["colormap"],
                     cfg["alphavalue"],
+                    cfg["pcutoff_mode"],
                     cfg["pcutoff"],
                     trailpoints,
                     cropping,
@@ -747,6 +780,7 @@ def proc_video(
                     bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
+                    pcutoff_mode=cfg["pcutoff_mode"],
                     pcutoff=cfg["pcutoff"],
                     dotsize=cfg["dotsize"],
                     cmap=cfg["colormap"],
@@ -770,6 +804,7 @@ def _create_labeled_video(
     keypoints2show="all",
     animals2show="all",
     skeleton_edges=None,
+    pcutoff_mode="hide",
     pcutoff=0.6,
     dotsize=8,
     cmap="cool",
@@ -819,6 +854,7 @@ def _create_labeled_video(
     CreateVideo(
         clip,
         df,
+        pcutoff_mode,
         pcutoff,
         dotsize,
         cmap,
