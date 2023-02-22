@@ -244,7 +244,7 @@ if __name__ == "__main__":
     print("RELABELING")
     DF = pd.read_hdf(file, "df_with_missing")
     DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
-    DF.columns.set_levels([scorer.replace(DLCscorer, SCORER)], level=0, inplace=True)
+    DF.columns = DF.columns.set_levels([scorer.replace(DLCscorer, SCORER)], level=0)
     DF = DF.drop("likelihood", axis=1, level=3)
     DF.to_csv(
         os.path.join(

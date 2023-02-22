@@ -241,7 +241,7 @@ def extract_outlier_frames(
         * ``'uncertain'`` looks for frames with confidence below p_bound
         * ``'manual'`` launches a GUI from which the user can choose the frames
         * ``'list'`` looks for user to provide a list of frame numbers to use, 'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
-    
+
     frames2use: list[str], optional, default=None
         If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
 
@@ -405,7 +405,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
-                sum_ = temp_dt.sum(axis=1, level=1)
+                sum_ = temp_dt.groupby(level="bodyparts", axis=1).sum()
                 ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":
@@ -440,7 +440,7 @@ def extract_outlier_frames(
             else:
                 raise ValueError(f'outlieralgorithm {outlieralgorithm} not recognized!')
 
-            # Run always except when the outlieralgorithm == manual. 
+            # Run always except when the outlieralgorithm == manual.
             if not outlieralgorithm == "manual":
                 Indices = np.sort(list(set(Indices)))  # remove repetitions.
                 print(
