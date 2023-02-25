@@ -222,7 +222,7 @@ class RefineTracklets(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config, forceiterate=None)
 
     def refine_tracks(self):
         cfg = self.root.cfg
