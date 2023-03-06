@@ -354,6 +354,80 @@ def CreateVideoSlow(
     plt.switch_backend(prev_backend)
 
 
+def create_labeled_video_with_h5_only(
+    h5_path,
+    video_path,
+    filtered=False,
+    fastmode=True,
+    save_frames=False,
+    keypoints_only=False,
+    Frames2plot=None,
+    displayedbodyparts="all",
+    displayedindividuals="all",
+    codec="mp4v",
+    outputframerate=None,
+    destfolder=None,
+    draw_skeleton=False,
+    trailpoints=0,
+    displaycropped=False,
+    color_by="bodypart",
+    modelprefix="",
+    track_method="",
+    superanimal_name="",
+    pcutoff=0.6,
+    skeleton=[],
+    skeleton_color="white",
+    dotsize=8,
+    colormap="rainbow",
+    alphavalue=0.5,        
+):
+
+    df = pd.read_hdf(h5_path)
+    
+    bodyparts = list(df.columns.get_level_values('bodyparts').unique())
+    scorer = df.columns.get_level_values('scorer').unique()[0]    
+
+    DLCscorer = 'dummy_scorer'
+    DLCscorerlegacy = DLCscorer
+    
+    destfolder = Path(h5_path).parent.absolute()
+    cfg = ''
+    individuals = 'ind0'
+    bodyparts2connect = None
+    skeleton_color = None
+
+    func = partial(
+        proc_video,
+        video_path,
+        destfolder,
+        filtered,
+        DLCscorer,
+        DLCscorerlegacy,
+        track_method,
+        cfg,
+        individuals,
+        color_by,
+        bodyparts,
+        codec,
+        bodyparts2connect,
+        trailpoints,
+        save_frames,
+        outputframerate,
+        Frames2plot,
+        draw_skeleton,
+        skeleton_color,
+        displaycropped,
+        fastmode,
+        keypoints_only,
+        h5_path = h5_path,
+        dotsize = dotsize,
+        pcutoff = pcutoff,
+        colormap = colormap)
+        
+    func(video_path)
+
+    
+
 def create_labeled_video(
     config,
     videos,
@@ -561,7 +635,8 @@ def create_labeled_video(
     else:
         DLCscorer = "DLC_" + Path(init_weights).stem
         DLCscorerlegacy = "DLC_" + Path(init_weights).stem
-
+        
+        
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
@@ -672,6 +747,10 @@ def proc_video(
     keypoints_only,
     video,
     init_weights="",
+    h5_path = None,
+    dotsize = None,
+    pcutoff = None,
+    colormap = None
 ):
     """Helper function for create_videos
 
@@ -694,6 +773,7 @@ def proc_video(
     print("Starting to process video: {}".format(video))
     vname = str(Path(video).stem)
 
+
     if init_weights != "":
         DLCscorer = "DLC_" + Path(init_weights).stem
         DLCscorerlegacy = "DLC_" + Path(init_weights).stem
@@ -710,6 +790,40 @@ def proc_video(
         print("Labeled video {} already created.".format(vname))
         return True
     else:
+
+        if cfg == '' and h5_path is not None:
+            # mode for create labeled video with h5 only
+
+
+            df =pd.read_hdf(h5_path)
+            bbox = None
+            labeled_bpts = [
+                bp
+                for bp in df.columns.get_level_values("bodyparts").unique()
+                if bp in bodyparts
+            ]            
+            videooutname = h5_path.replace('.h5', '_labeled.mp4')
+            _create_labeled_video(
+                video,
+                h5_path,
+                keypoints2show=labeled_bpts,
+                animals2show=individuals,
+                bbox=bbox,
+                codec=codec,
+                output_path=videooutname,
+                pcutoff=pcutoff,
+                dotsize=dotsize,
+                cmap=colormap,
+                color_by=color_by,
+                skeleton_edges=bodyparts2connect,
+                skeleton_color=skeleton_color,
+                trailpoints=trailpoints,
+                fps=outputframerate,
+            )            
+            
+
+            return 
+        
         print("Loading {} and data.".format(video))
         try:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(

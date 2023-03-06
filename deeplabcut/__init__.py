@@ -63,6 +63,7 @@ from deeplabcut.generate_training_dataset import (
 from deeplabcut.utils import (
     create_labeled_video,
     create_video_with_all_detections,
+    create_labeled_video_with_h5_only,
     plot_trajectories,
     auxiliaryfunctions,
     convert2_maDLC,
