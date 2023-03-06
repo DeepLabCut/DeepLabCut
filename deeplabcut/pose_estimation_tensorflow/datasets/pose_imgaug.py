@@ -563,8 +563,9 @@ class ImgaugPoseDataset(BasePoseDataset):
                 scmap[mask, j_id] = 1
                 locref_mask[mask, j_id * 2 + 0] = 1
                 locref_mask[mask, j_id * 2 + 1] = 1
+
                 locref_map[mask, j_id * 2 + 0] = (dx * self.locref_scale)[mask]
                 locref_map[mask, j_id * 2 + 1] = (dy * self.locref_scale)[mask]
-
+        
         weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
         return scmap, weights, locref_map, locref_mask

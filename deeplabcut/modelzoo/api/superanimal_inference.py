@@ -74,13 +74,16 @@ def _average_multiple_scale_preds(
     scale_list,
     num_kpts,
     cos_dist_threshold=0.997,
-    confidence_threshold=0.00,
+    confidence_threshold=0.1,
 ):
     if len(scale_list) < 2:
         return preds[0]
 
     xyp = np.zeros((len(scale_list), num_kpts, 3))
     for scale_id, pred in enumerate(preds):
+        # empty prediction if pred is not a dict
+        if isinstance(pred, list):
+            continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
         for i, (coords, conf) in enumerate(zip(coordinates, confidence)):

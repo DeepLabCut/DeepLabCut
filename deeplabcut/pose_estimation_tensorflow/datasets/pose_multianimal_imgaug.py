@@ -356,8 +356,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if trim_ends is None:
             trim_ends = 0
 
-        
-        img_idx = np.random.choice(num_images - trim_ends *2, size=self.batch_size, replace=True)
+        # because of the existence of threshold, sampling population is adjusted to len(self.data)
+        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)
+
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
@@ -648,6 +649,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         mask2 = (xx >= mins[:, 0]) & (xx <= maxs[:, 0])
         mask3 = (yy >= mins[:, 1]) & (yy <= maxs[:, 1])
         mask = mask1 & mask2 & mask3
+
         for n, ind in enumerate(np.concatenate(joint_id).tolist()):
             mask_ = mask[..., n]
             scmap[mask_, ind] = 1

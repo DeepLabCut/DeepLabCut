@@ -107,6 +107,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                     "locref_pred",
                     n_joints * 2,
                 )
+                #out['locref'] *= self.cfg['locref_stdev']                
             if (
                 self.cfg["pairwise_predict"]
                 and "multi-animal" not in self.cfg["dataset_type"]
