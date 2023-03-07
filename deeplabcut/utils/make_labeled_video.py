@@ -129,9 +129,9 @@ def CreateVideo(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -260,9 +260,9 @@ def CreateVideoSlow(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -384,6 +384,7 @@ def create_labeled_video(
     dotsize=8,
     colormap="rainbow",
     alphavalue=0.5,
+    overwrite=False,
 ):
     """Labels the bodyparts in a video.
 
@@ -493,6 +494,9 @@ def create_labeled_video(
         Empty by default (corresponding to a single animal project).
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
+
+    overwrite: bool, optional, default=False
+        If ``True`` overwrites existing labeled videos.
 
     Returns
     -------
@@ -633,6 +637,7 @@ def create_labeled_video(
         displaycropped,
         fastmode,
         keypoints_only,
+        overwrite,
         init_weights=init_weights,
     )
 
@@ -670,6 +675,7 @@ def proc_video(
     displaycropped,
     fastmode,
     keypoints_only,
+    overwrite,
     video,
     init_weights="",
 ):
@@ -705,7 +711,9 @@ def proc_video(
         videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
 
-    if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
+    if (
+        os.path.isfile(videooutname1) or os.path.isfile(videooutname2)
+    ) and not overwrite:
         print("Labeled video {} already created.".format(vname))
         return True
     else:
@@ -722,7 +730,7 @@ def proc_video(
             else:
                 s = ""
             videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
-            if os.path.isfile(videooutname):
+            if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
 
@@ -790,16 +798,12 @@ def proc_video(
                 )
                 clip.close()
             else:
-                if displaycropped:  # then the cropped video + the labels is depicted
-                    bbox = x1, x2, y1, y2
-                else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    bbox = None
                 _create_labeled_video(
                     video,
                     filepath,
                     keypoints2show=labeled_bpts,
                     animals2show=individuals,
-                    bbox=bbox,
+                    bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
                     pcutoff=cfg["pcutoff"],
@@ -810,6 +814,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     trailpoints=trailpoints,
                     fps=outputframerate,
+                    display_cropped=displaycropped
                 )
             return True
 
@@ -831,6 +836,7 @@ def _create_labeled_video(
     skeleton_color="k",
     trailpoints=0,
     bbox=None,
+    display_cropped=False,
     codec="mp4v",
     fps=None,
     output_path="",
@@ -841,16 +847,13 @@ def _create_labeled_video(
     if not output_path:
         s = "_id" if color_by == "individual" else "_bp"
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
-    try:
-        x1, x2, y1, y2 = bbox
-        display_cropped = True
+
+    x1, x2, y1, y2 = bbox
+    if display_cropped:
         sw = x2 - x1
         sh = y2 - y1
-    except TypeError:
-        x1 = x2 = y1 = y2 = 0
-        display_cropped = False
-        sw = ""
-        sh = ""
+    else:
+        sw = sh = ""
 
     clip = vp(
         fname=video,
@@ -860,6 +863,7 @@ def _create_labeled_video(
         sh=sh,
         fps=fps,
     )
+    cropping = bbox != (0, clip.w, 0, clip.h)
     df = pd.read_hdf(h5file)
     try:
         animals = df.columns.get_level_values("individuals").unique().to_list()
@@ -879,7 +883,7 @@ def _create_labeled_video(
         cmap,
         kpts,
         trailpoints,
-        False,
+        cropping,
         x1,
         x2,
         y1,
