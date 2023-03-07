@@ -21,6 +21,7 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 import pickle
+import pandas as pd
 
 ####################################################
 # Dependencies
@@ -294,35 +295,24 @@ def plot_trajectories(
         vname = str(Path(video).stem)
         print("Loading ", video, "and data.")
         try:
-            df, _, _, suffix = auxiliaryfunctions.load_analyzed_data(
+            df, filepath, _, suffix = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, filtered, track_method
             )
             tmpfolder = os.path.join(videofolder, "plot-poses", vname)
-            auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
-            # Keep only the individuals and bodyparts that were labeled
-            labeled_bpts = [
-                bp
-                for bp in df.columns.get_level_values("bodyparts").unique()
-                if bp in bodyparts
-            ]
-            # Either display the animals defined in the config if they are found
-            # in the dataframe, or all the trajectories regardless of their names
-            try:
-                animals = set(df.columns.get_level_values("individuals"))
-            except KeyError:
-                animals = {""}
-            for animal in animals.intersection(individuals) or animals:
-                PlottingResults(
-                    tmpfolder,
-                    df,
-                    cfg,
-                    labeled_bpts,
-                    animal,
-                    showfigures,
-                    suffix + animal + imagetype,
-                    resolution=resolution,
-                    linewidth=linewidth,
-                )
+            _plot_trajectories(
+                filepath,
+                bodyparts,
+                individuals,
+                showfigures,
+                resolution,
+                linewidth,
+                cfg["colormap"],
+                cfg["alphavalue"],
+                cfg["pcutoff"],
+                suffix,
+                imagetype,
+                tmpfolder,
+            )
         except FileNotFoundError as e:
             print(e)
             failures.append(video)
@@ -357,6 +347,64 @@ def plot_trajectories(
     else:
         print(
             'Plots created! Please check the directory "plot-poses" within the video directory'
+        )
+
+
+def _plot_trajectories(
+    h5file,
+    bodyparts=None,
+    individuals=None,
+    show=False,
+    resolution=100,
+    linewidth=1.0,
+    colormap="viridis",
+    alpha=1.0,
+    pcutoff=0.01,
+    suffix="",
+    image_type=".png",
+    dest_folder=None,
+):
+    df = pd.read_hdf(h5file)
+    if bodyparts is None:
+        bodyparts = list(df.columns.get_level_values("bodyparts").unique())
+    if individuals is None:
+        try:
+            individuals = set(df.columns.get_level_values("individuals"))
+        except KeyError:
+            individuals = [""]
+    if dest_folder is None:
+        vname = os.path.basename(h5file).split('DLC')[0]
+        vid_folder = os.path.dirname(h5file)
+        dest_folder = os.path.join(vid_folder, "plot-poses", vname)
+    auxiliaryfunctions.attempttomakefolder(dest_folder, recursive=True)
+    # Keep only the individuals and bodyparts that were labeled
+    labeled_bpts = [
+        bp
+        for bp in df.columns.get_level_values("bodyparts").unique()
+        if bp in bodyparts
+    ]
+    # Either display the animals defined in the config if they are found
+    # in the dataframe, or all the trajectories regardless of their names
+    try:
+        animals = set(df.columns.get_level_values("individuals"))
+    except KeyError:
+        animals = {""}
+    cfg = {
+        'colormap': colormap,
+        'alphavalue': alpha,
+        'pcutoff': pcutoff,
+    }
+    for animal in animals.intersection(individuals) or animals:
+        PlottingResults(
+            dest_folder,
+            df,
+            cfg,
+            labeled_bpts,
+            animal,
+            show,
+            suffix + animal + image_type,
+            resolution=resolution,
+            linewidth=linewidth,
         )
 
 

@@ -38,15 +38,41 @@ def train(
     max_to_keep=5,
     keepdeconvweights=True,
     allow_growth=True,
+    pseudo_labels="",
+    init_weights="",
+    pseudo_threshold=0,
+    modelfolder="",
+    traintime_resize=False,
+    video_path="",
 ):
+    # in case there was already a graph
+    tf.compat.v1.reset_default_graph()
+
     start_path = os.getcwd()
-    os.chdir(
-        str(Path(config_yaml).parents[0])
-    )  # switch to folder of config_yaml (for logging)
+    if modelfolder == "":
+        os.chdir(
+            str(Path(config_yaml).parents[0])
+        )  # switch to folder of config_yaml (for logging)
+    else:
+        os.chdir(modelfolder)
 
     setup_logging()
 
     cfg = load_config(config_yaml)
+
+    cfg["pseudo_threshold"] = pseudo_threshold
+    cfg["video_path"] = video_path
+    cfg["traintime_resize"] = traintime_resize
+
+    if pseudo_labels != "":
+        cfg["pseudo_label"] = pseudo_labels
+
+    if modelfolder != "":
+        cfg["log_dir"] = modelfolder
+        cfg["project_path"] = modelfolder
+        # have to overwrite this
+        cfg["snapshot_prefix"] = os.path.join("snapshot")
+
     if cfg["optimizer"] != "adam":
         print(
             "Setting batchsize to 1! Larger batchsize not supported for this loader:",
@@ -72,11 +98,19 @@ def train(
     merged_summaries = tf.compat.v1.summary.merge_all()
     net_type = cfg["net_type"]
 
+    if init_weights != "":
+        cfg["init_weights"] = init_weights
+        cfg["resume_weights_only"] = True
+
     stem = Path(cfg["init_weights"]).stem
     if "snapshot" in stem and keepdeconvweights:
         print("Loading already trained DLC with backbone:", net_type)
         variables_to_restore = slim.get_variables_to_restore()
-        start_iter = int(stem.split("-")[1])
+        if cfg.get("resume_weights_only", False):
+            start_iter = 0
+        else:
+            start_iter = int(stem.split("-")[1])
+
     else:
         print("Loading ImageNet-pretrained", net_type)
         # loading backbone from ResNet, MobileNet etc.
@@ -169,7 +203,6 @@ def train(
 
         cumloss += loss_val
         train_writer.add_summary(summary, it)
-
         if it % display_iters == 0 and it > start_iter:
             logging.info(
                 "iteration: {} loss: {} scmap loss: {} locref loss: {} limb loss: {} lr: {}".format(
