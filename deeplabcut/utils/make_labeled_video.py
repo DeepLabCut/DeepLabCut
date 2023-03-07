@@ -387,7 +387,6 @@ def create_labeled_video(
     pcutoff=None,
     dotsize=None,
     superanimal_name="",
-    pcutoff=0.6,
     skeleton=[],
     skeleton_color="white",
     dotsize=8,
