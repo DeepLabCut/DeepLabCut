@@ -241,7 +241,7 @@ def extract_outlier_frames(
         * ``'uncertain'`` looks for frames with confidence below p_bound
         * ``'manual'`` launches a GUI from which the user can choose the frames
         * ``'list'`` looks for user to provide a list of frame numbers to use, 'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
-    
+
     frames2use: list[str], optional, default=None
         If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
 
@@ -430,17 +430,21 @@ def extract_outlier_frames(
             elif outlieralgorithm == "list":
                 if frames2use is not None:
                     try:
-                        frames2use = np.array(frames2use).astype('int')
+                        frames2use = np.array(frames2use).astype("int")
                     except ValueError() as e:
-                        print('Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!')
+                        print(
+                            "Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!"
+                        )
                         raise
                     Indices.extend(frames2use)
                 else:
-                    raise ValueError('Expected list of frames2use for outlieralgorithm "list"!')
+                    raise ValueError(
+                        'Expected list of frames2use for outlieralgorithm "list"!'
+                    )
             else:
-                raise ValueError(f'outlieralgorithm {outlieralgorithm} not recognized!')
+                raise ValueError(f"outlieralgorithm {outlieralgorithm} not recognized!")
 
-            # Run always except when the outlieralgorithm == manual. 
+            # Run always except when the outlieralgorithm == manual.
             if not outlieralgorithm == "manual":
                 Indices = np.sort(list(set(Indices)))  # remove repetitions.
                 print(
@@ -678,7 +682,10 @@ def ExtractFramesbasedonPreselection(
         else:
             if coords is not None:
                 clip = clip.crop(
-                    y1=coords[2], y2=coords[3], x1=coords[0], x2=coords[1],
+                    y1=coords[2],
+                    y2=coords[3],
+                    x1=coords[0],
+                    x2=coords[1],
                 )
             frames2pick = frameselectiontools.UniformFrames(
                 clip, numframes2extract, start, stop, Index

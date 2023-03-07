@@ -814,7 +814,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     trailpoints=trailpoints,
                     fps=outputframerate,
-                    display_cropped=displaycropped
+                    display_cropped=displaycropped,
                 )
             return True
 

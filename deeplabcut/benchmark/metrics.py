@@ -110,7 +110,6 @@ def calc_prediction_errors(preds, gt):
     return errors
 
 
-
 def _map(strings, substrings):
     """
     Map image paths from predicted data to GT as the first are typically

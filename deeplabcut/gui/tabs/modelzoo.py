@@ -46,9 +46,11 @@ class ModelZoo(DefaultTab):
         supermodels = parse_available_supermodels()
         self.model_combo.addItems(supermodels.keys())
 
-        scales_label = QtWidgets.QLabel('Scale list')
+        scales_label = QtWidgets.QLabel("Scale list")
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
-        self.scales_line.setPlaceholderText("Optionally input a list of integer sizes separated by commas...")
+        self.scales_line.setPlaceholderText(
+            "Optionally input a list of integer sizes separated by commas..."
+        )
         validator = RegExpValidator(self._val_pattern, self)
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
@@ -66,13 +68,13 @@ class ModelZoo(DefaultTab):
 
     def _handle_validation_change(self, state):
         if state == RegExpValidator.Invalid:
-            color = 'red'
+            color = "red"
         elif state == RegExpValidator.Intermediate:
-            color = 'gold'
+            color = "gold"
         elif state == RegExpValidator.Acceptable:
-            color = 'lime'
-        self.scales_line.setStyleSheet(f'border: 1px solid {color}')
-        QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(''))
+            color = "lime"
+        self.scales_line.setStyleSheet(f"border: 1px solid {color}")
+        QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
     def run_video_adaptation(self):
         videos = list(self.files)
@@ -89,7 +91,10 @@ class ModelZoo(DefaultTab):
         scales = []
         scales_ = self.scales_line.text()
         if scales_:
-            if (self.scales_line.validator().validate(scales_, 0)[0] == RegExpValidator.Acceptable):
+            if (
+                self.scales_line.validator().validate(scales_, 0)[0]
+                == RegExpValidator.Acceptable
+            ):
                 scales = list(map(int, scales_.split(",")))
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
