@@ -389,7 +389,6 @@ def create_labeled_video(
     superanimal_name="",
     skeleton=[],
     skeleton_color="white",
-    dotsize=8,
     colormap="rainbow",
     alphavalue=0.5,
     overwrite=False,
