@@ -62,7 +62,9 @@ class SpatiotemporalAdaptation:
         """
         supermodels = parse_available_supermodels()
         if supermodel_name not in supermodels:
-            raise ValueError(f"`supermodel_name` should be one of: {', '.join(supermodels)}.")
+            raise ValueError(
+                f"`supermodel_name` should be one of: {', '.join(supermodels)}."
+            )
 
         self.video_path = video_path
         self.supermodel_name = supermodel_name
@@ -85,9 +87,7 @@ class SpatiotemporalAdaptation:
         else:
             self.customized_pose_config = customized_pose_config
 
-    def before_adapt_inference(self,
-                               make_video=False,
-                               **kwargs):
+    def before_adapt_inference(self, make_video=False, **kwargs):
         if self.init_weights != "":
             _ = superanimal_inference.video_inference(
                 [self.video_path],
@@ -114,7 +114,7 @@ class SpatiotemporalAdaptation:
                 init_weights=self.init_weights,
                 draw_skeleton=True,
                 superanimal_name=self.supermodel_name,
-                **kwargs
+                **kwargs,
             )
 
     def train_without_project(self, pseudo_label_path, **kwargs):
@@ -131,7 +131,7 @@ class SpatiotemporalAdaptation:
             init_weights=self.init_weights,
             pseudo_labels=pseudo_label_path,
             video_path=self.video_path,
-            **kwargs
+            **kwargs,
         )
 
     def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
@@ -174,7 +174,7 @@ class SpatiotemporalAdaptation:
 
         # spatial pyramid is not for adapted model
 
-        scale_list = kwargs.pop('scale_list', [])
+        scale_list = kwargs.pop("scale_list", [])
         _, datafiles = superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,
@@ -184,7 +184,7 @@ class SpatiotemporalAdaptation:
             customized_test_config=self.customized_pose_config,
         )
 
-        if kwargs.pop('plot_trajectories', True):
+        if kwargs.pop("plot_trajectories", True):
             _plot_trajectories(datafiles[0])
 
         deeplabcut.create_labeled_video(
@@ -195,5 +195,5 @@ class SpatiotemporalAdaptation:
             init_weights=adapt_weights,
             draw_skeleton=True,
             superanimal_name=self.supermodel_name,
-            **kwargs
+            **kwargs,
         )

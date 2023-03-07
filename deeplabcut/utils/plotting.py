@@ -373,7 +373,7 @@ def _plot_trajectories(
         except KeyError:
             individuals = [""]
     if dest_folder is None:
-        vname = os.path.basename(h5file).split('DLC')[0]
+        vname = os.path.basename(h5file).split("DLC")[0]
         vid_folder = os.path.dirname(h5file)
         dest_folder = os.path.join(vid_folder, "plot-poses", vname)
     auxiliaryfunctions.attempttomakefolder(dest_folder, recursive=True)
@@ -390,9 +390,9 @@ def _plot_trajectories(
     except KeyError:
         animals = {""}
     cfg = {
-        'colormap': colormap,
-        'alphavalue': alpha,
-        'pcutoff': pcutoff,
+        "colormap": colormap,
+        "alphavalue": alpha,
+        "pcutoff": pcutoff,
     }
     for animal in animals.intersection(individuals) or animals:
         PlottingResults(

@@ -13,10 +13,8 @@ from tqdm import tqdm
 
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.core import \
-    predict as single_predict
-from deeplabcut.pose_estimation_tensorflow.core import \
-    predict_multianimal as predict
+from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
@@ -91,7 +89,7 @@ def _average_multiple_scale_preds(
 
     # Compute cosine similarity
     mean_vec = np.nanmedian(xy, axis=0)
-    dist_ = np.einsum('ijk,jk->ij', xy, mean_vec)
+    dist_ = np.einsum("ijk,jk->ij", xy, mean_vec)
     n = np.linalg.norm(xy, axis=2) * np.linalg.norm(mean_vec, axis=1)
     dist = np.nan_to_num(dist_ / n)
 
@@ -103,8 +101,8 @@ def _average_multiple_scale_preds(
     coords = np.nanmedian(xyp[..., :2], axis=0)
     conf = np.nanmedian(xyp[..., 2], axis=0)
     dict_ = {
-        'coordinates': [list(coords[:, None])],
-        'confidence': list(conf[:, None].astype(np.float32)),
+        "coordinates": [list(coords[:, None])],
+        "confidence": list(conf[:, None].astype(np.float32)),
     }
     return dict_
 
@@ -277,22 +275,19 @@ def video_inference(
     else:
         test_cfg = load_config(customized_test_config)
 
-
     # add a temp folder for checkpoint
 
-    weight_folder = superanimal_name + '_weights'
+    weight_folder = superanimal_name + "_weights"
 
     if superanimal_name in MODELOPTIONS:
         if not os.path.exists(weight_folder):
             download_huggingface_model(superanimal_name, weight_folder)
         else:
-            print (f"{weight_folder} exists, using the downloaded weights")
+            print(f"{weight_folder} exists, using the downloaded weights")
     else:
-        print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
+        print(f"{superanimal_name} not available. Available ones are: ", MODELOPTIONS)
 
-    snapshots = glob.glob(
-        os.path.join(weight_folder, 'snapshot-*.index')
-    )
+    snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
 
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
@@ -300,8 +295,8 @@ def video_inference(
     if init_weights != "":
         test_cfg["init_weights"] = init_weights
     else:
-        init_weights = os.path.abspath(snapshots[0]).replace('.index', '')
-        test_cfg['init_weights'] = init_weights
+        init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
+        test_cfg["init_weights"] = init_weights
 
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
@@ -309,7 +304,7 @@ def video_inference(
     sess, inputs, outputs = single_predict.setup_pose_prediction(
         test_cfg, allow_growth=allow_growth
     )
-    DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
+    DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     datafiles = []

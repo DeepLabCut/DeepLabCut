@@ -77,5 +77,6 @@ def video_inference_superanimal(
             adapter.before_adapt_inference(make_video=False)
             adapter.adaptation_training()
             adapter.after_adapt_inference(
-                pcutoff=pcutoff, plot_trajectories=plot_trajectories,
+                pcutoff=pcutoff,
+                plot_trajectories=plot_trajectories,
             )
