@@ -157,6 +157,7 @@ def download_model(modelname, target_dir):
         print("Pick one of the following: ", models)
 
 
+
 # Aliases for backwards-compatibility
 Check4Weights = check_for_weights
 Downloadweights = download_weights
