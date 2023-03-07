@@ -1,48 +1,56 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>How To Install DeepLabCut &#8212; DeepLabCut</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
-    
-  <link rel="stylesheet"
-    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=4ec06e9971c5264fbd345897d5258098f11cc577" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
-    
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=8bf782fb4ee92b3d3646425e50f299c4e1fd152d"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
@@ -50,61 +58,634 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/installation';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Installation Tips" href="recipes/installTips.html" />
     <link rel="prev" title="Documentation Overview" href="UseOverviewGuide.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../index.html">
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../README.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
         
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="UseOverviewGuide.html">
+                        Documentation Overview
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        How To Install DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/installTips.html">
+                        Installation Tips
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="docker.html">
+                        DeepLabCut Docker containers
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="standardDeepLabCut_UserGuide.html">
+                        DeepLabCut User Guide (for single animal projects)
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="maDLC_UserGuide.html">
+                        DeepLabCut for Multi-Animal Projects
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Overviewof3D.html">
+                        3D DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="HelperFunctions.html">
+                        Helper & Advanced Optional Function Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="PROJECT_GUI.html">
+                        Interactive Project Manager GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="napariGUI.html">
+                        napari labeling GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/ClusteringNapari.html">
+                        Clustering in the napari-DeepLabCut GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="deeplabcutlive.html">
+                        DeepLabCut-Live!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="ModelZoo.html">
+                        The DeepLabCut Model Zoo!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/UsingModelZooPupil.html">
+                        Using ModelZoo models on your own datasets
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/MegaDetectorDLCLive.html">
+                        💚 MegaDetector+DeepLabCut 💜
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="benchmark.html">
+                        DeepLabCut benchmark
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/TechHardware.html">
+                        Technical (Hardware) Considerations
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="tutorial.html">
+                        Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="convert_maDLC.html">
+                        How to convert a pre-2.2 project for use with DeepLabCut 2.2
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/io.html">
+                        Input/output manipulations with DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/nn.html">
+                        Model training tips & tricks
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/post.html">
+                        Some data processing recipes!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/BatchProcessing.html">
+                        Automate training and video analysis: Batch Processing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/DLCMethods.html">
+                        How to write a DLC Methods Section
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/OpenVINO.html">
+                        Intel OpenVINO backend
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/flip_and_rotate.html">
+                        Improving network performance on unbalanced data via augmentation 🦇
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="MISSION_AND_VALUES.html">
+                        Mission and Values of DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="roadmap.html">
+                        A development roadmap for DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Governance.html">
+                        Governance Model of DeepLabCut
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
       
       
-      <img src="../_static/logo.png" class="logo" alt="logo">
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
       
-      <h1 class="site-logo" id="site-title">DeepLabCut</h1>
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="UseOverviewGuide.html">
+                        Documentation Overview
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        How To Install DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/installTips.html">
+                        Installation Tips
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="docker.html">
+                        DeepLabCut Docker containers
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="standardDeepLabCut_UserGuide.html">
+                        DeepLabCut User Guide (for single animal projects)
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="maDLC_UserGuide.html">
+                        DeepLabCut for Multi-Animal Projects
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Overviewof3D.html">
+                        3D DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="HelperFunctions.html">
+                        Helper & Advanced Optional Function Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="PROJECT_GUI.html">
+                        Interactive Project Manager GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="napariGUI.html">
+                        napari labeling GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/ClusteringNapari.html">
+                        Clustering in the napari-DeepLabCut GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="deeplabcutlive.html">
+                        DeepLabCut-Live!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="ModelZoo.html">
+                        The DeepLabCut Model Zoo!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/UsingModelZooPupil.html">
+                        Using ModelZoo models on your own datasets
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/MegaDetectorDLCLive.html">
+                        💚 MegaDetector+DeepLabCut 💜
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="benchmark.html">
+                        DeepLabCut benchmark
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/TechHardware.html">
+                        Technical (Hardware) Considerations
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="tutorial.html">
+                        Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="convert_maDLC.html">
+                        How to convert a pre-2.2 project for use with DeepLabCut 2.2
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/io.html">
+                        Input/output manipulations with DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/nn.html">
+                        Model training tips & tricks
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/post.html">
+                        Some data processing recipes!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/BatchProcessing.html">
+                        Automate training and video analysis: Batch Processing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/DLCMethods.html">
+                        How to write a DLC Methods Section
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/OpenVINO.html">
+                        Intel OpenVINO backend
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/flip_and_rotate.html">
+                        Improving network performance on unbalanced data via augmentation 🦇
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="MISSION_AND_VALUES.html">
+                        Mission and Values of DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="roadmap.html">
+                        A development roadmap for DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Governance.html">
+                        Governance Model of DeepLabCut
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item">
+  
+
+
+<a class="navbar-brand logo" href="../README.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    </div>
+    <div class="sidebar-start-items__item">
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
@@ -113,602 +694,325 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Getting Started
- </span>
-</p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="UseOverviewGuide.html">
-   Documentation Overview
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">Documentation Overview</a></li>
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Installation
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   How To Install DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/installTips.html">
-   Installation Tips
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   DeepLabCut Docker containers
-  </a>
- </li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">DeepLabCut Docker containers</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  User Guides
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="standardDeepLabCut_UserGuide.html">
-   DeepLabCut User Guide (for single animal projects)
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="maDLC_UserGuide.html">
-   DeepLabCut for Multi-Animal Projects
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="Overviewof3D.html">
-   3D DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="HelperFunctions.html">
-   Helper &amp; Advanced Optional Function Documentation
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Graphical User Interfaces (GUIs)
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="PROJECT_GUI.html">
-   Interactive Project Manager GUI
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="napariGUI.html">
-   napari labeling GUI
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/ClusteringNapari.html">
-   Clustering in the napari-DeepLabCut GUI
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="napariGUI.html">napari labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut-Live!
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="deeplabcutlive.html">
-   DeepLabCut-Live!
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="deeplabcutlive.html">DeepLabCut-Live!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut Model Zoo
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Model Zoo</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="ModelZoo.html">
-   The DeepLabCut Model Zoo!
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/UsingModelZooPupil.html">
-   Using ModelZoo models on your own datasets
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/MegaDetectorDLCLive.html">
-   💚 MegaDetector+DeepLabCut 💜
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut Benchmark
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="benchmark.html">
-   DeepLabCut benchmark
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Hardware
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/TechHardware.html">
-   Technical (Hardware) Considerations
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Tutorials &amp; Cookbook
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials &amp; Cookbook</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="tutorial.html">
-   Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="convert_maDLC.html">
-   How to convert a pre-2.2 project for use with DeepLabCut 2.2
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/io.html">
-   Input/output manipulations with DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/nn.html">
-   Model training tips &amp; tricks
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/post.html">
-   Some data processing recipes!
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/BatchProcessing.html">
-   Automate training and video analysis: Batch Processing
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/DLCMethods.html">
-   How to write a DLC Methods Section
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/OpenVINO.html">
-   Intel OpenVINO backend
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate.html">
-   Improving network performance on unbalanced data via augmentation 🦇
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Mission &amp; Contribute
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="MISSION_AND_VALUES.html">
-   Mission and Values of DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="roadmap.html">
-   A development roadmap for DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="Governance.html">
-   Governance Model of DeepLabCut
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Governance.html">Governance Model of DeepLabCut</a></li>
 </ul>
 
     </div>
-</nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-        </div>
+</nav>
     </div>
-    <div id="rtd-footer-container"></div>
-</div>
+  </div>
+  
 
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
 
-          
+  
+  <div id="rtd-footer-container"></div>
 
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
-<div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
+      </div>
+      <main id="main-content" class="bd-main">
         
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
 
 
 
 <div class="col py-1 d-flex header-article-main">
     <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
-  </span>
-
-</label>
-
-        
+        <label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" data-toggle="tooltip" data-placement="right" title="Toggle primary sidebar">
+            <span class="fa-solid fa-bars"></span>
+        </label>
     </div>
     <div class="header-article__right">
 <button onclick="toggleFullScreen()"
-  class="headerbtn"
+  class="btn btn-sm"
   data-toggle="tooltip"
 data-placement="bottom"
 title="Fullscreen mode"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-expand"></i>
   </span>
 
 </button>
 
-<div class="menu-dropdown menu-dropdown-repository-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Source repositories">
-      <i class="fab fa-github"></i>
+
+
+<div class="dropdown dropdown-repository-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Source repository"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fab fa-github"></i>
   </span>
-<span class="headerbtn__text-container">repository</span>
+<span class="btn__text-container">repository</span>
 </a>
-
-      </li>
+</a>
       
-      <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/installation.html&body=Your%20issue%20content%20here."
-   class="headerbtn"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/installation.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Open an issue"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
   </span>
-<span class="headerbtn__text-container">open issue</span>
+<span class="btn__text-container">open issue</span>
 </a>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
+  </ul>
 </div>
 
-<div class="menu-dropdown menu-dropdown-download-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Download this page">
-      <i class="fas fa-download"></i>
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="../_sources/docs/installation.md"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="../_sources/docs/installation.md" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Download source file"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.md</span>
+<span class="btn__text-container">.md</span>
 </a>
-
-      </li>
+</a>
       
       <li>
-        
 <button onclick="printPdf(this)"
-  class="headerbtn"
+  class="btn btn-sm dropdown-item"
   data-toggle="tooltip"
 data-placement="left"
 title="Print to PDF"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
   </span>
-<span class="headerbtn__text-container">.pdf</span>
+<span class="btn__text-container">.pdf</span>
 </button>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
+  </ul>
 </div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
-</label>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary" data-toggle="tooltip" data-placement="left" title="Toggle secondary sidebar">
+            <span class="fa-solid fa-list"></span>
+        </label>
     </div>
 </div>
-
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#pip">
-   PIP:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">
-   CONDA: The installation process is as easy as this figure! –&gt;
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-installed">
-     Step 1: You need to have Python installed
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users">
-       Install anaconda or use miniconda3 (ideal for MacOS users)!
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#we-recommend-having-a-gpu">
-       We recommend having a GPU.
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">
-     Step 2: please use our supplied conda environment
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#docker">
-   DOCKER:
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#pro-tips">
-     Pro Tips:
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
-     Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#gpu-support">
-     <strong>
-      GPU Support:
-     </strong>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
-       The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!
-      </a>
-      <ul class="nav section-nav flex-column">
-       <li class="toc-h5 nav-item toc-entry">
-        <a class="reference internal nav-link" href="#notes">
-         Notes:
-        </a>
-       </li>
-      </ul>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#troubleshooting">
-   Troubleshooting:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#system-wide-considerations">
-   System-wide considerations:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#technical-considerations">
-   Technical Considerations:
-  </a>
- </li>
-</ul>
-
-    </nav>
-</div>
-    </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>How To Install DeepLabCut</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#pip">
-   PIP:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">
-   CONDA: The installation process is as easy as this figure! –&gt;
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-installed">
-     Step 1: You need to have Python installed
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users">
-       Install anaconda or use miniconda3 (ideal for MacOS users)!
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#we-recommend-having-a-gpu">
-       We recommend having a GPU.
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">
-     Step 2: please use our supplied conda environment
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#docker">
-   DOCKER:
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#pro-tips">
-     Pro Tips:
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
-     Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#gpu-support">
-     <strong>
-      GPU Support:
-     </strong>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
-       The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!
-      </a>
-      <ul class="nav section-nav flex-column">
-       <li class="toc-h5 nav-item toc-entry">
-        <a class="reference internal nav-link" href="#notes">
-         Notes:
-        </a>
-       </li>
-      </ul>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#troubleshooting">
-   Troubleshooting:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#system-wide-considerations">
-   System-wide considerations:
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#technical-considerations">
-   Technical Considerations:
-  </a>
- </li>
-</ul>
-
-                        </nav>
-                    </div>
-                </div>
             </div>
-            <main id="main-content" role="main">
-                
-              <div>
-                
+            
+            
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>How To Install DeepLabCut</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pip">
+   PIP:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">
+   CONDA: The installation process is as easy as this figure! –&gt;
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-installed">
+     Step 1: You need to have Python installed
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users">
+       Install anaconda or use miniconda3 (ideal for MacOS users)!
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#we-recommend-having-a-gpu">
+       We recommend having a GPU.
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">
+     Step 2: please use our supplied conda environment
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#docker">
+   DOCKER:
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#pro-tips">
+     Pro Tips:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
+     Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#gpu-support">
+     <strong>
+      GPU Support:
+     </strong>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
+       The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h5 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#notes">
+         Notes:
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#troubleshooting">
+   Troubleshooting:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#system-wide-considerations">
+   System-wide considerations:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#technical-considerations">
+   Technical Considerations:
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+            <article class="bd-article" role="main">
+              
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-install-deeplabcut">
-<span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this headline">#</a></h1>
+<span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this heading">#</a></h1>
 <p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p>
 <p>We recommend using our supplied CONDA environment.</p>
 <section id="pip">
-<h2>PIP:<a class="headerlink" href="#pip" title="Permalink to this headline">#</a></h2>
+<h2>PIP:<a class="headerlink" href="#pip" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf]'</span></code> (for GUI support w/tensorflow) or without the gui: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[tf]'</span></code>.</p></li>
 <li><p>If you want to use the SuperAnimal models, then please use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf,modelzoo]'</span></code>.</p></li>
@@ -716,12 +1020,12 @@ title="Print to PDF"
 </ul>
 </section>
 <section id="conda-the-installation-process-is-as-easy-as-this-figure">
-<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Permalink to this headline">#</a></h2>
+<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Permalink to this heading">#</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 <section id="step-1-you-need-to-have-python-installed">
-<h3>Step 1: You need to have Python installed<a class="headerlink" href="#step-1-you-need-to-have-python-installed" title="Permalink to this headline">#</a></h3>
+<h3>Step 1: You need to have Python installed<a class="headerlink" href="#step-1-you-need-to-have-python-installed" title="Permalink to this heading">#</a></h3>
 <section id="install-anaconda-or-use-miniconda3-ideal-for-macos-users">
-<h4>Install <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a> or use miniconda3 (ideal for MacOS users)!<a class="headerlink" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users" title="Permalink to this headline">#</a></h4>
+<h4>Install <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a> or use miniconda3 (ideal for MacOS users)!<a class="headerlink" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users" title="Permalink to this heading">#</a></h4>
 <ul class="simple">
 <li><p>Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> on your machine.</p></li>
 </ul>
@@ -740,7 +1044,7 @@ conda init zsh
 </div>
 </section>
 <section id="we-recommend-having-a-gpu">
-<h4>We recommend having a GPU.<a class="headerlink" href="#we-recommend-having-a-gpu" title="Permalink to this headline">#</a></h4>
+<h4>We recommend having a GPU.<a class="headerlink" href="#we-recommend-having-a-gpu" title="Permalink to this heading">#</a></h4>
 <ul class="simple">
 <li><p>You <strong>need to decide if you want to use a CPU or GPU for your models</strong>: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus">here</a> and there are a lot of helper videos on <a class="reference external" href="https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi">our YouTube channel!</a>).</p>
 <ul>
@@ -753,7 +1057,7 @@ conda init zsh
 </section>
 </section>
 <section id="step-2-please-use-our-supplied-conda-environment">
-<h3>Step 2: please use our supplied conda environment<a class="headerlink" href="#step-2-please-use-our-supplied-conda-environment" title="Permalink to this headline">#</a></h3>
+<h3>Step 2: please use our supplied conda environment<a class="headerlink" href="#step-2-please-use-our-supplied-conda-environment" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Windows/Linux/MacBooks:</strong> git clone this repo (in the terminal/cmd program, while <strong>in a folder</strong> you wish to place DeepLabCut
 To git clone type: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DeepLabCut/DeepLabCut.git</span></code>). Note, this can be anywhere, even downloads is fine.)</p></li>
@@ -784,19 +1088,19 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="docker">
-<h2>DOCKER:<a class="headerlink" href="#docker" title="Permalink to this headline">#</a></h2>
+<h2>DOCKER:<a class="headerlink" href="#docker" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/docker.html">here</a>.</p></li>
 </ul>
 <section id="pro-tips">
-<h3>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this headline">#</a></h3>
+<h3>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this heading">#</a></h3>
 <p>More <span class="xref myst">installation ProTips</span> are also available.</p>
 <p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==2.2</span></code>. Once installed, you can check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.</p>
 <p>Here are some conda environment management tips: <a class="reference external" href="https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index">https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index</a></p>
 <p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see <span class="xref myst">here</span> on how to get the latest GitHub code, and how to test your installation by following this video: <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
 </section>
 <section id="creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
-<h3>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Permalink to this headline">#</a></h3>
+<h3>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Permalink to this heading">#</a></h3>
 <p>*Note in a fresh ubuntu install, you will often have to run: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-dev</span></code> to install the GNU Compiler Collection and the python developing environment.</p>
 <p>Some users might want to create their own customize env. -  Here is an example.</p>
 <p>In the terminal type:</p>
@@ -806,14 +1110,14 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p>We have some tips for linux users here, as the latest Ubuntu doesn’t easily support a 1-click install: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html</a></p>
 </section>
 <section id="gpu-support">
-<h3><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Permalink to this headline">#</a></h3>
+<h3><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Permalink to this heading">#</a></h3>
 <p>The ONLY thing you need to do <strong>first</strong> if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.</p>
 <ul class="simple">
 <li><p>CUDA: <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">https://developer.nvidia.com/cuda-downloads</a> (just follow the prompts here!)</p></li>
 <li><p>DRIVERS: <a class="reference external" href="https://www.nvidia.com/Download/index.aspx">https://www.nvidia.com/Download/index.aspx</a></p></li>
 </ul>
 <section id="the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
-<h4>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Permalink to this headline">#</a></h4>
+<h4>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Permalink to this heading">#</a></h4>
 <p><strong>CRITICAL:</strong> If you have a GPU, you should FIRST <strong>install the NVIDIA CUDA package and an appropriate driver for your specific GPU</strong>, then you can use the supplied conda file. Please follow the instructions found here <a class="reference external" href="https://www.tensorflow.org/install/gpu">https://www.tensorflow.org/install/gpu</a>, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.</p>
 <ul class="simple">
 <li><p>Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.</p></li>
@@ -825,7 +1129,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><strong>SECOND</strong>, install CUDA (versions up to CUDA11 are supported, together with TF2.5): <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
 <p><strong>THIRD:</strong> Follow the steps above to get the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT</span></code> conda file and install it!</p>
 <section id="notes">
-<h5>Notes:<a class="headerlink" href="#notes" title="Permalink to this headline">#</a></h5>
+<h5>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h5>
 <ul class="simple">
 <li><p><strong>All of the TensorFlow versions work with DeepLabCut</strong>. But, please be mindful different versions of TensorFlow require different CUDA versions.</p></li>
 <li><p>As the combination of TensorFlow and CUDA matters, we strongly encourage you to <strong>check your driver/cuDNN/CUDA/TensorFlow versions</strong> <a class="reference external" href="https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690">on this StackOverflow post</a>.</p></li>
@@ -834,7 +1138,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><code class="docutils literal notranslate"><span class="pre">nvcc</span> <span class="pre">-V</span></code> to check your installed version(s).</p>
 <ul class="simple">
 <li><p>The best practice is to then run the supplied <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code> (this is inside the examples folder you acquired when you git cloned the repo). Here is more information/a short <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">video on running the testscript</a>.</p></li>
-<li><p>Additionally, if you want to use the bleeding edge, with yout git clone you also get the latest code. While inside the main DeepLabCut folder, you can run <code class="docutils literal notranslate"><span class="pre">./reinstall.sh</span></code> to be sure it’s installed (more here: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code">https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code</a>)</p></li>
+<li><p>Additionally, if you want to use the bleeding edge, with yout git clone you also get the latest code. While inside the main DeepLabCut folder, you can run <code class="docutils literal notranslate"><span class="pre">./reinstall.sh</span></code> to be sure it’s installed (more here: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code">DeepLabCut/DeepLabCut</a>)</p></li>
 <li><p>You can test that your GPU is being properly engaged with these additional <a class="reference external" href="https://www.tensorflow.org/programmers_guide/using_gpu">tips</a>.</p></li>
 <li><p>Ubuntu users might find this <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#installation-on-ubuntu-20-04-lts">installation guide</a> for a fresh ubuntu install useful as well.</p></li>
 </ul>
@@ -843,7 +1147,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting:<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">#</a></h2>
+<h2>Troubleshooting:<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">#</a></h2>
 <p>TensorFlow:
 Here are some additional resources users have found helpful (posted without endorsement):</p>
 <ul class="simple">
@@ -868,15 +1172,15 @@ Here are some additional resources users have found helpful (posted without endo
 </ul>
 </section>
 <section id="system-wide-considerations">
-<span id="system-wide-considerations-during-install"></span><h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Permalink to this headline">#</a></h2>
+<span id="system-wide-considerations-during-install"></span><h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Permalink to this heading">#</a></h2>
 <p>If you perform the system-wide installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them. If you have a dedicated machine for DeepLabCut, this is fine. If there are other applications that require different versions of libraries, then one would potentially break those applications. The solution to this problem is to create a virtual environment, a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages. One way to manage virtual environments is to use conda environments (for which you need Anaconda installed).</p>
 </section>
 <section id="technical-considerations">
-<span id="tech-considerations-during-install"></span><h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Permalink to this headline">#</a></h2>
+<span id="tech-considerations-during-install"></span><h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Computer:</p>
 <ul>
-<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (<a class="reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">https://github.com/DeepLabCut/Docker4DeepLabCut2.0</a>). Now we use the new Docker containers supplied on this repo, also available through <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> or the <a class="reference external" href="https://pypi.org/project/deeplabcut-docker/"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code></a> helper script.</p></li>
+<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (<a class="github reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">DeepLabCut/Docker4DeepLabCut2.0</a>). Now we use the new Docker containers supplied on this repo, also available through <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> or the <a class="reference external" href="https://pypi.org/project/deeplabcut-docker/"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code></a> helper script.</p></li>
 </ul>
 </li>
 <li><p>Computer Hardware:</p>
@@ -928,54 +1232,191 @@ Here are some additional resources users have found helpful (posted without endo
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
-              
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
+            </article>
+            
+
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="UseOverviewGuide.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Documentation Overview</p>
-        </div>
-    </a>
-    <a class='right-next' id="next-link" href="recipes/installTips.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Installation Tips</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
-    </a>
+  <a class='left-prev' id="prev-link" href="UseOverviewGuide.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Documentation Overview</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="recipes/installTips.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Installation Tips</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
             </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
   
-    By The DeepLabCut Team<br/>
-  
-      &copy; Copyright 2022.<br/>
-    <div class="extra_footer">
-      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pip">
+   PIP:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">
+   CONDA: The installation process is as easy as this figure! –&gt;
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-1-you-need-to-have-python-installed">
+     Step 1: You need to have Python installed
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-ideal-for-macos-users">
+       Install anaconda or use miniconda3 (ideal for MacOS users)!
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#we-recommend-having-a-gpu">
+       We recommend having a GPU.
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">
+     Step 2: please use our supplied conda environment
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#docker">
+   DOCKER:
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#pro-tips">
+     Pro Tips:
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
+     Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#gpu-support">
+     <strong>
+      GPU Support:
+     </strong>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
+       The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h5 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#notes">
+         Notes:
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#troubleshooting">
+   Troubleshooting:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#system-wide-considerations">
+   System-wide considerations:
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#technical-considerations">
+   Technical Considerations:
+  </a>
+ </li>
+</ul>
 
-    </div>
-</p>
-        </footer>
-    </div>
-    
+</nav>
 </div>
 
-
-      </div>
-    </div>
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+<div class="bd-footer-content__inner container">
   
-  <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2022.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+Last updated on None.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </div>
+        </footer>
+        
+
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
   </body>
 </html>

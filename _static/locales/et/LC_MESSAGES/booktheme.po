@@ -8,74 +8,74 @@ msgstr ""
 "Language: et\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "hoidla"
-
-msgid "open issue"
-msgstr "avatud küsimus"
-
-msgid "Contents"
-msgstr "Sisu"
-
-msgid "Fullscreen mode"
-msgstr "Täisekraanirežiim"
-
-msgid "Download this page"
-msgstr "Laadige see leht alla"
-
-msgid "Download source file"
-msgstr "Laadige alla lähtefail"
-
-msgid "Launch"
-msgstr "Käivitage"
-
-msgid "Edit this page"
-msgstr "Muutke seda lehte"
-
-msgid "Toggle navigation"
-msgstr "Lülita navigeerimine sisse"
-
-msgid "Theme by the"
-msgstr "Teema"
-
-msgid "Source repository"
-msgstr "Allikahoidla"
-
-msgid "Last updated on"
-msgstr "Viimati uuendatud"
-
-msgid "By the"
-msgstr "Autor"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinksiraamatu teema"
-
-msgid "Open an issue"
-msgstr "Avage probleem"
-
-msgid "next page"
-msgstr "järgmine leht"
-
 msgid "Copyright"
 msgstr "Autoriõigus"
-
-msgid "Search this book..."
-msgstr "Otsige sellest raamatust ..."
 
 msgid "Print to PDF"
 msgstr "Prindi PDF-i"
 
-msgid "By"
-msgstr "Kõrval"
+msgid "Edit this page"
+msgstr "Muutke seda lehte"
 
-msgid "previous page"
-msgstr "eelmine leht"
+msgid "suggest edit"
+msgstr "soovita muuta"
 
-msgid "Search the docs ..."
-msgstr "Dokumentidest otsimine ..."
+msgid "Sphinx Book Theme"
+msgstr "Sfinksiraamatu teema"
+
+msgid "open issue"
+msgstr "avatud küsimus"
+
+msgid "By the"
+msgstr "Autor"
+
+msgid "Theme by the"
+msgstr "Teema"
 
 msgid "Download notebook file"
 msgstr "Laadige sülearvuti fail alla"
 
-msgid "suggest edit"
-msgstr "soovita muuta"
+msgid "Toggle navigation"
+msgstr "Lülita navigeerimine sisse"
+
+msgid "next page"
+msgstr "järgmine leht"
+
+msgid "Contents"
+msgstr "Sisu"
+
+msgid "Source repository"
+msgstr "Allikahoidla"
+
+msgid "Search the docs ..."
+msgstr "Dokumentidest otsimine ..."
+
+msgid "Last updated on"
+msgstr "Viimati uuendatud"
+
+msgid "Search this book..."
+msgstr "Otsige sellest raamatust ..."
+
+msgid "Download this page"
+msgstr "Laadige see leht alla"
+
+msgid "Launch"
+msgstr "Käivitage"
+
+msgid "Download source file"
+msgstr "Laadige alla lähtefail"
+
+msgid "previous page"
+msgstr "eelmine leht"
+
+msgid "By"
+msgstr "Kõrval"
+
+msgid "Open an issue"
+msgstr "Avage probleem"
+
+msgid "Fullscreen mode"
+msgstr "Täisekraanirežiim"
+
+msgid "repository"
+msgstr "hoidla"

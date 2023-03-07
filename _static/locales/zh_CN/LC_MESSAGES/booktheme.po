@@ -8,71 +8,74 @@ msgstr ""
 "Language: zh_CN\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "资料库"
+msgid "Copyright"
+msgstr "版权"
 
-msgid "open issue"
-msgstr "公开的问题"
-
-msgid "Contents"
-msgstr "内容"
-
-msgid "Fullscreen mode"
-msgstr "全屏模式"
-
-msgid "Download this page"
-msgstr "下载此页面"
-
-msgid "Download source file"
-msgstr "下载源文件"
-
-msgid "Launch"
-msgstr "发射"
+msgid "Print to PDF"
+msgstr "列印成 PDF"
 
 msgid "Edit this page"
-msgstr "编辑这个页面"
+msgstr "编辑此页面"
 
-msgid "Toggle navigation"
-msgstr "切换导航"
-
-msgid "Theme by the"
-msgstr "主题由"
-
-msgid "Source repository"
-msgstr "源库"
-
-msgid "Last updated on"
-msgstr "上次更新时间："
-
-msgid "By the"
-msgstr "由"
+msgid "suggest edit"
+msgstr "提出修改建议"
 
 msgid "Sphinx Book Theme"
-msgstr "狮身人面像书主题"
+msgstr "Sphinx Book 主题"
 
-msgid "Open an issue"
-msgstr "打开一个问题"
+msgid "open issue"
+msgstr "创建议题"
+
+msgid "By the"
+msgstr "作者："
+
+msgid "Theme by the"
+msgstr "主题作者："
+
+msgid "Download notebook file"
+msgstr "下载笔记本文件"
+
+msgid "Toggle navigation"
+msgstr "显示或隐藏导航栏"
 
 msgid "next page"
 msgstr "下一页"
 
-msgid "Copyright"
-msgstr "版权"
+msgid "Contents"
+msgstr "目录"
 
-msgid "Search this book..."
-msgstr "搜索这本书..."
-
-msgid "Print to PDF"
-msgstr "列印成PDF"
-
-msgid "By"
-msgstr "通过"
-
-msgid "previous page"
-msgstr "上一页"
+msgid "Source repository"
+msgstr "源码库"
 
 msgid "Search the docs ..."
 msgstr "搜索文档..."
 
-msgid "Download notebook file"
-msgstr "下载笔记本文件"
+msgid "Last updated on"
+msgstr "上次更新时间："
+
+msgid "Search this book..."
+msgstr "搜索这本书..."
+
+msgid "Download this page"
+msgstr "下载此页面"
+
+msgid "Launch"
+msgstr "启动"
+
+msgid "Download source file"
+msgstr "下载源文件"
+
+msgid "previous page"
+msgstr "上一页"
+
+msgid "By"
+msgstr "作者："
+
+msgid "Open an issue"
+msgstr "创建议题"
+
+msgid "Fullscreen mode"
+msgstr "全屏模式"
+
+msgid "repository"
+msgstr "仓库"

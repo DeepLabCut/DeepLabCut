@@ -1,48 +1,56 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>DeepLabCut for Multi-Animal Projects &#8212; DeepLabCut</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
-    
-  <link rel="stylesheet"
-    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=4ec06e9971c5264fbd345897d5258098f11cc577" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
-    
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=8bf782fb4ee92b3d3646425e50f299c4e1fd152d"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
@@ -50,61 +58,634 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/maDLC_UserGuide';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="3D DeepLabCut" href="Overviewof3D.html" />
     <link rel="prev" title="DeepLabCut User Guide (for single animal projects)" href="standardDeepLabCut_UserGuide.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../index.html">
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../README.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
         
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="UseOverviewGuide.html">
+                        Documentation Overview
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        How To Install DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/installTips.html">
+                        Installation Tips
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="docker.html">
+                        DeepLabCut Docker containers
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="standardDeepLabCut_UserGuide.html">
+                        DeepLabCut User Guide (for single animal projects)
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        DeepLabCut for Multi-Animal Projects
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Overviewof3D.html">
+                        3D DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="HelperFunctions.html">
+                        Helper & Advanced Optional Function Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="PROJECT_GUI.html">
+                        Interactive Project Manager GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="napariGUI.html">
+                        napari labeling GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/ClusteringNapari.html">
+                        Clustering in the napari-DeepLabCut GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="deeplabcutlive.html">
+                        DeepLabCut-Live!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="ModelZoo.html">
+                        The DeepLabCut Model Zoo!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/UsingModelZooPupil.html">
+                        Using ModelZoo models on your own datasets
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/MegaDetectorDLCLive.html">
+                        💚 MegaDetector+DeepLabCut 💜
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="benchmark.html">
+                        DeepLabCut benchmark
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/TechHardware.html">
+                        Technical (Hardware) Considerations
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="tutorial.html">
+                        Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="convert_maDLC.html">
+                        How to convert a pre-2.2 project for use with DeepLabCut 2.2
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/io.html">
+                        Input/output manipulations with DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/nn.html">
+                        Model training tips & tricks
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/post.html">
+                        Some data processing recipes!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/BatchProcessing.html">
+                        Automate training and video analysis: Batch Processing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/DLCMethods.html">
+                        How to write a DLC Methods Section
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/OpenVINO.html">
+                        Intel OpenVINO backend
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/flip_and_rotate.html">
+                        Improving network performance on unbalanced data via augmentation 🦇
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="MISSION_AND_VALUES.html">
+                        Mission and Values of DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="roadmap.html">
+                        A development roadmap for DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Governance.html">
+                        Governance Model of DeepLabCut
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
       
       
-      <img src="../_static/logo.png" class="logo" alt="logo">
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
       
-      <h1 class="site-logo" id="site-title">DeepLabCut</h1>
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="UseOverviewGuide.html">
+                        Documentation Overview
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        How To Install DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/installTips.html">
+                        Installation Tips
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="docker.html">
+                        DeepLabCut Docker containers
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="standardDeepLabCut_UserGuide.html">
+                        DeepLabCut User Guide (for single animal projects)
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        DeepLabCut for Multi-Animal Projects
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Overviewof3D.html">
+                        3D DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="HelperFunctions.html">
+                        Helper & Advanced Optional Function Documentation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="PROJECT_GUI.html">
+                        Interactive Project Manager GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="napariGUI.html">
+                        napari labeling GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/ClusteringNapari.html">
+                        Clustering in the napari-DeepLabCut GUI
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="deeplabcutlive.html">
+                        DeepLabCut-Live!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="ModelZoo.html">
+                        The DeepLabCut Model Zoo!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/UsingModelZooPupil.html">
+                        Using ModelZoo models on your own datasets
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/MegaDetectorDLCLive.html">
+                        💚 MegaDetector+DeepLabCut 💜
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="benchmark.html">
+                        DeepLabCut benchmark
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/TechHardware.html">
+                        Technical (Hardware) Considerations
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="tutorial.html">
+                        Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="convert_maDLC.html">
+                        How to convert a pre-2.2 project for use with DeepLabCut 2.2
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/io.html">
+                        Input/output manipulations with DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/nn.html">
+                        Model training tips & tricks
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/post.html">
+                        Some data processing recipes!
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/BatchProcessing.html">
+                        Automate training and video analysis: Batch Processing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/DLCMethods.html">
+                        How to write a DLC Methods Section
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/OpenVINO.html">
+                        Intel OpenVINO backend
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="recipes/flip_and_rotate.html">
+                        Improving network performance on unbalanced data via augmentation 🦇
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="MISSION_AND_VALUES.html">
+                        Mission and Values of DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="roadmap.html">
+                        A development roadmap for DeepLabCut
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="Governance.html">
+                        Governance Model of DeepLabCut
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item">
+  
+
+
+<a class="navbar-brand logo" href="../README.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    </div>
+    <div class="sidebar-start-items__item">
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
@@ -113,695 +694,372 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Getting Started
- </span>
-</p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="UseOverviewGuide.html">
-   Documentation Overview
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">Documentation Overview</a></li>
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Installation
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="installation.html">
-   How To Install DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/installTips.html">
-   Installation Tips
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   DeepLabCut Docker containers
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">DeepLabCut Docker containers</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  User Guides
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="standardDeepLabCut_UserGuide.html">
-   DeepLabCut User Guide (for single animal projects)
-  </a>
- </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   DeepLabCut for Multi-Animal Projects
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="Overviewof3D.html">
-   3D DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="HelperFunctions.html">
-   Helper &amp; Advanced Optional Function Documentation
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Graphical User Interfaces (GUIs)
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="PROJECT_GUI.html">
-   Interactive Project Manager GUI
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="napariGUI.html">
-   napari labeling GUI
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/ClusteringNapari.html">
-   Clustering in the napari-DeepLabCut GUI
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="napariGUI.html">napari labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut-Live!
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="deeplabcutlive.html">
-   DeepLabCut-Live!
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="deeplabcutlive.html">DeepLabCut-Live!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut Model Zoo
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Model Zoo</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="ModelZoo.html">
-   The DeepLabCut Model Zoo!
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/UsingModelZooPupil.html">
-   Using ModelZoo models on your own datasets
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/MegaDetectorDLCLive.html">
-   💚 MegaDetector+DeepLabCut 💜
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  DeepLabCut Benchmark
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="benchmark.html">
-   DeepLabCut benchmark
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Hardware
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/TechHardware.html">
-   Technical (Hardware) Considerations
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Tutorials &amp; Cookbook
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials &amp; Cookbook</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="tutorial.html">
-   Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="convert_maDLC.html">
-   How to convert a pre-2.2 project for use with DeepLabCut 2.2
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/io.html">
-   Input/output manipulations with DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/nn.html">
-   Model training tips &amp; tricks
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/post.html">
-   Some data processing recipes!
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/BatchProcessing.html">
-   Automate training and video analysis: Batch Processing
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/DLCMethods.html">
-   How to write a DLC Methods Section
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/OpenVINO.html">
-   Intel OpenVINO backend
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="recipes/flip_and_rotate.html">
-   Improving network performance on unbalanced data via augmentation 🦇
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Mission &amp; Contribute
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="MISSION_AND_VALUES.html">
-   Mission and Values of DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="roadmap.html">
-   A development roadmap for DeepLabCut
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="Governance.html">
-   Governance Model of DeepLabCut
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Governance.html">Governance Model of DeepLabCut</a></li>
 </ul>
 
     </div>
-</nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-        </div>
+</nav>
     </div>
-    <div id="rtd-footer-container"></div>
-</div>
+  </div>
+  
 
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
 
-          
+  
+  <div id="rtd-footer-container"></div>
 
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
-<div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
+      </div>
+      <main id="main-content" class="bd-main">
         
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
 
 
 
 <div class="col py-1 d-flex header-article-main">
     <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
-  </span>
-
-</label>
-
-        
+        <label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" data-toggle="tooltip" data-placement="right" title="Toggle primary sidebar">
+            <span class="fa-solid fa-bars"></span>
+        </label>
     </div>
     <div class="header-article__right">
 <button onclick="toggleFullScreen()"
-  class="headerbtn"
+  class="btn btn-sm"
   data-toggle="tooltip"
 data-placement="bottom"
 title="Fullscreen mode"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-expand"></i>
   </span>
 
 </button>
 
-<div class="menu-dropdown menu-dropdown-repository-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Source repositories">
-      <i class="fab fa-github"></i>
+
+
+<div class="dropdown dropdown-repository-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Source repository"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fab fa-github"></i>
   </span>
-<span class="headerbtn__text-container">repository</span>
+<span class="btn__text-container">repository</span>
 </a>
-
-      </li>
+</a>
       
-      <li>
-        <a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/maDLC_UserGuide.html&body=Your%20issue%20content%20here."
-   class="headerbtn"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/maDLC_UserGuide.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Open an issue"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
   </span>
-<span class="headerbtn__text-container">open issue</span>
+<span class="btn__text-container">open issue</span>
 </a>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
+  </ul>
 </div>
 
-<div class="menu-dropdown menu-dropdown-download-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Download this page">
-      <i class="fas fa-download"></i>
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="../_sources/docs/maDLC_UserGuide.md"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="../_sources/docs/maDLC_UserGuide.md" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Download source file"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.md</span>
+<span class="btn__text-container">.md</span>
 </a>
-
-      </li>
+</a>
       
       <li>
-        
 <button onclick="printPdf(this)"
-  class="headerbtn"
+  class="btn btn-sm dropdown-item"
   data-toggle="tooltip"
 data-placement="left"
 title="Print to PDF"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
   </span>
-<span class="headerbtn__text-container">.pdf</span>
+<span class="btn__text-container">.pdf</span>
 </button>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
-</div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
-</label>
-
-    </div>
-</div>
-
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#">
-   DeepLabCut for Multi-Animal Projects
-  </a>
-  <ul class="visible nav section-nav flex-column">
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#how-to-think-about-using-madlc">
-     How to think about using maDLC:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#install">
-     Install:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#get-started-in-the-terminal-or-project-gui">
-     Get started in the terminal or Project GUI:
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#create-a-new-project">
-       Create a New Project:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#configure-the-project">
-       Configure the Project:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#select-frames-to-label">
-       Select Frames to Label:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#label-frames">
-       Label Frames:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#check-annotated-frames">
-       Check Annotated Frames:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#create-training-dataset">
-       Create Training Dataset:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#train-the-network">
-       Train The Network:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#evaluate-the-trained-network">
-       Evaluate the Trained Network:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#decision-point">
-       ——————– DECISION POINT ——————-
-      </a>
-      <ul class="nav section-nav flex-column">
-       <li class="toc-h4 nav-item toc-entry">
-        <a class="reference internal nav-link" href="#attention">
-         ATTENTION!
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">
-       ——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">
-       Optimized Animal Assembly + Video Analysis:
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#if-auto-track-true">
-     IF auto_track = True:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#if-auto-track-false">
-     IF auto_track = False:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
-     Using Unsupervised Identity Tracking:
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#refine-tracklets">
-       Refine Tracklets:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
-       Once you have analyzed video data (and refined your maDeepLabCut tracklets):
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#plotting-results">
-       Plotting Results:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#help">
-       HELP:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#tips-for-daily-use">
-       Tips for “daily” use:
-      </a>
-     </li>
-    </ul>
-   </li>
   </ul>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#getting-help-with-madlc">
-   Getting help with maDLC:
-  </a>
- </li>
-</ul>
-
-    </nav>
 </div>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary" data-toggle="tooltip" data-placement="left" title="Toggle secondary sidebar">
+            <span class="fa-solid fa-list"></span>
+        </label>
     </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>DeepLabCut for Multi-Animal Projects</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#">
-   DeepLabCut for Multi-Animal Projects
-  </a>
-  <ul class="visible nav section-nav flex-column">
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#how-to-think-about-using-madlc">
-     How to think about using maDLC:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#install">
-     Install:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#get-started-in-the-terminal-or-project-gui">
-     Get started in the terminal or Project GUI:
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#create-a-new-project">
-       Create a New Project:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#configure-the-project">
-       Configure the Project:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#select-frames-to-label">
-       Select Frames to Label:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#label-frames">
-       Label Frames:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#check-annotated-frames">
-       Check Annotated Frames:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#create-training-dataset">
-       Create Training Dataset:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#train-the-network">
-       Train The Network:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#evaluate-the-trained-network">
-       Evaluate the Trained Network:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#decision-point">
-       ——————– DECISION POINT ——————-
-      </a>
-      <ul class="nav section-nav flex-column">
-       <li class="toc-h4 nav-item toc-entry">
-        <a class="reference internal nav-link" href="#attention">
-         ATTENTION!
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">
-       ——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">
-       Optimized Animal Assembly + Video Analysis:
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#if-auto-track-true">
-     IF auto_track = True:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#if-auto-track-false">
-     IF auto_track = False:
-    </a>
-   </li>
-   <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
-     Using Unsupervised Identity Tracking:
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#refine-tracklets">
-       Refine Tracklets:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
-       Once you have analyzed video data (and refined your maDeepLabCut tracklets):
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#plotting-results">
-       Plotting Results:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#help">
-       HELP:
-      </a>
-     </li>
-     <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#tips-for-daily-use">
-       Tips for “daily” use:
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#getting-help-with-madlc">
-   Getting help with maDLC:
-  </a>
- </li>
-</ul>
-
-                        </nav>
-                    </div>
-                </div>
+</div>
             </div>
-            <main id="main-content" role="main">
-                
-              <div>
-                
+            
+            
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>DeepLabCut for Multi-Animal Projects</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   DeepLabCut for Multi-Animal Projects
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#how-to-think-about-using-madlc">
+     How to think about using maDLC:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#install">
+     Install:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#get-started-in-the-terminal-or-project-gui">
+     Get started in the terminal or Project GUI:
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#create-a-new-project">
+       Create a New Project:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#configure-the-project">
+       Configure the Project:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#select-frames-to-label">
+       Select Frames to Label:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#label-frames">
+       Label Frames:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#check-annotated-frames">
+       Check Annotated Frames:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#create-training-dataset">
+       Create Training Dataset:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#train-the-network">
+       Train The Network:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#evaluate-the-trained-network">
+       Evaluate the Trained Network:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#decision-point">
+       ——————– DECISION POINT ——————-
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h4 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#attention">
+         ATTENTION!
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">
+       ——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">
+       Optimized Animal Assembly + Video Analysis:
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-true">
+     IF auto_track = True:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-false">
+     IF auto_track = False:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
+     Using Unsupervised Identity Tracking:
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#refine-tracklets">
+       Refine Tracklets:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
+       Once you have analyzed video data (and refined your maDeepLabCut tracklets):
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#plotting-results">
+       Plotting Results:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#help">
+       HELP:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#tips-for-daily-use">
+       Tips for “daily” use:
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#getting-help-with-madlc">
+   Getting help with maDLC:
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+            <article class="bd-article" role="main">
+              
   <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-for-multi-animal-projects">
-<span id="multi-animal-userguide"></span><h1>DeepLabCut for Multi-Animal Projects<a class="headerlink" href="#deeplabcut-for-multi-animal-projects" title="Permalink to this headline">#</a></h1>
+<span id="multi-animal-userguide"></span><h1>DeepLabCut for Multi-Animal Projects<a class="headerlink" href="#deeplabcut-for-multi-animal-projects" title="Permalink to this heading">#</a></h1>
 <p>This document should serve as the user guide for maDLC,
 and it is here to support the scientific advances presented in <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 <p>Note, we strongly encourage you to use the <a class="reference internal" href="PROJECT_GUI.html#project-manager-gui"><span class="std std-ref">Project Manager GUI</span></a> when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!</p>
 <section id="how-to-think-about-using-madlc">
-<h2>How to think about using maDLC:<a class="headerlink" href="#how-to-think-about-using-madlc" title="Permalink to this headline">#</a></h2>
+<h2>How to think about using maDLC:<a class="headerlink" href="#how-to-think-about-using-madlc" title="Permalink to this heading">#</a></h2>
 <p>You should think of maDLC being <strong>four</strong> parts.</p>
 <ul class="simple">
 <li><p>(1) Curate annotation data that allows you to learn a model to track the objects/animals of interest.</p></li>
@@ -813,12 +1071,12 @@ and it is here to support the scientific advances presented in <a class="referen
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
 </section>
 <section id="install">
-<h2>Install:<a class="headerlink" href="#install" title="Permalink to this headline">#</a></h2>
+<h2>Install:<a class="headerlink" href="#install" title="Permalink to this heading">#</a></h2>
 <p><strong>Quick start:</strong> If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>; if you need GUI support, please use: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code>.</p>
 <p>IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (<a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github">https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github</a>).</p>
 </section>
 <section id="get-started-in-the-terminal-or-project-gui">
-<h2>Get started in the terminal or Project GUI:<a class="headerlink" href="#get-started-in-the-terminal-or-project-gui" title="Permalink to this headline">#</a></h2>
+<h2>Get started in the terminal or Project GUI:<a class="headerlink" href="#get-started-in-the-terminal-or-project-gui" title="Permalink to this heading">#</a></h2>
 <p><strong>GUI:</strong> simply open your conda env, and windows/linux type <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>. MacOS users: <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut.</span></code>
 Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.</p>
 <p><strong>TERMINAL:</strong> To begin, (windows) navigate to anaconda prompt and right-click to “open as admin “, or (unix/MacOS) simply launch “terminal” on your computer. We assume you have DeepLabCut installed (if not, <a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">see installation instructions</span></a>). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>).</p>
@@ -831,7 +1089,7 @@ If you use Windows, please always open the terminal with administrator privilege
 </div>
 <p><strong>TIP:</strong> for every function there is a associated help document that can be viewed by adding a <strong>?</strong> after the function name; i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project?</span></code>. To exit this help screen, type <code class="docutils literal notranslate"><span class="pre">:q</span></code>.</p>
 <section id="create-a-new-project">
-<h3>Create a New Project:<a class="headerlink" href="#create-a-new-project" title="Permalink to this headline">#</a></h3>
+<h3>Create a New Project:<a class="headerlink" href="#create-a-new-project" title="Permalink to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span><span class="s1">&#39;ProjectName&#39;</span><span class="p">,</span><span class="s1">&#39;YourName&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/usr/FullPath/OfVideo1.avi&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/FullPath/OfVideo2.avi&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/FullPath/OfVideo1.avi&#39;</span><span class="p">],</span>
               <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -863,7 +1121,7 @@ If you use Windows, please always open the terminal with administrator privilege
 <p>You can also use annotated data from singe-animal projects, by converting those files. There are docs for this: <a class="reference internal" href="convert_maDLC.html#convert-madlc"><span class="std std-ref">convert single to multianimal annotation data</span></a></p>
 </section>
 <section id="configure-the-project">
-<h3>Configure the Project:<a class="headerlink" href="#configure-the-project" title="Permalink to this headline">#</a></h3>
+<h3>Configure the Project:<a class="headerlink" href="#configure-the-project" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>open the <strong>config.yaml</strong> file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step.</p></li>
 </ul>
@@ -903,7 +1161,7 @@ If you use Windows, please always open the terminal with administrator privilege
 <p><strong>Uniquebodyparts:</strong> are points that you want to track, but that appear only once within each frame, i.e. they are “unique”. Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, …).</p>
 </section>
 <section id="select-frames-to-label">
-<h3>Select Frames to Label:<a class="headerlink" href="#select-frames-to-label" title="Permalink to this headline">#</a></h3>
+<h3>Select Frames to Label:<a class="headerlink" href="#select-frames-to-label" title="Permalink to this heading">#</a></h3>
 <p><strong>CRITICAL:</strong> A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>. However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). <strong>For maDLC, be sure you have labeled frames with closely interacting animals!</strong></p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;automatic/manual&#39;</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s1">&#39;uniform/kmeans&#39;</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
@@ -937,7 +1195,7 @@ provided along with the toolbox. This can be launched by using:</p>
 bar to navigate across the video and <em>Grab a Frame</em> (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.</p>
 </section>
 <section id="label-frames">
-<h3>Label Frames:<a class="headerlink" href="#label-frames" title="Permalink to this headline">#</a></h3>
+<h3>Label Frames:<a class="headerlink" href="#label-frames" title="Permalink to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -966,7 +1224,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 </p>
 </section>
 <section id="check-annotated-frames">
-<h3>Check Annotated Frames:<a class="headerlink" href="#check-annotated-frames" title="Permalink to this headline">#</a></h3>
+<h3>Check Annotated Frames:<a class="headerlink" href="#check-annotated-frames" title="Permalink to this heading">#</a></h3>
 <p>Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:</p>
@@ -980,7 +1238,7 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 <p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
 </section>
 <section id="create-training-dataset">
-<h3>Create Training Dataset:<a class="headerlink" href="#create-training-dataset" title="Permalink to this headline">#</a></h3>
+<h3>Create Training Dataset:<a class="headerlink" href="#create-training-dataset" title="Permalink to this heading">#</a></h3>
 <p>At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For <strong>create_multianimaltraining_dataset</strong> we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
 </pre></div>
@@ -1032,7 +1290,7 @@ As a reminder, cropping images into smaller patches is a form of data augmentati
 allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).</p>
 </section>
 <section id="train-the-network">
-<h3>Train The Network:<a class="headerlink" href="#train-the-network" title="Permalink to this headline">#</a></h3>
+<h3>Train The Network:<a class="headerlink" href="#train-the-network" title="Permalink to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1078,7 +1336,7 @@ maxiters: This sets how many iterations to train. This variable is set in pose_c
 </div>
 </section>
 <section id="evaluate-the-trained-network">
-<h3>Evaluate the Trained Network:<a class="headerlink" href="#evaluate-the-trained-network" title="Permalink to this headline">#</a></h3>
+<h3>Evaluate the Trained Network:<a class="headerlink" href="#evaluate-the-trained-network" title="Permalink to this heading">#</a></h3>
 <p>Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -1136,9 +1394,9 @@ but does not guarantee best performance.</p>
 <p>you can drop “Indices” to run this on all training/testing images (this is very slow!)</p>
 </section>
 <section id="decision-point">
-<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this headline">#</a></h3>
+<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this heading">#</a></h3>
 <section id="attention">
-<h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this headline">#</a></h4>
+<h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this heading">#</a></h4>
 <p><strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
 <p>Please run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scorername</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
@@ -1150,7 +1408,7 @@ Another sanity check may be to examine the distributions of edge affinity costs 
 IF you have good clean out video, ending in <code class="docutils literal notranslate"><span class="pre">....full.mp4</span></code> (and the evaluation metrics look good, scoremaps look good, plotted evaluation images, and affinity distributions are far apart for most edges), then go forward!!!</p>
 <p>If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.</p>
 <p>You can either:</p>
-<ol class="simple">
+<ol class="arabic simple">
 <li><p>extract more frames manually from existing or new videos and label as when initially building the training data set, or</p></li>
 <li><p>let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
 to run:</p></li>
@@ -1163,11 +1421,11 @@ Flagged frames will be added to your collection of images in the corresponding l
 </section>
 </section>
 <section id="animal-assembly-tracking-across-frames">
-<h3>——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-<a class="headerlink" href="#animal-assembly-tracking-across-frames" title="Permalink to this headline">#</a></h3>
+<h3>——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-<a class="headerlink" href="#animal-assembly-tracking-across-frames" title="Permalink to this heading">#</a></h3>
 <p>After pose estimation, now you perform assembly and tracking. <em>NEW</em> in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file.</p>
 </section>
 <section id="optimized-animal-assembly-video-analysis">
-<h3>Optimized Animal Assembly + Video Analysis:<a class="headerlink" href="#optimized-animal-assembly-video-analysis" title="Permalink to this headline">#</a></h3>
+<h3>Optimized Animal Assembly + Video Analysis:<a class="headerlink" href="#optimized-animal-assembly-video-analysis" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Please note that <strong>novel videos DO NOT need to be added to the config.yaml file</strong>. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. <code class="docutils literal notranslate"><span class="pre">videotype='.mp4'</span></code>), or pass the path to the <strong>folder</strong> or exact video(s) you wish to analyze:</p></li>
 </ul>
@@ -1177,13 +1435,13 @@ Flagged frames will be added to your collection of images in the corresponding l
 </section>
 </section>
 <section id="if-auto-track-true">
-<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this headline">#</a></h2>
+<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><em>NEW</em> in 2.2.0.3+: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> has a new argument <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you’ll now get the <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file you might be used to getting in standard DLC. If <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code>, one must run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> and <code class="docutils literal notranslate"><span class="pre">stitch_tracklets</span></code> manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).</p></li>
 </ul>
 </section>
 <section id="if-auto-track-false">
-<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this headline">#</a></h2>
+<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>You can validate the tracking parameters. Namely, you can iteratively change the parameters, run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> then load them in the GUI (<code class="docutils literal notranslate"><span class="pre">refine_tracklets</span></code>) if you want to look at the performance. If you want to edit these, you will need to open the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file (or click button in GUI). The options are:</p></li>
 </ul>
@@ -1231,14 +1489,14 @@ can be directly specified as follows:</p>
 <p>In such cases, file columns will default to dummy animal names (ind1, ind2, …, up to indn).</p>
 </section>
 <section id="using-unsupervised-identity-tracking">
-<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this headline">#</a></h2>
+<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this heading">#</a></h2>
 <p>In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note you should pass the n_tracks (number of animals) you expect to see in the video.</p>
 <section id="refine-tracklets">
-<h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this headline">#</a></h3>
+<h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this heading">#</a></h3>
 <p>You can also optionally <strong>refine the tracklets</strong>. You can fix both “major” ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the <code class="docutils literal notranslate"><span class="pre">...trackertype.pickle</span></code> or <code class="docutils literal notranslate"><span class="pre">.h5'</span></code> file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this <code class="docutils literal notranslate"><span class="pre">.h5</span></code> this to refine (again) in case you find another issue, etc!</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_tracklets</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">pickle_or_h5_file</span><span class="p">,</span> <span class="n">videofile_path</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_swap_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_tracklet_len</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">trail_len</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
@@ -1247,15 +1505,15 @@ can be directly specified as follows:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619628014395-BQ09VLLTKCLQQGRB5T9A/ke17ZwdGBToddI8pDm48kLMj_XrWI9gi4tVeBdgcB8p7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0lt53wR20brczws2A6XSGt3kSTbW7uM0ncVKHWPvgHR4kN5Ka1TcK96ljy4ji9jPkQ/TrackletGUI.png?format=1000w" width="950" title="maDLCtrack" alt="maDLC" align="center" vspace = "50">
 <p>*note, setting <code class="docutils literal notranslate"><span class="pre">max_gap=0</span></code> can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this in the GUI very easy by editing the value and then re-launch pop-up GUI.</p>
 <p>If you fill in gaps, they will be associated to an ultra low probability, 0.01, so you are aware this is not the networks best estimate, this is the human-override! Thus, if you create a video, you need to set your pcutoff to 0 if you want to see these filled in frames.</p>
-<p><a class="reference external" href="functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets">Read more here!</a></p>
+<p><span class="xref myst">Read more here!</span></p>
 <p>Short demo:</p>
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
 </section>
 <section id="once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
-<h3>Once you have analyzed video data (and refined your maDeepLabCut tracklets):<a class="headerlink" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets" title="Permalink to this headline">#</a></h3>
-<p>Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis">https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis</a></p>
+<h3>Once you have analyzed video data (and refined your maDeepLabCut tracklets):<a class="headerlink" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets" title="Permalink to this heading">#</a></h3>
+<p>Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis">DeepLabCut/DeepLabCut</a></p>
 <p>You can also filter the predicted bodyparts by:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
 </pre></div>
@@ -1263,7 +1521,7 @@ can be directly specified as follows:</p>
 <p>Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: <code class="docutils literal notranslate"><span class="pre">deeplabcut.filterpredictions?</span></code></p>
 </section>
 <section id="plotting-results">
-<h3>Plotting Results:<a class="headerlink" href="#plotting-results" title="Permalink to this headline">#</a></h3>
+<h3>Plotting Results:<a class="headerlink" href="#plotting-results" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>NOTE :bulb::mega::</strong> Before you create a video, you should set what threshold to use for plotting. This is set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file as <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> - if you have a well trained network, this should be high, i.e. set it to <code class="docutils literal notranslate"><span class="pre">0.8</span></code> or higher! IF YOU FILLED IN GAPS, you need to set this to <code class="docutils literal notranslate"><span class="pre">0</span></code> to “see” the filled in parts.</p></li>
 <li><p>You can also determine a good <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> value by looking at the likelihood plot created during <code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code>:</p></li>
@@ -1279,10 +1537,10 @@ can be directly specified as follows:</p>
 <ul class="simple">
 <li><p><strong>NOTE :bulb::mega::</strong> You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!</p></li>
 </ul>
-<p>(more details <a class="reference external" href="functionDetails.md#i-video-analysis-and-plotting-results">here</a>)</p>
+<p>(more details <span class="xref myst">here</span>)</p>
 </section>
 <section id="help">
-<h3>HELP:<a class="headerlink" href="#help" title="Permalink to this headline">#</a></h3>
+<h3>HELP:<a class="headerlink" href="#help" title="Permalink to this heading">#</a></h3>
 <p>In ipython/Jupyter notebook:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>deeplabcut.nameofthefunction?
 </pre></div>
@@ -1293,7 +1551,7 @@ can be directly specified as follows:</p>
 </div>
 </section>
 <section id="tips-for-daily-use">
-<h3>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this headline">#</a></h3>
+<h3>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this heading">#</a></h3>
 <p align="center">
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
  </p>
@@ -1317,14 +1575,14 @@ can be directly specified as follows:</p>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="getting-help-with-madlc">
-<h1>Getting help with maDLC:<a class="headerlink" href="#getting-help-with-madlc" title="Permalink to this headline">#</a></h1>
+<h1>Getting help with maDLC:<a class="headerlink" href="#getting-help-with-madlc" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
-<li><p>If you have a detailed question about how to use the code, or you hit errors that are not “bugs” but you want code assistance, please post on the <a class="reference external" href="https://forum.image.sc/tags/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png%3Bbase64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a></p></li>
+<li><p>If you have a detailed question about how to use the code, or you hit errors that are not “bugs” but you want code assistance, please post on the <a class="reference external" href="https://forum.image.sc/tags/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a></p></li>
 <li><p>If you have a quick, short question that fits a “chat” format:
 <a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a></p></li>
 <li><p>If you want to share some results, or see others:
 <a class="reference external" href="https://twitter.com/DeepLabCut"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&amp;style=social" /></a></p></li>
-<li><p>If you have a code bug report, please create an issue and show the minimal code to reproduce the error: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues">https://github.com/DeepLabCut/DeepLabCut/issues</a></p></li>
+<li><p>If you have a code bug report, please create an issue and show the minimal code to reproduce the error: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues">DeepLabCut/DeepLabCut#issues</a></p></li>
 <li><p>if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: <a class="reference external" href="http://DLCcourse.deeplabcut.org">http://DLCcourse.deeplabcut.org</a>.</p></li>
 </ul>
 <p><strong>Please note:</strong> what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the &gt;700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our <a class="reference internal" href="MISSION_AND_VALUES.html#mission-and-values"><span class="std std-ref">Missions &amp; Values statement</span></a> to learn more about what we DO hope to provide you.</p>
@@ -1350,54 +1608,237 @@ can be directly specified as follows:</p>
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
-              
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
+            </article>
+            
+
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="standardDeepLabCut_UserGuide.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">DeepLabCut User Guide (for single animal projects)</p>
-        </div>
-    </a>
-    <a class='right-next' id="next-link" href="Overviewof3D.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">3D DeepLabCut</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
-    </a>
+  <a class='left-prev' id="prev-link" href="standardDeepLabCut_UserGuide.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">DeepLabCut User Guide (for single animal projects)</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="Overviewof3D.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">3D DeepLabCut</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
             </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
   
-    By The DeepLabCut Team<br/>
-  
-      &copy; Copyright 2022.<br/>
-    <div class="extra_footer">
-      <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   DeepLabCut for Multi-Animal Projects
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#how-to-think-about-using-madlc">
+     How to think about using maDLC:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#install">
+     Install:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#get-started-in-the-terminal-or-project-gui">
+     Get started in the terminal or Project GUI:
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#create-a-new-project">
+       Create a New Project:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#configure-the-project">
+       Configure the Project:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#select-frames-to-label">
+       Select Frames to Label:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#label-frames">
+       Label Frames:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#check-annotated-frames">
+       Check Annotated Frames:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#create-training-dataset">
+       Create Training Dataset:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#train-the-network">
+       Train The Network:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#evaluate-the-trained-network">
+       Evaluate the Trained Network:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#decision-point">
+       ——————– DECISION POINT ——————-
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h4 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#attention">
+         ATTENTION!
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">
+       ——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">
+       Optimized Animal Assembly + Video Analysis:
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-true">
+     IF auto_track = True:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#if-auto-track-false">
+     IF auto_track = False:
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">
+     Using Unsupervised Identity Tracking:
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#refine-tracklets">
+       Refine Tracklets:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">
+       Once you have analyzed video data (and refined your maDeepLabCut tracklets):
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#plotting-results">
+       Plotting Results:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#help">
+       HELP:
+      </a>
+     </li>
+     <li class="toc-h3 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#tips-for-daily-use">
+       Tips for “daily” use:
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#getting-help-with-madlc">
+   Getting help with maDLC:
+  </a>
+ </li>
+</ul>
 
-    </div>
-</p>
-        </footer>
-    </div>
-    
+</nav>
 </div>
 
-
-      </div>
-    </div>
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+<div class="bd-footer-content__inner container">
   
-  <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2022.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+Last updated on None.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </div>
+        </footer>
+        
+
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
   </body>
 </html>

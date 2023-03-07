@@ -8,74 +8,74 @@ msgstr ""
 "Language: id\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "gudang"
-
-msgid "open issue"
-msgstr "masalah terbuka"
-
-msgid "Contents"
-msgstr "Isi"
-
-msgid "Fullscreen mode"
-msgstr "Mode layar penuh"
-
-msgid "Download this page"
-msgstr "Unduh halaman ini"
-
-msgid "Download source file"
-msgstr "Unduh file sumber"
-
-msgid "Launch"
-msgstr "Meluncurkan"
-
-msgid "Edit this page"
-msgstr "Edit halaman ini"
-
-msgid "Toggle navigation"
-msgstr "Alihkan navigasi"
-
-msgid "Theme by the"
-msgstr "Tema oleh"
-
-msgid "Source repository"
-msgstr "Repositori sumber"
-
-msgid "Last updated on"
-msgstr "Terakhir diperbarui saat"
-
-msgid "By the"
-msgstr "Oleh"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema Buku Sphinx"
-
-msgid "Open an issue"
-msgstr "Buka masalah"
-
-msgid "next page"
-msgstr "halaman selanjutnya"
-
 msgid "Copyright"
 msgstr "hak cipta"
-
-msgid "Search this book..."
-msgstr "Telusuri buku ini ..."
 
 msgid "Print to PDF"
 msgstr "Cetak ke PDF"
 
-msgid "By"
+msgid "Edit this page"
+msgstr "Edit halaman ini"
+
+msgid "suggest edit"
+msgstr "menyarankan edit"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema Buku Sphinx"
+
+msgid "open issue"
+msgstr "masalah terbuka"
+
+msgid "By the"
 msgstr "Oleh"
 
-msgid "previous page"
-msgstr "halaman sebelumnya"
-
-msgid "Search the docs ..."
-msgstr "Telusuri dokumen ..."
+msgid "Theme by the"
+msgstr "Tema oleh"
 
 msgid "Download notebook file"
 msgstr "Unduh file notebook"
 
-msgid "suggest edit"
-msgstr "menyarankan edit"
+msgid "Toggle navigation"
+msgstr "Alihkan navigasi"
+
+msgid "next page"
+msgstr "halaman selanjutnya"
+
+msgid "Contents"
+msgstr "Isi"
+
+msgid "Source repository"
+msgstr "Repositori sumber"
+
+msgid "Search the docs ..."
+msgstr "Telusuri dokumen ..."
+
+msgid "Last updated on"
+msgstr "Terakhir diperbarui saat"
+
+msgid "Search this book..."
+msgstr "Telusuri buku ini ..."
+
+msgid "Download this page"
+msgstr "Unduh halaman ini"
+
+msgid "Launch"
+msgstr "Meluncurkan"
+
+msgid "Download source file"
+msgstr "Unduh file sumber"
+
+msgid "previous page"
+msgstr "halaman sebelumnya"
+
+msgid "By"
+msgstr "Oleh"
+
+msgid "Open an issue"
+msgstr "Buka masalah"
+
+msgid "Fullscreen mode"
+msgstr "Mode layar penuh"
+
+msgid "repository"
+msgstr "gudang"

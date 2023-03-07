@@ -8,74 +8,74 @@ msgstr ""
 "Language: lt\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "saugykla"
-
-msgid "open issue"
-msgstr "atviras klausimas"
-
-msgid "Contents"
-msgstr "Turinys"
-
-msgid "Fullscreen mode"
-msgstr "Pilno ekrano režimas"
-
-msgid "Download this page"
-msgstr "Atsisiųskite šį puslapį"
-
-msgid "Download source file"
-msgstr "Atsisiųsti šaltinio failą"
-
-msgid "Launch"
-msgstr "Paleiskite"
-
-msgid "Edit this page"
-msgstr "Redaguoti šį puslapį"
-
-msgid "Toggle navigation"
-msgstr "Perjungti naršymą"
-
-msgid "Theme by the"
-msgstr "Tema"
-
-msgid "Source repository"
-msgstr "Šaltinio saugykla"
-
-msgid "Last updated on"
-msgstr "Paskutinį kartą atnaujinta"
-
-msgid "By the"
-msgstr "Prie"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinkso knygos tema"
-
-msgid "Open an issue"
-msgstr "Atidarykite problemą"
-
-msgid "next page"
-msgstr "Kitas puslapis"
-
 msgid "Copyright"
 msgstr "Autorių teisės"
-
-msgid "Search this book..."
-msgstr "Ieškoti šioje knygoje ..."
 
 msgid "Print to PDF"
 msgstr "Spausdinti į PDF"
 
-msgid "By"
-msgstr "Iki"
+msgid "Edit this page"
+msgstr "Redaguoti šį puslapį"
 
-msgid "previous page"
-msgstr "Ankstesnis puslapis"
+msgid "suggest edit"
+msgstr "pasiūlyti redaguoti"
 
-msgid "Search the docs ..."
-msgstr "Ieškoti dokumentuose ..."
+msgid "Sphinx Book Theme"
+msgstr "Sfinkso knygos tema"
+
+msgid "open issue"
+msgstr "atviras klausimas"
+
+msgid "By the"
+msgstr "Prie"
+
+msgid "Theme by the"
+msgstr "Tema"
 
 msgid "Download notebook file"
 msgstr "Atsisiųsti nešiojamojo kompiuterio failą"
 
-msgid "suggest edit"
-msgstr "pasiūlyti redaguoti"
+msgid "Toggle navigation"
+msgstr "Perjungti naršymą"
+
+msgid "next page"
+msgstr "Kitas puslapis"
+
+msgid "Contents"
+msgstr "Turinys"
+
+msgid "Source repository"
+msgstr "Šaltinio saugykla"
+
+msgid "Search the docs ..."
+msgstr "Ieškoti dokumentuose ..."
+
+msgid "Last updated on"
+msgstr "Paskutinį kartą atnaujinta"
+
+msgid "Search this book..."
+msgstr "Ieškoti šioje knygoje ..."
+
+msgid "Download this page"
+msgstr "Atsisiųskite šį puslapį"
+
+msgid "Launch"
+msgstr "Paleiskite"
+
+msgid "Download source file"
+msgstr "Atsisiųsti šaltinio failą"
+
+msgid "previous page"
+msgstr "Ankstesnis puslapis"
+
+msgid "By"
+msgstr "Iki"
+
+msgid "Open an issue"
+msgstr "Atidarykite problemą"
+
+msgid "Fullscreen mode"
+msgstr "Pilno ekrano režimas"
+
+msgid "repository"
+msgstr "saugykla"

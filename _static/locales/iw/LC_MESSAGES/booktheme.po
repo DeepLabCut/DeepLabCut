@@ -8,74 +8,74 @@ msgstr ""
 "Language: iw\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "מאגר"
-
-msgid "open issue"
-msgstr "בעיה פתוחה"
-
-msgid "Contents"
-msgstr "תוכן"
-
-msgid "Fullscreen mode"
-msgstr "מצב מסך מלא"
-
-msgid "Download this page"
-msgstr "הורד דף זה"
-
-msgid "Download source file"
-msgstr "הורד את קובץ המקור"
-
-msgid "Launch"
-msgstr "לְהַשִׁיק"
-
-msgid "Edit this page"
-msgstr "ערוך דף זה"
-
-msgid "Toggle navigation"
-msgstr "החלף ניווט"
-
-msgid "Theme by the"
-msgstr "נושא מאת"
-
-msgid "Source repository"
-msgstr "מאגר המקורות"
-
-msgid "Last updated on"
-msgstr "עודכן לאחרונה ב"
-
-msgid "By the"
-msgstr "דרך"
-
-msgid "Sphinx Book Theme"
-msgstr "נושא ספר ספינקס"
-
-msgid "Open an issue"
-msgstr "פתח גיליון"
-
-msgid "next page"
-msgstr "עמוד הבא"
-
 msgid "Copyright"
 msgstr "זכויות יוצרים"
-
-msgid "Search this book..."
-msgstr "חפש בספר זה ..."
 
 msgid "Print to PDF"
 msgstr "הדפס לקובץ PDF"
 
-msgid "By"
-msgstr "על ידי"
+msgid "Edit this page"
+msgstr "ערוך דף זה"
 
-msgid "previous page"
-msgstr "עמוד קודם"
+msgid "suggest edit"
+msgstr "מציע לערוך"
 
-msgid "Search the docs ..."
-msgstr "חפש במסמכים ..."
+msgid "Sphinx Book Theme"
+msgstr "נושא ספר ספינקס"
+
+msgid "open issue"
+msgstr "בעיה פתוחה"
+
+msgid "By the"
+msgstr "דרך"
+
+msgid "Theme by the"
+msgstr "נושא מאת"
 
 msgid "Download notebook file"
 msgstr "הורד קובץ מחברת"
 
-msgid "suggest edit"
-msgstr "מציע לערוך"
+msgid "Toggle navigation"
+msgstr "החלף ניווט"
+
+msgid "next page"
+msgstr "עמוד הבא"
+
+msgid "Contents"
+msgstr "תוכן"
+
+msgid "Source repository"
+msgstr "מאגר המקורות"
+
+msgid "Search the docs ..."
+msgstr "חפש במסמכים ..."
+
+msgid "Last updated on"
+msgstr "עודכן לאחרונה ב"
+
+msgid "Search this book..."
+msgstr "חפש בספר זה ..."
+
+msgid "Download this page"
+msgstr "הורד דף זה"
+
+msgid "Launch"
+msgstr "לְהַשִׁיק"
+
+msgid "Download source file"
+msgstr "הורד את קובץ המקור"
+
+msgid "previous page"
+msgstr "עמוד קודם"
+
+msgid "By"
+msgstr "על ידי"
+
+msgid "Open an issue"
+msgstr "פתח גיליון"
+
+msgid "Fullscreen mode"
+msgstr "מצב מסך מלא"
+
+msgid "repository"
+msgstr "מאגר"

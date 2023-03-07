@@ -8,74 +8,74 @@ msgstr ""
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "repository"
-msgstr "förvar"
-
-msgid "open issue"
-msgstr "öppet problem"
-
-msgid "Contents"
-msgstr "Innehåll"
-
-msgid "Fullscreen mode"
-msgstr "Fullskärmsläge"
-
-msgid "Download this page"
-msgstr "Ladda ner den här sidan"
-
-msgid "Download source file"
-msgstr "Ladda ner källfil"
-
-msgid "Launch"
-msgstr "Lansera"
-
-msgid "Edit this page"
-msgstr "Redigera den här sidan"
-
-msgid "Toggle navigation"
-msgstr "Växla navigering"
-
-msgid "Theme by the"
-msgstr "Tema av"
-
-msgid "Source repository"
-msgstr "Källförvar"
-
-msgid "Last updated on"
-msgstr "Senast uppdaterad den"
-
-msgid "By the"
-msgstr "Vid"
-
-msgid "Sphinx Book Theme"
-msgstr "Sphinx boktema"
-
-msgid "Open an issue"
-msgstr "Öppna ett problem"
-
-msgid "next page"
-msgstr "nästa sida"
-
 msgid "Copyright"
 msgstr "upphovsrätt"
-
-msgid "Search this book..."
-msgstr "Sök i den här boken ..."
 
 msgid "Print to PDF"
 msgstr "Skriv ut till PDF"
 
-msgid "By"
-msgstr "Förbi"
+msgid "Edit this page"
+msgstr "Redigera den här sidan"
 
-msgid "previous page"
-msgstr "föregående sida"
+msgid "suggest edit"
+msgstr "föreslå redigering"
 
-msgid "Search the docs ..."
-msgstr "Sök i dokumenten ..."
+msgid "Sphinx Book Theme"
+msgstr "Sphinx boktema"
+
+msgid "open issue"
+msgstr "öppet problem"
+
+msgid "By the"
+msgstr "Vid"
+
+msgid "Theme by the"
+msgstr "Tema av"
 
 msgid "Download notebook file"
 msgstr "Ladda ner anteckningsbokfilen"
 
-msgid "suggest edit"
-msgstr "föreslå redigering"
+msgid "Toggle navigation"
+msgstr "Växla navigering"
+
+msgid "next page"
+msgstr "nästa sida"
+
+msgid "Contents"
+msgstr "Innehåll"
+
+msgid "Source repository"
+msgstr "Källförvar"
+
+msgid "Search the docs ..."
+msgstr "Sök i dokumenten ..."
+
+msgid "Last updated on"
+msgstr "Senast uppdaterad den"
+
+msgid "Search this book..."
+msgstr "Sök i den här boken ..."
+
+msgid "Download this page"
+msgstr "Ladda ner den här sidan"
+
+msgid "Launch"
+msgstr "Lansera"
+
+msgid "Download source file"
+msgstr "Ladda ner källfil"
+
+msgid "previous page"
+msgstr "föregående sida"
+
+msgid "By"
+msgstr "Förbi"
+
+msgid "Open an issue"
+msgstr "Öppna ett problem"
+
+msgid "Fullscreen mode"
+msgstr "Fullskärmsläge"
+
+msgid "repository"
+msgstr "förvar"
