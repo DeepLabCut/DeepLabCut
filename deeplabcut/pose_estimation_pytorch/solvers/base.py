@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from typing import Tuple, Dict
 
-import pandas as pd
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -11,7 +10,6 @@ from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
 from .utils import *
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
-
 
 class Solver(ABC):
 
@@ -80,13 +78,16 @@ class Solver(ABC):
                                         shuffle,
                                         model_prefix,
                                         train_loader.dataset.cfg)
-        for i in tqdm(range(epochs)):
+        # for i in tqdm(range(epochs)):
+        for i in range(epochs):
             train_loss = self.epoch(train_loader, mode='train')
             if self.scheduler:
                 self.scheduler.step()
+            print(f'Training for epoch {i+1} is done, started evaluating on validation data')
             valid_loss = self.epoch(valid_loader, mode='eval')
-            save_path = f'{model_folder}/train/snapshot-{i}.pt'
-            torch.save(self.model.state_dict(), save_path)
+            save_path = f'{model_folder}/train/snapshot-{i+1}.pt'
+            if (i+1)%10 == 0:
+                torch.save(self.model.state_dict(), save_path)
             print(f'Epoch {i + 1}/{epochs}, '
                   f'train loss {train_loss}, '
                   f'valid loss {valid_loss}')
@@ -110,9 +111,12 @@ class Solver(ABC):
         to_mode = getattr(self.model, mode)
         to_mode()
         epoch_loss = []
-        for batch in loader:
+        for i, batch in enumerate(loader):
             loss = self.step(batch, mode)
             epoch_loss.append(loss)
+
+            if (i+1)%self.cfg['display_iters'] == 0:
+                print(f"Number of iterations : {i+1}, loss : {loss}, lr : {self.optimizer.param_groups[0]['lr']}")
         epoch_loss = np.mean(epoch_loss)
         self.history[f'{mode}_loss'].append(epoch_loss)
 
@@ -168,7 +172,9 @@ class BottomUpSolver(Solver):
         image, keypoints = batch
         image = image.to(self.device)
         prediction = self.model(image)
-        target = self.model.get_target(keypoints, prediction[0].shape[2:])  # (batch_size, channels, h, w)
+        
+        scale_factor = (image.shape[2]/prediction[0].shape[2] , image.shape[3]/prediction[0].shape[3])
+        target = self.model.get_target(keypoints, prediction[0].shape[2:], scale_factor)  # (batch_size, channels, h, w)
 
         for key in target:
             if target[key] is not None:

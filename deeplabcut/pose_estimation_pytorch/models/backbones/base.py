@@ -10,6 +10,7 @@ class BaseBackbone(ABC, nn.Module):
 
     def __init__(self):
         super().__init__()
+        self.batch_norm_on = False
 
     @abstractmethod
     def forward(self, x):
@@ -33,3 +34,23 @@ class BaseBackbone(ABC, nn.Module):
             self.model.load_state_dict(state_dict, strict=False)
         else:
             self.model.load_state_dict(torch.load(pretrained), strict=False)
+
+    def activate_batch_norm(self, activation: bool=False):
+        """Turns on or off batch norm layers updating their weights while training
+        
+        Prameters
+        ---------
+        activation:  should batch_norm be activated or not for training"""
+        self.batch_norm_on = activation
+
+    def train(self, mode = True):
+        super(BaseBackbone, self).train(mode)
+
+        if not self.batch_norm_on:
+            for m in self.modules():
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eval()
+                    m.weight.requires_grad = False
+                    m.bias.requires_grad = False
+
+        return

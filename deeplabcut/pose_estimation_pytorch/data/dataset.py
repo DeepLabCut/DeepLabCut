@@ -1,15 +1,17 @@
 import cv2
+import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 from .base import BaseDataset
+from .dlcproject import DLCProject
 
 
 class PoseDataset(Dataset, BaseDataset):
 
     def __init__(self,
-                 project,
+                 project: DLCProject,
                  transform: object = None,
                  mode: str = 'train'):
         """
@@ -34,8 +36,12 @@ class PoseDataset(Dataset, BaseDataset):
         self.project.convert2dict(mode)
         self.dataframe = self.project.dataframe
 
+        # We must dropna because self.project.images doesn't contain imgaes with no labels so it can produce an indexnotfound error
+        # length is stored here to avoid repeating the computation
+        self.length = self.dataframe.dropna(axis=0, how="all").shape[0]
+
     def __len__(self):
-        return len(self.project.images)
+        return self.length
 
     def __getitem__(self,
                     index: int):
@@ -52,15 +58,24 @@ class PoseDataset(Dataset, BaseDataset):
         keypoints: list of keypoints
 
         train_dataset = PoseDataset(project, transform=transform)
-        im, keipoints = train_dataset[0]
+        im, keypoints = train_dataset[0]
 
         """
         # load images
-        image_file = self.project.images[index]['file_name']
+        try:
+            image_file = self.dataframe.index[index]
+            if isinstance(image_file, tuple):
+                image_file = os.path.join(self.cfg["project_path"], *image_file)
+            else:
+                image_file = os.path.join(self.cfg["project_path"], image_file)
+        except:
+            print(len(self.project.images))
+            print(index)
         image = cv2.imread(image_file)
 
         # load annotation
-        annotation = self.project.annotations[index]
+        annotation_index = self.project.image_path2index[image_file]
+        annotation = self.project.annotations[annotation_index]
         keypoints, undef_ids = self.project.annotation2keypoints(annotation)
 
         if self.transform:

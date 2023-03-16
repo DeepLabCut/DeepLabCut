@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 from deeplabcut import auxiliaryfunctions
-from typing import List
+from typing import List, Union
 
 from ..utils import create_folder
 
@@ -98,7 +98,7 @@ def save_predictions(names, cfg, data_index,
     )
 
     predicted_data.to_hdf(
-        results_path, "df_with_missing", format="table", mode="w"
+        results_path, "df_with_missing"
     )
 
     return predicted_data

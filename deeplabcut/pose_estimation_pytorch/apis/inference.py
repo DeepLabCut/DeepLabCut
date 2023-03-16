@@ -15,7 +15,7 @@ def inference_network(
         config_path: str,
         shuffle: int = 0,
         model_prefix: str = "",
-        load_epoch: int = 49,
+        load_epoch: Union[int, str] = 49,
         stride: int = 8,
         transform: object = None,
         plot: bool = False,
@@ -57,7 +57,9 @@ def inference_network(
     model = build_pose_model(config['model'], pose_cfg)
     model.load_state_dict(torch.load(names['model_path']))
 
-    target_df = valid_dataset.dataframe
+    # You need to dropna() here because on some frames no keypoint is annotated 
+    # Thus the target_df (contains NaNs) may not match the valid_dataloader (has dropped them)
+    target_df = valid_dataset.dataframe.dropna(axis = 0, how = "all")
     predicted_poses = []
     model.eval()
     with torch.no_grad():
@@ -65,7 +67,8 @@ def inference_network(
             if isinstance(item, tuple) or (isinstance, list):
                 item = item[0]
             output = model(item)
-            predictions = get_prediction(pose_cfg, output, stride)
+            scale_factor = (item.shape[2]/output[0].shape[2] , item.shape[3]/output[0].shape[3])
+            predictions = get_prediction(pose_cfg, output, scale_factor)
             predicted_poses.append(predictions)
         predicted_poses = np.array(predicted_poses)
 

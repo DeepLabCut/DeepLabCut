@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import torch
 from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
-from deeplabcut.pose_estimation_tensorflow.core.predict import multi_pose_predict, argmax_pose_predict
 from torch import nn
 from typing import List
 
@@ -30,6 +29,46 @@ def get_prediction(cfg, output, stride=8):
     return np.stack(poses, axis=0)
 
 
+def get_top_values(scmap, n_top=5):
+    batchsize, ny, nx, num_joints = scmap.shape
+    scmap_flat = scmap.reshape(batchsize, nx * ny, num_joints)
+    if n_top == 1:
+        scmap_top = np.argmax(scmap_flat, axis=1)[None]
+    else:
+        scmap_top = np.argpartition(scmap_flat, -n_top, axis=1)[:, -n_top:]
+        for ix in range(batchsize):
+            vals = scmap_flat[ix, scmap_top[ix], np.arange(num_joints)]
+            arg = np.argsort(-vals, axis=0)
+            scmap_top[ix] = scmap_top[ix, arg, np.arange(num_joints)]
+        scmap_top = scmap_top.swapaxes(0, 1)
+
+    Y, X = np.unravel_index(scmap_top, (ny, nx))
+    return Y, X
+
+
+def multi_pose_predict(scmap, locref, stride, num_outputs):
+    Y, X = get_top_values(scmap[None], num_outputs)
+    Y, X = Y[:, 0], X[:, 0]
+    num_joints = scmap.shape[2]
+
+    DZ = np.zeros((num_outputs, num_joints, 3))
+    indices = np.indices((num_outputs, num_joints))
+    x = X[indices[0], indices[1]]
+    y = Y[indices[0], indices[1]]
+    DZ[:, :, :2] = locref[y, x, indices[1], :]
+    DZ[:, :, 2] = scmap[y, x, indices[1]]
+
+    X = X.astype("float32") * stride[1] + 0.5 * stride[1] + DZ[:, :, 0]
+    Y = Y.astype("float32") * stride[0] + 0.5 * stride[0] + DZ[:, :, 1]
+    P = DZ[:, :, 2]
+
+    pose = np.empty((num_joints, num_outputs * 3), dtype="float32")
+    pose[:, 0::3] = X.T
+    pose[:, 1::3] = Y.T
+    pose[:, 2::3] = P.T
+
+    return pose
+
 def get_scores(cfg,
                prediction: pd.DataFrame,
                target: pd.DataFrame,
@@ -47,7 +86,7 @@ def get_scores(cfg,
 
 def get_rmse(prediction,
              target: pd.DataFrame,
-             pcutoff: int=-1,
+             pcutoff: float=-1,
              bodyparts: List[str] =None):
     scorer_pred = prediction.columns[0][0]
     scorer_target = target.columns[0][0]

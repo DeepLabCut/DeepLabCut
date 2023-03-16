@@ -159,7 +159,10 @@ def plot_and_save_labeled_frame(
     ax,
     scaling=1,
 ):
-    image_path = os.path.join(cfg["project_path"], *DataCombined.index[ind])
+    if isinstance(DataCombined.index[ind], tuple):
+        image_path = os.path.join(cfg["project_path"], *DataCombined.index[ind])
+    else:
+        image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
     frame = io.imread(image_path)
     if np.ndim(frame) > 2:  # color image!
         h, w, numcolors = np.shape(frame)

@@ -8,3 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+
+from deeplabcut.pose_estimation_pytorch.apis.train import train_network
+from deeplabcut.pose_estimation_pytorch.apis.inference import inference_network

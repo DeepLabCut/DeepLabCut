@@ -1,3 +1,4 @@
 from deeplabcut.pose_estimation_pytorch.data.dlcproject import DLCProject
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
 from deeplabcut.pose_estimation_pytorch.utils import fix_seeds
+from deeplabcut.pose_estimation_pytorch.apis import train_network, inference_network

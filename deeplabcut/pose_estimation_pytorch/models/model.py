@@ -18,6 +18,8 @@ class PoseModel(nn.Module):
 
         super().__init__()
         self.backbone = backbone
+        self.backbone.activate_batch_norm(cfg['batch_size'] >= 8) # We don't want batch norm to update for small batch sizes
+
         self.head_heatmaps = head_heatmaps
         self.head_locref = head_locref
         self.neck = neck
@@ -49,7 +51,8 @@ class PoseModel(nn.Module):
 
     def get_target(self,
                    keypoints_batch,
-                   heatmap_size):
+                   heatmap_size,
+                   scale_factor):
 
         heatmaps_target = []
         locref_target = []
@@ -59,7 +62,10 @@ class PoseModel(nn.Module):
             # TODO: make faster
             heatmap, weight, locref_map, locref_mask = generate_heatmaps(self.cfg,
                                                                          keypoints,
-                                                                         heatmap_size=heatmap_size)
+                                                                         scale_factor,
+                                                                         heatmap_size=heatmap_size,
+                                                                         heatmap_type=self.cfg['scmap_type'],
+                                                                         )
             locref_target.append(locref_map)
             heatmaps_target.append(heatmap)
             locref_masks.append(locref_mask)

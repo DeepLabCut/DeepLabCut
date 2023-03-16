@@ -1,14 +1,23 @@
 import numpy as np
 import torch
+from typing import Tuple
 
 
 def generate_heatmaps(cfg: dict,
                       coords: np.array,
+                      scale_factor,
                       heatmap_size: tuple = (64, 64),
                       heatmap_type: str = 'gaussian'):
+    # print(heatmap_type)
     if heatmap_type == 'gaussian':
         scmap, weights, locref_map, locref_mask = gaussian_scmap(cfg,
                                                                  coords,
+                                                                 scale_factor,
+                                                                 heatmap_size)
+    elif heatmap_type == 'plateau':
+        scmap, weights, locref_map, locref_mask = plateau_scmap(cfg,
+                                                                 coords,
+                                                                 scale_factor,
                                                                  heatmap_size)
     else:
         raise ValueError('Only gaussian heatmap is supported!')
@@ -16,13 +25,13 @@ def generate_heatmaps(cfg: dict,
     if weights:
         weights = torch.FloatTensor(weights)
     locref_map = torch.FloatTensor(locref_map)
-    locref_mask = torch.FloatTensor(locref_mask)
+    locref_mask = torch.BoolTensor(locref_mask)
     
     return scmap, weights, locref_map, locref_mask
 
 
 # Copy from dlc
-def gaussian_scmap(cfg, coords, heatmap_size):
+def gaussian_scmap(cfg, coords, scale_factors, heatmap_size):
     """
 
     Parameters
@@ -42,7 +51,8 @@ def gaussian_scmap(cfg, coords, heatmap_size):
     locref_scale = 1.0 / cfg["locref_stdev"]
     num_joints = cfg["num_joints"]
     # stride = cfg['stride'] # Apparently, there is no stride in the cfg
-    stride = 8  # TODO just test
+    # stride = scale_factors  # TODO just test
+    stride_y, stride_x = scale_factors
     scmap = np.zeros((
         heatmap_size[0],
         heatmap_size[1], num_joints), dtype=np.float32)
@@ -50,31 +60,73 @@ def gaussian_scmap(cfg, coords, heatmap_size):
     locref_map = np.zeros((
         heatmap_size[0],
         heatmap_size[1], num_joints * 2), dtype=np.float32)
-    locref_mask = np.zeros_like(locref_map)
+    locref_mask = np.zeros_like(locref_map, dtype=int)
 
     width = heatmap_size[1]
     height = heatmap_size[0]
-    dist_thresh = float((width + height) / 6)
+    dist_thresh = float(cfg['pos_dist_thresh']) #TODO Should depend on config
     dist_thresh_sq = dist_thresh ** 2
 
     std = dist_thresh / 4
     grid = np.mgrid[:height, :width].transpose((1, 2, 0))
-    grid = grid * stride + stride / 2
+    grid[:, :, 0] = grid[:, :, 0] * stride_y + stride_y / 2
+    grid[:, :, 1] = grid[:, :, 1] * stride_x + stride_x / 2
     for i, coord in enumerate(coords):
         coord = np.array(coord)[::-1]
+        if np.any(coord <= 0.):
+            continue
         dist = np.linalg.norm(grid - coord, axis=2) ** 2
         scmap_j = np.exp(-dist / (2 * std ** 2))
         scmap[:, :, i] = scmap_j
-        locref_mask[dist <= dist_thresh_sq, i * 2 + 0] = 1
-        locref_mask[dist <= dist_thresh_sq, i * 2 + 1] = 1
+        locref_mask[dist <= dist_thresh_sq, i * 2:i*2+2] = 1
         dx = coord[1] - grid.copy()[:, :, 1]
         dy = coord[0] - grid.copy()[:, :, 0]
         locref_map[:, :, i * 2 + 0] = dx * locref_scale
         locref_map[:, :, i * 2 + 1] = dy * locref_scale
     weights = None
-    # weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
     return scmap, weights, locref_map, locref_mask
 
+
+def plateau_scmap(cfg, coords, scale_factors, heatmap_size):
+    """Computes target objectives with plateau function rather than gaussian"""
+    
+    locref_scale = 1.0 / cfg["locref_stdev"]
+    num_joints = cfg["num_joints"]
+    stride_y, stride_x = scale_factors
+    scmap = np.zeros((
+        heatmap_size[0],
+        heatmap_size[1], num_joints), dtype=np.float32)
+
+    locref_map = np.zeros((
+        heatmap_size[0],
+        heatmap_size[1], num_joints * 2), dtype=np.float32)
+    locref_mask = np.zeros_like(locref_map, dtype=int)
+
+    width = heatmap_size[1]
+    height = heatmap_size[0]
+    dist_thresh = float(cfg['pos_dist_thresh']) #TODO Should depend on config
+    dist_thresh_sq = dist_thresh ** 2
+
+    std = dist_thresh / 4
+    grid = np.mgrid[:height, :width].transpose((1, 2, 0))
+
+    grid[:, :, 0] = grid[:, :, 0] * stride_y + stride_y / 2
+    grid[:, :, 1] = grid[:, :, 1] * stride_x + stride_x / 2
+
+    for i, coord in enumerate(coords):
+        coord = np.array(coord)[::-1]
+        if np.any(coord <= 0.):
+            continue
+        dist = np.linalg.norm(grid - coord, axis=2) ** 2
+        mask = (dist <= dist_thresh_sq)
+        scmap[(dist <= dist_thresh_sq), i] = 1
+        locref_mask[dist <= dist_thresh_sq, i * 2:i*2+2] = 1
+        dx = coord[1] - grid.copy()[:, :, 1]
+        dy = coord[0] - grid.copy()[:, :, 0]
+        locref_map[mask, i * 2 + 0] = (dx * locref_scale)[mask]
+        locref_map[mask, i * 2 + 1] = (dy * locref_scale)[mask]
+    weights = None
+    return scmap, weights, locref_map, locref_mask,
 
 # TODO: check this function and rewrite above
 def _generate_heatmaps(keypoints,

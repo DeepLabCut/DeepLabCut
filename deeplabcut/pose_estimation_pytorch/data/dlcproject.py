@@ -37,6 +37,10 @@ class DLCProject(BaseProject):
                                          f'Documentation_data-{self.task}_{tr_frac}shuffle{self.shuffle}.pickle')
         self.dlc_df = pd.read_hdf(self.path_dlc_data)
         self.load_split()
+        self.dlc_df = self.dlc_df[~self.dlc_df.index.duplicated(keep = 'first')]
+        self.df_train = self.df_train[~self.df_train.index.duplicated(keep = 'first')]
+        if hasattr(self, "df_test"):
+            self.df_test = self.df_test[~self.df_test.index.duplicated(keep = 'first')]
 
     def convert2dict(self,
                       mode: str = 'train'):
@@ -58,6 +62,11 @@ class DLCProject(BaseProject):
         data = df2generic(self.proj_root,
                           self.dataframe,
                           self.image_id_offset)
+        
+        self.image_path2index = {}
+        for i, image in enumerate(data["images"]):
+            image_path = image["file_name"]
+            self.image_path2index[image_path] = i
 
         for key in self.keys_to_load:
             setattr(self, key, data[key])
@@ -102,7 +111,8 @@ class DLCProject(BaseProject):
         x = annotation['keypoints'][::3]
         y = annotation['keypoints'][1::3]
         vis = annotation['keypoints'][2::3]
-        undef_ids = list(np.where(x == -1)[0])
+        eps = 1e-6
+        undef_ids = list(np.where(x <= eps)[0])
         keypoints = []
 
         for pair in np.stack([x, y]).T:

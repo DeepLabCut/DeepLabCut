@@ -14,7 +14,22 @@ class WeightedMSELoss(nn.MSELoss):
 
     def __call__(self, prediction, target, weights):
         loss_item = self.mse_loss(prediction, target)
-        loss_item_weighted = loss_item * weights
+        loss_item_weighted = loss_item[weights]
+        if loss_item_weighted.nelement() == 0:
+            return torch.tensor(0.)
+        return torch.mean(loss_item_weighted)
+    
+class WeightedHuberLoss(nn.HuberLoss):
+
+    def __init__(self):
+        super(WeightedHuberLoss, self).__init__()
+        self.huber_loss = nn.HuberLoss(reduction='none')
+
+    def __call__(self, prediction, target, weights):
+        loss_item = self.huber_loss(prediction, target)
+        loss_item_weighted = loss_item[weights]
+        if loss_item_weighted.nelement() == 0:
+            return torch.tensor(0.)
         return torch.mean(loss_item_weighted)
 
 @LOSSES.register_module
@@ -36,7 +51,7 @@ class PoseLoss(nn.Module):
         """
         super(PoseLoss, self).__init__()
         if locref_huber_loss:
-            self.locref_criterion = nn.HuberLoss()
+            self.locref_criterion = WeightedHuberLoss()
         else:
             self.locref_criterion = WeightedMSELoss()
         self.loss_weight_locref = loss_weight_locref
@@ -62,6 +77,7 @@ class PoseLoss(nn.Module):
         heatmaps, locref = prediction
         heatmap_loss = self.heatmap_criterion(heatmaps,
                                               target['heatmaps'])
+        
         locref_loss = self.loss_weight_locref * self.locref_criterion(locref,
                                                                       target['locref_maps'],
                                                                       target['locref_masks'])

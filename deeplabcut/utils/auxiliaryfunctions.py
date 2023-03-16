@@ -588,8 +588,11 @@ def get_scorer_name(
             str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
             "train",
         )
+        # Snapshots = np.array(
+        #     [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
+        # )
         Snapshots = np.array(
-            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
+            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "snapshot" in fn]
         )
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]

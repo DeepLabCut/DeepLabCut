@@ -39,9 +39,6 @@ def df2generic(proj_root, df, image_id_offset=0):
 
         # skipping all nan
 
-        if np.isnan(data.to_numpy()).all():
-            continue
-
         image_id +=1
         category_id = 0
         kpts = data.to_numpy().reshape(-1,2)
@@ -70,7 +67,17 @@ def df2generic(proj_root, df, image_id_offset=0):
 
 
         annotation_id += 1
+
+
+        # I think width and height are important
+
+        if isinstance(file_name, tuple):
+            image_path = os.path.join(proj_root, *list(file_name))
+        else:
+            image_path = os.path.join(proj_root, file_name)
+
         annotation = {
+            "file_name" : image_path,
             "image_id": image_id + image_id_offset,
             "num_keypoints": num_keypoints,
             "keypoints": keypoints,
@@ -80,17 +87,8 @@ def df2generic(proj_root, df, image_id_offset=0):
             "bbox": bbox,
             "iscrowd": 0,
         }
-        if np.sum(keypoints)!=0:
 
-            coco_annotations.append(annotation)
-
-
-        # I think width and height are important
-
-        if isinstance(file_name, tuple):
-            image_path = os.path.join(proj_root, *list(file_name))
-        else:
-            image_path = os.path.join(proj_root, file_name)
+        coco_annotations.append(annotation)
 
 
         _, height, width = read_image_shape_fast(image_path)

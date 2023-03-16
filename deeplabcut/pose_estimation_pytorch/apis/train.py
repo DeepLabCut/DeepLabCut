@@ -11,6 +11,7 @@ def train_network(
         config_path: str,
         shuffle: int = 1,
         training_set_index: Union[int, str] = 0,
+        transform = None,
         model_prefix: str = ""):
     cfg = auxiliaryfunctions.read_config(config_path)
     if training_set_index == "all":
@@ -27,13 +28,14 @@ def train_network(
     config = auxiliaryfunctions.read_config(pytorch_config_path)
     batch_size = config['batch_size']
     epochs = config['epochs']
-    transform = None
+
     dlc.fix_seeds(config['seed'])
-    project = dlc.DLCProject(proj_root=config['project_root'], shuffle=shuffle)
-    train_dataset = dlc.PoseDataset(project,
+    project_train = dlc.DLCProject(proj_root=config['project_root'], shuffle=shuffle)
+    project_valid = dlc.DLCProject(proj_root=config['project_root'], shuffle=shuffle)
+    train_dataset = dlc.PoseDataset(project_train,
                                     transform=transform,
                                     mode='train')
-    valid_dataset = dlc.PoseDataset(project,
+    valid_dataset = dlc.PoseDataset(project_valid,
                                     transform=transform,
                                     mode='test')
 
@@ -49,6 +51,7 @@ def train_network(
     solver.fit(
         train_dataloader,
         valid_dataloader,
+        train_fraction=train_fraction[0],
         epochs=epochs,
         shuffle=shuffle,
         model_prefix=model_prefix,

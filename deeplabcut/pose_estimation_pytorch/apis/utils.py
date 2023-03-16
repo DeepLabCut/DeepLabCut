@@ -4,6 +4,8 @@ import torch
 
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, BACKBONES, HEADS, LOSSES
 from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SINGLE_ANIMAL_SOLVER
+from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
+from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -26,7 +28,7 @@ def build_pose_model(cfg: Dict,
     return pose_model
 
 
-def build_solver(cfg: Dict):
+def build_solver(cfg: Dict) -> Solver:
     pose_cfg = auxiliaryfunctions.read_config(cfg['pose_cfg_path'])
     pose_model = build_pose_model(cfg['model'], pose_cfg)
 
@@ -36,7 +38,10 @@ def build_solver(cfg: Dict):
     criterion = LOSSES.build(cfg['criterion'])
 
     if cfg.get('scheduler'):
-        _scheduler = getattr(torch.optim.lr_scheduler,
+        if cfg['scheduler']['type'] == "LRListScheduler":
+            _scheduler = LRListScheduler
+        else:
+            _scheduler = getattr(torch.optim.lr_scheduler,
                              cfg['scheduler']['type'])
         scheduler = _scheduler(optimizer=optimizer,
                                **cfg['scheduler']['params'])
