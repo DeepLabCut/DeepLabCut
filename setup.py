@@ -81,6 +81,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
+                "deeplabcut/modelzoo/models.json",
             ],
         )
     ],
