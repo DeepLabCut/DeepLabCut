@@ -1,13 +1,3 @@
-# This notice file contains license headers for all code files
-# in the repository (currently all *.py files).
-#
-# When updating headers, lower entries take precedence over higher
-# entries. For each header, include/exclude statements can be used
-# to define files to apply them to.
-#
-# When adding code from an external repo, make sure to cover the
-# added code files with the correct license header.
-
 # Main repository license
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
@@ -23,7 +13,7 @@
     - 'tests/**/*.py'
     - 'examples/**/*.py'
     - 'docs/**/*.py'
-    - 'conda-environments/**/*.yaml'
+    #- 'conda-environments/**/*.yaml'
 
 # License for files adapted from DeeperCut by Eldar Insafutdinov
 # https://github.com/eldar/pose-tensorflow
@@ -117,22 +107,3 @@
   include:
     - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py
     - deeplabcut/pose_tracking_pytorch/model/backones/vit_pytorch.py
-
-# Reranking
-- header: |
-    """
-    CVPR2017 paper:Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding[J]. 2017.
-    url:http://openaccess.thecvf.com/content_cvpr_2017/papers/Zhong_Re-Ranking_Person_Re-Identification_CVPR_2017_paper.pdf
-    Matlab version: https://github.com/zhunzhong07/person-re-ranking
-
-    API
-
-    probFea: all feature vectors of the query set (torch tensor)
-    probFea: all feature vectors of the gallery set (torch tensor)
-    k1,k2,lambda: parameters, the original paper is (k1=20,k2=6,lambda=0.3)
-    MemorySave: set to 'True' when using MemorySave mode
-    Minibatch: available when 'MemorySave' is 'True'
-    """
-
-  include:
-    - deeplabcut/pose_tracking_pytorch/trackingutils/reranking.py

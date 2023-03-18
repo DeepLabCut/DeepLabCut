@@ -1,17 +1,13 @@
-"""
-CVPR2017 paper:Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding[J]. 2017.
-url:http://openaccess.thecvf.com/content_cvpr_2017/papers/Zhong_Re-Ranking_Person_Re-Identification_CVPR_2017_paper.pdf
-Matlab version: https://github.com/zhunzhong07/person-re-ranking
-
-API
-
-probFea: all feature vectors of the query set (torch tensor)
-probFea: all feature vectors of the gallery set (torch tensor)
-k1,k2,lambda: parameters, the original paper is (k1=20,k2=6,lambda=0.3)
-MemorySave: set to 'True' when using MemorySave mode
-Minibatch: available when 'MemorySave' is 'True'
-"""
-
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import torch
 
@@ -19,6 +15,17 @@ import torch
 def re_ranking(
     probFea, galFea, k1, k2, lambda_value, local_distmat=None, only_local=False
 ):
+    """
+
+    probFea: all feature vectors of the query set (torch tensor)
+    galFea: all feature vectors of the gallery set (torch tensor)
+    k1,k2,lambda: parameters, the original paper uses (k1=20,k2=6,lambda=0.3)
+
+    Code adapted from  https://github.com/zhunzhong07/person-re-ranking
+
+    Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding CVPR 2017.
+
+    """
     # if feature vector is numpy, you should use 'torch.tensor' transform it to tensor
     query_num = probFea.size(0)
     all_num = query_num + galFea.size(0)
