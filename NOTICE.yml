@@ -1,12 +1,9 @@
-# This notice file contains license headers for all code files
-# in the repository (currently all *.py files).
-#
-# When updating headers, lower entries take precedence over higher
-# entries. For each header, include/exclude statements can be used
-# to define files to apply them to.
-#
-# When adding code from an external repo, make sure to cover the
-# added code files with the correct license header.
+##
+## CVPR2017 paper: Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding[J]. 2017.
+##
+## url:http://openaccess.thecvf.com/content_cvpr_2017/papers/Zhong_Re-Ranking_Person_Re-Identification_CVPR_2017_paper.pdf
+## Matlab version: https://github.com/zhunzhong07/person-re-ranking
+##
 
 # Main repository license
 - header: |
