@@ -15,13 +15,14 @@
 
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="150">
 </p>
+  
 
-**DeepLabCut™️** is a toolbox for state-of-the-art markerless pose estimation of animals performing various behaviors. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic. [Read a short development and application summary below](https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut). 
+
 
 [📚Documentation](https://deeplabcut.github.io/DeepLabCut/README.html) |
 [🛠️ Installation](https://deeplabcut.github.io/DeepLabCut/docs/installation.html) |
 [🌎 Home Page](https://www.deeplabcut.org) |
-[🐿🐴🐁🐘🐆 Model Zoo](https://www.modelzoo.deeplabcut.org) |
+[🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/dlc-modelzoo/) |
 [🚨 News](https://deeplabcut.github.io/DeepLabCut/README.html#news-and-in-the-news) |
 [🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues) 
 
@@ -49,6 +50,10 @@
 
 
 </div>
+
+# Welcome! 👋
+
+**DeepLabCut™️** is a toolbox for state-of-the-art markerless pose estimation of animals performing various behaviors. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic. [Read a short development and application summary below](https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut). 
 
 # [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
@@ -94,7 +99,7 @@ DLC code was originally developed by [Alexander Mathis](https://github.com/AlexE
 
 This is an actively developed package and we welcome community development and involvement.
 
-## Get Assistance & be part of the DLC Community✨:
+# Get Assistance & be part of the DLC Community✨:
 
 | 🚉 Platform                                                 | 🎯 Goal                                                                      | ⏱️ Estimated Response Time | 📢 Support Squad                        |
 |------------------------------------------------------------|-----------------------------------------------------------------------------|---------------------------|----------------------------------------|
