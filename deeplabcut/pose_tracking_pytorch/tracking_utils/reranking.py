@@ -15,7 +15,7 @@ import torch
 def re_ranking(
     probFea, galFea, k1, k2, lambda_value, local_distmat=None, only_local=False
 ):
-    '''
+    """
 
     probFea: all feature vectors of the query set (torch tensor)
     galFea: all feature vectors of the gallery set (torch tensor)
@@ -25,7 +25,7 @@ def re_ranking(
 
     Zhong Z, Zheng L, Cao D, et al. Re-ranking Person Re-identification with k-reciprocal Encoding CVPR 2017.
 
-    '''
+    """
     # if feature vector is numpy, you should use 'torch.tensor' transform it to tensor
     query_num = probFea.size(0)
     all_num = query_num + galFea.size(0)
