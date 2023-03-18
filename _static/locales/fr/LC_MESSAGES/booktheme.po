@@ -8,74 +8,68 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "droits d'auteur"
-
-msgid "Print to PDF"
-msgstr "Imprimer au format PDF"
-
-msgid "Edit this page"
-msgstr "Modifier cette page"
-
-msgid "suggest edit"
-msgstr "suggestion de modification"
-
-msgid "Sphinx Book Theme"
-msgstr "Thème du livre Sphinx"
-
-msgid "open issue"
-msgstr "signaler un problème"
-
-msgid "By the"
-msgstr "Par le"
-
-msgid "Theme by the"
-msgstr "Thème par le"
-
-msgid "Download notebook file"
-msgstr "Télécharger le fichier notebook"
-
-msgid "Toggle navigation"
-msgstr "Basculer la navigation"
-
-msgid "next page"
-msgstr "page suivante"
-
-msgid "Contents"
-msgstr "Contenu"
-
-msgid "Source repository"
-msgstr "Dépôt source"
-
-msgid "Search the docs ..."
-msgstr "Rechercher dans les documents ..."
-
-msgid "Last updated on"
-msgstr "Dernière mise à jour le"
-
-msgid "Search this book..."
-msgstr "Rechercher dans ce livre ..."
-
-msgid "Download this page"
-msgstr "Téléchargez cette page"
-
-msgid "Launch"
-msgstr "lancement"
-
-msgid "Download source file"
-msgstr "Télécharger le fichier source"
-
-msgid "previous page"
-msgstr "page précédente"
-
 msgid "By"
 msgstr "Par"
 
-msgid "Open an issue"
-msgstr "Ouvrez un problème"
+msgid "repository"
+msgstr "dépôt"
 
 msgid "Fullscreen mode"
 msgstr "Mode plein écran"
 
-msgid "repository"
-msgstr "dépôt"
+msgid "Contents"
+msgstr "Contenu"
+
+msgid "Download source file"
+msgstr "Télécharger le fichier source"
+
+msgid "Edit this page"
+msgstr "Modifier cette page"
+
+msgid "Last updated on"
+msgstr "Dernière mise à jour le"
+
+msgid "Print to PDF"
+msgstr "Imprimer au format PDF"
+
+msgid "suggest edit"
+msgstr "suggestion de modification"
+
+msgid "Download this page"
+msgstr "Téléchargez cette page"
+
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
+
+msgid "By the"
+msgstr "Par le"
+
+msgid "Sphinx Book Theme"
+msgstr "Thème du livre Sphinx"
+
+msgid "previous page"
+msgstr "page précédente"
+
+msgid "Source repository"
+msgstr "Dépôt source"
+
+msgid "open issue"
+msgstr "signaler un problème"
+
+msgid "Download notebook file"
+msgstr "Télécharger le fichier notebook"
+
+msgid "Copyright"
+msgstr "droits d'auteur"
+
+msgid "Theme by the"
+msgstr "Thème par le"
+
+msgid "Open an issue"
+msgstr "Ouvrez un problème"
+
+msgid "next page"
+msgstr "page suivante"
+
+msgid "Launch"
+msgstr "lancement"

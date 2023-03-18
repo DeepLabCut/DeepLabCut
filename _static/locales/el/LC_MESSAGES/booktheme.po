@@ -8,74 +8,68 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "Πνευματική ιδιοκτησία"
-
-msgid "Print to PDF"
-msgstr "Εκτύπωση σε PDF"
-
-msgid "Edit this page"
-msgstr "Επεξεργαστείτε αυτήν τη σελίδα"
-
-msgid "suggest edit"
-msgstr "προτείνω επεξεργασία"
-
-msgid "Sphinx Book Theme"
-msgstr "Θέμα βιβλίου Sphinx"
-
-msgid "open issue"
-msgstr "ανοιχτό ζήτημα"
-
-msgid "By the"
-msgstr "Από το"
-
-msgid "Theme by the"
-msgstr "Θέμα από το"
-
-msgid "Download notebook file"
-msgstr "Λήψη αρχείου σημειωματάριου"
-
-msgid "Toggle navigation"
-msgstr "Εναλλαγή πλοήγησης"
-
-msgid "next page"
-msgstr "επόμενη σελίδα"
-
-msgid "Contents"
-msgstr "Περιεχόμενα"
-
-msgid "Source repository"
-msgstr "Αποθήκη πηγής"
-
-msgid "Search the docs ..."
-msgstr "Αναζήτηση στα έγγραφα ..."
-
-msgid "Last updated on"
-msgstr "Τελευταία ενημέρωση στις"
-
-msgid "Search this book..."
-msgstr "Αναζήτηση σε αυτό το βιβλίο ..."
-
-msgid "Download this page"
-msgstr "Λήψη αυτής της σελίδας"
-
-msgid "Launch"
-msgstr "Εκτόξευση"
-
-msgid "Download source file"
-msgstr "Λήψη αρχείου προέλευσης"
-
-msgid "previous page"
-msgstr "προηγούμενη σελίδα"
-
 msgid "By"
 msgstr "Με"
 
-msgid "Open an issue"
-msgstr "Ανοίξτε ένα ζήτημα"
+msgid "repository"
+msgstr "αποθήκη"
 
 msgid "Fullscreen mode"
 msgstr "ΛΕΙΤΟΥΡΓΙΑ ΠΛΗΡΟΥΣ ΟΘΟΝΗΣ"
 
-msgid "repository"
-msgstr "αποθήκη"
+msgid "Contents"
+msgstr "Περιεχόμενα"
+
+msgid "Download source file"
+msgstr "Λήψη αρχείου προέλευσης"
+
+msgid "Edit this page"
+msgstr "Επεξεργαστείτε αυτήν τη σελίδα"
+
+msgid "Last updated on"
+msgstr "Τελευταία ενημέρωση στις"
+
+msgid "Print to PDF"
+msgstr "Εκτύπωση σε PDF"
+
+msgid "suggest edit"
+msgstr "προτείνω επεξεργασία"
+
+msgid "Download this page"
+msgstr "Λήψη αυτής της σελίδας"
+
+msgid "Toggle navigation"
+msgstr "Εναλλαγή πλοήγησης"
+
+msgid "By the"
+msgstr "Από το"
+
+msgid "Sphinx Book Theme"
+msgstr "Θέμα βιβλίου Sphinx"
+
+msgid "previous page"
+msgstr "προηγούμενη σελίδα"
+
+msgid "Source repository"
+msgstr "Αποθήκη πηγής"
+
+msgid "open issue"
+msgstr "ανοιχτό ζήτημα"
+
+msgid "Download notebook file"
+msgstr "Λήψη αρχείου σημειωματάριου"
+
+msgid "Copyright"
+msgstr "Πνευματική ιδιοκτησία"
+
+msgid "Theme by the"
+msgstr "Θέμα από το"
+
+msgid "Open an issue"
+msgstr "Ανοίξτε ένα ζήτημα"
+
+msgid "next page"
+msgstr "επόμενη σελίδα"
+
+msgid "Launch"
+msgstr "Εκτόξευση"

@@ -8,74 +8,68 @@ msgstr ""
 "Language: sl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "avtorske pravice"
-
-msgid "Print to PDF"
-msgstr "Natisni v PDF"
-
-msgid "Edit this page"
-msgstr "Uredite to stran"
-
-msgid "suggest edit"
-msgstr "predlagajte urejanje"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema knjige Sphinx"
-
-msgid "open issue"
-msgstr "odprto vprašanje"
-
-msgid "By the"
-msgstr "Avtor"
-
-msgid "Theme by the"
-msgstr "Tema avtorja"
-
-msgid "Download notebook file"
-msgstr "Prenesite datoteko zvezka"
-
-msgid "Toggle navigation"
-msgstr "Preklopi navigacijo"
-
-msgid "next page"
-msgstr "Naslednja stran"
-
-msgid "Contents"
-msgstr "Vsebina"
-
-msgid "Source repository"
-msgstr "Izvorno skladišče"
-
-msgid "Search the docs ..."
-msgstr "Poiščite dokumente ..."
-
-msgid "Last updated on"
-msgstr "Nazadnje posodobljeno dne"
-
-msgid "Search this book..."
-msgstr "Poiščite to knjigo ..."
-
-msgid "Download this page"
-msgstr "Prenesite to stran"
-
-msgid "Launch"
-msgstr "Kosilo"
-
-msgid "Download source file"
-msgstr "Prenesite izvorno datoteko"
-
-msgid "previous page"
-msgstr "Prejšnja stran"
-
 msgid "By"
 msgstr "Avtor"
 
-msgid "Open an issue"
-msgstr "Odprite številko"
+msgid "repository"
+msgstr "odlagališče"
 
 msgid "Fullscreen mode"
 msgstr "Celozaslonski način"
 
-msgid "repository"
-msgstr "odlagališče"
+msgid "Contents"
+msgstr "Vsebina"
+
+msgid "Download source file"
+msgstr "Prenesite izvorno datoteko"
+
+msgid "Edit this page"
+msgstr "Uredite to stran"
+
+msgid "Last updated on"
+msgstr "Nazadnje posodobljeno dne"
+
+msgid "Print to PDF"
+msgstr "Natisni v PDF"
+
+msgid "suggest edit"
+msgstr "predlagajte urejanje"
+
+msgid "Download this page"
+msgstr "Prenesite to stran"
+
+msgid "Toggle navigation"
+msgstr "Preklopi navigacijo"
+
+msgid "By the"
+msgstr "Avtor"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema knjige Sphinx"
+
+msgid "previous page"
+msgstr "Prejšnja stran"
+
+msgid "Source repository"
+msgstr "Izvorno skladišče"
+
+msgid "open issue"
+msgstr "odprto vprašanje"
+
+msgid "Download notebook file"
+msgstr "Prenesite datoteko zvezka"
+
+msgid "Copyright"
+msgstr "avtorske pravice"
+
+msgid "Theme by the"
+msgstr "Tema avtorja"
+
+msgid "Open an issue"
+msgstr "Odprite številko"
+
+msgid "next page"
+msgstr "Naslednja stran"
+
+msgid "Launch"
+msgstr "Kosilo"

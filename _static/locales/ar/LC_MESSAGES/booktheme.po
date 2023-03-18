@@ -8,74 +8,68 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "حقوق النشر"
-
-msgid "Print to PDF"
-msgstr "طباعة إلى PDF"
-
-msgid "Edit this page"
-msgstr "قم بتحرير هذه الصفحة"
-
-msgid "suggest edit"
-msgstr "أقترح تحرير"
-
-msgid "Sphinx Book Theme"
-msgstr "موضوع كتاب أبو الهول"
-
-msgid "open issue"
-msgstr "قضية مفتوحة"
-
-msgid "By the"
-msgstr "بواسطة"
-
-msgid "Theme by the"
-msgstr "موضوع بواسطة"
-
-msgid "Download notebook file"
-msgstr "تنزيل ملف دفتر الملاحظات"
-
-msgid "Toggle navigation"
-msgstr "تبديل التنقل"
-
-msgid "next page"
-msgstr "الصفحة التالية"
-
-msgid "Contents"
-msgstr "محتويات"
-
-msgid "Source repository"
-msgstr "مستودع المصدر"
-
-msgid "Search the docs ..."
-msgstr "ابحث في المستندات ..."
-
-msgid "Last updated on"
-msgstr "آخر تحديث في"
-
-msgid "Search this book..."
-msgstr "بحث في هذا الكتاب ..."
-
-msgid "Download this page"
-msgstr "قم بتنزيل هذه الصفحة"
-
-msgid "Launch"
-msgstr "إطلاق"
-
-msgid "Download source file"
-msgstr "تنزيل ملف المصدر"
-
-msgid "previous page"
-msgstr "الصفحة السابقة"
-
 msgid "By"
 msgstr "بواسطة"
 
-msgid "Open an issue"
-msgstr "افتح قضية"
+msgid "repository"
+msgstr "مخزن"
 
 msgid "Fullscreen mode"
 msgstr "وضع ملء الشاشة"
 
-msgid "repository"
-msgstr "مخزن"
+msgid "Contents"
+msgstr "محتويات"
+
+msgid "Download source file"
+msgstr "تنزيل ملف المصدر"
+
+msgid "Edit this page"
+msgstr "قم بتحرير هذه الصفحة"
+
+msgid "Last updated on"
+msgstr "آخر تحديث في"
+
+msgid "Print to PDF"
+msgstr "طباعة إلى PDF"
+
+msgid "suggest edit"
+msgstr "أقترح تحرير"
+
+msgid "Download this page"
+msgstr "قم بتنزيل هذه الصفحة"
+
+msgid "Toggle navigation"
+msgstr "تبديل التنقل"
+
+msgid "By the"
+msgstr "بواسطة"
+
+msgid "Sphinx Book Theme"
+msgstr "موضوع كتاب أبو الهول"
+
+msgid "previous page"
+msgstr "الصفحة السابقة"
+
+msgid "Source repository"
+msgstr "مستودع المصدر"
+
+msgid "open issue"
+msgstr "قضية مفتوحة"
+
+msgid "Download notebook file"
+msgstr "تنزيل ملف دفتر الملاحظات"
+
+msgid "Copyright"
+msgstr "حقوق النشر"
+
+msgid "Theme by the"
+msgstr "موضوع بواسطة"
+
+msgid "Open an issue"
+msgstr "افتح قضية"
+
+msgid "next page"
+msgstr "الصفحة التالية"
+
+msgid "Launch"
+msgstr "إطلاق"

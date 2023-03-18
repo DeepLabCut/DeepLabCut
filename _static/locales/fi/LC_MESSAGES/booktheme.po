@@ -8,74 +8,68 @@ msgstr ""
 "Language: fi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "Tekijänoikeus"
-
-msgid "Print to PDF"
-msgstr "Tulosta PDF-tiedostoon"
-
-msgid "Edit this page"
-msgstr "Muokkaa tätä sivua"
-
-msgid "suggest edit"
-msgstr "ehdottaa muokkausta"
-
-msgid "Sphinx Book Theme"
-msgstr "Sphinx-kirjan teema"
-
-msgid "open issue"
-msgstr "avoin ongelma"
-
-msgid "By the"
-msgstr "Mukaan"
-
-msgid "Theme by the"
-msgstr "Teeman tekijä"
-
-msgid "Download notebook file"
-msgstr "Lataa muistikirjatiedosto"
-
-msgid "Toggle navigation"
-msgstr "Vaihda navigointia"
-
-msgid "next page"
-msgstr "seuraava sivu"
-
-msgid "Contents"
-msgstr "Sisällys"
-
-msgid "Source repository"
-msgstr "Lähteen arkisto"
-
-msgid "Search the docs ..."
-msgstr "Hae dokumenteista ..."
-
-msgid "Last updated on"
-msgstr "Viimeksi päivitetty"
-
-msgid "Search this book..."
-msgstr "Hae tästä kirjasta ..."
-
-msgid "Download this page"
-msgstr "Lataa tämä sivu"
-
-msgid "Launch"
-msgstr "Tuoda markkinoille"
-
-msgid "Download source file"
-msgstr "Lataa lähdetiedosto"
-
-msgid "previous page"
-msgstr "Edellinen sivu"
-
 msgid "By"
 msgstr "Tekijä"
 
-msgid "Open an issue"
-msgstr "Avaa ongelma"
+msgid "repository"
+msgstr "arkisto"
 
 msgid "Fullscreen mode"
 msgstr "Koko näytön tila"
 
-msgid "repository"
-msgstr "arkisto"
+msgid "Contents"
+msgstr "Sisällys"
+
+msgid "Download source file"
+msgstr "Lataa lähdetiedosto"
+
+msgid "Edit this page"
+msgstr "Muokkaa tätä sivua"
+
+msgid "Last updated on"
+msgstr "Viimeksi päivitetty"
+
+msgid "Print to PDF"
+msgstr "Tulosta PDF-tiedostoon"
+
+msgid "suggest edit"
+msgstr "ehdottaa muokkausta"
+
+msgid "Download this page"
+msgstr "Lataa tämä sivu"
+
+msgid "Toggle navigation"
+msgstr "Vaihda navigointia"
+
+msgid "By the"
+msgstr "Mukaan"
+
+msgid "Sphinx Book Theme"
+msgstr "Sphinx-kirjan teema"
+
+msgid "previous page"
+msgstr "Edellinen sivu"
+
+msgid "Source repository"
+msgstr "Lähteen arkisto"
+
+msgid "open issue"
+msgstr "avoin ongelma"
+
+msgid "Download notebook file"
+msgstr "Lataa muistikirjatiedosto"
+
+msgid "Copyright"
+msgstr "Tekijänoikeus"
+
+msgid "Theme by the"
+msgstr "Teeman tekijä"
+
+msgid "Open an issue"
+msgstr "Avaa ongelma"
+
+msgid "next page"
+msgstr "seuraava sivu"
+
+msgid "Launch"
+msgstr "Tuoda markkinoille"

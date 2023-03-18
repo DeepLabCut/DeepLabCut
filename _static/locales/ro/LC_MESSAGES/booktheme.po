@@ -8,74 +8,68 @@ msgstr ""
 "Language: ro\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "Drepturi de autor"
-
-msgid "Print to PDF"
-msgstr "Imprimați în PDF"
-
-msgid "Edit this page"
-msgstr "Editați această pagină"
-
-msgid "suggest edit"
-msgstr "sugerează editare"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema Sphinx Book"
-
-msgid "open issue"
-msgstr "problema deschisă"
-
-msgid "By the"
-msgstr "Langa"
-
-msgid "Theme by the"
-msgstr "Tema de"
-
-msgid "Download notebook file"
-msgstr "Descărcați fișierul notebook"
-
-msgid "Toggle navigation"
-msgstr "Comutare navigare"
-
-msgid "next page"
-msgstr "pagina următoare"
-
-msgid "Contents"
-msgstr "Cuprins"
-
-msgid "Source repository"
-msgstr "Depozit sursă"
-
-msgid "Search the docs ..."
-msgstr "Căutați documente ..."
-
-msgid "Last updated on"
-msgstr "Ultima actualizare la"
-
-msgid "Search this book..."
-msgstr "Căutați în această carte ..."
-
-msgid "Download this page"
-msgstr "Descarcă această pagină"
-
-msgid "Launch"
-msgstr "Lansa"
-
-msgid "Download source file"
-msgstr "Descărcați fișierul sursă"
-
-msgid "previous page"
-msgstr "pagina anterioară"
-
 msgid "By"
 msgstr "De"
 
-msgid "Open an issue"
-msgstr "Deschideți o problemă"
+msgid "repository"
+msgstr "repertoriu"
 
 msgid "Fullscreen mode"
 msgstr "Modul ecran întreg"
 
-msgid "repository"
-msgstr "repertoriu"
+msgid "Contents"
+msgstr "Cuprins"
+
+msgid "Download source file"
+msgstr "Descărcați fișierul sursă"
+
+msgid "Edit this page"
+msgstr "Editați această pagină"
+
+msgid "Last updated on"
+msgstr "Ultima actualizare la"
+
+msgid "Print to PDF"
+msgstr "Imprimați în PDF"
+
+msgid "suggest edit"
+msgstr "sugerează editare"
+
+msgid "Download this page"
+msgstr "Descarcă această pagină"
+
+msgid "Toggle navigation"
+msgstr "Comutare navigare"
+
+msgid "By the"
+msgstr "Langa"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema Sphinx Book"
+
+msgid "previous page"
+msgstr "pagina anterioară"
+
+msgid "Source repository"
+msgstr "Depozit sursă"
+
+msgid "open issue"
+msgstr "problema deschisă"
+
+msgid "Download notebook file"
+msgstr "Descărcați fișierul notebook"
+
+msgid "Copyright"
+msgstr "Drepturi de autor"
+
+msgid "Theme by the"
+msgstr "Tema de"
+
+msgid "Open an issue"
+msgstr "Deschideți o problemă"
+
+msgid "next page"
+msgstr "pagina următoare"
+
+msgid "Launch"
+msgstr "Lansa"

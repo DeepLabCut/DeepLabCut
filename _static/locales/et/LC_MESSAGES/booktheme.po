@@ -8,74 +8,68 @@ msgstr ""
 "Language: et\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "Autoriõigus"
-
-msgid "Print to PDF"
-msgstr "Prindi PDF-i"
-
-msgid "Edit this page"
-msgstr "Muutke seda lehte"
-
-msgid "suggest edit"
-msgstr "soovita muuta"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinksiraamatu teema"
-
-msgid "open issue"
-msgstr "avatud küsimus"
-
-msgid "By the"
-msgstr "Autor"
-
-msgid "Theme by the"
-msgstr "Teema"
-
-msgid "Download notebook file"
-msgstr "Laadige sülearvuti fail alla"
-
-msgid "Toggle navigation"
-msgstr "Lülita navigeerimine sisse"
-
-msgid "next page"
-msgstr "järgmine leht"
-
-msgid "Contents"
-msgstr "Sisu"
-
-msgid "Source repository"
-msgstr "Allikahoidla"
-
-msgid "Search the docs ..."
-msgstr "Dokumentidest otsimine ..."
-
-msgid "Last updated on"
-msgstr "Viimati uuendatud"
-
-msgid "Search this book..."
-msgstr "Otsige sellest raamatust ..."
-
-msgid "Download this page"
-msgstr "Laadige see leht alla"
-
-msgid "Launch"
-msgstr "Käivitage"
-
-msgid "Download source file"
-msgstr "Laadige alla lähtefail"
-
-msgid "previous page"
-msgstr "eelmine leht"
-
 msgid "By"
 msgstr "Kõrval"
 
-msgid "Open an issue"
-msgstr "Avage probleem"
+msgid "repository"
+msgstr "hoidla"
 
 msgid "Fullscreen mode"
 msgstr "Täisekraanirežiim"
 
-msgid "repository"
-msgstr "hoidla"
+msgid "Contents"
+msgstr "Sisu"
+
+msgid "Download source file"
+msgstr "Laadige alla lähtefail"
+
+msgid "Edit this page"
+msgstr "Muutke seda lehte"
+
+msgid "Last updated on"
+msgstr "Viimati uuendatud"
+
+msgid "Print to PDF"
+msgstr "Prindi PDF-i"
+
+msgid "suggest edit"
+msgstr "soovita muuta"
+
+msgid "Download this page"
+msgstr "Laadige see leht alla"
+
+msgid "Toggle navigation"
+msgstr "Lülita navigeerimine sisse"
+
+msgid "By the"
+msgstr "Autor"
+
+msgid "Sphinx Book Theme"
+msgstr "Sfinksiraamatu teema"
+
+msgid "previous page"
+msgstr "eelmine leht"
+
+msgid "Source repository"
+msgstr "Allikahoidla"
+
+msgid "open issue"
+msgstr "avatud küsimus"
+
+msgid "Download notebook file"
+msgstr "Laadige sülearvuti fail alla"
+
+msgid "Copyright"
+msgstr "Autoriõigus"
+
+msgid "Theme by the"
+msgstr "Teema"
+
+msgid "Open an issue"
+msgstr "Avage probleem"
+
+msgid "next page"
+msgstr "järgmine leht"
+
+msgid "Launch"
+msgstr "Käivitage"

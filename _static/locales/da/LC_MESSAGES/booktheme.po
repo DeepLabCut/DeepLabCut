@@ -8,74 +8,68 @@ msgstr ""
 "Language: da\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "ophavsret"
-
-msgid "Print to PDF"
-msgstr "Udskriv til PDF"
-
-msgid "Edit this page"
-msgstr "Rediger denne side"
-
-msgid "suggest edit"
-msgstr "foreslå redigering"
-
-msgid "Sphinx Book Theme"
-msgstr "Sphinx bogtema"
-
-msgid "open issue"
-msgstr "åbent nummer"
-
-msgid "By the"
-msgstr "Ved"
-
-msgid "Theme by the"
-msgstr "Tema af"
-
-msgid "Download notebook file"
-msgstr "Download notesbog-fil"
-
-msgid "Toggle navigation"
-msgstr "Skift navigation"
-
-msgid "next page"
-msgstr "Næste side"
-
-msgid "Contents"
-msgstr "Indhold"
-
-msgid "Source repository"
-msgstr "Kildelager"
-
-msgid "Search the docs ..."
-msgstr "Søg i dokumenterne ..."
-
-msgid "Last updated on"
-msgstr "Sidst opdateret den"
-
-msgid "Search this book..."
-msgstr "Søg i denne bog ..."
-
-msgid "Download this page"
-msgstr "Download denne side"
-
-msgid "Launch"
-msgstr "Start"
-
-msgid "Download source file"
-msgstr "Download kildefil"
-
-msgid "previous page"
-msgstr "forrige side"
-
 msgid "By"
 msgstr "Ved"
 
-msgid "Open an issue"
-msgstr "Åbn et problem"
+msgid "repository"
+msgstr "lager"
 
 msgid "Fullscreen mode"
 msgstr "Fuldskærmstilstand"
 
-msgid "repository"
-msgstr "lager"
+msgid "Contents"
+msgstr "Indhold"
+
+msgid "Download source file"
+msgstr "Download kildefil"
+
+msgid "Edit this page"
+msgstr "Rediger denne side"
+
+msgid "Last updated on"
+msgstr "Sidst opdateret den"
+
+msgid "Print to PDF"
+msgstr "Udskriv til PDF"
+
+msgid "suggest edit"
+msgstr "foreslå redigering"
+
+msgid "Download this page"
+msgstr "Download denne side"
+
+msgid "Toggle navigation"
+msgstr "Skift navigation"
+
+msgid "By the"
+msgstr "Ved"
+
+msgid "Sphinx Book Theme"
+msgstr "Sphinx bogtema"
+
+msgid "previous page"
+msgstr "forrige side"
+
+msgid "Source repository"
+msgstr "Kildelager"
+
+msgid "open issue"
+msgstr "åbent nummer"
+
+msgid "Download notebook file"
+msgstr "Download notesbog-fil"
+
+msgid "Copyright"
+msgstr "ophavsret"
+
+msgid "Theme by the"
+msgstr "Tema af"
+
+msgid "Open an issue"
+msgstr "Åbn et problem"
+
+msgid "next page"
+msgstr "Næste side"
+
+msgid "Launch"
+msgstr "Start"

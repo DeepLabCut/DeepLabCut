@@ -8,74 +8,68 @@ msgstr ""
 "Language: sk\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Copyright"
-msgstr "Autorské práva"
-
-msgid "Print to PDF"
-msgstr "Tlač do PDF"
-
-msgid "Edit this page"
-msgstr "Upraviť túto stránku"
-
-msgid "suggest edit"
-msgstr "navrhnúť úpravu"
-
-msgid "Sphinx Book Theme"
-msgstr "Téma knihy Sfinga"
-
-msgid "open issue"
-msgstr "otvorené vydanie"
-
-msgid "By the"
-msgstr "Podľa"
-
-msgid "Theme by the"
-msgstr "Téma od"
-
-msgid "Download notebook file"
-msgstr "Stiahnite si zošit"
-
-msgid "Toggle navigation"
-msgstr "Prepnúť navigáciu"
-
-msgid "next page"
-msgstr "ďalšia strana"
-
-msgid "Contents"
-msgstr "Obsah"
-
-msgid "Source repository"
-msgstr "Zdrojové úložisko"
-
-msgid "Search the docs ..."
-msgstr "Hľadať v dokumentoch ..."
-
-msgid "Last updated on"
-msgstr "Posledná aktualizácia dňa"
-
-msgid "Search this book..."
-msgstr "Hľadať v tejto knihe ..."
-
-msgid "Download this page"
-msgstr "Stiahnite si túto stránku"
-
-msgid "Launch"
-msgstr "Spustiť"
-
-msgid "Download source file"
-msgstr "Stiahnite si zdrojový súbor"
-
-msgid "previous page"
-msgstr "predchádzajúca strana"
-
 msgid "By"
 msgstr "Autor:"
 
-msgid "Open an issue"
-msgstr "Otvorte problém"
+msgid "repository"
+msgstr "Úložisko"
 
 msgid "Fullscreen mode"
 msgstr "Režim celej obrazovky"
 
-msgid "repository"
-msgstr "Úložisko"
+msgid "Contents"
+msgstr "Obsah"
+
+msgid "Download source file"
+msgstr "Stiahnite si zdrojový súbor"
+
+msgid "Edit this page"
+msgstr "Upraviť túto stránku"
+
+msgid "Last updated on"
+msgstr "Posledná aktualizácia dňa"
+
+msgid "Print to PDF"
+msgstr "Tlač do PDF"
+
+msgid "suggest edit"
+msgstr "navrhnúť úpravu"
+
+msgid "Download this page"
+msgstr "Stiahnite si túto stránku"
+
+msgid "Toggle navigation"
+msgstr "Prepnúť navigáciu"
+
+msgid "By the"
+msgstr "Podľa"
+
+msgid "Sphinx Book Theme"
+msgstr "Téma knihy Sfinga"
+
+msgid "previous page"
+msgstr "predchádzajúca strana"
+
+msgid "Source repository"
+msgstr "Zdrojové úložisko"
+
+msgid "open issue"
+msgstr "otvorené vydanie"
+
+msgid "Download notebook file"
+msgstr "Stiahnite si zošit"
+
+msgid "Copyright"
+msgstr "Autorské práva"
+
+msgid "Theme by the"
+msgstr "Téma od"
+
+msgid "Open an issue"
+msgstr "Otvorte problém"
+
+msgid "next page"
+msgstr "ďalšia strana"
+
+msgid "Launch"
+msgstr "Spustiť"
