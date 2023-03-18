@@ -160,6 +160,7 @@ def compute_peaks_and_costs(
 ):
     n_samples, _, _, n_channels = np.shape(scmaps)
     n_bodyparts = n_channels - n_id_channels
+
     pos = calc_peak_locations(locrefs, peak_inds_in_batch, stride, n_decimals)
     if graph:
         costs = compute_edge_costs(
@@ -222,6 +223,7 @@ def predict_batched_peaks_and_costs(
 
     locrefs = np.reshape(locrefs, (*locrefs.shape[:3], -1, 2))
     locrefs *= pose_cfg["locref_stdev"]
+
     if pafs:
         pafs = np.reshape(pafs[0], (*pafs[0].shape[:3], -1, 2))
     else:
@@ -323,6 +325,8 @@ def calc_peak_locations(
     n_decimals=3,
 ):
     s, r, c, b = peak_inds_in_batch.T
-    off = locrefs[s, r, c, b]
+    off = locrefs[s, r, c, b] 
     loc = stride * peak_inds_in_batch[:, [2, 1]] + stride // 2 + off
+    
     return np.round(loc, decimals=n_decimals)
+

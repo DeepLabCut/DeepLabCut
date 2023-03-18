@@ -101,6 +101,8 @@ def multi_pose_predict(scmap, locref, stride, num_outputs):
 
     X = X.astype("float32") * stride + 0.5 * stride + DZ[:, :, 0]
     Y = Y.astype("float32") * stride + 0.5 * stride + DZ[:, :, 1]
+
+    
     P = DZ[:, :, 2]
 
     pose = np.empty((num_joints, num_outputs * 3), dtype="float32")

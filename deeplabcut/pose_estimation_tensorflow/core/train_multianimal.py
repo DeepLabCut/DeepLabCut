@@ -40,10 +40,12 @@ def train(
     allow_growth=True,
     pseudo_labels="",
     init_weights="",
-    pseudo_threshold=0,
+    pseudo_threshold=0.1,
     modelfolder="",
     traintime_resize=False,
     video_path="",
+    topview = False,
+    trim_ends = None
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -61,9 +63,13 @@ def train(
     cfg = load_config(config_yaml)
 
     cfg["pseudo_threshold"] = pseudo_threshold
+    print ('pseudo threshold set to', pseudo_threshold)
+    if trim_ends:
+        cfg['trim_ends'] = trim_ends
+        print ('trim ends is set to ', trim_ends)
     cfg["video_path"] = video_path
     cfg["traintime_resize"] = traintime_resize
-
+    cfg["topview"] = topview
     if pseudo_labels != "":
         cfg["pseudo_label"] = pseudo_labels
 

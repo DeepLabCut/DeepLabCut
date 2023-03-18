@@ -35,10 +35,11 @@ def get_multi_scale_frames(frame, scale_list):
     for scale in scale_list:
         aug = iaa.Resize({"width": "keep-aspect-ratio", "height": scale})
         augs.append(aug)
+        
 
     frames = []
     for i in range(len(scale_list)):
-        resized_frame = augs[i](image=frame)
+        resized_frame = augs[i](image=frame)        
         frames.append(resized_frame)
         shapes.append(frames[-1].shape)
 
@@ -80,6 +81,9 @@ def _average_multiple_scale_preds(
 
     xyp = np.zeros((len(scale_list), num_kpts, 3))
     for scale_id, pred in enumerate(preds):
+        # empty prediction if pred is not a dict
+        if isinstance(pred, list):
+            continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
         for i, (coords, conf) in enumerate(zip(coordinates, confidence)):
@@ -282,13 +286,14 @@ def video_inference(
 
     weight_folder = superanimal_name + '_weights'
 
-    if superanimal_name in MODELOPTIONS:
-        if not os.path.exists(weight_folder):
-            download_huggingface_model(superanimal_name, weight_folder)
+    if init_weights=="":
+        if superanimal_name in MODELOPTIONS:
+            if not os.path.exists(weight_folder):
+                download_huggingface_model(superanimal_name, weight_folder)
+            else:
+                print (f"{weight_folder} exists, using the downloaded weights")
         else:
-            print (f"{weight_folder} exists, using the downloaded weights")
-    else:
-        print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
+            print (f'{superanimal_name} not available. Available ones are: ', MODELOPTIONS)
 
     snapshots = glob.glob(
         os.path.join(weight_folder, 'snapshot-*.index')
@@ -310,6 +315,7 @@ def video_inference(
         test_cfg, allow_growth=allow_growth
     )
     DLCscorer = "DLC_" + Path(test_cfg['init_weights']).stem
+    
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     datafiles = []

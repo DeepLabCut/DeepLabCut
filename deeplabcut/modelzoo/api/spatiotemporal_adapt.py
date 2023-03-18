@@ -14,7 +14,6 @@ class SpatiotemporalAdaptation:
         supermodel_name,
         scale_list=[],
         videotype="mp4",
-        adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
         init_weights="",
@@ -70,7 +69,6 @@ class SpatiotemporalAdaptation:
         self.videotype = videotype
         vname = str(Path(self.video_path).stem)
         self.adapt_modelprefix = vname + "_video_adaptation"
-        self.adapt_iterations = adapt_iterations
         self.modelfolder = modelfolder
         self.init_weights = init_weights
 
@@ -89,7 +87,8 @@ class SpatiotemporalAdaptation:
                                make_video=False,
                                **kwargs):
         if self.init_weights != "":
-            _ = superanimal_inference.video_inference(
+            print ('using customized weights', self.init_weights)
+            _, datafiles = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
@@ -98,13 +97,17 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )
         else:
-            self.init_weights, _ = superanimal_inference.video_inference(
+            self.init_weights, datafiles = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
                 videotype=self.videotype,
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
+
+        if kwargs.pop('plot_trajectories', True):
+            _plot_trajectories(datafiles[0])        
+            
         if make_video:
             deeplabcut.create_labeled_video(
                 "",
@@ -117,24 +120,32 @@ class SpatiotemporalAdaptation:
                 **kwargs
             )
 
-    def train_without_project(self, pseudo_label_path, **kwargs):
+    def train_without_project(self,
+                              pseudo_label_path,
+                              **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
 
         displayiters = kwargs.pop("displayiters", 500)
         saveiters = kwargs.pop("saveiters", 1000)
+        adapt_iterations = kwargs.pop('adapt_iterations', 1000)
+        self.adapt_iterations = adapt_iterations
         train(
             self.customized_pose_config,
             displayiters=displayiters,
             saveiters=saveiters,
-            maxiters=self.adapt_iterations,
+            maxiters=adapt_iterations,
             modelfolder=self.modelfolder,
             init_weights=self.init_weights,
             pseudo_labels=pseudo_label_path,
             video_path=self.video_path,
+            topview = 'topview' in self.supermodel_name,
             **kwargs
         )
 
-    def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
+    def adaptation_training(self,
+                            displayiters=500,
+                            saveiters=1000,
+                            **kwargs):
         """
         There should be two choices, either taking a config, with is then assuming there is a DLC project.
         Or we make up a fake one, then we use a light way convention to do adaptation
@@ -144,6 +155,7 @@ class SpatiotemporalAdaptation:
         DLCscorer = "DLC_" + Path(self.init_weights).stem
         vname = str(Path(self.video_path).stem)
         video_root = Path(self.video_path).parent
+        
 
         _, pseudo_label_path, _, _ = deeplabcut.auxiliaryfunctions.load_analyzed_data(
             video_root, vname, DLCscorer, False, ""
@@ -151,15 +163,27 @@ class SpatiotemporalAdaptation:
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
-        self.train_without_project(
-            pseudo_label_path,
-            displayiters=displayiters,
-            saveiters=saveiters,
-            **kwargs,
-        )
+        adapt_iterations = kwargs['adapt_iterations']
+        self.adapt_iterations = adapt_iterations
+        
+        if not os.path.exists(
+                os.path.join(self.modelfolder, f"snapshot-{adapt_iterations}.index")
+        ):
+            # skip if it's already trained
+
+            self.train_without_project(
+                pseudo_label_path,
+                displayiters=displayiters,
+                saveiters=saveiters,
+                **kwargs,
+                
+            )
+        else:
+            print (f'snapshot-{adapt_iterations} exists. Skip training')            
 
     def after_adapt_inference(self, **kwargs):
 
+        
         pattern = os.path.join(
             self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
         )
