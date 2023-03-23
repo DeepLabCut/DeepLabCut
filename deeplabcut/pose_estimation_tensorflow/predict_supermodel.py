@@ -10,6 +10,7 @@
 #
 from pathlib import Path
 from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
+from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
 
 def video_inference_superanimal(
@@ -72,7 +73,17 @@ def video_inference_superanimal(
 
     for video in videos:
         vname = Path(video).stem
-        modelfolder = superanimal_name + "_" + vname + "_weights"
+        dlcparent_path = get_deeplabcut_path()
+        modelfolder = (
+            Path(dlcparent_path)
+            / "pose_estimation_tensorflow"
+            / "models"
+            / "pretrained"
+            / superanimal_name
+            + "_"
+            + vname
+            + "_weights"
+        )
         adapter = SpatiotemporalAdaptation(
             video,
             superanimal_name,
