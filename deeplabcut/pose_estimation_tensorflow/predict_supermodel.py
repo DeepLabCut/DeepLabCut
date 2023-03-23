@@ -79,10 +79,7 @@ def video_inference_superanimal(
             / "pose_estimation_tensorflow"
             / "models"
             / "pretrained"
-            / superanimal_name
-            + "_"
-            + vname
-            + "_weights"
+            / (superanimal_name + "_" + vname + "_weights")
         )
         adapter = SpatiotemporalAdaptation(
             video,
