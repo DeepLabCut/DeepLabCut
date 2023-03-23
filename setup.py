@@ -69,6 +69,8 @@ setuptools.setup(
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
+                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/superquadruped.yaml",
+                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/supertopview.yaml",
                 "deeplabcut/gui/style.qss",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
