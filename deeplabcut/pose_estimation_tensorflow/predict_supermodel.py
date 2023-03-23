@@ -10,7 +10,6 @@
 #
 from pathlib import Path
 from deeplabcut.modelzoo.api import SpatiotemporalAdaptation
-from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
 
 def video_inference_superanimal(
@@ -70,6 +69,7 @@ def video_inference_superanimal(
 
 
     """
+    from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
     for video in videos:
         vname = Path(video).stem
