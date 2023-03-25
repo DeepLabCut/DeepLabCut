@@ -277,8 +277,13 @@ class MainWindow(QMainWindow):
         self.load_project_button.setFixedWidth(200)
         self.load_project_button.clicked.connect(self._open_project)
 
+        self.run_superanimal_button = QtWidgets.QPushButton("Model Zoo")
+        self.run_superanimal_button.setFixedWidth(200)
+        self.run_superanimal_button.clicked.connect(self._goto_superanimal)
+
         self.layout_buttons.addWidget(self.create_project_button)
         self.layout_buttons.addWidget(self.load_project_button)
+        self.layout_buttons.addWidget(self.run_superanimal_button)
 
         self.layout.addLayout(self.layout_buttons)
 
@@ -397,6 +402,15 @@ class MainWindow(QMainWindow):
             open_project.config,
             open_project.loaded,
         )
+
+    def _goto_superanimal(self):
+        self.tab_widget = QtWidgets.QTabWidget()
+        self.tab_widget.setContentsMargins(0, 20, 0, 0)
+        self.modelzoo = ModelZoo(
+            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
+        )
+        self.tab_widget.addTab(self.modelzoo, "Model Zoo")
+        self.setCentralWidget(self.tab_widget)
 
     def load_config(self, config):
         self.config = config
