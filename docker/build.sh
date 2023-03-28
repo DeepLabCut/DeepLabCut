@@ -48,8 +48,8 @@ iterate_build_matrix() {
     # 11.1.1-runtime-ubuntu18.04 \
     mode=${1:-build}
     for cuda_version in \
-        11.4.0-runtime-ubuntu20.04 \
-        11.7.0-runtime-ubuntu20.04
+        11.4.0-cudnn8-runtime-ubuntu20.04 \
+        11.7.0-cudnn8-runtime-ubuntu20.04
     do
         for deeplabcut_version in \
             2.2.0.6 \

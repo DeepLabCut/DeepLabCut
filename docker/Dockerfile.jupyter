@@ -1,4 +1,4 @@
-ARG CUDA_VERSION=11.4.0-runtime-ubuntu20.04
+ARG CUDA_VERSION=11.4.0-cudnn8-runtime-ubuntu20.04
 ARG DEEPLABCUT_VERSION=2.2.1.1
 FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-gui-cuda${CUDA_VERSION}
 
