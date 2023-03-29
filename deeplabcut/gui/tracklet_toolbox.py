@@ -862,8 +862,8 @@ class TrackletVisualizer:
             return cols
 
         df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
-        df.index = pd.MultiIndex.from_tuples([ind
-                        for ind in index])
+        df.index = pd.MultiIndex.from_tuples(index)
+        
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
