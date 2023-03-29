@@ -878,8 +878,8 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer", inplace=True
+        df.columns = df.columns.set_levels(
+            [self.manager.cfg["scorer"]], level="scorer"
         )
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(
