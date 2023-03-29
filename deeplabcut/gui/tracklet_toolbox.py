@@ -836,7 +836,7 @@ class TrackletVisualizer:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
+            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -861,8 +861,9 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
-        df.index = index
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
+        df.index = pd.MultiIndex.from_tuples([ind
+                        for ind in index])
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
