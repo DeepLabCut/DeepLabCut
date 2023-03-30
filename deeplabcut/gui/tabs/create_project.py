@@ -193,7 +193,7 @@ class ProjectCreator(QtWidgets.QDialog):
                     child.setDisabled(True)
                 else:
                     child.setDisabled(False)
-
+    
     def update_project_name(self, text):
         self.proj_default = text
         self.update_project_location()

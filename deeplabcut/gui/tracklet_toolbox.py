@@ -92,12 +92,11 @@ class DraggablePoint:
             message = f"Do you want to remove the label {self.bodyParts}?"
             if self.likelihood is not None:
                 message += " You cannot undo this step!"
-            msg = QMessageBox(
-                title="Remove!",
-                text=message,
-            )
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning!")
+            msg.setText(message)
             msg.setStandardButtons(msg.Yes | msg.No)
-            if msg == 2:
+            if msg.exec() == msg.Yes:
                 self.delete_data()
 
     def delete_data(self):
@@ -837,7 +836,7 @@ class TrackletVisualizer:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
+            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -862,8 +861,9 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
-        df.index = index
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
+        df.index = pd.MultiIndex.from_tuples(index)
+        
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
@@ -878,8 +878,8 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer", inplace=True
+        df.columns = df.columns.set_levels(
+            [self.manager.cfg["scorer"]], level="scorer"
         )
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(
