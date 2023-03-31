@@ -8,41 +8,20 @@ msgstr ""
 "Language: ur\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "By"
-msgstr "بذریعہ"
-
-msgid "Download source file"
-msgstr "سورس فائل ڈاؤن لوڈ کریں"
-
-msgid "Edit this page"
-msgstr "اس صفحے میں ترمیم کریں"
+msgid "suggest edit"
+msgstr "ترمیم کی تجویز کریں"
 
 msgid "Last updated on"
 msgstr "آخری بار تازہ کاری ہوئی"
 
+msgid "Edit this page"
+msgstr "اس صفحے میں ترمیم کریں"
+
+msgid "Launch"
+msgstr "لانچ کریں"
+
 msgid "Print to PDF"
 msgstr "پی ڈی ایف پرنٹ کریں"
-
-msgid "suggest edit"
-msgstr "ترمیم کی تجویز کریں"
-
-msgid "Download this page"
-msgstr "اس صفحے کو ڈاؤن لوڈ کریں"
-
-msgid "Toggle navigation"
-msgstr "نیویگیشن ٹوگل کریں"
-
-msgid "By the"
-msgstr "کی طرف"
-
-msgid "Sphinx Book Theme"
-msgstr "سپنکس بک تھیم"
-
-msgid "previous page"
-msgstr "سابقہ ​​صفحہ"
-
-msgid "Source repository"
-msgstr "ماخذ ذخیرہ"
 
 msgid "open issue"
 msgstr "کھلا مسئلہ"
@@ -50,17 +29,38 @@ msgstr "کھلا مسئلہ"
 msgid "Download notebook file"
 msgstr "نوٹ بک فائل ڈاؤن لوڈ کریں"
 
-msgid "Copyright"
-msgstr "کاپی رائٹ"
+msgid "Toggle navigation"
+msgstr "نیویگیشن ٹوگل کریں"
 
-msgid "Theme by the"
-msgstr "کے ذریعہ تھیم"
+msgid "Source repository"
+msgstr "ماخذ ذخیرہ"
 
-msgid "Open an issue"
-msgstr "ایک مسئلہ کھولیں"
+msgid "By the"
+msgstr "کی طرف"
 
 msgid "next page"
 msgstr "اگلا صفحہ"
 
-msgid "Launch"
-msgstr "لانچ کریں"
+msgid "Sphinx Book Theme"
+msgstr "سپنکس بک تھیم"
+
+msgid "Download source file"
+msgstr "سورس فائل ڈاؤن لوڈ کریں"
+
+msgid "By"
+msgstr "بذریعہ"
+
+msgid "Copyright"
+msgstr "کاپی رائٹ"
+
+msgid "Open an issue"
+msgstr "ایک مسئلہ کھولیں"
+
+msgid "previous page"
+msgstr "سابقہ ​​صفحہ"
+
+msgid "Download this page"
+msgstr "اس صفحے کو ڈاؤن لوڈ کریں"
+
+msgid "Theme by the"
+msgstr "کے ذریعہ تھیم"

@@ -8,50 +8,20 @@ msgstr ""
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "By"
-msgstr "Förbi"
-
-msgid "repository"
-msgstr "förvar"
-
-msgid "Fullscreen mode"
-msgstr "Fullskärmsläge"
-
-msgid "Contents"
-msgstr "Innehåll"
-
-msgid "Download source file"
-msgstr "Ladda ner källfil"
-
-msgid "Edit this page"
-msgstr "Redigera den här sidan"
+msgid "suggest edit"
+msgstr "föreslå redigering"
 
 msgid "Last updated on"
 msgstr "Senast uppdaterad den"
 
+msgid "Edit this page"
+msgstr "Redigera den här sidan"
+
+msgid "Launch"
+msgstr "Lansera"
+
 msgid "Print to PDF"
 msgstr "Skriv ut till PDF"
-
-msgid "suggest edit"
-msgstr "föreslå redigering"
-
-msgid "Download this page"
-msgstr "Ladda ner den här sidan"
-
-msgid "Toggle navigation"
-msgstr "Växla navigering"
-
-msgid "By the"
-msgstr "Vid"
-
-msgid "Sphinx Book Theme"
-msgstr "Sphinx boktema"
-
-msgid "previous page"
-msgstr "föregående sida"
-
-msgid "Source repository"
-msgstr "Källförvar"
 
 msgid "open issue"
 msgstr "öppet problem"
@@ -59,17 +29,47 @@ msgstr "öppet problem"
 msgid "Download notebook file"
 msgstr "Ladda ner anteckningsbokfilen"
 
-msgid "Copyright"
-msgstr "upphovsrätt"
+msgid "Toggle navigation"
+msgstr "Växla navigering"
 
-msgid "Theme by the"
-msgstr "Tema av"
+msgid "Source repository"
+msgstr "Källförvar"
 
-msgid "Open an issue"
-msgstr "Öppna ett problem"
+msgid "By the"
+msgstr "Vid"
 
 msgid "next page"
 msgstr "nästa sida"
 
-msgid "Launch"
-msgstr "Lansera"
+msgid "repository"
+msgstr "förvar"
+
+msgid "Sphinx Book Theme"
+msgstr "Sphinx boktema"
+
+msgid "Download source file"
+msgstr "Ladda ner källfil"
+
+msgid "Contents"
+msgstr "Innehåll"
+
+msgid "By"
+msgstr "Förbi"
+
+msgid "Copyright"
+msgstr "upphovsrätt"
+
+msgid "Fullscreen mode"
+msgstr "Fullskärmsläge"
+
+msgid "Open an issue"
+msgstr "Öppna ett problem"
+
+msgid "previous page"
+msgstr "föregående sida"
+
+msgid "Download this page"
+msgstr "Ladda ner den här sidan"
+
+msgid "Theme by the"
+msgstr "Tema av"

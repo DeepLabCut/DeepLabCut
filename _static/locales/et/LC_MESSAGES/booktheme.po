@@ -8,50 +8,20 @@ msgstr ""
 "Language: et\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "By"
-msgstr "Kõrval"
-
-msgid "repository"
-msgstr "hoidla"
-
-msgid "Fullscreen mode"
-msgstr "Täisekraanirežiim"
-
-msgid "Contents"
-msgstr "Sisu"
-
-msgid "Download source file"
-msgstr "Laadige alla lähtefail"
-
-msgid "Edit this page"
-msgstr "Muutke seda lehte"
+msgid "suggest edit"
+msgstr "soovita muuta"
 
 msgid "Last updated on"
 msgstr "Viimati uuendatud"
 
+msgid "Edit this page"
+msgstr "Muutke seda lehte"
+
+msgid "Launch"
+msgstr "Käivitage"
+
 msgid "Print to PDF"
 msgstr "Prindi PDF-i"
-
-msgid "suggest edit"
-msgstr "soovita muuta"
-
-msgid "Download this page"
-msgstr "Laadige see leht alla"
-
-msgid "Toggle navigation"
-msgstr "Lülita navigeerimine sisse"
-
-msgid "By the"
-msgstr "Autor"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinksiraamatu teema"
-
-msgid "previous page"
-msgstr "eelmine leht"
-
-msgid "Source repository"
-msgstr "Allikahoidla"
 
 msgid "open issue"
 msgstr "avatud küsimus"
@@ -59,17 +29,47 @@ msgstr "avatud küsimus"
 msgid "Download notebook file"
 msgstr "Laadige sülearvuti fail alla"
 
-msgid "Copyright"
-msgstr "Autoriõigus"
+msgid "Toggle navigation"
+msgstr "Lülita navigeerimine sisse"
 
-msgid "Theme by the"
-msgstr "Teema"
+msgid "Source repository"
+msgstr "Allikahoidla"
 
-msgid "Open an issue"
-msgstr "Avage probleem"
+msgid "By the"
+msgstr "Autor"
 
 msgid "next page"
 msgstr "järgmine leht"
 
-msgid "Launch"
-msgstr "Käivitage"
+msgid "repository"
+msgstr "hoidla"
+
+msgid "Sphinx Book Theme"
+msgstr "Sfinksiraamatu teema"
+
+msgid "Download source file"
+msgstr "Laadige alla lähtefail"
+
+msgid "Contents"
+msgstr "Sisu"
+
+msgid "By"
+msgstr "Kõrval"
+
+msgid "Copyright"
+msgstr "Autoriõigus"
+
+msgid "Fullscreen mode"
+msgstr "Täisekraanirežiim"
+
+msgid "Open an issue"
+msgstr "Avage probleem"
+
+msgid "previous page"
+msgstr "eelmine leht"
+
+msgid "Download this page"
+msgstr "Laadige see leht alla"
+
+msgid "Theme by the"
+msgstr "Teema"

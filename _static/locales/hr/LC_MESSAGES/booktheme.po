@@ -8,50 +8,20 @@ msgstr ""
 "Language: hr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "By"
-msgstr "Po"
-
-msgid "repository"
-msgstr "spremište"
-
-msgid "Fullscreen mode"
-msgstr "Način preko cijelog zaslona"
-
-msgid "Contents"
-msgstr "Sadržaj"
-
-msgid "Download source file"
-msgstr "Preuzmi izvornu datoteku"
-
-msgid "Edit this page"
-msgstr "Uredite ovu stranicu"
+msgid "suggest edit"
+msgstr "predloži uređivanje"
 
 msgid "Last updated on"
 msgstr "Posljednje ažuriranje:"
 
+msgid "Edit this page"
+msgstr "Uredite ovu stranicu"
+
+msgid "Launch"
+msgstr "Pokrenite"
+
 msgid "Print to PDF"
 msgstr "Ispis u PDF"
-
-msgid "suggest edit"
-msgstr "predloži uređivanje"
-
-msgid "Download this page"
-msgstr "Preuzmite ovu stranicu"
-
-msgid "Toggle navigation"
-msgstr "Uključi / isključi navigaciju"
-
-msgid "By the"
-msgstr "Od strane"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema knjige Sphinx"
-
-msgid "previous page"
-msgstr "Prethodna stranica"
-
-msgid "Source repository"
-msgstr "Izvorno spremište"
 
 msgid "open issue"
 msgstr "otvoreno izdanje"
@@ -59,17 +29,47 @@ msgstr "otvoreno izdanje"
 msgid "Download notebook file"
 msgstr "Preuzmi datoteku bilježnice"
 
-msgid "Copyright"
-msgstr "Autorska prava"
+msgid "Toggle navigation"
+msgstr "Uključi / isključi navigaciju"
 
-msgid "Theme by the"
-msgstr "Tema autora"
+msgid "Source repository"
+msgstr "Izvorno spremište"
 
-msgid "Open an issue"
-msgstr "Otvorite izdanje"
+msgid "By the"
+msgstr "Od strane"
 
 msgid "next page"
 msgstr "sljedeća stranica"
 
-msgid "Launch"
-msgstr "Pokrenite"
+msgid "repository"
+msgstr "spremište"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema knjige Sphinx"
+
+msgid "Download source file"
+msgstr "Preuzmi izvornu datoteku"
+
+msgid "Contents"
+msgstr "Sadržaj"
+
+msgid "By"
+msgstr "Po"
+
+msgid "Copyright"
+msgstr "Autorska prava"
+
+msgid "Fullscreen mode"
+msgstr "Način preko cijelog zaslona"
+
+msgid "Open an issue"
+msgstr "Otvorite izdanje"
+
+msgid "previous page"
+msgstr "Prethodna stranica"
+
+msgid "Download this page"
+msgstr "Preuzmite ovu stranicu"
+
+msgid "Theme by the"
+msgstr "Tema autora"
