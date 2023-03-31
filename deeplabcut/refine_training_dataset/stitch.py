@@ -858,7 +858,8 @@ class TrackletStitcher:
         self._first_frame = min(self.tracks, key=lambda t: t.start).start
         self._last_frame = max(self.tracks, key=lambda t: t.end).end
         data = []
-        for track in self.tracks:
+        # Guarantee track data are sorted in the order defined in the config
+        for track in sorted(self.tracks, key=lambda t: t.identity):
             flat_data = track.flat_data
             temp = np.full((self.n_frames, flat_data.shape[1]), np.nan)
             temp[track.inds - self._first_frame] = flat_data
