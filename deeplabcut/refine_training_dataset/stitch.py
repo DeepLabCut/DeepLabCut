@@ -538,7 +538,10 @@ class TrackletStitcher:
         header = dict_of_dict.pop("header", None)
         single = None
         for k, dict_ in dict_of_dict.items():
-            inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+            try:
+                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+            except ValueError:
+                continue
             inds = np.asarray(inds)
             data = np.asarray(data)
             try:
