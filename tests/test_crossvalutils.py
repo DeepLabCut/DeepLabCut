@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import numpy as np
-import pickle
+import pandas as pd
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 
 
@@ -98,8 +98,7 @@ def test_benchmark_paf_graphs_montblanc(evaluation_data_and_metadata_montblanc):
         [BEST_GRAPH_MONTBLANC],
         split_inds=[metadata["data"]["trainIndices"], metadata["data"]["testIndices"]],
     )
-    with open("tests/data/montblanc_map.pickle", "rb") as file:
-        results_gt = pickle.load(file)
+    results_gt = pd.read_pickle("tests/data/montblanc_map.pickle")
     np.testing.assert_equal(
         results[1].loc["purity"].to_numpy().squeeze(),
         results_gt[0].loc["purity", 6].to_numpy(),
