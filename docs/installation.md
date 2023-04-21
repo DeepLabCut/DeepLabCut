@@ -55,6 +55,10 @@ Windows users: Be sure you have `git` installed along with anaconda: https://git
 - **Windows/Linux/MacBooks:** git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
 To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine.)
 
+```{Hint}
+Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a RIGHT-click, "open as admin"
+```
+
 -  Now, in Terminal (or Anaconda Command Prompt for Windows users), go to the DeepLabCut folder. If you cloned the repo onto your Desktop, the command may look like:
 
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
