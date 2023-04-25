@@ -405,7 +405,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
-                sum_ = temp_dt.sum(axis=1, level=1)
+                sum_ = temp_dt.groupby(level="bodyparts", axis=1).sum()
                 ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":

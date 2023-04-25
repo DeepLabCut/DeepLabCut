@@ -13,13 +13,15 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-from threading import Event, Thread
+from threading import Event
+from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import QMutex
 
 
 class DraggablePoint:
@@ -92,12 +94,11 @@ class DraggablePoint:
             message = f"Do you want to remove the label {self.bodyParts}?"
             if self.likelihood is not None:
                 message += " You cannot undo this step!"
-            msg = QMessageBox(
-                title="Remove!",
-                text=message,
-            )
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning!")
+            msg.setText(message)
             msg.setStandardButtons(msg.Yes | msg.No)
-            if msg == 2:
+            if msg.exec() == msg.Yes:
                 self.delete_data()
 
     def delete_data(self):
@@ -203,10 +204,10 @@ class BackgroundPlayer:
                     i -= 1
                 else:
                     i -= 2 * (len(self.speed) - 1)
-            if i > self.viz.manager.nframes:
+            if i >= self.viz.manager.nframes:
                 i = 0
             elif i < 0:
-                i = self.viz.manager.nframes
+                i = self.viz.manager.nframes - 1
             self.viz.slider.set_val(i)
 
     def pause(self):
@@ -248,6 +249,7 @@ class BackgroundPlayer:
         self.resume()
 
     def terminate(self, *args):
+        self.can_run.set()
         self.running = False
 
 
@@ -318,8 +320,9 @@ class TrackletVisualizer:
         self.picked_pair = []
         self.cuts = []
 
+        self.mutex = QMutex()
         self.player = BackgroundPlayer(self)
-        self.thread_player = Thread(target=self.player.run, daemon=True)
+        self.worker, self.thread_player = move_to_separate_thread(self.player.run)
         self.thread_player.start()
 
         self.dps = []
@@ -436,7 +439,7 @@ class TrackletVisualizer:
         self.lasso_toggle.on_clicked(self.selector.toggle)
         self.display_traces(only_picked=False)
         self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
-        plt.show()
+        self.fig.show()
 
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
@@ -785,9 +788,11 @@ class TrackletVisualizer:
         self.vline_y.set_xdata([val, val])
 
     def on_change(self, val):
+        self.mutex.lock()  # Make video frame retrieval thread-safe
         self.curr_frame = int(val)
         self.video.set_to_frame(self.curr_frame)
         img = self.video.read_frame()
+        self.mutex.unlock()
         if img is not None:
             # Automatically disable the draggable points
             if self.draggable:
@@ -837,7 +842,7 @@ class TrackletVisualizer:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
+            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -862,8 +867,9 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
-        df.index = index
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
+        df.index = pd.MultiIndex.from_tuples(index)
+        
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
@@ -878,8 +884,8 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer", inplace=True
+        df.columns = df.columns.set_levels(
+            [self.manager.cfg["scorer"]], level="scorer"
         )
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(

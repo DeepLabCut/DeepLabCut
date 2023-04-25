@@ -27,7 +27,7 @@
 [🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues) 
 
 
-[🫶 Getting Asisstance](https://deeplabcut.github.io/DeepLabCut/README.html#be-part-of-the-dlc-community) | 
+[🫶 Getting Assistance](https://deeplabcut.github.io/DeepLabCut/README.html#be-part-of-the-dlc-community) | 
 [∞ DeepLabCut Online Course](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/DLCcourse.md) | 
 [📝 Publications](https://deeplabcut.github.io/DeepLabCut/README.html#references) | 
 [👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 

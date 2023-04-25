@@ -18,7 +18,6 @@ import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
 from skimage.util import img_as_ubyte
-from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
 from deeplabcut.modelzoo.utils import parse_available_supermodels
@@ -290,7 +289,13 @@ def video_inference(
 
     # add a temp folder for checkpoint
 
-    weight_folder = superanimal_name + "_weights"
+    weight_folder = str(
+        Path(dlc_root_path)
+        / "pose_estimation_tensorflow"
+        / "models"
+        / "pretrained"
+        / (superanimal_name + "_weights")
+    )
 
     if superanimal_name in MODELOPTIONS:
         if not os.path.exists(weight_folder):

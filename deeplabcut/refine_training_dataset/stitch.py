@@ -538,7 +538,10 @@ class TrackletStitcher:
         header = dict_of_dict.pop("header", None)
         single = None
         for k, dict_ in dict_of_dict.items():
-            inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+            try:
+                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+            except ValueError:
+                continue
             inds = np.asarray(inds)
             data = np.asarray(data)
             try:
@@ -858,7 +861,8 @@ class TrackletStitcher:
         self._first_frame = min(self.tracks, key=lambda t: t.start).start
         self._last_frame = max(self.tracks, key=lambda t: t.end).end
         data = []
-        for track in self.tracks:
+        # Guarantee track data are sorted in the order defined in the config
+        for track in sorted(self.tracks, key=lambda t: t.identity):
             flat_data = track.flat_data
             temp = np.full((self.n_frames, flat_data.shape[1]), np.nan)
             temp[track.inds - self._first_frame] = flat_data
