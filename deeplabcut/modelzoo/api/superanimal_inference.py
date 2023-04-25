@@ -88,7 +88,8 @@ def _average_multiple_scale_preds(
     xyp = np.zeros((len(scale_list), num_kpts, 3))
     for scale_id, pred in enumerate(preds):
         # empty prediction if pred is not a dict
-        if isinstance(pred, list):
+        if not isinstance(pred, dict):
+            xyp[scale_id] = np.nan
             continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
