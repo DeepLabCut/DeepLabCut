@@ -500,9 +500,19 @@ conda init zsh
 </section>
 <section id="step-2-please-use-our-supplied-conda-environment">
 <h3>Step 2: please use our supplied conda environment<a class="headerlink" href="#step-2-please-use-our-supplied-conda-environment" title="Permalink to this heading">#</a></h3>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Windows users: Be sure you have <code class="docutils literal notranslate"><span class="pre">git</span></code> installed along with anaconda: <a class="reference external" href="https://gitforwindows.org/">https://gitforwindows.org/</a></p>
+</div>
 <ul class="simple">
 <li><p><strong>Windows/Linux/MacBooks:</strong> git clone this repo (in the terminal/cmd program, while <strong>in a folder</strong> you wish to place DeepLabCut
 To git clone type: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DeepLabCut/DeepLabCut.git</span></code>). Note, this can be anywhere, even downloads is fine.)</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a RIGHT-click, “open as admin”</p>
+</div>
+<ul class="simple">
 <li><p>Now, in Terminal (or Anaconda Command Prompt for Windows users), go to the DeepLabCut folder. If you cloned the repo onto your Desktop, the command may look like:</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments</span></code></p>
@@ -568,7 +578,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <ul class="simple">
 <li><p>check which driver is installed by typing this into the terminal: <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>.</p></li>
 </ul>
-<p><strong>SECOND</strong>, install CUDA (versions up to CUDA11 are supported, together with TF2.5): <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
+<p><strong>SECOND</strong>, install CUDA: <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
 <p><strong>THIRD:</strong> Follow the steps above to get the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT</span></code> conda file and install it!</p>
 <section id="notes">
 <h5>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h5>
@@ -622,12 +632,12 @@ Here are some additional resources users have found helpful (posted without endo
 <ul class="simple">
 <li><p>Computer:</p>
 <ul>
-<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (<a class="github reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">DeepLabCut/Docker4DeepLabCut2.0</a>). Now we use the new Docker containers supplied on this repo, also available through <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> or the <a class="reference external" href="https://pypi.org/project/deeplabcut-docker/"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code></a> helper script.</p></li>
+<li><p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS</strong> and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (<a class="github reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">DeepLabCut/Docker4DeepLabCut2.0</a>). Now we use the new Docker containers supplied on this repo (linux support only), also available through <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> or the <a class="reference external" href="https://pypi.org/project/deeplabcut-docker/"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code></a> helper script.</p></li>
 </ul>
 </li>
 <li><p>Computer Hardware:</p>
 <ul>
-<li><p>Ideally, you will use a strong GPU with <em>at least</em> 8GB memory such as the <a class="reference external" href="https://www.nvidia.com/en-us/shop/geforce/?page=1&amp;limit=9&amp;locale=en-us">NVIDIA GeForce 1080 Ti or 2080 Ti</a>.  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/47">Google cloud/amazon web services</a> or Google Colaboratory.</p></li>
+<li><p>Ideally, you will use a strong NVIDIA GPU with <em>at least</em> 8GB memory.  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/47">Google cloud/amazon web services</a> or Google Colaboratory.</p></li>
 </ul>
 </li>
 <li><p>Camera Hardware:</p>
