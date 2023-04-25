@@ -592,7 +592,8 @@ class TrackletVisualizer:
                     ] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
                     self.fill_shaded_areas()
                     self.cuts = []
-                    self.ax_slider.lines.clear()
+                    for line in self.ax_slider.lines:
+                        line.remove()
         elif event.key == "backspace":
             if not self.dps:  # Last flag deletion
                 try:
@@ -684,7 +685,8 @@ class TrackletVisualizer:
                 if len(self.cuts) > 1:
                     mask[self.cuts[-2] : self.cuts[-1] + 1] = True
                     self.cuts = []
-                    self.ax_slider.lines.clear()
+                    for line in self.ax_slider.lines:
+                        line.remove()
                     self.clean_collections()
                 else:
                     return
@@ -869,7 +871,7 @@ class TrackletVisualizer:
 
         df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
         df.index = pd.MultiIndex.from_tuples(index)
-        
+
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
