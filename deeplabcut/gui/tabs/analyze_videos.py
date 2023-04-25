@@ -324,9 +324,12 @@ class AnalyzeVideos(DefaultTab):
         save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
         filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        create_video_all_detections = (
-                self.create_detections_video_checkbox.checkState() == Qt.Checked
-            )
+        try:
+            create_video_all_detections = (
+                    self.create_detections_video_checkbox.checkState() == Qt.Checked
+                )
+        except AttributeError:
+            create_video_all_detections = False
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
                 config,
