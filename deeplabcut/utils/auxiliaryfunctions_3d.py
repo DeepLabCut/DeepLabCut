@@ -304,7 +304,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
     Parameters:
     -----------
     tracklets1/2: Tracklet() object (defined in stitch.py)
-    F: nd.array
+    F: numpy.ndarray
         Fundamental matrix between cam1 and cam2
     """
     from scipy.optimize import linear_sum_assignment
