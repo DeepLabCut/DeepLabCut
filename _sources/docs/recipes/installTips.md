@@ -342,7 +342,7 @@ conda env create -f DEEPLABCUT_M1.yaml
 conda activate DEEPLABCUT_M1
 conda env config vars set CONDA_SUBDIR=osx-64
 ```
-Now, as the print statement says, please deactivate and re-activate to set the change:
+Now, as the print satement says, please deactivate and re-activate to set the change:
 
 ```
 conda deactivate
