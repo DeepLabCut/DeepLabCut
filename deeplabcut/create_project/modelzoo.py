@@ -21,7 +21,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     MODELOPTIONS,
 )
 
-Modeloptions = MODELOPTIONS  # backwards compatability for COLAB NOTEBOOK
+Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
