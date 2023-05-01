@@ -222,7 +222,7 @@ class RefineTracklets(DefaultTab):
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
             deeplabcut.merge_datasets(self.root.config, forceiterate=None)
-            self.root.viz.export_to_training_data()
+            self.viz.export_to_training_data()
 
     def refine_tracks(self):
         cfg = self.root.cfg
