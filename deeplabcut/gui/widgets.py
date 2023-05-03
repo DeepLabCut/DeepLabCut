@@ -514,7 +514,6 @@ class FrameCropper(QtWidgets.QDialog):
         self.rs = RectangleSelector(
             self.ax,
             self.line_select_callback,
-            drawtype="box",
             minspanx=5,
             minspany=5,
             interactive=True,
