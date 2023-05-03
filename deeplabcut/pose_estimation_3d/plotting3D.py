@@ -227,7 +227,7 @@ def create_labeled_video_3d(
                         str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                     ),
                 )
-            except FileNotFoundError:
+            except IndexError:
                 print(
                     "No filtered predictions found, the unfiltered predictions will be used instead."
                 )
