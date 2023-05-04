@@ -227,7 +227,7 @@ def create_labeled_video_3d(
                         str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                     ),
                 )
-            except FileNotFoundError:
+            except IndexError:
                 print(
                     "No filtered predictions found, the unfiltered predictions will be used instead."
                 )
@@ -269,10 +269,10 @@ def create_labeled_video_3d(
 
             # Format data
             mask2d = df_cam1.columns.get_level_values("bodyparts").isin(bodyparts2plot)
-            xy1 = df_cam1.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            xy1 = df_cam1.iloc[:len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible1 = xy1[..., 2] >= pcutoff
             xy1[~visible1] = np.nan
-            xy2 = df_cam2.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            xy2 = df_cam2.iloc[:len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible2 = xy2[..., 2] >= pcutoff
             xy2[~visible2] = np.nan
             mask = df_3d.columns.get_level_values("bodyparts").isin(bodyparts2plot)
