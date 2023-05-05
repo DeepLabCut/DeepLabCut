@@ -423,14 +423,14 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">Step 2: please use our supplied conda environment</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">DOCKER:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pro-tips">Pro Tips:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">DOCKER:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pro-tips">Pro Tips:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-support"><strong>GPU Support:</strong></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes:</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-support"><strong>GPU Support:</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes:</a></li>
 </ul>
 </li>
 </ul>
@@ -544,13 +544,13 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <ul class="simple">
 <li><p>We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/docker.html">here</a>.</p></li>
 </ul>
+</section>
 <section id="pro-tips">
-<h3>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this heading">#</a></h3>
+<h2>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this heading">#</a></h2>
 <p>More <span class="xref myst">installation ProTips</span> are also available.</p>
 <p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==2.2</span></code>. Once installed, you can check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.</p>
 <p>Here are some conda environment management tips: <a class="reference external" href="https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index">https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index</a></p>
 <p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see <span class="xref myst">here</span> on how to get the latest GitHub code, and how to test your installation by following this video: <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
-</section>
 <section id="creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
 <h3>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Permalink to this heading">#</a></h3>
 <p>*Note in a fresh ubuntu install, you will often have to run: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-dev</span></code> to install the GNU Compiler Collection and the python developing environment.</p>
@@ -561,15 +561,16 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><strong>Pre-version2.3 (Dec 2022):</strong> The only thing you then need to add to the env is deeplabcut (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> which has wxPython for GUI support. For Windows and MacOS, you just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">wxPython&lt;4.1.0</span></code> but for linux you might need the specific wheel (<a class="reference external" href="https://wxpython.org/pages/downloads/index.html">https://wxpython.org/pages/downloads/index.html</a>).</p>
 <p>We have some tips for linux users here, as the latest Ubuntu doesn’t easily support a 1-click install: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html</a></p>
 </section>
+</section>
 <section id="gpu-support">
-<h3><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Permalink to this heading">#</a></h3>
+<h2><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Permalink to this heading">#</a></h2>
 <p>The ONLY thing you need to do <strong>first</strong> if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.</p>
 <ul class="simple">
 <li><p>CUDA: <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">https://developer.nvidia.com/cuda-downloads</a> (just follow the prompts here!)</p></li>
 <li><p>DRIVERS: <a class="reference external" href="https://www.nvidia.com/Download/index.aspx">https://www.nvidia.com/Download/index.aspx</a></p></li>
 </ul>
 <section id="the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
-<h4>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Permalink to this heading">#</a></h4>
+<h3>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Permalink to this heading">#</a></h3>
 <p><strong>CRITICAL:</strong> If you have a GPU, you should FIRST <strong>install the NVIDIA CUDA package and an appropriate driver for your specific GPU</strong>, then you can use the supplied conda file. Please follow the instructions found here <a class="reference external" href="https://www.tensorflow.org/install/gpu">https://www.tensorflow.org/install/gpu</a>, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.</p>
 <ul class="simple">
 <li><p>Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.</p></li>
@@ -581,7 +582,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><strong>SECOND</strong>, install CUDA: <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
 <p><strong>THIRD:</strong> Follow the steps above to get the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT</span></code> conda file and install it!</p>
 <section id="notes">
-<h5>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h5>
+<h4>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h4>
 <ul class="simple">
 <li><p><strong>All of the TensorFlow versions work with DeepLabCut</strong>. But, please be mindful different versions of TensorFlow require different CUDA versions.</p></li>
 <li><p>As the combination of TensorFlow and CUDA matters, we strongly encourage you to <strong>check your driver/cuDNN/CUDA/TensorFlow versions</strong> <a class="reference external" href="https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690">on this StackOverflow post</a>.</p></li>
@@ -594,7 +595,6 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <li><p>You can test that your GPU is being properly engaged with these additional <a class="reference external" href="https://www.tensorflow.org/programmers_guide/using_gpu">tips</a>.</p></li>
 <li><p>Ubuntu users might find this <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#installation-on-ubuntu-20-04-lts">installation guide</a> for a fresh ubuntu install useful as well.</p></li>
 </ul>
-</section>
 </section>
 </section>
 </section>
@@ -741,14 +741,14 @@ Here are some additional resources users have found helpful (posted without endo
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-please-use-our-supplied-conda-environment">Step 2: please use our supplied conda environment</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">DOCKER:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pro-tips">Pro Tips:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">DOCKER:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pro-tips">Pro Tips:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-support"><strong>GPU Support:</strong></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes:</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-support"><strong>GPU Support:</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes:</a></li>
 </ul>
 </li>
 </ul>
