@@ -88,7 +88,7 @@ Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have
 
 - We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page [here](https://deeplabcut.github.io/DeepLabCut/docs/docker.html).
 
-### Pro Tips:
+## Pro Tips:
 
 More [installation ProTips](installTips) are also available.
 
@@ -115,7 +115,7 @@ In the terminal type:
 
 We have some tips for linux users here, as the latest Ubuntu doesn't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
-### **GPU Support:**
+## **GPU Support:**
 
 The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.
 - CUDA: https://developer.nvidia.com/cuda-downloads (just follow the prompts here!)
