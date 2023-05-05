@@ -514,12 +514,10 @@ class FrameCropper(QtWidgets.QDialog):
         self.rs = RectangleSelector(
             self.ax,
             self.line_select_callback,
-            drawtype="box",
             minspanx=5,
             minspany=5,
             interactive=True,
             spancoords="pixels",
-            rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
         )
         self.show()
         self.fig.canvas.start_event_loop(timeout=-1)
