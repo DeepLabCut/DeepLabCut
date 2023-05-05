@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
@@ -119,3 +120,43 @@ def test_get_list_of_videos(tmpdir_factory):
             videotype=ext,
         )
         assert len(videos) == 1
+
+
+def test_write_config_has_skeleton(tmpdir_factory):
+    """ Required for backward compatibility """
+    fake_folder = tmpdir_factory.mktemp("fakeConfigs")
+    fake_config_file = fake_folder / Path("fakeConfig")
+    auxiliaryfunctions.write_config(fake_config_file, {})
+    config_data = auxiliaryfunctions.read_config(fake_config_file)        
+    assert "skeleton" in config_data
+
+
+def test_intersection_of_body_parts_and_ones_given_by_user():
+    all_bodyparts = ["head", "shoulders", "knees", "and toes", "knees and toes"]
+    comparison_bodyparts = {"shoulders", "knees and toes", "others"}
+    expected_bodyparts = ["shoulders", "knees and toes"]
+
+    for multianimal, bodyparts, multianimalbodyparts, uniquebodyparts in [
+        (False, all_bodyparts, None, None),
+        (True, None, all_bodyparts[:3], all_bodyparts[3:]),
+    ]:
+        cfg = {
+            "multianimalproject": multianimal,
+            "bodyparts": bodyparts,
+            "multianimalbodyparts": multianimalbodyparts,
+            "uniquebodyparts": uniquebodyparts,
+        }
+
+        filtered_bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts="all"
+        )
+        print(filtered_bodyparts)
+        assert len(all_bodyparts) == len(filtered_bodyparts)
+        assert all([bpt in all_bodyparts for bpt in filtered_bodyparts])
+
+        filtered_bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts=comparison_bodyparts,
+        )
+        print(filtered_bodyparts)
+        assert len(expected_bodyparts) == len(filtered_bodyparts)
+        assert all([bpt in expected_bodyparts for bpt in filtered_bodyparts])
