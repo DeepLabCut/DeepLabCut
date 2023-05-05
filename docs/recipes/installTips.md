@@ -312,58 +312,6 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
-
-## DeepLabCut MacOS M1 and M2 chip installation environment instructions:
-
-This only assumes you have anaconda installed.
-
-Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 or M2 chip, and follow these steps:
-
-(1) git clone the deeplabcut cut repo:
-
-```
-git clone https://github.com/DeepLabCut/DeepLabCut.git
-```
-
-(2) in the program terminal run: `cd DeepLabCut/conda-environments`
-
-(3) Click [here](https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing) to download the Rosetta wheel for TensorFlow. We assume this goes into your Downloads folder. This downloads TF 2.4.1; https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
-(for different versions see here: https://github.com/tensorflow/tensorflow/issues/46044).
-
-(4) Then, run:
-
-```
-conda env create -f DEEPLABCUT_M1.yaml
-```
-
-(5) Please activate the environment and set osx-64; i.e., then, run:
-
-```
-conda activate DEEPLABCUT_M1
-conda env config vars set CONDA_SUBDIR=osx-64
-```
-Now, as the print statement says, please deactivate and re-activate to set the change:
-
-```
-conda deactivate
-conda activate DEEPLABCUT_M1
-conda env update -f DEEPLABCUT_M1.yaml
-```
-
-(5) Next, run:
-
- ```
- pip install ~/Downloads/tensorflow-2.4.1-py3-none-any.whl --no-dependencies --force-reinstall
- ```
- (again, assumes this file in your downloads folder)
-
-
-(6) Next, launch DLC with `pythonw -m deeplabcut` (or if DLC version 2.3+, please use `python -m deeplabcut`)
-
-GUI will open!
-
-Note: Based on issues  #1380 and #2011, thanks!
-
 ## How to confirm that your GPU is being used by DeepLabCut
 
 During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:
