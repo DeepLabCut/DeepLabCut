@@ -312,6 +312,33 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
+## DeepLabCut MacOS M1 and M2 chip installation environment instructions:
+
+This only assumes you have anaconda installed.
+
+Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 or M2 chip, and follow these steps:
+
+(1) git clone the deeplabcut cut repo:
+
+```bash
+git clone https://github.com/DeepLabCut/DeepLabCut.git
+```
+
+(2) in the program terminal run: `cd DeepLabCut/conda-environments`
+
+(3) Then, run:
+
+```bash
+conda env create -f DEEPLABCUT_M1.yaml
+```
+
+(4) Finally, activate your environment and launch DLC. The GUI will open!
+
+```bash
+conda activate DEEPLABCUT_M1
+python -m deeplabcut
+```
+
 ## How to confirm that your GPU is being used by DeepLabCut
 
 During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:
