@@ -704,35 +704,20 @@ For more examples and ideas, visit:
 <p>This only assumes you have anaconda installed.</p>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT_M1.yaml</span></code> conda file if you have an Macbok with an M1 or M2 chip, and follow these steps:</p>
 <p>(1) git clone the deeplabcut cut repo:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DeepLabCut/DeepLabCut.git
 </pre></div>
 </div>
 <p>(2) in the program terminal run: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">DeepLabCut/conda-environments</span></code></p>
-<p>(3) Click <a class="reference external" href="https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing">here</a> to download the Rosetta wheel for TensorFlow. We assume this goes into your Downloads folder. This downloads TF 2.4.1; <a class="reference external" href="https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing">https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing</a>
-(for different versions see here: <a class="github reference external" href="https://github.com/tensorflow/tensorflow/issues/46044">tensorflow/tensorflow#46044</a>).</p>
-<p>(4) Then, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">DEEPLABCUT_M1</span><span class="o">.</span><span class="n">yaml</span>
+<p>(3) Then, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>DEEPLABCUT_M1.yaml
 </pre></div>
 </div>
-<p>(5) Please activate the environment and set osx-64; i.e., then, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">DEEPLABCUT_M1</span>
-<span class="n">conda</span> <span class="n">env</span> <span class="n">config</span> <span class="nb">vars</span> <span class="nb">set</span> <span class="n">CONDA_SUBDIR</span><span class="o">=</span><span class="n">osx</span><span class="o">-</span><span class="mi">64</span>
+<p>(4) Finally, activate your environment and to launch DLC with the GUI</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT_M1
+python<span class="w"> </span>-m<span class="w"> </span>deeplabcut
 </pre></div>
 </div>
-<p>Now, as the print statement says, please deactivate and re-activate to set the change:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">DEEPLABCUT_M1</span>
-<span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">f</span> <span class="n">DEEPLABCUT_M1</span><span class="o">.</span><span class="n">yaml</span>
-</pre></div>
-</div>
-<p>(5) Next, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">~/</span><span class="n">Downloads</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">-</span><span class="mf">2.4.1</span><span class="o">-</span><span class="n">py3</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">dependencies</span> <span class="o">--</span><span class="n">force</span><span class="o">-</span><span class="n">reinstall</span>
-</pre></div>
-</div>
-<p>(again, assumes this file in your downloads folder)</p>
-<p>(6) Next, launch DLC with <code class="docutils literal notranslate"><span class="pre">pythonw</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> (or if DLC version 2.3+, please use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>)</p>
-<p>GUI will open!</p>
-<p>Note: Based on issues  #1380 and #2011, thanks!</p>
+<p>The GUI will open. Of course, you can also run DeepLabCut in headless mode.</p>
 </section>
 <section id="how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut">
 <h2>How to confirm that your GPU is being used by DeepLabCut<a class="headerlink" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut" title="Permalink to this heading">#</a></h2>
