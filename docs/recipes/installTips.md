@@ -332,12 +332,14 @@ git clone https://github.com/DeepLabCut/DeepLabCut.git
 conda env create -f DEEPLABCUT_M1.yaml
 ```
 
-(4) Finally, activate your environment and launch DLC. The GUI will open!
+(4) Finally, activate your environment and to launch DLC with the GUI
 
 ```bash
 conda activate DEEPLABCUT_M1
 python -m deeplabcut
 ```
+
+The GUI will open. Of course, you can also run DeepLabCut in headless mode. 
 
 ## How to confirm that your GPU is being used by DeepLabCut
 
