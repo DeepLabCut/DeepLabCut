@@ -165,3 +165,48 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
     print(filtered_bpts)
     assert len(expected_bpts) == len(filtered_bpts)
     assert all([bpt in expected_bpts for bpt in filtered_bpts])
+
+
+class MockPath:
+
+    def __init__(self, path: Path, st_mtime: int):
+        self.path = path
+        self.parent = self.path.parent
+        self.st_mtime = st_mtime
+    
+    def lstat(self):
+        return self
+
+
+
+# labeled_folders: (has_H5, H5_st_mtime, folder_name)
+@pytest.mark.parametrize(
+    "labeled_folders, next_folder_name",
+    [
+        ([(True, 1, "a"), (False, None, "b"), (False, None, "c")], "b"),
+        ([(False, None, "a"), (True, 123, "d"), (False, None, "f")], "f"),
+    ]
+)
+def test_find_next_unlabeled_folder(
+    tmpdir_factory, monkeypatch, labeled_folders, next_folder_name,
+):
+    project_folder = tmpdir_factory.mktemp("project")
+    fake_cfg = Path(project_folder / "cfg.yaml")
+    auxiliaryfunctions.write_config(fake_cfg, {"project_path": str(project_folder)})
+
+    data_folder = project_folder / "labeled-data"
+    data_folder.mkdir()
+    rglob_results = []
+    for has_h5, h5_last_mod_time, folder_name in labeled_folders:
+        labeled_folder_path = Path(data_folder / folder_name)
+        labeled_folder_path.mkdir()
+        if has_h5:
+            h5_path = Path(labeled_folder_path / "data.h5")
+            rglob_results.append(MockPath(h5_path, h5_last_mod_time))
+
+    def get_rglob_results(*args, **kwargs):
+        return rglob_results
+
+    monkeypatch.setattr(Path, "rglob", get_rglob_results)
+    next_folder = auxiliaryfunctions.find_next_unlabeled_folder(fake_cfg)
+    assert str(next_folder) == str(Path(data_folder / next_folder_name))
