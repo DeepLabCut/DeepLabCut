@@ -18,6 +18,9 @@ examples/.DS_Store
 *.ckpt
 snapshot-*
 
+# Wandb files
+wandb/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

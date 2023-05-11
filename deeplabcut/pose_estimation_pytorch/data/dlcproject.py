@@ -63,14 +63,30 @@ class DLCProject(BaseProject):
                           self.dataframe,
                           self.image_id_offset)
         
-        self.image_path2index = {}
-        for i, image in enumerate(data["images"]):
-            image_path = image["file_name"]
-            self.image_path2index[image_path] = i
+        self._init_annotation_image_correspondance(data)
 
         for key in self.keys_to_load:
             setattr(self, key, data[key])
         print('The data has been loaded!')
+
+    def _init_annotation_image_correspondance(self, data):
+        
+        # Path to id correspondance
+        self.image_path2image_id = {}
+        for i, image in enumerate(data["images"]):
+            image_path = image["file_name"]
+            self.image_path2image_id[image_path] = image['id']
+
+        # id to annotations list
+        self.id2annotations_idx = {}
+        for i, annotation in enumerate(data['annotations']):
+            image_id = annotation['image_id']
+            try:
+                self.id2annotations_idx[image_id].append(i)
+            except KeyError:
+                self.id2annotations_idx[image_id] = [i]
+
+        return
 
     def load_split(self):
         """
@@ -111,8 +127,7 @@ class DLCProject(BaseProject):
         x = annotation['keypoints'][::3]
         y = annotation['keypoints'][1::3]
         vis = annotation['keypoints'][2::3]
-        eps = 1e-6
-        undef_ids = list(np.where(x <= eps)[0])
+        undef_ids = ((x > 0) & (y > 0)).astype(int)
         keypoints = []
 
         for pair in np.stack([x, y]).T:

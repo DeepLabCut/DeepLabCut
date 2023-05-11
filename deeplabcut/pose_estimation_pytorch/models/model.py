@@ -3,6 +3,7 @@ import torch
 from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
 from deeplabcut.pose_estimation_tensorflow.core.predict import multi_pose_predict
 from torch import nn
+from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 
 
 class PoseModel(nn.Module):
@@ -12,9 +13,10 @@ class PoseModel(nn.Module):
                  backbone: torch.nn.Module,
                  head_heatmaps: torch.nn.Module,
                  head_locref: torch.nn.Module,
+                 target_generator: BaseGenerator,
                  neck: torch.nn.Module = None,
                  stride: int = 8,
-                 heatmap_type: str = 'gaussian'):
+                ):
 
         super().__init__()
         self.backbone = backbone
@@ -25,7 +27,7 @@ class PoseModel(nn.Module):
         self.neck = neck
         self.stride = stride
         self.cfg = cfg
-        self.heatmap_type = heatmap_type
+        self.target_generator = target_generator
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
@@ -50,39 +52,8 @@ class PoseModel(nn.Module):
         return heat_maps, loc_ref
 
     def get_target(self,
-                   keypoints_batch,
-                   heatmap_size,
-                   scale_factor):
-
-        heatmaps_target = []
-        locref_target = []
-        weights = []
-        locref_masks = []
-        for keypoints in keypoints_batch:
-            # TODO: make faster
-            heatmap, weight, locref_map, locref_mask = generate_heatmaps(self.cfg,
-                                                                         keypoints,
-                                                                         scale_factor,
-                                                                         heatmap_size=heatmap_size,
-                                                                         heatmap_type=self.cfg['scmap_type'],
-                                                                         )
-            locref_target.append(locref_map)
-            heatmaps_target.append(heatmap)
-            locref_masks.append(locref_mask)
-
-        heatmaps = torch.stack(heatmaps_target).permute(0, 3, 1, 2)
-        locref_maps = torch.stack(locref_target).permute(0, 3, 1, 2)
-        locref_masks = torch.stack(locref_masks).permute(0, 3, 1, 2)
-
-        if weight is not None:
-            weights = torch.stack(weights)
-        else:
-            weights = None
-
-        target = {
-            'heatmaps': heatmaps,
-            'locref_maps': locref_maps,
-            'locref_masks': locref_masks,
-            'weights': weights
-        }
-        return target
+                   annotations,
+                   prediction,
+                   image_size):
+        
+        return self.target_generator(annotations, prediction, image_size)

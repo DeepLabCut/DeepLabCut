@@ -10,6 +10,7 @@ from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
 from .utils import *
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
+from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 
 class Solver(ABC):
 
@@ -17,6 +18,7 @@ class Solver(ABC):
                  model: PoseModel,
                  criterion: torch.nn,
                  optimizer: torch.optim.Optimizer,
+                 predictor: BasePredictor,
                  cfg: Dict,
                  device: str = 'cpu',
                  scheduler: Optional = None,
@@ -44,6 +46,7 @@ class Solver(ABC):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.criterion = criterion
+        self.predictor = predictor
         self.history = {'train_loss': [],
                         'eval_loss': []}
         self.logger = logger
@@ -86,7 +89,7 @@ class Solver(ABC):
             print(f'Training for epoch {i+1} is done, started evaluating on validation data')
             valid_loss = self.epoch(valid_loader, mode='eval')
             save_path = f'{model_folder}/train/snapshot-{i+1}.pt'
-            if (i+1)%10 == 0:
+            if (i+1)%30 == 0:
                 torch.save(self.model.state_dict(), save_path)
             print(f'Epoch {i + 1}/{epochs}, '
                   f'train loss {train_loss}, '
@@ -111,14 +114,27 @@ class Solver(ABC):
         to_mode = getattr(self.model, mode)
         to_mode()
         epoch_loss = []
+        metrics={
+            'total_loss': [],
+            'heatmap_loss': [],
+            'locref_loss': [],
+        }
         for i, batch in enumerate(loader):
-            loss = self.step(batch, mode)
+            loss, htmp_loss, locref_loss = self.step(batch, mode)
             epoch_loss.append(loss)
+
+            metrics['total_loss'].append(loss)
+            metrics['heatmap_loss'].append(htmp_loss)
+            metrics['locref_loss'].append(locref_loss)
 
             if (i+1)%self.cfg['display_iters'] == 0:
                 print(f"Number of iterations : {i+1}, loss : {loss}, lr : {self.optimizer.param_groups[0]['lr']}")
         epoch_loss = np.mean(epoch_loss)
         self.history[f'{mode}_loss'].append(epoch_loss)
+
+        if self.logger:
+            for key in metrics.keys():
+                self.logger.log(f'{mode} {key}', np.nanmean(metrics[key]))
 
         return epoch_loss
 
@@ -169,27 +185,21 @@ class BottomUpSolver(Solver):
             raise ValueError(f'Solver must be in train or eval mode, but {mode} was found.')
         if mode == 'train':
             self.optimizer.zero_grad()
-        image, keypoints = batch
+        image = batch['image']
         image = image.to(self.device)
         prediction = self.model(image)
         
-        scale_factor = (image.shape[2]/prediction[0].shape[2] , image.shape[3]/prediction[0].shape[3])
-        target = self.model.get_target(keypoints, prediction[0].shape[2:], scale_factor)  # (batch_size, channels, h, w)
-
+        target = self.model.get_target(batch['annotations'], prediction, image.shape[2:])  # (batch_size, channels, h, w)
         for key in target:
             if target[key] is not None:
-                target[key] = target[key].to(self.device)
+                target[key] = torch.Tensor(target[key]).to(self.device)
 
         total_loss, heatmap_loss, locref_loss = self.criterion(prediction, target)
-        if self.logger:
-            self.logger.log(f'{mode} total loss', total_loss)
-            self.logger.log(f'{mode} heatmap loss', heatmap_loss)
-            self.logger.log(f'{mode} locref loss', locref_loss)
         if mode == 'train':
             total_loss.backward()
             self.optimizer.step()
 
-        return total_loss.detach().cpu().numpy()
+        return total_loss.detach().cpu().numpy(), heatmap_loss.detach().cpu().numpy(), locref_loss.detach().cpu().numpy(), #rmse #, rmse_pcutoff
 
 
 class TopDownSolver(Solver):

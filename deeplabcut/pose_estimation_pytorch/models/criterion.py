@@ -12,12 +12,14 @@ class WeightedMSELoss(nn.MSELoss):
         super(WeightedMSELoss, self).__init__()
         self.mse_loss = nn.MSELoss(reduction='none')
 
-    def __call__(self, prediction, target, weights):
+    def __call__(self, prediction, target, weights = 1):
         loss_item = self.mse_loss(prediction, target)
-        loss_item_weighted = loss_item[weights]
-        if loss_item_weighted.nelement() == 0:
+        loss_item_weighted = loss_item * weights
+
+        loss_without_zeros = loss_item_weighted[loss_item_weighted != 0]
+        if loss_without_zeros.nelement() == 0:
             return torch.tensor(0.)
-        return torch.mean(loss_item_weighted)
+        return torch.mean(loss_without_zeros)
     
 class WeightedHuberLoss(nn.HuberLoss):
 
@@ -25,18 +27,21 @@ class WeightedHuberLoss(nn.HuberLoss):
         super(WeightedHuberLoss, self).__init__()
         self.huber_loss = nn.HuberLoss(reduction='none')
 
-    def __call__(self, prediction, target, weights):
+    def __call__(self, prediction, target, weights = 1):
         loss_item = self.huber_loss(prediction, target)
-        loss_item_weighted = loss_item[weights]
-        if loss_item_weighted.nelement() == 0:
+        loss_item_weighted = loss_item*weights
+
+        loss_without_zeros = loss_item_weighted[loss_item_weighted != 0]
+        if loss_without_zeros.nelement() == 0:
             return torch.tensor(0.)
-        return torch.mean(loss_item_weighted)
+        return torch.mean(loss_without_zeros)
 
 @LOSSES.register_module
 class PoseLoss(nn.Module):
     def __init__(self,
                  loss_weight_locref: float = 0.1,
-                 locref_huber_loss: bool = False):
+                 locref_huber_loss: bool = False,
+                 apply_sigmoid: bool= True):
         """
 
         Parameters
@@ -55,7 +60,9 @@ class PoseLoss(nn.Module):
         else:
             self.locref_criterion = WeightedMSELoss()
         self.loss_weight_locref = loss_weight_locref
-        self.heatmap_criterion = nn.BCEWithLogitsLoss()
+        self.heatmap_criterion = WeightedMSELoss()
+        self.apply_sigmoid = apply_sigmoid
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, prediction, target):
         """
@@ -75,8 +82,14 @@ class PoseLoss(nn.Module):
         loss: sum
         """
         heatmaps, locref = prediction
-        heatmap_loss = self.heatmap_criterion(heatmaps,
-                                              target['heatmaps'])
+        if self.apply_sigmoid:
+            heatmap_loss = self.heatmap_criterion(self.sigmoid(heatmaps),
+                                              target['heatmaps'],
+                                              target.get('heatmaps_ignored', 1))
+        else:
+            heatmap_loss = self.heatmap_criterion(heatmaps,
+                                              target['heatmaps'],
+                                              target.get('heatmaps_ignored', 1))
         
         locref_loss = self.loss_weight_locref * self.locref_criterion(locref,
                                                                       target['locref_maps'],

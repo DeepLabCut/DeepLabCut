@@ -2,13 +2,13 @@ import numpy as np
 import torch
 from typing import Tuple
 
+''' FILE NOT USED ANYMORE  '''
 
 def generate_heatmaps(cfg: dict,
                       coords: np.array,
                       scale_factor,
                       heatmap_size: tuple = (64, 64),
                       heatmap_type: str = 'gaussian'):
-    # print(heatmap_type)
     if heatmap_type == 'gaussian':
         scmap, weights, locref_map, locref_mask = gaussian_scmap(cfg,
                                                                  coords,
@@ -50,8 +50,6 @@ def gaussian_scmap(cfg, coords, scale_factors, heatmap_size):
     """
     locref_scale = 1.0 / cfg["locref_stdev"]
     num_joints = cfg["num_joints"]
-    # stride = cfg['stride'] # Apparently, there is no stride in the cfg
-    # stride = scale_factors  # TODO just test
     stride_y, stride_x = scale_factors
     scmap = np.zeros((
         heatmap_size[0],
@@ -64,7 +62,7 @@ def gaussian_scmap(cfg, coords, scale_factors, heatmap_size):
 
     width = heatmap_size[1]
     height = heatmap_size[0]
-    dist_thresh = float(cfg['pos_dist_thresh']) #TODO Should depend on config
+    dist_thresh = float(cfg['pos_dist_thresh'])
     dist_thresh_sq = dist_thresh ** 2
 
     std = dist_thresh / 4
@@ -104,7 +102,7 @@ def plateau_scmap(cfg, coords, scale_factors, heatmap_size):
 
     width = heatmap_size[1]
     height = heatmap_size[0]
-    dist_thresh = float(cfg['pos_dist_thresh']) #TODO Should depend on config
+    dist_thresh = float(cfg['pos_dist_thresh'])
     dist_thresh_sq = dist_thresh ** 2
 
     std = dist_thresh / 4

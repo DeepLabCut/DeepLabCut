@@ -1,5 +1,7 @@
 import timm
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import BaseBackbone, BACKBONES
 
@@ -18,7 +20,14 @@ class HRNet(BaseBackbone):
         """
         super().__init__()
         _backbone = timm.create_model(model_name, pretrained=True)
+        _backbone.incre_modules = None #Necesssary to get high resolution features, if not set to None _backbone.forward_features will return low_res images
         self.model = _backbone
 
     def forward(self, x):
-        return self.model.forward_features(x)
+        y_list = self.model.forward_features(x)
+        x0_h, x0_w = y_list[0].size(2), y_list[0].size(3)
+        x = torch.cat([y_list[0], \
+            F.interpolate(y_list[1], size=(x0_h, x0_w), mode='bilinear'), \
+            F.interpolate(y_list[2], size=(x0_h, x0_w), mode='bilinear'), \
+            F.interpolate(y_list[3], size=(x0_h, x0_w), mode='bilinear')], 1)
+        return x

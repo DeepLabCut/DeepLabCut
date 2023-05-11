@@ -4,6 +4,8 @@ import torch
 
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, BACKBONES, HEADS, LOSSES
 from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SINGLE_ANIMAL_SOLVER
+from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
+from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
 from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
 from deeplabcut.utils import auxiliaryfunctions
@@ -14,6 +16,7 @@ def build_pose_model(cfg: Dict,
     backbone = BACKBONES.build(dict(cfg['backbone']))
     head_heatmaps = HEADS.build(dict(cfg['heatmap_head']))
     head_locref = HEADS.build(dict(cfg['locref_head']))
+    target_generator = TARGET_GENERATORS.build(dict(cfg['target_generator']))
     if cfg.get('neck'):
         neck = None
     else:
@@ -22,6 +25,7 @@ def build_pose_model(cfg: Dict,
                            backbone=backbone,
                            head_heatmaps=head_heatmaps,
                            head_locref=head_locref,
+                           target_generator=target_generator,
                            neck=neck,
                            **cfg['pose_model'])
 
@@ -36,6 +40,8 @@ def build_solver(cfg: Dict) -> Solver:
     optimizer = get_optimizer(params=pose_model.parameters(), **cfg['optimizer']['params'])
 
     criterion = LOSSES.build(cfg['criterion'])
+
+    predictor = PREDICTORS.build(dict(cfg['predictor']))
 
     if cfg.get('scheduler'):
         if cfg['scheduler']['type'] == "LRListScheduler":
@@ -58,6 +64,7 @@ def build_solver(cfg: Dict) -> Solver:
                                              model=pose_model,
                                              criterion=criterion,
                                              optimizer=optimizer,
+                                             predictor=predictor,
                                              cfg=pose_cfg,
                                              device=cfg['device'],
                                              scheduler=scheduler,

@@ -3,6 +3,7 @@ import deeplabcut.pose_estimation_pytorch as dlc
 import os
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver
+from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
 from torch.utils.data import DataLoader
 from typing import Union
 
@@ -26,6 +27,7 @@ def train_network(
     )
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
     config = auxiliaryfunctions.read_config(pytorch_config_path)
+
     batch_size = config['batch_size']
     epochs = config['epochs']
 
