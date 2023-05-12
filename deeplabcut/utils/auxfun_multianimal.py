@@ -303,7 +303,6 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         if (
             askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
         ):  # multilanguage support :)
-
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)

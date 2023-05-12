@@ -38,7 +38,6 @@ def save_train_triplets(feature_fname, triplets, out_name):
     zfill_width = int(np.ceil(np.log10(nframes)))
 
     for triplet in triplets:
-
         anchor, pos, neg = triplet[0], triplet[1], triplet[2]
 
         anchor_coord, anchor_frame = anchor
@@ -84,7 +83,6 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
 def create_triplets_dataset(
     videos, dlcscorer, track_method, n_triplets=1000, destfolder=None
 ):
-
     # 1) reference to video folder and get the proper bpt_feature file for feature table
     # 2) get either the path to gt or the path to track pickle
 

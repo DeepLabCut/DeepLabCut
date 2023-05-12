@@ -844,7 +844,11 @@ class TrackletVisualizer:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
+            index.append(
+                tuple(
+                    (os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")
+                )
+            )
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -869,7 +873,9 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(
+            filter_low_prob, prob=pcutoff
+        )
         df.index = pd.MultiIndex.from_tuples(index)
 
         machinefile = os.path.join(
@@ -886,9 +892,7 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns = df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer"
-        )
+        df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(
             tmpfolder, f'CollectedData_{self.manager.cfg["scorer"]}.h5'

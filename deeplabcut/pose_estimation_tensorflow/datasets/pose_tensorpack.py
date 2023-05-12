@@ -313,7 +313,6 @@ class TensorpackPoseDataset(BasePoseDataset):
         return [joint_id, aug_img, aug_coords, data, size, scale]
 
     def get_dataflow(self, cfg):
-
         df = Pose(cfg)
         df = MapData(df, self.augment)
         df = MapData(df, self.compute_target_part_scoremap)
