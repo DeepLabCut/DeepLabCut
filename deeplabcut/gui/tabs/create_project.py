@@ -43,7 +43,7 @@ class ProjectCreator(QtWidgets.QDialog):
 
     def lay_out_user_frame(self):
         user_frame = QtWidgets.QFrame(self)
-        user_frame.setFrameShape(user_frame.StyledPanel)
+        user_frame.setFrameShape(user_frame.Shape.StyledPanel)
         user_frame.setLineWidth(0.5)
 
         proj_label = QtWidgets.QLabel("Project:", user_frame)
@@ -193,7 +193,7 @@ class ProjectCreator(QtWidgets.QDialog):
                     child.setDisabled(True)
                 else:
                     child.setDisabled(False)
-    
+
     def update_project_name(self, text):
         self.proj_default = text
         self.update_project_location()
