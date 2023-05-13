@@ -44,7 +44,7 @@ class ProjectCreator(QtWidgets.QDialog):
     def lay_out_user_frame(self):
         user_frame = QtWidgets.QFrame(self)
         user_frame.setFrameShape(user_frame.Shape.StyledPanel)
-        user_frame.setLineWidth(0.5)
+        user_frame.setLineWidth(0)
 
         proj_label = QtWidgets.QLabel("Project:", user_frame)
         self.proj_line = QtWidgets.QLineEdit(self.proj_default, user_frame)
