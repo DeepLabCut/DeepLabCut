@@ -528,7 +528,6 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
     Y = x.copy()
     Y[p < pcutoff] = np.nan  # Set uncertain estimates to nan (modeled as missing data)
     if np.sum(np.isfinite(Y)) > 10:
-
         # SARIMAX implementation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
         mod = sm.tsa.statespace.SARIMAX(
             Y.flatten(),
@@ -540,7 +539,9 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
             res = mod.fit(disp=disp)
-        except ValueError:  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+        except (
+            ValueError
+        ):  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
             startvalues = np.array([convertparms2start(pn) for pn in mod.param_names])
             res = mod.fit(start_params=startvalues, disp=disp)
         except np.linalg.LinAlgError:

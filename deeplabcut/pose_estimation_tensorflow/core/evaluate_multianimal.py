@@ -312,7 +312,6 @@ def evaluate_multianimal_full(
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-
                         (
                             sess,
                             inputs,

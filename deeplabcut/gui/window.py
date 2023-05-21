@@ -52,7 +52,6 @@ def _check_for_updates():
 
 
 class MainWindow(QMainWindow):
-
     config_loaded = QtCore.Signal()
     video_type_ = QtCore.Signal(str)
     video_files_ = QtCore.Signal(set)

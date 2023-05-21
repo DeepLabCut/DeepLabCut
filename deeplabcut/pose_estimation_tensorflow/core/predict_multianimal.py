@@ -212,7 +212,6 @@ def predict_batched_peaks_and_costs(
     n_decimals=3,
     extra_dict=None,
 ):
-
     if extra_dict:
         features = sess.run(extra_dict["features"], feed_dict={inputs: images_batch})
 

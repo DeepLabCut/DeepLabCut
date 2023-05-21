@@ -27,7 +27,6 @@ TESTTRACKER = "ellipse"
 USE_SHELVE = False  # random.choice([True, False])
 
 if __name__ == "__main__":
-
     TASK = "multi_mouse"
     SCORER = "dlc_team"
     NUM_FRAMES = 5

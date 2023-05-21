@@ -261,7 +261,6 @@ def GetPoseandCostsF_from_assemblies(
     feature_dict,
     extra_dict,
 ):
-
     """Batchwise prediction of pose"""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
@@ -294,7 +293,6 @@ def GetPoseandCostsF_from_assemblies(
             inds.append(counter)
 
             if batch_ind == batchsize - 1:
-
                 preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
@@ -321,7 +319,6 @@ def GetPoseandCostsF_from_assemblies(
                 batch_ind += 1
         elif counter >= nframes:
             if batch_ind > 0:
-
                 preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )

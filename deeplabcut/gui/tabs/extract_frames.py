@@ -86,7 +86,6 @@ class ExtractFrames(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout(margins=(0, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
@@ -101,7 +100,6 @@ class ExtractFrames(DefaultTab):
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
-
         # Extraction method
         ext_method_label = QtWidgets.QLabel("Extraction method")
         self.extraction_method_widget = QtWidgets.QComboBox()

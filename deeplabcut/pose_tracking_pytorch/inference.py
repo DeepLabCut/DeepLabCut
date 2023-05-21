@@ -43,7 +43,6 @@ class DLCTrans:
         self.model.eval()
 
     def _load_params(self, params):
-
         self.model.load_state_dict(params)
 
     def _get_vec(self, inp_a, inp_b, zfill_width, feature_dict):
