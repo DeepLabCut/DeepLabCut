@@ -40,4 +40,5 @@ if __name__ == "__main__":
         video_adapt=True,
         scale_list=scale_list,
         pcutoff=0.1,
+        adapt_iterations=50,
     )

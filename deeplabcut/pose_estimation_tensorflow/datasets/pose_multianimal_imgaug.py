@@ -82,9 +82,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if cfg["pseudo_label"].endswith(".h5"):
                 pseudo_threshold = cfg.get("pseudo_threshold", 0)
                 print(f"Loading pseudo labels with threshold > {pseudo_threshold}")
-                return self._load_pseudo_data_from_h5(cfg,
-                                                      threshold=pseudo_threshold,
-                                                      topview = cfg.get('topview', False))
+
+                # for topview, it's safe to mask keypoints under threshold
+                mask_kpts_below_thresh = "topview" in cfg.get("superanimal", "")
+                return self._load_pseudo_data_from_h5(
+                    cfg,
+                    threshold=pseudo_threshold,
+                    mask_kpts_below_thresh=mask_kpts_below_thresh,
+                )
 
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
@@ -126,7 +131,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, topview=False):
+    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, mask_kpts_below_thresh=False):
         gt_file = cfg["pseudo_label"]
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
@@ -156,11 +161,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
             item.joints = {}
 
-            if not topview:
+            if not mask_kpts_below_thresh:
                 joints = np.concatenate([joint_ids, kpts], axis=1)                
                 joints = np.nan_to_num(joints, nan=0)
             else:
-                # for topview, it's safe to mask keypoints under threshold
                 for kpt_id, kpt in enumerate(kpts):
                     if kpt[-1] < threshold:
                         kpts[kpt_id][:-1] = -1

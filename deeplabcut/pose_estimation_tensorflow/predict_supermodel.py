@@ -20,7 +20,6 @@ def video_inference_superanimal(
     video_adapt=False,
     plot_trajectories=True,
     pcutoff=0.1,
-    init_weights = '',
     adapt_iterations = 1000,
     pseudo_threshold = 0.1,
     trim_ends = None
@@ -55,9 +54,6 @@ def video_inference_superanimal(
 
     pcutoff: float, optional
         Keypoints confidence that are under pcutoff will not be shown in the resulted video
-
-    init_weights: str, optional:
-        Path to customized weights. Only for developing purpose
 
     adapt_iterations: int, optional:
         Number of iterations for adaptation training
