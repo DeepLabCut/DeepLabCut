@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import os
 import pickle
@@ -97,7 +107,7 @@ def test_link():
     j1 = inferenceutils.Joint(pos1, conf, idx=idx1)
     j2 = inferenceutils.Joint(pos2, conf, idx=idx2)
     link = inferenceutils.Link(j1, j2)
-    assert link.confidence == conf ** 2
+    assert link.confidence == conf**2
     assert link.idx == (idx1, idx2)
     assert link.to_vector() == [*pos1, *pos2]
 
@@ -180,7 +190,11 @@ def test_assembler_with_single_bodypart(real_assemblies):
             "coordinates": (dict_["coordinates"][0][:1],),
             "confidence": dict_["confidence"][:1],
         }
-    ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=1,)
+    ass = inferenceutils.Assembler(
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=1,
+    )
     ass.metadata["joint_names"] = ass.metadata["joint_names"][:1]
     ass.metadata["num_joints"] = 1
     ass.metadata["paf_graph"] = []
@@ -197,7 +211,11 @@ def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
     with open(os.path.join(TEST_DATA_DIR, "montblanc_full.pickle"), "rb") as file:
         data = pickle.load(file)
     ass = inferenceutils.Assembler(
-        data, max_n_individuals=3, n_multibodyparts=4, pcutoff=0.1, min_affinity=0.1,
+        data,
+        max_n_individuals=3,
+        n_multibodyparts=4,
+        pcutoff=0.1,
+        min_affinity=0.1,
     )
     assert len(ass.metadata["imnames"]) == 180
     assert ass.n_keypoints == 5

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
@@ -50,12 +60,11 @@ class ExtractOutlierFrames(DefaultTab):
         self.extract_outlierframes_button.setMinimumWidth(150)
 
         self.label_outliers_button = QtWidgets.QPushButton("Labeling GUI")
-        self.label_outliers_button.setEnabled(False)
+        self.label_outliers_button.setEnabled(True)
         self.label_outliers_button.clicked.connect(self.launch_refinement_gui)
         self.label_outliers_button.setMinimumWidth(150)
 
         self.merge_data_button = QtWidgets.QPushButton("Merge data")
-        self.merge_data_button.setEnabled(False)
         self.merge_data_button.clicked.connect(self.merge_dataset)
         self.merge_data_button.setMinimumWidth(150)
 
@@ -106,7 +115,6 @@ class ExtractOutlierFrames(DefaultTab):
         )
 
     def extract_outlier_frames(self):
-        self.label_outliers_button.setEnabled(True)
 
         config = self.root.config
         shuffle = self.root.shuffle_value
@@ -134,6 +142,7 @@ class ExtractOutlierFrames(DefaultTab):
             shuffle=shuffle,
             outlieralgorithm=outlieralgorithm,
             track_method=track_method,
+            automatic=True,
         )
 
     def launch_refinement_gui(self):
@@ -147,8 +156,7 @@ class ExtractOutlierFrames(DefaultTab):
             "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
         )
         msg.setWindowTitle("Warning")
-        msg.setWindowIcon(QtWidgets.QMessageBox.Warning)
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config, forceiterate=None)

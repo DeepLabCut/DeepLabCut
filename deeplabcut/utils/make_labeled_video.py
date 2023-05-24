@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -20,7 +30,7 @@ import os
 import os.path
 from pathlib import Path
 from functools import partial
-from multiprocessing import Pool
+from multiprocessing import Pool, get_start_method
 from typing import Iterable
 
 import matplotlib.colors as mcolors
@@ -32,7 +42,8 @@ from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa
 from skimage.util import img_as_ubyte
 from tqdm import trange
-
+from deeplabcut.modelzoo.utils import parse_available_supermodels
+from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
@@ -109,6 +120,7 @@ def CreateVideo(
     print("Generating frames and creating video.")
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
+
     if cropping and not displaycropped:
         df_x += x1
         df_y += y1
@@ -117,9 +129,9 @@ def CreateVideo(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -248,9 +260,9 @@ def CreateVideoSlow(
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
     if Dataframe.columns.nlevels == 3:
-        nindividuals = 1
-        map2bp = list(range(len(all_bpts)))
-        map2id = [0 for _ in map2bp]
+        nindividuals = int(len(all_bpts) / len(set(all_bpts)))
+        map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
+        map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
@@ -315,14 +327,14 @@ def CreateVideoSlow(
                             ax.scatter(
                                 df_x[ind][max(0, index - trailpoints) : index],
                                 df_y[ind][max(0, index - trailpoints) : index],
-                                s=dotsize ** 2,
+                                s=dotsize**2,
                                 color=color,
                                 alpha=alphavalue * 0.75,
                             )
                         ax.scatter(
                             df_x[ind, index],
                             df_y[ind, index],
-                            s=dotsize ** 2,
+                            s=dotsize**2,
                             color=color,
                             alpha=alphavalue,
                         )
@@ -363,7 +375,16 @@ def create_labeled_video(
     displaycropped=False,
     color_by="bodypart",
     modelprefix="",
+    init_weights="",
     track_method="",
+    superanimal_name="",
+    pcutoff=0.6,
+    skeleton=[],
+    skeleton_color="white",
+    dotsize=8,
+    colormap="rainbow",
+    alphavalue=0.5,
+    overwrite=False,
 ):
     """Labels the bodyparts in a video.
 
@@ -466,15 +487,21 @@ def create_labeled_video(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    init_weights: str,
+        Checkpoint path to the super model
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.
         Empty by default (corresponding to a single animal project).
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
 
+    overwrite: bool, optional, default=False
+        If ``True`` overwrites existing labeled videos.
+
     Returns
     -------
-    None
+        results : list[bool]
+        ``True`` if the video is successfully created for each item in ``videos``.
 
     Examples
     --------
@@ -520,21 +547,55 @@ def create_labeled_video(
             videotype='mp4',
         )
     """
-    cfg = auxiliaryfunctions.read_config(config)
-    track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+    if config == "":
+        pass
+    else:
+        cfg = auxiliaryfunctions.read_config(config)
+        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        track_method = auxfun_multianimal.get_track_method(
+            cfg, track_method=track_method
+        )
 
-    trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix
-    )  # automatically loads corresponding model (even training iteration based on snapshot index)
+    if init_weights == "":
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+            cfg, shuffle, trainFraction, modelprefix=modelprefix
+        )  # automatically loads corresponding model (even training iteration based on snapshot index)
+    else:
+        DLCscorer = "DLC_" + Path(init_weights).stem
+        DLCscorerlegacy = "DLC_" + Path(init_weights).stem
 
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
 
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, displayedbodyparts
-    )
+    if superanimal_name != "":
+        dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
+        supermodels = parse_available_supermodels()
+        test_cfg = load_config(
+            os.path.join(
+                dlc_root_path,
+                "pose_estimation_tensorflow",
+                "superanimal_configs",
+                supermodels[superanimal_name],
+            )
+        )
+
+        bodyparts = test_cfg["all_joints_names"]
+        cfg = {
+            "skeleton": skeleton,
+            "skeleton_color": skeleton_color,
+            "pcutoff": pcutoff,
+            "dotsize": dotsize,
+            "alphavalue": alphavalue,
+            "colormap": colormap,
+        }
+    else:
+        bodyparts = (
+            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+                cfg, displayedbodyparts
+            )
+        )
+
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
         cfg, displayedindividuals
     )
@@ -549,7 +610,7 @@ def create_labeled_video(
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
     if not Videos:
-        return
+        return []
 
     func = partial(
         proc_video,
@@ -574,12 +635,20 @@ def create_labeled_video(
         displaycropped,
         fastmode,
         keypoints_only,
+        overwrite,
+        init_weights=init_weights,
     )
 
-    with Pool(min(os.cpu_count(), len(Videos))) as pool:
-        pool.map(func, Videos)
+    if get_start_method() == "fork":
+        with Pool(min(os.cpu_count(), len(Videos))) as pool:
+            results = pool.map(func, Videos)
+    else:
+        results = []
+        for video in Videos:
+            results.append(func(video))
 
     os.chdir(start_path)
+    return results
 
 
 def proc_video(
@@ -604,7 +673,9 @@ def proc_video(
     displaycropped,
     fastmode,
     keypoints_only,
+    overwrite,
     video,
+    init_weights="",
 ):
     """Helper function for create_videos
 
@@ -612,6 +683,10 @@ def proc_video(
     ----------
 
 
+    Returns
+    -------
+        result : bool
+        ``True`` if a video is successfully created.
     """
     videofolder = Path(video).parents[0]
     if destfolder is None:
@@ -623,6 +698,10 @@ def proc_video(
     print("Starting to process video: {}".format(video))
     vname = str(Path(video).stem)
 
+    if init_weights != "":
+        DLCscorer = "DLC_" + Path(init_weights).stem
+        DLCscorerlegacy = "DLC_" + Path(init_weights).stem
+
     if filtered:
         videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
@@ -630,8 +709,11 @@ def proc_video(
         videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
 
-    if os.path.isfile(videooutname1) or os.path.isfile(videooutname2):
+    if (
+        os.path.isfile(videooutname1) or os.path.isfile(videooutname2)
+    ) and not overwrite:
         print("Labeled video {} already created.".format(vname))
+        return True
     else:
         print("Loading {} and data.".format(video))
         try:
@@ -646,7 +728,7 @@ def proc_video(
             else:
                 s = ""
             videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
-            if os.path.isfile(videooutname):
+            if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
 
@@ -714,16 +796,12 @@ def proc_video(
                 )
                 clip.close()
             else:
-                if displaycropped:  # then the cropped video + the labels is depicted
-                    bbox = x1, x2, y1, y2
-                else:  # then the full video + the (perhaps in cropped mode analyzed labels) are depicted
-                    bbox = None
                 _create_labeled_video(
                     video,
                     filepath,
                     keypoints2show=labeled_bpts,
                     animals2show=individuals,
-                    bbox=bbox,
+                    bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
                     pcutoff=cfg["pcutoff"],
@@ -734,10 +812,13 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     trailpoints=trailpoints,
                     fps=outputframerate,
+                    display_cropped=displaycropped,
                 )
+            return True
 
         except FileNotFoundError as e:
             print(e)
+            return False
 
 
 def _create_labeled_video(
@@ -753,6 +834,7 @@ def _create_labeled_video(
     skeleton_color="k",
     trailpoints=0,
     bbox=None,
+    display_cropped=False,
     codec="mp4v",
     fps=None,
     output_path="",
@@ -763,18 +845,23 @@ def _create_labeled_video(
     if not output_path:
         s = "_id" if color_by == "individual" else "_bp"
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
-    try:
-        x1, x2, y1, y2 = bbox
-        display_cropped = True
+
+    x1, x2, y1, y2 = bbox
+    if display_cropped:
         sw = x2 - x1
         sh = y2 - y1
-    except TypeError:
-        x1 = x2 = y1 = y2 = 0
-        display_cropped = False
-        sw = ""
-        sh = ""
+    else:
+        sw = sh = ""
 
-    clip = vp(fname=video, sname=output_path, codec=codec, sw=sw, sh=sh, fps=fps,)
+    clip = vp(
+        fname=video,
+        sname=output_path,
+        codec=codec,
+        sw=sw,
+        sh=sh,
+        fps=fps,
+    )
+    cropping = bbox != (0, clip.w, 0, clip.h)
     df = pd.read_hdf(h5file)
     try:
         animals = df.columns.get_level_values("individuals").unique().to_list()
@@ -794,7 +881,7 @@ def _create_labeled_video(
         cmap,
         kpts,
         trailpoints,
-        False,
+        cropping,
         x1,
         x2,
         y1,
@@ -852,7 +939,7 @@ def create_video_with_keypoints_only(
     plt.switch_backend("agg")
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
-    scat = ax.scatter([], [], s=dotsize ** 2, alpha=alpha)
+    scat = ax.scatter([], [], s=dotsize**2, alpha=alpha)
     coords = xyp[0, :, :2]
     coords[xyp[0, :, 2] < pcutoff] = np.nan
     scat.set_offsets(coords)

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -20,7 +30,7 @@ import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):
-    """ Definitions of subfolders in 3D projects """
+    """Definitions of subfolders in 3D projects"""
 
     img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
@@ -271,7 +281,7 @@ def _reconstruct_tracks_as_tracklets(df):
     """
     Parameters:
     -----------
-    df: DataFrame 
+    df: DataFrame
         loaded from an .h5 tracks file (obtained from `stitch_tracklets()`)
     """
     from deeplabcut.refine_training_dataset.stitch import Tracklet
@@ -288,13 +298,13 @@ def _reconstruct_tracks_as_tracklets(df):
 
 def _associate_paired_view_tracks(tracklets1, tracklets2, F):
     """
-    Computes the optimal matching between tracks in two cameras 
+    Computes the optimal matching between tracks in two cameras
     using the xFx'=0 epipolar constraint equation.
 
     Parameters:
     -----------
     tracklets1/2: Tracklet() object (defined in stitch.py)
-    F: nd.array
+    F: numpy.ndarray
         Fundamental matrix between cam1 and cam2
     """
     from scipy.optimize import linear_sum_assignment

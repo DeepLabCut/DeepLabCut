@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 Created on Tue Oct  2 13:56:11 2018
 @author: alex
@@ -129,7 +139,10 @@ if __name__ == "__main__":
     # Check the training image paths are correctly stored as arrays of strings
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     datafile, _ = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainingsetfolder, 0.8, 1, cfg,
+        trainingsetfolder,
+        0.8,
+        1,
+        cfg,
     )
     mlab = sio.loadmat(os.path.join(cfg["project_path"], datafile))["dataset"]
     num_images = mlab.shape[1]
@@ -244,7 +257,7 @@ if __name__ == "__main__":
     print("RELABELING")
     DF = pd.read_hdf(file, "df_with_missing")
     DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
-    DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
+    DF.columns = DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0)
     DF = DF.drop("likelihood", axis=1, level=2)
     DF.to_csv(
         os.path.join(
@@ -364,7 +377,10 @@ if __name__ == "__main__":
     print("will be used for 3D testscript...")
     # TENSORPACK could fail in WINDOWS...
     deeplabcut.create_training_dataset(
-        path_config_file, Shuffles=[2], net_type=NET, augmenter_type=augmenter_type3,
+        path_config_file,
+        Shuffles=[2],
+        net_type=NET,
+        augmenter_type=augmenter_type3,
     )
 
     posefile = os.path.join(

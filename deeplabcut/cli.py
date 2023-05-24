@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 from pathlib import Path
 
 import click
@@ -185,9 +187,7 @@ def label_frames(_, config):
 @click.argument("config")
 @click.pass_context
 def check_labels(_, config):
-    """Check if labels were stored correctly by plotting annotations and inspect them visually. If some are wrong, then use the refine_labels to correct the labels.\n
-
-    """
+    """Check if labels were stored correctly by plotting annotations and inspect them visually. If some are wrong, then use the refine_labels to correct the labels.\n"""
     from deeplabcut.generate_training_dataset import labelFrames
 
     labelFrames.check_labels(config)
@@ -206,7 +206,7 @@ def check_labels(_, config):
 @click.pass_context
 def create_training_dataset(_, *args, **kwargs):
     """Combine frame and label information into a an array. Create training and test sets. Update parameters TrainFraction, iteration in config.yaml
-	Also update parameters for pose_config.yaml as wanted.\n
+        Also update parameters for pose_config.yaml as wanted.\n
     CONFIG: Full path of the config.yaml file in the train directory of a project.\n
     Example \n
     --------\n
@@ -234,7 +234,7 @@ def create_training_dataset(_, *args, **kwargs):
 @click.pass_context
 def train_network(_, *args, **kwargs):
     """Train a trained Feature detector with a specific training data set.\n
-	Provide path to the pose_config file.
+        Provide path to the pose_config file.
         CONFIG: Full path of the config.yaml file in the train directory of a project.\n
 
     e.g. run the script like this:

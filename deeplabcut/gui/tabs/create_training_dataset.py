@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import os
 
 from PySide6 import QtWidgets
@@ -53,7 +63,7 @@ class CreateTrainingDataset(DefaultTab):
         self.net_choice = QtWidgets.QComboBox()
         nets = DLCParams.NNETS.copy()
         if not self.root.is_multianimal:
-            nets.remove('dlcrnet_ms5')
+            nets.remove("dlcrnet_ms5")
         self.net_choice.addItems(nets)
         self.net_choice.setCurrentText("resnet_50")
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
@@ -101,12 +111,14 @@ class CreateTrainingDataset(DefaultTab):
                 )
             # Check that training data files were indeed created.
             trainingsetfolder = get_training_set_folder(self.root.cfg)
-            filenames = list(get_data_and_metadata_filenames(
-                trainingsetfolder,
-                self.root.cfg["TrainingFraction"][0],
-                self.shuffle.value(),
-                self.root.cfg,
-            ))
+            filenames = list(
+                get_data_and_metadata_filenames(
+                    trainingsetfolder,
+                    self.root.cfg["TrainingFraction"][0],
+                    self.shuffle.value(),
+                    self.root.cfg,
+                )
+            )
             if self.root.is_multianimal:
                 filenames[0] = filenames[0].replace("mat", "pickle")
             if all(
@@ -136,9 +148,7 @@ def _create_message_box(text, info_text):
 
     msg.setWindowTitle("Info")
     msg.setMinimumWidth(900)
-    logo_dir = (
-            os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    )
+    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
     logo = logo_dir + "/assets/logo.png"
     msg.setWindowIcon(QIcon(logo))
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)

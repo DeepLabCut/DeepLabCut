@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import logging
 import os
 import time
@@ -44,11 +46,13 @@ def calc_cos_correct(vec1, gt1, vec2, gt2, threshold=0.5):
     n_correct = torch.sum(torch.eq(pred_mask, gt_mask))
     return n_correct
 
-#TODO: maybe find a better spot for this.
-def default_device(device = "cuda"): #setting CPU, if no GPU available
-    #dev =  device if torch.cuda.is_available() else "cpu"
+
+# TODO: maybe find a better spot for this.
+def default_device(device="cuda"):  # setting CPU, if no GPU available
+    # dev =  device if torch.cuda.is_available() else "cpu"
     dev = torch.device(device) if torch.cuda.is_available() else torch.device("cpu")
     return dev
+
 
 def do_dlc_train(
     cfg,
@@ -76,7 +80,6 @@ def do_dlc_train(
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(device)
-
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -196,9 +199,9 @@ def do_dlc_train(
     plot_dict["test_acc"] = test_acc_list
     plot_dict["epochs"] = epoch_list
 
-
-
-    with open(os.path.join(ckpt_folder,"dlc_transreid_results.pickle"), "wb") as handle:
+    with open(
+        os.path.join(ckpt_folder, "dlc_transreid_results.pickle"), "wb"
+    ) as handle:
         pickle.dump(plot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

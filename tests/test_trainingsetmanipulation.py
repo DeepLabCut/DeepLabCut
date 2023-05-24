@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import os
 import pandas as pd
@@ -31,7 +41,9 @@ def test_split_trials():
     train_fractions = np.arange(50, 96) / 100
     for frac in train_fractions:
         train_inds, test_inds = SplitTrials(
-            range(n_rows), frac, enforce_train_fraction=True,
+            range(n_rows),
+            frac,
+            enforce_train_fraction=True,
         )
         assert (len(train_inds) / (len(train_inds) + len(test_inds))) == frac
         train_inds = train_inds[train_inds != -1]
@@ -42,7 +54,9 @@ def test_split_trials():
 def test_format_training_data(monkeypatch):
     fake_shape = 3, 480, 640
     monkeypatch.setattr(
-        trainingsetmanipulation, "read_image_shape_fast", lambda _: fake_shape,
+        trainingsetmanipulation,
+        "read_image_shape_fast",
+        lambda _: fake_shape,
     )
     df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5")).xs(
         "mus1", level="individuals", axis=1

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
@@ -5,7 +15,9 @@ from deeplabcut.gui.widgets import ConfigEditor
 
 
 def _create_label_widget(
-    text: str, style: str = "", margins: tuple = (20, 10, 0, 10),
+    text: str,
+    style: str = "",
+    margins: tuple = (20, 10, 0, 10),
 ) -> QtWidgets.QLabel:
 
     label = QtWidgets.QLabel(text)
@@ -40,7 +52,9 @@ def _create_vertical_layout(
 
 
 def _create_grid_layout(
-    alignment=None, spacing: int = 20, margins: tuple = None,
+    alignment=None,
+    spacing: int = 20,
+    margins: tuple = None,
 ) -> QtWidgets.QGridLayout():
 
     layout = QtWidgets.QGridLayout()
@@ -79,17 +93,11 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
     def update_selected_bodyparts(self):
         self.selected_bodyparts = [item.text() for item in self.selectedItems()]
-        self.root.logger.info(
-            f"Selected bodyparts:\n\t{self.selected_bodyparts}"
-        )
+        self.root.logger.info(f"Selected bodyparts:\n\t{self.selected_bodyparts}")
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
-    def __init__(
-        self,
-        root: QtWidgets.QMainWindow,
-        parent: QtWidgets.QWidget
-    ):
+    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
         super(VideoSelectionWidget, self).__init__(parent)
 
         self.root = root
@@ -115,7 +123,9 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
-        self.selected_videos_text = QtWidgets.QLabel("") #updated when videos are selected
+        self.selected_videos_text = QtWidgets.QLabel(
+            ""
+        )  # updated when videos are selected
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
@@ -228,10 +238,7 @@ class DefaultTab(QtWidgets.QWidget):
 
 class EditYamlButton(QtWidgets.QPushButton):
     def __init__(
-        self,
-        button_label: str,
-        filepath: str,
-        parent: QtWidgets.QWidget = None
+        self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None
     ):
         super(EditYamlButton, self).__init__(button_label)
         self.filepath = filepath

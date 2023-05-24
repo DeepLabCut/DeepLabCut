@@ -1,7 +1,20 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QPushButton, QFileDialog, QLabel, QLineEdit,
+    QPushButton,
+    QFileDialog,
+    QLabel,
+    QLineEdit,
 )
 from deeplabcut.create_project import add_new_videos
 from deeplabcut.gui.dlc_params import DLCParams

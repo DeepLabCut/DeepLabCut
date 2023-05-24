@@ -1,10 +1,13 @@
-# DeepLabCut2.0 Toolbox (deeplabcut.org)
-# © A. & M. Mathis Labs
-# https://github.com/AlexEMG/DeepLabCut
-# Please see AUTHORS for contributors.
 #
-# https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
 # Licensed under GNU Lesser General Public License v3.0
+#
 
 """Command line interface for DeepLabCut deeplabcut.benchmark."""
 
@@ -34,7 +37,9 @@ def main():
     else:
         results = None
     results = deeplabcut.benchmark.evaluate(
-        include_benchmarks=args.include, results=results, on_error=args.onerror,
+        include_benchmarks=args.include,
+        results=results,
+        on_error=args.onerror,
     )
     if not args.nocache:
         deeplabcut.benchmark.savecache(results)

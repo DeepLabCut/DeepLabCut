@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import pytest
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
@@ -44,9 +54,9 @@ def test_ellipse_tracker(ellipse):
 
 def test_sort_ellipse():
     tracklets = dict()
-    mot = trackingutils.SORTEllipse(1, 1, 0.6)
+    mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
     poses = np.random.rand(2, 10, 3)
-    trackers = mot.track(poses[..., :2])
+    trackers = mot_tracker.track(poses[..., :2])
     assert trackers.shape == (2, 7)
     trackingutils.fill_tracklets(tracklets, trackers, poses, imname=0)
     assert all(id_ in tracklets for id_ in trackers[:, -2])
@@ -104,7 +114,8 @@ def test_tracking_box(real_assemblies, real_tracklets):
 
 
 def test_tracking_montblanc(
-    real_assemblies_montblanc, real_tracklets_montblanc,
+    real_assemblies_montblanc,
+    real_tracklets_montblanc,
 ):
     tracklets_ref = real_tracklets_montblanc.copy()
     _ = tracklets_ref.pop("header", None)

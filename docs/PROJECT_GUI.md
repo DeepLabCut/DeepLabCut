@@ -8,11 +8,10 @@ As some users may be more comfortable working with an interactive interface, we 
 ## Get Started:
 
 (1) Install DeepLabCut using the simple-install with Anaconda found [here!](how-to-install)*.
-Now that you have deeplabcut installed, just go into your env (activate DEEPLABCUT) then run:
+Now you have DeepLabCut installed, but if you want to update it, either follow the prompt in the GUI which will ask you to upgrade when a new version is available, or just go into your env (activate DEEPLABCUT) then run:
 
-` pip install --upgrade --force-reinstall 'deeplabcut[gui,tf]'==2.3rc2`
+` pip install --upgrade --force-reinstall 'deeplabcut[gui,tf,modelzoo]'`
 
-*Note, currently the latest GUI is a release candidate, so you need to specifically install the `rc` version. This will change once v2.3 is stable.
 
 (2) Open the terminal and run: `python -m deeplabcut`
 

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import os
 from pathlib import Path
 from PySide6 import QtWidgets
@@ -208,11 +218,11 @@ class RefineTracklets(DefaultTab):
             "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
         )
         msg.setWindowTitle("Warning")
-        msg.setWindowIcon(QtWidgets.QMessageBox.Warning)
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config, forceiterate=None)
+            self.viz.export_to_training_data()
 
     def refine_tracks(self):
         cfg = self.root.cfg

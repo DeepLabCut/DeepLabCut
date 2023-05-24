@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 
 def transformer_reID(
@@ -19,7 +20,7 @@ def transformer_reID(
     n_tracks=None,
     n_triplets=1000,
     train_epochs=100,
-    train_frac = 0.8,
+    train_frac=0.8,
     modelprefix="",
     destfolder=None,
 ):

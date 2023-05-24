@@ -3,9 +3,12 @@
 
 DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 
+We recommend using our supplied CONDA environment.
+
 ## PIP:
 
-- Everything you need to run DeepLabCut (i.e., our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut[tf]'`.
+- Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut[tf]'`.
+- If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,tf,modelzoo]'`. 
 
 - Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 
@@ -24,7 +27,7 @@ Download anaconda for your operating system: https://www.anaconda.com/distributi
 ```
 
 
-- IF you use a M1 or M2 chip in your MacBook (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
+- IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
 
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
@@ -32,7 +35,6 @@ bash ~/miniconda.sh -b -p $HOME/miniconda
 source ~/miniconda/bin/activate
 conda init zsh
 ```
-
 
 #### We recommend having a GPU. 
 
@@ -46,8 +48,16 @@ conda init zsh
 
 ### Step 2: please use our supplied conda environment
 
+```{Hint}
+Windows users: Be sure you have `git` installed along with anaconda: https://gitforwindows.org/
+```
+
 - **Windows/Linux/MacBooks:** git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
 To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). Note, this can be anywhere, even downloads is fine.)
+
+```{Hint}
+Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a RIGHT-click, "open as admin"
+```
 
 -  Now, in Terminal (or Anaconda Command Prompt for Windows users), go to the DeepLabCut folder. If you cloned the repo onto your Desktop, the command may look like:
 
@@ -78,7 +88,7 @@ Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have
 
 - We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page [here](https://deeplabcut.github.io/DeepLabCut/docs/docker.html).
 
-### Pro Tips:
+## Pro Tips:
 
 More [installation ProTips](installTips) are also available.
 
@@ -99,12 +109,13 @@ In the terminal type:
 
 `conda create -n DLC python=3.8`
 
+**Current version:** The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut[tf]`) or `pip install 'deeplabcut[gui,tf]'` which has a pyside/napari based GUI.
 
-The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
+**Pre-version2.3 (Dec 2022):** The only thing you then need to add to the env is deeplabcut (`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has wxPython for GUI support. For Windows and MacOS, you just run `pip install -U wxPython<4.1.0` but for linux you might need the specific wheel (https://wxpython.org/pages/downloads/index.html).
 
 We have some tips for linux users here, as the latest Ubuntu doesn't easily support a 1-click install: https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html
 
-### **GPU Support:**
+## **GPU Support:**
 
 The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.
 - CUDA: https://developer.nvidia.com/cuda-downloads (just follow the prompts here!)
@@ -120,7 +131,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matchi
 **FIRST**, install a driver for your GPU. Find DRIVER HERE: https://www.nvidia.com/download/index.aspx
 - check which driver is installed by typing this into the terminal: ``nvidia-smi``.
 
-**SECOND**, install CUDA (versions up to CUDA11 are supported, together with TF2.5): https://developer.nvidia.com/ (Note that cuDNN, https://developer.nvidia.com/cudnn, is supplied inside the anaconda environment files, so you don't need to install it again).
+**SECOND**, install CUDA: https://developer.nvidia.com/ (Note that cuDNN, https://developer.nvidia.com/cudnn, is supplied inside the anaconda environment files, so you don't need to install it again).
 
 **THIRD:** Follow the steps above to get the `DEEPLABCUT` conda file and install it!
 
@@ -178,10 +189,10 @@ If you perform the system-wide installation, and the computer has other Python p
 
 - Computer:
 
-     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS** and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (https://github.com/DeepLabCut/Docker4DeepLabCut2.0). Now we use the new Docker containers supplied on this repo, also available through [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) or the [`deeplabcut-docker`](https://pypi.org/project/deeplabcut-docker/) helper script.
+     - For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS** and for versions prior to 2.2, we run a Docker container that has TensorFlow, etc. installed (https://github.com/DeepLabCut/Docker4DeepLabCut2.0). Now we use the new Docker containers supplied on this repo (linux support only), also available through [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) or the [`deeplabcut-docker`](https://pypi.org/project/deeplabcut-docker/) helper script.
 
 - Computer Hardware:
-     - Ideally, you will use a strong GPU with *at least* 8GB memory such as the [NVIDIA GeForce 1080 Ti or 2080 Ti](https://www.nvidia.com/en-us/shop/geforce/?page=1&limit=9&locale=en-us).  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/DeepLabCut/DeepLabCut/issues/47) or Google Colaboratory.
+     - Ideally, you will use a strong NVIDIA GPU with *at least* 8GB memory.  A GPU is not necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets are faster (see WIKI). You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/DeepLabCut/DeepLabCut/issues/47) or Google Colaboratory.
 
 - Camera Hardware:
      - The software is very robust to track data from any camera (cell phone cameras, grayscale, color; captured under infrared light, different manufacturers, etc.). See demos on our [website](https://www.mousemotorlab.org/deeplabcut/).
@@ -191,7 +202,7 @@ If you perform the system-wide installation, and the computer has other Python p
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
      - `pip install deeplabcut`
      - TensorFlow
-       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
+       - You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers)
 

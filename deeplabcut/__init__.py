@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 
@@ -56,7 +58,7 @@ from deeplabcut.generate_training_dataset import (
     dropimagesduetolackofannotation,
     adddatasetstovideolistandviceversa,
     dropduplicatesinannotatinfiles,
-    dropunlabeledframes
+    dropunlabeledframes,
 )
 from deeplabcut.utils import (
     create_labeled_video,
@@ -74,6 +76,7 @@ try:
     from deeplabcut.pose_tracking_pytorch import transformer_reID
 except ModuleNotFoundError as e:
     import warnings
+
     warnings.warn(
         """
         As PyTorch is not installed, unsupervised identity learning will not be available.
@@ -104,6 +107,7 @@ from deeplabcut.pose_estimation_tensorflow import (
     visualize_paf,
     extract_save_all_maps,
     export_model,
+    video_inference_superanimal,
 )
 
 
@@ -121,4 +125,3 @@ from deeplabcut.refine_training_dataset import (
     find_outliers_in_raw_data,
 )
 from deeplabcut.post_processing import filterpredictions, analyzeskeleton
-

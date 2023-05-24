@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -355,8 +365,8 @@ def check_video_integrity(video_path):
 
 
 def imread(image_path, mode="skimage"):
-    """ Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels. """
+    """Read image either with skimage or cv2.
+    Returns frame in uint with 3 color channels."""
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:
@@ -587,12 +597,10 @@ def draw_bbox(video):
     rs = RectangleSelector(
         ax,
         line_select_callback,
-        drawtype="box",
         minspanx=5,
         minspany=5,
         interactive=True,
         spancoords="pixels",
-        rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
 

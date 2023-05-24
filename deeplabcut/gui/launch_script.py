@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -21,11 +31,10 @@ from PySide6.QtGui import QIcon, QPixmap
 
 def launch_dlc():
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join(BASE_DIR, 'assets', 'logo.png')))
+    app.setWindowIcon(QIcon(os.path.join(BASE_DIR, "assets", "logo.png")))
     screen_size = app.screens()[0].size()
-    pixmap = (
-        QPixmap(os.path.join(BASE_DIR, 'assets', 'welcome.png'))
-        .scaledToWidth(int(0.7 * screen_size.width()), Qt.SmoothTransformation)
+    pixmap = QPixmap(os.path.join(BASE_DIR, "assets", "welcome.png")).scaledToWidth(
+        int(0.7 * screen_size.width()), Qt.SmoothTransformation
     )
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
@@ -60,5 +69,5 @@ def launch_dlc():
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     launch_dlc()

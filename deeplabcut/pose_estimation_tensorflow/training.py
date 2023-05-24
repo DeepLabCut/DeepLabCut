@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 from pathlib import Path
@@ -144,7 +146,7 @@ def train_network(
         )
     """
     if allow_growth:
-        os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+        os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
     import tensorflow as tf
 

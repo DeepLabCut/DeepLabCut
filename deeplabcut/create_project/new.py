@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 import shutil
@@ -126,7 +128,7 @@ def create_new_project(
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
         print('Project "{}" already exists!'.format(project_path))
-        return  os.path.join(str(project_path), "config.yaml")
+        return os.path.join(str(project_path), "config.yaml")
     video_path = project_path / "videos"
     data_path = project_path / "labeled-data"
     shuffles_path = project_path / "training-datasets"
@@ -197,10 +199,10 @@ def create_new_project(
                 except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
-                        "cutting/pasting the video instead."
+                        "copying the video instead."
                     )
-                    shutil.move(os.fspath(src), os.fspath(dst))
-                    print("{} moved to {}".format(src, dst))
+                    shutil.copy(os.fspath(src), os.fspath(dst))
+                    print("{} copied to {}".format(src, dst))
             videos = destinations
 
     if copy_videos:

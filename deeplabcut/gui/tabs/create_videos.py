@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
@@ -88,7 +98,7 @@ class CreateVideos(DefaultTab):
 
     def _generate_layout_video_parameters(self, layout):
 
-        tmp_layout = _create_horizontal_layout(margins=(0,0,0,0))
+        tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
         # Trail Points
         opt_text = QtWidgets.QLabel("Specify the number of trail points")
@@ -99,7 +109,7 @@ class CreateVideos(DefaultTab):
 
         layout.addLayout(tmp_layout)
 
-        tmp_layout = _create_vertical_layout(margins=(0,0,0,0))
+        tmp_layout = _create_vertical_layout(margins=(0, 0, 0, 0))
 
         # Plot all bodyparts
         self.plot_all_bodyparts = QtWidgets.QCheckBox("Plot all bodyparts")
@@ -137,13 +147,16 @@ class CreateVideos(DefaultTab):
         )
         tmp_layout.addWidget(self.create_high_quality_video)
 
-        nested_tmp_layout = _create_horizontal_layout(margins=(0,0,0,0))
+        nested_tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
         nested_tmp_layout.addLayout(tmp_layout)
 
-        tmp_layout = _create_vertical_layout(margins=(0,0,0,0))
+        tmp_layout = _create_vertical_layout(margins=(0, 0, 0, 0))
 
         # Bodypart list
-        self.bodyparts_list_widget = BodypartListWidget(root=self.root, parent=self,)
+        self.bodyparts_list_widget = BodypartListWidget(
+            root=self.root,
+            parent=self,
+        )
         nested_tmp_layout.addWidget(self.bodyparts_list_widget, Qt.AlignLeft)
 
         tmp_layout.addLayout(nested_tmp_layout, Qt.AlignLeft)
@@ -207,7 +220,14 @@ class CreateVideos(DefaultTab):
         shuffle = self.root.shuffle_value
         videos = self.files
         trailpoints = self.trail_points.value()
-        color_by = self.color_by_widget.currentText()
+        if hasattr(self, "color_by_widget"):
+            # Multianimal scenario.
+            # Color is based on individual or bodypart.
+            color_by = self.color_by_widget.currentText()
+        else:
+            # Single animal scenario.
+            # Color is based on bodypart.
+            color_by = "bodypart"
         filtered = bool(self.use_filtered_data_checkbox.checkState())
 
         bodyparts = "all"
@@ -217,7 +237,7 @@ class CreateVideos(DefaultTab):
         ):
             bodyparts = self.bodyparts_to_use
 
-        deeplabcut.create_labeled_video(
+        videos_created = deeplabcut.create_labeled_video(
             config=config,
             videos=videos,
             shuffle=shuffle,
@@ -228,7 +248,14 @@ class CreateVideos(DefaultTab):
             trailpoints=trailpoints,
             color_by=color_by,
         )
-        self.root.writer.write("Labeled videos created.")
+        if all(videos_created):
+            self.root.writer.write("Labeled videos created.")
+        else:
+            failed_videos = [
+                video for success, video in zip(videos_created, videos) if not success
+            ]
+            failed_videos_str = ", ".join(failed_videos)
+            self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
         if self.plot_trajectories.checkState():
             deeplabcut.plot_trajectories(
@@ -240,6 +267,6 @@ class CreateVideos(DefaultTab):
             )
 
     def build_skeleton(self, *args):
-        from widgets import SkeletonBuilder
+        from deeplabcut.gui.widgets import SkeletonBuilder
 
         SkeletonBuilder(self.root.config)

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 Author: Hao Wu
 hwu01@g.harvard.edu
@@ -146,7 +156,8 @@ class VideoProcessorCV(VideoProcessor):
         return np.flip(frame, 2)
 
     def save_frame(self, frame):
-        self.svid.write(np.flip(frame, 2))
+        if frame is not None:
+            self.svid.write(np.flip(frame, 2))
 
     def close(self):
         if hasattr(self, "svid") and self.svid is not None:

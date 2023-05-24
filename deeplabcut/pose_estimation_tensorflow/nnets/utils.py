@@ -1,3 +1,4 @@
+#
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+#
 
 import functools
 import numpy as np
@@ -85,8 +86,8 @@ def get_batch_spec(cfg):
 def make_2d_gaussian_kernel(sigma, size):
     sigma = tf.convert_to_tensor(sigma, dtype=tf.float32)
     k = tf.range(-size // 2 + 1, size // 2 + 1)
-    k = tf.cast(k ** 2, sigma.dtype)
-    k = tf.nn.softmax(-k / (2 * (sigma ** 2)))
+    k = tf.cast(k**2, sigma.dtype)
+    k = tf.nn.softmax(-k / (2 * (sigma**2)))
     return tf.einsum("i,j->ij", k, k)
 
 

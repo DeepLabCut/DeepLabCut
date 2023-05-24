@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import os
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -37,7 +47,7 @@ class LabelFrames(DefaultTab):
             folder = dialog.selectedFiles()[0]
             has_h5 = False
             for file in os.listdir(folder):
-                if file.endswith('.h5'):
+                if file.endswith(".h5"):
                     has_h5 = True
                     break
             if not has_h5:

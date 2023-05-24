@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import glob
 import os
@@ -226,7 +227,7 @@ def create_labeled_video_3d(
                         str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                     ),
                 )
-            except FileNotFoundError:
+            except IndexError:
                 print(
                     "No filtered predictions found, the unfiltered predictions will be used instead."
                 )
@@ -247,7 +248,9 @@ def create_labeled_video_3d(
 
             df_3d = pd.read_hdf(triangulate_file)
             try:
-                num_animals = df_3d.columns.get_level_values("individuals").unique().size
+                num_animals = (
+                    df_3d.columns.get_level_values("individuals").unique().size
+                )
             except KeyError:
                 num_animals = 1
 
@@ -265,20 +268,21 @@ def create_labeled_video_3d(
             )
 
             # Format data
-            mask2d = df_cam1.columns.get_level_values('bodyparts').isin(bodyparts2plot)
-            xy1 = df_cam1.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            mask2d = df_cam1.columns.get_level_values("bodyparts").isin(bodyparts2plot)
+            xy1 = df_cam1.iloc[:len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible1 = xy1[..., 2] >= pcutoff
             xy1[~visible1] = np.nan
-            xy2 = df_cam2.loc[:, mask2d].to_numpy().reshape((len(df_cam1), -1, 3))
+            xy2 = df_cam2.iloc[:len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible2 = xy2[..., 2] >= pcutoff
             xy2[~visible2] = np.nan
-            mask = df_3d.columns.get_level_values('bodyparts').isin(bodyparts2plot)
+            mask = df_3d.columns.get_level_values("bodyparts").isin(bodyparts2plot)
             xyz = df_3d.loc[:, mask].to_numpy().reshape((len(df_3d), -1, 3))
             xyz[~(visible1 & visible2)] = np.nan
 
-            bpts = df_3d.columns.get_level_values('bodyparts')[mask][::3]
+            bpts = df_3d.columns.get_level_values("bodyparts")[mask][::3]
             links = make_labeled_video.get_segment_indices(
-                bodyparts2connect, bpts,
+                bodyparts2connect,
+                bpts,
             )
             ind_links = tuple(zip(*links))
 
@@ -308,15 +312,21 @@ def create_labeled_video_3d(
             # Set up the matplotlib figure beforehand
             fig, axes1, axes2, axes3 = set_up_grid(figsize, xlim, ylim, zlim, view)
             points_2d1 = axes1.scatter(
-                *np.zeros((2, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+                *np.zeros((2, len(bodyparts2plot))),
+                s=markerSize,
+                alpha=alphaValue,
             )
             im1 = axes1.imshow(np.zeros((vid_cam1.height, vid_cam1.width)))
             points_2d2 = axes2.scatter(
-                *np.zeros((2, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+                *np.zeros((2, len(bodyparts2plot))),
+                s=markerSize,
+                alpha=alphaValue,
             )
             im2 = axes2.imshow(np.zeros((vid_cam2.height, vid_cam2.width)))
             points_3d = axes3.scatter(
-                *np.zeros((3, len(bodyparts2plot))), s=markerSize, alpha=alphaValue,
+                *np.zeros((3, len(bodyparts2plot))),
+                s=markerSize,
+                alpha=alphaValue,
             )
             if draw_skeleton:
                 # Set up skeleton LineCollections

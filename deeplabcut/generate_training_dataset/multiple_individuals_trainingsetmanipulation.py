@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import os
 import os.path
@@ -32,6 +33,7 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
+
 
 def format_multianimal_training_data(
     df,
@@ -113,7 +115,7 @@ def create_multianimaltraining_dataset(
     Only the videos included in the config file are used to create this dataset.\n
     [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
 
-    Imporant differences to standard:
+    Important differences to standard:
      - stores coordinates with numdigits as many digits
      - creates
     Parameter
@@ -238,7 +240,8 @@ def create_multianimaltraining_dataset(
         # see Suppl. Fig S9c in Lauer et al., 2022.
         if n_edges_orig >= n_edges_threshold:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                partaffinityfield_graph, average_degree=paf_graph_degree,
+                partaffinityfield_graph,
+                average_degree=paf_graph_degree,
             )
     else:
         if paf_graph == "config":

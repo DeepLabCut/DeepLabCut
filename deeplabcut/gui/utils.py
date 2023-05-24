@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from PySide6 import QtCore
 
 
@@ -33,7 +43,7 @@ def is_latest_deeplabcut_version():
     import urllib.request
     from deeplabcut import VERSION
 
-    url = 'https://pypi.org/pypi/deeplabcut/json'
+    url = "https://pypi.org/pypi/deeplabcut/json"
     contents = urllib.request.urlopen(url).read()
-    latest_version = json.loads(contents)['info']['version']
+    latest_version = json.loads(contents)["info"]["version"]
     return VERSION == latest_version, latest_version

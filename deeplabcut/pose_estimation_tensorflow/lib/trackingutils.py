@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import abc
 import math
 import numpy as np
@@ -53,7 +55,12 @@ class BaseTracker:
     n_trackers = 0
 
     def __init__(self, dim, dim_z):
-        self.kf = kinematic_kf(dim, 1, dim_z=dim_z, order_by_dim=False,)
+        self.kf = kinematic_kf(
+            dim,
+            1,
+            dim_z=dim_z,
+            order_by_dim=False,
+        )
         self.id = self.__class__.n_trackers
         self.__class__.n_trackers += 1
         self.time_since_update = 0

@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import os
 from pathlib import Path
@@ -17,17 +18,17 @@ from deeplabcut.utils import auxiliaryfunctions
 
 def load_demo_data(config, createtrainingset=True):
     """
-    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018. 
+    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
     When loading, it sets paths correctly to run this project on your system
-    
+
     Parameter
       ----------
       config : string
           Full path of the config.yaml file of the provided demo dataset as a string.
 
-      createtrainingset : bool 
-          Boolean variable indicating if a training set shall be created. 
-          
+      createtrainingset : bool
+          Boolean variable indicating if a training set shall be created.
+
       Example
       --------
       >>> deeplabcut.load_demo_data('config.yaml')

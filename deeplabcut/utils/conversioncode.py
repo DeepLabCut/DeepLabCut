@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -128,7 +138,10 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 
 
 def analyze_videos_converth5_to_nwb(
-    config, video_folder, videotype=".mp4", listofvideos=False,
+    config,
+    video_folder,
+    videotype=".mp4",
+    listofvideos=False,
 ):
     """
     Convert all h5 output data files in `video_folder` to NWB format.
@@ -208,9 +221,9 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
-    """ If a project was created on Windows (and labeled there,) but ran on unix then the data folders
+    """If a project was created on Windows (and labeled there,) but ran on unix then the data folders
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
-    looping over all folders in labeled-data """
+    looping over all folders in labeled-data"""
 
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")

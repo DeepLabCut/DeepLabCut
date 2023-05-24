@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -85,7 +95,7 @@ def get_track_method(cfg, track_method=""):
 
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
-    """ Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts """
+    """Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts"""
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -145,10 +155,10 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
 
 
 def getpafgraph(cfg, printnames=True):
-    """ Auxiliary function that turns skeleton (list of connected bodypart pairs)
-        into a list of corresponding indices (with regard to the stacked multianimal/uniquebodyparts)
+    """Auxiliary function that turns skeleton (list of connected bodypart pairs)
+    into a list of corresponding indices (with regard to the stacked multianimal/uniquebodyparts)
 
-        Convention: multianimalbodyparts go first!
+    Convention: multianimalbodyparts go first!
     """
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
         cfg
@@ -189,7 +199,7 @@ def graph2names(cfg, partaffinityfield_graph):
 
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
-    """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
+    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -201,7 +211,7 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 
 def LoadFullMultiAnimalData(dataname):
-    """ Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py """
+    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
         with open(data_file, "rb") as handle:
@@ -214,7 +224,7 @@ def LoadFullMultiAnimalData(dataname):
 
 
 def returnlabelingdata(config):
-    """ Returns a specific labeleing data set -- the user will be asked which one. """
+    """Returns a specific labeleing data set -- the user will be asked which one."""
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
@@ -360,7 +370,8 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5", "df_with_missing",
+                fn + "singleanimal.h5",
+                "df_with_missing",
             )
             Data.to_csv(fn + "singleanimal.csv")
 
@@ -369,7 +380,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
-    """ Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target! """
+    """Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target!"""
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
@@ -434,12 +445,14 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5", "df_with_missing",
+                    fn + "multianimal.h5",
+                    "df_with_missing",
                 )
                 Data.to_csv(fn + "multianimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing",
+                    fn + ".h5",
+                    "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
             elif target is None or target == "multi":
@@ -521,12 +534,14 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5", "df_with_missing",
+                    fn + "singleanimal.h5",
+                    "df_with_missing",
                 )
                 Data.to_csv(fn + "singleanimal.csv")
 
                 DataFrame.to_hdf(
-                    fn + ".h5", "df_with_missing",
+                    fn + ".h5",
+                    "df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
 

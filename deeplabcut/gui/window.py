@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import os
 import logging
 import subprocess
@@ -26,13 +36,13 @@ def _check_for_updates():
             text=f"DeepLabCut {latest_version} available",
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton('Update', msg.AcceptRole)
+        update_btn = msg.addButton("Update", msg.AcceptRole)
         msg.setDefaultButton(update_btn)
-        _ = msg.addButton('Skip', msg.RejectRole)
+        _ = msg.addButton("Skip", msg.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call(
-                [sys.executable, '-m', 'pip', 'install', '-U', 'deeplabcut']
+                [sys.executable, "-m", "pip", "install", "-U", "deeplabcut"]
             )
     else:
         msg = QtWidgets.QMessageBox(
@@ -103,7 +113,7 @@ class MainWindow(QMainWindow):
         return QtCore.QSettings()
 
     def load_settings(self):
-        filenames = self.settings.value("recent_files", [])
+        filenames = self.settings.value("recent_files") or []
         for filename in filenames:
             self.add_recent_filename(filename)
 
@@ -216,7 +226,7 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        icon = os.path.join(BASE_DIR, 'assets', 'logo.png')
+        icon = os.path.join(BASE_DIR, "assets", "logo.png")
         self.setWindowIcon(QIcon(icon))
 
         self.status_bar = self.statusBar()
@@ -267,8 +277,13 @@ class MainWindow(QMainWindow):
         self.load_project_button.setFixedWidth(200)
         self.load_project_button.clicked.connect(self._open_project)
 
+        self.run_superanimal_button = QtWidgets.QPushButton("Model Zoo")
+        self.run_superanimal_button.setFixedWidth(200)
+        self.run_superanimal_button.clicked.connect(self._goto_superanimal)
+
         self.layout_buttons.addWidget(self.create_project_button)
         self.layout_buttons.addWidget(self.load_project_button)
+        self.layout_buttons.addWidget(self.run_superanimal_button)
 
         self.layout.addLayout(self.layout_buttons)
 
@@ -388,6 +403,15 @@ class MainWindow(QMainWindow):
             open_project.loaded,
         )
 
+    def _goto_superanimal(self):
+        self.tab_widget = QtWidgets.QTabWidget()
+        self.tab_widget.setContentsMargins(0, 20, 0, 0)
+        self.modelzoo = ModelZoo(
+            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
+        )
+        self.tab_widget.addTab(self.modelzoo, "Model Zoo")
+        self.setCentralWidget(self.tab_widget)
+
     def load_config(self, config):
         self.config = config
         self.config_loaded.emit()
@@ -461,6 +485,9 @@ class MainWindow(QMainWindow):
         self.refine_tracklets = RefineTracklets(
             root=self, parent=None, h1_description="DeepLabCut - Refine labels"
         )
+        self.modelzoo = ModelZoo(
+            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
+        )
         self.video_editor = VideoEditor(
             root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
         )
@@ -480,6 +507,7 @@ class MainWindow(QMainWindow):
             self.extract_outlier_frames, "Extract outlier frames (*)"
         )
         self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
+        self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
@@ -518,6 +546,7 @@ class MainWindow(QMainWindow):
         if self.is_multianimal:
             try:
                 from deeplabcut.pose_tracking_pytorch import transformer_reID
+
                 return True
             except ModuleNotFoundError:
                 return False
@@ -525,10 +554,11 @@ class MainWindow(QMainWindow):
             return False
 
     def closeEvent(self, event):
-        print('Exiting...')
+        print("Exiting...")
         answer = QtWidgets.QMessageBox.question(
-            self, 'Quit',
-            'Are you sure you want to quit?',
+            self,
+            "Quit",
+            "Are you sure you want to quit?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel,
             QtWidgets.QMessageBox.Cancel,
         )
@@ -538,4 +568,4 @@ class MainWindow(QMainWindow):
             self.save_settings()
         else:
             event.ignore()
-            print('')
+            print("")

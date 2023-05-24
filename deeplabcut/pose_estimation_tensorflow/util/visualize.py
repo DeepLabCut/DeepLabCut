@@ -1,3 +1,16 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Adapted from DeeperCut by Eldar Insafutdinov
+# https://github.com/eldar/pose-tensorflow
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
@@ -17,7 +30,7 @@ def _npcircle(image, cx, cy, radius, color, transparency=0.0):
     cx = int(cx)
     cy = int(cy)
     y, x = np.ogrid[-radius:radius, -radius:radius]
-    index = x ** 2 + y ** 2 <= radius ** 2
+    index = x**2 + y**2 <= radius**2
     image[cy - radius : cy + radius, cx - radius : cx + radius][index] = (
         image[cy - radius : cy + radius, cx - radius : cx + radius][index].astype(
             "float32"

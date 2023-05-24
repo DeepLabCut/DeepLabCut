@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import ast
 import os
 import warnings
@@ -32,7 +42,7 @@ def launch_napari(files=None):
             action.trigger()
             break
     if files is not None:
-        viewer.open(files, plugin='napari-deeplabcut')
+        viewer.open(files, plugin="napari-deeplabcut")
     return viewer
 
 
@@ -111,7 +121,7 @@ class DragDropListView(QtWidgets.QListView):
             elif os.path.isdir(path):
                 for root, _, files in os.walk(path):
                     for file in files:
-                        if not file.startswith('.'):
+                        if not file.startswith("."):
                             self.add_item(os.path.join(root, file))
 
 
@@ -121,7 +131,7 @@ class ItemSelectionFrame(QtWidgets.QFrame):
         self.setFrameShape(self.StyledPanel)
         self.setLineWidth(0.5)
 
-        self.select_box = QtWidgets.QCheckBox('Files')
+        self.select_box = QtWidgets.QCheckBox("Files")
         self.select_box.setChecked(True)
         self.select_box.stateChanged.connect(self.toggle_select)
 
@@ -147,10 +157,10 @@ class ItemSelectionFrame(QtWidgets.QFrame):
         state, n_checked = self.fancy_list.state
         if self.select_box.checkState() != state:
             self.select_box.setCheckState(state)
-        string = 'file'
+        string = "file"
         if n_checked > 1:
-            string += 's'
-        self.select_box.setText(f'{n_checked} {string} selected')
+            string += "s"
+        self.select_box.setText(f"{n_checked} {string} selected")
 
     def toggle_select(self, state):
         if state != QtCore.Qt.PartiallyChecked:
@@ -160,8 +170,9 @@ class ItemSelectionFrame(QtWidgets.QFrame):
 
 
 class NavigationToolbar(NavigationToolbar2QT):
-    toolitems = [t for t in NavigationToolbar2QT.toolitems if
-                 t[0] in ('Home', 'Pan', 'Zoom')]
+    toolitems = [
+        t for t in NavigationToolbar2QT.toolitems if t[0] in ("Home", "Pan", "Zoom")
+    ]
 
     def set_message(self, msg):
         pass
@@ -176,7 +187,7 @@ class StreamWriter:
         self.queue = Queue()
 
     def write(self, text):
-        if text != '\n':
+        if text != "\n":
             self.queue.put(text)
 
     def flush(self):
@@ -199,7 +210,7 @@ class StreamReceiver(QtCore.QThread):
 class ClickableLabel(QtWidgets.QLabel):
     signal = QtCore.Signal()
 
-    def __init__(self, text='', color='turquoise', parent=None):
+    def __init__(self, text="", color="turquoise", parent=None):
         super(ClickableLabel, self).__init__(text, parent)
         self.color = color
         self._default_style = self.styleSheet()
@@ -209,7 +220,7 @@ class ClickableLabel(QtWidgets.QLabel):
 
     def enterEvent(self, event):
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        self.setStyleSheet(f'color: {self.color}')
+        self.setStyleSheet(f"color: {self.color}")
 
     def leaveEvent(self, event):
         self.unsetCursor()
@@ -224,11 +235,11 @@ class ItemCreator(QtWidgets.QDialog):
         self.parent = parent
         vbox = QtWidgets.QVBoxLayout(self)
         self.field1 = QtWidgets.QLineEdit(self)
-        self.field1.setPlaceholderText('Parameter')
+        self.field1.setPlaceholderText("Parameter")
         self.field2 = QtWidgets.QLineEdit(self)
-        self.field2.setPlaceholderText('Value')
+        self.field2.setPlaceholderText("Value")
         create_button = QtWidgets.QPushButton(self)
-        create_button.setText('Create')
+        create_button.setText("Create")
         create_button.clicked.connect(self.form_item)
         vbox.addWidget(self.field1)
         vbox.addWidget(self.field2)
@@ -251,14 +262,14 @@ class ContextMenu(QtWidgets.QMenu):
         super(ContextMenu, self).__init__(parent)
         self.parent = parent
         self.current_item = parent.tree.currentItem()
-        insert = QAction('Insert', self)
+        insert = QAction("Insert", self)
         insert.triggered.connect(self.create_item)
-        delete = QAction('Delete', self)
+        delete = QAction("Delete", self)
         delete.triggered.connect(parent.remove_items)
         self.addAction(insert)
         self.addAction(delete)
-        if self.current_item.text(0) == 'project_path':
-            fix_path = QAction('Fix Path', self)
+        if self.current_item.text(0) == "project_path":
+            fix_path = QAction("Fix Path", self)
             fix_path.triggered.connect(self.fix_path)
             self.addAction(fix_path)
 
@@ -281,14 +292,14 @@ class CustomDelegate(QtWidgets.QItemDelegate):
 
 
 class DictViewer(QtWidgets.QWidget):
-    def __init__(self, cfg, filename='', parent=None):
+    def __init__(self, cfg, filename="", parent=None):
         super(DictViewer, self).__init__(parent)
         self.cfg = cfg
         self.filename = filename
         self.parent = parent
         self.tree = QtWidgets.QTreeWidget()
         self.tree.setItemDelegate(CustomDelegate())
-        self.tree.setHeaderLabels(['Parameter', 'Value'])
+        self.tree.setHeaderLabels(["Parameter", "Value"])
         self.tree.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.tree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.tree.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
@@ -357,7 +368,7 @@ class DictViewer(QtWidgets.QWidget):
         except SyntaxError:
             # Slashes also raise the error, but no need to print anything since it is then likely to be a path
             if os.path.sep not in val:
-                print('Consider removing leading zeros or spaces in the string.')
+                print("Consider removing leading zeros or spaces in the string.")
         return val
 
     @staticmethod
@@ -383,7 +394,9 @@ class DictViewer(QtWidgets.QWidget):
 
     def edit_value(self, item):
         keys, value = self.walk_recursively_to_root(item)
-        if 'crop' not in keys:  # 'crop' should not be cast, otherwise it is understood as a list
+        if (
+            "crop" not in keys
+        ):  # 'crop' should not be cast, otherwise it is understood as a list
             value = self.cast_to_right_type(value)
         self.set_value(self.cfg, keys, value)
 
@@ -417,7 +430,7 @@ class DictViewer(QtWidgets.QWidget):
             for i, val in enumerate(data, start=1):
                 self.add_row(str(i), val, tree_widget)
         else:
-            print('This should never be reached!')
+            print("This should never be reached!")
 
     def add_row(self, key, val, tree_widget):
         if isinstance(val, dict) or isinstance(val, list):
@@ -433,7 +446,7 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        if config.endswith('config.yaml'):
+        if config.endswith("config.yaml"):
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:
@@ -441,16 +454,16 @@ class ConfigEditor(QtWidgets.QDialog):
             self.write_func = auxiliaryfunctions.write_plainconfig
         self.cfg = self.read_func(config)
         self.parent = parent
-        self.setWindowTitle('Configuration Editor')
+        self.setWindowTitle("Configuration Editor")
         if parent is not None:
             self.setMinimumWidth(parent.screen_width // 2)
             self.setMinimumHeight(parent.screen_height // 2)
         self.viewer = DictViewer(self.cfg, config, self)
 
-        self.save_button = QtWidgets.QPushButton('Save', self)
+        self.save_button = QtWidgets.QPushButton("Save", self)
         self.save_button.setDefault(True)
         self.save_button.clicked.connect(self.accept)
-        self.cancel_button = QtWidgets.QPushButton('Cancel', self)
+        self.cancel_button = QtWidgets.QPushButton("Cancel", self)
         self.cancel_button.clicked.connect(self.close)
 
         vbox = QtWidgets.QVBoxLayout(self)
@@ -501,12 +514,10 @@ class FrameCropper(QtWidgets.QDialog):
         self.rs = RectangleSelector(
             self.ax,
             self.line_select_callback,
-            drawtype="box",
             minspanx=5,
             minspany=5,
             interactive=True,
             spancoords="pixels",
-            rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
         )
         self.show()
         self.fig.canvas.start_event_loop(timeout=-1)

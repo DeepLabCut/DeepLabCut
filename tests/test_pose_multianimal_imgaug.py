@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import os
 import pytest
@@ -27,10 +37,21 @@ def ma_dataset():
 
 @pytest.mark.parametrize(
     "scale, stride",
-    [(0.6, 2), (0.6, 4), (0.6, 8), (0.8, 4), (1.0, 8), (1.2, 8), (0.6, 4), (0.8, 8),],
+    [
+        (0.6, 2),
+        (0.6, 4),
+        (0.6, 8),
+        (0.8, 4),
+        (1.0, 8),
+        (1.2, 8),
+        (0.6, 4),
+        (0.8, 8),
+    ],
 )
 def test_calc_target_and_scoremap_sizes(
-    ma_dataset, scale, stride,
+    ma_dataset,
+    scale,
+    stride,
 ):
     ma_dataset.cfg["global_scale"] = scale
     ma_dataset.cfg["stride"] = stride

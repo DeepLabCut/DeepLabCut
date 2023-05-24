@@ -1,15 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 
 import logging
@@ -230,7 +228,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def compute_target_part_scoremap(self, joint_id, coords, data_item, size, scale):
         dist_thresh = self.cfg["pos_dist_thresh"] * scale
-        dist_thresh_sq = dist_thresh ** 2
+        dist_thresh_sq = dist_thresh**2
         num_joints = self.cfg["num_joints"]
         scmap = np.zeros(np.concatenate([size, np.array([num_joints])]))
         locref_size = np.concatenate([size, np.array([num_joints * 2])])
@@ -262,7 +260,7 @@ class DeterministicPoseDataset(BasePoseDataset):
                         pt_x = i * self.stride + self.half_stride
                         dx = j_x - pt_x
                         dy = j_y - pt_y
-                        dist = dx ** 2 + dy ** 2
+                        dist = dx**2 + dy**2
                         # print(la.norm(diff))
                         if dist <= dist_thresh_sq:
                             scmap[j, i, j_id] = 1

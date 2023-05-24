@@ -1,12 +1,13 @@
-"""
-DeepLabCut 2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import imgaug.augmenters as iaa
 import os
@@ -153,8 +154,10 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts
+    comparisonbodyparts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
+        )
     )
     all_bpts = np.asarray(
         len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -310,9 +313,11 @@ def evaluate_multianimal_full(
                         print("Model already evaluated.", resultsfilename)
                     else:
 
-                        (sess, inputs, outputs,) = predict.setup_pose_prediction(
-                            dlc_cfg
-                        )
+                        (
+                            sess,
+                            inputs,
+                            outputs,
+                        ) = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -355,7 +360,8 @@ def evaluate_multianimal_full(
                             # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                             temp = df.reset_index(level="bodyparts").dropna()
                             temp["bodyparts"].replace(
-                                dict(zip(joints, range(len(joints)))), inplace=True,
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
                             )
                             temp["sample"] = 0
                             peaks_gt = temp.loc[
@@ -633,7 +639,10 @@ def evaluate_multianimal_full(
                                 ax=ax,
                             )
                             visualization.save_labeled_frame(
-                                fig, image_path, foldername, k in trainIndices,
+                                fig,
+                                image_path,
+                                foldername,
+                                k in trainIndices,
                             )
                             visualization.erase_artists(ax)
 

@@ -24,7 +24,7 @@ To begin, navigate to anaconda prompt and right-click to "open as admin "(window
 
 The function **create\_new\_project** creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.
 
-Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full path of the videos that are (initially) used to create the training dataset.  
+Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full path of the videos that are (initially) used to create the training dataset.
 
 Optional arguments specify the working directory, where the project directory will be created, and if the user wants to copy the videos (to the project directory). If the optional argument working\_directory is unspecified, the project directory is created in the current working directory, and if copy\_videos is unspecified symbolic links for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).
 
@@ -47,7 +47,7 @@ This set of arguments will create a project directory with the name **Name of th
 
 **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding video, which allows the user to trace every frame back to its origin.
 
-**training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.  
+**training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which contains information about how the training dataset was created.
 
 **videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file.
 
@@ -66,11 +66,12 @@ The ``create_new_project`` step writes the following parameters to the configura
 </p>
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_new_project.rst
 ```
+````
 
 ### (B) Configure the Project
 
@@ -124,11 +125,12 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 </p>
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.extract_frames.rst
 ```
+````
 
 ### (D) Label Frames
 
@@ -161,11 +163,12 @@ delete key: delete label
 ```
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.label_frames.rst
 ```
+````
 
 ###  (E) Check Annotated Frames
 
@@ -174,16 +177,17 @@ is one of the most critical parts for creating the training dataset. The DeepLab
 ‘check_labels’ to do so. It is used as follows:
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
- ```   
+ ```
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.check_labels.rst
 ```
+````
 
 ### (F) Create Training Dataset(s)
 
@@ -234,18 +238,20 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 </p>
 
 #### API Docs for deeplabcut.create_training_dataset
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset.rst
 ```
+````
 
 #### API Docs for deeplabcut.create_training_model_comparison
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_model_comparison.rst
 ```
+````
 
 ### (G) Train The Network
 
@@ -273,11 +279,12 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 **maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.train_network.rst
 ```
+````
 
 ### (H) Evaluate the Trained Network
 
@@ -340,11 +347,12 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.evaluate_network.rst
 ```
+````
 
 ### (I) Novel Video Analysis:
 
@@ -366,11 +374,12 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.analyze_videos.rst
 ```
+````
 
 ### Novel Video Analysis: extra features
 
@@ -392,9 +401,9 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
   An example call:
  ```python
 deeplabcut.filterpredictions(config_path,['fullpath/analysis/project/videos'], videotype='.mp4',filtertype= 'arima',ARdegree=5,MAdegree=2)
- ```            
+ ```
   Here are parameters you can modify and pass:
-```python        
+```python
 deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'], shuffle=1, trainingsetindex=0, comparisonbodyparts='all', filtertype='arima', p_bound=0.01, ARdegree=3, MAdegree=1, alpha=0.01)
 ```
  Here is an example of how this can be applied to a video:
@@ -404,11 +413,12 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 </p>
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.filterpredictions.rst
 ```
+````
 
 ### (K) Plot Trajectories:
 
@@ -428,11 +438,12 @@ It creates a folder called ``plot-poses`` (in the directory of the video). The p
 </p>
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.plot_trajectories.rst
 ```
+````
 
 ### (L) Create Labeled Videos:
 
@@ -440,11 +451,11 @@ Additionally, the toolbox provides a function to create labeled videos based on 
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
 ```python
 deeplabcut.create_labeled_video(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi','fullpath/analysis/project/videos/reachingvideo2.avi'], save_frames = True/False)
-```       
+```
  Optionally, if you want to use the filtered data for a video or directory of filtered videos pass ``filtered=True``, i.e.:
-```python       
+```python
 deeplabcut.create_labeled_video(config_path, ['fullpath/afolderofvideos'], videotype='.mp4', filtered=True)
-```    
+```
 You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the "trailing points" you need to pass ``trailpoints``:
 ```python
 deeplabcut.create_labeled_video(config_path, ['fullpath/afolderofvideos'], videotype='.mp4', trailpoints=10)
@@ -481,11 +492,12 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_labeled_video.rst
 ```
+````
 
 #### Extract "Skeleton" Features:
 
@@ -496,11 +508,12 @@ deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingse
 ```
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.analyzeskeleton.rst
 ```
+````
 
 ### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
@@ -550,11 +563,12 @@ list (``extractionalgorithm='uniform'``), by performing ``extractionalgorithm='k
 In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user can run the extract_outlier_frames iteratively, and (even) extract additional frames from the same video. Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback (see below).
 
 #### API Docs
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.extract_outlier_frames.rst
 ```
+````
 
  ### (N) Refine Labels: Augmentation of the Training Dataset
 
@@ -598,18 +612,20 @@ Now you can run ``create_training_dataset``, then ``train_network``, etc. If you
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
 #### API Docs for deeplabcut.refine_labels
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.refine_labels.rst
 ```
+````
 
 #### API Docs for deeplabcut.merge_datasets
-```{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.merge_datasets.rst
 ```
+````
 
 ### Jupyter Notebooks for Demonstration of the DeepLabCut Workflow
 

@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from functools import partial
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -104,9 +114,7 @@ class UnsupervizedIdTracking(DefaultTab):
         self.worker.finished.connect(
             lambda: self.run_transformer_button.setEnabled(True)
         )
-        self.worker.finished.connect(
-            lambda: self.root._progress_bar.hide()
-        )
+        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()
         self.run_transformer_button.setEnabled(False)
         self.root._progress_bar.show()

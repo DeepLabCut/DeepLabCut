@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from functools import partial
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -248,15 +258,12 @@ class AnalyzeVideos(DefaultTab):
 
         videos = list(self.files)
         save_as_csv = self.save_as_csv.checkState() == Qt.Checked
-        save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
-        filter_data = self.filter_predictions.checkState() == Qt.Checked
         videotype = self.video_selection_widget.videotype_widget.currentText()
-        create_video_all_detections = (
-            self.create_detections_video_checkbox.checkState() == Qt.Checked
-        )
 
         if self.root.is_multianimal:
-            calibrate_assembly = self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+            calibrate_assembly = (
+                self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+            )
             assemble_with_ID_only = (
                 self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
             )
@@ -301,16 +308,28 @@ class AnalyzeVideos(DefaultTab):
         )
 
         self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(
-            lambda: self.analyze_videos_btn.setEnabled(True)
-        )
-        self.worker.finished.connect(
-            lambda: self.root._progress_bar.hide()
-        )
+        self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
+        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+        self.worker.finished.connect(lambda: self.run_enabled())
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
 
+    def run_enabled(self):
+        config = self.root.config
+        shuffle = self.root.shuffle_value
+
+        videos = list(self.files)
+        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
+        filter_data = self.filter_predictions.checkState() == Qt.Checked
+        videotype = self.video_selection_widget.videotype_widget.currentText()
+        try:
+            create_video_all_detections = (
+                    self.create_detections_video_checkbox.checkState() == Qt.Checked
+                )
+        except AttributeError:
+            create_video_all_detections = False
         if create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
                 config,
@@ -322,7 +341,7 @@ class AnalyzeVideos(DefaultTab):
         if filter_data:
             deeplabcut.filterpredictions(
                 config,
-                videos=videos,
+                video=videos,
                 videotype=videotype,
                 shuffle=shuffle,
                 filtertype="median",
@@ -332,7 +351,7 @@ class AnalyzeVideos(DefaultTab):
 
         if self.plot_trajectories.checkState() == Qt.Checked:
             bdpts = self.bodyparts_list_widget.selected_bodyparts
-            self.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
+            self.root.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
             showfig = self.show_trajectory_plots.checkState() == Qt.Checked
             deeplabcut.plot_trajectories(
                 config,
@@ -346,7 +365,8 @@ class AnalyzeVideos(DefaultTab):
 
         if self.root.is_multianimal and save_as_csv:
             deeplabcut.analyze_videos_converth5_to_csv(
-                videos, listofvideos=True,
+                videos,
+                listofvideos=True,
             )
 
         if save_as_nwb:

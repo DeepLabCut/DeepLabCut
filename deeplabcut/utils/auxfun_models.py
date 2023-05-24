@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -10,7 +20,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 from pathlib import Path
-
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -35,7 +44,7 @@ MODELTYPE_FILEPATH_MAP = {
 
 
 def check_for_weights(modeltype, parent_path, num_shuffles):
-    """ gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org """
+    """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
         print(
@@ -140,33 +149,12 @@ def download_model(modelname, target_dir):
         models = [
             fn
             for fn in neturls.keys()
-            if "resnet_" not in fn and "mobilenet_" not in fn
+            if "resnet_" not in fn
+            and "efficientnet" not in fn
+            and "mobilenet_" not in fn
         ]
         print("Model does not exist: ", modelname)
         print("Pick one of the following: ", models)
-
-
-def download_mpii_weights(wd):
-    """ Downloads weights pretrained on human data from DeeperCut. """
-    import urllib.request
-    from pathlib import Path
-
-    url = [
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.data-00000-of-00001",
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.meta",
-        "https://datasets.d2.mpi-inf.mpg.de/deepercut-models-tensorflow/mpii-single-resnet-101.index",
-    ]
-    for i in url:
-        file = str(Path(i).name)
-        filename = file.replace("mpii-single-resnet-101", "snapshot-103000")
-        filename = os.path.join(wd, filename)
-        if os.path.isfile(filename):
-            print("Weights already present!")
-            break  # not checking all the 3 files.
-        else:
-            urllib.request.urlretrieve(i, filename)
-
-    return filename
 
 
 # Aliases for backwards-compatibility

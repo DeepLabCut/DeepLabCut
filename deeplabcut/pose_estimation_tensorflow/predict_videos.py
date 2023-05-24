@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 ####################################################
 # Dependencies
@@ -235,7 +237,11 @@ def create_tracking_dataset(
             sess.close()
             tf.keras.backend.clear_session()
             create_triplets_dataset(
-                Videos, DLCscorer, track_method, n_triplets=n_triplets, destfolder=destfolder,
+                Videos,
+                DLCscorer,
+                track_method,
+                n_triplets=n_triplets,
+                destfolder=destfolder,
             )
 
         else:
@@ -724,7 +730,9 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     )
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
-    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
+        cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    )
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
@@ -879,9 +887,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
             continue
 
         if cfg["cropping"]:
-            frame = img_as_ubyte(
-                frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-            )
+            frame = img_as_ubyte(frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
         else:
             frame = img_as_ubyte(frame)
         frames[batch_ind] = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -920,7 +926,9 @@ def GetPoseDynamic(
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
-        ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
+            cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        )
     x1, x2, y1, y2 = 0, nx, 0, ny
     detected = False
     # TODO: perform detection on resized image (For speed)
@@ -1021,7 +1029,10 @@ def AnalyzeVideo(
         fps = cap.get(cv2.CAP_PROP_FPS)
         nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         duration = nframes * 1.0 / fps
-        size = (int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
+        size = (
+            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        )
         ny, nx = size
         print(
             "Duration of video [s]: ",
@@ -1445,7 +1456,13 @@ def analyze_time_lapse_frames(
 
 
 def _convert_detections_to_tracklets(
-    cfg, inference_cfg, data, metadata, output_path, greedy=False, calibrate=False,
+    cfg,
+    inference_cfg,
+    data,
+    metadata,
+    output_path,
+    greedy=False,
+    calibrate=False,
 ):
     track_method = cfg.get("default_track_method", "ellipse")
     if track_method not in trackingutils.TRACK_METHODS:

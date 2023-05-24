@@ -1,15 +1,18 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
-
-def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
+def add_new_videos(
+    config, videos, copy_videos=False, coords=None, extract_frames=False
+):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -22,7 +25,8 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
         A list of strings containing the full paths of the videos to include in the project.
 
     copy_videos : bool, optional
-        If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
+        If this is set to True, the videos will be copied to your project/videos directory. If False, the symlink of the
+        videos will be copied instead. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
 
     coords: list, optional
@@ -74,13 +78,14 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             else:
                 print("Copying the videos")
                 shutil.copy(os.fspath(src), os.fspath(dst))
-  
+
     else:
         # creates the symlinks of the video and puts it in the videos directory.
         print("Attempting to create a symbolic link of the video ...")
         for src, dst in zip(videos, destinations):
             if dst.exists():
-                pass
+                print(f"Video {dst} already exists. Skipping...")
+                continue
             try:
                 src = str(src)
                 dst = str(dst)
@@ -94,13 +99,11 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
                 except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
-                        "cutting/pasting the video instead."
+                        "copying the video instead."
                     )
-                    shutil.move(os.fspath(src), os.fspath(dst))
-                    print("{} moved to {}".format(src, dst))
+                    shutil.copy(os.fspath(src), os.fspath(dst))
+                    print("{} copied to {}".format(src, dst))
             videos = destinations
-
-    
 
     if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
@@ -125,7 +128,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             cfg["video_sets_original"].update(params)
     videos_str = [str(video) for video in videos]
     if extract_frames:
-        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
+        frame_extraction.extract_frames(
+            config, userfeedback=False, videos_list=videos_str
+        )
         print(
             "New videos were added to the project and frames have been extracted for labeling!"
         )

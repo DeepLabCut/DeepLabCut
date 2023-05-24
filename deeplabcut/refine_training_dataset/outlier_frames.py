@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import argparse
 import os
@@ -180,6 +182,7 @@ def extract_outlier_frames(
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
+    frames2use=None,
     comparisonbodyparts="all",
     epsilon=20,
     p_bound=0.01,
@@ -237,6 +240,10 @@ def extract_outlier_frames(
         * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
         * ``'uncertain'`` looks for frames with confidence below p_bound
         * ``'manual'`` launches a GUI from which the user can choose the frames
+        * ``'list'`` looks for user to provide a list of frame numbers to use, 'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
+
+    frames2use: list[str], optional, default=None
+        If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
 
     comparisonbodyparts: list[str] or str, optional, default="all"
         This selects the body parts for which the comparisons with the outliers are
@@ -398,8 +405,8 @@ def extract_outlier_frames(
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
-                sum_ = temp_dt.sum(axis=1, level=1)
-                ind = df_temp.index[(sum_ > epsilon ** 2).any(axis=1)].tolist()
+                sum_ = temp_dt.groupby(level="bodyparts", axis=1).sum()
+                ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":
                 d, o = compute_deviations(
@@ -418,8 +425,24 @@ def extract_outlier_frames(
             elif outlieralgorithm == "manual":
                 from deeplabcut.gui.widgets import launch_napari
 
-                _ = launch_napari()
+                _ = launch_napari([video, dataname])
                 return
+            elif outlieralgorithm == "list":
+                if frames2use is not None:
+                    try:
+                        frames2use = np.array(frames2use).astype("int")
+                    except ValueError() as e:
+                        print(
+                            "Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!"
+                        )
+                        raise
+                    Indices.extend(frames2use)
+                else:
+                    raise ValueError(
+                        'Expected list of frames2use for outlieralgorithm "list"!'
+                    )
+            else:
+                raise ValueError(f"outlieralgorithm {outlieralgorithm} not recognized!")
 
             # Run always except when the outlieralgorithm == manual.
             if not outlieralgorithm == "manual":
@@ -614,7 +637,9 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        cfg, "all"
+    )
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)
@@ -644,14 +669,24 @@ def ExtractFramesbasedonPreselection(
     else:
         coords = None
 
+    print("Cropping coords:", coords)
     print("Duration of video [s]: ", duration, ", recorded @ ", fps, "fps!")
     print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ")
     if extractionalgorithm == "uniform":
         if opencv:
+            if coords is not None:
+                vid.set_bbox(*coords)
             frames2pick = frameselectiontools.UniformFramescv2(
                 vid, numframes2extract, start, stop, Index
             )
         else:
+            if coords is not None:
+                clip = clip.crop(
+                    y1=coords[2],
+                    y2=coords[3],
+                    x1=coords[0],
+                    x2=coords[1],
+                )
             frames2pick = frameselectiontools.UniformFrames(
                 clip, numframes2extract, start, stop, Index
             )
@@ -671,7 +706,10 @@ def ExtractFramesbasedonPreselection(
         else:
             if coords is not None:
                 clip = clip.crop(
-                    y1=coords[2], y2=coords[3], x1=coords[0], x2=coords[1],
+                    y1=coords[2],
+                    y2=coords[3],
+                    x1=coords[0],
+                    x2=coords[1],
                 )
             frames2pick = frameselectiontools.KmeansbasedFrameselection(
                 clip,
@@ -736,10 +774,15 @@ def ExtractFramesbasedonPreselection(
         try:
             if coords is not None:
                 add.add_new_videos(
-                    config, [video], coords=[coords], copy_videos=copy_videos,
+                    config,
+                    [video],
+                    coords=[coords],
+                    copy_videos=copy_videos,
                 )  # make sure you pass coords as a list
             else:
-                add.add_new_videos(config, [video], coords=None,  copy_videos=copy_videos)
+                add.add_new_videos(
+                    config, [video], coords=None, copy_videos=copy_videos
+                )
         except:  # can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
             print(
                 "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!"
@@ -753,15 +796,27 @@ def ExtractFramesbasedonPreselection(
             )
             if isinstance(data, pd.DataFrame):
                 df = data.loc[frames2pick]
-                df.index = pd.MultiIndex.from_tuples([
-                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
-                    for index in df.index
-                ])  # exchange index number by file names.
+                df.index = pd.MultiIndex.from_tuples(
+                    [
+                        (
+                            "labeled-data",
+                            vname,
+                            "img" + str(index).zfill(strwidth) + ".png",
+                        )
+                        for index in df.index
+                    ]
+                )  # exchange index number by file names.
             elif isinstance(data, dict):
-                idx = pd.MultiIndex.from_tuples([
-                    ("labeled-data", vname, "img" + str(index).zfill(strwidth) + ".png")
-                    for index in frames2pick
-                ])
+                idx = pd.MultiIndex.from_tuples(
+                    [
+                        (
+                            "labeled-data",
+                            vname,
+                            "img" + str(index).zfill(strwidth) + ".png",
+                        )
+                        for index in frames2pick
+                    ]
+                )
                 filename = os.path.join(
                     str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
                 )
@@ -886,7 +941,7 @@ def PlottingSingleFrame(
                     plt.scatter(
                         df_x[ind, index],
                         df_y[ind, index],
-                        s=dotsize ** 2,
+                        s=dotsize**2,
                         color=colors(map2bp[i]),
                         alpha=alphavalue,
                     )
@@ -958,7 +1013,7 @@ def PlottingSingleFramecv2(
                     plt.scatter(
                         df_x[ind, index],
                         df_y[ind, index],
-                        s=dotsize ** 2,
+                        s=dotsize**2,
                         color=colors(map2bp[i]),
                         alpha=alphavalue,
                     )
