@@ -391,6 +391,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
                 joint_id = np.array(list(range(self._n_kpts))*self._n_animals)
                 joint_ids.append(joint_id)
+                batch_joints.append(kpts)
+
             batch_images.append(image)
 
         return batch_images, joint_ids, batch_joints, data_items
