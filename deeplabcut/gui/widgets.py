@@ -128,8 +128,8 @@ class DragDropListView(QtWidgets.QListView):
 class ItemSelectionFrame(QtWidgets.QFrame):
     def __init__(self, items, parent=None):
         super(ItemSelectionFrame, self).__init__(parent)
-        self.setFrameShape(self.StyledPanel)
-        self.setLineWidth(0.5)
+        self.setFrameShape(self.Shape.StyledPanel)
+        self.setLineWidth(0)
 
         self.select_box = QtWidgets.QCheckBox("Files")
         self.select_box.setChecked(True)
