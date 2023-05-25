@@ -86,6 +86,10 @@ def _average_multiple_scale_preds(
 
     xyp = np.zeros((len(scale_list), num_kpts, 3))
     for scale_id, pred in enumerate(preds):
+        # empty prediction if pred is not a dict
+        if not isinstance(pred, dict):
+            xyp[scale_id] = np.nan
+            continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
         for i, (coords, conf) in enumerate(zip(coordinates, confidence)):
@@ -337,8 +341,8 @@ def video_inference(
             print("Loading ", video)
             vid = VideoWriter(video)
             if len(scale_list) == 0:
-                # if the scale_list is empty, by default we use the original one
-                scale_list = [vid.height]
+                # spatial pyramid can still be useful for reducing jittering and quantization error                
+                scale_list = [vid.height - 50, vid.height, vid.height + 50]
             if robust_nframes:
                 nframes = vid.get_n_frames(robust=True)
                 duration = vid.calc_duration(robust=True)

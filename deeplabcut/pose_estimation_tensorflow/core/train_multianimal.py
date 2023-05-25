@@ -40,10 +40,12 @@ def train(
     allow_growth=True,
     pseudo_labels="",
     init_weights="",
-    pseudo_threshold=0,
+    pseudo_threshold=0.1,
     modelfolder="",
     traintime_resize=False,
     video_path="",
+    superanimal=None,
+    trim_ends = None  # trim the both ends of the video for video adaptation
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -63,6 +65,9 @@ def train(
     cfg["pseudo_threshold"] = pseudo_threshold
     cfg["video_path"] = video_path
     cfg["traintime_resize"] = traintime_resize
+
+    if superanimal is not None:
+        cfg["superanimal"] = superanimal
 
     if pseudo_labels != "":
         cfg["pseudo_label"] = pseudo_labels
