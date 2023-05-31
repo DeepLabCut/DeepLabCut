@@ -226,7 +226,6 @@ class PoseMultiNet(BasePoseNet):
                 weights_regularizer=slim.l2_regularizer(self.cfg["weight_decay"]),
             ):
                 with tf.compat.v1.variable_scope("upsampled_features"):
-
                     concat_3_s16 = tf.concat([bank_1_s16, bank_2_s16, features], 3)
 
                     if self.cfg["stride"] == 8:

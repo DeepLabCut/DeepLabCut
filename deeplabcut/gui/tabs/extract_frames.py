@@ -16,6 +16,7 @@ from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
+    VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
@@ -85,18 +86,20 @@ class ExtractFrames(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout(margins=(0, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
+
+        self.main_layout.addWidget(_create_label_widget("Optional: frame extraction from a video subset", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
         self.ok_button = QtWidgets.QPushButton("Extract Frames")
         self.ok_button.clicked.connect(self.extract_frames)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
-
         # Extraction method
         ext_method_label = QtWidgets.QLabel("Extraction method")
         self.extraction_method_widget = QtWidgets.QComboBox()
@@ -194,6 +197,7 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
             userfeedback=False,
+            videos_list=self.video_selection_widget.files or None,
         )
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(lambda: self.ok_button.setEnabled(True))

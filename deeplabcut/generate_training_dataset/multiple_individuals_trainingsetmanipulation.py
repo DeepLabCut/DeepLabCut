@@ -115,7 +115,7 @@ def create_multianimaltraining_dataset(
     Only the videos included in the config file are used to create this dataset.\n
     [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
 
-    Imporant differences to standard:
+    Important differences to standard:
      - stores coordinates with numdigits as many digits
      - creates
     Parameter

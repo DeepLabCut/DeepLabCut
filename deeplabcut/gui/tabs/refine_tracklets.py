@@ -105,7 +105,6 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.num_animals_in_videos)
 
     def _generate_layout_refinement(self, layout):
-
         section_title = _create_label_widget(
             "Refinement Settings", "font:bold", (0, 50, 0, 0)
         )
@@ -140,7 +139,6 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.trail_length_widget, 3, 1)
 
     def _generate_layout_filtering(self, layout):
-
         section_title = _create_label_widget("Filtering", "font:bold", (0, 50, 0, 0))
 
         # Filter type
@@ -222,7 +220,7 @@ class RefineTracklets(DefaultTab):
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
             deeplabcut.merge_datasets(self.root.config, forceiterate=None)
-            self.root.viz.export_to_training_data()
+            self.viz.export_to_training_data()
 
     def refine_tracks(self):
         cfg = self.root.cfg

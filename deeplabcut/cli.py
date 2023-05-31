@@ -304,7 +304,6 @@ def evaluate_network(_, config, **kwargs):
 )
 @click.pass_context
 def analyze_videos(_, *args, **kwargs):
-
     """Makes prediction.\n
         CONFIG: Full path of the "config.yaml" file in the train directory of a project.\n
         VIDEOS: Full path to video.\n

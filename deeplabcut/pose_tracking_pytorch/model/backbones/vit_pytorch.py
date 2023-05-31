@@ -278,7 +278,6 @@ class DLCTransReID(nn.Module):
         )
 
     def forward_features(self, x):
-
         # x: inputs
         B = x.shape[0]
         # (B, 12, 768)
@@ -376,7 +375,6 @@ def dlc_base_kpt_TransReID(
     kpt_num=12,
     **kwargs,
 ):
-
     embed_dim = 128
     depth = 4
     num_heads = 4

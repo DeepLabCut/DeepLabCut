@@ -29,7 +29,6 @@ class SpatiotemporalAdaptation:
         customized_pose_config="",
         init_weights="",
     ):
-
         """
         This class supports video adaptation to a super model.
 
@@ -187,7 +186,6 @@ class SpatiotemporalAdaptation:
             )
 
     def after_adapt_inference(self, **kwargs):
-
         pattern = os.path.join(
             self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
         )

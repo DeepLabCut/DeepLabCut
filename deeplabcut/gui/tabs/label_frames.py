@@ -38,8 +38,8 @@ class LabelFrames(DefaultTab):
 
     def label_frames(self):
         dialog = QtWidgets.QFileDialog(self)
-        dialog.setFileMode(dialog.Directory)
-        dialog.setViewMode(dialog.Detail)
+        dialog.setFileMode(QtWidgets.QFileDialog.Directory)
+        dialog.setViewMode(QtWidgets.QFileDialog.Detail)
         dialog.setDirectory(
             os.path.join(os.path.dirname(self.root.config), "labeled-data")
         )

@@ -8,14 +8,13 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from pathlib import Path
+import pytest
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
 
 def test_find_analyzed_data(tmpdir_factory):
-    import os
-    import pytest
-
     fake_folder = tmpdir_factory.mktemp("videos")
     SUPPORTED_VIDEOS = ["avi"]
     n_ext = len(SUPPORTED_VIDEOS)
@@ -119,3 +118,115 @@ def test_get_list_of_videos(tmpdir_factory):
             videotype=ext,
         )
         assert len(videos) == 1
+
+
+def test_write_config_has_skeleton(tmpdir_factory):
+    """Required for backward compatibility"""
+    fake_folder = tmpdir_factory.mktemp("fakeConfigs")
+    fake_config_file = fake_folder / Path("fakeConfig")
+    auxiliaryfunctions.write_config(fake_config_file, {})
+    config_data = auxiliaryfunctions.read_config(fake_config_file)
+    assert "skeleton" in config_data
+
+
+@pytest.mark.parametrize(
+    "multianimal, bodyparts, ma_bpts, unique_bpts, comparison_bpts, expected_bpts",
+    [
+        (
+            False,
+            ["head", "shoulders", "knees", "toes"],
+            None,
+            None,
+            {"knees", "others", "toes"},
+            ["knees", "toes"],
+        ),
+        (
+            True,
+            None,
+            ["head", "shoulders", "knees"],
+            ["toes"],
+            {"knees", "others", "toes"},
+            ["knees", "toes"],
+        ),
+    ],
+)
+def test_intersection_of_body_parts_and_ones_given_by_user(
+    multianimal, bodyparts, ma_bpts, unique_bpts, comparison_bpts, expected_bpts
+):
+    cfg = {
+        "multianimalproject": multianimal,
+        "bodyparts": bodyparts,
+        "multianimalbodyparts": ma_bpts,
+        "uniquebodyparts": unique_bpts,
+    }
+
+    if multianimal:
+        all_bodyparts = list(set(ma_bpts + unique_bpts))
+    else:
+        all_bodyparts = bodyparts
+
+    filtered_bpts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts="all"
+        )
+    )
+    print(all_bodyparts)
+    print(filtered_bpts)
+    assert len(all_bodyparts) == len(filtered_bpts)
+    assert all([bpt in all_bodyparts for bpt in filtered_bpts])
+
+    filtered_bpts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg,
+            comparisonbodyparts=comparison_bpts,
+        )
+    )
+    print(filtered_bpts)
+    assert len(expected_bpts) == len(filtered_bpts)
+    assert all([bpt in expected_bpts for bpt in filtered_bpts])
+
+
+class MockPath:
+    def __init__(self, path: Path, st_mtime: int):
+        self.path = path
+        self.parent = self.path.parent
+        self.st_mtime = st_mtime
+
+    def lstat(self):
+        return self
+
+
+# labeled_folders: (has_H5, H5_st_mtime, folder_name)
+@pytest.mark.parametrize(
+    "labeled_folders, next_folder_name",
+    [
+        ([(True, 1, "a"), (False, None, "b"), (False, None, "c")], "b"),
+        ([(False, None, "a"), (True, 123, "d"), (False, None, "f")], "f"),
+    ],
+)
+def test_find_next_unlabeled_folder(
+    tmpdir_factory,
+    monkeypatch,
+    labeled_folders,
+    next_folder_name,
+):
+    project_folder = tmpdir_factory.mktemp("project")
+    fake_cfg = Path(project_folder / "cfg.yaml")
+    auxiliaryfunctions.write_config(fake_cfg, {"project_path": str(project_folder)})
+
+    data_folder = project_folder / "labeled-data"
+    data_folder.mkdir()
+    rglob_results = []
+    for has_h5, h5_last_mod_time, folder_name in labeled_folders:
+        labeled_folder_path = Path(data_folder / folder_name)
+        labeled_folder_path.mkdir()
+        if has_h5:
+            h5_path = Path(labeled_folder_path / "data.h5")
+            rglob_results.append(MockPath(h5_path, h5_last_mod_time))
+
+    def get_rglob_results(*args, **kwargs):
+        return rglob_results
+
+    monkeypatch.setattr(Path, "rglob", get_rglob_results)
+    next_folder = auxiliaryfunctions.find_next_unlabeled_folder(fake_cfg)
+    assert str(next_folder) == str(Path(data_folder / next_folder_name))

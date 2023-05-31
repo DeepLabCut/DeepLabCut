@@ -128,8 +128,8 @@ class DragDropListView(QtWidgets.QListView):
 class ItemSelectionFrame(QtWidgets.QFrame):
     def __init__(self, items, parent=None):
         super(ItemSelectionFrame, self).__init__(parent)
-        self.setFrameShape(self.StyledPanel)
-        self.setLineWidth(0.5)
+        self.setFrameShape(self.Shape.StyledPanel)
+        self.setLineWidth(0)
 
         self.select_box = QtWidgets.QCheckBox("Files")
         self.select_box.setChecked(True)
@@ -514,12 +514,10 @@ class FrameCropper(QtWidgets.QDialog):
         self.rs = RectangleSelector(
             self.ax,
             self.line_select_callback,
-            drawtype="box",
             minspanx=5,
             minspany=5,
             interactive=True,
             spancoords="pixels",
-            rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
         )
         self.show()
         self.fig.canvas.start_event_loop(timeout=-1)

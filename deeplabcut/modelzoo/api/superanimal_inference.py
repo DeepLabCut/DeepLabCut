@@ -53,7 +53,6 @@ def get_multi_scale_frames(frame, scale_list):
 
 
 def _project_pred_to_original_size(pred, old_shape, new_shape):
-
     old_h, old_w, _ = old_shape
     new_h, new_w, _ = new_shape
     ratio_h, ratio_w = old_h / new_h, old_w / new_w
@@ -130,7 +129,6 @@ def _video_inference(
     batchsize,
     scale_list=[],
 ):
-
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
 
@@ -272,7 +270,6 @@ def video_inference(
     init_weights="",
     customized_test_config="",
 ):
-
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
@@ -328,7 +325,6 @@ def video_inference(
 
     datafiles = []
     for video in videos:
-
         vname = Path(video).stem
 
         videofolder = str(Path(video).parents[0])

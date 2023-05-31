@@ -264,6 +264,7 @@ def extract_frames(
 
     if mode == "manual":
         from deeplabcut.gui.widgets import launch_napari
+
         _ = launch_napari()
         return
 
@@ -315,7 +316,6 @@ def extract_frames(
                 or askuser == "oui"
                 or askuser == "ouais"
             ):  # multilanguage support :)
-
                 if opencv:
                     cap = VideoWriter(video)
                     nframes = len(cap)
@@ -411,6 +411,7 @@ def extract_frames(
                 output_path = (
                     Path(config).parents[0] / "labeled-data" / Path(video).stem
                 )
+                output_path.mkdir(parents=True, exist_ok=True)
                 is_valid = []
                 if opencv:
                     for index in frames2pick:

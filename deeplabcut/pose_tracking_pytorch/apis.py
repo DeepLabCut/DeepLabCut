@@ -24,7 +24,6 @@ def transformer_reID(
     modelprefix="",
     destfolder=None,
 ):
-
     """
     Enables tracking with transformer.
 

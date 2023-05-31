@@ -597,12 +597,10 @@ def draw_bbox(video):
     rs = RectangleSelector(
         ax,
         line_select_callback,
-        drawtype="box",
         minspanx=5,
         minspany=5,
         interactive=True,
         spancoords="pixels",
-        rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
     plt.show()
 

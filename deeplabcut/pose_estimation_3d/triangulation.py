@@ -546,7 +546,7 @@ def undistort_points(config, dataframe, camera_pair):
     filename_cam1 = Path(dataframe[0]).stem
     filename_cam2 = Path(dataframe[1]).stem
 
-    #currently no interm. saving of this due to high speed.
+    #currently no intermediate saving of this due to high speed.
     # check if the undistorted files are already present
     if os.path.exists(os.path.join(path_undistort,filename_cam1 + '_undistort.h5')) and os.path.exists(os.path.join(path_undistort,filename_cam2 + '_undistort.h5')):
         print("The undistorted files are already present at %s" % os.path.join(path_undistort,filename_cam1))

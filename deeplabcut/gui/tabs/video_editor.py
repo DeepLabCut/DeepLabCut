@@ -34,7 +34,6 @@ class VideoEditor(DefaultTab):
         return self.video_selection_widget.files
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
@@ -60,7 +59,6 @@ class VideoEditor(DefaultTab):
         self.main_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
-
         videoheight_label = QtWidgets.QLabel("Video height (aspect ratio fixed)")
         self.video_height = QtWidgets.QSpinBox()
         self.video_height.setMaximum(1000)
