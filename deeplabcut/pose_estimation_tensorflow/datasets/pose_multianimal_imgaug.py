@@ -510,7 +510,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     data_items,
                 ) = self.get_batch()
             # in case it's empty prediction
-            if batch_joints == None:
+            if batch_joints is None or batch_images is None:
                 continue
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.
