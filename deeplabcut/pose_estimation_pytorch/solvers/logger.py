@@ -1,3 +1,5 @@
+from typing import Optional
+
 import wandb as wb
 
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
@@ -34,7 +36,8 @@ class WandbLogger:
 
     def log(self,
             key: str = None,
-            value: str = None) -> None:
+            value: str = None,
+            step: Optional[int] = None) -> None:
         """
         Use this method to log data from runs, such as scalars, images, video, histograms, plots, and tables.
 
@@ -42,10 +45,11 @@ class WandbLogger:
         ----------
         key: name of the logged value
         value: data to log
+        step: the global step in processing
         """
         if key is None or value is None:
             raise ValueError(f'Nothing to log. Key: {key} and value: {value} expected to be scalar, table or image.')
-        self.run.log({key: value})
+        self.run.log({key: value}, step=step)
 
     def save(self):
         self.run.save(self.run.run.dir)

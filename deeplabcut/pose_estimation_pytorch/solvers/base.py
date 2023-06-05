@@ -4,13 +4,13 @@ from typing import Tuple, Dict
 
 import numpy as np
 import torch
-from tqdm import tqdm
 
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
-from .utils import *
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
+from .utils import *
+
 
 class Solver(ABC):
 
@@ -81,36 +81,53 @@ class Solver(ABC):
                                         shuffle,
                                         model_prefix,
                                         train_loader.dataset.cfg)
-        # for i in tqdm(range(epochs)):
+
+        save_epochs = 30  # TODO: read this value from config file
         for i in range(epochs):
-            train_loss = self.epoch(train_loader, mode='train')
+            train_loss = self.epoch(train_loader, mode='train', step=i + 1)
             if self.scheduler:
                 self.scheduler.step()
-            print(f'Training for epoch {i+1} is done, started evaluating on validation data')
-            valid_loss = self.epoch(valid_loader, mode='eval')
-            save_path = f'{model_folder}/train/snapshot-{i+1}.pt'
-            if (i+1)%30 == 0:
-                torch.save(self.model.state_dict(), save_path)
-            print(f'Epoch {i + 1}/{epochs}, '
-                  f'train loss {train_loss}, '
-                  f'valid loss {valid_loss}')
+            print(f'Training for epoch {i + 1} done, starting eval on validation data')
+            valid_loss = self.epoch(valid_loader, mode='eval', step=i + 1)
+
+            if (i + 1) % save_epochs == 0:
+                print(f"Finished epoch {i + 1}; saving model")
+                torch.save(
+                    self.model.state_dict(),
+                    f"{model_folder}/train/snapshot-{i + 1}.pt",
+                )
+
+            print(
+                f'Epoch {i + 1}/{epochs}, '
+                f'train loss {train_loss}, '
+                f'valid loss {valid_loss}'
+            )
+        
+        if epochs % save_epochs != 0:
+            print(f"Finished epoch {epochs}; saving model")
+            torch.save(
+                self.model.state_dict(),
+                f"{model_folder}/train/snapshot-{epochs}.pt",
+            )
 
     def epoch(self,
               loader: torch.utils.data.DataLoader,
-              mode: str = 'train') -> np.array:
+              mode: str = 'train',
+              step: Optional[int] = None) -> np.array:
         """
 
         Parameters
         ----------
         loader: Data loader, which is an iterator over instances.
             Each batch contains image tensor and heat maps tensor input samples.
-        mode:
+        mode: "train" or "eval"
+        step: the global step in processing, used to log metrics.
         Returns
         -------
         epoch_loss: Average of the loss over the batches.
         """
         if mode not in ['train', 'eval']:
-            raise ValueError(f'Solver must be in train or eval mode, but {mode} was found.')
+            raise ValueError(f'Solver mode must be train or eval, found mode={mode}.')
         to_mode = getattr(self.model, mode)
         to_mode()
         epoch_loss = []
@@ -134,7 +151,11 @@ class Solver(ABC):
 
         if self.logger:
             for key in metrics.keys():
-                self.logger.log(f'{mode} {key}', np.nanmean(metrics[key]))
+                self.logger.log(
+                    f'{mode} {key}',
+                    np.nanmean(metrics[key]),
+                    step=step,
+                )
 
         return epoch_loss
 
