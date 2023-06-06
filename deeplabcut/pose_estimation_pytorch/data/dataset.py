@@ -108,6 +108,7 @@ class PoseDataset(Dataset, BaseDataset):
             print(len(self.project.images))
             print(index)
         image = cv2.imread(image_file)
+        original_size = image.shape
 
         # load annotations
         image_id = self.project.image_path2image_id[image_file]
@@ -175,6 +176,7 @@ class PoseDataset(Dataset, BaseDataset):
 
         res = {}
         res['image'] = image
+        res['original_size'] = original_size # In order to convert back the keypoints to their original space
         res['annotations'] = {}
         res['annotations']['keypoints'] = keypoints
         res['annotations']['area'] = area

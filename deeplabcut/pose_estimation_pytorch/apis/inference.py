@@ -1,13 +1,17 @@
 import argparse
 import deeplabcut.pose_estimation_pytorch as dlc
 import numpy as np
+import pandas as pd
 import os
 import torch
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import build_pose_model
+from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction, get_scores
 from deeplabcut.pose_estimation_pytorch.solvers.utils import get_paths, get_results_filename, save_predictions
 from deeplabcut.pose_estimation_tensorflow import Plotting
+from deeplabcut.pose_estimation_pytorch.post_processing import rmse_match_prediction_to_gt, oks_match_prediction_to_gt
+from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
 from typing import Union
 
 
@@ -15,7 +19,7 @@ def inference_network(
         config_path: str,
         shuffle: int = 0,
         model_prefix: str = "",
-        load_epoch: Union[int, str] = 49,
+        load_epoch: Union[int, str] = -1,
         stride: int = 8,
         transform: object = None,
         plot: bool = False,
@@ -29,8 +33,9 @@ def inference_network(
             train_fraction[0], shuffle, cfg, modelprefix=model_prefix,
         ),
     )
+    individuals = cfg.get('individuals', ['single'])
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    config = auxiliaryfunctions.read_config(pytorch_config_path)
+    config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
 
     batch_size = config['batch_size']
     project = dlc.DLCProject(shuffle=shuffle,
@@ -42,6 +47,7 @@ def inference_network(
     valid_dataloader = torch.utils.data.DataLoader(valid_dataset,
                                                    batch_size=batch_size,
                                                    shuffle=False)
+    
     names = get_paths(train_fraction=train_fraction[0],
                       model_prefix=model_prefix,
                       shuffle=shuffle,
@@ -53,30 +59,61 @@ def inference_network(
                                             names['dlc_scorer_legacy'],
                                             names['model_path'][:-3])
 
-    pose_cfg = auxiliaryfunctions.read_config(config['pose_cfg_path'])
+    pose_cfg = auxiliaryfunctions.read_plainconfig(config['pose_cfg_path'])
     model = build_pose_model(config['model'], pose_cfg)
     model.load_state_dict(torch.load(names['model_path']))
+
+    predictor = PREDICTORS.build(dict(config['predictor']))
 
     # You need to dropna() here because on some frames no keypoint is annotated 
     # Thus the target_df (contains NaNs) may not match the valid_dataloader (has dropped them)
     target_df = valid_dataset.dataframe.dropna(axis = 0, how = "all")
     predicted_poses = []
     model.eval()
+    model.to('cuda:3')
     with torch.no_grad():
         for item in valid_dataloader:
-            if isinstance(item, tuple) or (isinstance, list):
-                item = item[0]
-            output = model(item)
-            scale_factor = (item.shape[2]/output[0].shape[2] , item.shape[3]/output[0].shape[3])
-            predictions = get_prediction(pose_cfg, output, scale_factor)
+            item['image'] = item['image'].to('cuda:3')
+            output = model(item['image'])
+            shape_image = item['image'].shape
+            scale_factor = (shape_image[2]/output[0].shape[2] , shape_image[3]/output[0].shape[3])
+            predictions = predictor(output, scale_factor).cpu().numpy()
+
+            # Matching predictions to ground truth individuals in order to compute rmse and save as dataframe
+            if len(individuals) > 1:
+                for b in range(predictions.shape[0]):
+                    match_individuals = oks_match_prediction_to_gt(
+                        predictions[b], 
+                        item['annotations']['keypoints'][b].cpu().numpy(), 
+                        individuals
+                    )
+                    predictions[b] = predictions[b][match_individuals]
+
+            #converts back to original image size if image was resized during the augmentation pipeline
+            for b in range(predictions.shape[0]):
+                resizing_factor = (item['original_size'][0]/shape_image[2]).item(), (item['original_size'][1]/shape_image[3]).item()
+                predictions[b, :, :, 0] = predictions[b, :, :, 0]*resizing_factor[1] + resizing_factor[1]/2
+                predictions[b, :, :, 1] = predictions[b, :, :, 1]*resizing_factor[0] + resizing_factor[0]/2
             predicted_poses.append(predictions)
+
         predicted_poses = np.array(predicted_poses)
 
     predicted_df = save_predictions(names,
-                                    pose_cfg,
+                                    cfg,
                                     target_df.index,
                                     predicted_poses.reshape(target_df.index.shape[0], -1),
                                     results_filename)
+    
+    # Convert dataframe to 'multianimal' format in any case, allows for similar post_processing
+    try:
+        predicted_df.columns.get_level_values('individuals').unique().tolist()
+    except KeyError:
+        new_cols = pd.MultiIndex.from_tuples(
+            [(col[0], 'single', col[1], col[2]) for col in predicted_df.columns],
+            names=['scorer', 'individuals', 'bodyparts', 'coords']
+        )
+        predicted_df.columns = new_cols
+
     if plot:
         foldername = f'{names["evaluation_folder"]}/LabeledImages_{names["dlc_scorer"]}-{load_epoch}'
         auxiliaryfunctions.attempttomakefolder(foldername)
@@ -90,10 +127,10 @@ def inference_network(
                  combined_df,
                  foldername)
     if evaluate:
-        rmse, rmes_p = get_scores(pose_cfg,
+        scores = get_scores(pose_cfg,
                                   predicted_df,
                                   target_df)
-        print(f'RMSE: {rmse}, RMSE pcutoff: {rmes_p}')
+        print(scores)
 
 
 if __name__ == '__main__':

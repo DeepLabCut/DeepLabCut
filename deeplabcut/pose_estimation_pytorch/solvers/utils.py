@@ -84,14 +84,28 @@ def save_predictions(names, cfg, data_index,
         os.makedirs(names['evaluation_folder'])
 
     results_path = f'{results_filename}'
-    index = pd.MultiIndex.from_product(
-        [
-            [names['dlc_scorer']],
-            cfg["all_joints_names"],
-            ["x", "y", "likelihood"],
-        ],
-        names=["scorer", "bodyparts", "coords"],
-    )
+    num_animals = len(cfg.get('individuals', ['single']))
+    if num_animals == 1:
+        # Single animal prediction deataframe
+        index = pd.MultiIndex.from_product(
+            [
+                [names['dlc_scorer']],
+                cfg["bodyparts"],
+                ["x", "y", "likelihood"],
+            ],
+            names=["scorer", "bodyparts", "coords"],
+        )
+    else:
+        # Multi animal prediction dataframe
+        index = pd.MultiIndex.from_product(
+            [
+                [names['dlc_scorer']],
+                cfg['individuals'],
+                cfg["bodyparts"],
+                ["x", "y", "likelihood"],
+            ],
+            names=["scorer", "individuals", "bodyparts", "coords"],
+        )
 
     predicted_data = pd.DataFrame(
         predicted_poses, columns=index, index=data_index

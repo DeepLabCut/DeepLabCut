@@ -36,12 +36,27 @@ class WeightedHuberLoss(nn.HuberLoss):
             return torch.tensor(0.)
         return torch.mean(loss_without_zeros)
 
+class WeightedBCELoss(nn.BCEWithLogitsLoss):
+    
+    def __init__(self):
+        super(WeightedBCELoss, self).__init__()
+        self.BCELoss = nn.BCEWithLogitsLoss(reduction='none')
+
+    def __call__(self, prediction, target, weights=1):
+        loss_item = self.BCELoss(prediction, target)
+        loss_item_weighted = loss_item*weights
+
+        loss_without_zeros = loss_item_weighted[loss_item_weighted != 0]
+        if loss_without_zeros.nelement() == 0:
+            return torch.tensor(0.)
+        return torch.mean(loss_without_zeros)
+
 @LOSSES.register_module
 class PoseLoss(nn.Module):
     def __init__(self,
                  loss_weight_locref: float = 0.1,
                  locref_huber_loss: bool = False,
-                 apply_sigmoid: bool= True):
+                 apply_sigmoid: bool= False):
         """
 
         Parameters
@@ -52,6 +67,7 @@ class PoseLoss(nn.Module):
         locref_huber_loss: bool
             If `True` uses torch.nn.HuberLoss for locref
             (default is False)
+        apply_sigmoid : wether to apply sigmoid to the heatmap predictions should be true for MSE, false for BCE (since it already applies it by itself)
 
         """
         super(PoseLoss, self).__init__()
@@ -60,7 +76,7 @@ class PoseLoss(nn.Module):
         else:
             self.locref_criterion = WeightedMSELoss()
         self.loss_weight_locref = loss_weight_locref
-        self.heatmap_criterion = WeightedMSELoss()
+        self.heatmap_criterion = WeightedBCELoss()
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
