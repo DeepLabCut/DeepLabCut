@@ -210,6 +210,7 @@ def create_multianimaltraining_dataset(
 
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
+
     elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob", 'dekr')):
         raise ValueError(f"Unsupported network {net_type}.")
 

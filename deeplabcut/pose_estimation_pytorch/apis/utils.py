@@ -1,9 +1,10 @@
-from typing import Dict
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
-import os
-import yaml
-import torch
 import albumentations as A
+import torch
+import yaml
+from deeplabcut.utils import auxfun_videos
 
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, BACKBONES, HEADS, LOSSES
 from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SINGLE_ANIMAL_SOLVER
@@ -11,8 +12,6 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
 from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
-# from deeplabcut.pose_estimation_pytorch.default_config import pytorch_cfg_template
-# from deeplabcut.utils import auxiliaryfunctions
 
 
 def build_pose_model(cfg: Dict, pytorch_cfg):
@@ -73,6 +72,7 @@ def build_solver(pytorch_cfg: Dict) -> Solver:
                                              scheduler=scheduler,
                                              logger=logger))
     return solver
+
 
 def build_transforms(aug_cfg):
     transforms = []
@@ -162,7 +162,49 @@ def build_transforms(aug_cfg):
         keypoint_params=A.KeypointParams('xy', remove_invisible=False)
     )
 
+
 def read_yaml(path):
     with open(path) as f:
         file = yaml.safe_load(f)
     return file
+
+
+def get_model_snapshots(model_folder: Path) -> List[Path]:
+    """
+    Assumes that all snapshots are named using the pattern "snapshot-{idx}.pt"
+
+    Args:
+        model_folder: the path to the folder containing the snapshots
+
+    Returns:
+        the paths of snapshots in the folder, sorted by index in ascending order
+    """
+    return sorted(
+        [file for file in model_folder.iterdir() if file.suffix == ".pt"],
+        key=lambda p: int(p.stem.split("-")[-1])
+    )
+
+
+def videos_in_folder(
+    data_path: Union[str, List[str]],
+    video_type: Optional[str],
+) -> List[Path]:
+    """
+    TODO
+    """
+    video_path = Path(data_path)
+    if video_path.is_dir():
+        if video_type is None:
+            video_suffixes = auxfun_videos.SUPPORTED_VIDEOS
+        else:
+            video_suffixes = [video_type]
+
+        return [
+            file for file in video_path.iterdir()
+            if video_path.stem in video_suffixes
+        ]
+
+    assert video_path.exists(), (
+        f"Could not find the video: {video_path}. Check access rights."
+    )
+    return [video_path]

@@ -4,9 +4,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxiliaryfunctions import read_plainconfig, get_model_folder
-from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
-
 from .base import BaseDataset
 from .dlcproject import DLCProject
 
@@ -35,7 +34,10 @@ class PoseDataset(Dataset, BaseDataset):
         self.transform = transform
         self.project = project
         self.cfg = self.project.cfg
-        self.num_joints = len(self.cfg['bodyparts'])
+
+        self.bodyparts = auxiliaryfunctions.get_bodyparts(self.cfg)
+        self.num_joints = len(self.bodyparts)
+
         self.shuffle = self.project.shuffle
         self.project.convert2dict(mode)
         self.dataframe = self.project.dataframe
@@ -108,6 +110,7 @@ class PoseDataset(Dataset, BaseDataset):
         except:
             print(len(self.project.images))
             print(index)
+
         image = cv2.imread(image_file)
         original_size = image.shape
 
@@ -115,12 +118,14 @@ class PoseDataset(Dataset, BaseDataset):
         image_id = self.project.image_path2image_id[image_file]
         n_annotations = len(self.project.id2annotations_idx[image_id])
 
+        bodyparts = [bpt for bpt in self.bodyparts]
         if not self.with_center:
             keypoints = np.zeros((self.max_num_animals, self.num_joints, 3))
             num_keypoints_returned = self.num_joints
         else:
             keypoints = np.zeros((self.max_num_animals, self.num_joints + 1, 3))
             num_keypoints_returned = self.num_joints + 1
+            bodyparts += ["_center_"]
 
         for i, annotation_idx in enumerate(self.project.id2annotations_idx[image_id]):
             _annotation = self.project.annotations[annotation_idx]
@@ -130,7 +135,7 @@ class PoseDataset(Dataset, BaseDataset):
             if self.with_center:
                 keypoints[i, :-1, :2] = _keypoints
                 keypoints[i, :-1, 2] = _undef_ids
-                
+
             else:
                 keypoints[i, :, :2] = _keypoints
                 keypoints[i, :, 2] = _undef_ids
@@ -140,12 +145,33 @@ class PoseDataset(Dataset, BaseDataset):
         keypoints = keypoints.reshape((-1, 3))
 
         if self.transform:
-            transformed = self.transform(image=image, keypoints=keypoints[:, :2])
+            class_labels = [
+                f"individual{i}_{bpt}"
+                for i in range(self.max_num_animals)
+                for bpt in bodyparts
+            ]
+            transformed = self.transform(
+                image=image,
+                keypoints=keypoints[:, :2],
+                class_labels=class_labels,
+            )
+
+            # Discard keypoints that aren't in the frame anymore
             shape_transformed = transformed['image'].shape
-            transformed['keypoints'] = [(-1, -1) 
-                                        if ((keypoints[i, 2] == 0) or (not self._keypoint_in_boundary(keypoint, shape_transformed)))
-                                        else keypoint
-                                        for i, keypoint in enumerate(transformed['keypoints'])]
+            transformed['keypoints'] = [
+                keypoint if self._keypoint_in_boundary(keypoint, shape_transformed)
+                else (-1, -1)
+                for keypoint in transformed['keypoints']
+            ]
+
+            # Discard keypoints that are undefined
+            undef_class_labels = [
+                class_labels[i] for i, kpt in enumerate(keypoints) if kpt[2] == 0
+            ]
+            for label in undef_class_labels:
+                new_index = transformed["class_labels"].index(label)
+                transformed['keypoints'][new_index] = (-1, -1)
+
         else:
             transformed = {}
             transformed['keypoints'] = keypoints[:, :2]

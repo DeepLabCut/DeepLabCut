@@ -1,4 +1,4 @@
-import yaml
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 BACKBONE_OUT_CHANNELS = {
     'resnet-50': 2048,
@@ -74,9 +74,10 @@ def make_pytorch_config(project_config: dict, net_type: str, augmenter_type: str
             , 'dekr_w32'
             , 'dekr_w48']
 
+    bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
+    num_joints = len(bodyparts)
     pytorch_config = config_template
     if net_type in single_animal_nets:
-        num_joints = len(project_config['bodyparts'])
         pytorch_config['model']['heatmap_head']['channels'][-1] = num_joints
         pytorch_config['model']['locref_head']['channels'][-1] = 2*num_joints
         pytorch_config['model']['target_generator']['num_joints'] = num_joints
@@ -88,10 +89,8 @@ def make_pytorch_config(project_config: dict, net_type: str, augmenter_type: str
             raise NotImplementedError('mobilenet config not yet implemented')
         elif 'hrnet' in net_type:
             raise NotImplementedError('hrnet config not yet implemented')
-            
 
     elif net_type in multi_animal_nets:
-        num_joints = len(project_config['bodyparts'])
         num_animals = len(project_config.get('individuals', [0]))
         if 'dekr' in net_type:
             version = net_type.split('_')[-1]

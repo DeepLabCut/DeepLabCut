@@ -990,7 +990,7 @@ def create_training_dataset(
                     (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
                 )
 
-        bodyparts = cfg["bodyparts"]
+        bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
         nbodyparts = len(bodyparts)
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:

@@ -101,7 +101,7 @@ def save_predictions(names, cfg, data_index,
             [
                 [names['dlc_scorer']],
                 cfg['individuals'],
-                cfg["bodyparts"],
+                cfg["multianimalbodyparts"],
                 ["x", "y", "likelihood"],
             ],
             names=["scorer", "individuals", "bodyparts", "coords"],

@@ -29,8 +29,10 @@ def train_network(
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
     pytorch_config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
 
+    if transform is None:
+        print("No transform specified... using default")
+        transform = build_transforms(dict(pytorch_config['data']))
 
-    transform = build_transforms(dict(pytorch_config['data']))
     batch_size = pytorch_config['batch_size']
     epochs = pytorch_config['epochs']
 

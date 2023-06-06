@@ -29,7 +29,7 @@ import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
-from deeplabcut.utils import auxfun_videos
+from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
 def create_config_template(multianimal=False):
@@ -268,6 +268,24 @@ def edit_config(configname, edits, output_name=""):
             cfg.pop(key)
         write_plainconfig(output_name, cfg)
     return cfg
+
+
+def get_bodyparts(cfg: dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: all bodyparts listed in the project
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            unique_bodyparts,
+            multianimal_bodyparts,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return multianimal_bodyparts + unique_bodyparts
+
+    return cfg["bodyparts"]
 
 
 def write_config_3d(configname, cfg):

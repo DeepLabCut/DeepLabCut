@@ -99,10 +99,11 @@ class Solver(ABC):
 
             print(
                 f'Epoch {i + 1}/{epochs}, '
-                f'train loss {train_loss}, '
-                f'valid loss {valid_loss}'
+                f'train loss {float(train_loss):.5f}, '
+                f'valid loss {float(valid_loss):.5f}, '
+                f'lr {self.optimizer.param_groups[0]["lr"]}'
             )
-        
+
         if epochs % save_epochs != 0:
             print(f"Finished epoch {epochs}; saving model")
             torch.save(
