@@ -62,7 +62,7 @@ def UniformFrames(clip, numframes2pick, start, stop, Index=None):
     else:
         startindex = int(np.floor(clip.fps * clip.duration * start))
         stopindex = int(np.ceil(clip.fps * clip.duration * stop))
-        Index = np.array(Index, dtype=np.int)
+        Index = np.array(Index, dtype=int)
         Index = Index[(Index > startindex) * (Index < stopindex)]  # crop to range!
         if len(Index) >= numframes2pick:
             return list(np.random.permutation(Index)[:numframes2pick])
@@ -102,7 +102,7 @@ def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
     else:
         startindex = int(np.floor(nframes * start))
         stopindex = int(np.ceil(nframes * stop))
-        Index = np.array(Index, dtype=np.int)
+        Index = np.array(Index, dtype=int)
         Index = Index[(Index > startindex) * (Index < stopindex)]  # crop to range!
         if len(Index) >= numframes2pick:
             return list(np.random.permutation(Index)[:numframes2pick])
