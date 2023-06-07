@@ -44,7 +44,7 @@ def extract_bpt_feature_from_video(
     videofolder = str(Path(video).parents[0])
     if destfolder is None:
         destfolder = videofolder
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
     assemble_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
@@ -126,7 +126,7 @@ def AnalyzeMultiAnimalVideo(
     videofolder = str(Path(video).parents[0])
     if destfolder is None:
         destfolder = videofolder
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
     if os.path.isfile(dataname.split(".h5")[0] + "_full.pickle"):

@@ -692,7 +692,7 @@ def proc_video(
     if destfolder is None:
         destfolder = videofolder  # where your folder with videos is.
 
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
     os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
     print("Starting to process video: {}".format(video))
@@ -767,7 +767,7 @@ def proc_video(
             elif not fastmode:
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
-                    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+                    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
                 clip = vp(video)
                 CreateVideoSlow(
                     videooutname,
@@ -1035,7 +1035,7 @@ def create_video_with_all_detections(
             outputname = "{}_full.mp4".format(videofolder + DLCscorername)
             full_pickle = os.path.join(videofolder + DLCscorername + "_full.pickle")
         else:
-            auxiliaryfunctions.attempttomakefolder(destfolder)
+            auxiliaryfunctions.attempt_to_make_folder(destfolder)
             outputname = os.path.join(
                 destfolder, str(Path(video).stem) + DLCscorername + "_full.mp4"
             )

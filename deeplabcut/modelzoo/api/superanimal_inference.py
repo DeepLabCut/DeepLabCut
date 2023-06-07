@@ -330,7 +330,7 @@ def video_inference(
         videofolder = str(Path(video).parents[0])
         if destfolder is None:
             destfolder = videofolder
-            auxiliaryfunctions.attempttomakefolder(destfolder)
+            auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
         dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
         datafiles.append(dataname)

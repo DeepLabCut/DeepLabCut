@@ -1156,7 +1156,7 @@ def stitch_tracklets(
         nframe = len(VideoWriter(video))
         videofolder = str(Path(video).parents[0])
         dest = destfolder or videofolder
-        deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
+        deeplabcut.utils.auxiliaryfunctions.attempt_to_make_folder(dest)
         vname = Path(video).stem
 
         feature_dict_path = os.path.join(

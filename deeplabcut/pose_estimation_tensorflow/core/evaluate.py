@@ -669,7 +669,7 @@ def evaluate_network(
             )
         )
         # Make folder for evaluation
-        auxiliaryfunctions.attempttomakefolder(
+        auxiliaryfunctions.attempt_to_make_folder(
             str(cfg["project_path"] + "/evaluation-results/")
         )
         for shuffle in Shuffles:
@@ -720,7 +720,7 @@ def evaluate_network(
                         )
                     ),
                 )
-                auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
                 # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
                 # Check which snapshots are available and sort them by # iterations
@@ -940,7 +940,7 @@ def evaluate_network(
                                 + "_"
                                 + Snapshots[snapindex],
                             )
-                            auxiliaryfunctions.attempttomakefolder(foldername)
+                            auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
                                 cfg,
                                 comparisonbodyparts,
@@ -970,7 +970,7 @@ def evaluate_network(
                                 print(
                                     "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
                                 )
-                                auxiliaryfunctions.attempttomakefolder(foldername)
+                                auxiliaryfunctions.attempt_to_make_folder(foldername)
                                 Plotting(
                                     cfg,
                                     comparisonbodyparts,

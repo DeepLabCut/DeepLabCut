@@ -624,7 +624,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
         cfg
     )  # Path concatenation OS platform independent
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
     )
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
@@ -854,7 +854,7 @@ def create_training_dataset(
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
         )  # Path concatenation OS platform independent
-        auxiliaryfunctions.attempttomakefolder(
+        auxiliaryfunctions.attempt_to_make_folder(
             Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
         )
 
@@ -1018,13 +1018,13 @@ def create_training_dataset(
                 modelfoldername = auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/train"
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/test"
                 )
 
