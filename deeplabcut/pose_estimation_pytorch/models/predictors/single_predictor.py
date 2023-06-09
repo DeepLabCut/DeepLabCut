@@ -7,6 +7,12 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import PREDICTORS
 class SinglePredictor(BasePredictor):
     """Predictor only intended for single animal pose estimation"""
 
+    default_init = {
+        'location_refinement': True,
+        'locref_stdev': 7.2801,
+        'apply_sigmoid' : True
+    }
+
     def __init__(self, num_animals, location_refinement, locref_stdev, apply_sigmoid: bool= True):
         super().__init__()
         #TODO add num_animals in pytorch_cfg automatically

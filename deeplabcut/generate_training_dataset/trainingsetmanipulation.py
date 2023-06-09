@@ -24,6 +24,7 @@ import pandas as pd
 import yaml
 
 from deeplabcut.pose_estimation_tensorflow import training
+from deeplabcut.generate_training_dataset.make_pytorch_config import make_pytorch_config
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -1126,8 +1127,9 @@ def create_training_dataset(
                     "apis",
                     "pytorch_config.yaml",
                 )
-                pytorch_cfg = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
-                pytorch_cfg["project_root"] = os.path.dirname(config)
+                pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+                pytorch_cfg = make_pytorch_config(cfg, net_type, config_template=pytorch_cfg_template)
+                pytorch_cfg["project_path"] = os.path.dirname(config)
                 pytorch_cfg["pose_cfg_path"] = path_train_config
                 pytorch_cfg["cfg_path"] = config
                 auxiliaryfunctions.write_plainconfig(

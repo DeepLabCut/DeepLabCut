@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from deeplabcut.utils.auxiliaryfunctions import read_config, get_model_folder
+from deeplabcut.utils.auxiliaryfunctions import read_plainconfig, get_model_folder
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 
 from .base import BaseDataset
@@ -50,7 +50,7 @@ class PoseDataset(Dataset, BaseDataset):
             )
         )
         pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-        pytorch_cfg = read_config(pytorch_config_path)
+        pytorch_cfg = read_plainconfig(pytorch_config_path)
         self.with_center = pytorch_cfg.get('with_center', False)
         self.max_num_animals = len(self.cfg.get('individuals', ['0']))
 

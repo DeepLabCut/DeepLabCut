@@ -27,6 +27,7 @@ from deeplabcut.generate_training_dataset import (
     MakeTest_pose_yaml,
     MakeInference_yaml,
     pad_train_test_indices,
+    make_pytorch_config,
 )
 from deeplabcut.utils import (
     auxiliaryfunctions,
@@ -209,7 +210,7 @@ def create_multianimaltraining_dataset(
 
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
-    elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
+    elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob", 'dekr')):
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
@@ -476,6 +477,23 @@ def create_multianimaltraining_dataset(
             }
             MakeInference_yaml(
                 items2change, path_inference_config, defaultinference_configfile
+            )
+
+            # Populate the pytorch config yaml file
+            pytorch_config_path = os.path.join(
+                dlcparent_path,
+                "pose_estimation_pytorch",
+                "apis",
+                "pytorch_config.yaml",
+            )
+            pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+            pytorch_cfg = make_pytorch_config(cfg, net_type, config_template=pytorch_cfg_template)
+            pytorch_cfg["project_path"] = os.path.dirname(config)
+            pytorch_cfg["pose_cfg_path"] = path_train_config
+            pytorch_cfg["cfg_path"] = config
+            auxiliaryfunctions.write_plainconfig(
+                path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml"),
+                pytorch_cfg,
             )
 
             print(

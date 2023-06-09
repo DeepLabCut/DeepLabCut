@@ -2,9 +2,10 @@ import argparse
 import deeplabcut.pose_estimation_pytorch as dlc
 import os
 from deeplabcut import auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver
+from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver, build_transforms
 from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
 from torch.utils.data import DataLoader
+import albumentations as A
 from typing import Union
 
 
@@ -26,14 +27,16 @@ def train_network(
         ),
     )
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    config = auxiliaryfunctions.read_config(pytorch_config_path)
+    pytorch_config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
 
-    batch_size = config['batch_size']
-    epochs = config['epochs']
 
-    dlc.fix_seeds(config['seed'])
-    project_train = dlc.DLCProject(proj_root=config['project_root'], shuffle=shuffle)
-    project_valid = dlc.DLCProject(proj_root=config['project_root'], shuffle=shuffle)
+    transform = build_transforms(dict(pytorch_config['data']))
+    batch_size = pytorch_config['batch_size']
+    epochs = pytorch_config['epochs']
+
+    dlc.fix_seeds(pytorch_config['seed'])
+    project_train = dlc.DLCProject(proj_root=pytorch_config['project_path'], shuffle=shuffle)
+    project_valid = dlc.DLCProject(proj_root=pytorch_config['project_path'], shuffle=shuffle)
     train_dataset = dlc.PoseDataset(project_train,
                                     transform=transform,
                                     mode='train')
@@ -49,7 +52,7 @@ def train_network(
                                 batch_size=batch_size,
                                 shuffle=False)
 
-    solver = build_solver(config)
+    solver = build_solver(pytorch_config)
     solver.fit(
         train_dataloader,
         valid_dataloader,

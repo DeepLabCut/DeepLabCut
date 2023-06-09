@@ -81,8 +81,8 @@ class DEKRGenerator(BaseGenerator):
                     br = int(np.ceil(x_sm + 3 * sigma + 2)
                                 ), int(np.ceil(y_sm + 3 * sigma + 2))
 
-                    cc, dd = max(0, ul[0]), min(br[0], min(output_res))
-                    aa, bb = max(0, ul[1]), min(br[1], min(output_res))
+                    cc, dd = max(0, ul[0]), min(br[0], output_res[1])
+                    aa, bb = max(0, ul[1]), min(br[1], output_res[0])
 
                     joint_rg = np.zeros((bb-aa, dd-cc))
                     for sy in range(aa, bb):

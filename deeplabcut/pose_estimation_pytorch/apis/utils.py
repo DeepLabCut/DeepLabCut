@@ -1,6 +1,9 @@
 from typing import Dict
 
+import os
+import yaml
 import torch
+import albumentations as A
 
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, BACKBONES, HEADS, LOSSES
 from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SINGLE_ANIMAL_SOLVER
@@ -8,11 +11,11 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
 from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
-from deeplabcut.utils import auxiliaryfunctions
+# from deeplabcut.pose_estimation_pytorch.default_config import pytorch_cfg_template
+# from deeplabcut.utils import auxiliaryfunctions
 
 
-def build_pose_model(cfg: Dict,
-                     pose_cfg: Dict):
+def build_pose_model(cfg: Dict, pytorch_cfg):
     backbone = BACKBONES.build(dict(cfg['backbone']))
     head_heatmaps = HEADS.build(dict(cfg['heatmap_head']))
     head_locref = HEADS.build(dict(cfg['locref_head']))
@@ -21,7 +24,7 @@ def build_pose_model(cfg: Dict,
         neck = None
     else:
         neck = None
-    pose_model = PoseModel(cfg=pose_cfg,
+    pose_model = PoseModel(cfg=pytorch_cfg,
                            backbone=backbone,
                            head_heatmaps=head_heatmaps,
                            head_locref=head_locref,
@@ -32,41 +35,134 @@ def build_pose_model(cfg: Dict,
     return pose_model
 
 
-def build_solver(cfg: Dict) -> Solver:
-    pose_cfg = auxiliaryfunctions.read_config(cfg['pose_cfg_path'])
-    pose_model = build_pose_model(cfg['model'], pose_cfg)
+def build_solver(pytorch_cfg: Dict) -> Solver:
+    # pose_cfg = auxiliaryfunctions.read_plainconfig(cfg['pose_cfg_path'])
+    pose_model = build_pose_model(pytorch_cfg['model'], pytorch_cfg)
 
-    get_optimizer = getattr(torch.optim, cfg['optimizer']['type'])
-    optimizer = get_optimizer(params=pose_model.parameters(), **cfg['optimizer']['params'])
+    get_optimizer = getattr(torch.optim, pytorch_cfg['optimizer']['type'])
+    optimizer = get_optimizer(params=pose_model.parameters(), **pytorch_cfg['optimizer']['params'])
 
-    criterion = LOSSES.build(cfg['criterion'])
+    criterion = LOSSES.build(pytorch_cfg['criterion'])
 
-    predictor = PREDICTORS.build(dict(cfg['predictor']))
+    predictor = PREDICTORS.build(dict(pytorch_cfg['predictor']))
 
-    if cfg.get('scheduler'):
-        if cfg['scheduler']['type'] == "LRListScheduler":
+    if pytorch_cfg.get('scheduler'):
+        if pytorch_cfg['scheduler']['type'] == "LRListScheduler":
             _scheduler = LRListScheduler
         else:
             _scheduler = getattr(torch.optim.lr_scheduler,
-                             cfg['scheduler']['type'])
+                             pytorch_cfg['scheduler']['type'])
         scheduler = _scheduler(optimizer=optimizer,
-                               **cfg['scheduler']['params'])
+                               **pytorch_cfg['scheduler']['params'])
     else:
         scheduler = None
 
-    if cfg.get('logger'):
-        logger = LOGGER.build(dict(**cfg['logger'],
+    if pytorch_cfg.get('logger'):
+        logger = LOGGER.build(dict(**pytorch_cfg['logger'],
                                    model=pose_model))
     else:
         logger = None
 
-    solver = SINGLE_ANIMAL_SOLVER.build(dict(**cfg['solver'],
+    solver = SINGLE_ANIMAL_SOLVER.build(dict(**pytorch_cfg['solver'],
                                              model=pose_model,
                                              criterion=criterion,
                                              optimizer=optimizer,
                                              predictor=predictor,
-                                             cfg=pose_cfg,
-                                             device=cfg['device'],
+                                             cfg=pytorch_cfg,
+                                             device=pytorch_cfg['device'],
                                              scheduler=scheduler,
                                              logger=logger))
     return solver
+
+def build_transforms(aug_cfg):
+    transforms = []
+
+    if aug_cfg.get('resize', False):
+        input_size = aug_cfg.get('resize', False)
+        transforms.append(
+            A.Resize(input_size[0], input_size[1])
+        )
+
+    # TODO code again this augmentation to match the symmetric_pair syntax in orignal dlc
+    # if aug_cfg.get('flipr', False) and aug_cfg.get('symmetric_pair', False):
+    #     opt = aug_cfg.get("fliplr", False)
+    #     if type(opt) == int:
+    #         p = opt
+    #     else:
+    #         p = 0.5
+    #     transforms.append(
+    #         CustomHorizontalFlip(
+                
+    #             symmetric_pairs = aug_cfg['symmetric_pairs'],
+    #             p=p
+    #         )
+    #     )
+    scale_jitter_lo, scale_jitter_up = aug_cfg.get('scale_jitter', (1, 1))
+    rotation = aug_cfg.get('rotation', 0)
+    translation = aug_cfg.get('translation', 0)
+    transforms.append(
+        A.Affine(
+                scale=(scale_jitter_lo, scale_jitter_up),
+                rotate=(-rotation, rotation),
+                translate_px=(-translation, translation),
+                p=0.5,
+            )
+    )
+    if aug_cfg.get('hist_eq', False):
+        transforms.append(
+            A.Equalize(
+                p=0.5
+            )
+        )
+    if aug_cfg.get('motion_blur', False):
+        transforms.append(A.MotionBlur(p=0.5))
+    #TODO Coarse dropout can mask a keypoint which messes up the training, implement new augmentation
+    # if aug_cfg.get('covering', False):
+    #     transforms.append(
+    #         A.CoarseDropout(
+    #             max_holes=10,
+    #             max_height=0.05,
+    #             min_height=0.01,
+    #             max_width=0.05,
+    #             min_width=0.01,
+    #             p=0.5
+    #         )
+    #     )
+    #TODO implement elastic transform apply_to_keypoints in albumentations
+    # if aug_cfg.get('elastic_transform', False):
+    #     transforms.append(A.ElasticTransform(sigma=5, p=0.5))
+    #TODO implement iia grayscale augmentation with albumentation
+    # if aug_cfg.get('grayscale', False):
+    if aug_cfg.get('gaussian_noise', False):
+        opt = aug_cfg.get('gaussian_noise', False) #std
+        # TODO inherit custom gaussian transform to support per_channel = 0.5
+        if type(opt) == int or type(opt) == float:
+            transforms.append(
+                A.GaussNoise(
+                    var_limit= (0, opt**2),
+                    mean= 0,
+                    per_channel= True, # Albumentations doesn't support per_cahnnel = 0.5
+                    p=0.5,
+                )
+            )
+        else:
+            transforms.append(
+                A.GaussNoise(
+                    var_limit= (0, (0.05 * 255)**2),
+                    mean= 0,
+                    per_channel= True,
+                    p=0.5,
+                )
+            )
+
+    if aug_cfg.get('normalize_images'):
+        transforms.append(A.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]))
+    return A.Compose(
+        transforms,
+        keypoint_params=A.KeypointParams('xy', remove_invisible=False)
+    )
+
+def read_yaml(path):
+    with open(path) as f:
+        file = yaml.safe_load(f)
+    return file

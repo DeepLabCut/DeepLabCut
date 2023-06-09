@@ -10,6 +10,11 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS, Bas
 @PREDICTORS.register_module
 class DEKRPredictor(BasePredictor):
 
+    default_init = {
+        'apply_sigmoid' : True,
+        'detection_threshold' : 0.01
+    }
+    
     def __init__(self, num_animals: int, detection_threshold: float=0.01, apply_sigmoid: bool=True, use_heatmap = True):
         super().__init__()
 

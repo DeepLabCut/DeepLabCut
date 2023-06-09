@@ -90,7 +90,7 @@ class Solver(ABC):
             print(f'Training for epoch {i + 1} done, starting eval on validation data')
             valid_loss = self.epoch(valid_loader, mode='eval', step=i + 1)
 
-            if (i + 1) % save_epochs == 0:
+            if (i + 1) % self.cfg['save_epochs'] == 0:
                 print(f"Finished epoch {i + 1}; saving model")
                 torch.save(
                     self.model.state_dict(),
