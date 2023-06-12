@@ -66,8 +66,8 @@ def df2generic(proj_root, df, image_id_offset = 0):
         data = df.loc[file_name]            
 
         # skipping all nan
-        if np.isnan(data.to_numpy()).all():
-            continue
+        # if np.isnan(data.to_numpy()).all():
+        #     continue
         
         image_id+=1
         

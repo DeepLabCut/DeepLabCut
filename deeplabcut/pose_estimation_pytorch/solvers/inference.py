@@ -78,19 +78,19 @@ def get_scores(cfg,
         pcutoff = cfg['pcutoff']
         rmse, rmse_p = get_rmse(prediction, target, pcutoff,
                                 bodyparts = bodyparts)
-        oks, oks_pcutoff = get_oks(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
+        oks, oks_p = get_oks(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
     else:
         rmse, rmse_p = get_rmse(prediction, target,
                                 bodyparts = bodyparts)
-        scores = get_oks(prediction, target, bodyparts=bodyparts)
+        oks, oks_p = get_oks(prediction, target, bodyparts=bodyparts)
 
     scores = {}
     scores['rmse'] = np.nanmean(rmse)
     scores['rmse_pcutoff'] = np.nanmean(rmse_p)
     scores['mAP'] = oks['mAP']
     scores['mAR'] = oks['mAR']
-    scores['mAP_pcutoff'] = oks_pcutoff['mAP']
-    scores['mAR_pcutoff'] = oks_pcutoff['mAR']
+    scores['mAP_pcutoff'] = oks_p['mAP']
+    scores['mAR_pcutoff'] = oks_p['mAR']
 
     return scores
 

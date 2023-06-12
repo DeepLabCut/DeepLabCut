@@ -37,6 +37,8 @@ def rmse_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individu
             distance_matrix[g, p] = np.linalg.norm(gt_kpts_without_ctr[g] - pred_kpts[p, :, :2])
 
     row_ind, col_ind = linear_sum_assignment(distance_matrix)
+    # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
+    col_ind = extend_col_ind(col_ind, num_animals)
     
     return col_ind
 
@@ -72,9 +74,14 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
 
     oks_matrix = np.zeros((num_animals_gt, num_animals))
     gt_kpts_without_ctr[gt_kpts_without_ctr < 0]  = np.nan # non visible keypoints should be nan to use calc_oks
-    for g in range(num_animals_gt):
+    idx_gt = -1
+    for g in range(num_animals):
+        if np.isnan(gt_kpts_without_ctr[g]).all():
+            continue
+        else:
+            idx_gt += 1
         for p in range(num_animals):
-            oks_matrix[g, p] = calc_object_keypoint_similarity(
+            oks_matrix[idx_gt, p] = calc_object_keypoint_similarity(
                 pred_kpts[p, :, :2],
                 gt_kpts_without_ctr[g],
                 0.1,
@@ -83,5 +90,13 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
             )
 
     row_ind, col_ind = linear_sum_assignment(oks_matrix, maximize=True)
+    # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
+    col_ind = extend_col_ind(col_ind, num_animals)
     
     return col_ind
+
+def extend_col_ind(col_ind, num_animals):
+    existing_cols = set(col_ind)  # Convert the array to a set for faster lookup
+    missing_cols = [num for num in range(num_animals) if num not in existing_cols]
+    extended_array = np.concatenate((col_ind, missing_cols)).astype(int)
+    return extended_array

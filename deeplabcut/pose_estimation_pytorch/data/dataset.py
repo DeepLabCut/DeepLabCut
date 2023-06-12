@@ -56,7 +56,8 @@ class PoseDataset(Dataset, BaseDataset):
 
         # We must dropna because self.project.images doesn't contain imgaes with no labels so it can produce an indexnotfound error
         # length is stored here to avoid repeating the computation
-        self.length = self.dataframe.dropna(axis=0, how="all").shape[0]
+        self.length = self.dataframe.shape[0]
+        assert self.length == len(self.project.image_path2image_id.keys())
 
     def __len__(self):
         return self.length

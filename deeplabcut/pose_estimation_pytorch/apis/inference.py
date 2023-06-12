@@ -36,10 +36,11 @@ def inference_network(
     individuals = cfg.get('individuals', ['single'])
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
     config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+    device = config['device']
 
     batch_size = config['batch_size']
     project = dlc.DLCProject(shuffle=shuffle,
-                             proj_root=config['project_root'])
+                             proj_root=config['project_path'])
 
     valid_dataset = dlc.PoseDataset(project,
                                     transform=transform,
@@ -65,15 +66,16 @@ def inference_network(
 
     predictor = PREDICTORS.build(dict(config['predictor']))
 
-    # You need to dropna() here because on some frames no keypoint is annotated 
-    # Thus the target_df (contains NaNs) may not match the valid_dataloader (has dropped them)
-    target_df = valid_dataset.dataframe.dropna(axis = 0, how = "all")
+    # # You need to dropna() here because on some frames no keypoint is annotated 
+    # # Thus the target_df (contains NaNs) may not match the valid_dataloader (has dropped them)
+    # target_df = valid_dataset.dataframe.dropna(axis = 0, how = "all")
+    target_df = valid_dataset.dataframe
     predicted_poses = []
     model.eval()
-    model.to('cuda:3')
+    model.to(device)
     with torch.no_grad():
         for item in valid_dataloader:
-            item['image'] = item['image'].to('cuda:3')
+            item['image'] = item['image'].to(device)
             output = model(item['image'])
             shape_image = item['image'].shape
             scale_factor = (shape_image[2]/output[0].shape[2] , shape_image[3]/output[0].shape[3])
@@ -82,7 +84,9 @@ def inference_network(
             # Matching predictions to ground truth individuals in order to compute rmse and save as dataframe
             if len(individuals) > 1:
                 for b in range(predictions.shape[0]):
-                    match_individuals = oks_match_prediction_to_gt(
+                    # rmse is more practical than oks
+                    # since oks needs at least 2 annotated keypoints per animal (to compute area)
+                    match_individuals = rmse_match_prediction_to_gt(
                         predictions[b], 
                         item['annotations']['keypoints'][b].cpu().numpy(), 
                         individuals
@@ -91,10 +95,10 @@ def inference_network(
 
             #converts back to original image size if image was resized during the augmentation pipeline
             for b in range(predictions.shape[0]):
-                resizing_factor = (item['original_size'][0]/shape_image[2]).item(), (item['original_size'][1]/shape_image[3]).item()
+                resizing_factor = (item['original_size'][0][b]/shape_image[2]).item(), (item['original_size'][1][b]/shape_image[3]).item()
                 predictions[b, :, :, 0] = predictions[b, :, :, 0]*resizing_factor[1] + resizing_factor[1]/2
                 predictions[b, :, :, 1] = predictions[b, :, :, 1]*resizing_factor[0] + resizing_factor[0]/2
-            predicted_poses.append(predictions)
+                predicted_poses.append(predictions)
 
         predicted_poses = np.array(predicted_poses)
 

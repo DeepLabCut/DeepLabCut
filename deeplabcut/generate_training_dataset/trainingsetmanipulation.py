@@ -908,6 +908,7 @@ def create_training_dataset(
                 or "mobilenet" in net_type
                 or "efficientnet" in net_type
                 or "dlcrnet" in net_type
+                or "dekr" in net_type
             ):
                 pass
             else:
