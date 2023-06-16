@@ -212,8 +212,9 @@ class ClickableLabel(QtWidgets.QLabel):
 
     def __init__(self, text="", color="turquoise", parent=None):
         super(ClickableLabel, self).__init__(text, parent)
-        self.color = color
         self._default_style = self.styleSheet()
+        self.color = color
+        self.setStyleSheet(f"color: {self.color}")
 
     def mouseReleaseEvent(self, event):
         self.signal.emit()

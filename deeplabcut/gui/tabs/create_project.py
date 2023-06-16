@@ -13,10 +13,12 @@ from datetime import datetime
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 
 from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QIcon
 
 
 class ProjectCreator(QtWidgets.QDialog):
@@ -60,6 +62,12 @@ class ProjectCreator(QtWidgets.QDialog):
         loc_label = ClickableLabel("Location:", parent=user_frame)
         loc_label.signal.connect(self.on_click)
         self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
+        self.loc_line.setReadOnly(True)
+        action = self.loc_line.addAction(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            self.loc_line.TrailingPosition,
+        )
+        action.triggered.connect(self.on_click)
 
         vbox = QtWidgets.QVBoxLayout(user_frame)
         grid = QtWidgets.QGridLayout()
