@@ -109,7 +109,6 @@ class ProjectCreator(QtWidgets.QDialog):
             self,
             "Please select a folder",
             self.loc_default,
-            QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if not folder:
             return
