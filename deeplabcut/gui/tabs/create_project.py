@@ -48,11 +48,13 @@ class ProjectCreator(QtWidgets.QDialog):
 
         proj_label = QtWidgets.QLabel("Project:", user_frame)
         self.proj_line = QtWidgets.QLineEdit(self.proj_default, user_frame)
+        self.proj_line.setPlaceholderText("my project's name")
         self._default_style = self.proj_line.styleSheet()
         self.proj_line.textEdited.connect(self.update_project_name)
 
         exp_label = QtWidgets.QLabel("Experimenter:", user_frame)
         self.exp_line = QtWidgets.QLineEdit(self.exp_default, user_frame)
+        self.exp_line.setPlaceholderText("my nickname")
         self.exp_line.textEdited.connect(self.update_experimenter_name)
 
         loc_label = ClickableLabel("Location:", parent=user_frame)
