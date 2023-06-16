@@ -305,6 +305,7 @@ class MainWindow(QMainWindow):
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0]))
         )
         self.newAction.setShortcut("Ctrl+N")
+        self.newAction.setStatusTip("Create a new project...")
 
         self.newAction.triggered.connect(self._create_project)
 
@@ -314,6 +315,7 @@ class MainWindow(QMainWindow):
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1]))
         )
         self.openAction.setShortcut("Ctrl+O")
+        self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
 
         self.saveAction = QAction("&Save", self)
@@ -328,6 +330,7 @@ class MainWindow(QMainWindow):
         self.helpAction.setIcon(
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2]))
         )
+        self.helpAction.setStatusTip("Ask for help...")
 
         self.aboutAction = QAction("&Learn DLC", self)
         self.check_updates = QAction("&Check for Updates...", self)
