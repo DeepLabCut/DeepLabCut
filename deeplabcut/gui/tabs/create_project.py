@@ -26,6 +26,7 @@ class ProjectCreator(QtWidgets.QDialog):
         super(ProjectCreator, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle("New Project")
+        self.setModal(True)
         self.setMinimumWidth(parent.screen_width // 2)
         today = datetime.today().strftime("%Y-%m-%d")
         self.name_default = "-".join(("{}", "{}", today))
@@ -65,7 +66,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
             QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
-            self.loc_line.TrailingPosition,
+            QtWidgets.QLineEdit.TrailingPosition,
         )
         action.triggered.connect(self.on_click)
 
