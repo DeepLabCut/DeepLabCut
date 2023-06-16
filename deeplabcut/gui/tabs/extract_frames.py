@@ -100,6 +100,7 @@ class ExtractFrames(DefaultTab):
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
+        layout.setColumnMinimumWidth(1, 300)
         # Extraction method
         ext_method_label = QtWidgets.QLabel("Extraction method")
         self.extraction_method_widget = QtWidgets.QComboBox()
