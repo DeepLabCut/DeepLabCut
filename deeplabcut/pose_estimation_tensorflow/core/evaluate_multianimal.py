@@ -164,7 +164,7 @@ def evaluate_multianimal_full(
     )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         str(cfg["project_path"] + "/evaluation-results/")
     )
     for shuffle in Shuffles:
@@ -226,7 +226,7 @@ def evaluate_multianimal_full(
                     )
                 ),
             )
-            auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
             # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
             # Check which snapshots are available and sort them by # iterations
@@ -305,7 +305,7 @@ def evaluate_multianimal_full(
                             str(evaluationfolder),
                             "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
                         )
-                        auxiliaryfunctions.attempttomakefolder(foldername)
+                        auxiliaryfunctions.attempt_to_make_folder(foldername)
                         if plotting == "bodypart":
                             fig, ax = visualization.create_minimal_figure()
 

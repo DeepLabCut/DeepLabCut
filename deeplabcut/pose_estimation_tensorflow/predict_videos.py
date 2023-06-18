@@ -1014,7 +1014,7 @@ def AnalyzeVideo(
 
     if destfolder is None:
         destfolder = str(Path(video).parents[0])
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
     vname = Path(video).stem
     try:
         _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
@@ -1738,7 +1738,7 @@ def convert_detections2tracklets(
             videofolder = str(Path(video).parents[0])
             if destfolder is None:
                 destfolder = videofolder
-            auxiliaryfunctions.attempttomakefolder(destfolder)
+            auxiliaryfunctions.attempt_to_make_folder(destfolder)
             vname = Path(video).stem
             dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)

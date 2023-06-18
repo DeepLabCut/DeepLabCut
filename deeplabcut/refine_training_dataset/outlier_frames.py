@@ -648,7 +648,7 @@ def ExtractFramesbasedonPreselection(
     if os.path.isdir(tmpfolder):
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
-        auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
+        auxiliaryfunctions.attempt_to_make_folder(tmpfolder, recursive=True)
 
     nframes = len(data)
     print("Loading video...")

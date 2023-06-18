@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     # to test destination folder:
     dfolder = os.path.join(basepath, "OUT")
-    deeplabcut.auxiliaryfunctions.attempttomakefolder(dfolder)
+    deeplabcut.auxiliaryfunctions.attempt_to_make_folder(dfolder)
 
     # dfolder=None
     augmenter_type = "tensorpack"  # imgaug'
