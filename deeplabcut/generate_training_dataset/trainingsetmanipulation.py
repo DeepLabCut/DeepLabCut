@@ -845,7 +845,10 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, net_type=net_type
+            config, num_shuffles, Shuffles,
+            net_type=net_type,
+            trainIndices=trainIndices,
+            testIndices=testIndices,
         )
     else:
         scorer = cfg["scorer"]
