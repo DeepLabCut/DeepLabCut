@@ -14,7 +14,15 @@ from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListSchedule
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
 
 
-def build_pose_model(cfg: Dict, pytorch_cfg):
+def build_pose_model(cfg: Dict, pytorch_cfg: Dict) -> PoseModel:
+    """
+        Returns a pytorch pose model based on pytorch config
+        
+    Args:
+        cfg : sub dict of the pytorch config that contains all information about the model
+        pytorch_cfg : entire pytorch config"""
+    
+    #TODO not sure why exactly we would need those two dicts as entries
     backbone = BACKBONES.build(dict(cfg['backbone']))
     head_heatmaps = HEADS.build(dict(cfg['heatmap_head']))
     head_locref = HEADS.build(dict(cfg['locref_head']))
@@ -35,7 +43,14 @@ def build_pose_model(cfg: Dict, pytorch_cfg):
 
 
 def build_solver(pytorch_cfg: Dict) -> Solver:
-    # pose_cfg = auxiliaryfunctions.read_plainconfig(cfg['pose_cfg_path'])
+    """
+        Build the solver object to run training
+        
+    Args:
+        pytorch_cfg: config dictionnary to build the solver
+    Returns:
+        solver : solver to train the model
+    """
     pose_model = build_pose_model(pytorch_cfg['model'], pytorch_cfg)
 
     get_optimizer = getattr(torch.optim, pytorch_cfg['optimizer']['type'])
@@ -74,7 +89,15 @@ def build_solver(pytorch_cfg: Dict) -> Solver:
     return solver
 
 
-def build_transforms(aug_cfg):
+def build_transforms(aug_cfg:dict) -> Union[A.BasicTransform, A.BaseCompose]:
+    """
+    Returns the transformation pipeline based on config
+
+    Args:
+        aug_cfg : dict containing all transforms information
+    Returns:
+        transform: callable element that can augment images, keypoints and bboxes
+    """
     transforms = []
 
     if aug_cfg.get('resize', False):
@@ -208,3 +231,20 @@ def videos_in_folder(
         f"Could not find the video: {video_path}. Check access rights."
     )
     return [video_path]
+
+
+def update_config_parameters(pytorch_config: dict, **kwargs) -> None:
+    """
+    Overwrites the pytorch config dictionnary to correspond to the command line input keys
+    
+    Args:
+        pytorch_config
+        **kwargs : any arguments that can be found as entry for the pytorch config
+        
+    Return:
+        None
+    """
+    for key in kwargs.keys():
+        pytorch_config[key] = kwargs[key]
+
+    return

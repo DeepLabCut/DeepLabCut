@@ -12,10 +12,21 @@ from ..utils import df2generic
 
 class DLCProject(BaseProject):
     """
-    TODO
+    Wrapper around the project containing information about the data, 
+    the actual annotations and the configs
+
+    Methods:
+        - convert2dict : convert the annotations dataframe into a coco format dict of annotations
+        - _init_annotation_image_correspondance: binds the image paths to corresponding annotations
+                ensures there is no indexing offsets between images and annotations when
+                going through the dataset
+        - load_split : split the annotation dataframe into train and test dataframes 
+                        based on project's split
+        - annotation2keypoints : convert the coco annotations into array of keypoints
+                                also returns the array of the keypoints' visibility
     """
 
-    def __init__(self, proj_root,
+    def __init__(self, proj_root:str,
                  shuffle: int = 0,
                  image_id_offset: int = 0,
                  keys_to_load: List[str] = ['images', 'annotations']):
@@ -69,7 +80,8 @@ class DLCProject(BaseProject):
             setattr(self, key, data[key])
         print('The data has been loaded!')
 
-    def _init_annotation_image_correspondance(self, data):
+    def _init_annotation_image_correspondance(self, data:dict):
+        """data should be a COCO like dictionnary of the pose dataset"""
         
         # Path to id correspondance
         self.image_path2image_id = {}
@@ -121,12 +133,11 @@ class DLCProject(BaseProject):
         -------
         keypoints: list
             paired keypoints
-        undef_ids: list
-            mask
+        undef_ids: array
+            0 means this keypoints is undefined, 1 means it is
         """
         x = annotation['keypoints'][::3]
         y = annotation['keypoints'][1::3]
-        vis = annotation['keypoints'][2::3]
         undef_ids = ((x > 0) & (y > 0)).astype(int)
         keypoints = []
 

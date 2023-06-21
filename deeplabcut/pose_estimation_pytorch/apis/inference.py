@@ -11,7 +11,7 @@ from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction,
 from deeplabcut.pose_estimation_pytorch.solvers.utils import get_paths, get_results_filename, save_predictions
 from deeplabcut.pose_estimation_tensorflow import Plotting
 from deeplabcut.pose_estimation_pytorch.post_processing import rmse_match_prediction_to_gt, oks_match_prediction_to_gt
-from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
+import albumentations as A
 from typing import Union
 
 
@@ -21,9 +21,36 @@ def inference_network(
         model_prefix: str = "",
         load_epoch: Union[int, str] = -1,
         stride: int = 8,
-        transform: object = None,
+        transform: Union[A.BasicTransform, A.Compose] = None,
         plot: bool = False,
-        evaluate: bool = True):
+        evaluate: bool = True) -> None:
+    """
+        Performs inference on the validation dataset and save the results as a dataframe
+
+    Args:
+        - config_path : path to the project's config file
+        - shuffle : shuffle index
+        - model_prefix: model prefix
+        - load_epoch: 
+                    index (starting at 0) of the snapshot we want to load, 
+                    if -1 loads the last one automatically
+                    for example if we have 3 models saved
+                        -snapshot-0.pt
+                        -snapshot-50.pt
+                        -snapshot-100.pt
+                    and we want to load the second one, load epoch should be 1
+        - stride : unused #TODO We clearly should remove this
+        - transform : 
+                    transformation pipeline for evaluation
+                    ** Should normalise the data the same way it was normalised during training **
+        - plot: whether to plot the predicted data or not
+            #TODO Currently does not work for multinaimal, should be False for multianimal project
+             otherwise it breaks
+        - evaluate: whether to compare predictions and ground truth
+
+    Returns:
+        None
+    """
     # reading pytorch config
     cfg = auxiliaryfunctions.read_config(config_path)
     train_fraction = cfg["TrainingFraction"]

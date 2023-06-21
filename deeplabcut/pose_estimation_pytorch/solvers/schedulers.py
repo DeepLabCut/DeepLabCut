@@ -1,6 +1,6 @@
-from torch.optim.lr_scheduler import LRScheduler
+from torch.optim.lr_scheduler import _LRScheduler
 
-class LRListScheduler(LRScheduler):
+class LRListScheduler(_LRScheduler):
 
     def __init__(self, optimizer, last_epoch=-1, verbose=False, milestones=[10], lr_list=[0.001]):
         self.milestones = milestones

@@ -4,7 +4,7 @@ import torch
 from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly, evaluate_assembly
 from torch import nn
-from typing import List
+from typing import List, Tuple, Dict
 
 
 def get_prediction(cfg, output, stride=8):
@@ -29,7 +29,7 @@ def get_prediction(cfg, output, stride=8):
         poses.append(pose)
     return np.stack(poses, axis=0)
 
-
+#DEPRECATED
 def get_top_values(scmap, n_top=5):
     batchsize, ny, nx, num_joints = scmap.shape
     scmap_flat = scmap.reshape(batchsize, nx * ny, num_joints)
@@ -46,7 +46,7 @@ def get_top_values(scmap, n_top=5):
     Y, X = np.unravel_index(scmap_top, (ny, nx))
     return Y, X
 
-
+#DEPRECATED
 def multi_pose_predict(scmap, locref, stride, num_outputs):
     Y, X = get_top_values(scmap[None], num_outputs)
     Y, X = Y[:, 0], X[:, 0]
@@ -70,10 +70,23 @@ def multi_pose_predict(scmap, locref, stride, num_outputs):
 
     return pose
 
-def get_scores(cfg,
+def get_scores(cfg: Dict,
                prediction: pd.DataFrame,
                target: pd.DataFrame,
-               bodyparts: List = None):
+               bodyparts: List[str] = None) -> Dict:
+    """_summary_
+
+    Args:
+        cfg (Dict): config dictionnary
+        prediction (pd.DataFrame): prediction df, should already be matched to ground truth using
+                                    hungarian algorithm
+        target (pd.DataFrame): ground truth dataframe
+        bodyparts (List[str], optional): names of the bodyparts. Defaults to None.
+
+    Returns:
+        Dict: scores dict, keys are :
+        ['rmse', 'rmse_pcutoff', 'mAP', 'mAR', 'mAP_pcutoff', 'mAR_pcutoff']
+    """
     if cfg.get('pcutoff'):
         pcutoff = cfg['pcutoff']
         rmse, rmse_p = get_rmse(prediction, target, pcutoff,
@@ -95,10 +108,25 @@ def get_scores(cfg,
     return scores
 
 
-def get_rmse(prediction,
+def get_rmse(prediction: pd.DataFrame,
              target: pd.DataFrame,
              pcutoff: float=-1,
-             bodyparts: List[str] =None):
+             bodyparts: List[str] =None) -> Tuple[float, float]:
+    """Computes rmse for predictions
+    Assumes hungarian algorithm matching has already be applied to match predicted animals
+    and ground truth ones.
+
+    Args:
+        prediction (pd.DataFrame): prediction dataframe
+        target (pd.DataFrame): target dataframe
+        pcutoff (float, optional): Confidence lower bound for a keypoint to be considred as detected.
+                                    Defaults to -1.
+        bodyparts (List[str], optional): list of the bodyparts names. Defaults to None.
+
+    Returns:
+        rmse: rmse without cutoff
+        rmse_p : rmse with cutoff
+    """
     scorer_pred = prediction.columns[0][0]
     scorer_target = target.columns[0][0]
     mask = prediction[scorer_pred].xs("likelihood", level=2, axis=1) >= pcutoff
@@ -118,7 +146,23 @@ def get_oks(prediction: pd.DataFrame,
             margin=0,
             symmetric_kpts=None,
             pcutoff: float=-1,
-            bodyparts: List[str] =None):
+            bodyparts: List[str] =None) -> Tuple[Dict, Dict]:
+    """Computes oks related scores for predictions
+
+    Args:
+        prediction (pd.DataFrame): prediction dataframe
+        target (pd.DataFrame): target dataframe
+        oks_sigma (float, optional): Sigma for oks conputation. Defaults to 0.1.
+        margin (int, optional): margin used for bbox computation. Defaults to 0.
+        symmetric_kpts (_type_, optional): Not supported yet. Defaults to None.
+        pcutoff (float, optional): Confidence lower bound for a keypoint to be considred as detected.
+                                    Defaults to -1.
+        bodyparts (List[str], optional): list of the bodyparts names. Defaults to None.
+
+    Returns:
+        oks_raw (Dict): oks scores without p_cutoff
+        oks_pcutoff (Dict): oks scores with pcutoff
+    """
     
     scorer_pred = prediction.columns[0][0]
     scorer_target = target.columns[0][0]

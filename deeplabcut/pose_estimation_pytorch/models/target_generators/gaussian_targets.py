@@ -1,11 +1,17 @@
 import numpy as np
+from typing import Tuple
+import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import BaseGenerator, TARGET_GENERATORS
 
 @TARGET_GENERATORS.register_module
 class GaussianGenerator(BaseGenerator):
+    """
+    Generate gaussian heatmaps and locref targets from ground truth keypoints in order
+    to train baseline deeplabcut model (ResNet + Deconv)
+    """
 
-    def __init__(self, locref_stdev, num_joints, pos_dist_thresh):
+    def __init__(self, locref_stdev:float, num_joints:int, pos_dist_thresh:int):
         super().__init__()
 
         self.locref_scale = 1.0/locref_stdev
@@ -15,7 +21,11 @@ class GaussianGenerator(BaseGenerator):
         self.std = 2*self.dist_thresh / 3 # We think of dist_thresh as a radius and std is a 'diameter'
 
 
-    def forward(self, annotations, prediction, image_size):
+    def forward(self,
+                annotations:dict,
+                prediction:Tuple[torch.Tensor, torch.Tensor],
+                image_size:Tuple[int, int]
+    ):
         """
 
         Parameters
@@ -26,7 +36,10 @@ class GaussianGenerator(BaseGenerator):
         
         Returns
         -------
-        dict of the targets
+        targets : dict of the taregts, keys:
+                'heatmaps' : heatmaps
+                'locref_maps' : locref maps
+                'locref_masks' : weights to apply to the locref maps for loss computation
 
         """
         # stride = cfg['stride'] # Apparently, there is no stride in the cfg

@@ -1,3 +1,4 @@
+import torch
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 BACKBONE_OUT_CHANNELS = {
@@ -77,6 +78,7 @@ def make_pytorch_config(project_config: dict, net_type: str, augmenter_type: str
     bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
     num_joints = len(bodyparts)
     pytorch_config = config_template
+    pytorch_config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
     if net_type in single_animal_nets:
         pytorch_config['model']['heatmap_head']['channels'][-1] = num_joints
         pytorch_config['model']['locref_head']['channels'][-1] = 2*num_joints

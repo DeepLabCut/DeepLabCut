@@ -5,6 +5,9 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.base import BaseBackbon
 
 @BACKBONES.register_module
 class ResNet(BaseBackbone):
+    """
+        Typical ResNet backbone
+    """    
 
     def __init__(self, model_name: str = 'resnet50',
                  pretrained: str = None) -> nn.Module:

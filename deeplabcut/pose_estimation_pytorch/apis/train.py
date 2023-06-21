@@ -2,8 +2,8 @@ import argparse
 import deeplabcut.pose_estimation_pytorch as dlc
 import os
 from deeplabcut import auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver, build_transforms
-from deeplabcut.pose_estimation_pytorch.models.target_generators import TARGET_GENERATORS
+from deeplabcut.pose_estimation_pytorch.apis.utils import build_solver, build_transforms, update_config_parameters
+from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
 from torch.utils.data import DataLoader
 import albumentations as A
 from typing import Union
@@ -13,8 +13,34 @@ def train_network(
         config_path: str,
         shuffle: int = 1,
         training_set_index: Union[int, str] = 0,
-        transform = None,
-        model_prefix: str = ""):
+        transform: Union[A.BaseCompose, A.BasicTransform] = None,
+        model_prefix: str = "",
+        **kwargs) -> Solver:
+    
+    """
+        Trains a network for a project
+        
+    Args:
+        - config_path : path to the yaml config file of the project
+        - shuffle : index of the shuffle we want to train on
+        - training_set_index : training set index
+
+        - transform: if None, the augmentation pipeline is built from config files
+            Advice if you want ot use custom transformations:
+                Keep in mind that in order for transfer leanring to be efficient, your 
+                data statistical distribution should resemble the one used to pretrain your backbone
+                
+                In most cases (e.g bacbone was pretrained on ImageNet), that means it should be Normalized with 
+                A.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
+        
+        - model_prefix: model prefix
+        - **kwargs : could be any entry of the pytorch_config dictionnary
+            to see the full list see the pytorch_cfg.yaml file in your project folder
+    
+    Returns:
+        solver: solver used for training, stores data about losses during training
+    """
+    
     cfg = auxiliaryfunctions.read_config(config_path)
     if training_set_index == "all":
         train_fraction = cfg["TrainingFraction"]
@@ -28,7 +54,7 @@ def train_network(
     )
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
     pytorch_config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
-
+    update_config_parameters(pytorch_config=pytorch_config, **kwargs)
     if transform is None:
         print("No transform specified... using default")
         transform = build_transforms(dict(pytorch_config['data']))

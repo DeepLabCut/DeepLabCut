@@ -7,6 +7,12 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.base import BaseBackbon
 
 @BACKBONES.register_module
 class HRNet(BaseBackbone):
+    """
+        HRNet backbone, this version returns high resolution feature maps of size
+        1/4 * original_image_size
+        This is obtained using bilinear interpolation and concatenation of all the outputs of the
+        HRNet stages
+    """    
 
     def __init__(self, model_name: str = 'hrnet_w32') -> nn.Module:
         """

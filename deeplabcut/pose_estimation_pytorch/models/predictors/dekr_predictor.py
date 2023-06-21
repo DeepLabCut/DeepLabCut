@@ -5,10 +5,18 @@ from typing import Tuple
 
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS, BasePredictor
 
-#TODO what about credits ? DIfferent code from DEKR repo but still largely inspired from it
-
 @PREDICTORS.register_module
 class DEKRPredictor(BasePredictor):
+    """
+        Regresses keypoints and assembles them (if multianimal project) from DEKR output
+        Based on:
+            Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
+            Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
+            CVPR
+            2021
+        Code based on:
+            https://github.com/HRNet/DEKR
+    """
 
     default_init = {
         'apply_sigmoid' : True,
@@ -24,7 +32,7 @@ class DEKRPredictor(BasePredictor):
         self.use_heatmap = use_heatmap
 
     def forward(self, outputs, scale_factors: Tuple[float, float]):
-        
+        #TODO implement confidence scores for each keypoints
         heatmaps, offsets = outputs
         if self.apply_sigmoid:
             heatmaps = nn.Sigmoid()(heatmaps)

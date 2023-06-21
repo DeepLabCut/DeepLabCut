@@ -107,8 +107,8 @@ class PoseLoss(nn.Module):
                                               target['heatmaps'],
                                               target.get('heatmaps_ignored', 1))
         
-        locref_loss = self.loss_weight_locref * self.locref_criterion(locref,
-                                                                      target['locref_maps'],
-                                                                      target['locref_masks'])
-        total_loss = locref_loss + heatmap_loss
+        locref_loss = self.locref_criterion(locref,
+                                            target['locref_maps'],
+                                            target['locref_masks'])
+        total_loss = locref_loss*self.loss_weight_locref + heatmap_loss
         return total_loss, heatmap_loss, locref_loss

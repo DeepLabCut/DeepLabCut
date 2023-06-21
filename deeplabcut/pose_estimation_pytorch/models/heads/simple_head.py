@@ -6,6 +6,9 @@ from .base import BaseHead
 
 @HEADS.register_module
 class SimpleHead(BaseHead):
+    """
+        Deconvolutional head to predict maps from the extracted features
+    """
 
     def __init__(self, channels: list,
                  kernel_size: list,

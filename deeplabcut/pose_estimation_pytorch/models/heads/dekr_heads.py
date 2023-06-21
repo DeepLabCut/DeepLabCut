@@ -8,6 +8,16 @@ from .base import BaseHead
 
 @HEADS.register_module
 class HeatmapDEKRHead(BaseHead):
+    """
+        DEKR head to compute the heatmaps corresponding to keypoints
+        based on:
+            Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
+            Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
+            CVPR
+            2021
+        Code based on:
+            https://github.com/HRNet/DEKR
+    """    
 
     def __init__(
             self,
@@ -98,6 +108,16 @@ class HeatmapDEKRHead(BaseHead):
 
 @HEADS.register_module
 class OffsetDEKRHead(BaseHead):
+    """
+        DEKR head to compute the offset from the center corresponding to each keypoints
+        based on:
+            Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
+            Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
+            CVPR
+            2021
+        Code based on:
+        https://github.com/HRNet/DEKR
+    """ 
 
     def __init__(
             self,

@@ -11,6 +11,9 @@ from .dlcproject import DLCProject
 
 
 class PoseDataset(Dataset, BaseDataset):
+    """
+        Dataset for pose estimation
+    """
 
     def __init__(self,
                  project: DLCProject,
@@ -21,10 +24,7 @@ class PoseDataset(Dataset, BaseDataset):
         Parameters
         ----------
         project: see class Project (wrapper for DLC original project class)
-        transform: transformation function:
-
-            def transform(image, keypoints):
-                return image, keypoints
+        transform: augmentation/normalization pipeline
 
         mode: 'train' or 'test'
             this parameter which dataframe parse from the Project (df_tran or df_test)
@@ -55,9 +55,8 @@ class PoseDataset(Dataset, BaseDataset):
         pytorch_cfg = read_plainconfig(pytorch_config_path)
         self.with_center = pytorch_cfg.get('with_center', False)
         self.max_num_animals = len(self.cfg.get('individuals', ['0']))
+        self.color_mode = pytorch_cfg.get('colormode', 'RGB')
 
-        # We must dropna because self.project.images doesn't contain imgaes with no labels so it can produce an indexnotfound error
-        # length is stored here to avoid repeating the computation
         self.length = self.dataframe.shape[0]
         assert self.length == len(self.project.image_path2image_id.keys())
 
@@ -83,7 +82,7 @@ class PoseDataset(Dataset, BaseDataset):
         return (keypoint[0] > 0) and (keypoint[1] > 0) and (keypoint[0] < shape[1]) and (keypoint[1] < shape[0])
     
     def __getitem__(self,
-                    index: int):
+                    index: int) -> dict:
         """
 
         Parameters
@@ -92,12 +91,18 @@ class PoseDataset(Dataset, BaseDataset):
             ordered number of the item in the dataset
         Returns
         -------
-        image: torch.FloatTensor \in [0, 255]
-            Tensor for the image from the dataset
-        keypoints: list of keypoints
+        dictionnary corresponding to the image, annotations...
+            keys:
+                -'image' : image
+                -'annotations':
+                    -'keypoints' : array of keypoints, invisible keypoints appear as (-1, -1)
+                    -'area': array of animals area in this image
+                -'original_size' : original size of the image before applying transforms
+                                    useful to convert the predictions/ground truth back to
+                                    the input space
 
         train_dataset = PoseDataset(project, transform=transform)
-        im, keypoints = train_dataset[0]
+        pose_dict = train_dataset[0]
 
         """
         # load images
@@ -112,6 +117,8 @@ class PoseDataset(Dataset, BaseDataset):
             print(index)
 
         image = cv2.imread(image_file)
+        if self.color_mode == 'RGB':
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         original_size = image.shape
 
         # load annotations
@@ -180,7 +187,7 @@ class PoseDataset(Dataset, BaseDataset):
         image = torch.FloatTensor(transformed['image']).permute(2, 0, 1)  # channels first
 
         assert len(transformed['keypoints']) == len(keypoints)
-        keypoints = np.array(transformed['keypoints']).reshape((n_annotations, num_keypoints_returned, 2))
+        keypoints = np.array(transformed['keypoints']).reshape((n_annotations, num_keypoints_returned, 2)).astype(float)
 
         #TODO Quite ugly
         #      

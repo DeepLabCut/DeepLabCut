@@ -19,6 +19,7 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 from skimage.util import img_as_ubyte
+import cv2
 
 import deeplabcut.pose_estimation_pytorch as dlc
 from deeplabcut import auxiliaryfunctions
@@ -38,6 +39,7 @@ def video_inference(
     batch_size: int = 1,
     device: Optional[str] = None,
     transform: Optional[A.Compose] = None,
+    colormode: Optional[str]= 'RGB'
 ) -> List[np.ndarray]:
     """
     Runs inference on all frames of a video
@@ -49,6 +51,7 @@ def video_inference(
         batch_size: the batch size with which to run inference
         device: the torch device to use to run inference. Dynamic selection if None
         transform: the image augmentation transform to use on the video frames, if any
+        colormode: RGB or BGR
 
     Returns:
         for each frame in the video, a numpy array containing the output of the
@@ -82,6 +85,9 @@ def video_inference(
         while frame is not None:
             if frame.dtype != np.uint8:
                 frame = img_as_ubyte(frame)
+
+            if colormode =='BGR':
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
             batch_frames[batch_ind] = frame
             if batch_ind == batch_size - 1:
@@ -208,6 +214,7 @@ def analyze_videos(
                 batch_size=batch_size,
                 device=device,
                 transform=transform,
+                colormode=pytorch_config.get('colormode', 'RGB')
             )
             runtime.append(time.time())
 

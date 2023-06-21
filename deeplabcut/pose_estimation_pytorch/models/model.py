@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from typing import Tuple
 from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
 from deeplabcut.pose_estimation_tensorflow.core.predict import multi_pose_predict
 from torch import nn
@@ -7,7 +8,9 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGene
 
 
 class PoseModel(nn.Module):
-
+    """
+        Complete model architecture
+    """
     def __init__(self,
                  cfg: dict,
                  backbone: torch.nn.Module,
@@ -30,16 +33,17 @@ class PoseModel(nn.Module):
         self.target_generator = target_generator
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
+    def forward(self, x:torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         TODO
         Parameters
         ----------
-        x
+        x: input images
 
         Returns
         -------
-
+            heat_maps : heatmaps
+            loc_ref : locref maps
         """
         if x.dim() == 3:
             x = x[None, :]
@@ -52,8 +56,19 @@ class PoseModel(nn.Module):
         return heat_maps, loc_ref
 
     def get_target(self,
-                   annotations,
-                   prediction,
-                   image_size):
+                   annotations:dict,
+                   prediction:Tuple[torch.Tensor, torch.Tensor],
+                   image_size:Tuple[int, int]):
+        """_summary_
+
+        Args:
+            annotations (dict): dict of annotations
+            prediction (Tuple[torch.Tensor, torch.Tensor]): output of the model 
+                        (used here to compute the scaling factor of the model)
+            image_size (Tuple[int, int]): image_size, used here to compute the scaling factor of the model
+
+        Returns:
+            targets : dict of the targets needed for model training
+        """
         
         return self.target_generator(annotations, prediction, image_size)

@@ -5,7 +5,11 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import PREDICTORS
 
 @PREDICTORS.register_module
 class SinglePredictor(BasePredictor):
-    """Predictor only intended for single animal pose estimation"""
+    """
+    Predictor only intended for single animal pose estimation
+    
+    Regresses keypoints from heatmaps and locref_maps of baseline DLC model (ResNet + Deconv)
+    """
 
     default_init = {
         'location_refinement': True,

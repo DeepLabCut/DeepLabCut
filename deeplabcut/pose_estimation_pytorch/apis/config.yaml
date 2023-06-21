@@ -1,5 +1,6 @@
 batch_size: 1
 cfg_path: /data/quentin/datasets/daniel3mouse/config.yaml
+colormode: 'RGB'
 criterion:
   locref_huber_loss: true
   loss_weight_locref: 0.02

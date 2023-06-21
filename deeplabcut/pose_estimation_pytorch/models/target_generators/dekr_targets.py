@@ -1,11 +1,22 @@
 import numpy as np
+from typing import Tuple
+import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import BaseGenerator, TARGET_GENERATORS
 
 @TARGET_GENERATORS.register_module
 class DEKRGenerator(BaseGenerator):
+    """
+        Generate ground truth target for DEKR model training
+        based on:
+            Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
+            Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
+            CVPR
+            2021
+        Code based on:
+            https://github.com/HRNet/DEKR"""
     
-    def __init__(self, num_joints, pos_dist_thresh, bg_weight = 0.1):
+    def __init__(self, num_joints:int, pos_dist_thresh:int, bg_weight:float = 0.1):
         super().__init__()
 
         self.num_joints = num_joints
@@ -14,14 +25,32 @@ class DEKRGenerator(BaseGenerator):
             
         self.num_joints_with_center = self.num_joints + 1
 
-    def get_heat_val(self, sigma, x, y, x0, y0):
+    def get_heat_val(self, sigma:float, x:float, y:float, x0:float, y0:float):
 
         g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
 
         return g
 
-    def forward(self, annotations, prediction, image_size):
+    def forward(self, annotations:dict, prediction:Tuple[torch.Tensor, torch.Tensor], image_size:Tuple[int, int]):
+        """
 
+        Parameters
+        ----------
+        annotations: dict, each entry should begin with the shape batch_size
+        prediction: output of model, format could depend on the model, only used to compute output resolution
+        image_size: size of image (only one tuple since for batch training all images should have the same size)
+        
+        Returns
+        -------
+        #TODO locref is a bad name here and should be 'offset to center', but for code's simplicity it
+            is easier to use the same keys as for the SingleAnimal target generators
+        targets : dict of the taregts, keys:
+                'heatmaps' : heatmaps
+                'heatmaps_ignored': weights to apply to the heatmaps for loss computation
+                'locref_maps' : offset maps
+                'locref_masks' : weights to apply to the offet maps for loss computation
+
+        """
         batch_size, _, output_h, output_w = prediction[0].shape
         output_res = output_h, output_w
         stride_y, stride_x = image_size[0]/output_h, image_size[1]/output_w

@@ -8,6 +8,9 @@ from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 HEADS = Registry('heads', build_func=build_from_cfg)
 
 class BaseHead(ABC, nn.Module):
+    """
+    Head for pose estimation models
+    """
 
     def __init__(self):
         super().__init__()

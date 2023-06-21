@@ -37,6 +37,7 @@ class Solver(ABC):
         cfg: DeepLabCut pose_cfg for training.
             See https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml for more details.
         scheduler: Optional. Scheduler for adjusting the lr of the optimizer.
+        logger: logger to monitor training (e.g WandB logger)
         """
         if cfg is None:
             raise ValueError('')
@@ -201,7 +202,7 @@ class BottomUpSolver(Solver):
 
         Returns
         -------
-        batch loss
+        batch loss, heatmap_loss, locref_loss
         """
         if mode not in ['train', 'eval']:
             raise ValueError(f'Solver must be in train or eval mode, but {mode} was found.')

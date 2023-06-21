@@ -1,11 +1,17 @@
 import numpy as np
+import torch
+from typing import Tuple
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import BaseGenerator, TARGET_GENERATORS
 
 @TARGET_GENERATORS.register_module
 class PlateauGenerator(BaseGenerator):
+    """
+    Generate gaussian heatmaps and locref targets from ground truth keypoints in order
+    to train baseline deeplabcut model (ResNet + Deconv)
+    """
 
-    def __init__(self, locref_stdev, num_joints, pos_dist_thresh):
+    def __init__(self, locref_stdev:float, num_joints:int, pos_dist_thresh:int):
         super().__init__()
         
         self.locref_scale = 1.0/locref_stdev
@@ -13,7 +19,11 @@ class PlateauGenerator(BaseGenerator):
         self.dist_thresh = float(pos_dist_thresh)
         self.dist_thresh_sq = self.dist_thresh ** 2
 
-    def forward(self, annotations, prediction, image_size):
+    def forward(self,
+                annotations:dict,
+                prediction:Tuple[torch.Tensor, torch.Tensor],
+                image_size:Tuple[int, int]
+        ):
         """
 
         Parameters
@@ -24,7 +34,10 @@ class PlateauGenerator(BaseGenerator):
 
         Returns
         -------
-
+            targets : dict of the taregts, keys:
+                'heatmaps' : heatmaps
+                'locref_maps' : locref maps
+                'locref_masks' : weights to apply to the locref maps for loss computation
         """
         batch_size, _, height, width = prediction[0].shape
         stride_y, stride_x = image_size[0]/height, image_size[1]/width
