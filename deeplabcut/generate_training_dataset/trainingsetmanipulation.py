@@ -481,6 +481,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
+            if data.columns.levels[0][0] != cfg["scorer"]:
+                print(f"{file_path} labeled by a different scorer. This data will not be utilized in trainig dataset creation.")
+                continue
             AnnotationData.append(data)
         except FileNotFoundError:
             print(file_path, " not found (perhaps not annotated).")
