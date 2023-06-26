@@ -138,8 +138,7 @@ class SpatiotemporalAdaptation:
 
         displayiters = kwargs.pop("displayiters", 500)
         saveiters = kwargs.pop("saveiters", 1000)
-        adapt_iterations = kwargs.pop("adapt_iterations", 1000)
-        self.adapt_iterations = adapt_iterations
+        self.adapt_iterations = kwargs.pop("adapt_iterations", self.adapt_iterations)
 
         train(
             self.customized_pose_config,
@@ -171,7 +170,7 @@ class SpatiotemporalAdaptation:
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
-        self.adapt_iterations = kwargs["adapt_iterations"]
+        self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
         if os.path.exists(
             os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
