@@ -98,6 +98,12 @@ def make_pytorch_config(project_config: dict, net_type: str, augmenter_type: str
             version = net_type.split('_')[-1]
             backbone_type = 'hrnet_' + version
             num_offset_per_kpt = 15
+            pytorch_config['data']['auto_padding'] = {
+                'min_height': 64,
+                'min_width': 64,
+                'pad_width_divisor': 32,
+                'pad_height_divisor': 32,
+            }
             pytorch_config['model']['backbone'] = {
                 'type': 'HRNet',
                 'model_name': 'hrnet_' + version

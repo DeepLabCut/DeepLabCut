@@ -178,6 +178,17 @@ def build_transforms(aug_cfg:dict) -> Union[A.BasicTransform, A.BaseCompose]:
                 )
             )
 
+    if aug_cfg.get('auto_padding'):
+        params = aug_cfg.get('auto_padding')
+        pad_height_divisor = params.get('pad_height_divisor', 1)
+        pad_width_divisor = params.get('pad_width_divisor', 1)
+        transforms.append(A.PadIfNeeded(
+            min_height= None, 
+            min_width= None,
+            pad_height_divisor=pad_height_divisor,
+            pad_width_divisor=pad_width_divisor)
+        )
+
     if aug_cfg.get('normalize_images'):
         transforms.append(A.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]))
     return A.Compose(

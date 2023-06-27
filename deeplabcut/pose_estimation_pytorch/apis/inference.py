@@ -76,6 +76,10 @@ def inference_network(
                                                    batch_size=batch_size,
                                                    shuffle=False)
     
+    # if images are resized for inference, 
+    # need to take that into account to go back to original space
+    images_resized_with_transform = config['data'].get('resize', False)
+    
     names = get_paths(train_fraction=train_fraction[0],
                       model_prefix=model_prefix,
                       shuffle=shuffle,
@@ -121,11 +125,12 @@ def inference_network(
                     predictions[b] = predictions[b][match_individuals]
 
             # converts back to original image size if image was resized during the augmentation pipeline
-            for b in range(predictions.shape[0]):
-                resizing_factor = (item['original_size'][0][b]/shape_image[2]).item(), (item['original_size'][1][b]/shape_image[3]).item()
-                predictions[b, :, :, 0] = predictions[b, :, :, 0]*resizing_factor[1] + resizing_factor[1]/2
-                predictions[b, :, :, 1] = predictions[b, :, :, 1]*resizing_factor[0] + resizing_factor[0]/2
-                predicted_poses.append(predictions)
+            if images_resized_with_transform:
+                for b in range(predictions.shape[0]):
+                    resizing_factor = (item['original_size'][0][b]/shape_image[2]).item(), (item['original_size'][1][b]/shape_image[3]).item()
+                    predictions[b, :, :, 0] = predictions[b, :, :, 0]*resizing_factor[1] + resizing_factor[1]/2
+                    predictions[b, :, :, 1] = predictions[b, :, :, 1]*resizing_factor[0] + resizing_factor[0]/2
+            predicted_poses.append(predictions)
 
         predicted_poses = np.array(predicted_poses)
 

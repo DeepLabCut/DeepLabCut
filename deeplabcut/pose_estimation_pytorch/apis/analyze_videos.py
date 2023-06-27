@@ -39,7 +39,8 @@ def video_inference(
     batch_size: int = 1,
     device: Optional[str] = None,
     transform: Optional[A.Compose] = None,
-    colormode: Optional[str]= 'RGB'
+    colormode: Optional[str]= 'RGB',
+    frames_resized: Optional[bool]= False,
 ) -> List[np.ndarray]:
     """
     Runs inference on all frames of a video
@@ -52,6 +53,7 @@ def video_inference(
         device: the torch device to use to run inference. Dynamic selection if None
         transform: the image augmentation transform to use on the video frames, if any
         colormode: RGB or BGR
+        frames_resized: Wether the frame are resized for inference or not
 
     Returns:
         for each frame in the video, a numpy array containing the output of the
@@ -101,6 +103,7 @@ def video_inference(
                     batch.shape[3] / output[0].shape[3]
                 )
                 for frame_pred in predictor(output, scale_factor).cpu().numpy():
+                    #TODO if images are resized should be taken into account for inference
                     predictions.append(frame_pred)
 
             frame = video_reader.read_frame()
@@ -186,6 +189,11 @@ def analyze_videos(
     pose_cfg["batch_size"] = batch_size
     individuals = project.cfg.get('individuals', ['single'])
 
+    # Get data processing parameters
+    # if images are resized for inference, 
+    # need to take that into account to go back to original space
+    frames_resized_with_transform = pytorch_config['data'].get('resize', False)
+
     # Load model, predictor
     model = build_pose_model(pytorch_config['model'], pose_cfg)
     model.load_state_dict(torch.load(model_path))
@@ -214,7 +222,8 @@ def analyze_videos(
                 batch_size=batch_size,
                 device=device,
                 transform=transform,
-                colormode=pytorch_config.get('colormode', 'RGB')
+                colormode=pytorch_config.get('colormode', 'RGB'),
+                frames_resized=frames_resized_with_transform
             )
             runtime.append(time.time())
 
