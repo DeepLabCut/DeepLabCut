@@ -69,7 +69,6 @@ def get_segment_indices(bodyparts2connect, all_bpts):
 def CreateVideo(
     clip,
     Dataframe,
-    pcutoff_mode,
     pcutoff,
     dotsize,
     colormap,
@@ -85,6 +84,7 @@ def CreateVideo(
     draw_skeleton,
     displaycropped,
     color_by,
+    pcutoff_mode="hide",
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
@@ -206,7 +206,6 @@ def CreateVideoSlow(
     dotsize,
     colormap,
     alphavalue,
-    pcutoff_mode,
     pcutoff,
     trailpoints,
     cropping,
@@ -223,6 +222,7 @@ def CreateVideoSlow(
     draw_skeleton,
     displaycropped,
     color_by,
+    pcutoff_mode="hide",
 ):
     """Creating individual frames with labeled body parts and making a video"""
     # scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
@@ -383,15 +383,15 @@ def create_labeled_video(
     modelprefix="",
     init_weights="",
     track_method="",
-    pcutoff_mode="hide",
-    pcutoff=None,
-    dotsize=None,
     superanimal_name="",
+    pcutoff=0.6,
     skeleton=[],
     skeleton_color="white",
+    dotsize=None,
     colormap="rainbow",
     alphavalue=0.5,
     overwrite=False,
+    pcutoff_mode="hide",
 ):
     """Labels the bodyparts in a video.
 
@@ -810,7 +810,6 @@ def proc_video(
                     cfg["dotsize"],
                     cfg["colormap"],
                     cfg["alphavalue"],
-                    cfg["pcutoff_mode"],
                     cfg["pcutoff"],
                     trailpoints,
                     cropping,
@@ -827,6 +826,7 @@ def proc_video(
                     draw_skeleton,
                     displaycropped,
                     color_by,
+                    pcutoff_mode=cfg["pcutoff_mode"],
                 )
                 clip.close()
             else:
@@ -912,7 +912,6 @@ def _create_labeled_video(
     CreateVideo(
         clip,
         df,
-        pcutoff_mode,
         pcutoff,
         dotsize,
         cmap,
@@ -928,6 +927,7 @@ def _create_labeled_video(
         bool(skeleton_edges),
         display_cropped,
         color_by,
+        pcutoff_mode=pcutoff_mode,
     )
 
 
