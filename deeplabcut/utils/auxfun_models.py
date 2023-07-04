@@ -47,7 +47,7 @@ MODELTYPE_FILEPATH_MAP = {
 def check_for_weights(modeltype, parent_path):
     """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
     # TODO: Adapt code for all PyTorch models
-    if any([torch_fam in modeltype for torch_fam in ["dekr"]]):
+    if any([torch_fam in modeltype for torch_fam in ["dekr", "token_pose"]]):
         return str(parent_path), num_shuffles
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():

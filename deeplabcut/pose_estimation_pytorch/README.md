@@ -9,7 +9,7 @@
 ## Data
 - [data](data/project.py#L7):
 The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch dataset creation and test/train splitting.
-    - `Project` class provides train and test splitting and converts dataset to required format. For intance, to [COCO]() format.
+    - `Project` class provides train and test splitting and converts dataset to required format. For instance, to [COCO]() format.
 
     Example:
     
@@ -34,7 +34,7 @@ The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pyt
     ```
     
     > **Note**
-    > `transform` is a `List` of transformations to be applied to images and keypoints sequentialy, `None` by default.
+    > `transform` is a `List` of transformations to be applied to images and keypoints sequentially, `None` by default.
     
     Example:
     

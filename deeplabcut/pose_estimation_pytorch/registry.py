@@ -3,9 +3,9 @@ from functools import partial
 from typing import Any, Dict, Optional
 
 
-def build_from_cfg(cfg: Dict,
-                   registry: 'Registry',
-                   default_args: Optional[Dict] = None) -> Any:
+def build_from_cfg(
+    cfg: Dict, registry: "Registry", default_args: Optional[Dict] = None
+) -> Any:
     """Build a module from config dict when it is a class configuration, or
     call a function from config dict when it is a function configuration.
     Args:
@@ -21,22 +21,20 @@ def build_from_cfg(cfg: Dict,
         for name, value in default_args.items():
             args.setdefault(name, value)
 
-    obj_type = args.pop('type')
+    obj_type = args.pop("type")
     if isinstance(obj_type, str):
         obj_cls = registry.get(obj_type)
         if obj_cls is None:
-            raise KeyError(
-                f'{obj_type} is not in the {registry.name} registry')
+            raise KeyError(f"{obj_type} is not in the {registry.name} registry")
     elif inspect.isclass(obj_type) or inspect.isfunction(obj_type):
         obj_cls = obj_type
     else:
-        raise TypeError(
-            f'type must be a str or valid type, but got {type(obj_type)}')
+        raise TypeError(f"type must be a str or valid type, but got {type(obj_type)}")
     try:
         return obj_cls(**args)
     except Exception as e:
         # Normal TypeError does not print class name.
-        raise type(e)(f'{obj_cls.__name__}: {e}')
+        raise type(e)(f"{obj_cls.__name__}: {e}")
 
 
 class Registry:
@@ -63,7 +61,7 @@ class Registry:
         self._name = name
         self._module_dict = dict()
         self._children = dict()
-        self._scope = '.'
+        self._scope = "."
 
         if build_func is None:
             if parent is not None:
@@ -86,11 +84,11 @@ class Registry:
         return self.get(key) is not None
 
     def __repr__(self):
-        format_str = self.__class__.__name__ + \
-                     f'(name={self._name}, ' \
-                     f'items={self._module_dict})'
+        format_str = (
+            self.__class__.__name__ + f"(name={self._name}, "
+            f"items={self._module_dict})"
+        )
         return format_str
-
 
     @staticmethod
     def split_scope_key(key):
@@ -105,9 +103,9 @@ class Registry:
             tuple[str | None, str]: The former element is the first scope of
             the key, which can be ``None``. The latter is the remaining key.
         """
-        split_index = key.find('.')
+        split_index = key.find(".")
         if split_index != -1:
-            return key[:split_index], key[split_index + 1:]
+            return key[:split_index], key[split_index + 1 :]
         else:
             return None, key
 
@@ -168,14 +166,16 @@ class Registry:
 
         assert isinstance(registry, Registry)
         assert registry.scope is not None
-        assert registry.scope not in self.children, \
-            f'scope {registry.scope} exists in {self.name} registry'
+        assert (
+            registry.scope not in self.children
+        ), f"scope {registry.scope} exists in {self.name} registry"
         self.children[registry.scope] = registry
 
     def _register_module(self, module, module_name=None, force=False):
         if not inspect.isclass(module) and not inspect.isfunction(module):
-            raise TypeError('module must be a class or a function, '
-                            f'but got {type(module)}')
+            raise TypeError(
+                "module must be a class or a function, " f"but got {type(module)}"
+            )
 
         if module_name is None:
             module_name = module.__name__
@@ -183,12 +183,10 @@ class Registry:
             module_name = [module_name]
         for name in module_name:
             if not force and name in self._module_dict:
-                raise KeyError(f'{name} is already registered '
-                               f'in {self.name}')
+                raise KeyError(f"{name} is already registered " f"in {self.name}")
             self._module_dict[name] = module
 
     def deprecated_register_module(self, cls=None, force=False):
-
         if cls is None:
             return partial(self.deprecated_register_module, force=force)
         self._register_module(cls, force=force)
@@ -207,7 +205,7 @@ class Registry:
             module (type): Module class or function to be registered.
         """
         if not isinstance(force, bool):
-            raise TypeError(f'force must be a boolean, but got {type(force)}')
+            raise TypeError(f"force must be a boolean, but got {type(force)}")
         # NOTE: This is a walkaround to be compatible with the old api,
         # while it may introduce unexpected bugs.
         if isinstance(name, type):

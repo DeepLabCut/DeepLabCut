@@ -22,13 +22,26 @@ from skimage.util import img_as_ubyte
 import cv2
 
 import deeplabcut.pose_estimation_pytorch as dlc
-from deeplabcut import auxiliaryfunctions
-from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, VideoReader
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS, BasePredictor
-from deeplabcut.utils import VideoReader
+from deeplabcut.pose_estimation_pytorch.models.detectors import (
+    DETECTORS,
+    BaseDetector,
+)
+from deeplabcut.pose_estimation_pytorch.models.predictors import (
+    PREDICTORS,
+    BasePredictor,
+)
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    build_pose_model, read_yaml, get_model_snapshots, videos_in_folder,
+    build_pose_model,
+    read_yaml,
+    get_model_snapshots,
+    get_detector_snapshots,
+    videos_in_folder,
+)
+from deeplabcut.pose_estimation_pytorch.apis.inference_utils import (
+    get_predictions_bottom_up,
+    get_predictions_top_down,
 )
 
 
@@ -39,8 +52,13 @@ def video_inference(
     batch_size: int = 1,
     device: Optional[str] = None,
     transform: Optional[A.Compose] = None,
-    colormode: Optional[str]= 'RGB',
-    frames_resized: Optional[bool]= False,
+    colormode: Optional[str] = "RGB",
+    method: Optional[str] = "bu",
+    detector: Optional[BaseDetector] = None,
+    top_down_predictor: Optional[BasePredictor] = None,
+    max_num_animals: Optional[int] = 1,
+    num_keypoints: Optional[int] = 1,
+    frames_resized: Optional[bool] = False,
 ) -> List[np.ndarray]:
     """
     Runs inference on all frames of a video
@@ -53,7 +71,13 @@ def video_inference(
         device: the torch device to use to run inference. Dynamic selection if None
         transform: the image augmentation transform to use on the video frames, if any
         colormode: RGB or BGR
-        frames_resized: Wether the frame are resized for inference or not
+        method: 'td' (Top Down) or 'bu' (Bottom Up)
+        detector: Detector for top down approach
+        top_down_predictor: Makes predictions from the cropped keypoints coordinates and
+                            the detected bbox
+        max_num_animals: max number of animals
+        num_keypoints: number of keypoints
+        frames_resized: Whether the frame are resized for inference or not
 
     Returns:
         for each frame in the video, a numpy array containing the output of the
@@ -88,7 +112,7 @@ def video_inference(
             if frame.dtype != np.uint8:
                 frame = img_as_ubyte(frame)
 
-            if colormode =='BGR':
+            if colormode == "BGR":
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
             batch_frames[batch_ind] = frame
@@ -96,14 +120,31 @@ def video_inference(
                 if transform:
                     batch_frames = transform(image=batch_frames)["image"]
 
-                batch = torch.FloatTensor(batch_frames, device=device).permute(0, 3, 1, 2)
-                output = model(batch)
-                scale_factor = (
-                    batch.shape[2] / output[0].shape[2],
-                    batch.shape[3] / output[0].shape[3]
-                )
-                for frame_pred in predictor(output, scale_factor).cpu().numpy():
-                    #TODO if images are resized should be taken into account for inference
+                batch = torch.tensor(
+                    batch_frames, device=device, dtype=torch.float
+                ).permute(0, 3, 1, 2)
+                if method.lower() == "td":
+                    batched_predictions = get_predictions_top_down(
+                        detector=detector,
+                        top_down_predictor=top_down_predictor,
+                        model=model,
+                        pose_predictor=predictor,
+                        images=batch,
+                        max_num_animals=max_num_animals,
+                        num_keypoints=num_keypoints,
+                        device=device,
+                    )
+                elif method.lower() == "bu":
+                    batched_predictions = get_predictions_bottom_up(
+                        model=model,
+                        predictor=predictor,
+                        images=batch,
+                    )
+                else:
+                    raise ValueError(
+                        "Method must be either 'bu' (Bottom Up) or 'td' (Top Down)."
+                    )
+                for frame_pred in batched_predictions:
                     predictions.append(frame_pred)
 
             frame = video_reader.read_frame()
@@ -127,7 +168,7 @@ def analyze_videos(
     device: Optional[str] = None,
     transform: Optional[A.Compose] = None,
     inv_transform: Optional[A.Compose] = None,
-    overwrite: bool = False
+    overwrite: bool = False,
 ) -> List[Tuple[str, pd.DataFrame]]:
     """
     Makes pose estimation predictions based on a trained model
@@ -163,7 +204,10 @@ def analyze_videos(
     project_path = Path(project.cfg["project_path"])
     train_fraction = project.cfg["TrainingFraction"][dataset_index]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, project.cfg, modelprefix=model_prefix,
+        train_fraction,
+        shuffle,
+        project.cfg,
+        modelprefix=model_prefix,
     )
     model_path = _get_model_path(model_folder, snapshot_index, project.cfg)
     model_epochs = int(model_path.stem.split("-")[-1])
@@ -174,12 +218,16 @@ def analyze_videos(
         trainingsiterations=model_epochs,
         modelprefix=model_prefix,
     )
+    # Get general project parameters
+    max_num_animals = len(project.cfg.get("individuals", ["single"]))
+    num_keypoints = len(auxiliaryfunctions.get_bodyparts(project.cfg))
 
     # Read the inference configuration, load the model
     pytorch_config_path = model_folder / "train" / "pytorch_config.yaml"
     pytorch_config = read_yaml(pytorch_config_path)
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_config(pose_cfg_path)
+    method = pytorch_config.get("method", "bu")
 
     # Get model parameters
     # TODO: Should we get the batch size from the inference pose_cfg? Or have an
@@ -187,18 +235,27 @@ def analyze_videos(
     if batch_size is None:
         batch_size = pytorch_config.get("batch_size", 1)
     pose_cfg["batch_size"] = batch_size
-    individuals = project.cfg.get('individuals', ['single'])
+    individuals = project.cfg.get("individuals", ["single"])
 
     # Get data processing parameters
-    # if images are resized for inference, 
+    # if images are resized for inference,
     # need to take that into account to go back to original space
-    frames_resized_with_transform = pytorch_config['data'].get('resize', False)
+    frames_resized_with_transform = pytorch_config["data"].get("resize", False)
 
     # Load model, predictor
-    model = build_pose_model(pytorch_config['model'], pose_cfg)
+    model = build_pose_model(pytorch_config["model"], pose_cfg)
     model.load_state_dict(torch.load(model_path))
-    predictor: BasePredictor = PREDICTORS.build(dict(pytorch_config['predictor']))
+    predictor: BasePredictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
+    detector: BaseDetector = None
+    top_down_predictor: BasePredictor = None
+    if method.lower() == "td":
+        detector_path = _get_detector_path(model_folder, snapshot_index, project.cfg)
+        detector = DETECTORS.build(dict(pytorch_config["detector"]["detector_model"]))
+        detector.load_state_dict(torch.load(detector_path))
 
+        top_down_predictor = PREDICTORS.build(
+            {"type": "TopDownPredictor", "format_bbox": "xyxy"}
+        )
     # Reading video and init variables
     videos = videos_in_folder(data_path, video_type)
     results = []
@@ -216,14 +273,19 @@ def analyze_videos(
         else:
             runtime = [time.time()]
             predictions = video_inference(
-                model,
-                predictor,
-                video,
+                model=model,
+                predictor=predictor,
+                video_path=video,
                 batch_size=batch_size,
                 device=device,
                 transform=transform,
-                colormode=pytorch_config.get('colormode', 'RGB'),
-                frames_resized=frames_resized_with_transform
+                colormode=pytorch_config.get("colormode", "RGB"),
+                method=method,
+                detector=detector,
+                top_down_predictor=top_down_predictor,
+                max_num_animals=max_num_animals,
+                num_keypoints=num_keypoints,
+                frames_resized=frames_resized_with_transform,
             )
             runtime.append(time.time())
 
@@ -279,9 +341,9 @@ def _create_output_folder(output_folder: Optional[Path]) -> None:
             print(f"Creating the output folder {output_folder}")
             output_folder.mkdir(parents=True)
 
-        assert (
-            Path(output_folder).is_dir()
-        ), f"Output folder must be a directory: you passed '{output_folder}'"
+        assert Path(
+            output_folder
+        ).is_dir(), f"Output folder must be a directory: you passed '{output_folder}'"
 
 
 def _generate_metadata(
@@ -298,7 +360,10 @@ def _generate_metadata(
     cropping = config.get("cropping", False)
     if cropping:
         cropping_parameters = [
-            config["x1"], config["x2"], config["y1"], config["y2"],
+            config["x1"],
+            config["x2"],
+            config["y1"],
+            config["y2"],
         ]
     else:
         cropping_parameters = [0, w, 0, h]
@@ -339,9 +404,32 @@ def _get_model_path(model_folder: Path, snapshot_index: int, config: dict) -> Pa
         )
         snapshot_index = -1
 
-    assert isinstance(snapshot_index, int), (
-        f"snapshotindex must be an integer but was '{snapshot_index}'"
-    )
+    assert isinstance(
+        snapshot_index, int
+    ), f"snapshotindex must be an integer but was '{snapshot_index}'"
+    return trained_models[snapshot_index]
+
+
+def _get_detector_path(model_folder: Path, snapshot_index: int, config: dict) -> Path:
+    trained_models = get_detector_snapshots(model_folder / "train")
+
+    if snapshot_index is None:
+        snapshot_index = config["snapshotindex"]
+
+    if snapshot_index == "all":
+        print(
+            "snapshotindex is set to 'all' in the config.yaml file. Running video "
+            "analysis with all snapshots is very costly! Use the function "
+            "'evaluate_network' to choose the best the snapshot. For now, changing "
+            "snapshot index to -1. To evaluate another snapshot, you can change the "
+            "value in the config file or call `analyze_videos` with your desired "
+            "snapshot index."
+        )
+        snapshot_index = -1
+
+    assert isinstance(
+        snapshot_index, int
+    ), f"snapshotindex must be an integer but was '{snapshot_index}'"
     return trained_models[snapshot_index]
 
 
@@ -356,11 +444,13 @@ def _generate_output_data(
             "sigma": pose_config.get("sigma", 1),
             "PAFgraph": pose_config.get("partaffinityfield_graph"),
             "PAFinds": pose_config.get(
-                "paf_best", np.arange(len(pose_config.get("partaffinityfield_graph", [])))
+                "paf_best",
+                np.arange(len(pose_config.get("partaffinityfield_graph", []))),
             ),
             "all_joints": [[i] for i in range(len(pose_config["all_joints"]))],
             "all_joints_names": [
-                pose_config["all_joints_names"][i] for i in range(len(pose_config["all_joints"]))
+                pose_config["all_joints_names"][i]
+                for i in range(len(pose_config["all_joints"]))
             ],
             "nframes": len(predictions),
         }

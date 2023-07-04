@@ -909,6 +909,7 @@ def create_training_dataset(
                 or "efficientnet" in net_type
                 or "dlcrnet" in net_type
                 or "dekr" in net_type
+                or "token_pose" in net_type
             ):
                 pass
             else:
@@ -1128,8 +1129,12 @@ def create_training_dataset(
                     "apis",
                     "pytorch_config.yaml",
                 )
-                pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
-                pytorch_cfg = make_pytorch_config(cfg, net_type, config_template=pytorch_cfg_template)
+                pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(
+                    pytorch_config_path
+                )
+                pytorch_cfg = make_pytorch_config(
+                    cfg, net_type, config_template=pytorch_cfg_template
+                )
                 pytorch_cfg["project_path"] = os.path.dirname(config)
                 pytorch_cfg["pose_cfg_path"] = path_train_config
                 pytorch_cfg["cfg_path"] = config

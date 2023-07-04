@@ -2,18 +2,21 @@ import numpy as np
 import pandas as pd
 import torch
 from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly, evaluate_assembly
+from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+    Assembly,
+    evaluate_assembly,
+)
 from torch import nn
 from typing import List, Tuple, Dict
 
 
 def get_prediction(cfg, output, stride=8):
-    '''
+    """
     get predictions from model output
     output = heatmaps, locref
     heatmaps: numpy.ndarray([batch_size, num_joints, height, width])
     locref: numpy.ndarray([batch_size, num_joints, height, width])
-    '''
+    """
 
     poses = []
     heatmaps, locref = output
@@ -23,13 +26,14 @@ def get_prediction(cfg, output, stride=8):
     for i in range(heatmaps.shape[0]):
         shape = locref[i].shape
         locref_i = np.reshape(locref, (shape[0], shape[1], -1, 2))
-        if cfg['location_refinement']:
-            locref_i = locref_i * cfg['locref_stdev']
+        if cfg["location_refinement"]:
+            locref_i = locref_i * cfg["locref_stdev"]
         pose = multi_pose_predict(heatmaps[i], locref_i, stride, 1)
         poses.append(pose)
     return np.stack(poses, axis=0)
 
-#DEPRECATED
+
+# DEPRECATED
 def get_top_values(scmap, n_top=5):
     batchsize, ny, nx, num_joints = scmap.shape
     scmap_flat = scmap.reshape(batchsize, nx * ny, num_joints)
@@ -46,7 +50,8 @@ def get_top_values(scmap, n_top=5):
     Y, X = np.unravel_index(scmap_top, (ny, nx))
     return Y, X
 
-#DEPRECATED
+
+# DEPRECATED
 def multi_pose_predict(scmap, locref, stride, num_outputs):
     Y, X = get_top_values(scmap[None], num_outputs)
     Y, X = Y[:, 0], X[:, 0]
@@ -70,14 +75,17 @@ def multi_pose_predict(scmap, locref, stride, num_outputs):
 
     return pose
 
-def get_scores(cfg: Dict,
-               prediction: pd.DataFrame,
-               target: pd.DataFrame,
-               bodyparts: List[str] = None) -> Dict:
+
+def get_scores(
+    cfg: Dict,
+    prediction: pd.DataFrame,
+    target: pd.DataFrame,
+    bodyparts: List[str] = None,
+) -> Dict:
     """_summary_
 
     Args:
-        cfg (Dict): config dictionnary
+        cfg (Dict): config dictionary
         prediction (pd.DataFrame): prediction df, should already be matched to ground truth using
                                     hungarian algorithm
         target (pd.DataFrame): ground truth dataframe
@@ -87,31 +95,31 @@ def get_scores(cfg: Dict,
         Dict: scores dict, keys are :
         ['rmse', 'rmse_pcutoff', 'mAP', 'mAR', 'mAP_pcutoff', 'mAR_pcutoff']
     """
-    if cfg.get('pcutoff'):
-        pcutoff = cfg['pcutoff']
-        rmse, rmse_p = get_rmse(prediction, target, pcutoff,
-                                bodyparts = bodyparts)
+    if cfg.get("pcutoff"):
+        pcutoff = cfg["pcutoff"]
+        rmse, rmse_p = get_rmse(prediction, target, pcutoff, bodyparts=bodyparts)
         oks, oks_p = get_oks(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
     else:
-        rmse, rmse_p = get_rmse(prediction, target,
-                                bodyparts = bodyparts)
+        rmse, rmse_p = get_rmse(prediction, target, bodyparts=bodyparts)
         oks, oks_p = get_oks(prediction, target, bodyparts=bodyparts)
 
     scores = {}
-    scores['rmse'] = np.nanmean(rmse)
-    scores['rmse_pcutoff'] = np.nanmean(rmse_p)
-    scores['mAP'] = oks['mAP']
-    scores['mAR'] = oks['mAR']
-    scores['mAP_pcutoff'] = oks_p['mAP']
-    scores['mAR_pcutoff'] = oks_p['mAR']
+    scores["rmse"] = np.nanmean(rmse)
+    scores["rmse_pcutoff"] = np.nanmean(rmse_p)
+    scores["mAP"] = oks["mAP"]
+    scores["mAR"] = oks["mAR"]
+    scores["mAP_pcutoff"] = oks_p["mAP"]
+    scores["mAR_pcutoff"] = oks_p["mAR"]
 
     return scores
 
 
-def get_rmse(prediction: pd.DataFrame,
-             target: pd.DataFrame,
-             pcutoff: float=-1,
-             bodyparts: List[str] =None) -> Tuple[float, float]:
+def get_rmse(
+    prediction: pd.DataFrame,
+    target: pd.DataFrame,
+    pcutoff: float = -1,
+    bodyparts: List[str] = None,
+) -> Tuple[float, float]:
     """Computes rmse for predictions
     Assumes hungarian algorithm matching has already be applied to match predicted animals
     and ground truth ones.
@@ -119,7 +127,7 @@ def get_rmse(prediction: pd.DataFrame,
     Args:
         prediction (pd.DataFrame): prediction dataframe
         target (pd.DataFrame): target dataframe
-        pcutoff (float, optional): Confidence lower bound for a keypoint to be considred as detected.
+        pcutoff (float, optional): Confidence lower bound for a keypoint to be considered as detected.
                                     Defaults to -1.
         bodyparts (List[str], optional): list of the bodyparts names. Defaults to None.
 
@@ -131,7 +139,9 @@ def get_rmse(prediction: pd.DataFrame,
     scorer_target = target.columns[0][0]
     mask = prediction[scorer_pred].xs("likelihood", level=2, axis=1) >= pcutoff
     if bodyparts:
-        diff = (target[scorer_target][bodyparts] - prediction[scorer_pred][bodyparts]) ** 2
+        diff = (
+            target[scorer_target][bodyparts] - prediction[scorer_pred][bodyparts]
+        ) ** 2
     else:
         diff = (target[scorer_target] - prediction[scorer_pred]) ** 2
     mse = diff.xs("x", level=2, axis=1) + diff.xs("y", level=2, axis=1)
@@ -140,13 +150,16 @@ def get_rmse(prediction: pd.DataFrame,
 
     return rmse, rmse_p
 
-def get_oks(prediction: pd.DataFrame,
-            target: pd.DataFrame,
-            oks_sigma=0.1,
-            margin=0,
-            symmetric_kpts=None,
-            pcutoff: float=-1,
-            bodyparts: List[str] =None) -> Tuple[Dict, Dict]:
+
+def get_oks(
+    prediction: pd.DataFrame,
+    target: pd.DataFrame,
+    oks_sigma=0.1,
+    margin=0,
+    symmetric_kpts=None,
+    pcutoff: float = -1,
+    bodyparts: List[str] = None,
+) -> Tuple[Dict, Dict]:
     """Computes oks related scores for predictions
 
     Args:
@@ -155,7 +168,7 @@ def get_oks(prediction: pd.DataFrame,
         oks_sigma (float, optional): Sigma for oks conputation. Defaults to 0.1.
         margin (int, optional): margin used for bbox computation. Defaults to 0.
         symmetric_kpts (_type_, optional): Not supported yet. Defaults to None.
-        pcutoff (float, optional): Confidence lower bound for a keypoint to be considred as detected.
+        pcutoff (float, optional): Confidence lower bound for a keypoint to be considered as detected.
                                     Defaults to -1.
         bodyparts (List[str], optional): list of the bodyparts names. Defaults to None.
 
@@ -163,17 +176,17 @@ def get_oks(prediction: pd.DataFrame,
         oks_raw (Dict): oks scores without p_cutoff
         oks_pcutoff (Dict): oks scores with pcutoff
     """
-    
+
     scorer_pred = prediction.columns[0][0]
     scorer_target = target.columns[0][0]
-    
+
     if bodyparts != None:
         idx_slice = pd.IndexSlice[:, :, bodyparts, :]
         prediction = prediction.loc[:, idx_slice]
         target = target.loc[:, idx_slice]
     mask = prediction[scorer_pred].xs("likelihood", level=2, axis=1) >= pcutoff
-    
-    # Convert predicitons to DLC assemblies
+
+    # Convert predictions to DLC assemblies
     assemblies_pred_raw = conv_df_to_assemblies(prediction[scorer_pred])
     assemblies_gt_raw = conv_df_to_assemblies(target[scorer_target])
 
@@ -185,7 +198,7 @@ def get_oks(prediction: pd.DataFrame,
         assemblies_gt_raw,
         oks_sigma,
         margin=margin,
-        symmetric_kpts=symmetric_kpts
+        symmetric_kpts=symmetric_kpts,
     )
 
     oks_pcutoff = evaluate_assembly(
@@ -193,23 +206,23 @@ def get_oks(prediction: pd.DataFrame,
         assemblies_gt_masked,
         oks_sigma,
         margin=margin,
-        symmetric_kpts=symmetric_kpts
+        symmetric_kpts=symmetric_kpts,
     )
 
     return oks_raw, oks_pcutoff
 
 
 def conv_df_to_assemblies(df: pd.DataFrame):
-    '''
-    Convert a dataframe to an assemblies dictionnary
-    
+    """
+    Convert a dataframe to an assemblies dictionary
+
     Arguments :
         df : dataframe of coordinates/predictions, df is expected to have a multi_index of shape (num_animals, num_keypoints, 2 or 3)
-    '''
+    """
     assemblies = {}
-    
-    num_animals=len(df.columns.get_level_values(0).unique())
-    num_kpts=len(df.columns.get_level_values(1).unique())
+
+    num_animals = len(df.columns.get_level_values(0).unique())
+    num_kpts = len(df.columns.get_level_values(1).unique())
     for image_path in df.index:
         row = df.loc[image_path].to_numpy()
         row = row.reshape(num_animals, num_kpts, -1)

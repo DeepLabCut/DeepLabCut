@@ -15,11 +15,11 @@ import torch.nn as nn
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
-PREDICTORS = Registry('predictors', build_func=build_from_cfg)
+PREDICTORS = Registry("predictors", build_func=build_from_cfg)
 
 
 class BasePredictor(ABC, nn.Module):
-    """ A base predictor """
+    """A base predictor"""
 
     def __init__(self):
         super().__init__()

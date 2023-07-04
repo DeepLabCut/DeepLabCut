@@ -637,6 +637,8 @@ def get_scorer_name(
         netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
     elif "dekr" in dlc_cfg["net_type"]:
         netname = "dekr_" + dlc_cfg["net_type"].split("_")[-1]
+    elif "token_pose" in dlc_cfg["net_type"]:
+        netname = "token_pose" + dlc_cfg["net_type"].split("_")[-1]
 
     scorer = (
         "DLC_"

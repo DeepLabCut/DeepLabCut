@@ -211,7 +211,9 @@ def create_multianimaltraining_dataset(
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
 
-    elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob", 'dekr')):
+    elif not any(
+        net in net_type for net in ("resnet", "eff", "dlc", "mob", "dekr", "token_pose")
+    ):
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
@@ -487,8 +489,12 @@ def create_multianimaltraining_dataset(
                 "apis",
                 "pytorch_config.yaml",
             )
-            pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
-            pytorch_cfg = make_pytorch_config(cfg, net_type, config_template=pytorch_cfg_template)
+            pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(
+                pytorch_config_path
+            )
+            pytorch_cfg = make_pytorch_config(
+                cfg, net_type, config_template=pytorch_cfg_template
+            )
             pytorch_cfg["project_path"] = os.path.dirname(config)
             pytorch_cfg["pose_cfg_path"] = path_train_config
             pytorch_cfg["cfg_path"] = config

@@ -5,6 +5,17 @@ criterion:
   locref_huber_loss: true
   loss_weight_locref: 0.02
   type: PoseLoss
+cropped_data: # Used only for Top-Down approach
+  covering: true
+  gaussian_noise: 12.75
+  hist_eq: true
+  motion_blur: true
+  normalize_images: true
+  rotation: 30
+  scale_jitter:
+  - 0.5
+  - 1.25
+  translation: 40
 data:
   covering: true
   gaussian_noise: 12.75
@@ -23,30 +34,6 @@ model:
   backbone:
     pretrained: https://download.pytorch.org/models/resnet50-19c8e357.pth
     type: ResNet
-  heatmap_head:
-    channels:
-    - 2048
-    - 1024
-    - -1
-    kernel_size:
-    - 2
-    - 2
-    strides:
-    - 2
-    - 2
-    type: SimpleHead
-  locref_head:
-    channels:
-    - 2048
-    - 1024
-    - -1
-    kernel_size:
-    - 2
-    - 2
-    strides:
-    - 2
-    - 2
-    type: SimpleHead
   pose_model:
     stride: 8
   target_generator:

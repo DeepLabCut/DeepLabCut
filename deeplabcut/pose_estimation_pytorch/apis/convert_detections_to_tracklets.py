@@ -27,7 +27,8 @@ from deeplabcut.pose_estimation_tensorflow import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_model_snapshots, videos_in_folder,
+    get_model_snapshots,
+    videos_in_folder,
 )
 
 
@@ -48,7 +49,7 @@ def convert_detections2tracklets(
     identity_only=False,
     track_method="",
 ):
-    """ TODO: Documentation, clean & remove code duplication (with analyze video) """
+    """TODO: Documentation, clean & remove code duplication (with analyze video)"""
     cfg = auxiliaryfunctions.read_config(config_path)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
@@ -93,9 +94,9 @@ def convert_detections2tracklets(
 
     # Check which snapshots are available and sort them by # iterations
     snapshots = get_model_snapshots(model_dir / "train")
-    assert len(snapshots) > 0, (
-        f"No snapshots were found in the model directory {model_dir / 'train'}"
-    )
+    assert (
+        len(snapshots) > 0
+    ), f"No snapshots were found in the model directory {model_dir / 'train'}"
     snapshot_index = cfg["snapshotindex"]
     if snapshot_index == "all":
         print(
@@ -160,9 +161,7 @@ def convert_detections2tracklets(
             # TODO: adjust this for multi + unique bodyparts!
             # this is only for multianimal parts and uniquebodyparts as one (not one
             # uniquebodyparts guy tracked etc.)
-            bodypartlabels = [
-                bpt for i, bpt in enumerate(joints) for _ in range(3)
-            ]
+            bodypartlabels = [bpt for bpt in joints for _ in range(3)]
             scorers = len(bodypartlabels) * [dlc_scorer]
             xyl_value = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
             df_index = pd.MultiIndex.from_arrays(
@@ -201,7 +200,9 @@ def convert_detections2tracklets(
                 ass_data[ind] = [ass.data for ass in assemblies]
             if ass_unique:
                 ass_data["single"] = ass_unique
-            with open(data_filename.parent / (data_filename.stem + "_assemblies.pickle"), "wb") as file:
+            with open(
+                data_filename.parent / (data_filename.stem + "_assemblies.pickle"), "wb"
+            ) as file:
                 pickle.dump(ass_data, file, pickle.HIGHEST_PROTOCOL)
 
             # Initialize storage of the 'single' individual track
@@ -243,9 +244,7 @@ def convert_detections2tracklets(
                         trackers = mot_tracker.track(xy)
                     else:
                         # Optimal identity assignment based on soft voting
-                        mat = np.zeros(
-                            (len(assemblies), inference_cfg["topktoretain"])
-                        )
+                        mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
                         for nrow, assembly in enumerate(assemblies):
                             for k, v in assembly.soft_identity.items():
                                 mat[nrow, k] = v

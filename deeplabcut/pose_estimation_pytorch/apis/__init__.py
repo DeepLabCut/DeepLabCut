@@ -1,4 +1,3 @@
-
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
 # https://github.com/DeepLabCut/DeepLabCut
@@ -11,7 +10,7 @@
 
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import analyze_videos
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
-    convert_detections2tracklets
+    convert_detections2tracklets,
 )
 from deeplabcut.pose_estimation_pytorch.apis.inference import inference_network
 from deeplabcut.pose_estimation_pytorch.apis.train import train_network

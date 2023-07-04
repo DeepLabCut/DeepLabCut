@@ -4,7 +4,8 @@ import torch
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
-BACKBONES = Registry('backbones', build_func=build_from_cfg)
+BACKBONES = Registry("backbones", build_func=build_from_cfg)
+
 
 class BaseBackbone(ABC, nn.Module):
     """
@@ -37,15 +38,15 @@ class BaseBackbone(ABC, nn.Module):
         else:
             self.model.load_state_dict(torch.load(pretrained), strict=False)
 
-    def activate_batch_norm(self, activation: bool=False):
+    def activate_batch_norm(self, activation: bool = False):
         """Turns on or off batch norm layers updating their weights while training
-        
-        Prameters
+
+        Parameters
         ---------
         activation:  should batch_norm be activated or not for training"""
         self.batch_norm_on = activation
 
-    def train(self, mode = True):
+    def train(self, mode=True):
         # Bacth Norm should not be on for small batch sizes
         super(BaseBackbone, self).train(mode)
 
