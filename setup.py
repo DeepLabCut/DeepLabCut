@@ -70,6 +70,7 @@ setuptools.setup(
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
+                "deeplabcut/pose_estimation_pytorch/apis/pytorch_config.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/pose_estimation_tensorflow/superanimal_configs/superquadruped.yaml",
                 "deeplabcut/pose_estimation_tensorflow/superanimal_configs/supertopview.yaml",

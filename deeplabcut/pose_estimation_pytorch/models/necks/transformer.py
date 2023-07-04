@@ -1,7 +1,7 @@
 import torch
 from einops import rearrange, repeat
 from torch import nn
-from timm.models.layers.weight_init import trunc_normal_
+from timm.layers import trunc_normal_
 from .layers import TransformerLayer
 from .utils import make_sine_position_embedding
 from .base import NECKS

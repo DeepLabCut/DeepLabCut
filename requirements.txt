@@ -1,5 +1,6 @@
 # novel for pytorch DLC:
 albumentations
+einops
 timm
 # old:
 dlclibrary

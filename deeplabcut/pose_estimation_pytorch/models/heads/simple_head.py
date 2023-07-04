@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from einops import rearrange
-from timm.models.layers.weight_init import trunc_normal_
+from timm.layers import trunc_normal_
 
 from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS
 from .base import BaseHead
