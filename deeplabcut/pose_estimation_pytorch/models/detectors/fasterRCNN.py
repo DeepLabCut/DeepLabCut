@@ -1,3 +1,5 @@
+import torch
+from typing import List
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
@@ -34,6 +36,9 @@ class FasterRCNN(BaseDetector):
         res = []
         for i, _ in enumerate(annotations["image_id"]):
             box_ann = annotations["boxes"][i].clone()
+
+            mask = (box_ann[:, 2] > 0.0) & (box_ann[:, 3] > 0.0)
+            box_ann = box_ann[mask]
             # bbox format conversion (x, y, w, h) -> (x1, y1, x2, y2)
             box_ann[:, 2] += box_ann[:, 0]
             box_ann[:, 3] += box_ann[:, 1]

@@ -142,11 +142,9 @@ class PoseDataset(Dataset, BaseDataset):
             num_keypoints_returned = self.num_joints + 1
             bodyparts += ["_center_"]
 
-        bboxes = np.full((self.max_num_animals, 4), -1)
+        bbox_list = []
+        bbox_label_list = []
         labels = np.zeros((self.max_num_animals), dtype=np.int64)
-        bbox_labels = [
-            "animal"
-        ] * self.max_num_animals  # Not used but albumentation needs them
         is_crowd = np.zeros((self.max_num_animals), dtype=np.int64)
         ids = np.full((self.max_num_animals), -1, dtype=np.int64)
         image_id = index
@@ -165,16 +163,28 @@ class PoseDataset(Dataset, BaseDataset):
                 keypoints[i, :, :2] = _keypoints
                 keypoints[i, :, 2] = _undef_ids
 
-            bboxes[i] = np.array(_annotation["bbox"])
+            # If bbox has width and height > 0, add
+            annotation_bbox = np.array(_annotation["bbox"])
+            if 0 < annotation_bbox[2] and 0 < annotation_bbox[3]:
+                bbox_list.append(annotation_bbox)
+                bbox_label_list.append(i)
+
             is_crowd[i] = _annotation["iscrowd"]
             labels[i] = _annotation["category_id"]
 
-        # Sometimes bbox coords are larger than the image because of the margin
-        h, w, _ = image.shape
-        bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
-        bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-        bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
-        bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
+        if len(bbox_list) > 0:
+            h, w, _ = image.shape
+            bboxes = np.stack(bbox_list, axis=0)
+            bbox_labels = np.array(bbox_label_list)
+
+            # Sometimes bbox coords are larger than the image because of the margin
+            bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
+            bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
+            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
+            bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
+        else:
+            bboxes = np.zeros((0, 4))
+            bbox_labels = np.zeros((0,))
 
         # Needs two be 2 dimensional for albumentations
         keypoints = keypoints.reshape((-1, 3))
@@ -212,9 +222,10 @@ class PoseDataset(Dataset, BaseDataset):
                 transformed["keypoints"][new_index] = (-1, -1)
 
         else:
-            transformed = {}
-            transformed["keypoints"] = keypoints[:, :2]
-            transformed["image"] = image
+            transformed = {
+                "keypoints": keypoints[:, :2],
+                "image": image,
+            }
 
         image = torch.tensor(transformed["image"], dtype=torch.float).permute(
             2, 0, 1
@@ -226,6 +237,16 @@ class PoseDataset(Dataset, BaseDataset):
             .reshape((n_annotations, num_keypoints_returned, 2))
             .astype(float)
         )
+
+        # Pad bboxes and labels to always have shape (num_animals, 4)
+        #  If we want the original index of the bboxes, we can use the bbox labels
+        bbox_tensor = torch.tensor(bboxes, dtype=torch.float)
+        if len(bbox_tensor) < self.max_num_animals:
+            missing_animals = self.max_num_animals - len(bbox_tensor)
+            bbox_tensor = torch.cat(
+                [bbox_tensor, torch.zeros((missing_animals, 4))],
+                dim=0,
+            )
 
         # TODO Quite ugly
         #
@@ -260,7 +281,7 @@ class PoseDataset(Dataset, BaseDataset):
         res["annotations"]["keypoints"] = keypoints
         res["annotations"]["area"] = area
         res["annotations"]["ids"] = ids
-        res["annotations"]["boxes"] = torch.tensor(bboxes, dtype=torch.float)
+        res["annotations"]["boxes"] = bbox_tensor
         res["annotations"]["image_id"] = image_id
         res["annotations"]["is_crowd"] = is_crowd
         res["annotations"]["labels"] = labels
@@ -290,7 +311,8 @@ class CroppedDataset(Dataset, BaseDataset):
         self.transform = transform
         self.project = project
         self.cfg = self.project.cfg
-        self.num_joints = len(self.cfg["bodyparts"])
+        self.bodyparts = auxiliaryfunctions.get_bodyparts(self.cfg)
+        self.num_joints = len(self.bodyparts)
         self.shuffle = self.project.shuffle
         self.project.convert2dict(mode)
         self.dataframe = self.project.dataframe

@@ -69,7 +69,7 @@ class DEKRPredictor(BasePredictor):
         )
 
         poses_w_scores = torch.cat([poses, ctr_score], dim=3)
-        self.pose_nms(heatmaps, poses_w_scores)
+        # self.pose_nms(heatmaps, poses_w_scores)
 
         return poses_w_scores
 
