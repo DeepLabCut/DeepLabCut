@@ -262,6 +262,7 @@ def build_transforms(
                 min_width=None,
                 pad_height_divisor=pad_height_divisor,
                 pad_width_divisor=pad_width_divisor,
+                position="top_left",
             )
         )
     if aug_cfg.get("normalize_images"):
@@ -299,6 +300,19 @@ def build_inference_transform(
     """
 
     list_transforms = []
+    if transform_cfg.get("auto_padding"):
+        params = transform_cfg.get("auto_padding")
+        pad_height_divisor = params.get("pad_height_divisor", 1)
+        pad_width_divisor = params.get("pad_width_divisor", 1)
+        list_transforms.append(
+            A.PadIfNeeded(
+                min_height=None,
+                min_width=None,
+                pad_height_divisor=pad_height_divisor,
+                pad_width_divisor=pad_width_divisor,
+                position="top_left",
+            )
+        )
     if transform_cfg.get("normalize_images"):
         list_transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])

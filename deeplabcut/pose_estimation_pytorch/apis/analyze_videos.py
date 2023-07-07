@@ -101,12 +101,18 @@ def video_inference(
         f"  resolution: w={vid_w}, h={vid_h}\n"
     )
 
-    batch_ind = 0  # Index of the current img in batch
-    batch_frames = np.empty((batch_size, vid_h, vid_w, 3))
-
     pbar = tqdm(total=n_frames, file=sys.stdout)
     predictions = []
     frame = video_reader.read_frame()
+    original_size = frame.shape
+    transformed_size = original_size
+    if transform:
+        # Apply transformation once only to see the shape after transformation
+        transformed_size = transform(image=frame)["image"].shape
+
+    batch_ind = 0  # Index of the current img in batch
+    batch_frames = np.empty((batch_size, transformed_size[0], transformed_size[1], 3))
+
     with torch.no_grad():
         while frame is not None:
             if frame.dtype != np.uint8:
@@ -115,11 +121,11 @@ def video_inference(
             if colormode == "BGR":
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
+            if transform:
+                frame = transform(image=frame)["image"]
+
             batch_frames[batch_ind] = frame
             if batch_ind == batch_size - 1:
-                if transform:
-                    batch_frames = transform(image=batch_frames)["image"]
-
                 batch = torch.tensor(
                     batch_frames, device=device, dtype=torch.float
                 ).permute(0, 3, 1, 2)
@@ -145,6 +151,18 @@ def video_inference(
                         "Method must be either 'bu' (Bottom Up) or 'td' (Top Down)."
                     )
                 for frame_pred in batched_predictions:
+                    if frames_resized:
+                        resizing_factor = (original_size[0] / transformed_size[0]), (
+                            original_size[1] / transformed_size[1]
+                        )
+                        frame_pred[:, :, 0] = (
+                            frame_pred[:, :, 0] * resizing_factor[1]
+                            + resizing_factor[1] / 2
+                        )
+                        frame_pred[:, :, 1] = (
+                            frame_pred[:, :, 1] * resizing_factor[0]
+                            + resizing_factor[0] / 2
+                        )
                     predictions.append(frame_pred)
 
             frame = video_reader.read_frame()
