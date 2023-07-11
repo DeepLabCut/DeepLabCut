@@ -1,15 +1,29 @@
+"""
+DeepLabCut2.0 Toolbox (deeplabcut.org)
+© A. & M. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+Please see AUTHORS for contributors.
+
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+Licensed under GNU Lesser General Public License v3.0
+"""
 import argparse
-import deeplabcut.pose_estimation_pytorch as dlc
+from pathlib import Path
+from typing import Union
+
+import albumentations as A
 import numpy as np
 import pandas as pd
 import os
 import torch
-from deeplabcut.utils import auxiliaryfunctions
+
+import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.pose_estimation_pytorch.apis.inference_utils as inference_utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_pose_model,
     build_inference_transform,
 )
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_scores
@@ -18,12 +32,10 @@ from deeplabcut.pose_estimation_pytorch.solvers.utils import (
     get_results_filename,
     save_predictions,
 )
-from deeplabcut.pose_estimation_tensorflow import Plotting
 from deeplabcut.pose_estimation_pytorch.post_processing import (
     rmse_match_prediction_to_gt,
 )
-import albumentations as A
-from typing import Union
+from deeplabcut.utils.visualization import plot_evaluation_results
 
 
 def inference_network(
@@ -33,32 +45,29 @@ def inference_network(
     load_epoch: Union[int, str] = -1,
     stride: int = 8,
     transform: Union[A.BasicTransform, A.Compose] = None,
-    plot: bool = False,
+    plot: Union[bool, str] = False,
     evaluate: bool = True,
 ) -> None:
     """
         Performs inference on the validation dataset and save the results as a dataframe
 
     Args:
-        - config_path : path to the project's config file
-        - shuffle : shuffle index
-        - model_prefix: model prefix
-        - load_epoch:
-                    index (starting at 0) of the snapshot we want to load,
-                    if -1 loads the last one automatically
-                    for example if we have 3 models saved
-                        -snapshot-0.pt
-                        -snapshot-50.pt
-                        -snapshot-100.pt
-                    and we want to load the second one, load epoch should be 1
-        - stride : unused #TODO We clearly should remove this
-        - transform :
-                    transformation pipeline for evaluation
-                    ** Should normalise the data the same way it was normalised during training **
-        - plot: whether to plot the predicted data or not
-            #TODO Currently does not work for multinaimal, should be False for multianimal project
-             otherwise it breaks
-        - evaluate: whether to compare predictions and ground truth
+        config_path: path to the project's config file
+        shuffle: shuffle index
+        model_prefix: model prefix
+        load_epoch: index (starting at 0) of the snapshot we want to load, if -1 loads
+            the last one automatically. For example if we have 3 models saved
+                - snapshot-0.pt
+                - snapshot-50.pt
+                - snapshot-100.pt
+            and we want to load the second one, load epoch should be 1
+        stride: unused  # TODO We clearly should remove this
+        transform: transformation pipeline for evaluation
+            ** Should normalise the data the same way it was normalised during training **
+        plot: Plots the predictions on the train and test images. If provided it must
+            be either ``True``, ``False``, ``"bodypart"``, or ``"individual"``. Setting
+            to ``True`` defaults as ``"bodypart"`` for multi-animal projects.
+        evaluate: whether to compare predictions and ground truth
 
     Returns:
         None
@@ -87,13 +96,15 @@ def inference_network(
         )
     device = pytorch_config["device"]
 
-    batch_size = pytorch_config["batch_size"]
+    # TODO: inference currently fails on batch_size > 1
+    # batch_size = pytorch_config["batch_size"]
+    batch_size = 1
 
     if transform is None:
         print("No transform passed, using default normalisation from config")
         transform = build_inference_transform(pytorch_config["data"])
-    project = dlc.DLCProject(shuffle=shuffle, proj_root=pytorch_config["project_path"])
 
+    project = dlc.DLCProject(shuffle=shuffle, proj_root=pytorch_config["project_path"])
     valid_dataset = dlc.PoseDataset(project, transform=transform, mode="test")
     valid_dataloader = torch.utils.data.DataLoader(
         valid_dataset, batch_size=batch_size, shuffle=False
@@ -213,17 +224,33 @@ def inference_network(
         predicted_df.columns = new_cols
 
     if plot:
-        foldername = f'{names["evaluation_folder"]}/LabeledImages_{names["dlc_scorer"]}-{load_epoch}'
-        auxiliaryfunctions.attempttomakefolder(foldername)
-        combined_df = predicted_df.merge(target_df, left_index=True, right_index=True)
-        Plotting(
-            valid_dataset.cfg,
-            valid_dataset.cfg["bodyparts"],
-            names["dlc_scorer"],
-            predicted_df.index,
-            combined_df,
-            foldername,
+        snapshot_name = Path(names["model_path"]).stem
+        folder_name = (
+            f"{names['evaluation_folder']}/"
+            f"LabeledImages_{names['dlc_scorer']}_{snapshot_name}"
         )
+        auxiliaryfunctions.attempttomakefolder(folder_name)
+        df_combined = predicted_df.merge(target_df, left_index=True, right_index=True)
+
+        if isinstance(plot, str):
+            mode = plot
+        else:
+            mode = "bodypart"
+
+        plot_evaluation_results(
+            df_combined=df_combined,
+            project_root=cfg["project_path"],
+            scorer=cfg["scorer"],
+            model_name=names["dlc_scorer"],
+            output_folder=folder_name,
+            in_train_set=False,
+            mode=mode,
+            colormap=cfg["colormap"],
+            dot_size=cfg["dotsize"],
+            alpha_value=cfg["alphavalue"],
+            p_cutoff=cfg["pcutoff"],
+        )
+
     if evaluate:
         scores = get_scores(pose_cfg, predicted_df, target_df)
         print(scores)

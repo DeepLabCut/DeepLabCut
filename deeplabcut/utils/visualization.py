@@ -23,11 +23,12 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.collections import LineCollection
 from skimage import io, color
 from tqdm import trange
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
 
 def get_cmap(n, name="hsv"):
@@ -378,3 +379,87 @@ def make_labeled_images_from_dataframe(
                 dpi=dpi,
             )
             plt.close(fig)
+
+
+def plot_evaluation_results(
+    df_combined: pd.DataFrame,
+    project_root: str,
+    scorer: str,
+    model_name: str,
+    output_folder: str,
+    in_train_set: bool,
+    mode: str = "bodypart",
+    colormap: str = "rainbow",
+    dot_size: int = 12,
+    alpha_value: float = 0.7,
+    p_cutoff: float = 0.6,
+) -> None:
+    """
+    Creates labeled images using the results of inference, and saves them to an output
+    folder.
+
+    Args:
+        df_combined: dataframe with multiindex rows ("labeled-data", video_name,
+            image_name) and columns ("scorer", "individuals", "bodyparts", "coords").
+            There should be two scorers: scorer (for ground truth data) and model_name
+            (for prediction data)
+        project_root: the project root path
+        scorer: the name of the scorer for ground truth data in df_combined
+        model_name: the name of the model for predictions in df_combined
+        output_folder: the name of the folder where images should be saved
+        in_train_set: whether df_combined is for train set images
+        mode: one of {"bodypart", "individual"}. Determines the keypoint color grouping
+        colormap: the colormap to use for keypoints
+        dot_size: the dot size to use for keypoints
+        alpha_value: the alpha value to use for keypoints
+        p_cutoff: the p-cutoff for "confident" keypoints
+    """
+    for row_index, row in df_combined.iterrows():
+        data_folder, video, image = row_index
+        image_path = Path(project_root) / data_folder / video / image
+        frame = auxfun_videos.imread(str(image_path), mode="skimage")
+
+        individuals = len(row.index.levels[1])
+        bodyparts = len(row.index.levels[2])
+        df_gt = row[scorer]
+        df_predictions = row[model_name]
+
+        # Shape (num_individuals, num_bodyparts, xy)
+        ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
+        predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+
+        fig, ax = create_minimal_figure()
+        h, w, _ = np.shape(frame)
+        fig.set_size_inches(w / 100, h / 100)
+        ax.set_xlim(0, w)
+        ax.set_ylim(0, h)
+        ax.invert_yaxis()
+
+        if mode == "bodypart":
+            colors = get_cmap(bodyparts, name=colormap)
+            predictions = predictions.swapaxes(0, 1)
+            ground_truth = ground_truth.swapaxes(0, 1)
+        elif mode == "individual":
+            colors = get_cmap(individuals, name=colormap)
+        else:
+            colors = []
+
+        ax = make_multianimal_labeled_image(
+            frame,
+            ground_truth,
+            predictions[:, :, :2],
+            predictions[:, :, 2:],
+            colors,
+            dot_size,
+            alpha_value,
+            p_cutoff,
+            ax=ax,
+        )
+
+        save_labeled_frame(
+            fig,
+            str(image_path),
+            output_folder,
+            belongs_to_train=in_train_set,
+        )
+        erase_artists(ax)

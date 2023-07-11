@@ -1,19 +1,25 @@
 import glob
-import numpy as np
 import os
-import pandas as pd
-from deeplabcut.utils import auxiliaryfunctions
-from typing import List, Union
+from pathlib import Path
 
-from ..utils import create_folder
+import pandas as pd
+from typing import List
+
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.pose_estimation_pytorch.utils import create_folder
 
 
 def get_dlc_scorer(train_fraction, shuffle, model_prefix, test_cfg, train_iterations):
+    model_folder = get_model_folder(train_fraction, shuffle, model_prefix, test_cfg)
+    snapshots = get_snapshots(Path(model_folder))
+    snapshot = snapshots[train_iterations]
+    snapshot_epochs = int(snapshot.split("-")[-1])
+
     dlc_scorer, dlc_scorer_legacy = auxiliaryfunctions.get_scorer_name(
         test_cfg,
         shuffle,
         train_fraction,
-        train_iterations,
+        snapshot_epochs,
         modelprefix=model_prefix,
     )
 
@@ -46,11 +52,19 @@ def get_model_folder(train_fraction, shuffle, model_prefix, test_cfg):
     return model_folder
 
 
+def get_snapshots(model_folder: Path) -> List[str]:
+    snapshots = [
+        f.stem
+        for f in (model_folder / "train").iterdir()
+        if f.name.startswith("snapshot") and f.suffix == ".pt"
+    ]
+    return sorted(snapshots, key=lambda s: int(s.split("-")[-1]))
+
+
 def get_result_filename(evaluation_folder, dlc_scorer, dlc_scorerlegacy, model_path):
     _, results_filename, _ = auxiliaryfunctions.check_if_not_evaluated(
         evaluation_folder, dlc_scorer, dlc_scorerlegacy, os.path.basename(model_path)
     )
-
     return results_filename
 
 
@@ -147,5 +161,4 @@ def get_results_filename(evaluation_folder, dlc_scorer, dlc_scorer_legacy, model
     results_filename = get_result_filename(
         evaluation_folder, dlc_scorer, dlc_scorer_legacy, model_path
     )
-
     return results_filename
