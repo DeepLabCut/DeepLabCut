@@ -44,6 +44,7 @@ class TopDownSolver(Solver):
         model_prefix: str = "",
         *,
         epochs: int = 10000,
+        detector_epochs: int = 10000,
     ):
         """
         Train model for the specified number of steps.
@@ -58,40 +59,65 @@ class TopDownSolver(Solver):
         train_fraction: TODO discuss (mb better specify with config)
         shuffle: TODO discuss (mb better specify with config)
         model_prefix: TODO discuss (mb better specify with config)
-        epochs: The number of training iterations.
+        epochs: The number of training epochs for pose_estimator.
+        detector_epochs: The number of training epochs for detector.
         """
         model_folder = get_model_folder(
             train_fraction, shuffle, model_prefix, train_detector_loader.dataset.cfg
         )
 
-        for i in range(epochs):
-            train_detector_loss, train_pose_loss = self.epoch(
-                train_detector_loader, train_pose_loader, mode="train", step=i + 1
+        for i in range(detector_epochs):
+            train_detector_loss = self.epoch_detector(
+                train_detector_loader, mode="train", step=i + 1
             )
-            if self.scheduler:
-                self.scheduler.step()
             if self.detector_scheduler:
                 self.detector_scheduler.step()
-            print(f"Training for epoch {i + 1} done, starting eval on validation data")
-            valid_detector_loss, valid_pose_loss = self.epoch(
-                valid_detector_loader, valid_pose_loader, mode="eval", step=i + 1
-            )
+            print(f"Training the detector for epoch {i + 1} done")
 
-            if (i + 1) % self.cfg["save_epochs"] == 0:
-                print(f"Finished epoch {i + 1}; saving model")
-                torch.save(
-                    self.model.state_dict(),
-                    f"{model_folder}/train/snapshot-{i + 1}.pt",
-                )
+            # TODO no eval pass for the detector since fasterRCNN can't return a loss in eval mode
+
+            if (i + 1) % self.cfg["detector"].get("detector_save_epochs", 1) == 0:
+                print(f"Finished epoch {i + 1}; saving detector")
                 torch.save(
                     self.detector.state_dict(),
                     f"{model_folder}/train/detector-snapshot-{i + 1}.pt",
                 )
-
             print(
                 f"Epoch {i + 1}/{epochs}, "
                 f"train detector loss {train_detector_loss}, "
-                f"valid detector loss {valid_detector_loss}"
+            )
+
+        if detector_epochs % self.cfg["detector"].get("detector_save_epochs", 1) != 0:
+            torch.save(
+                self.detector.state_dict(),
+                f"{model_folder}/train/detector-snapshot-{epochs}.pt",
+            )
+            print(f"Finished epoch {detector_epochs}; saving model")
+
+        for i in range(epochs):
+            train_pose_loss = self.epoch_pose(
+                train_pose_loader, mode="train", step=i + 1
+            )
+            if self.scheduler:
+                self.scheduler.step()
+
+            print(
+                f"Training the pose estimator for epoch {i + 1} done, starting eval on validation data"
+            )
+
+            valid_pose_loss = self.epoch_pose(
+                valid_pose_loader, mode="eval", step=i + 1
+            )
+
+            if (i + 1) % self.cfg["save_epochs"] == 0:
+                print(f"Finished epoch {i + 1}; saving pose model")
+                torch.save(
+                    self.model.state_dict(),
+                    f"{model_folder}/train/snapshot-{i + 1}.pt",
+                )
+
+            print(
+                f"Epoch {i + 1}/{epochs}, "
                 f"train pose loss {train_pose_loss}"
                 f"valid pose loss {valid_pose_loss}"
             )
@@ -102,62 +128,42 @@ class TopDownSolver(Solver):
                 self.model.state_dict(),
                 f"{model_folder}/train/pose-snapshot-{epochs}.pt",
             )
-            torch.save(
-                self.detector.state_dict(),
-                f"{model_folder}/train/detector-snapshot-{epochs}.pt",
-            )
+
+    def epoch(self, *args):
+        # Unused in top down since we are dealing with two different epoch functions
+        pass
 
     def step(self, *args):
         # Unused in top down since we are dealing with two different step functions
         pass
 
-    def epoch(
+    def epoch_detector(
         self,
         detector_loader: torch.utils.data.DataLoader,
-        pose_loader: torch.utils.data.DataLoader,
         mode: str = "train",
         step: Optional[int] = None,
-    ):
-        """
+    ) -> float:
+        """Does an epoch for the detector over the dataset
 
-        Parameters
+        Args:
         ----------
         detector_loader: Data loader, which is an iterator over instances.
             Each batch contains image tensors.
-        pose_loader: Data loader, Each batch contains a cropped image around an animal
         mode: "train" or "eval"
         step: the global step in processing, used to log metrics.
+
         Returns
         -------
         epoch_loss: Average of the loss over the batches.
         """
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
-        to_mode_pose = getattr(self.model, mode)
-        to_mode_pose()
         to_mode_detector = getattr(self.detector, mode)
         to_mode_detector()
-        epoch_detector_loss, epoch_pose_loss = [], []
+        epoch_detector_loss = []
         metrics = {
-            "total_pose_loss": [],
             "detector_loss": [],
         }
-
-        # Pose model training
-        for i, batch in enumerate(pose_loader):
-            total_loss = self.step_pose(batch, mode)
-            epoch_pose_loss.append(total_loss)
-
-            metrics["total_pose_loss"].append(total_loss)
-
-            if mode == "eval" and i > 100:
-                break
-
-            if (i + 1) % self.cfg["display_iters"] == 0:
-                print(
-                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['total_pose_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
-                )
-        epoch_pose_loss = np.mean(epoch_pose_loss)
 
         # Detector training
         for i, batch_d in enumerate(detector_loader):
@@ -166,8 +172,9 @@ class TopDownSolver(Solver):
 
             metrics["detector_loss"].append(detector_loss)
 
-            if mode == "eval" and i > 100:
-                break
+            # TODO good for evaluation speed up but should be optional
+            # if mode == "eval" and i > 100:
+            #     break
 
             if (i + 1) % self.cfg["display_iters"] == 0:
                 print(
@@ -186,7 +193,66 @@ class TopDownSolver(Solver):
                     step=step,
                 )
 
-        return epoch_detector_loss, epoch_pose_loss
+        return epoch_detector_loss
+
+    def epoch_pose(
+        self,
+        pose_loader: torch.utils.data.DataLoader,
+        mode: str = "train",
+        step: Optional[int] = None,
+    ) -> float:
+        """Does an epoch for the pose_model over the dataset
+
+        Args:
+        ----------
+        pose_loader: Data loader, which is an iterator over instances.
+            Each batch contains cropped images around an animal.
+        mode: "train" or "eval"
+        step: the global step in processing, used to log metrics.
+
+        Returns
+        -------
+        epoch_loss: Average of the loss over the batches.
+        """
+
+        if mode not in ["train", "eval"]:
+            raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
+        to_mode_pose = getattr(self.model, mode)
+        to_mode_pose()
+        epoch_pose_loss = []
+        metrics = {
+            "total_pose_loss": [],
+        }
+
+        # Pose model training
+        for i, batch in enumerate(pose_loader):
+            total_loss = self.step_pose(batch, mode)
+            epoch_pose_loss.append(total_loss)
+
+            metrics["total_pose_loss"].append(total_loss)
+
+            # TODO good for evaluation speed up but should be optional
+            # if mode == "eval" and i > 100:
+            #     break
+
+            if (i + 1) % self.cfg["display_iters"] == 0:
+                print(
+                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['total_pose_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
+                )
+        epoch_pose_loss = np.mean(epoch_pose_loss)
+
+        # TODO is history really necessary here ?
+        # self.history[f'{mode}_loss'].append(epoch_loss)
+
+        if self.logger:
+            for key in metrics.keys():
+                self.logger.log(
+                    f"{mode} {key}",
+                    np.nanmean(metrics[key]),
+                    step=step,
+                )
+
+        return epoch_pose_loss
 
     def step_detector(self, batch, mode: str = "train"):
         if mode not in ["train", "eval"]:

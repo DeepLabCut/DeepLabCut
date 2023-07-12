@@ -102,6 +102,7 @@ def train_network(
                 pytorch_config["cropped_data"], augment_bbox=False
             )
 
+        detector_epochs = pytorch_config["detector"].get("detector_max_epochs", epochs)
         train_cropped_dataset = dlc.CroppedDataset(
             project_train, transform=transform_cropped, mode="train"
         )
@@ -122,6 +123,7 @@ def train_network(
             valid_cropped_dataloader,
             train_fraction=train_fraction[0],
             epochs=epochs,
+            detector_epochs=detector_epochs,
             shuffle=shuffle,
             model_prefix=model_prefix,
         )

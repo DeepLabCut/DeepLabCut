@@ -18,7 +18,9 @@ class HRNet(BaseBackbone):
     HRNet stages
     """
 
-    def __init__(self, model_name: str = "hrnet_w32") -> nn.Module:
+    def __init__(
+        self, model_name: str = "hrnet_w32", pretrained: bool = True
+    ) -> nn.Module:
         """
         Constructs an ImageNet pre-trained HRNet from timm
         (https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/hrnet.py)
@@ -29,7 +31,7 @@ class HRNet(BaseBackbone):
                 type of HRNet (e.g. 'hrnet_w32, 'hrnet_w48')
         """
         super().__init__()
-        _backbone = timm.create_model(model_name, pretrained=True)
+        _backbone = timm.create_model(model_name, pretrained=pretrained)
         _backbone.incre_modules = None  # Necesssary to get high resolution features, if not set to None _backbone.forward_features will return low_res images
         self.model = _backbone
 
@@ -50,7 +52,7 @@ class HRNet(BaseBackbone):
 
 @BACKBONES.register_module
 class HRNetTopDown(BaseBackbone):
-    def __init__(self, model_name: str = "hrnet_w32"):
+    def __init__(self, model_name: str = "hrnet_w32", pretrained: bool = True):
         """
         Constructs an ImageNet pre-trained HRNet from timm
         (https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/hrnet.py)
@@ -61,7 +63,7 @@ class HRNetTopDown(BaseBackbone):
                 type of HRNet (e.g. 'hrnet_w32, 'hrnet_w48')
         """
         super().__init__()
-        _backbone = timm.create_model(model_name, pretrained=True)
+        _backbone = timm.create_model(model_name, pretrained=pretrained)
         _backbone.incre_modules = None  # Necesssary to get high resolution features, if not set to None _backbone.forward_features will return low_res images
         self.model = _backbone
 

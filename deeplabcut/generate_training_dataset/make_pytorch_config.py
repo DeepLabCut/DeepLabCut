@@ -110,15 +110,15 @@ def make_pytorch_config(
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
             num_offset_per_kpt = 15
-            pytorch_config['data']['auto_padding'] = {
-                'min_height': 64,
-                'min_width': 64,
-                'pad_width_divisor': 32,
-                'pad_height_divisor': 32,
+            pytorch_config["data"]["auto_padding"] = {
+                "min_height": 64,
+                "min_width": 64,
+                "pad_width_divisor": 32,
+                "pad_height_divisor": 32,
             }
-            pytorch_config['model']['backbone'] = {
-                'type': 'HRNet',
-                'model_name': 'hrnet_' + version
+            pytorch_config["model"]["backbone"] = {
+                "type": "HRNet",
+                "model_name": "hrnet_" + version,
             }
             pytorch_config["model"]["heads"] = make_dekr_head_cfg(
                 num_joints, backbone_type, num_offset_per_kpt
@@ -291,5 +291,9 @@ def make_detector_cfg():
         "type": "LRListScheduler",
         "params": {"milestones": [10, 430], "lr_list": [[0.05], [0.005]]},
     }
+
+    detector_cfg["detector_max_epochs"] = 500
+
+    detector_cfg["detector_save_epochs"] = 100
 
     return detector_cfg

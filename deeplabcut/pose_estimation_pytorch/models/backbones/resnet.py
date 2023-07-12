@@ -1,5 +1,6 @@
 import torch.nn as nn
-import torchvision
+import timm
+from typing import Union
 
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BaseBackbone,
@@ -14,7 +15,7 @@ class ResNet(BaseBackbone):
     """
 
     def __init__(
-        self, model_name: str = "resnet50", pretrained: str = None
+        self, model_name: str = "resnet50", pretrained: bool = True
     ) -> nn.Module:
         """
         Parameters
@@ -22,11 +23,7 @@ class ResNet(BaseBackbone):
         model_name
         """
         super().__init__()
-        _backbone = torchvision.models.get_model(model_name)
-        _backbone._modules.pop("fc")
-        _backbone._modules.pop("avgpool")
-        self.model = nn.Sequential(_backbone._modules)
-        self._init_weights(pretrained)
+        self.model = timm.create_model(model_name, pretrained=pretrained)
 
     def forward(self, x):
-        return self.model(x)
+        return self.model.forward_features(x)
