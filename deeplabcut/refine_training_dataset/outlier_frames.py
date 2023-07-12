@@ -15,6 +15,7 @@ import os
 import pickle
 import re
 from pathlib import Path
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -424,9 +425,19 @@ def extract_outlier_frames(
                 Indices.extend(ind)
             elif outlieralgorithm == "manual":
                 from deeplabcut.gui.widgets import launch_napari
-
-                _ = launch_napari([video, dataname])
+                added_video = attempt_to_add_video(
+                    config=config,
+                    video=video,
+                    copy_videos=copy_videos,
+                    coords=None,
+                )
+                if added_video:
+                    project_video_path = (
+                        Path(cfg["project_path"]) / "videos" / Path(video).name
+                    )
+                    _ = launch_napari([project_video_path, dataname])
                 return
+
             elif outlieralgorithm == "list":
                 if frames2use is not None:
                     try:
@@ -619,6 +630,57 @@ def compute_deviations(
         return d, o
 
 
+def attempt_to_add_video(
+    config: str,
+    video: str,
+    copy_videos: bool,
+    coords: Optional[List],
+) -> bool:
+    """
+    Add new videos to the config file at any stage of the project.
+
+    Parameters
+    ----------
+    config : string
+        Full path of the config file in the project.
+
+    video : string
+        Full path of the video to add to the project.
+
+    copy_videos : bool, optional
+        If this is set to True, the videos will be copied to the project/videos directory. If False, the symlink of the
+        videos will be copied instead. The default is
+        ``False``; if provided it must be either ``True`` or ``False``.
+
+    coords: list, optional
+        A list containing the list of cropping coordinates of the video. The default is set to None.
+
+    Returns
+    -------
+    True iff the video was successfully added to the project
+    """
+    from deeplabcut.create_project import add
+
+    # make sure coords and videos are a list
+    videos = [video]
+    if coords is not None:
+        coords = [coords]
+
+    try:
+        add.add_new_videos(config, videos, coords=coords, copy_videos=copy_videos)
+    except ValueError as err:
+        # can we make a catch here? - in fact we should drop indices from DataCombined
+        # if they are in CollectedData.. [ideal behavior; currently pretty unlikely]
+        print(
+            f"AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED WITH {err}! You need to "
+            "do this manually for including it in the config.yaml file!"
+        )
+        print("Videopath:", video, "Coordinates for cropping:", coords)
+        return False
+
+    return True
+
+
 def ExtractFramesbasedonPreselection(
     Index,
     extractionalgorithm,
@@ -633,8 +695,6 @@ def ExtractFramesbasedonPreselection(
     with_annotations=True,
     copy_videos=False,
 ):
-    from deeplabcut.create_project import add
-
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
@@ -772,23 +832,13 @@ def ExtractFramesbasedonPreselection(
 
     # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
     if len(frames2pick) > 0:
-        try:
-            if coords is not None:
-                add.add_new_videos(
-                    config,
-                    [video],
-                    coords=[coords],
-                    copy_videos=copy_videos,
-                )  # make sure you pass coords as a list
-            else:
-                add.add_new_videos(
-                    config, [video], coords=None, copy_videos=copy_videos
-                )
-        except:  # can we make a catch here? - in fact we should drop indices from DataCombined if they are in CollectedData.. [ideal behavior; currently this is pretty unlikely]
-            print(
-                "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to do this manually for including it in the config.yaml file!"
-            )
-            print("Videopath:", video, "Coordinates for cropping:", coords)
+        added_video = attempt_to_add_video(
+            config=config,
+            video=video,
+            copy_videos=copy_videos,
+            coords=coords,
+        )
+        if not added_video:
             pass
 
         if with_annotations:
