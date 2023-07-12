@@ -89,6 +89,9 @@ def video_inference(
     # Set the model to eval mode and put it on the device
     model.eval()
     model.to(device)
+    if not detector is None:
+        detector.eval()
+        detector.to(device)
 
     print(f"Loading {video_path}")
     video_reader = VideoReader(str(video_path))

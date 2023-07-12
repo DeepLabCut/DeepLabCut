@@ -72,15 +72,18 @@ def get_predictions_top_down(
 
     boxes = torch.zeros((batch_size, max_num_animals, 4))
     for b, item in enumerate(output_detector):
-        boxes[b] = item["boxes"][
+        boxes[b][: min(max_num_animals, len(item["boxes"]))] = item["boxes"][
             :max_num_animals
         ]  # Boxes should be sorted by scores, only keep the maximum number allowed
-
     boxes = boxes.int()
-    cropped_kpts_total = torch.zeros((batch_size, max_num_animals, num_keypoints, 3))
+    cropped_kpts_total = torch.full(
+        (batch_size, max_num_animals, num_keypoints, 3), -1.
+    )
 
     for b in range(batch_size):
         for j, box in enumerate(boxes[b]):
+            if (box == 0.0).all():
+                continue
             cropped_image = (
                 images[b][:, box[1] : box[3], box[0] : box[2]]
                 .permute(1, 2, 0)
