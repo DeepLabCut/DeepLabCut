@@ -425,6 +425,7 @@ def extract_outlier_frames(
                 Indices.extend(ind)
             elif outlieralgorithm == "manual":
                 from deeplabcut.gui.widgets import launch_napari
+
                 added_video = attempt_to_add_video(
                     config=config,
                     video=video,
