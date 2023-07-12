@@ -33,7 +33,7 @@ def test_ellipse_similarity(ellipse):
 def test_ellipse_fitter():
     fitter = trackingutils.EllipseFitter()
     assert fitter.fit(np.random.rand(2, 2)) is None
-    xy = np.asarray([[-2, 0], [2, 0], [0, 1], [0, -1]], dtype=np.float)
+    xy = np.asarray([[-2, 0], [2, 0], [0, 1], [0, -1]], dtype=float)
     assert fitter.fit(xy) is not None
     fitter.sd = 0
     el = fitter.fit(xy)
