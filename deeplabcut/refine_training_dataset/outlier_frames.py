@@ -669,11 +669,11 @@ def attempt_to_add_video(
 
     try:
         add.add_new_videos(config, videos, coords=coords, copy_videos=copy_videos)
-    except ValueError as err:
+    except:
         # can we make a catch here? - in fact we should drop indices from DataCombined
         # if they are in CollectedData.. [ideal behavior; currently pretty unlikely]
         print(
-            f"AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED WITH {err}! You need to "
+            f"AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to "
             "do this manually for including it in the config.yaml file!"
         )
         print("Videopath:", video, "Coordinates for cropping:", coords)
