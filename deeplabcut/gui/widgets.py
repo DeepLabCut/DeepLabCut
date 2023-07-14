@@ -156,17 +156,21 @@ class ItemSelectionFrame(QtWidgets.QFrame):
     def check_select_box(self):
         state, n_checked = self.fancy_list.state
         if self.select_box.checkState() != state:
+            self.select_box.blockSignals(True)
             self.select_box.setCheckState(state)
+            self.select_box.blockSignals(False)
         string = "file"
         if n_checked > 1:
             string += "s"
         self.select_box.setText(f"{n_checked} {string} selected")
 
     def toggle_select(self, state):
-        if state != QtCore.Qt.PartiallyChecked:
-            for item in self.fancy_list.items:
-                if item.checkState() != state:
-                    item.setCheckState(QtCore.Qt.CheckState(state))
+        state = QtCore.Qt.CheckState(state)
+        if state == QtCore.Qt.PartiallyChecked:
+            return
+        for item in self.fancy_list.items:
+            if item.checkState() != state:
+                item.setCheckState(state)
 
 
 class NavigationToolbar(NavigationToolbar2QT):
