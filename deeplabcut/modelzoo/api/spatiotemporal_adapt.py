@@ -22,7 +22,7 @@ class SpatiotemporalAdaptation:
         self,
         video_path,
         supermodel_name,
-        scale_list=[],
+        scale_list=None,
         videotype="mp4",
         adapt_iterations=1000,
         modelfolder="",
@@ -69,6 +69,9 @@ class SpatiotemporalAdaptation:
 
 
         """
+        if scale_list is None:
+            scale_list = []
+
         supermodels = parse_available_supermodels()
         if supermodel_name not in supermodels:
             raise ValueError(
@@ -96,9 +99,9 @@ class SpatiotemporalAdaptation:
         else:
             self.customized_pose_config = customized_pose_config
 
-    def before_adapt_inference(self, make_video=False, **kwargs):                
+    def before_adapt_inference(self, make_video=False, **kwargs):
         if self.init_weights != "":
-            print ('using customized weights', self.init_weights)            
+            print("using customized weights", self.init_weights)
             _, datafiles = superanimal_inference.video_inference(
                 [self.video_path],
                 self.supermodel_name,
@@ -115,9 +118,9 @@ class SpatiotemporalAdaptation:
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
-        if kwargs.pop('plot_trajectories', True):
+        if kwargs.pop("plot_trajectories", True):
             _plot_trajectories(datafiles[0])
-            
+
         if make_video:
             deeplabcut.create_labeled_video(
                 "",
@@ -130,15 +133,13 @@ class SpatiotemporalAdaptation:
                 **kwargs,
             )
 
-    def train_without_project(self,
-                              pseudo_label_path,
-                              **kwargs):
+    def train_without_project(self, pseudo_label_path, **kwargs):
         from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import train
+
         displayiters = kwargs.pop("displayiters", 500)
         saveiters = kwargs.pop("saveiters", 1000)
-        adapt_iterations = kwargs.pop('adapt_iterations', 1000)
-        self.adapt_iterations = adapt_iterations
-        
+        self.adapt_iterations = kwargs.pop("adapt_iterations", self.adapt_iterations)
+
         train(
             self.customized_pose_config,
             displayiters=displayiters,
@@ -152,10 +153,7 @@ class SpatiotemporalAdaptation:
             **kwargs,
         )
 
-    def adaptation_training(self,
-                            displayiters=500,
-                            saveiters=1000,
-                            **kwargs):
+    def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
         """
         There should be two choices, either taking a config, with is then assuming there is a DLC project.
         Or we make up a fake one, then we use a light way convention to do adaptation
@@ -172,12 +170,15 @@ class SpatiotemporalAdaptation:
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
-        self.adapt_iterations = kwargs['adapt_iterations']
+        self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
-            
-        if os.path.exists(os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")):        
-            print (f'model checkpoint snapshot-{self.adapt_iterations}.index exists, skipping the video adaptation')            
-        else:            
+        if os.path.exists(
+            os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
+        ):
+            print(
+                f"model checkpoint snapshot-{self.adapt_iterations}.index exists, skipping the video adaptation"
+            )
+        else:
             self.train_without_project(
                 pseudo_label_path,
                 displayiters=displayiters,
@@ -203,7 +204,7 @@ class SpatiotemporalAdaptation:
         scale_list = kwargs.pop("scale_list", [])
 
         # spatial pyramid can still be useful for reducing jittering and quantization error
-        
+
         _, datafiles = superanimal_inference.video_inference(
             [self.video_path],
             self.supermodel_name,

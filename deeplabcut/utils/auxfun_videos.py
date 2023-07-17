@@ -586,7 +586,7 @@ def draw_bbox(video):
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.imshow(frame[:, :, ::-1])
+    ax.imshow(frame)
     ax_help = fig.add_axes([0.9, 0.2, 0.1, 0.1])
     ax_save = fig.add_axes([0.9, 0.1, 0.1, 0.1])
     crop_button = Button(ax_save, "Crop")
@@ -602,7 +602,7 @@ def draw_bbox(video):
         interactive=True,
         spancoords="pixels",
     )
-    plt.show()
+    plt.show(block=False)
 
     # import platform
     # if platform.system() == "Darwin":  # for OSX use WXAgg

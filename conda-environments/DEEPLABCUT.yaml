@@ -24,5 +24,6 @@ dependencies:
   - jupyter
   - nb_conda
   - ffmpeg
+  - cudnn
   - pip:
     - "deeplabcut[gui,tf]"
