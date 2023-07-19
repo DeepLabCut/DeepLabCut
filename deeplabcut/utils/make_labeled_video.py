@@ -39,7 +39,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
-from skimage.draw import disk, line_aa
+from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 from deeplabcut.modelzoo.utils import parse_available_supermodels
@@ -84,6 +84,7 @@ def CreateVideo(
     draw_skeleton,
     displaycropped,
     color_by,
+    alpha_for_confidence=False,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
@@ -189,7 +190,10 @@ def CreateVideo(
                     rr, cc = disk(
                         (df_y[ind, index], df_x[ind, index]), dotsize, shape=(ny, nx)
                     )
-                    image[rr, cc] = color
+                    alpha = 1
+                    if alpha_for_confidence:
+                        alpha = np.clip(df_likelihood[ind, index], 0, 1)
+                    set_color(image, (rr, cc), color, alpha)
 
             clip.save_frame(image)
     clip.close()
@@ -385,6 +389,7 @@ def create_labeled_video(
     colormap="rainbow",
     alphavalue=0.5,
     overwrite=False,
+    alpha_for_confidence: bool = False,
 ):
     """Labels the bodyparts in a video.
 
@@ -489,6 +494,7 @@ def create_labeled_video(
 
     init_weights: str,
         Checkpoint path to the super model
+
     track_method: string, optional, default=""
         Specifies the tracker used to generate the data.
         Empty by default (corresponding to a single animal project).
@@ -497,6 +503,9 @@ def create_labeled_video(
 
     overwrite: bool, optional, default=False
         If ``True`` overwrites existing labeled videos.
+
+    alpha_for_confidence: bool, default=False
+        If True, the alpha value for each keypoint will be set as its confidence score
 
     Returns
     -------
@@ -639,6 +648,7 @@ def create_labeled_video(
         keypoints_only,
         overwrite,
         init_weights=init_weights,
+        alpha_for_confidence=alpha_for_confidence,
     )
 
     if get_start_method() == "fork":
@@ -678,6 +688,7 @@ def proc_video(
     overwrite,
     video,
     init_weights="",
+    alpha_for_confidence: bool = False,
 ):
     """Helper function for create_videos
 
@@ -815,6 +826,7 @@ def proc_video(
                     trailpoints=trailpoints,
                     fps=outputframerate,
                     display_cropped=displaycropped,
+                    alpha_for_confidence=alpha_for_confidence,
                 )
             return True
 
@@ -840,6 +852,7 @@ def _create_labeled_video(
     codec="mp4v",
     fps=None,
     output_path="",
+    alpha_for_confidence=False,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -893,6 +906,7 @@ def _create_labeled_video(
         bool(skeleton_edges),
         display_cropped,
         color_by,
+        alpha_for_confidence=alpha_for_confidence,
     )
 
 
@@ -985,6 +999,7 @@ def create_video_with_all_detections(
     displayedbodyparts="all",
     destfolder=None,
     modelprefix="",
+    alpha_for_confidence: bool = False,
 ):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
@@ -1016,6 +1031,8 @@ def create_video_with_all_detections(
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
+    alpha_for_confidence: bool, default=False
+        If True, the alpha value for each keypoint will be set as its confidence score
     """
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import re
@@ -1065,7 +1082,6 @@ def create_video_with_all_detections(
                     if bp in displayedbodyparts:
                         bpts.append(bptindex)
                 numjoints = len(bpts)
-
             frame_names = list(data)
             frames = [int(re.findall(r"\d+", name)[0]) for name in frame_names]
             colorclass = plt.cm.ScalarMappable(cmap=cfg["colormap"])
@@ -1089,9 +1105,18 @@ def create_video_with_all_detections(
                             continue
                         x, y = det.pos
                         rr, cc = disk((y, x), dotsize, shape=(ny, nx))
-                        frame[rr, cc] = colors[bpts.index(det.label)]
-                except ValueError:  # No data stored for that particular frame
-                    print(n, "no data")
+                        alpha = 1
+                        if alpha_for_confidence:
+                            alpha = np.clip(det.confidence, 0, 1)
+
+                        set_color(
+                            frame,
+                            (rr, cc),
+                            colors[bpts.index(det.label)],
+                            alpha,
+                        )
+                except ValueError as err:  # No data stored for that particular frame
+                    print(n, f"no data: {err}")
                     pass
                 try:
                     clip.save_frame(frame)
@@ -1170,7 +1195,9 @@ def create_video_from_pickled_tracks(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config")
-    parser.add_argument("videos")
-    cli_args = parser.parse_args()
+    root = Path("/Users/niels/Documents/upamathis/datasets/")
+    project = "dev-ma-pen-2023-06-14"
+    create_video_with_all_detections(
+        config=str(root / project / "config.yaml"),
+        videos=[str(root / project / "videos" / "multipen.mov")],
+    )
