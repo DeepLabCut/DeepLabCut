@@ -501,9 +501,23 @@ def keypoint_error(
     train_indices: List[int],
     test_indices: List[int],
 ) -> pd.DataFrame:
-    """ Computes the RMSE per keypoint
+    """Computes the RMSE error for each bodypart
 
-    TODO
+    The error dataframes can be in single animal format (non-hierarchical columns, one
+    column for each bodypart) or multi-animal format (hierarchical columns with 3
+    levels: "scorer", "individuals", "bodyparts").
+
+    Args:
+        df_error: dataframe containing the RMSE error for each image, individual and
+            bodypart
+        df_error_p_cutoff: dataframe containing the RMSE error with p-cutoff for each
+            image, individual and bodypart
+        train_indices: the indices of rows in the dataframe that are in the train set
+        test_indices: the indices of rows in the dataframe that are in the test set
+
+    Returns:
+        A dataframe containing 4 rows (train and test error, with and without p-cutoff)
+        and one column for each bodypart.
     """
     df_error = df_error.copy()
     df_error_p_cutoff = df_error_p_cutoff.copy()
