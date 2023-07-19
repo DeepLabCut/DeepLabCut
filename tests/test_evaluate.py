@@ -22,9 +22,7 @@ def make_single_animal_rmse_df(
     error_data=None,
 ) -> pd.DataFrame:
     if error_data is None:
-        error_data = np.ones(
-            (len(train_indices) + len(test_indices), len(bodyparts))
-        )
+        error_data = np.ones((len(train_indices) + len(test_indices), len(bodyparts)))
     return pd.DataFrame(error_data, columns=bodyparts)
 
 
@@ -79,9 +77,9 @@ KEYPOINT_ERROR_TEST_DATA = [
                 test_indices=[1, 3],
                 error_data=[
                     [1.0, np.nan],
-                    [1.0,    0.0],
-                    [0.0,   10.0],
-                    [5.0,    5.0],
+                    [1.0, 0.0],
+                    [0.0, 10.0],
+                    [5.0, 5.0],
                 ],
             ),
             "train_indices": [0, 2],
@@ -119,10 +117,10 @@ KEYPOINT_ERROR_TEST_DATA = [
                 error_data=[
                     # individual_1, individual2
                     # leftArm, rightArm, leftArm, rightArm
-                    [1.0,  np.nan,    1.0,    2.0],
-                    [2.0,     0.0,    1.0, np.nan],
-                    [3.0,    10.0,    1.0, np.nan],
-                    [10.0,    4.0, np.nan, np.nan],
+                    [1.0, np.nan, 1.0, 2.0],
+                    [2.0, 0.0, 1.0, np.nan],
+                    [3.0, 10.0, 1.0, np.nan],
+                    [10.0, 4.0, np.nan, np.nan],
                 ],
             ),
             "train_indices": [0, 1, 3],

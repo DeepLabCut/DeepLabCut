@@ -507,7 +507,9 @@ def evaluate_multianimal_full(
                                 testIndices,
                             )
                             kpt_filename = DLCscorer + "-keypoint-results.csv"
-                            df_keypoint_error.to_csv(Path(evaluationfolder) / kpt_filename)
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
 
                         if show_errors:
                             string = (

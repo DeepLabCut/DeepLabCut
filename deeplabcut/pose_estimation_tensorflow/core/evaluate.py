@@ -608,7 +608,7 @@ def evaluate_network(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
-    per_keypoint_evaluation: bool, default=True
+    per_keypoint_evaluation: bool, default=False
         Compute the train and test RMSE for each keypoint, and save the results to
         a {model_name}-keypoint-results.csv in the evalution-results folder
 
@@ -776,7 +776,9 @@ def evaluate_network(
                         )
                     ),
                 )
-                auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(
+                    evaluationfolder, recursive=True
+                )
                 # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
                 # Check which snapshots are available and sort them by # iterations
@@ -961,7 +963,9 @@ def evaluate_network(
                                 RMSE, RMSEpcutoff, trainIndices, testIndices
                             )
                             kpt_filename = DLCscorer + "-keypoint-results.csv"
-                            df_keypoint_error.to_csv(Path(evaluationfolder) / kpt_filename)
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
 
                         if show_errors:
                             print(
