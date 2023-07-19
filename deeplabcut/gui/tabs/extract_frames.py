@@ -173,7 +173,7 @@ class ExtractFrames(DefaultTab):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
-            _ = launch_napari()
+            _ = launch_napari(list(self.video_selection_widget.files)[0])
             return
 
         algo = self.extraction_algorithm_widget.currentText()
