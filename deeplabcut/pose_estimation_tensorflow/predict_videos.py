@@ -1798,26 +1798,29 @@ def convert_detections2tracklets(
                     )
                 tracklets = {}
                 multi_bpts = cfg["multianimalbodyparts"]
-                ass = inferenceutils.Assembler(
-                    data,
-                    max_n_individuals=inferencecfg["topktoretain"],
-                    n_multibodyparts=len(multi_bpts),
-                    greedy=greedy,
-                    pcutoff=inferencecfg.get("pcutoff", 0.1),
-                    min_affinity=inferencecfg.get("pafthreshold", 0.05),
-                    window_size=window_size,
-                    identity_only=identity_only,
-                )
-                if calibrate:
-                    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-                    train_data_file = os.path.join(
-                        cfg["project_path"],
-                        str(trainingsetfolder),
-                        "CollectedData_" + cfg["scorer"] + ".h5",
+                if not os.path.exists(dataname.split(".h5")[0] + "_assemblies.pickle") or overwrite:
+                    ass = inferenceutils.Assembler(
+                        data,
+                        max_n_individuals=inferencecfg["topktoretain"],
+                        n_multibodyparts=len(multi_bpts),
+                        greedy=greedy,
+                        pcutoff=inferencecfg.get("pcutoff", 0.1),
+                        min_affinity=inferencecfg.get("pafthreshold", 0.05),
+                        window_size=window_size,
+                        identity_only=identity_only,
                     )
-                    ass.calibrate(train_data_file)
-                ass.assemble()
-                ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+                    if calibrate:
+                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
+                        train_data_file = os.path.join(
+                            cfg["project_path"],
+                            str(trainingsetfolder),
+                            "CollectedData_" + cfg["scorer"] + ".h5",
+                        )
+                        ass.calibrate(train_data_file)
+                    ass.assemble()
+                    ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
+                else:
+                    ass = pd.read_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
                 try:
                     data.close()
                 except AttributeError:
@@ -1847,7 +1850,12 @@ def convert_detections2tracklets(
                     keep = set(multi_bpts).difference(ignore_bodyparts or [])
                     keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
                     for index, imname in tqdm(enumerate(imnames)):
-                        assemblies = ass.assemblies.get(index)
+                        if isinstance(ass, dict):
+                            assemblies = ass.get(index)
+                            animals = np.stack([ass for ass in assemblies])
+                        else:
+                            assemblies = ass.assemblies.get(index)
+                            animals = np.stack([ass.data for ass in assemblies])
                         if assemblies is None:
                             continue
                         animals = np.stack([ass.data for ass in assemblies])
@@ -1860,6 +1868,21 @@ def convert_detections2tracklets(
                             else:
                                 xy = animals[:, keep_inds, :2]
                             trackers = mot_tracker.track(xy)
+                        elif isinstance(ass, dict) and identity_only:
+                            #identity assignement if read from _assemblies.pickle
+                            mat = np.zeros(
+                                (len(assemblies), inferencecfg["topktoretain"])
+                            )
+                            for nrow, assembly in enumerate(assemblies):
+                                assembly = assembly[~np.isnan(assembly).any(axis=1)]
+                                unq, idx, cnt = np.unique(assembly[:, 3], return_inverse=True, return_counts=True)
+                                avg = np.bincount(idx, weights=assembly[:, 2]) / cnt
+                                soft = softmax(avg)
+                                vote_output = dict(zip(unq.astype(int), soft))
+                                for k, v in vote_output.items():
+                                    mat[nrow, k] = v
+                            inds = linear_sum_assignment(mat, maximize=True)
+                            trackers = np.c_[inds][:, ::-1]
                         else:
                             # Optimal identity assignment based on soft voting
                             mat = np.zeros(
