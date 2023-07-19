@@ -22,7 +22,7 @@ from deeplabcut import auxiliaryfunctions, VERSION
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from PySide6.QtWidgets import QMenu, QWidget, QMainWindow
+from PySide6.QtWidgets import QMessageBox, QMenu, QWidget, QMainWindow
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction
 from PySide6 import QtWidgets, QtGui
@@ -331,8 +331,11 @@ class MainWindow(QMainWindow):
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2]))
         )
         self.helpAction.setStatusTip("Ask for help...")
+        self.helpAction.triggered.connect(self._ask_for_help)
 
         self.aboutAction = QAction("&Learn DLC", self)
+        self.aboutAction.triggered.connect(self._learn_dlc)
+
         self.check_updates = QAction("&Check for Updates...", self)
         self.check_updates.triggered.connect(_check_for_updates)
 
@@ -388,6 +391,18 @@ class MainWindow(QMainWindow):
         if loaded:
             self.add_recent_filename(self.config)
             self.add_tabs()
+
+    def _ask_for_help(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Ask for help")
+        dlg.setText('''Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!''')
+        _ = dlg.exec()
+
+    def _learn_dlc(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Learn DLC")
+        dlg.setText('''Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!''')
+        _ = dlg.exec()
 
     def _create_project(self):
         dlg = ProjectCreator(self)
