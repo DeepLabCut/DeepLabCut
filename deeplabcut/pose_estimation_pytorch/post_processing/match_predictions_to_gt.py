@@ -6,8 +6,9 @@ from scipy.optimize import linear_sum_assignment
 
 
 def rmse_match_prediction_to_gt(
-    pred_kpts: np.array, gt_kpts: np.array, individual_names: list
-):
+    pred_kpts: np.ndarray,
+    gt_kpts: np.ndarray,
+) -> np.ndarray:
     """
         Hungarian algorithm predicted individuals to ground truth ones, using rmse
 
@@ -15,7 +16,6 @@ def rmse_match_prediction_to_gt(
     ---------
         pred_kpts: (num_animals, num_keypoints, 3)
         gt_kpts: (num_animals, num_keypoints(+1 if with center), 2)
-        individual_names: names of individuals
 
     Output
     ------

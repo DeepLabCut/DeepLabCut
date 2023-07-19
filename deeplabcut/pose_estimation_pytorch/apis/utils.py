@@ -300,6 +300,10 @@ def build_inference_transform(
     """
 
     list_transforms = []
+    if transform_cfg.get("resize", False):
+        input_size = transform_cfg.get("resize", False)
+        list_transforms.append(A.Resize(input_size[0], input_size[1]))
+
     if transform_cfg.get("auto_padding"):
         params = transform_cfg.get("auto_padding")
         pad_height_divisor = params.get("pad_height_divisor", 1)
@@ -387,13 +391,12 @@ def videos_in_folder(
     video_path = Path(data_path)
     if video_path.is_dir():
         if video_type is None:
-            video_suffixes = auxfun_videos.SUPPORTED_VIDEOS
+            video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
         else:
             video_suffixes = [video_type]
 
-        return [
-            file for file in video_path.iterdir() if video_path.stem in video_suffixes
-        ]
+        video_suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
+        return [file for file in video_path.iterdir() if file.suffix in video_suffixes]
 
     assert (
         video_path.exists()

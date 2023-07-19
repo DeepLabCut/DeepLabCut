@@ -4,6 +4,6 @@ from deeplabcut.pose_estimation_pytorch.utils import fix_seeds
 from deeplabcut.pose_estimation_pytorch.apis import (
     analyze_videos,
     convert_detections2tracklets,
-    inference_network,
+    evaluate_network,
     train_network,
 )

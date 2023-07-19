@@ -84,7 +84,7 @@ class TopDownSolver(Solver):
                     f"{model_folder}/train/detector-snapshot-{i + 1}.pt",
                 )
             print(
-                f"Epoch {i + 1}/{epochs}, "
+                f"Epoch {i + 1}/{detector_epochs}, "
                 f"train detector loss {train_detector_loss}, "
             )
 

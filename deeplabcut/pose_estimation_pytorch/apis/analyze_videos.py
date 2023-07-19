@@ -8,18 +8,19 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import pickle
 import sys
 import time
 from pathlib import Path
 from typing import List, Tuple, Optional, Union
 
 import albumentations as A
+import cv2
 import numpy as np
 import pandas as pd
 import torch
 from tqdm import tqdm
 from skimage.util import img_as_ubyte
-import cv2
 
 import deeplabcut.pose_estimation_pytorch as dlc
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, VideoReader
@@ -38,8 +39,9 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_detector_snapshots,
     videos_in_folder,
+    build_inference_transform,
 )
-from deeplabcut.pose_estimation_pytorch.apis.inference_utils import (
+from deeplabcut.pose_estimation_pytorch.apis.inference import (
     get_predictions_bottom_up,
     get_predictions_top_down,
 )
@@ -61,6 +63,8 @@ def video_inference(
     frames_resized: Optional[bool] = False,
 ) -> List[np.ndarray]:
     """
+    TODO: This should be refactored to use the `inference` code with a `video dataset`
+
     Runs inference on all frames of a video
 
     Args:
@@ -89,7 +93,7 @@ def video_inference(
     # Set the model to eval mode and put it on the device
     model.eval()
     model.to(device)
-    if not detector is None:
+    if detector is not None:
         detector.eval()
         detector.to(device)
 
@@ -111,7 +115,7 @@ def video_inference(
     transformed_size = original_size
     if transform:
         # Apply transformation once only to see the shape after transformation
-        transformed_size = transform(image=frame)["image"].shape
+        transformed_size = transform(image=frame, keypoints=[])["image"].shape
 
     batch_ind = 0  # Index of the current img in batch
     batch_frames = np.empty((batch_size, transformed_size[0], transformed_size[1], 3))
@@ -125,7 +129,7 @@ def video_inference(
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
             if transform:
-                frame = transform(image=frame)["image"]
+                frame = transform(image=frame, keypoints=[])["image"]
 
             batch_frames[batch_ind] = frame
             if batch_ind == batch_size - 1:
@@ -135,9 +139,8 @@ def video_inference(
                 if method.lower() == "td":
                     batched_predictions = get_predictions_top_down(
                         detector=detector,
-                        top_down_predictor=top_down_predictor,
                         model=model,
-                        pose_predictor=predictor,
+                        predictor=predictor,
                         images=batch,
                         max_num_animals=max_num_animals,
                         num_keypoints=num_keypoints,
@@ -153,6 +156,8 @@ def video_inference(
                     raise ValueError(
                         "Method must be either 'bu' (Bottom Up) or 'td' (Top Down)."
                     )
+
+                # TODO: use resize_batch_predictions from `inference.py`
                 for frame_pred in batched_predictions:
                     if frames_resized:
                         resizing_factor = (original_size[0] / transformed_size[0]), (
@@ -177,67 +182,83 @@ def video_inference(
 
 
 def analyze_videos(
-    config_path: str,
-    data_path: Union[str, List[str]],
-    output_folder: Optional[str] = None,
-    video_type: Optional[str] = None,
-    dataset_index: int = 0,
+    config: str,
+    videos: Union[str, List[str]],
+    videotype: Optional[str] = None,
     shuffle: int = 1,
-    snapshot_index: Optional[int] = None,
-    model_prefix: str = "",
-    batch_size: Optional[int] = None,
-    device: Optional[str] = None,
+    trainingsetindex: int = 0,
+    snapshotindex: Optional[int] = None,
+    device: Optional[str] = None,  # TODO: Keep "device" instead of gputouse
+    # TODO: save_as_csv
+    destfolder: Optional[str] = None,
+    batchsize: Optional[int] = None,
+    modelprefix: str = "",
     transform: Optional[A.Compose] = None,
-    inv_transform: Optional[A.Compose] = None,
     overwrite: bool = False,
+    # TODO: other options such as auto_track
 ) -> List[Tuple[str, pd.DataFrame]]:
-    """
-    Makes pose estimation predictions based on a trained model
-    TODO: finish doc
+    """Makes prediction based on a trained network.
+
+    The index of the trained network is specified by parameters in the config file
+    (in particular the variable 'snapshot_index').
 
     Args:
-        config_path:
-        data_path:
-        output_folder:
-        video_type:
-        dataset_index:
-        shuffle:
-        snapshot_index:
-        model_prefix:
-        batch_size:
-        device:
-        transform:
-        inv_transform:
-        overwrite:
+        config: full path of the config.yaml file for the project
+        videos: a str (or list of strings) containing the full paths to videos for
+            analysis or a path to the directory, where all the videos with same
+            extension are stored.
+        videotype: checks for the extension of the video in case the input to the video
+            is a directory. Only videos with this extension are analyzed. If left
+            unspecified, keeps videos with extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv').
+        shuffle: An integer specifying the shuffle index of the training dataset used for
+            training the network.
+        trainingsetindex: Integer specifying which TrainingsetFraction to use.
+        device: the device to use for video analysis
+        destfolder: specifies the destination folder for analysis data. If ``None``,
+            the path of the video is used. Note that for subsequent analysis this
+            folder also needs to be passed
+        snapshotindex: index (starting at 0) of the snapshot to use to analyze the
+            videos. To evaluate the last one, use -1. For example if we have
+                - snapshot-0.pt
+                - snapshot-50.pt
+                - snapshot-100.pt
+            and we want to evaluate snapshot-50.pt, snapshotindex should be 1. If None,
+            the snapshotindex is loaded from the project configuration.
+        modelprefix: directory containing the deeplabcut models to use when evaluating
+            the network. By default, they are assumed to exist in the project folder.
+        batchsize: the batch size to use for inference. Takes the value from the
+            PyTorch config as a default
+        transform: Optional custom transforms to apply to the video
+        overwrite: Overwrite any existing videos
 
     Returns:
-
+        A list containing tuples (video_name, df_video_predictions)
     """
     # Create the output folder
-    _create_output_folder(output_folder)
+    _create_output_folder(destfolder)
 
     # Load the project configuration
     project = dlc.DLCProject(
         shuffle=shuffle,
-        proj_root=str(Path(config_path).parent),
+        proj_root=str(Path(config).parent),
     )
     project.convert2dict(mode="test")
     project_path = Path(project.cfg["project_path"])
-    train_fraction = project.cfg["TrainingFraction"][dataset_index]
+    train_fraction = project.cfg["TrainingFraction"][trainingsetindex]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
         train_fraction,
         shuffle,
         project.cfg,
-        modelprefix=model_prefix,
+        modelprefix=modelprefix,
     )
-    model_path = _get_model_path(model_folder, snapshot_index, project.cfg)
+    model_path = _get_model_path(model_folder, snapshotindex, project.cfg)
     model_epochs = int(model_path.stem.split("-")[-1])
     dlc_scorer, dlc_scorer_legacy = auxiliaryfunctions.get_scorer_name(
         project.cfg,
         shuffle,
         train_fraction,
         trainingsiterations=model_epochs,
-        modelprefix=model_prefix,
+        modelprefix=modelprefix,
     )
     # Get general project parameters
     max_num_animals = len(project.cfg.get("individuals", ["single"]))
@@ -253,9 +274,9 @@ def analyze_videos(
     # Get model parameters
     # TODO: Should we get the batch size from the inference pose_cfg? Or have an
     #  inference pytorch_cfg?
-    if batch_size is None:
-        batch_size = pytorch_config.get("batch_size", 1)
-    pose_cfg["batch_size"] = batch_size
+    if batchsize is None:
+        batchsize = pytorch_config.get("batch_size", 1)
+    pose_cfg["batch_size"] = batchsize
     individuals = project.cfg.get("individuals", ["single"])
 
     # Get data processing parameters
@@ -266,25 +287,32 @@ def analyze_videos(
     # Load model, predictor
     model = build_pose_model(pytorch_config["model"], pose_cfg)
     model.load_state_dict(torch.load(model_path))
-    predictor: BasePredictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
-    detector: BaseDetector = None
-    top_down_predictor: BasePredictor = None
+    predictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
+    detector = None
+    top_down_predictor = None
     if method.lower() == "td":
-        detector_path = _get_detector_path(model_folder, snapshot_index, project.cfg)
+        detector_path = _get_detector_path(model_folder, snapshotindex, project.cfg)
         detector = DETECTORS.build(dict(pytorch_config["detector"]["detector_model"]))
         detector.load_state_dict(torch.load(detector_path))
-
         top_down_predictor = PREDICTORS.build(
             {"type": "TopDownPredictor", "format_bbox": "xyxy"}
         )
+
+    # Load inference
+    if transform is None:
+        print("No transform passed, using default normalisation from config")
+        transform = build_inference_transform(
+            pytorch_config["data"], augment_bbox=False
+        )
+
     # Reading video and init variables
-    videos = videos_in_folder(data_path, video_type)
+    videos = videos_in_folder(videos, videotype)
     results = []
     for video in videos:
-        if output_folder is None:
+        if destfolder is None:
             output_path = video.parent
         else:
-            output_path = Path(output_folder)
+            output_path = Path(destfolder)
 
         output_prefix = video.stem + dlc_scorer
         output_h5 = output_path / f"{output_prefix}.h5"
@@ -297,7 +325,7 @@ def analyze_videos(
                 model=model,
                 predictor=predictor,
                 video_path=video,
-                batch_size=batch_size,
+                batch_size=batchsize,
                 device=device,
                 transform=transform,
                 colormode=pytorch_config.get("colormode", "RGB"),
@@ -317,22 +345,25 @@ def analyze_videos(
                 pytorch_pose_config=pytorch_config,
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
-                batch_size=batch_size,
+                batch_size=batchsize,
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
 
+            coordinate_labels = ["x", "y", "likelihood"]
             if len(individuals) > 1:
                 print("Extracting ", len(individuals), "instances per bodypart")
-                xyz_labs_orig = ["x", "y", "likelihood"]
-                suffix = [str(s + 1) for s in range(len(individuals))]
-                suffix[0] = ""  # first has empty suffix for backwards compatibility
-                xyz_labs = [x + s for s in suffix for x in xyz_labs_orig]
-            else:
-                xyz_labs = ["x", "y", "likelihood"]
+                # first has empty suffix for backwards compatibility
+                individual_suffixes = [str(s + 1) for s in range(len(individuals))]
+                individual_suffixes[0] = ""
+                coordinate_labels = [
+                    coord_label + s
+                    for s in individual_suffixes
+                    for coord_label in coordinate_labels
+                ]
 
             results_df_index = pd.MultiIndex.from_product(
-                [[dlc_scorer], pose_cfg["all_joints_names"], xyz_labs],
+                [[dlc_scorer], pose_cfg["all_joints_names"], coordinate_labels],
                 names=["scorer", "bodyparts", "coords"],
             )
             df = pd.DataFrame(
@@ -351,6 +382,22 @@ def analyze_videos(
             _ = auxfun_multianimal.SaveFullMultiAnimalData(
                 output_data, metadata, str(output_h5)
             )
+
+            # save an assemblies file for backwards-compatibility with tensorflow
+            if project.cfg["multianimalproject"]:
+                ass_file = output_path / f"{output_prefix}_assemblies.pickle"
+                assemblies = {}
+                for i, prediction in enumerate(predictions):
+                    extra_column = np.full(
+                        (prediction.shape[0], prediction.shape[1], 1),
+                        -1.0,
+                        dtype=np.float32,
+                    )
+                    ass = np.concatenate((prediction, extra_column), axis=-1)
+                    assemblies[i] = ass
+
+                with open(ass_file, "wb") as handle:
+                    pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     return results
 

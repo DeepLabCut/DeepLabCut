@@ -2,6 +2,7 @@ import glob
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from typing import List
 
@@ -89,18 +90,39 @@ def sort_paths(paths: list):
     return sorted_paths
 
 
-def save_predictions(names, cfg, data_index, predicted_poses, results_filename):
-    if not os.path.exists(names["evaluation_folder"]):
-        os.makedirs(names["evaluation_folder"])
+def build_predictions_df(
+    dlc_scorer: str,
+    individuals: List[str],
+    bodyparts: List[str],
+    df_index: pd.Index,
+    predictions: np.ndarray,
+) -> pd.DataFrame:
+    """Builds a predictions dataframe in the DLC format
 
-    results_path = f"{results_filename}"
-    num_animals = len(cfg.get("individuals", ["single"]))
-    if num_animals == 1:
-        # Single animal prediction deataframe
+    Builds a DataFrame in the DeepLabCut format, with MultiIndex columns. If there is
+    only one individual, the column levels are ("scorer", "bodyparts", "coords"). If
+    there are multiple individuals, the column levels are ("scorer", "individuals",
+    "bodyparts", "coords").
+
+    Args:
+        dlc_scorer: the DLC scorer that generated the predictions
+        individuals: the names of individuals in the project
+        bodyparts: the names of bodyparts in the project
+        df_index: the index to apply to the dataframe
+        predictions: the predictions made by the scorer. should be of shape
+        (len(df_index), len(bodyparts), 3) if len(individuals) == 1, and otherwise
+        (len(df_index), len(individuals), len(bodyparts), 3)
+
+    Returns:
+        the dataframe containing the predictions in DLC format
+    """
+    num_individuals = len(individuals)
+    if num_individuals == 1:
+        # Single animal prediction dataframe
         index = pd.MultiIndex.from_product(
             [
-                [names["dlc_scorer"]],
-                cfg["bodyparts"],
+                [dlc_scorer],
+                bodyparts,
                 ["x", "y", "likelihood"],
             ],
             names=["scorer", "bodyparts", "coords"],
@@ -109,19 +131,15 @@ def save_predictions(names, cfg, data_index, predicted_poses, results_filename):
         # Multi animal prediction dataframe
         index = pd.MultiIndex.from_product(
             [
-                [names["dlc_scorer"]],
-                cfg["individuals"],
-                cfg["multianimalbodyparts"],
+                [dlc_scorer],
+                individuals,
+                bodyparts,
                 ["x", "y", "likelihood"],
             ],
             names=["scorer", "individuals", "bodyparts", "coords"],
         )
 
-    predicted_data = pd.DataFrame(predicted_poses, columns=index, index=data_index)
-
-    predicted_data.to_hdf(results_path, "df_with_missing")
-
-    return predicted_data
+    return pd.DataFrame(predictions, columns=index, index=df_index)
 
 
 def get_paths(

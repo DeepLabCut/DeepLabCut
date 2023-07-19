@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
+DeepLabCut2.0-2.3 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
@@ -25,7 +25,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
+        "albumentations",
         "dlclibrary",
+        "einops",
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
@@ -37,10 +39,12 @@ setuptools.setup(
         "pandas>=1.0.1,!=1.5.0",
         "scikit-image>=0.17",
         "scikit-learn>=1.0",
-        "scipy>=1.9",
+        "scipy>=1.4,<1.11.0",
         "statsmodels>=0.11",
         "tables>=3.7.0",
-        "torch<=1.12",
+        "timm",
+        "torch>=2.0.0",
+        "torchvision",
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
         "tqdm",
@@ -60,6 +64,7 @@ setuptools.setup(
         ],  # Last supported TF version on Windows Native is 2.10
         "apple_mchips": ["tensorflow-macos<2.13.0", "tensorflow-metal"],
         "modelzoo": ["huggingface_hub"],
+        "wandb": ["wandb"],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),

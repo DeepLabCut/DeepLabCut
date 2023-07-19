@@ -17,15 +17,13 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
-from scipy.optimize import linear_sum_assignment
-
 from tqdm import tqdm
 
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
-from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
+from deeplabcut.utils import auxfun_multianimal, read_pickle
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     videos_in_folder,
@@ -33,33 +31,34 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 
 
 def convert_detections2tracklets(
-    config_path: str,
-    data_path: Union[str, List[str]],
-    output_folder: Optional[str] = None,
-    video_type: Optional[str] = None,
+    config: str,
+    videos: Union[str, List[str]],
+    videotype: Optional[str] = None,
     shuffle: int = 1,
-    dataset_index: int = 0,
+    trainingsetindex: int = 0,
     overwrite: bool = False,
-    ignore_bodyparts=None,
-    inference_cfg: Optional[str] = None,
+    destfolder: Optional[str] = None,
+    ignore_bodyparts: Optional[List[str]] = None,
+    inferencecfg: Optional[dict] = None,
     modelprefix="",
-    greedy=False,
-    calibrate=False,
-    window_size=0,
+    greedy=False,  # TODO: Unused, remove
+    calibrate=False,  # TODO: Unused, remove
+    window_size=0,  # TODO: Unused, remove
     identity_only=False,
     track_method="",
 ):
     """TODO: Documentation, clean & remove code duplication (with analyze video)"""
-    cfg = auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config)
+    inference_cfg = inferencecfg
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
         track_method = "box"
         cfg["default_track_method"] = track_method
-        auxiliaryfunctions.write_config(config_path, cfg)
+        auxiliaryfunctions.write_config(config, cfg)
 
-    train_fraction = cfg["TrainingFraction"][dataset_index]
+    train_fraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = os.getcwd()  # record cwd to return to this directory in the end
 
     # TODO: add cropping as in video analysis!
@@ -80,10 +79,10 @@ def convert_detections2tracklets(
         raise ValueError("This function is only required for multianimal projects!")
 
     if inference_cfg is None:
-        path_inference_config = model_dir / "test" / "inference_cfg.yaml"
-        inference_cfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
-    else:
-        auxfun_multianimal.check_inferencecfg_sanity(cfg, inference_cfg)
+        inference_cfg = auxfun_multianimal.read_inferencecfg(
+            model_dir / "test" / "inference_cfg.yaml", cfg
+        )
+    auxfun_multianimal.check_inferencecfg_sanity(cfg, inference_cfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
@@ -122,17 +121,17 @@ def convert_detections2tracklets(
     )
 
     # TODO: deal with lists of strings
-    videos = videos_in_folder(data_path, video_type)
+    videos = videos_in_folder(videos, videotype)
     if len(videos) == 0:
-        print(f"No videos were found in {data_path}")
+        print(f"No videos were found in {videos}")
         return
 
     for video in videos:
         print("Processing... ", video)
-        if output_folder is None:
+        if destfolder is None:
             output_path = video.parent
         else:
-            output_path = Path(output_folder)
+            output_path = Path(destfolder)
             output_path.mkdir(exist_ok=True, parents=True)
 
         video_name = video.stem
@@ -159,13 +158,13 @@ def convert_detections2tracklets(
             n_joints = len(joints)
 
             # TODO: adjust this for multi + unique bodyparts!
-            # this is only for multianimal parts and uniquebodyparts as one (not one
-            # uniquebodyparts guy tracked etc.)
-            bodypartlabels = [bpt for bpt in joints for _ in range(3)]
-            scorers = len(bodypartlabels) * [dlc_scorer]
-            xyl_value = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
+            # this is only for multianimal parts and unique bodyparts as one (not one
+            # unique bodyparts guy tracked etc.)
+            bodypart_labels = [bpt for bpt in joints for _ in range(3)]
+            scorers = len(bodypart_labels) * [dlc_scorer]
+            xyl_value = int(len(bodypart_labels) / 3) * ["x", "y", "likelihood"]
             df_index = pd.MultiIndex.from_arrays(
-                np.vstack([scorers, bodypartlabels, xyl_value]),
+                np.vstack([scorers, bodypart_labels, xyl_value]),
                 names=["scorer", "bodyparts", "coords"],
             )
             image_names = [fn for fn in data if fn != "metadata"]
@@ -193,24 +192,25 @@ def convert_detections2tracklets(
             tracklets = {}
             multi_bpts = cfg["multianimalbodyparts"]
 
-            ass_unique = {}
-            ass_assemblies = _conv_predictions_to_assemblies(image_names, data)
-            ass_data = dict()
-            for ind, assemblies in ass_assemblies.items():
-                ass_data[ind] = [ass.data for ass in assemblies]
-            if ass_unique:
-                ass_data["single"] = ass_unique
-            with open(
-                data_filename.parent / (data_filename.stem + "_assemblies.pickle"), "wb"
-            ) as file:
-                pickle.dump(ass_data, file, pickle.HIGHEST_PROTOCOL)
+            ass_filename = data_filename.with_stem(
+                data_filename.stem + "_assemblies"
+            ).with_suffix(".pickle")
+            if not ass_filename.exists():
+                raise FileNotFoundError(
+                    f"Could not find the assembles file {ass_filename}. You're "
+                    f"converting detections to tracklets using PyTorch, which "
+                    "means the assemblies file must be created by the model when "
+                    "analyzing the video!"
+                )
+
+            ass = read_pickle(ass_filename)
 
             # Initialize storage of the 'single' individual track
             if cfg["uniquebodyparts"]:
                 tracklets["single"] = {}
                 _single = {}
                 for index, image_name in enumerate(image_names):
-                    single_detection = ass_unique.get(index)
+                    single_detection = ass["single"].get(index)
                     if single_detection is None:
                         continue
                     imindex = int(re.findall(r"\d+", image_name)[0])
@@ -220,7 +220,7 @@ def convert_detections2tracklets(
             if inference_cfg["topktoretain"] == 1:
                 tracklets[0] = {}
                 for index, image_name in tqdm(enumerate(image_names)):
-                    assemblies = ass_assemblies.get(index)
+                    assemblies = ass.get(index)
                     if assemblies is None:
                         continue
                     tracklets[0][image_name] = assemblies[0].data
@@ -228,12 +228,21 @@ def convert_detections2tracklets(
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
                 for index, image_name in tqdm(enumerate(image_names)):
-                    assemblies = ass_assemblies.get(index)
-                    if assemblies is None:
+                    assemblies = ass.get(index)
+                    if assemblies is None or len(assemblies) == 0:
                         continue
 
-                    animals = np.stack([ass.data for ass in assemblies])
-                    if not identity_only:
+                    animals = np.stack([a for a in assemblies])
+                    if identity_only:
+                        raise ValueError("Identity Only is currently not implemented")
+                        # Optimal identity assignment based on soft voting
+                        # mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
+                        # for row, a in enumerate(assemblies):
+                        #     for k, v in a.soft_identity.items():
+                        #         mat[row, k] = v
+                        # inds = linear_sum_assignment(mat, maximize=True)
+                        # trackers = np.c_[inds][:, ::-1]
+                    else:
                         if track_method == "box":
                             xy = trackingutils.calc_bboxes_from_keypoints(
                                 animals[:, keep_inds],
@@ -242,24 +251,16 @@ def convert_detections2tracklets(
                         else:
                             xy = animals[:, keep_inds, :2]
                         trackers = mot_tracker.track(xy)
-                    else:
-                        # Optimal identity assignment based on soft voting
-                        mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
-                        for nrow, assembly in enumerate(assemblies):
-                            for k, v in assembly.soft_identity.items():
-                                mat[nrow, k] = v
-                        inds = linear_sum_assignment(mat, maximize=True)
-                        trackers = np.c_[inds][:, ::-1]
-                    trackingutils.fill_tracklets(
-                        tracklets, trackers, animals, image_name
-                    )
+
+                        trackingutils.fill_tracklets(
+                            tracklets, trackers, animals, image_name
+                        )
 
             tracklets["header"] = df_index
             with open(track_filename, "wb") as f:
                 pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
     os.chdir(str(start_path))
-
     print(
         "The tracklets were created (i.e., under the hood "
         "deeplabcut.convert_detections2tracklets was run). Now you can "

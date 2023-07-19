@@ -463,3 +463,4 @@ def plot_evaluation_results(
             belongs_to_train=in_train_set,
         )
         erase_artists(ax)
+        plt.close()

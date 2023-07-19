@@ -610,7 +610,11 @@ def get_scorer_name(
         #     [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
         # )
         Snapshots = np.array(
-            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "snapshot" in fn]
+            [
+                fn.split(".")[0]
+                for fn in os.listdir(modelfolder)
+                if ("index" in fn) or ("snapshot" in fn and not "detector" in fn)
+            ]
         )
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]

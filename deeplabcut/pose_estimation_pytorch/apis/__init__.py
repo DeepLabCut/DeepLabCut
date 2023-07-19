@@ -12,5 +12,5 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import analyze_video
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.apis.inference import inference_network
+from deeplabcut.pose_estimation_pytorch.apis.evaluate import evaluate_network
 from deeplabcut.pose_estimation_pytorch.apis.train import train_network

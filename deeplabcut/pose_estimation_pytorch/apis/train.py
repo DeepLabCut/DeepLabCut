@@ -14,58 +14,55 @@ from typing import Union
 
 
 def train_network(
-    config_path: str,
+    config: str,
     shuffle: int = 1,
-    training_set_index: Union[int, str] = 0,
+    trainingsetindex: int = 0,
     transform: Union[A.BaseCompose, A.BasicTransform] = None,
     transform_cropped: Union[A.BaseCompose, A.BasicTransform] = None,
-    model_prefix: str = "",
+    modelprefix: str = "",
     **kwargs
 ) -> Solver:
-    """
-        Trains a network for a project
+    """Trains a network for a project
+
+    TODO: max_snapshots_to_keep
 
     Args:
-        - config_path : path to the yaml config file of the project
-        - shuffle : index of the shuffle we want to train on
-        - training_set_index : training set index
-
-        - transform: Augmentation pipeline for the images
+        config : path to the yaml config file of the project
+        shuffle : index of the shuffle we want to train on
+        trainingsetindex : training set index
+        transform: Augmentation pipeline for the images
             if None, the augmentation pipeline is built from config files
             Advice if you want to use custom transformations:
-                Keep in mind that in order for transfer leanring to be efficient, your
+                Keep in mind that in order for transfer learning to be efficient, your
                 data statistical distribution should resemble the one used to pretrain your backbone
 
-                In most cases (e.g bacbone was pretrained on ImageNet), that means it should be Normalized with
+                In most cases (e.g backbone was pretrained on ImageNet), that means it should be Normalized with
                 A.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
-        - transform_cropped: Augmentation pipeline for the cropped images around animals
+        transform_cropped: Augmentation pipeline for the cropped images around animals
             if None, the augmentation pipeline is built from config files
             Advice if you want to use custom transformations:
-                Keep in mind that in order for transfer leanring to be efficient, your
+                Keep in mind that in order for transfer learning to be efficient, your
                 data statistical distribution should resemble the one used to pretrain your backbone
-
-                In most cases (e.g bacbone was pretrained on ImageNet), that means it should be Normalized with
+                In most cases (e.g backbone was pretrained on ImageNet), that means it should be Normalized with
                 A.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
-        - model_prefix: model prefix
-        - **kwargs : could be any entry of the pytorch_config dictionary
+        modelprefix: directory containing the deeplabcut configuration files to use
+            to train the network (and where snapshots will be saved). By default, they
+             are assumed to exist in the project folder.
+        **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
 
     Returns:
         solver: solver used for training, stores data about losses during training
     """
-
-    cfg = auxiliaryfunctions.read_config(config_path)
-    if training_set_index == "all":
-        train_fraction = cfg["TrainingFraction"]
-    else:
-        train_fraction = [cfg["TrainingFraction"][training_set_index]]
+    cfg = auxiliaryfunctions.read_config(config)
+    train_fraction = cfg["TrainingFraction"][trainingsetindex]
     modelfolder = os.path.join(
         cfg["project_path"],
         auxiliaryfunctions.get_model_folder(
-            train_fraction[0],
+            train_fraction,
             shuffle,
             cfg,
-            modelprefix=model_prefix,
+            modelprefix=modelprefix,
         ),
     )
     pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
@@ -94,7 +91,7 @@ def train_network(
 
     solver = build_solver(pytorch_config)
     if pytorch_config.get("method", "bu").lower() == "td":
-        if transform_cropped == None:
+        if transform_cropped is None:
             print(
                 "No transform passed to augment cropped images, using default augmentations"
             )
@@ -121,20 +118,20 @@ def train_network(
             valid_dataloader,
             train_cropped_dataloader,
             valid_cropped_dataloader,
-            train_fraction=train_fraction[0],
+            train_fraction=train_fraction,
             epochs=epochs,
             detector_epochs=detector_epochs,
             shuffle=shuffle,
-            model_prefix=model_prefix,
+            model_prefix=modelprefix,
         )
     elif pytorch_config.get("method", "bu").lower() == "bu":
         solver.fit(
             train_dataloader,
             valid_dataloader,
-            train_fraction=train_fraction[0],
+            train_fraction=train_fraction,
             epochs=epochs,
             shuffle=shuffle,
-            model_prefix=model_prefix,
+            model_prefix=modelprefix,
         )
     else:
         raise ValueError(
@@ -150,9 +147,9 @@ if __name__ == "__main__":
     parser.add_argument("--train-ind", type=int, default=0)
     parser.add_argument("--modelprefix", type=str, default="")
     args = parser.parse_args()
-    solver = train_network(
-        config_path=args.config_path,
+    _ = train_network(
+        config=args.config_path,
         shuffle=args.shuffle,
-        training_set_index=args.train_ind,
-        model_prefix=args.modelprefix,
+        trainingsetindex=args.train_ind,
+        modelprefix=args.modelprefix,
     )
