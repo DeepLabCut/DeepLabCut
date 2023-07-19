@@ -1195,9 +1195,7 @@ def create_video_from_pickled_tracks(
 
 
 if __name__ == "__main__":
-    root = Path("/Users/niels/Documents/upamathis/datasets/")
-    project = "dev-ma-pen-2023-06-14"
-    create_video_with_all_detections(
-        config=str(root / project / "config.yaml"),
-        videos=[str(root / project / "videos" / "multipen.mov")],
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config")
+    parser.add_argument("videos")
+    cli_args = parser.parse_args()
