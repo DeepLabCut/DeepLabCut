@@ -77,7 +77,7 @@ def get_predictions_top_down(
         ]  # Boxes should be sorted by scores, only keep the maximum number allowed
     boxes = boxes.int()
     cropped_kpts_total = torch.full(
-        (batch_size, max_num_animals, num_keypoints, 3), -1.
+        (batch_size, max_num_animals, num_keypoints, 3), -1.0
     )
 
     for b in range(batch_size):

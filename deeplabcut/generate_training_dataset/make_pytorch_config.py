@@ -139,11 +139,11 @@ def make_pytorch_config(
             pytorch_config["method"] = "td"
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
-            pytorch_config['data']['auto_padding'] = {
-                'min_height': 64,
-                'min_width': 64,
-                'pad_width_divisor': 32,
-                'pad_height_divisor': 32,
+            pytorch_config["data"]["auto_padding"] = {
+                "min_height": 64,
+                "min_width": 64,
+                "pad_width_divisor": 32,
+                "pad_height_divisor": 32,
             }
             pytorch_config["detector"] = make_detector_cfg()
             pytorch_config["model"] = make_token_pose_model_cfg(

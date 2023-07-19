@@ -3,6 +3,7 @@ from typing import Tuple, Dict
 import torch
 import torch.nn as nn
 import numpy as np
+from collections import defaultdict
 
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver, SOLVERS
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -161,9 +162,7 @@ class TopDownSolver(Solver):
         to_mode_detector = getattr(self.detector, mode)
         to_mode_detector()
         epoch_detector_loss = []
-        metrics = {
-            "detector_loss": [],
-        }
+        metrics = defaultdict(list)
 
         # Detector training
         for i, batch_d in enumerate(detector_loader):
@@ -220,16 +219,15 @@ class TopDownSolver(Solver):
         to_mode_pose = getattr(self.model, mode)
         to_mode_pose()
         epoch_pose_loss = []
-        metrics = {
-            "total_pose_loss": [],
-        }
+        metrics = defaultdict(list)
 
         # Pose model training
         for i, batch in enumerate(pose_loader):
-            total_loss = self.step_pose(batch, mode)
-            epoch_pose_loss.append(total_loss)
+            losses_dict = self.step_pose(batch, mode)
+            epoch_pose_loss.append(losses_dict["total_loss"])
 
-            metrics["total_pose_loss"].append(total_loss)
+            for key in losses_dict.keys():
+                metrics["pose_" + key].append(losses_dict[key])
 
             # TODO good for evaluation speed up but should be optional
             # if mode == "eval" and i > 100:
@@ -237,7 +235,7 @@ class TopDownSolver(Solver):
 
             if (i + 1) % self.cfg["display_iters"] == 0:
                 print(
-                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['total_pose_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
+                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['pose_total_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
                 )
         epoch_pose_loss = np.mean(epoch_pose_loss)
 
@@ -254,7 +252,16 @@ class TopDownSolver(Solver):
 
         return epoch_pose_loss
 
-    def step_detector(self, batch, mode: str = "train"):
+    def step_detector(self, batch: dict, mode: str = "train") -> float:
+        """Performs a step for the detector over a batch
+
+        Args:
+            batch: batch returned by the dataloader
+            mode: "train" or "eval". Defaults to "train".
+
+        Returns:
+            loss : loss for the detector
+        """
         if mode not in ["train", "eval"]:
             raise ValueError(
                 f"Solver must be in train or eval mode, but {mode} was found."
@@ -287,7 +294,16 @@ class TopDownSolver(Solver):
             # No way to get losses in eval mode for the moment
             return 0.0
 
-    def step_pose(self, batch, mode: str = "train"):
+    def step_pose(self, batch: dict, mode: str = "train") -> dict:
+        """Performs a step for the pose estimator over a batch
+
+        Args:
+            batch: batch returned by the dataloader
+            mode: "train" or "eval". Defaults to "train".
+
+        Returns:
+            dict : the loss components over the batch, should always contain "total_loss" key
+        """
         if mode not in ["train", "eval"]:
             raise ValueError(
                 f"Solver must be in train or eval mode, but {mode} was found."
@@ -307,9 +323,11 @@ class TopDownSolver(Solver):
             if target[key] is not None:
                 target[key] = torch.tensor(target[key]).to(self.device)
 
-        total_loss = self.criterion(prediction, target)
+        losses_dict = self.criterion(prediction, target)
         if mode == "train":
-            total_loss.backward()
+            losses_dict["total_loss"].backward()
             self.optimizer.step()
 
-        return total_loss.detach().cpu().numpy()
+        for key in losses_dict.keys():
+            losses_dict[key] = losses_dict[key].detach().cpu().numpy()
+        return losses_dict

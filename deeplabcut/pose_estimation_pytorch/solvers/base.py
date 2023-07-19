@@ -5,6 +5,7 @@ from typing import Tuple, Dict
 import numpy as np
 import torch
 import torch.nn as nn
+from collections import defaultdict
 
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -121,7 +122,7 @@ class Solver(ABC):
         loader: torch.utils.data.DataLoader,
         mode: str = "train",
         step: Optional[int] = None,
-    ) -> np.array:
+    ) -> float:
         """
 
         Parameters
@@ -139,22 +140,17 @@ class Solver(ABC):
         to_mode = getattr(self.model, mode)
         to_mode()
         epoch_loss = []
-        metrics = {
-            "total_loss": [],
-            "heatmap_loss": [],
-            "locref_loss": [],
-        }
+        metrics = defaultdict(list)
         for i, batch in enumerate(loader):
-            loss, htmp_loss, locref_loss = self.step(batch, mode)
-            epoch_loss.append(loss)
+            losses_dict = self.step(batch, mode)
+            epoch_loss.append(losses_dict["total_loss"])
 
-            metrics["total_loss"].append(loss)
-            metrics["heatmap_loss"].append(htmp_loss)
-            metrics["locref_loss"].append(locref_loss)
+            for key in losses_dict.keys():
+                metrics[key].append(losses_dict[key])
 
             if (i + 1) % self.cfg["display_iters"] == 0:
                 print(
-                    f"Number of iterations : {i+1}, loss : {loss}, lr : {self.optimizer.param_groups[0]['lr']}"
+                    f"Number of iterations : {i+1}, loss : {losses_dict['total_loss']}, lr : {self.optimizer.param_groups[0]['lr']}"
                 )
         epoch_loss = np.mean(epoch_loss)
         self.history[f"{mode}_loss"].append(epoch_loss)
@@ -170,7 +166,7 @@ class Solver(ABC):
         return epoch_loss
 
     @abstractmethod
-    def step(self, batch: Tuple[torch.Tensor, torch.Tensor], *args) -> Optional:
+    def step(self, batch: Tuple[torch.Tensor, torch.Tensor], *args) -> dict:
         raise NotImplementedError
 
     @torch.no_grad()
@@ -197,7 +193,7 @@ class BottomUpSolver(Solver):
 
     def step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], mode: str = "train"
-    ) -> np.array:
+    ) -> dict:
         """Perform a single epoch gradient update or validation step.
 
         Parameters
@@ -207,7 +203,11 @@ class BottomUpSolver(Solver):
 
         Returns
         -------
-        batch loss, heatmap_loss, locref_loss
+        dict : {
+            'batch loss' : torch.Tensor,
+            'heatmap_loss' : torch.Tensor,
+            'locref_loss' : torch.Tensor
+        }
         """
         if mode not in ["train", "eval"]:
             raise ValueError(
@@ -226,13 +226,11 @@ class BottomUpSolver(Solver):
             if target[key] is not None:
                 target[key] = torch.tensor(target[key]).to(self.device)
 
-        total_loss, heatmap_loss, locref_loss = self.criterion(prediction, target)
+        losses_dict = self.criterion(prediction, target)
         if mode == "train":
-            total_loss.backward()
+            losses_dict["total_loss"].backward()
             self.optimizer.step()
 
-        return (
-            total_loss.detach().cpu().numpy(),
-            heatmap_loss.detach().cpu().numpy(),
-            locref_loss.detach().cpu().numpy(),
-        )  # rmse #, rmse_pcutoff
+        for key in losses_dict.keys():
+            losses_dict[key] = losses_dict[key].detach().cpu().numpy()
+        return losses_dict

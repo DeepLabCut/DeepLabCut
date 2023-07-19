@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from typing import Tuple
+
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 LOSSES = Registry("losses", build_func=build_from_cfg)
@@ -82,7 +84,7 @@ class PoseLoss(nn.Module):
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, prediction, target):
+    def forward(self, prediction: Tuple[torch.Tensor], target: dict) -> dict:
         """
 
         Parameters
@@ -91,13 +93,17 @@ class PoseLoss(nn.Module):
             Predicted heatmap and locref
         target: dict = {
             'heatmaps': torch.Tensor (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1]),
+            'heatmaps_ignored': torch.Tensor (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1])
+                                weights for the heatmaps
             'locref_maps': torch.Tensor (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
             'locref_masks': torch.Tensor (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'weights': torch.Tensor (optional, default is None)
         }
         Returns
         -------
-        loss: sum
+        losses_dict: dict of the different unweighted loss components, keys:
+                        - 'total_loss'
+                        - 'heatmap_loss'
+                        - 'locref_loss'
         """
         heatmaps, locref = prediction
         if self.apply_sigmoid:
@@ -115,7 +121,11 @@ class PoseLoss(nn.Module):
             locref, target["locref_maps"], target["locref_masks"]
         )
         total_loss = locref_loss * self.loss_weight_locref + heatmap_loss
-        return total_loss, heatmap_loss, locref_loss
+        return {
+            "total_loss": total_loss,
+            "heatmap_loss": heatmap_loss,
+            "locref_loss": locref_loss,
+        }
 
 
 @LOSSES.register_module
@@ -139,7 +149,7 @@ class HeatmapOnlyLoss(nn.Module):
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, prediction, target):
+    def forward(self, prediction: Tuple[torch.Tensor], target: dict) -> dict:
         """
 
         Parameters
@@ -148,13 +158,13 @@ class HeatmapOnlyLoss(nn.Module):
             Predicted heatmap and locref
         target: dict = {
             'heatmaps': torch.Tensor (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'locref_maps': torch.Tensor (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'locref_masks': torch.Tensor (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'weights': torch.Tensor (optional, default is None)
+            'heatmaps_ignored': torch.Tensor (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1])
+                                weights for the heatmaps
         }
         Returns
         -------
-        loss: sum
+        losses_dict: dict of the different unweighted loss components, keys:
+                        - 'total_loss'
         """
         heatmaps = prediction[0]
         if self.apply_sigmoid:
@@ -168,4 +178,6 @@ class HeatmapOnlyLoss(nn.Module):
                 heatmaps, target["heatmaps"], target.get("heatmaps_ignored", 1)
             )
 
-        return heatmap_loss
+        return {
+            "total_loss": heatmap_loss,
+        }
