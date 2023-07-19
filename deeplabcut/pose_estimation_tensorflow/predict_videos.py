@@ -1821,6 +1821,7 @@ def convert_detections2tracklets(
                     ass.assemble()
                     ass.to_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
                 else:
+                    print(f"Loading assemblies from {dataname.split(".h5")[0] + "_assemblies.pickle"}")
                     ass = pd.read_pickle(dataname.split(".h5")[0] + "_assemblies.pickle")
                 try:
                     data.close()
