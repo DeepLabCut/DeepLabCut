@@ -1872,7 +1872,7 @@ def convert_detections2tracklets(
                                 xy = animals[:, keep_inds, :2]
                             trackers = mot_tracker.track(xy)
                         elif isinstance(ass, dict) and identity_only:
-                            #identity assignement if read from _assemblies.pickle
+                            #identity assignment if read from _assemblies.pickle
                             mat = np.zeros(
                                 (len(assemblies), inferencecfg["topktoretain"])
                             )
