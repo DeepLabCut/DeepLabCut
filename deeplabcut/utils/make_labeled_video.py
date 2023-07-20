@@ -1047,7 +1047,7 @@ def create_video_with_all_detections(
         If False, all keypoints will be plot with alpha=1. Otherwise, this can be
         defined as a function f: [0, 1] -> [0, 1] such that the alpha value for a
         keypoint will be set as a function of its score: alpha = f(score). The default
-        function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
+        function used when True is f(x) = x.
     """
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import re
