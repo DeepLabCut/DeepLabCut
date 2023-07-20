@@ -84,7 +84,9 @@ def create_tracking_dataset(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
+        physical_devices = tf.config.list_physical_devices('GPU')
+        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
+        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -479,7 +481,9 @@ def analyze_videos(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
+        physical_devices = tf.config.list_physical_devices('GPU')
+        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
+        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -1290,7 +1294,9 @@ def analyze_time_lapse_frames(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
+        physical_devices = tf.config.list_physical_devices('GPU')
+        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
+        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -1378,7 +1384,9 @@ def analyze_time_lapse_frames(
     )
 
     if gputouse is not None:  # gpu selectinon
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
+        physical_devices = tf.config.list_physical_devices('GPU')
+        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
+        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
 
     ##################################################
     # Loading the images
