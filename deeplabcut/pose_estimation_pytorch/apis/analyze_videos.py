@@ -17,6 +17,7 @@ from typing import List, Tuple, Optional, Union
 import albumentations as A
 import cv2
 import numpy as np
+from skimage.transform import resize
 import pandas as pd
 import torch
 from tqdm import tqdm
@@ -43,7 +44,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.apis.inference import (
     get_predictions_bottom_up,
-    get_predictions_top_down,
+    get_detections_batch,
 )
 
 
@@ -57,11 +58,10 @@ def video_inference(
     colormode: Optional[str] = "RGB",
     method: Optional[str] = "bu",
     detector: Optional[BaseDetector] = None,
-    top_down_predictor: Optional[BasePredictor] = None,
     max_num_animals: Optional[int] = 1,
     num_keypoints: Optional[int] = 1,
     frames_resized: Optional[bool] = False,
-) -> List[np.ndarray]:
+) -> np.ndarray:
     """
     TODO: This should be refactored to use the `inference` code with a `video dataset`
 
@@ -87,15 +87,65 @@ def video_inference(
         for each frame in the video, a numpy array containing the output of the
         predictor for the frame
     """
+
+    if method.lower() == "bu":
+        return bottom_up_video_inference(
+            model,
+            predictor,
+            video_path,
+            batch_size,
+            device,
+            transform,
+            colormode,
+            frames_resized,
+        )
+    elif method.lower() == "td":
+        return top_down_video_inference(
+            detector,
+            model,
+            predictor,
+            video_path,
+            batch_size,
+            device,
+            transform,
+            colormode,
+            max_num_animals,
+            num_keypoints,
+            frames_resized,
+        )
+
+
+def bottom_up_video_inference(
+    model: PoseModel,
+    predictor: BasePredictor,
+    video_path: Path,
+    batch_size: int = 1,
+    device: Optional[str] = None,
+    transform: Optional[A.Compose] = None,
+    colormode: Optional[str] = "RGB",
+    frames_resized: Optional[bool] = False,
+) -> np.ndarray:
+    """Does batched inference for top down over a video
+
+    Args:
+        model: pose_estimator
+        predictor: predictor to regress the coordinates inside the cropped image from the pose_estimator's outputs
+        video_path: path to the video/folder of videos
+        batch_size: batch_size. Defaults to 1.
+        device: device on which to run inference. Defaults to None.
+        transform: transform for inference (normalizing, padding...). Defaults to None.
+        colormode: "BGR" or "RGB. Defaults to "RGB".
+        frames_resized: Whether the frames were resized or not. Defaults to False.
+
+    Returns:
+        List of pose predictions, each element has shape (max_num_animals, num_keypoints, 3)
+    """
     if device is None:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # Set the model to eval mode and put it on the device
     model.eval()
     model.to(device)
-    if detector is not None:
-        detector.eval()
-        detector.to(device)
 
     print(f"Loading {video_path}")
     video_reader = VideoReader(str(video_path))
@@ -136,28 +186,11 @@ def video_inference(
                 batch = torch.tensor(
                     batch_frames, device=device, dtype=torch.float
                 ).permute(0, 3, 1, 2)
-                if method.lower() == "td":
-                    batched_predictions = get_predictions_top_down(
-                        detector=detector,
-                        model=model,
-                        predictor=predictor,
-                        images=batch,
-                        max_num_animals=max_num_animals,
-                        num_keypoints=num_keypoints,
-                        device=device,
-                    )
-                elif method.lower() == "bu":
-                    batched_predictions = get_predictions_bottom_up(
-                        model=model,
-                        predictor=predictor,
-                        images=batch,
-                    )
-                else:
-                    raise ValueError(
-                        "Method must be either 'bu' (Bottom Up) or 'td' (Top Down)."
-                    )
-
-                # TODO: use resize_batch_predictions from `inference.py`
+                batched_predictions = get_predictions_bottom_up(
+                    model=model,
+                    predictor=predictor,
+                    images=batch,
+                )
                 for frame_pred in batched_predictions:
                     if frames_resized:
                         resizing_factor = (original_size[0] / transformed_size[0]), (
@@ -178,7 +211,206 @@ def video_inference(
             batch_ind = batch_ind % batch_size
             pbar.update(1)
 
-    return predictions
+    pbar.close()
+
+    return np.array(predictions)
+
+
+def top_down_video_inference(
+    detector: BaseDetector,
+    model: PoseModel,
+    predictor: BasePredictor,
+    video_path: Path,
+    batch_size: int = 1,
+    device: Optional[str] = None,
+    transform: Optional[A.Compose] = None,
+    colormode: Optional[str] = "RGB",
+    max_num_animals: Optional[int] = 1,
+    num_keypoints: Optional[int] = 1,
+    frames_resized: Optional[bool] = False,
+) -> np.ndarray:
+    """Does batched inference for top down over a video
+
+    Args:
+        detector: detector used to detect animals.
+        model: pose_estimator
+        predictor: predictor to regress the coordinates inside the cropped image from the pose_estimator's outputs
+        video_path: path to the video/folder of videos
+        batch_size: batch_size. Defaults to 1.
+        device: device on which to run inference. Defaults to None.
+        transform: transform for inference (normalizing, padding...). Defaults to None.
+        colormode: "BGR" or "RGB. Defaults to "RGB".
+        max_num_animals: Maximum number of animals. Defaults to 1.
+        num_keypoints: Number of keypoints. Defaults to 1.
+        frames_resized: Whether the frames were resized or not. Defaults to False.
+
+    Returns:
+        tensor of pose predictions, shape (num_frames, max_num_animals, num_keypoints, 3)
+    """
+    if device is None:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    # Set the models to eval mode and put it on the device
+    model.eval()
+    model.to(device)
+    detector.eval()
+    detector.to(device)
+    top_down_predictor = PREDICTORS.build(
+        {"type": "TopDownPredictor", "format_bbox": "xyxy"}
+    )
+    print(f"Loading {video_path}")
+    video_reader = VideoReader(str(video_path))
+    n_frames = video_reader.get_n_frames()
+    vid_w, vid_h = video_reader.dimensions
+    print(
+        f"Video metadata: \n"
+        f"  n_frames:   {n_frames}\n"
+        f"  fps:        {video_reader.fps}\n"
+        f"  resolution: w={vid_w}, h={vid_h}\n"
+    )
+
+    pbar = tqdm(total=n_frames, file=sys.stdout)
+    predictions = []
+    frame = video_reader.read_frame()
+    original_size = frame.shape
+    transformed_size = original_size
+    if transform:
+        # Apply transformation once only to see the shape after transformation
+        transformed_size = transform(image=frame, keypoints=[])["image"].shape
+
+    # Animal detections
+    batch_ind_detect = 0  # Index of the current img in batch
+    batch_detect_frames = np.empty(
+        (batch_size, transformed_size[0], transformed_size[1], 3)
+    )
+
+    detections_list = []
+    detections = torch.zeros((n_frames, max_num_animals, 4))
+    with torch.no_grad():
+        while frame is not None:
+            if frame.dtype != np.uint8:
+                frame = img_as_ubyte(frame)
+
+            if colormode == "BGR":
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            if transform:
+                frame = transform(image=frame, keypoints=[])["image"]
+
+            batch_detect_frames[batch_ind_detect] = frame
+            if batch_ind_detect == batch_size - 1:
+                batch = torch.tensor(
+                    batch_detect_frames, device=device, dtype=torch.float
+                ).permute(0, 3, 1, 2)
+                batched_detections = get_detections_batch(
+                    detector, batch, max_num_animals
+                )
+                for detect in batched_detections:
+                    detections_list.append(detect)
+
+            frame = video_reader.read_frame()
+            batch_ind_detect += 1
+            batch_ind_detect = batch_ind_detect % batch_size
+            pbar.update(1)
+        if batch_ind_detect != 0:
+            batch = torch.tensor(
+                batch_detect_frames, device=device, dtype=torch.float
+            ).permute(0, 3, 1, 2)
+            batched_detections = get_detections_batch(detector, batch, max_num_animals)
+            for detect in batched_detections[:batch_ind_detect]:
+                detections_list.append(detect)
+
+    pbar.close()
+
+    print("Detections are done, moving to estimating poses...")
+
+    detections = torch.stack(detections_list)
+
+    # Pose estimation
+    batch_ind_pose = 0  # Index of the current pose img in batch
+    batch_pose_frames = torch.empty(
+        (batch_size, 3, 256, 256), device=device
+    )  # TODO 256 hardcoded
+
+    # This array stores (image_idx, animal_idx, bbox_coords)
+    # To be able to go back to it from bacthed cropepd images
+    batch_image_infos = torch.zeros((batch_size, 6))
+    cropped_predictions = torch.full(
+        (n_frames, max_num_animals, num_keypoints, 3), -1.0
+    )
+
+    video_reader.reset()
+    frame = video_reader.read_frame()
+    frame_index = 0
+    pbar = tqdm(total=n_frames, file=sys.stdout)
+    with torch.no_grad():
+        while frame is not None:
+            if frame.dtype != np.uint8:
+                frame = img_as_ubyte(frame)
+
+            if colormode == "BGR":
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            if transform is not None:
+                frame = transform(image=frame, keypoints=[])["image"]
+
+            for animal_idx, box in enumerate(detections[frame_index]):
+                if (box == 0.0).all():
+                    continue
+                cropped_image = frame[box[1] : box[3] + 1, box[0] : box[2] + 1, :]
+                cropped_image = resize(
+                    cropped_image, (256, 256)
+                )  # TODO: hardcoded for now
+                cropped_image = torch.tensor(cropped_image.transpose(2, 0, 1)).to(
+                    device
+                )
+                batch_pose_frames[batch_ind_pose] = cropped_image
+                batch_image_infos[batch_ind_pose, 0] = frame_index
+                batch_image_infos[batch_ind_pose, 1] = animal_idx
+                batch_image_infos[batch_ind_pose, 2:] = box
+
+                if batch_ind_pose == batch_size - 1:
+                    model_outputs = model(batch_pose_frames)
+                    # TODO hardcoded for now
+                    scale_factors = (
+                        256 / model_outputs[0].shape[2],
+                        256 / model_outputs[0].shape[3],
+                    )
+                    pose_predictions = predictor(model_outputs, scale_factors)
+                    for idx, prediction in enumerate(pose_predictions):
+                        cropped_predictions[
+                            batch_image_infos[idx, 0].detach().int(),
+                            batch_image_infos[idx, 1].detach().int(),
+                        ] = prediction[0]
+
+                batch_ind_pose += 1
+                batch_ind_pose = batch_ind_pose % batch_size
+
+            frame = video_reader.read_frame()
+            frame_index += 1
+            pbar.update(1)
+
+        # Left cropped images
+        if batch_ind_pose != 0:
+            model_outputs = model(batch_pose_frames)
+            # TODO hardcoded for now
+            scale_factors = (
+                256 / model_outputs[0].shape[2],
+                256 / model_outputs[0].shape[3],
+            )
+            pose_predictions = predictor(model_outputs, scale_factors)
+            for idx, prediction in enumerate(pose_predictions):
+                if batch_image_infos[idx, 0] != -1.0:
+                    cropped_predictions[
+                        batch_image_infos[idx, 0].detach().int(),
+                        batch_image_infos[idx, 1].detach().int(),
+                    ] = prediction[0]
+    pbar.close()
+    predictions = top_down_predictor(detections, cropped_predictions)
+
+    print("Keypoints coordinate prediction done !")
+
+    return predictions.detach().cpu().numpy()
 
 
 def analyze_videos(
@@ -367,7 +599,7 @@ def analyze_videos(
                 names=["scorer", "bodyparts", "coords"],
             )
             df = pd.DataFrame(
-                np.array(predictions).reshape((len(predictions), -1)),
+                predictions.reshape((len(predictions), -1)),
                 columns=results_df_index,
                 index=range(len(predictions)),
             )

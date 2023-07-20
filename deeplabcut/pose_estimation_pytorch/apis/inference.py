@@ -1,8 +1,8 @@
 from typing import Union, List, Dict, Tuple, Optional
 
 import torch
+from torchvision.transforms import Resize as TorchResize
 import numpy as np
-from skimage.transform import resize
 
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
@@ -46,7 +46,7 @@ def get_predictions_top_down(
     images: torch.Tensor,
     max_num_animals: int,
     num_keypoints: int,
-    device: Union[torch.device, str],
+    resize_object: TorchResize,
 ) -> np.array:
     """
     TODO probably quite bad design, most arguments could be stored somewhere else
@@ -86,16 +86,8 @@ def get_predictions_top_down(
         for j, box in enumerate(boxes[b]):
             if (box == 0.0).all():
                 continue
-            cropped_image = (
-                images[b][:, box[1] : box[3], box[0] : box[2]]
-                .permute(1, 2, 0)
-                .cpu()
-                .numpy()
-            )  # needs to be (h,w,c) for resizing
-            cropped_image = resize(cropped_image, (256, 256))  # TODO: hardcoded for now
-            cropped_image = (
-                torch.tensor(cropped_image.transpose(2, 0, 1)).unsqueeze(0).to(device)
-            )
+            cropped_image = images[b][:, box[1] : box[3] + 1, box[0] : box[2] + 1]
+            cropped_image = resize_object(cropped_image).unsqueeze(0)
             heatmaps = model(cropped_image)
 
             scale_factors_cropped = (
@@ -108,6 +100,69 @@ def get_predictions_top_down(
 
     final_predictions = top_down_predictor(boxes, cropped_kpts_total)
     return final_predictions.cpu().numpy()
+
+
+def get_detections_batch(
+    detector: BaseDetector,
+    images: torch.Tensor,
+    max_num_animals: int,
+) -> torch.Tensor:
+    """Given a batch of images, outputs the predicted bboxes.
+
+    Args:
+        detector: detector model
+        images: batch of images, shape (batch_size, 3, height, width)
+        max_num_animals: maximum number of accepted detections
+
+    Returns:
+        The coordinates of the bounding boxes shape (batch_size, max_num_animals, 4)
+    """
+    batch_size = images.shape[0]
+
+    output_detector = detector(images)
+
+    boxes = torch.zeros((batch_size, max_num_animals, 4))
+    for b, item in enumerate(output_detector):
+        boxes[b][: min(max_num_animals, len(item["boxes"]))] = item["boxes"][
+            :max_num_animals
+        ]  # Boxes should be sorted by scores, only keep the maximum number allowed
+    boxes = boxes.int()
+
+    return boxes
+
+
+def get_pose_batch(
+    pose_model: PoseModel,
+    predictor: BasePredictor,
+    cropped_images: torch.Tensor,
+) -> torch.Tensor:
+    """Given a batch of cropped images, outputs a batch of predicted pose coordinates.
+    Coordinates are still in cropped image space and needs to be handled accordingly to
+    be back in input space.
+
+    Should only be used for top down with a predictor for single animal
+
+    Args:
+        pose_model: pose_estimation model
+        predictor: regresses the coordinates of the keypoints inside the cropped images
+                Must be a single animal predictor
+        cropped_images: Batch of cropped images for the top down pose_estimation
+
+    Returns:
+        Tensor of the estimated poses (inside the cropped image), shape (batch_size, num_joints, 3)
+    """
+    outputs = pose_model(cropped_images)
+
+    scale_factors_cropped = (
+        cropped_images.shape[2] / outputs[0].shape[2],
+        cropped_images.shape[3] / outputs[0].shape[3],
+    )
+
+    # Predictor always returns num_animals as 2nd dimension even for single animal ones
+    # Hence the slicing
+    poses = predictor(outputs, scale_factors_cropped)[:, 0]
+
+    return poses
 
 
 def match_predicted_individuals_to_annotations(
@@ -225,12 +280,15 @@ def inference(
     predictor.to(device)
 
     top_down_predictor = None
+    resize_object = None
     if method == "td":
         top_down_predictor = PREDICTORS.build(
             {"type": "TopDownPredictor", "format_bbox": "xyxy"}
         )
         top_down_predictor.eval()
         top_down_predictor.to(device)
+
+        resize_object = TorchResize((256, 256))  # TODO hardcoded 256
 
     predicted_poses = []
     with torch.no_grad():
@@ -247,6 +305,7 @@ def inference(
                     max_num_animals=max_individuals,
                     num_keypoints=num_keypoints,
                     device=device,
+                    resize_object=resize_object,
                 )
             else:
                 predictions = get_predictions_bottom_up(

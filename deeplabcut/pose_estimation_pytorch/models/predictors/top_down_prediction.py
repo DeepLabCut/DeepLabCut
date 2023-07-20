@@ -59,6 +59,7 @@ class TopDownPredictor(BasePredictor):
 
         x_corners = (bboxes[:, :, 0]).unsqueeze(2).expand(-1, -1, num_joints)
         y_corners = (bboxes[:, :, 1]).unsqueeze(2).expand(-1, -1, num_joints)
+        # TODO harcoded 256
         scales_x = (bboxes[:, :, 2] / 256).unsqueeze(2).expand(-1, -1, num_joints)
         scales_y = (bboxes[:, :, 3] / 256).unsqueeze(2).expand(-1, -1, num_joints)
 
