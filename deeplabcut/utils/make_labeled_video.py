@@ -618,8 +618,12 @@ def create_labeled_video(
     )
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
-        if displayedbodyparts!="all":
-            bodyparts2connect = [pair for pair in bodyparts2connect if all(element in displayedbodyparts for element in pair)]
+        if displayedbodyparts != "all":
+            bodyparts2connect = [
+                pair
+                for pair in bodyparts2connect
+                if all(element in displayedbodyparts for element in pair)
+            ]
         skeleton_color = cfg["skeleton_color"]
     else:
         bodyparts2connect = None
@@ -1222,7 +1226,6 @@ def _get_default_conf_to_alpha(
         return np.clip((x - pcutoff) / (1 - pcutoff), 0, 1)
 
     return default_confidence_to_alpha
-
 
 
 if __name__ == "__main__":
