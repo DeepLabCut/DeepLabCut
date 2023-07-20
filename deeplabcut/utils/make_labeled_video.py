@@ -31,7 +31,7 @@ import os.path
 from pathlib import Path
 from functools import partial
 from multiprocessing import Pool, get_start_method
-from typing import Iterable
+from typing import Iterable, Callable, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -84,7 +84,7 @@ def CreateVideo(
     draw_skeleton,
     displaycropped,
     color_by,
-    alpha_for_confidence=False,
+    confidence_to_alpha=None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
@@ -191,8 +191,9 @@ def CreateVideo(
                         (df_y[ind, index], df_x[ind, index]), dotsize, shape=(ny, nx)
                     )
                     alpha = 1
-                    if alpha_for_confidence:
-                        alpha = np.clip(df_likelihood[ind, index], 0, 1)
+                    if confidence_to_alpha is not None:
+                        alpha = confidence_to_alpha(df_likelihood[ind, index])
+
                     set_color(image, (rr, cc), color, alpha)
 
             clip.save_frame(image)
@@ -389,7 +390,7 @@ def create_labeled_video(
     colormap="rainbow",
     alphavalue=0.5,
     overwrite=False,
-    alpha_for_confidence: bool = False,
+    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
 ):
     """Labels the bodyparts in a video.
 
@@ -504,8 +505,11 @@ def create_labeled_video(
     overwrite: bool, optional, default=False
         If ``True`` overwrites existing labeled videos.
 
-    alpha_for_confidence: bool, default=False
-        If True, the alpha value for each keypoint will be set as its confidence score
+    confidence_to_alpha: Union[bool, Callable[[float], float], default=False
+        If False, all keypoints will be plot with alpha=1. Otherwise, this can be
+        defined as a function f: [0, 1] -> [0, 1] such that the alpha value for a
+        keypoint will be set as a function of its score: alpha = f(score). The default
+        function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
 
     Returns
     -------
@@ -576,6 +580,10 @@ def create_labeled_video(
     if save_frames:
         fastmode = False  # otherwise one cannot save frames
         keypoints_only = False
+
+    # parse the alpha selection function
+    if isinstance(confidence_to_alpha, bool):
+        confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, pcutoff)
 
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
@@ -648,7 +656,7 @@ def create_labeled_video(
         keypoints_only,
         overwrite,
         init_weights=init_weights,
-        alpha_for_confidence=alpha_for_confidence,
+        confidence_to_alpha=confidence_to_alpha,
     )
 
     if get_start_method() == "fork":
@@ -688,7 +696,7 @@ def proc_video(
     overwrite,
     video,
     init_weights="",
-    alpha_for_confidence: bool = False,
+    confidence_to_alpha: Optional[Callable[[float], float]] = None,
 ):
     """Helper function for create_videos
 
@@ -826,7 +834,7 @@ def proc_video(
                     trailpoints=trailpoints,
                     fps=outputframerate,
                     display_cropped=displaycropped,
-                    alpha_for_confidence=alpha_for_confidence,
+                    confidence_to_alpha=confidence_to_alpha,
                 )
             return True
 
@@ -852,7 +860,7 @@ def _create_labeled_video(
     codec="mp4v",
     fps=None,
     output_path="",
-    alpha_for_confidence=False,
+    confidence_to_alpha=None,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -906,7 +914,7 @@ def _create_labeled_video(
         bool(skeleton_edges),
         display_cropped,
         color_by,
-        alpha_for_confidence=alpha_for_confidence,
+        confidence_to_alpha=confidence_to_alpha,
     )
 
 
@@ -999,7 +1007,7 @@ def create_video_with_all_detections(
     displayedbodyparts="all",
     destfolder=None,
     modelprefix="",
-    alpha_for_confidence: bool = False,
+    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
 ):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
@@ -1031,8 +1039,11 @@ def create_video_with_all_detections(
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
 
-    alpha_for_confidence: bool, default=False
-        If True, the alpha value for each keypoint will be set as its confidence score
+    confidence_to_alpha: Union[bool, Callable[[float], float], default=False
+        If False, all keypoints will be plot with alpha=1. Otherwise, this can be
+        defined as a function f: [0, 1] -> [0, 1] such that the alpha value for a
+        keypoint will be set as a function of its score: alpha = f(score). The default
+        function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
     """
     from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import re
@@ -1046,6 +1057,9 @@ def create_video_with_all_detections(
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     if not videos:
         return
+
+    if isinstance(confidence_to_alpha, bool):
+        confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, 0)
 
     for video in videos:
         videofolder = os.path.splitext(video)[0]
@@ -1106,8 +1120,8 @@ def create_video_with_all_detections(
                         x, y = det.pos
                         rr, cc = disk((y, x), dotsize, shape=(ny, nx))
                         alpha = 1
-                        if alpha_for_confidence:
-                            alpha = np.clip(det.confidence, 0, 1)
+                        if confidence_to_alpha is not None:
+                            alpha = confidence_to_alpha(det.confidence)
 
                         set_color(
                             frame,
@@ -1192,6 +1206,23 @@ def create_video_from_pickled_tracks(
         output_name = video_name + "DLClabeled" + ext
     tracks = auxiliaryfunctions.read_pickle(pickle_file)
     _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff)
+
+
+def _get_default_conf_to_alpha(
+    confidence_to_alpha: bool,
+    pcutoff: float,
+) -> Optional[Callable[[float], float]]:
+    """Creates the default confidence_to_alpha function"""
+    if not confidence_to_alpha:
+        return None
+
+    def default_confidence_to_alpha(x):
+        if pcutoff == 0:
+            return x
+        return np.clip((x - pcutoff) / (1 - pcutoff), 0, 1)
+
+    return default_confidence_to_alpha
+
 
 
 if __name__ == "__main__":
