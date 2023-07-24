@@ -153,7 +153,9 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(config_path, plotting=True)
+    deeplabcut.evaluate_network(
+        config_path, plotting=True, per_keypoint_evaluation=True
+    )
 
     print("Network evaluated....")
 
@@ -296,7 +298,9 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(config_path, plotting=True)
+    deeplabcut.evaluate_network(
+        config_path, plotting=True, per_keypoint_evaluation=True
+    )
 
     print("Network evaluated....")
 
