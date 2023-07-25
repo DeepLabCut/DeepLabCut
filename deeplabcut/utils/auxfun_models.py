@@ -19,6 +19,7 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
+import tensorflow as tf
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -155,6 +156,16 @@ def download_model(modelname, target_dir):
         ]
         print("Model does not exist: ", modelname)
         print("Pick one of the following: ", models)
+
+
+def set_visible_devices(gputouse: int):
+    physical_devices = tf.config.list_physical_devices("GPU")
+    n_devices = len(physical_devices)
+    if gputouse >= n_devices:
+        raise ValueError(
+            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {list(range(n_devices))}."
+        )
+    tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
 
 
 # Aliases for backwards-compatibility

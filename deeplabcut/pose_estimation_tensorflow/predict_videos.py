@@ -36,7 +36,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils, trackingutils
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_models
 from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
     GetPoseF_OV,
     is_openvino_available,
@@ -84,9 +84,7 @@ def create_tracking_dataset(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        physical_devices = tf.config.list_physical_devices('GPU')
-        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
-        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
+        auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -481,9 +479,7 @@ def analyze_videos(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        physical_devices = tf.config.list_physical_devices('GPU')
-        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
-        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
+        auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -1294,9 +1290,7 @@ def analyze_time_lapse_frames(
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
     if gputouse is not None:  # gpu selection
-        physical_devices = tf.config.list_physical_devices('GPU')
-        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
-        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
+        auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
     start_path = os.getcwd()  # record cwd to return to this directory in the end
@@ -1384,9 +1378,7 @@ def analyze_time_lapse_frames(
     )
 
     if gputouse is not None:  # gpu selectinon
-        physical_devices = tf.config.list_physical_devices('GPU')
-        assert gputouse < len(physical_devices), f"There are {len(physical_devices)} available GPUs: {physical_devices}\nPlease choose gputouse in {np.arange(len(physical_devices))}"
-        tf.config.set_visible_devices(physical_devices[gputouse], 'GPU')
+        auxfun_models.set_visible_devices(gputouse)
 
     ##################################################
     # Loading the images
