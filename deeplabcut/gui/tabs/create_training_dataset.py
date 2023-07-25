@@ -47,6 +47,8 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
+        layout.setColumnMinimumWidth(3, 300)
+
         # Shuffle
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
