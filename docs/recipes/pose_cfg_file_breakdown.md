@@ -35,9 +35,6 @@ The `pose_cfg.yaml` file offers easy access to a range of training parameters th
 <a id="hyperparam"></a>
 ## 3.1 Training Hyperparameters 
 
-<a id="hyperparam"></a>
-## 3.1 Training Hyperparameters 
-
 <a id="input_size"></a>
 ### 3.1.A `max_input_size` and `min_input_size`
 The default values are `1500` and `64`, respectively. 
