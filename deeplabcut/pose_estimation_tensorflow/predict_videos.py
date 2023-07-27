@@ -28,7 +28,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from scipy.optimize import linear_sum_assignment
-from scipy.special import softmax
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
