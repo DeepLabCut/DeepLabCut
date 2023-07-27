@@ -55,7 +55,7 @@ The default value is `0.8`. It's the most basic, first scaling that happens to a
 
 The default for single animal projects is 1, and for maDLC projects it's `8`. It's the number of frames used per training iteration.
 
-In both cases, you can increase the batchsize up to the limit of your GPU memory and train for a lower number of iterations. The relationship between the number of iterations and `batch_size` is not linear so `batch_size: 8` doesn't mean you can train for 8x less iterations, but like with every training, plateauing loss can be treated as an indicator of reaching optimal performance.
+In both cases, you can increase the batchsize up to the limit of your GPU memory and train for a lower number of iterations. The relationship between the number of iterations and `batch_size` is not linear, so `batch_size: 8` doesn't mean you can train for 8x less iterations, but like with every training, plateauing loss can be treated as an indicator of reaching optimal performance.
 
 💡Pro-tip:💡
 - Having a higher `batch_size` can be beneficial in terms of models' generalization
@@ -72,6 +72,7 @@ The default value is `17`. It's the size of a window within which detections are
 ### 3.1.E `pafwidth`
 The default value is `20`. PAF stands for part affinity fields. It is a method of learning associations between pairs of bodyparts by preserving the location and orientation of the limb (the connection between two keypoints). This learned part affinity helps in proper animal assembly, making the model less prone to associating bodyparts of one individual with those of another. [1](#ref1)
 <a id="data_aug"></a>
+
 ## 3.2 Data augmentation parameters
 In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world. [2, 3, 4](#references)
 
@@ -101,7 +102,7 @@ Classes of data augmentations, characterized by their nature, are given by:
 
 The image below, retrieved from [3](#ref3), illustrates the difference between two scale jittering methods.
 
-![scale_jittering.png](attachment:scale_jittering.png)
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471482096-VLLQJU4H6AH6ESMZGNQW/scale_jittering.png?format=1000w">
 
 During training, each image is randomly scaled within the range `[scale_jitter_lo, scale_jitter_up]` to augment training data. The default values for these two parameters are:
 - `scale_jitter_lo = 0.5`
@@ -122,7 +123,8 @@ During training, each image is randomly scaled within the range `[scale_jitter_l
 *Rotation augmentations* are done by rotating the image right or left on an axis between $1^{\circ}$ and $359^{\circ}$. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between $+1^{\circ}$ and $+20^{\circ}$ or $-1^{\circ}$ to $-20^{\circ}$ is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease 
 
 The image below, retrieved from [2](#ref2), illustrates the difference between the different rotation degrees.
-![augset_rot.png](attachment:augset_rot.png)
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471478493-Z4JEWJG0I7MB9AYCB322/augset_rot.png?format=750w">
 
 During training, each image is rotated $+/-$ the `rotation` degree parameter set. By default, this parameter is set to `25`, which means that the images are augmented with a $+25^{\circ}$ rotation of itself and a $-25^{\circ}$ degree rotation of itself. Should you want to opt out of this augmentation, set the rotation value to `False`.
 
@@ -146,7 +148,8 @@ This parameter in the DLC module is given by the percentage of sampled data to b
 **Mirroring**, otherwise called **horizontal axis fipping**, is much more common than flipping the vertical axis. This augmentation is one of the easiest to implement and has proven useful on datasets such as CIFAR-10 and ImageNet. However, on datasets involving text recognition, such as MNIST or SVHN, this is not a label-preserving transformation.
 
 The image below is an illustration of this property (shown on the right-most column).
-![augset_flip.png](attachment:augset_flip.png)
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471476980-RGW6NDYR5BSMN27G9K30/augset_flip.png?format=1500w">
 
 This parameter randomly flips an image horizontally to augment training data.
 By default, this parameter is set to `False` especially on poses with mirror symmetric joints (for example, so the left hand and right hand are not swapped).
@@ -154,8 +157,6 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 💡Pro-tip:💡
 - ⭐ If you work with labels with symmetric joints, keep the **default** value **unchanged** - unless the dataset is biased (animal moves mostly in one direction, but sometimes in the opposite)✅
 - Keeping the default value to `False` will work well in most cases.
-
-<a id ="crop_size"></a>
 
 <a id ="crop_size"></a>
  ### 3.2.5 `crop_size`
@@ -178,7 +179,7 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 
  The image below is modified from 
  [2](#references). 
- ![cropping.png](attachment:cropping.png)
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471479692-R078RFZXIQ8K552OIOFP/cropping.png?format=750w">
 
  <a id ="crop_sampling"></a>
  ### 3.2.8 `crop_sampling`
@@ -199,7 +200,7 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 
  The image below is modified from 
  [2](#references). 
- ![kernelfilter.png](attachment:kernelfilter.png)
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471480991-HBZAYJP1FY0K8H2KB8DB/kernelfilter.png?format=1500w">
 
  <a id ="edge"></a>
  ### 3.2.10 `edge`
