@@ -1796,7 +1796,7 @@ def convert_detections2tracklets(
                         inferencecfg.get("min_hits", 1),
                         inferencecfg.get("iou_threshold", 0.6),
                     )
-                                tracklets = {}
+                tracklets = {}
                 multi_bpts = cfg["multianimalbodyparts"]
                 ass = inferenceutils.Assembler(
                     data,
