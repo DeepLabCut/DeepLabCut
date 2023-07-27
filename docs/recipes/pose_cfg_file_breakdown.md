@@ -1,3 +1,40 @@
+# The `pose_cfg.yaml` Handbook
+Hello! Mabuhay! Hola!
+In this notebook, we will have a rundown on the following pose config parameters related to models' training and data augmentation:
+
+# 2. What is *pose_cfg.yml*?
+<a id="whatisposecfg"></a>
+The `pose_cfg.yaml` file offers easy access to a range of training parameters that the user may want or have to adjust depending on the used dataset and task. This recipe is aimed at giving an average user an intuition on those hyperparameters and situations in which addressing them can be useful.
+
+# 3. Full parameter list
+<a id="fullparamlist"></a>
+- [The `pose_cfg.yaml` Handbook](#the-pose_cfgyaml-handbook)
+- [2. What is *pose\_cfg.yml*?](#2-what-is-pose_cfgyml)
+- [3. Full parameter list](#3-full-parameter-list)
+  - [3.1 Training Hyperparameters](#31-training-hyperparameters)
+    - [3.1.A `max_input_size` and `min_input_size`](#31a-max_input_size-and-min_input_size)
+    - [3.1.B `global_scale`](#31b-global_scale)
+    - [3.1.C `batch_size`](#31c-batch_size)
+    - [3.1.D `pos_dist_thresh`](#31d-pos_dist_thresh)
+    - [3.1.E `pafwidth`](#31e-pafwidth)
+  - [3.2 Data augmentation parameters](#32-data-augmentation-parameters)
+    - [Geometric transformations](#geometric-transformations)
+    - [3.2.1 `scale_jitter_lo` and `scale_jitter_up`](#321-scale_jitter_lo-and-scale_jitter_up)
+    - [3.1.2 `rotation`](#312-rotation)
+    - [3.2.3 `rotratio` (rotation ratio)](#323-rotratio-rotation-ratio)
+    - [3.2.4 `fliplr` (or a horizontal flip)](#324-fliplr-or-a-horizontal-flip)
+    - [3.2.5 `crop_size`](#325-crop_size)
+    - [3.2.6 `crop_ratio`](#326-crop_ratio)
+    - [3.2.7 `max_shift`](#327-max_shift)
+    - [3.2.8 `crop_sampling`](#328-crop_sampling)
+    - [Kernel transformations](#kernel-transformations)
+    - [3.2.9 `sharpening` and `sharpenratio`](#329-sharpening-and-sharpenratio)
+    - [3.2.10 `edge`](#3210-edge)
+- [References](#references)
+
+<a id="hyperparam"></a>
+## 3.1 Training Hyperparameters 
+
 <a id="hyperparam"></a>
 ## 3.1 Training Hyperparameters 
 
@@ -37,6 +74,91 @@ The default value is `17`. It's the size of a window within which detections are
 <a id="paf"></a>
 ### 3.1.E `pafwidth`
 The default value is `20`. PAF stands for part affinity fields. It is a method of learning associations between pairs of bodyparts by preserving the location and orientation of the limb (the connection between two keypoints). This learned part affinity helps in proper animal assembly, making the model less prone to associating bodyparts of one individual with those of another. [1](#ref1)
+<a id="data_aug"></a>
+## 3.2 Data augmentation parameters
+In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world. [2, 3, 4](#references)
+
+Similarly, we train our models to different types of "imagined" scenarios, which we limit to the foreseeable ones, so we ultimately get a robust model that can more likely handle new data and scenes. 
+
+Classes of data augmentations, characterized by their nature, are given by:
+- [**Geometric transformations**](#geometric)
+    1. [`scale_jitter_lo` and `scale_jitter_up`](#scale_jitter)
+    2. [`rotation`](#rot)
+    3. [`rotratio`](#rotratio)
+    4. [`mirror`](#mirror)
+    5. [`crop size`](#crop_size)
+    6. [`crop ratio`](#crop_ratio)
+    7. [`max shift`](#max_shift)
+    8. [`crop sampling`](#crop_sampling)
+- [**Kernel transformations**](#kernel)
+    9. [`sharpening` and `sharpen_ratio`](#sharp)
+    10. [`edge_enhancement`](#edge)
+
+<a id="geometric"></a>
+### Geometric transformations
+**Geometric transformations** such as *flipping*, *rotating*, *translating*, *cropping*, *scaling*, and *injecting noise*, which are very good for positional biases present in the training data.
+
+<a id="scale_jitter"></a>
+### 3.2.1 `scale_jitter_lo` and `scale_jitter_up`
+*Scale jittering* resizes an image within a given resize range. This allows the model to learn from different sizes of objects in the scene, therefore increasing its robustness to generalize, especially on newer scenes or object sizes.
+
+The image below, retrieved from [3](#ref3), illustrates the difference between two scale jittering methods.
+
+![scale_jittering.png](attachment:scale_jittering.png)
+
+During training, each image is randomly scaled within the range `[scale_jitter_lo, scale_jitter_up]` to augment training data. The default values for these two parameters are:
+- `scale_jitter_lo = 0.5`
+- `scale_jitter_up = 1.25`
+
+💡Pro-tips:💡
+- ⭐⭐⭐ If the target animal/s do not have an incredibly high variance in size throughout the video (e.g., jumping or moving towards the static camera), keeping the **default** values **unchanged** will give just enough variability in the data for the model to generalize better ✅
+
+- ⭐⭐However, you may want to adjust these parameters if you want your model to:
+  - handle new data with possibly **larger (25% bigger than original)** animal subjects ➡️ in this scenario, increase the value of *scale_jitter_up*
+  - handle new data with possibly **smaller (50% smaller than the original)** animal subjects ➡️ in this scenario, decrease the value of *scale_jitter_lo*
+  - **generalize well in new set-ups/environments** with minimal to no pre-training
+  ⚠️ But as a consequence, **training time will take longer**.😔🕒
+- ⭐If you have a fully static camera set-up and the sizes of the animals do not vary much, you may also try to **shorten** this range to **reduce training time**.😃🕒(⚠️ but, as a consequence, your model might only fit your data and not generalize well)
+
+<a id="rot"></a>
+### 3.1.2 `rotation`
+*Rotation augmentations* are done by rotating the image right or left on an axis between $1^{\circ}$ and $359^{\circ}$. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between $+1^{\circ}$ and $+20^{\circ}$ or $-1^{\circ}$ to $-20^{\circ}$ is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease 
+
+The image below, retrieved from [2](#ref2), illustrates the difference between the different rotation degrees.
+![augset_rot.png](attachment:augset_rot.png)
+
+During training, each image is rotated $+/-$ the `rotation` degree parameter set. By default, this parameter is set to `25`, which means that the images are augmented with a $+25^{\circ}$ rotation of itself and a $-25^{\circ}$ degree rotation of itself. Should you want to opt out of this augmentation, set the rotation value to `False`.
+
+💡Pro-tips:💡
+- ⭐If you have labelled all the possible rotations of your animal/s, keeping the **default** value **unchanged** is **enough** ✅ 
+
+- However, you may want to adjust this parameter if you want your model to:
+  - handle new data with new rotations of the animal subjects 
+  - handle the possibly unlabelled rotations of your minimally-labeled data 
+  - But as a consequence, the more you increase the rotation degree, the more the original keypoint labels may not be preserved
+
+<a id="rotratio"></a>
+### 3.2.3 `rotratio` (rotation ratio)
+This parameter in the DLC module is given by the percentage of sampled data to be augmented from your training data. The default value is set to `0.4` or $40\%$. This means that there is a $40\%$ chance that images within the current batch will be rotated.
+
+💡Pro-tip:💡
+- ⭐ Generally, keeping the **default** value **unchanged** is **enough** ✅ 
+
+<a id="fliplr"></a>
+### 3.2.4 `fliplr` (or a horizontal flip)
+**Mirroring**, otherwise called **horizontal axis fipping**, is much more common than flipping the vertical axis. This augmentation is one of the easiest to implement and has proven useful on datasets such as CIFAR-10 and ImageNet. However, on datasets involving text recognition, such as MNIST or SVHN, this is not a label-preserving transformation.
+
+The image below is an illustration of this property (shown on the right-most column).
+![augset_flip.png](attachment:augset_flip.png)
+
+This parameter randomly flips an image horizontally to augment training data.
+By default, this parameter is set to `False` especially on poses with mirror symmetric joints (for example, so the left hand and right hand are not swapped).
+
+💡Pro-tip:💡
+- ⭐ If you work with labels with symmetric joints, keep the **default** value **unchanged** - unless the dataset is biased (animal moves mostly in one direction, but sometimes in the opposite)✅
+- Keeping the default value to `False` will work well in most cases.
+
+<a id ="crop_size"></a>
 
 <a id ="crop_size"></a>
  ### 3.2.5 `crop_size`
