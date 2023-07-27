@@ -813,7 +813,7 @@ class Assembler:
     def from_pickle(self, pickle_path):
         with open(pickle_path, "rb") as file:
             data = pickle.load(file)
-        self.unique = data.pop('single', {})
+        self.unique = data.pop("single", {})
         self.assemblies = data
         
     @staticmethod
