@@ -179,6 +179,7 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 
  The image below is modified from 
  [2](#references). 
+ 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471479692-R078RFZXIQ8K552OIOFP/cropping.png?format=750w">
 
  <a id ="crop_sampling"></a>
@@ -200,6 +201,7 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 
  The image below is modified from 
  [2](#references). 
+ 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471480991-HBZAYJP1FY0K8H2KB8DB/kernelfilter.png?format=1500w">
 
  <a id ="edge"></a>
