@@ -809,7 +809,14 @@ class Assembler:
                         if unique is not None:
                             self.unique[i] = unique
                         pbar.update()
-
+    
+    def from_pickle(self, pickle_path):
+        with open(pickle_path, "rb") as file:
+            data = pickle.load(file)
+        
+        self.assemblies = {key: value for key, value in data.items() if key != "single"}
+        self.unique = data["single"] if "single" in data.keys() else dict()
+        
     @staticmethod
     def parse_metadata(data):
         params = dict()
