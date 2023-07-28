@@ -1,0 +1,871 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>The pose_cfg.yaml Guideline Handbook &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/pose_cfg_file_breakdown';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="Improving network performance on unbalanced data via augmentation 🦇" href="flip_and_rotate.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">Documentation Overview</a></li>
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../napariGUI.html">napari labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials &amp; Cookbook</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/pose_cfg_file_breakdown.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/docs/recipes/pose_cfg_file_breakdown.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>The pose_cfg.yaml Guideline Handbook</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-the-pose-cfg-yml-file">1. What is the <em>pose_cfg.yml</em> file?</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start-full-parameter-list-toc">2. Quick start: full parameter list TOC</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-hyperparameters">2.1 Training Hyperparameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-max-input-size-and-min-input-size">2.1.A <code class="docutils literal notranslate"><span class="pre">max_input_size</span></code> and <code class="docutils literal notranslate"><span class="pre">min_input_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-global-scale">2.1.B <code class="docutils literal notranslate"><span class="pre">global_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-batch-size">2.1.C <code class="docutils literal notranslate"><span class="pre">batch_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-pos-dist-thresh">2.1.D <code class="docutils literal notranslate"><span class="pre">pos_dist_thresh</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#e-pafwidth">2.1.E <code class="docutils literal notranslate"><span class="pre">pafwidth</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-augmentation-parameters">2.2 Data augmentation parameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geometric-transformations">Geometric transformations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-jitter-lo-and-scale-jitter-up">2.2.1 <code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotation">2.1.2 <code class="docutils literal notranslate"><span class="pre">rotation</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotratio-rotation-ratio">2.2.3 <code class="docutils literal notranslate"><span class="pre">rotratio</span></code> (rotation ratio)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fliplr-or-a-horizontal-flip">2.2.4 <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> (or a horizontal flip)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-size">2.2.5 <code class="docutils literal notranslate"><span class="pre">crop_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-ratio">2.2.6 <code class="docutils literal notranslate"><span class="pre">crop_ratio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shift">2.2.7 <code class="docutils literal notranslate"><span class="pre">max_shift</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-sampling">2.2.8 <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-transformations">Kernel transformations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sharpening-and-sharpenratio">2.2.9 <code class="docutils literal notranslate"><span class="pre">sharpening</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpenratio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#edge">2.2.10 <code class="docutils literal notranslate"><span class="pre">edge</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="the-pose-cfg-yaml-guideline-handbook">
+<h1>The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook<a class="headerlink" href="#the-pose-cfg-yaml-guideline-handbook" title="Permalink to this heading">#</a></h1>
+<p>👋 Hello! Mabuhay! Hola! This recipe was written by the <a class="reference external" href="https://www.deeplabcutairesidency.org/">2023 DLC AI Residents</a>!</p>
+<p>When you train, evaluate, and run inference with a neural network there are hyperparatmeters you must consider. While DLC attempts to set the “globally good for everyone” parameters, you might want to change them. Therefore, in this recipe we will review the pose config parameters related to neural network models’ and the related data augmentation!</p>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="what-is-the-pose-cfg-yml-file">
+<h1>1. What is the <em>pose_cfg.yml</em> file?<a class="headerlink" href="#what-is-the-pose-cfg-yml-file" title="Permalink to this heading">#</a></h1>
+<p><a id="whatisposecfg"></a></p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file offers easy access to a range of training parameters that the user may want or have to adjust depending on the used dataset and task.</p></li>
+<li><p>You will find the file in the dlc-models &gt; test and train sub-directories. There is also a button in the GUI to directly open this file.</p></li>
+<li><p>This recipe is aimed at giving an average user an intuition on those hyperparameters and situations in which addressing them can be useful.</p></li>
+</ul>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="quick-start-full-parameter-list-toc">
+<h1>2. Quick start: full parameter list TOC<a class="headerlink" href="#quick-start-full-parameter-list-toc" title="Permalink to this heading">#</a></h1>
+<p><a id="fullparamlist"></a></p>
+<ul class="simple">
+<li><p><span class="xref myst">2. Full parameter list</span></p>
+<ul>
+<li><p><span class="xref myst">2.1 Training Hyperparameters</span></p>
+<ul>
+<li><p><span class="xref myst">2.1.A <code class="docutils literal notranslate"><span class="pre">max_input_size</span></code> and <code class="docutils literal notranslate"><span class="pre">min_input_size</span></code></span></p></li>
+<li><p><span class="xref myst">2.1.B <code class="docutils literal notranslate"><span class="pre">global_scale</span></code></span></p></li>
+<li><p><span class="xref myst">2.1.C <code class="docutils literal notranslate"><span class="pre">batch_size</span></code></span></p></li>
+<li><p><span class="xref myst">2.1.D <code class="docutils literal notranslate"><span class="pre">pos_dist_thresh</span></code></span></p></li>
+<li><p><span class="xref myst">2.1.E <code class="docutils literal notranslate"><span class="pre">pafwidth</span></code></span></p></li>
+</ul>
+</li>
+<li><p><span class="xref myst">2.2 Data augmentation parameters</span></p>
+<ul>
+<li><p><span class="xref myst">Geometric transformations</span></p></li>
+<li><p><span class="xref myst">2.2.1 <code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code></span></p></li>
+<li><p><span class="xref myst">2.1.2 <code class="docutils literal notranslate"><span class="pre">rotation</span></code></span></p></li>
+<li><p><span class="xref myst">2.2.3 <code class="docutils literal notranslate"><span class="pre">rotratio</span></code> (rotation ratio)</span></p></li>
+<li><p><span class="xref myst">2.2.4 <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> (or a horizontal flip)</span></p></li>
+<li><p><span class="xref myst">2.2.5 <code class="docutils literal notranslate"><span class="pre">crop_size</span></code></span></p></li>
+<li><p><span class="xref myst">2.2.6 <code class="docutils literal notranslate"><span class="pre">crop_ratio</span></code></span></p></li>
+<li><p><span class="xref myst">2.2.7 <code class="docutils literal notranslate"><span class="pre">max_shift</span></code></span></p></li>
+<li><p><span class="xref myst">2.2.8 <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code></span></p></li>
+<li><p><span class="xref myst">Kernel transformations</span></p></li>
+<li><p><span class="xref myst">2.2.9 <code class="docutils literal notranslate"><span class="pre">sharpening</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpenratio</span></code></span></p></li>
+<li><p><span class="xref myst">2.2.10 <code class="docutils literal notranslate"><span class="pre">edge</span></code></span></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><span class="xref myst">References</span></p></li>
+</ul>
+<p><a id="hyperparam"></a></p>
+<section id="training-hyperparameters">
+<h2>2.1 Training Hyperparameters<a class="headerlink" href="#training-hyperparameters" title="Permalink to this heading">#</a></h2>
+<p><a id="input_size"></a></p>
+<section id="a-max-input-size-and-min-input-size">
+<h3>2.1.A <code class="docutils literal notranslate"><span class="pre">max_input_size</span></code> and <code class="docutils literal notranslate"><span class="pre">min_input_size</span></code><a class="headerlink" href="#a-max-input-size-and-min-input-size" title="Permalink to this heading">#</a></h3>
+<p>The default values are <code class="docutils literal notranslate"><span class="pre">1500</span></code> and <code class="docutils literal notranslate"><span class="pre">64</span></code>, respectively.</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>change <code class="docutils literal notranslate"><span class="pre">max_input_size</span></code> when the resolution of the video is higher than 1500x1500 or when <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code> will possibly go over that value</p></li>
+<li><p>change <code class="docutils literal notranslate"><span class="pre">min_input_size</span></code> when the resolution of the video is smaller than 64x64 or when <code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> will possibly go below that value</p></li>
+</ul>
+<p><a id="global_scale"></a></p>
+</section>
+<section id="b-global-scale">
+<h3>2.1.B <code class="docutils literal notranslate"><span class="pre">global_scale</span></code><a class="headerlink" href="#b-global-scale" title="Permalink to this heading">#</a></h3>
+<p>The default value is <code class="docutils literal notranslate"><span class="pre">0.8</span></code>. It’s the most basic, first scaling that happens to all images in the training queue.</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>With images that are low resolution or lack detail, it may be beneficial to increase the <code class="docutils literal notranslate"><span class="pre">global_scale</span></code> to 1, to keep the original size and retain as much information as possible.</p></li>
+</ul>
+</section>
+<section id="c-batch-size">
+<h3>2.1.C <code class="docutils literal notranslate"><span class="pre">batch_size</span></code><a class="headerlink" href="#c-batch-size" title="Permalink to this heading">#</a></h3>
+<p><a id="batch_size"></a></p>
+<p>The default for single animal projects is 1, and for maDLC projects it’s <code class="docutils literal notranslate"><span class="pre">8</span></code>. It’s the number of frames used per training iteration.</p>
+<p>In both cases, you can increase the batchsize up to the limit of your GPU memory and train for a lower number of iterations. The relationship between the number of iterations and <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> is not linear, so <code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">8</span></code> doesn’t mean you can train for 8x less iterations, but like with every training, plateauing loss can be treated as an indicator of reaching optimal performance.</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>Having a higher <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> can be beneficial in terms of models’ generalization</p></li>
+</ul>
+<hr class="docutils" />
+<p>Values mentioned above and the augmentation parameters are often intuitive, and knowing our own data, we are able to decide on what will and won’t be beneficial. Unfortunately, not all hyperparameters are this simple or intuitive. Two parameters that might require some tuning on challenging datasets are <code class="docutils literal notranslate"><span class="pre">pafwidth</span></code> and <code class="docutils literal notranslate"><span class="pre">pos_dist_thresh</span></code>.</p>
+<p><a id="pos"></a></p>
+</section>
+<section id="d-pos-dist-thresh">
+<h3>2.1.D <code class="docutils literal notranslate"><span class="pre">pos_dist_thresh</span></code><a class="headerlink" href="#d-pos-dist-thresh" title="Permalink to this heading">#</a></h3>
+<p>The default value is <code class="docutils literal notranslate"><span class="pre">17</span></code>. It’s the size of a window within which detections are considered positive training samples, meaning they tell the model that it’s going in the right direction.</p>
+<p><a id="paf"></a></p>
+</section>
+<section id="e-pafwidth">
+<h3>2.1.E <code class="docutils literal notranslate"><span class="pre">pafwidth</span></code><a class="headerlink" href="#e-pafwidth" title="Permalink to this heading">#</a></h3>
+<p>The default value is <code class="docutils literal notranslate"><span class="pre">20</span></code>. PAF stands for part affinity fields. It is a method of learning associations between pairs of bodyparts by preserving the location and orientation of the limb (the connection between two keypoints). This learned part affinity helps in proper animal assembly, making the model less prone to associating bodyparts of one individual with those of another. <span class="xref myst">1</span>
+<a id="data_aug"></a></p>
+</section>
+</section>
+<section id="data-augmentation-parameters">
+<h2>2.2 Data augmentation parameters<a class="headerlink" href="#data-augmentation-parameters" title="Permalink to this heading">#</a></h2>
+<p>In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world. <span class="xref myst">2, 3, 4</span></p>
+<p>Similarly, we train our models to different types of “imagined” scenarios, which we limit to the foreseeable ones, so we ultimately get a robust model that can more likely handle new data and scenes.</p>
+<p>Classes of data augmentations, characterized by their nature, are given by:</p>
+<ul class="simple">
+<li><p><span class="xref myst"><strong>Geometric transformations</strong></span></p>
+<ol class="arabic simple">
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">rotation</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">rotratio</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">mirror</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">crop</span> <span class="pre">size</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">crop</span> <span class="pre">ratio</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">shift</span></code></span></p></li>
+<li><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">crop</span> <span class="pre">sampling</span></code></span></p></li>
+</ol>
+</li>
+<li><p><span class="xref myst"><strong>Kernel transformations</strong></span>
+9. <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">sharpening</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpen_ratio</span></code></span>
+10. <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">edge_enhancement</span></code></span></p></li>
+</ul>
+<p><a id="geometric"></a></p>
+<section id="geometric-transformations">
+<h3>Geometric transformations<a class="headerlink" href="#geometric-transformations" title="Permalink to this heading">#</a></h3>
+<p><strong>Geometric transformations</strong> such as <em>flipping</em>, <em>rotating</em>, <em>translating</em>, <em>cropping</em>, <em>scaling</em>, and <em>injecting noise</em>, which are very good for positional biases present in the training data.</p>
+<p><a id="scale_jitter"></a></p>
+</section>
+<section id="scale-jitter-lo-and-scale-jitter-up">
+<h3>2.2.1 <code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code><a class="headerlink" href="#scale-jitter-lo-and-scale-jitter-up" title="Permalink to this heading">#</a></h3>
+<p><em>Scale jittering</em> resizes an image within a given resize range. This allows the model to learn from different sizes of objects in the scene, therefore increasing its robustness to generalize, especially on newer scenes or object sizes.</p>
+<p>The image below, retrieved from <span class="xref myst">3</span>, illustrates the difference between two scale jittering methods.</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471482096-VLLQJU4H6AH6ESMZGNQW/scale_jittering.png?format=1000w">
+<p>During training, each image is randomly scaled within the range <code class="docutils literal notranslate"><span class="pre">[scale_jitter_lo,</span> <span class="pre">scale_jitter_up]</span></code> to augment training data. The default values for these two parameters are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span> <span class="pre">=</span> <span class="pre">0.5</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span> <span class="pre">=</span> <span class="pre">1.25</span></code></p></li>
+</ul>
+<p>💡Pro-tips:💡</p>
+<ul class="simple">
+<li><p>⭐⭐⭐ If the target animal/s do not have an incredibly high variance in size throughout the video (e.g., jumping or moving towards the static camera), keeping the <strong>default</strong> values <strong>unchanged</strong> will give just enough variability in the data for the model to generalize better ✅</p></li>
+<li><p>⭐⭐However, you may want to adjust these parameters if you want your model to:</p>
+<ul>
+<li><p>handle new data with possibly <strong>larger (25% bigger than original)</strong> animal subjects ➡️ in this scenario, increase the value of <em>scale_jitter_up</em></p></li>
+<li><p>handle new data with possibly <strong>smaller (50% smaller than the original)</strong> animal subjects ➡️ in this scenario, decrease the value of <em>scale_jitter_lo</em></p></li>
+<li><p><strong>generalize well in new set-ups/environments</strong> with minimal to no pre-training
+⚠️ But as a consequence, <strong>training time will take longer</strong>.😔🕒</p></li>
+</ul>
+</li>
+<li><p>⭐If you have a fully static camera set-up and the sizes of the animals do not vary much, you may also try to <strong>shorten</strong> this range to <strong>reduce training time</strong>.😃🕒(⚠️ but, as a consequence, your model might only fit your data and not generalize well)</p></li>
+</ul>
+<p><a id="rot"></a></p>
+</section>
+<section id="rotation">
+<h3>2.1.2 <code class="docutils literal notranslate"><span class="pre">rotation</span></code><a class="headerlink" href="#rotation" title="Permalink to this heading">#</a></h3>
+<p><em>Rotation augmentations</em> are done by rotating the image right or left on an axis between <span class="math notranslate nohighlight">\(1^{\circ}\)</span> and <span class="math notranslate nohighlight">\(359^{\circ}\)</span>. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between <span class="math notranslate nohighlight">\(+1^{\circ}\)</span> and <span class="math notranslate nohighlight">\(+20^{\circ}\)</span> or <span class="math notranslate nohighlight">\(-1^{\circ}\)</span> to <span class="math notranslate nohighlight">\(-20^{\circ}\)</span> is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease</p>
+<p>The image below, retrieved from <span class="xref myst">2</span>, illustrates the difference between the different rotation degrees.</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471478493-Z4JEWJG0I7MB9AYCB322/augset_rot.png?format=750w">
+<p>During training, each image is rotated <span class="math notranslate nohighlight">\(+/-\)</span> the <code class="docutils literal notranslate"><span class="pre">rotation</span></code> degree parameter set. By default, this parameter is set to <code class="docutils literal notranslate"><span class="pre">25</span></code>, which means that the images are augmented with a <span class="math notranslate nohighlight">\(+25^{\circ}\)</span> rotation of itself and a <span class="math notranslate nohighlight">\(-25^{\circ}\)</span> degree rotation of itself. Should you want to opt out of this augmentation, set the rotation value to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>💡Pro-tips:💡</p>
+<ul class="simple">
+<li><p>⭐If you have labelled all the possible rotations of your animal/s, keeping the <strong>default</strong> value <strong>unchanged</strong> is <strong>enough</strong> ✅</p></li>
+<li><p>However, you may want to adjust this parameter if you want your model to:</p>
+<ul>
+<li><p>handle new data with new rotations of the animal subjects</p></li>
+<li><p>handle the possibly unlabelled rotations of your minimally-labeled data</p></li>
+<li><p>But as a consequence, the more you increase the rotation degree, the more the original keypoint labels may not be preserved</p></li>
+</ul>
+</li>
+</ul>
+<p><a id="rotratio"></a></p>
+</section>
+<section id="rotratio-rotation-ratio">
+<h3>2.2.3 <code class="docutils literal notranslate"><span class="pre">rotratio</span></code> (rotation ratio)<a class="headerlink" href="#rotratio-rotation-ratio" title="Permalink to this heading">#</a></h3>
+<p>This parameter in the DLC module is given by the percentage of sampled data to be augmented from your training data. The default value is set to <code class="docutils literal notranslate"><span class="pre">0.4</span></code> or <span class="math notranslate nohighlight">\(40\%\)</span>. This means that there is a <span class="math notranslate nohighlight">\(40\%\)</span> chance that images within the current batch will be rotated.</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>⭐ Generally, keeping the <strong>default</strong> value <strong>unchanged</strong> is <strong>enough</strong> ✅</p></li>
+</ul>
+<p><a id="fliplr"></a></p>
+</section>
+<section id="fliplr-or-a-horizontal-flip">
+<h3>2.2.4 <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> (or a horizontal flip)<a class="headerlink" href="#fliplr-or-a-horizontal-flip" title="Permalink to this heading">#</a></h3>
+<p><strong>Mirroring</strong>, otherwise called <strong>horizontal axis fipping</strong>, is much more common than flipping the vertical axis. This augmentation is one of the easiest to implement and has proven useful on datasets such as CIFAR-10 and ImageNet. However, on datasets involving text recognition, such as MNIST or SVHN, this is not a label-preserving transformation.</p>
+<p>The image below is an illustration of this property (shown on the right-most column).</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471476980-RGW6NDYR5BSMN27G9K30/augset_flip.png?format=1500w">
+<p>This parameter randomly flips an image horizontally to augment training data.
+By default, this parameter is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> especially on poses with mirror symmetric joints (for example, so the left hand and right hand are not swapped).</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>⭐ If you work with labels with symmetric joints, keep the <strong>default</strong> value <strong>unchanged</strong> - unless the dataset is biased (animal moves mostly in one direction, but sometimes in the opposite)✅</p></li>
+<li><p>Keeping the default value to <code class="docutils literal notranslate"><span class="pre">False</span></code> will work well in most cases.</p></li>
+</ul>
+<p><a id ="crop_size"></a></p>
+</section>
+<section id="crop-size">
+<h3>2.2.5 <code class="docutils literal notranslate"><span class="pre">crop_size</span></code><a class="headerlink" href="#crop-size" title="Permalink to this heading">#</a></h3>
+<p>Cropping consists of removing unwanted pixels from the image, thus selecting a part of the image and discarding the rest, reducing the size of the input.</p>
+<p>In DeepLabCut <em>pose_config.yaml</em> file, by default, <code class="docutils literal notranslate"><span class="pre">crop_size</span></code> is set to (<code class="docutils literal notranslate"><span class="pre">400,400</span></code>), width, and height, respectively. This means it will cut out parts of an image of this size.</p>
+<p>💡Pro-tip:💡</p>
+<ul class="simple">
+<li><p>If your images are very large, you could consider increasing the crop size. However, be aware that you’ll need a strong GPU, or you will hit memory errors!</p></li>
+<li><p>If your images are very small, you could consider decreasing the crop size.</p></li>
+</ul>
+<p><a id ="cropratio"></a></p>
+</section>
+<section id="crop-ratio">
+<h3>2.2.6 <code class="docutils literal notranslate"><span class="pre">crop_ratio</span></code><a class="headerlink" href="#crop-ratio" title="Permalink to this heading">#</a></h3>
+<p>Also, the number of frames to be cropped is defined by the variable <code class="docutils literal notranslate"><span class="pre">cropratio</span></code>, which is set to <code class="docutils literal notranslate"><span class="pre">0.4</span></code> by default. That means that there is a <span class="math notranslate nohighlight">\(40\%\)</span> the images within the current batch will be cropped. By default, this value works well.</p>
+<p><a id ="max_shift"></a></p>
+</section>
+<section id="max-shift">
+<h3>2.2.7 <code class="docutils literal notranslate"><span class="pre">max_shift</span></code><a class="headerlink" href="#max-shift" title="Permalink to this heading">#</a></h3>
+<p>The crop shift between each cropped image is defined by <code class="docutils literal notranslate"><span class="pre">max_shift</span></code> variable, which explains the max relative shift to the position of the crop centre. By default is set to <code class="docutils literal notranslate"><span class="pre">0.4</span></code>, which means it will be displaced 40% max from the center to not apply identical cropping each time the same image is encountered during training - this is especially important for <code class="docutils literal notranslate"><span class="pre">density</span></code> and <code class="docutils literal notranslate"><span class="pre">hybrid</span></code> cropping methods.</p>
+<p>The image below is modified from
+<span class="xref myst">2</span>.</p>
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471479692-R078RFZXIQ8K552OIOFP/cropping.png?format=750w">
+<p><a id ="crop_sampling"></a></p>
+</section>
+<section id="crop-sampling">
+<h3>2.2.8 <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code><a class="headerlink" href="#crop-sampling" title="Permalink to this heading">#</a></h3>
+<p>Likewise, there are different cropping sampling methods (<code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code>), we can use depending on how our image looks like.</p>
+<p>💡Pro-tips💡</p>
+<ul class="simple">
+<li><p>For highly crowded scenes, <code class="docutils literal notranslate"><span class="pre">hybrid</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code> approaches will work best.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uniform</span></code> will take out random parts of the image, disregarding the annotations completely</p></li>
+<li><p>‘keypoint’ centers on a random keypoint and crops based on that location - might be best in preserving the whole animal (if reasonable <code class="docutils literal notranslate"><span class="pre">crop_size</span></code> is used)</p></li>
+</ul>
+<p><a id ="kernel"></a></p>
+</section>
+<section id="kernel-transformations">
+<h3>Kernel transformations<a class="headerlink" href="#kernel-transformations" title="Permalink to this heading">#</a></h3>
+<p>Kernel filters are very popular in image processing to sharpen and blur images. Intuitively, blurring an image might increase the motion blur resistance during testing. Otherwise, sharpening for data enhancement could result in capturing more detail on objects of interest.</p>
+<p><a id ="sharp"></a></p>
+</section>
+<section id="sharpening-and-sharpenratio">
+<h3>2.2.9 <code class="docutils literal notranslate"><span class="pre">sharpening</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpenratio</span></code><a class="headerlink" href="#sharpening-and-sharpenratio" title="Permalink to this heading">#</a></h3>
+<p>In DeepLabCut <em>pose_config.yaml</em> file, by default, <code class="docutils literal notranslate"><span class="pre">sharpening</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, but if we want to use this type of data augmentation, we can set it <code class="docutils literal notranslate"><span class="pre">True</span></code> and specify a value for <code class="docutils literal notranslate"><span class="pre">sharpenratio</span></code>, which by default is set to <code class="docutils literal notranslate"><span class="pre">0.3</span></code>. Blurring is not defined in the <em>pose_config.yaml</em>, but if the user finds it convenient, it can be added to the data augmentation pipeline.</p>
+<p>The image below is modified from
+<span class="xref myst">2</span>.</p>
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471480991-HBZAYJP1FY0K8H2KB8DB/kernelfilter.png?format=1500w">
+<p><a id ="edge"></a></p>
+</section>
+<section id="edge">
+<h3>2.2.10 <code class="docutils literal notranslate"><span class="pre">edge</span></code><a class="headerlink" href="#edge" title="Permalink to this heading">#</a></h3>
+<p>Concerning sharpness, we have an additional parameter, <code class="docutils literal notranslate"><span class="pre">edge</span></code> enhancement, which enhances the edge contrast of an image to improve its apparent sharpness. Likewise, by default, this parameter is set <code class="docutils literal notranslate"><span class="pre">False</span></code>, but if you want to include it, you just need to set it <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</section>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h1>
+ <ol id="references">
+     <li id="ref1">Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity fields. In Proceedings of the IEEE conference on Computer Vision and Pattern Recognition (pp. 7291-7299).<a href="https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html">https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html</a></li>
+     <li id="ref2">Mathis, A., Schneider, S., Lauer, J., & Mathis, M. W. (2020). A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives. In Neuron (Vol. 108, Issue 1, pp. 44-65). <a href="https://doi.org/10.1016/j.neuron.2020.09.017">https://doi.org/10.1016/j.neuron.2020.09.017</a></li>
+     <li id="ref3">Ghiasi, G., Cui, Y., Srinivas, A., Qian, R., Lin, T.-Y., Cubuk, E. D., Le, Q. V., & Zoph, B. (2020). Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation (Version 2). arXiv. <a href="https://doi.org/10.48550/ARXIV.2012.07177">https://doi.org/10.48550/ARXIV.2012.07177</a></li>
+     <li id="ref4">Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on Image Data Augmentation for Deep Learning. In Journal of Big Data (Vol. 6, Issue 1). <a href="https://doi.org/10.1186/s40537-019-0197-0">https://doi.org/10.1186/s40537-019-0197-0</a> </li>
+ </ol>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/recipes"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="flip_and_rotate.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Improving network performance on unbalanced data via augmentation 🦇</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../MISSION_AND_VALUES.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Mission and Values of DeepLabCut</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-the-pose-cfg-yml-file">1. What is the <em>pose_cfg.yml</em> file?</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start-full-parameter-list-toc">2. Quick start: full parameter list TOC</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-hyperparameters">2.1 Training Hyperparameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-max-input-size-and-min-input-size">2.1.A <code class="docutils literal notranslate"><span class="pre">max_input_size</span></code> and <code class="docutils literal notranslate"><span class="pre">min_input_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-global-scale">2.1.B <code class="docutils literal notranslate"><span class="pre">global_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-batch-size">2.1.C <code class="docutils literal notranslate"><span class="pre">batch_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-pos-dist-thresh">2.1.D <code class="docutils literal notranslate"><span class="pre">pos_dist_thresh</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#e-pafwidth">2.1.E <code class="docutils literal notranslate"><span class="pre">pafwidth</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-augmentation-parameters">2.2 Data augmentation parameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geometric-transformations">Geometric transformations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-jitter-lo-and-scale-jitter-up">2.2.1 <code class="docutils literal notranslate"><span class="pre">scale_jitter_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">scale_jitter_up</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotation">2.1.2 <code class="docutils literal notranslate"><span class="pre">rotation</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotratio-rotation-ratio">2.2.3 <code class="docutils literal notranslate"><span class="pre">rotratio</span></code> (rotation ratio)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fliplr-or-a-horizontal-flip">2.2.4 <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> (or a horizontal flip)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-size">2.2.5 <code class="docutils literal notranslate"><span class="pre">crop_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-ratio">2.2.6 <code class="docutils literal notranslate"><span class="pre">crop_ratio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shift">2.2.7 <code class="docutils literal notranslate"><span class="pre">max_shift</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-sampling">2.2.8 <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-transformations">Kernel transformations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sharpening-and-sharpenratio">2.2.9 <code class="docutils literal notranslate"><span class="pre">sharpening</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpenratio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#edge">2.2.10 <code class="docutils literal notranslate"><span class="pre">edge</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
