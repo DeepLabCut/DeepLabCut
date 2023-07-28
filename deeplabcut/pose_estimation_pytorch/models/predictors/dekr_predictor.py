@@ -37,6 +37,7 @@ class DEKRPredictor(BasePredictor):
         self.detection_threshold = detection_threshold
         self.apply_sigmoid = apply_sigmoid
         self.use_heatmap = use_heatmap
+        self.max_absorb_distance = 75
 
     def forward(self, outputs, scale_factors: Tuple[float, float]):
         # TODO implement confidence scores for each keypoints
@@ -58,6 +59,8 @@ class DEKRPredictor(BasePredictor):
         for i in range(batch_size):
             pose = posemap[i, pose_ind[i]]
             poses[i] = pose
+
+        poses = self._update_pose_with_heatmaps(poses, heatmaps[:, :-1])
 
         ctr_score = scores[:, :, None].expand(batch_size, -1, num_joints)[:, :, :, None]
 
@@ -146,6 +149,43 @@ class DEKRPredictor(BasePredictor):
         return pos_ind, scores
 
     ########## WIP to take heatmap into account for scoring ##########
+    def _update_pose_with_heatmaps(
+        self, _poses: torch.Tensor, kpt_heatmaps: torch.Tensor
+    ):
+        """If a heatmap center is close enough from the regressed point, the final prediction is the center of this heatmap
+
+        Args:
+            poses: poses tensor, shape (batch_size, num_animals, num_keypoints, 2)
+            kpt_heatmaps: heatmaps (does not contain the center heatmap), shape (batch_size, num_keypoints, h, w)
+        """
+        poses = _poses.clone()
+        maxm = self.max_pool(kpt_heatmaps)
+        maxm = torch.eq(maxm, kpt_heatmaps).float()
+        kpt_heatmaps *= maxm
+        batch_size, num_keypoints, h, w = kpt_heatmaps.shape
+        kpt_heatmaps = kpt_heatmaps.view(batch_size, num_keypoints, -1)
+        val_k, ind = kpt_heatmaps.topk(self.num_animals, dim=2)
+
+        x = ind % w
+        y = (ind / w).long()
+        heats_ind = torch.stack((x, y), dim=3)
+
+        for b in range(batch_size):
+            for i in range(num_keypoints):
+                heat_ind = heats_ind[b, i].float()
+                pose_ind = poses[b, :, i]
+                pose_heat_diff = pose_ind[:, None, :] - heat_ind
+                pose_heat_diff.pow_(2)
+                pose_heat_diff = pose_heat_diff.sum(2)
+                pose_heat_diff.sqrt_()
+                keep_ind = torch.argmin(pose_heat_diff, dim=1)
+
+                for p in range(keep_ind.shape[0]):
+                    if pose_heat_diff[p, keep_ind[p]] < self.max_absorb_distance:
+                        poses[b, p, i] = heat_ind[keep_ind[p]]
+
+        return poses
+
     def get_heat_value(self, pose_coords, heatmaps):
         """
         pose_coords : (batch_size, num_people, num_joints, 2)

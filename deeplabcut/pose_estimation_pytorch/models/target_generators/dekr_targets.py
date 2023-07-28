@@ -173,12 +173,14 @@ class DEKRGenerator(BaseGenerator):
                                 offset_map[b, idx * 2, pos_y, pos_x] = offset_x
                                 offset_map[b, idx * 2 + 1, pos_y, pos_x] = offset_y
                                 # TODO find a decent constant make weights vary giving animal area
-                                weight_map[
-                                    b, idx * 2, pos_y, pos_x
-                                ] = 1.0  # /((scale**2)*np.sqrt(area[person_id]))
+                                weight_map[b, idx * 2, pos_y, pos_x] = 1.0 / np.sqrt(
+                                    area[b, person_id]
+                                )
                                 weight_map[
                                     b, idx * 2 + 1, pos_y, pos_x
-                                ] = 1.0  # /((scale**2)*np.sqrt(area[person_id]))
+                                ] = 1.0 / np.sqrt(
+                                    area[b, person_id]
+                                ) 
                                 area_map[b, pos_y, pos_x] = area[b, person_id]
 
         hms_list[1][hms_list[1] == 2] = self.bg_weight

@@ -180,7 +180,7 @@ class PoseDataset(Dataset, BaseDataset):
             # Sometimes bbox coords are larger than the image because of the margin
             bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
             bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
+            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.)
             bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
         else:
             bboxes = np.zeros((0, 4))
