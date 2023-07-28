@@ -45,6 +45,7 @@ parts:
   - file: docs/recipes/DLCMethods
   - file: docs/recipes/OpenVINO
   - file: docs/recipes/flip_and_rotate
+  - file: docs/recipes/pose_cfg_file_breakdown
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
