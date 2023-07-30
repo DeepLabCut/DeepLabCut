@@ -177,7 +177,9 @@ if __name__ == "__main__":
     deeplabcut.train_network(path_config_file)
 
     print("EVALUATE")
-    deeplabcut.evaluate_network(path_config_file, plotting=True)
+    deeplabcut.evaluate_network(
+        path_config_file, plotting=True, per_keypoint_evaluation=True
+    )
     # deeplabcut.evaluate_network(path_config_file,plotting=True,trainingsetindex=33)
     print("CUT SHORT VIDEO AND ANALYZE (with dynamic cropping!)")
 

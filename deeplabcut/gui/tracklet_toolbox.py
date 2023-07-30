@@ -17,7 +17,7 @@ from threading import Event
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
+from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from PySide6.QtWidgets import QMessageBox
@@ -838,7 +838,7 @@ class TrackletVisualizer:
                 " already extracted (more will be added)!",
             )
         else:
-            attempttomakefolder(tmpfolder)
+            attempt_to_make_folder(tmpfolder)
         index = []
         for ind in inds:
             imagename = os.path.join(

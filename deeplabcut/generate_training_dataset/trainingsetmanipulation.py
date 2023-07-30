@@ -481,6 +481,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
+            if data.columns.levels[0][0] != cfg["scorer"]:
+                print(f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)")
+                continue
             AnnotationData.append(data)
         except FileNotFoundError:
             print(file_path, " not found (perhaps not annotated).")
@@ -624,7 +627,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
         cfg
     )  # Path concatenation OS platform independent
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
     )
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
@@ -845,7 +848,10 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, net_type=net_type
+            config, num_shuffles, Shuffles,
+            net_type=net_type,
+            trainIndices=trainIndices,
+            testIndices=testIndices,
         )
     else:
         scorer = cfg["scorer"]
@@ -854,7 +860,7 @@ def create_training_dataset(
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
         )  # Path concatenation OS platform independent
-        auxiliaryfunctions.attempttomakefolder(
+        auxiliaryfunctions.attempt_to_make_folder(
             Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
         )
 
@@ -1018,13 +1024,13 @@ def create_training_dataset(
                 modelfoldername = auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/train"
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/test"
                 )
 

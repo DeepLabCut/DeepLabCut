@@ -266,7 +266,7 @@ def find_local_maxima(scmap, radius, threshold):
     grid[tuple(peak_idx.T)] = True
     labels = measurements.label(grid)[0]
     xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
-    return np.asarray(xy, dtype=np.int).reshape((-1, 2))
+    return np.asarray(xy, dtype=int).reshape((-1, 2))
 
 
 def find_local_peak_indices_maxpool_nms(scmaps, radius, threshold):
@@ -309,7 +309,7 @@ def find_local_peak_indices_skimage(scmaps, radius, threshold):
         for j in range(scmaps.shape[3]):
             scmap = scmaps[i, ..., j]
             peaks = find_local_maxima(scmap, radius, threshold)
-            samples_i = np.ones(len(peaks), dtype=np.int).reshape((-1, 1)) * i
+            samples_i = np.ones(len(peaks), dtype=int).reshape((-1, 1)) * i
             bpts_j = np.ones_like(samples_i) * j
             inds_gt.append(np.c_[samples_i, peaks, bpts_j])
     return np.concatenate(inds_gt)
