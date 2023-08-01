@@ -127,18 +127,24 @@ def main():
     frame_id = 0
     ret = {}
 
+    time_accumulated = 0
+    frame_count = 0
+    import time
     while (cap.isOpened()):
         flag, img = cap.read()
+        frame_count +=1
         if not flag:
             print ('frame_id', frame_id)
             break
         # test a single image, the resulting box is (x1, y1, x2, y2)
+        start = time.time()        
         mmdet_results = inference_detector(det_model, img)
         
         # keep the person class bounding boxes.
         person_results = process_mmdet_results(mmdet_results, args.det_cat_id)
 
         # test a single image, with a list of bboxes.
+
         pose_results, returned_outputs = inference_top_down_pose_model(
             pose_model,
             img,
@@ -149,7 +155,9 @@ def main():
             dataset_info=dataset_info,
             return_heatmap=return_heatmap,
             outputs=output_layer_names)
-        
+        end = time.time()
+
+        time_accumulated +=  (end - start)
                        
         ret[frame_id] = pose_results        
         frame_id+=1
@@ -176,6 +184,10 @@ def main():
         if args.show and cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    print ('frame_count', frame_count)
+    print ('time_accumulated', time_accumulated)
+    print ('frame_count / time_accumulated', frame_count/time_accumulated)
+    
     cap.release()
     if save_out_video:
         videoWriter.release()
