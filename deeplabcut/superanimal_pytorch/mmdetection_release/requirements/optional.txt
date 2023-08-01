@@ -1,4 +1,0 @@
-cityscapesscripts
-imagecorruptions
-scipy
-sklearn
