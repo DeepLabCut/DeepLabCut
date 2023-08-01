@@ -113,8 +113,8 @@ val_pipeline = [
 
 test_pipeline = val_pipeline
 
-data_root = 'data/allquadruped'
-dataset_info = 'data/allquadruped/dataset.json'
+data_root = 'data/ma_superquadruped_coco'
+dataset_info = 'data/ma_superquadruped_coco/dataset.json'
 
 data = dict(
     samples_per_gpu=64,

@@ -97,7 +97,7 @@ def main():
             
     #image_name = os.path.join(args.img_root, args.img)
     import glob
-    image_names = glob.glob(os.path.join(args.img_root, '*.jpg'))
+    image_names = glob.glob(os.path.join(args.img_root, ('*.png'))) + glob.glob(os.path.join(args.img_root, ('*.jpg')))
 
     for image_name in image_names:
 

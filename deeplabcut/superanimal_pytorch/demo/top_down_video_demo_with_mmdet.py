@@ -8,12 +8,14 @@ import cv2
 from mmpose.apis import (inference_top_down_pose_model, init_pose_model,
                          process_mmdet_results, vis_pose_result)
 from mmpose.datasets import DatasetInfo
-
+import traceback
 try:
     from mmdet.apis import inference_detector, init_detector
+    print (inference_detector, init_detector)
     has_mmdet = True
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError) as e:
     has_mmdet = False
+    traceback.print_exc()
 
 import json
 

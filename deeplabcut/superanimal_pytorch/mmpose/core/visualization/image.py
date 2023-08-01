@@ -110,7 +110,7 @@ def imshow_keypoints(img,
                      kpt_score_thr=0.3,
                      pose_kpt_color=None,
                      pose_link_color=None,
-                     radius=4,
+                     radius=1,
                      thickness=1,
                      draw_gt=False,
                      show_keypoint_weight=False):
@@ -225,11 +225,11 @@ def imshow_keypoints(img,
                             0,
                             dst=img)
                     else:
+
                         cv2.line(
                             img,
                             pos1,
                             pos2, (int(r), int(g), int(b)),
-                            #thickness=thickness)
                             thickness=1)
 
 
