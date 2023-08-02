@@ -1,15 +1,14 @@
-from typing import Union, List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
-import torch
-from torchvision.transforms import Resize as TorchResize
 import numpy as np
-
-from deeplabcut.pose_estimation_pytorch.models import PoseModel, PREDICTORS
-from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
+import torch
+from deeplabcut.pose_estimation_pytorch.models import PREDICTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.post_processing import (
     rmse_match_prediction_to_gt,
 )
+from torchvision.transforms import Resize as TorchResize
 
 
 def get_predictions_bottom_up(

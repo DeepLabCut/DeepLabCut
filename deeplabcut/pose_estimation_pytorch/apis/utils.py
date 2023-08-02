@@ -4,23 +4,22 @@ from typing import Dict, List, Optional, Union
 import albumentations as A
 import torch
 import yaml
-from deeplabcut.utils import auxfun_videos
-
 from deeplabcut.pose_estimation_pytorch.models import (
-    PoseModel,
     BACKBONES,
-    NECKS,
+    DETECTORS,
     HEADS,
     LOSSES,
-    DETECTORS,
+    NECKS,
+    PoseModel,
 )
-from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SOLVERS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import (
     TARGET_GENERATORS,
 )
-from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
+from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SOLVERS
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
+from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
+from deeplabcut.utils import auxfun_videos
 
 
 def build_pose_model(cfg: Dict, pytorch_cfg: Dict) -> PoseModel:
@@ -85,7 +84,7 @@ def build_detector(detector_cfg: Dict):
     return detector, detector_optimizer, detector_scheduler
 
 
-def build_solver(pytorch_cfg: Dict) -> Solver:
+def build_solver(pytorch_cfg: Dict, snapshot_path: str, detector_path: str) -> Solver:
     """
         Build the solver object to run training
 
@@ -133,6 +132,7 @@ def build_solver(pytorch_cfg: Dict) -> Solver:
                 predictor=predictor,
                 cfg=pytorch_cfg,
                 device=pytorch_cfg["device"],
+                snapshot_path=snapshot_path,
                 scheduler=scheduler,
                 logger=logger,
             )
@@ -151,6 +151,8 @@ def build_solver(pytorch_cfg: Dict) -> Solver:
                 predictor=predictor,
                 cfg=pytorch_cfg,
                 device=pytorch_cfg["device"],
+                snapshot_path=snapshot_path,
+                detector_path=detector_path,
                 scheduler=scheduler,
                 logger=logger,
                 detector=detector,

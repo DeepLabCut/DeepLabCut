@@ -12,40 +12,39 @@ import pickle
 import sys
 import time
 from pathlib import Path
-from typing import List, Tuple, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import albumentations as A
 import cv2
+import deeplabcut.pose_estimation_pytorch as dlc
 import numpy as np
-from skimage.transform import resize
 import pandas as pd
 import torch
-from tqdm import tqdm
-from skimage.util import img_as_ubyte
-
-import deeplabcut.pose_estimation_pytorch as dlc
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, VideoReader
-from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.models.detectors import (
-    DETECTORS,
-    BaseDetector,
+from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
+    convert_detections2tracklets,
 )
+from deeplabcut.pose_estimation_pytorch.apis.inference import (
+    get_detections_batch,
+    get_predictions_bottom_up,
+)
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_inference_transform,
+    build_pose_model,
+    get_detector_snapshots,
+    get_model_snapshots,
+    videos_in_folder,
+)
+from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS, BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     PREDICTORS,
     BasePredictor,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    build_pose_model,
-    read_yaml,
-    get_model_snapshots,
-    get_detector_snapshots,
-    videos_in_folder,
-    build_inference_transform,
-)
-from deeplabcut.pose_estimation_pytorch.apis.inference import (
-    get_predictions_bottom_up,
-    get_detections_batch,
-)
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
+from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
+from skimage.transform import resize
+from skimage.util import img_as_ubyte
+from tqdm import tqdm
 
 
 def video_inference(
@@ -426,6 +425,8 @@ def analyze_videos(
     batchsize: Optional[int] = None,
     modelprefix: str = "",
     transform: Optional[A.Compose] = None,
+    auto_track: Optional[bool] = True,
+    identity_only: Optional[bool] = False,
     overwrite: bool = False,
     # TODO: other options such as auto_track
 ) -> List[Tuple[str, pd.DataFrame]]:
@@ -462,6 +463,15 @@ def analyze_videos(
             PyTorch config as a default
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
+        auto_track: By default, tracking and stitching are automatically performed, 
+            producing the final h5 data file. This is equivalent to the behavior for
+            single-animal projects.
+
+            If ``False``, one must run ``convert_detections2tracklets`` and
+            ``stitch_tracklets`` afterwards, in order to obtain the h5 file.
+        identity_only: sub-call for auto_track. If ``True`` and animal identity was
+            learned by the model, assembly and tracking rely exclusively on identity 
+            prediction.
 
     Returns:
         A list containing tuples (video_name, df_video_predictions)
@@ -497,8 +507,7 @@ def analyze_videos(
     num_keypoints = len(auxiliaryfunctions.get_bodyparts(project.cfg))
 
     # Read the inference configuration, load the model
-    pytorch_config_path = model_folder / "train" / "pytorch_config.yaml"
-    pytorch_config = read_yaml(pytorch_config_path)
+    pytorch_config = auxiliaryfunctions.read_plainconfig(model_folder / "train" / "pytorch_config.yaml")
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_config(pose_cfg_path)
     method = pytorch_config.get("method", "bu")
@@ -518,14 +527,14 @@ def analyze_videos(
 
     # Load model, predictor
     model = build_pose_model(pytorch_config["model"], pose_cfg)
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path)["model_state_dict"])
     predictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
     detector = None
     top_down_predictor = None
     if method.lower() == "td":
         detector_path = _get_detector_path(model_folder, snapshotindex, project.cfg)
         detector = DETECTORS.build(dict(pytorch_config["detector"]["detector_model"]))
-        detector.load_state_dict(torch.load(detector_path))
+        detector.load_state_dict(torch.load(detector_path)["detector_state_dict"])
         top_down_predictor = PREDICTORS.build(
             {"type": "TopDownPredictor", "format_bbox": "xyxy"}
         )
@@ -581,43 +590,13 @@ def analyze_videos(
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
-
-            coordinate_labels = ["x", "y", "likelihood"]
-            if len(individuals) > 1:
-                print("Extracting ", len(individuals), "instances per bodypart")
-                # first has empty suffix for backwards compatibility
-                individual_suffixes = [str(s + 1) for s in range(len(individuals))]
-                individual_suffixes[0] = ""
-                coordinate_labels = [
-                    coord_label + s
-                    for s in individual_suffixes
-                    for coord_label in coordinate_labels
-                ]
-
-            results_df_index = pd.MultiIndex.from_product(
-                [[dlc_scorer], pose_cfg["all_joints_names"], coordinate_labels],
-                names=["scorer", "bodyparts", "coords"],
-            )
-            df = pd.DataFrame(
-                predictions.reshape((len(predictions), -1)),
-                columns=results_df_index,
-                index=range(len(predictions)),
-            )
-            df.to_hdf(
-                str(output_h5),
-                "df_with_missing",
-                format="table",
-                mode="w",
-            )
-            results.append((str(video), df))
             output_data = _generate_output_data(pose_cfg, predictions)
             _ = auxfun_multianimal.SaveFullMultiAnimalData(
                 output_data, metadata, str(output_h5)
             )
 
-            # save an assemblies file for backwards-compatibility with tensorflow
-            if project.cfg["multianimalproject"]:
-                ass_file = output_path / f"{output_prefix}_assemblies.pickle"
+            if project.cfg["multianimalproject"] and len(individuals) > 1:
+                output_ass = output_path / f"{output_prefix}_assemblies.pickle"
                 assemblies = {}
                 for i, prediction in enumerate(predictions):
                     extra_column = np.full(
@@ -628,9 +607,43 @@ def analyze_videos(
                     ass = np.concatenate((prediction, extra_column), axis=-1)
                     assemblies[i] = ass
 
-                with open(ass_file, "wb") as handle:
+                with open(output_ass, "wb") as handle:
                     pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                if auto_track:
+                    convert_detections2tracklets(
+                        config,
+                        str(video),
+                        videotype,
+                        shuffle,
+                        trainingsetindex,
+                        overwrite=False,
+                        identity_only=identity_only
+                    )
+                    stitch_tracklets(
+                        config, str(video), videotype, shuffle, trainingsetindex
+                    )
 
+            else:
+                results_df_index = pd.MultiIndex.from_product(
+                    [
+                        [dlc_scorer],
+                        pose_cfg["all_joints_names"],
+                        ["x", "y", "likelihood"],
+                    ],
+                    names=["scorer", "bodyparts", "coords"],
+                )
+                df = pd.DataFrame(
+                    np.array(predictions).reshape((len(predictions), -1)),
+                    columns=results_df_index,
+                    index=range(len(predictions)),
+                )
+                df.to_hdf(
+                    str(output_h5),
+                    "df_with_missing",
+                    format="table",
+                    mode="w",
+                )
+                results.append((str(video), df))
     return results
 
 

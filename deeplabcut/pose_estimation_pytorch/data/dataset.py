@@ -1,12 +1,24 @@
-import cv2
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
 import os
+
+import albumentations as A
+import cv2
 import numpy as np
 import torch
-from torch.utils.data import Dataset
-import albumentations as A
-
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxiliaryfunctions import read_plainconfig, get_model_folder
+from deeplabcut.utils.auxiliaryfunctions import get_model_folder, read_plainconfig
+from torch.utils.data import Dataset
+
 from .base import BaseDataset
 from .dlcproject import DLCProject
 
@@ -19,17 +31,6 @@ class PoseDataset(Dataset, BaseDataset):
     def __init__(
         self, project: DLCProject, transform: object = None, mode: str = "train"
     ):
-        """
-
-        Parameters
-        ----------
-        project: see class Project (wrapper for DLC original project class)
-        transform: augmentation/normalization pipeline
-
-        mode: 'train' or 'test'
-            this parameter which dataframe parse from the Project (df_tran or df_test)
-
-        """
         super().__init__()
         self.transform = transform
         self.project = project
@@ -67,22 +68,12 @@ class PoseDataset(Dataset, BaseDataset):
     def __len__(self):
         return self.length
 
-    def _calc_area_from_keypoints(self, keypoints):
+    def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
         w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
         h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
         return w * h
-
-    def _keypoint_in_boundary(self, keypoint, shape):
-        """
-
-        Parameters
-        ----------
-            keypoint: [x, y]
-            shape: (height, width)
-        Returns
-        -------
-            bool : whether a keypoint lies inside the given shape"""
-
+    
+    def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
         return (
             (keypoint[0] > 0)
             and (keypoint[1] > 0)
@@ -91,28 +82,6 @@ class PoseDataset(Dataset, BaseDataset):
         )
 
     def __getitem__(self, index: int) -> dict:
-        """
-
-        Parameters
-        ----------
-        index: int
-            ordered number of the item in the dataset
-        Returns
-        -------
-        dictionary corresponding to the image, annotations...
-            keys:
-                -'image' : image
-                -'annotations':
-                    -'keypoints' : array of keypoints, invisible keypoints appear as (-1, -1)
-                    -'area': array of animals area in this image
-                -'original_size' : original size of the image before applying transforms
-                                    useful to convert the predictions/ground truth back to
-                                    the input space
-
-        train_dataset = PoseDataset(project, transform=transform)
-        pose_dict = train_dataset[0]
-
-        """
         # load images
         try:
             image_file = self.dataframe.index[index]
@@ -293,20 +262,6 @@ class CroppedDataset(Dataset, BaseDataset):
     def __init__(
         self, project: DLCProject, transform: object = None, mode: str = "train"
     ):
-        """
-
-        Parameters
-        ----------
-        project: see class Project (wrapper for DLC original project class)
-        transform: transformation function:
-
-            def transform(image, keypoints):
-                return image, keypoints
-
-        mode: 'train' or 'test'
-            this parameter which dataframe parse from the Project (df_train or df_test)
-
-        """
         super().__init__()
         self.transform = transform
         self.project = project
@@ -353,14 +308,49 @@ class CroppedDataset(Dataset, BaseDataset):
             bbox_params=A.BboxParams(format="coco"),
         )
 
-        # We must dropna because self.project.images doesn't contain imgaes with no labels so it can produce an indexnotfound error
+        # We must drop na because self.project.images doesn't contain imgaes with no
+        # labels so it can produce an indexnotfound error
         # length is stored here to avoid repeating the computation
         self.length = len(self.annotations)
 
     def __len__(self):
         return self.length
+    
+    def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
+        """Summary:
+        Check if a keypoint lies inside the given shape.
+
+        Args:
+            keypoint: [x,y] coordinates of the keypoints
+            shape: tuple representing the shape of the boundary (height, width)
+
+        Returns:
+            Whether a keypoint lies inside the given shape
+
+        Example:
+            input:
+                keypoint = [100, 50]
+                shape = (200, 300)
+            output:
+                _keypoint_in_boundary(keypoint, shape) = True
+        """
+        return (
+            (keypoint[0] > 0)
+            and (keypoint[1] > 0)
+            and (keypoint[0] < shape[1])
+            and (keypoint[1] < shape[0])
+        )
 
     def _compute_anno(self):
+        """Summary:
+        Compute annotations for the dataset
+
+        Args:
+            None
+
+        Returns:
+            annotations: list of annotations containing information about keypoints and image paths.
+        """
         annotations = []
         df_length = self.dataframe.shape[0]
 
@@ -384,45 +374,12 @@ class CroppedDataset(Dataset, BaseDataset):
 
         return annotations
 
-    def _calc_area_from_keypoints(self, keypoints):
+    def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
         w = keypoints[:, 0].max(axis=0) - keypoints[:, 0].min(axis=0)
         h = keypoints[:, 1].max(axis=0) - keypoints[:, 1].min(axis=0)
         return w * h
 
-    def _keypoint_in_boundary(self, keypoint, shape):
-        """
-
-        Parameters
-        ----------
-            keypoint: [x, y]
-            shape: (height, width)
-        Returns
-        -------
-            bool : whether a keypoint lies inside the given shape"""
-
-        return (
-            (keypoint[0] > 0)
-            and (keypoint[1] > 0)
-            and (keypoint[0] < shape[1])
-            and (keypoint[1] < shape[0])
-        )
-
-    def __getitem__(self, index: int):
-        """
-        Parameters
-        ----------
-        index: int
-            ordered number of the item in the dataset
-        Returns
-        -------
-        image: torch.FloatTensor \in [0, 255]
-            Tensor for the image from the dataset
-        keypoints: list of keypoints
-
-        train_dataset = PoseDataset(project, transform=transform)
-        im, keypoints = train_dataset[0]
-
-        """
+    def __getitem__(self, index: int) -> dict:
         # load images
         ann = self.annotations[index]
         image_file = ann["image_path"]

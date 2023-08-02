@@ -8,29 +8,28 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 import argparse
+import os
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Union, List
+from typing import Dict, Iterable, List, Optional, Union
 
 import albumentations as A
-import pandas as pd
-import os
-import torch
-
 import deeplabcut.pose_estimation_pytorch as dlc
+import pandas as pd
+import torch
 from deeplabcut.pose_estimation_pytorch.apis.inference import inference
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    build_pose_model,
     build_inference_transform,
+    build_pose_model,
 )
 from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_scores
 from deeplabcut.pose_estimation_pytorch.solvers.utils import (
+    build_predictions_df,
     get_model_folder,
     get_paths,
     get_results_filename,
     get_snapshots,
-    build_predictions_df,
 )
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
@@ -112,8 +111,7 @@ def evaluate_snapshot(
     bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
     max_individuals = len(individuals)
     num_joints = len(bodyparts)
-    pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    pytorch_config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+    pytorch_config = auxiliaryfunctions.read_plainconfig(os.path.join(modelfolder, "train", "pytorch_config.yaml"))
     method = pytorch_config.get("method", "bu")
     if method not in ["bu", "td"]:
         raise ValueError(
@@ -147,13 +145,15 @@ def evaluate_snapshot(
 
     pose_cfg = auxiliaryfunctions.read_plainconfig(pytorch_config["pose_cfg_path"])
     model = build_pose_model(pytorch_config["model"], pose_cfg)
-    model.load_state_dict(torch.load(names["model_path"]))
+    model.load_state_dict(torch.load(names["model_path"])["model_state_dict"])
 
     predictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
     detector = None
     if method.lower() == "td":
         detector = DETECTORS.build(dict(pytorch_config["detector"]["detector_model"]))
-        detector.load_state_dict(torch.load(names["detector_path"]))
+        detector.load_state_dict(
+            torch.load(names["detector_path"])["detector_state_dict"]
+        )
 
     df_mode_predictions: List[pd.DataFrame] = []
     for mode in ["train", "test"]:
@@ -267,6 +267,29 @@ def evaluate_network(
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for evaluation
+
+    Examples:
+        If you want to evaluate without plotting predicitons with shuffle set to 1.
+
+        >>> deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml', shuffles=[1],
+            )
+
+        If you want to plot and evaluate with shuffle set to 0 and 1.
+
+        >>> deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[0, 1],
+                plotting=True,
+            )
+
+        If you want to plot assemblies for a maDLC project
+
+        >>> deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[1],
+                plotting="individual",
+            )
     """
     cfg = auxiliaryfunctions.read_config(config)
 

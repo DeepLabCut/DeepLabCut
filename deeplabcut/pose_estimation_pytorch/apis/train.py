@@ -1,6 +1,9 @@
 import argparse
-import deeplabcut.pose_estimation_pytorch as dlc
 import os
+from typing import Optional, Union
+
+import albumentations as A
+import deeplabcut.pose_estimation_pytorch as dlc
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_solver,
@@ -9,8 +12,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
 from torch.utils.data import DataLoader
-import albumentations as A
-from typing import Union
 
 
 def train_network(
@@ -20,6 +21,8 @@ def train_network(
     transform: Union[A.BaseCompose, A.BasicTransform] = None,
     transform_cropped: Union[A.BaseCompose, A.BasicTransform] = None,
     modelprefix: str = "",
+    snapshot_path: Optional[str] = "",
+    detector_path: Optional[str] = "",
     **kwargs
 ) -> Solver:
     """Trains a network for a project
@@ -48,6 +51,9 @@ def train_network(
         modelprefix: directory containing the deeplabcut configuration files to use
             to train the network (and where snapshots will be saved). By default, they
              are assumed to exist in the project folder.
+        snapshot_path: if resuming training, used to specify the snapshot from which to resume
+        detector_path: if resuming training of a top down model, used to specify the detector snapshot from
+            which to resume
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
 
@@ -65,8 +71,7 @@ def train_network(
             modelprefix=modelprefix,
         ),
     )
-    pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    pytorch_config = auxiliaryfunctions.read_plainconfig(pytorch_config_path)
+    pytorch_config = auxiliaryfunctions.read_plainconfig(os.path.join(modelfolder, "train", "pytorch_config.yaml"))
     update_config_parameters(pytorch_config=pytorch_config, **kwargs)
     if transform is None:
         print("No transform specified... using default")
@@ -89,7 +94,7 @@ def train_network(
 
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
 
-    solver = build_solver(pytorch_config)
+    solver = build_solver(pytorch_config, snapshot_path, detector_path)
     if pytorch_config.get("method", "bu").lower() == "td":
         if transform_cropped is None:
             print(

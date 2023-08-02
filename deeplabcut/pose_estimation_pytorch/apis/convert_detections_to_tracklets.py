@@ -8,26 +8,25 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 import pickle
 import re
-import os
 import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-
 from deeplabcut import auxiliaryfunctions
-from deeplabcut.pose_estimation_tensorflow import load_config
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
-from deeplabcut.utils import auxfun_multianimal, read_pickle
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     videos_in_folder,
 )
+from deeplabcut.pose_estimation_tensorflow import load_config
+from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
+from deeplabcut.utils import auxfun_multianimal, read_pickle
+from tqdm import tqdm
 
 
 def convert_detections2tracklets(

@@ -1,23 +1,27 @@
-from typing import Optional
-from typing import Tuple, Dict
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
+from collections import defaultdict
+from typing import Dict, Optional, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-from collections import defaultdict
-
-from deeplabcut.pose_estimation_pytorch.solvers.base import Solver, SOLVERS
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
+from deeplabcut.pose_estimation_pytorch.solvers.base import SOLVERS, Solver
 from deeplabcut.pose_estimation_pytorch.solvers.utils import *
 
 
 @SOLVERS.register_module
 class TopDownSolver(Solver):
-    """
-    Top down solver
-
-    Currently very specific to FasterRCNN for detectpr since torchvison's implementation isn't flexible
-    """
-
     def __init__(
         self,
         *args,
@@ -25,14 +29,22 @@ class TopDownSolver(Solver):
         detector_optimizer: torch.optim.Optimizer,
         detector_criterion: nn.Module = None,  # Not Used with fasterRCNN
         detector_scheduler: Optional = None,
+        detector_path: Optional[str] = "",
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.detector = detector
+        self.detector.to(self.device)
         self.detector_optimizer = detector_optimizer
         self.detector_criterion = detector_criterion
         self.detector_scheduler = detector_scheduler
-        self.detector.to(self.device)
+        self.starting_epoch = 0
+        self.starting_epoch_detector = 0
+        if detector_path:
+            detector = torch.load(detector_path)
+            self.detector.load_state_dict(detector["detector_state_dict"])
+            self.detector_optimizer.load_state_dict(detector["optimizer_state_dict"])
+            self.starting_epoch_detector = detector["epoch"]
 
     def fit(
         self,
@@ -47,27 +59,11 @@ class TopDownSolver(Solver):
         epochs: int = 10000,
         detector_epochs: int = 10000,
     ):
-        """
-        Train model for the specified number of steps.
-
-        Parameters
-        ----------
-        train_detector_loader: Data loader, which is an iterator over train instances.
-            Each batch contains image tensor and heat maps tensor input samples.
-        valid_detector_loader: Data loader used for validation of the detector model.
-        train_pose_loader: Data loader used for the pose detection part of the top down model
-        valid_pose_loader: Data loader used for validaton of the pose regression part of the top down model
-        train_fraction: TODO discuss (mb better specify with config)
-        shuffle: TODO discuss (mb better specify with config)
-        model_prefix: TODO discuss (mb better specify with config)
-        epochs: The number of training epochs for pose_estimator.
-        detector_epochs: The number of training epochs for detector.
-        """
         model_folder = get_model_folder(
             train_fraction, shuffle, model_prefix, train_detector_loader.dataset.cfg
         )
 
-        for i in range(detector_epochs):
+        for i in range(self.starting_epoch_detector, detector_epochs):
             train_detector_loss = self.epoch_detector(
                 train_detector_loader, mode="train", step=i + 1
             )
@@ -80,12 +76,17 @@ class TopDownSolver(Solver):
             if (i + 1) % self.cfg["detector"].get("detector_save_epochs", 1) == 0:
                 print(f"Finished epoch {i + 1}; saving detector")
                 torch.save(
-                    self.detector.state_dict(),
+                    {
+                        "detector_state_dict": self.detector.state_dict(),
+                        "epoch": i + 1,
+                        "optimizer_state_dict": self.detector_optimizer.state_dict(),
+                        "train_loss": train_detector_loss,
+                    },
                     f"{model_folder}/train/detector-snapshot-{i + 1}.pt",
                 )
             print(
                 f"Epoch {i + 1}/{detector_epochs}, "
-                f"train detector loss {train_detector_loss}, "
+                f"train detector loss {train_detector_loss:.5f}"
             )
 
         if detector_epochs % self.cfg["detector"].get("detector_save_epochs", 1) != 0:
@@ -95,7 +96,7 @@ class TopDownSolver(Solver):
             )
             print(f"Finished epoch {detector_epochs}; saving model")
 
-        for i in range(epochs):
+        for i in range(self.starting_epoch, epochs):
             train_pose_loss = self.epoch_pose(
                 train_pose_loader, mode="train", step=i + 1
             )
@@ -113,14 +114,20 @@ class TopDownSolver(Solver):
             if (i + 1) % self.cfg["save_epochs"] == 0:
                 print(f"Finished epoch {i + 1}; saving pose model")
                 torch.save(
-                    self.model.state_dict(),
+                    {
+                        "model_state_dict": self.model.state_dict(),
+                        "epoch": i + 1,
+                        "optimizer_state_dict": self.optimizer.state_dict(),
+                        "train_loss": train_pose_loss,
+                        "validation_loss": valid_pose_loss,
+                    },
                     f"{model_folder}/train/snapshot-{i + 1}.pt",
                 )
 
             print(
                 f"Epoch {i + 1}/{epochs}, "
-                f"train pose loss {train_pose_loss}"
-                f"valid pose loss {valid_pose_loss}"
+                f"train pose loss {train_pose_loss:.5f}, "
+                f"valid pose loss {valid_pose_loss:.5f}"
             )
 
         if epochs % self.cfg["save_epochs"] != 0:
@@ -135,7 +142,7 @@ class TopDownSolver(Solver):
         pass
 
     def step(self, *args):
-        # Unused in top down since we are dealing with two different step functions
+        """Unused in top down since we are dealing with two different step functions."""
         pass
 
     def epoch_detector(
@@ -144,19 +151,7 @@ class TopDownSolver(Solver):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
-        """Does an epoch for the detector over the dataset
-
-        Args:
-        ----------
-        detector_loader: Data loader, which is an iterator over instances.
-            Each batch contains image tensors.
-        mode: "train" or "eval"
-        step: the global step in processing, used to log metrics.
-
-        Returns
-        -------
-        epoch_loss: Average of the loss over the batches.
-        """
+        
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
         to_mode_detector = getattr(self.detector, mode)
@@ -177,7 +172,7 @@ class TopDownSolver(Solver):
 
             if (i + 1) % self.cfg["display_iters"] == 0:
                 print(
-                    f"Number of iterations for detector: {i+1}, loss : {np.mean(metrics['detector_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
+                    f"Number of iterations for detector: {i+1}, loss : {np.mean(metrics['detector_loss']):.5f}, lr : {self.optimizer.param_groups[0]['lr']}"
                 )
         epoch_detector_loss = np.mean(epoch_detector_loss)
 
@@ -200,20 +195,7 @@ class TopDownSolver(Solver):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
-        """Does an epoch for the pose_model over the dataset
-
-        Args:
-        ----------
-        pose_loader: Data loader, which is an iterator over instances.
-            Each batch contains cropped images around an animal.
-        mode: "train" or "eval"
-        step: the global step in processing, used to log metrics.
-
-        Returns
-        -------
-        epoch_loss: Average of the loss over the batches.
-        """
-
+        
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
         to_mode_pose = getattr(self.model, mode)
@@ -235,7 +217,7 @@ class TopDownSolver(Solver):
 
             if (i + 1) % self.cfg["display_iters"] == 0:
                 print(
-                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['pose_total_loss'])}, lr : {self.optimizer.param_groups[0]['lr']}"
+                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['pose_total_loss']):.5f}, lr : {self.optimizer.param_groups[0]['lr']}"
                 )
         epoch_pose_loss = np.mean(epoch_pose_loss)
 
@@ -295,15 +277,7 @@ class TopDownSolver(Solver):
             return 0.0
 
     def step_pose(self, batch: dict, mode: str = "train") -> dict:
-        """Performs a step for the pose estimator over a batch
-
-        Args:
-            batch: batch returned by the dataloader
-            mode: "train" or "eval". Defaults to "train".
-
-        Returns:
-            dict : the loss components over the batch, should always contain "total_loss" key
-        """
+        
         if mode not in ["train", "eval"]:
             raise ValueError(
                 f"Solver must be in train or eval mode, but {mode} was found."
