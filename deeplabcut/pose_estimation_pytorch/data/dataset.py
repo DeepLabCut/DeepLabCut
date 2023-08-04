@@ -12,10 +12,27 @@
 import os
 
 import albumentations as A
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
+import os
+
+import albumentations as A
 import cv2
 import numpy as np
 import torch
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxiliaryfunctions import get_model_folder, read_plainconfig
+from torch.utils.data import Dataset
+
 from deeplabcut.utils.auxiliaryfunctions import get_model_folder, read_plainconfig
 from torch.utils.data import Dataset
 
@@ -31,6 +48,19 @@ class PoseDataset(Dataset, BaseDataset):
     def __init__(
         self, project: DLCProject, transform: object = None, mode: str = "train"
     ):
+        """Summary:
+        Constructor of the PoseDataset.
+        Loads the data
+
+        Args:
+            project: see class Project (wrapper for DLC original project class)
+            transform: augmentation/normalization pipeline
+            mode: 'train' or 'test'
+                this parameter which dataframe parse from the Project (df_tran or df_test)
+
+        Returns:
+            None
+        """
         super().__init__()
         self.transform = transform
         self.project = project
@@ -66,14 +96,49 @@ class PoseDataset(Dataset, BaseDataset):
         assert self.length == len(self.project.image_path2image_id.keys())
 
     def __len__(self):
+        """Summary:
+        Get the length of the dataset
+
+        Args:
+            None
+
+        Returns:
+            Number of samples in the dataset
+        """
         return self.length
 
     def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
+        """Summary:
+        Calculate the area from keypoints
+
+        Args:
+            keypoints (np.ndarray): array of keypoints
+
+        Returns:
+            np.ndarray: array containing the computed areas based on the keypoints
+        """
         w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
         h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
         return w * h
     
     def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
+        """Summary:
+        Check if a keypoint lies inside the given shape.
+
+        Args:
+            keypoint: [x,y] coordinates of the keypoints
+            shape: tuple representing the shape of the boundary (height, width)
+
+        Returns:
+            Whether a keypoint lies inside the given shape
+
+        Example:
+            input:
+                keypoint = [100, 50]
+                shape = (200, 300)
+            output:
+                _keypoint_in_boundary(keypoint, shape) = True
+        """
         return (
             (keypoint[0] > 0)
             and (keypoint[1] > 0)
@@ -82,6 +147,24 @@ class PoseDataset(Dataset, BaseDataset):
         )
 
     def __getitem__(self, index: int) -> dict:
+        """Summary:
+        Gets the item at the specified index from the dataset.
+
+        Args:
+            index: ordered number of the items in the dataset
+
+        Returns:
+            dict: corresponding to the image annotations, with keys:
+                - image: image tensor
+                - original_size: original size of the image before applying transforms
+                                 useful to convert the predictions/ground truth back to
+                                 the input space
+                - annotations:
+                    - keypoints: array of keypoints, invisible keypoints appear as (-1,-1)
+                    - area: array of animals area in this image
+                    - ids: array containing the individuals IDs associated with each annotation.
+                    - path
+        """
         # load images
         try:
             image_file = self.dataframe.index[index]
@@ -259,9 +342,27 @@ class PoseDataset(Dataset, BaseDataset):
 
 
 class CroppedDataset(Dataset, BaseDataset):
+    """
+    Definition of the class object CroppedDataset: dataset for cropped images and keypoints
+    """
+
     def __init__(
         self, project: DLCProject, transform: object = None, mode: str = "train"
     ):
+        """Summary:
+        Constructor of the CroppedDataset class.
+        Loads the data
+
+        Args:
+            project: DLC original project class
+            transform: transformation function that takes keypoints as inputs
+                       and returns a transformed image with corresponding keypoints.
+                       Defaults to None.
+            mode: 'train' or 'test'. Defaults to "train".
+
+        Returns:
+            None:
+        """
         super().__init__()
         self.transform = transform
         self.project = project
@@ -307,13 +408,19 @@ class CroppedDataset(Dataset, BaseDataset):
             keypoint_params=A.KeypointParams(format="xy", remove_invisible=False),
             bbox_params=A.BboxParams(format="coco"),
         )
-
-        # We must drop na because self.project.images doesn't contain imgaes with no
-        # labels so it can produce an indexnotfound error
-        # length is stored here to avoid repeating the computation
+        
         self.length = len(self.annotations)
 
     def __len__(self):
+        """Summary:
+        Get the length of the dataset
+
+        Args:
+            None
+
+        Returns:
+            Number of samples in the dataset
+        """
         return self.length
     
     def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
@@ -351,6 +458,15 @@ class CroppedDataset(Dataset, BaseDataset):
         Returns:
             annotations: list of annotations containing information about keypoints and image paths.
         """
+        """Summary:
+        Compute annotations for the dataset
+
+        Args:
+            None
+
+        Returns:
+            annotations: list of annotations containing information about keypoints and image paths.
+        """
         annotations = []
         df_length = self.dataframe.shape[0]
 
@@ -375,11 +491,37 @@ class CroppedDataset(Dataset, BaseDataset):
         return annotations
 
     def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
+        """Summary:
+        Calculate the area from keypoints
+
+        Args:
+            keypoints: array of keypoints
+
+        Returns:
+            Array containing the computed areas based on the keypoints
+        """
         w = keypoints[:, 0].max(axis=0) - keypoints[:, 0].min(axis=0)
         h = keypoints[:, 1].max(axis=0) - keypoints[:, 1].min(axis=0)
         return w * h
 
     def __getitem__(self, index: int) -> dict:
+        """Summary:
+        Get the item at the specified index from the dataset.
+
+        Args:
+            index: ordered number of the item in the dataset
+
+        Returns:
+            dict: dictionary containing following information:
+                - image: tensor representing the cropped image
+                - original_size:tuple representing the original size of the image
+                                        before applying transforms.
+                - annotations: dictionary containing annotation information.
+                    - keypoints: array of keypoints associated with the cropped image
+                    - area: array of animal's area in the image
+                    - ids: individual ids associated with the animals
+                    - path
+        """
         # load images
         ann = self.annotations[index]
         image_file = ann["image_path"]

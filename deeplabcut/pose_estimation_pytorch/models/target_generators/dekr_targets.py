@@ -1,10 +1,21 @@
-import numpy as np
-from typing import Tuple
-import torch
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
+from typing import Tuple
+
+import numpy as np
+import torch
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
@@ -18,9 +29,27 @@ class DEKRGenerator(BaseGenerator):
         CVPR
         2021
     Code based on:
-        https://github.com/HRNet/DEKR"""
+        https://github.com/HRNet/DEKR
+    """
 
     def __init__(self, num_joints: int, pos_dist_thresh: int, bg_weight: float = 0.1):
+        """Summary:
+        Constructor of the DEKRGenerator class.
+        Loads the data.
+
+        Args:
+            num_joints: number of keypoints
+            pos_dist_thresh: 3*std of the gaussian
+            bg_weight:background weight. Defaults to 0.1.
+
+        Returns:
+            None
+
+        Examples:
+            num_joints = 6
+            pos_dist_thresh = 17
+            bg_weight = 0.1 (default)
+        """
         super().__init__()
 
         self.num_joints = num_joints
@@ -30,6 +59,20 @@ class DEKRGenerator(BaseGenerator):
         self.num_joints_with_center = self.num_joints + 1
 
     def get_heat_val(self, sigma: float, x: float, y: float, x0: float, y0: float):
+        """Summary:
+        Calculates the corresponding heat value of point (x,y) given the heat distribution centered
+        at (x0,y0) and spread value of sigma.
+
+        Args:
+            sigma: controls the spread or width of the heat distribution
+            x: x coord of a point on the image grid
+            y: y coord of a point on the image grid
+            x0: x center coordinate of the heat distribution
+            y0: y center coordinate of the heat distribution
+
+        Returns:
+            g: calculated heat value represents the intensity of the heat at a given position
+        """
         g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
 
         return g
@@ -40,25 +83,32 @@ class DEKRGenerator(BaseGenerator):
         prediction: Tuple[torch.Tensor, torch.Tensor],
         image_size: Tuple[int, int],
     ):
-        """
+        """Summary
+        Given the annotations and predictions of your keypoints, this function returns the targets,
+        a dictionary containing the heatmaps, locref_maps and locref_masks.
+        Args:
+            annotations: each entry should begin with the shape batch_size
+            prediction: output of model, format could depend on the model, only used to compute output resolution
+            image_size:size of image (only one tuple since for batch training all images should have the same size)
 
-        Parameters
-        ----------
-        annotations: dict, each entry should begin with the shape batch_size
-        prediction: output of model, format could depend on the model, only used to compute output resolution
-        image_size: size of image (only one tuple since for batch training all images should have the same size)
-
-        Returns
-        -------
-        #TODO locref is a bad name here and should be 'offset to center', but for code's simplicity it
+        Returns:
+            #TODO locref is a bad name here and should be 'offset to center', but for code's simplicity it
             is easier to use the same keys as for the SingleAnimal target generators
-        targets : dict of the taregts, keys:
+            targets, keys:
                 'heatmaps' : heatmaps
                 'heatmaps_ignored': weights to apply to the heatmaps for loss computation
                 'locref_maps' : offset maps
                 'locref_masks' : weights to apply to the offset maps for loss computation
 
+        Examples:
+            input:
+                annotations = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
+                prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
+                image_size = (256, 256)
+            output:
+                targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
         """
+
         batch_size, _, output_h, output_w = prediction[0].shape
         output_res = output_h, output_w
         stride_y, stride_x = image_size[0] / output_h, image_size[1] / output_w

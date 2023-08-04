@@ -1,29 +1,22 @@
 import os
 import pickle
-from typing import List
+from typing import List, Tuple
 
+import deeplabcut
 import numpy as np
 import pandas as pd
 
-import deeplabcut
-from .base import BaseProject
-from ..utils import df2generic
-
+from deeplabcut.pose_estimation_pytorch.utils import (
+    df2generic
+)
+from deeplabcut.pose_estimation_pytorch.data.base import (
+    BaseProject
+)
 
 class DLCProject(BaseProject):
     """
     Wrapper around the project containing information about the data,
     the actual annotations and the configs
-
-    Methods:
-        - convert2dict : convert the annotations dataframe into a coco format dict of annotations
-        - _init_annotation_image_correspondance: binds the image paths to corresponding annotations
-                ensures there is no indexing offsets between images and annotations when
-                going through the dataset
-        - load_split : split the annotation dataframe into train and test dataframes
-                        based on project's split
-        - annotation2keypoints : convert the coco annotations into array of keypoints
-                                also returns the array of the keypoints' visibility
     """
 
     def __init__(
@@ -33,6 +26,21 @@ class DLCProject(BaseProject):
         image_id_offset: int = 0,
         keys_to_load: List[str] = ["images", "annotations"],
     ):
+        """Summary:
+        Constructor of the DLCProject class.
+        Loads the data
+
+        Args:
+            proj_root: project path
+            shuffle: shuffle index for the project. Defaults to 0.
+            image_id_offset: offset value for image ids. Defaults to 0.
+            keys_to_load: list of keys to load from the dataset.
+                          Defaults to ["images", "annotations"].
+
+        Return:
+            None
+        """
+
         super().__init__()
         self.proj_root = proj_root
         self.shuffle = shuffle
@@ -62,15 +70,17 @@ class DLCProject(BaseProject):
             self.df_test = self.df_test[~self.df_test.index.duplicated(keep="first")]
 
     def convert2dict(self, mode: str = "train"):
-        """
+        """Summary:
+        Convert the annotations dataframe into coco format dictionary of annotations
 
-        Parameters
-        ----------
-        mode
+        Args:
+            mode: mode indicating whether to use 'train' or 'test' data. Defaults to "train".
 
-        Returns
-        -------
+        Raises:
+            AttributeError: if the specified mode (train or test) does not exist.
 
+        Returns:
+            None
         """
         try:
             self.dataframe = getattr(self, f"df_{mode}")
@@ -85,11 +95,22 @@ class DLCProject(BaseProject):
 
         for key in self.keys_to_load:
             setattr(self, key, data[key])
-        print("The data has been loaded!")
+        print("The data has been converted!")
 
     def _init_annotation_image_correspondance(self, data: dict):
-        """data should be a COCO like dictionary of the pose dataset"""
+        """Summary:
+        Binds the image paths to corresponding annotations and ensures there is no indexing
+        offsets between images and annotations when going through the dataset
 
+        Args:
+            data: dictionary containing annotations in COCO-like format
+
+        Returns:
+            None
+
+        Examples:
+            data = {"images": [...], "annotations": [...]}
+        """
         # Path to id correspondence
         self.image_path2image_id = {}
         for i, image in enumerate(data["images"]):
@@ -108,11 +129,14 @@ class DLCProject(BaseProject):
         return
 
     def load_split(self):
-        """
+        """Summary:
+        Split the annotation dataframe into train and test dataframes based on project's split
 
-        Returns
-        -------
+        Args:
+            None
 
+        Return:
+            None
         """
         with open(self.path_dlc_doc, "rb") as f:
             meta = pickle.load(f)
@@ -128,20 +152,15 @@ class DLCProject(BaseProject):
         self.df_train = self.dlc_df.loc[train_images]
 
     @staticmethod
-    def annotation2keypoints(annotation):
-        """
-        TODO
-        This function was copied from modelzoo project (transformation to coco format)
-        Parameters
-        ----------
-        annotation: dict of annotations
+    def annotation2keypoints(annotation: dict) -> Tuple[list, np.array]:
+        """Summary:
+        Convert the coco annotations into array of keypoints also returns the array of the keypoints' visibility
+        Args:
+            annotation: dictionary containing coco-like annotations
 
-        Returns
-        -------
-        keypoints: list
-            paired keypoints
-        undef_ids: array
-            0 means this keypoints is undefined, 1 means it is
+        Returns:
+            keypoints: paired keypoints
+            undef_ids: array where 0 means the keypoint is undefined. 1 means it is defined.
         """
         x = annotation["keypoints"][::3]
         y = annotation["keypoints"][1::3]

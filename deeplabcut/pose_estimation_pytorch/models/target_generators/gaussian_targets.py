@@ -1,10 +1,21 @@
-import numpy as np
-from typing import Tuple
-import torch
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
+from typing import Tuple
+
+import numpy as np
+import torch
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
@@ -16,6 +27,24 @@ class GaussianGenerator(BaseGenerator):
     """
 
     def __init__(self, locref_stdev: float, num_joints: int, pos_dist_thresh: int):
+        """Summary:
+        Constructor of the GaussianGenerator class.
+        Loads the data.
+
+        Args:
+            locref_stdev: scaling factor
+            num_joints: number of keypoints
+            pos_dist_thresh: 3*std of the gaussian
+
+        Return:
+            None
+
+        Examples:
+            input:
+                locref_stdev = 7.2801, default value in pytorch config
+                num_joints = 6
+                po_dist_thresh = 17, default value in pytorch config
+        """
         super().__init__()
 
         self.locref_scale = 1.0 / locref_stdev
@@ -32,22 +61,30 @@ class GaussianGenerator(BaseGenerator):
         prediction: Tuple[torch.Tensor, torch.Tensor],
         image_size: Tuple[int, int],
     ):
+        """Summary:
+        Given the annotations and predictions of your keypoints, this function returns the targets,
+        a dictionary containing the heatmaps, locref_maps and locref_masks.
+
+        Args:
+            annotations: each entry should begin with the shape batch_size
+            prediction: output of model format could depend on the model, only used to compute output resolution
+            image_size: size of image (only one tuple since for batch training all images should have the same size)
+
+        Returns:
+            targets: dict of the taregts, keys:
+                    'heatmaps' : heatmaps
+                    'locref_maps' : locref maps
+                    'locref_masks' : weights to apply to the locref maps for loss computation
+
+        Examples:
+            input:
+                annotations = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
+                prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
+                image_size = (256, 256)
+            output:
+                targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
         """
 
-        Parameters
-        ----------
-        annotations: dict, each entry should begin with the shape batch_size
-        prediction: output of model, format could depend on the model, only used to compute output resolution
-        image_size: size of image (only one tuple since for batch training all images should have the same size)
-
-        Returns
-        -------
-        targets : dict of the taregts, keys:
-                'heatmaps' : heatmaps
-                'locref_maps' : locref maps
-                'locref_masks' : weights to apply to the locref maps for loss computation
-
-        """
         # stride = cfg['stride'] # Apparently, there is no stride in the cfg
         # stride = scale_factors  # TODO just test
         batch_size, _, height, width = prediction[0].shape
@@ -92,7 +129,28 @@ class GaussianGenerator(BaseGenerator):
 
 @TARGET_GENERATORS.register_module
 class GaussianWithoutLocref(BaseGenerator):
-    def __init__(self, num_joints, pos_dist_thresh):
+    """
+    Generate plateau heatmaps from ground truth keypoints in order
+    to train baseline deeplabcut model (ResNet + Deconv)
+    """
+
+    def __init__(self, num_joints: int, pos_dist_thresh: int):
+        """Summary:
+        Constructor of the GaussianWithoutLocref class.
+        Loads the data.
+
+        Args:
+            num_joints: number of keypoints
+            pos_dist_thresh: 3*std of the gaussian
+
+        Returns:
+            None
+
+        Examples:
+            input:
+                num_joints = 6
+                po_dist_thresh = 17, default value in pytorch config
+        """
         super().__init__()
 
         self.num_joints = num_joints
@@ -100,17 +158,28 @@ class GaussianWithoutLocref(BaseGenerator):
         self.dist_thresh_sq = self.dist_thresh**2
         self.std = 2 * self.dist_thresh / 3
 
-    def forward(self, annotations, prediction, image_size):
-        """
+    def forward(
+        self,
+        annotations: dict,
+        prediction: Tuple[torch.Tensor, torch.Tensor],
+        image_size: Tuple[int, int],
+    ):
+        """Summary:
+        Given the annotations and predictions of your keypoints, this function returns the targets,
+        a dictionary containing the heatmaps, locref_maps and locref_masks.
 
-        Parameters
-        ----------
-        annotations : dict of annoations which should all be tensors of first dimension batch_size
-        prediction: model's output
-        image_size : size of input images
+        Args:
+            annotations: dict of annoations which should all be tensors of first dimension batch_size
+            prediction: model's output
+            image_size: size of input images
 
-        Returns
-        -------
+        Returns:
+            input:
+                annotations = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
+                prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
+                image_size = (256, 256)
+            output:
+                targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
 
         """
         batch_size, _, height, width = prediction[0].shape
