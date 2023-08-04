@@ -5,9 +5,5 @@
 # (https://github.com/HRNet/HigherHRNet-Human-Pose-Estimation)
 # ------------------------------------------------------------------------------
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from .conv_block import BasicBlock, Bottleneck, AdaptBlock
-from .conv_module import HighResolutionModule
+from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import AdaptBlock, BasicBlock, Bottleneck
+from deeplabcut.pose_estimation_pytorch.models.modules.conv_module import HighResolutionModule

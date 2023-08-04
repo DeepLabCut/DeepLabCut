@@ -22,6 +22,44 @@ from deeplabcut.pose_estimation_pytorch.solvers.utils import *
 
 @SOLVERS.register_module
 class TopDownSolver(Solver):
+    """Top Down Solver Class
+
+    This class is used for training the top-down pose estimation model
+    based on a detector model such as FasterRCNN.
+    Only supports FasterRCNN as a detector for now (https://github.com/rbgirshick/fast-rcnn)
+
+    Attributes:
+        detector: The detector model used in the top-down approach.
+        detector_optimizer: Optimizer for the detector model.
+        detector_criterion: Criterion for the detector model (not used with FasterRCNN).
+        detector_scheduler: Scheduler for the detector model (optional).
+        detector_path: Path to a pre-trained detector model checkpoint (optional).
+
+    Examples:
+        # Initialize the top-down solver with a FasterRCNN detector and its optimizer
+        detector = FasterRCNN()
+        detector_optimizer = torch.optim.SGD(detector.parameters(), lr=0.001, momentum=0.9)
+        solver = TopDownSolver(detector=detector, detector_optimizer=detector_optimizer)
+
+        # Load data loaders for training and validation
+        train_detector_loader = torch.utils.data.DataLoader(...)
+        valid_detector_loader = torch.utils.data.DataLoader(...)
+        train_pose_loader = torch.utils.data.DataLoader(...)
+        valid_pose_loader = torch.utils.data.DataLoader(...)
+
+        # Train the top-down pose estimation model
+        solver.fit(
+            train_detector_loader=train_detector_loader,
+            valid_detector_loader=valid_detector_loader,
+            train_pose_loader=train_pose_loader,
+            valid_pose_loader=valid_pose_loader,
+            train_fraction=0.95,
+            shuffle=0,
+            model_prefix="my_model",
+            epochs=10000
+        )
+    """
+
     def __init__(
         self,
         *args,

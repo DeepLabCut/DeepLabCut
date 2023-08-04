@@ -44,6 +44,32 @@ class Solver(ABC):
         scheduler: torch.optim.lr_scheduler = None,
         logger: Optional = None,
     ):
+        """Constructor of the Solver class.
+
+        Args:
+            model: The neural network for solving pose estimation task.
+            criterion: The criterion computed from the difference
+                                  between the prediction and the target.
+            optimizer: A PyTorch optimizer for
+                                               updating model parameters.
+            cfg: DeepLabCut pose_cfg for training.
+            See https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml
+                        for more details.
+            device: str representing the device on which a torch.Tensor
+                          is or will be allocated.
+                          Possible value are: ('cpu', 'cuda' or 'mps')
+            snapshot_path: path of the snapshot/weights file to load before training
+            scheduler: Scheduler for adjusting the
+                            lr of the optimizer.
+            logger: logger to monitor training (e.g WandB logger)
+
+        Returns:
+            None
+
+        Notes/TODO:
+            Read stride from config file
+        """
+        
         if cfg is None:
             raise ValueError("")
         self.model = model
@@ -76,6 +102,26 @@ class Solver(ABC):
         *,
         epochs: int = 10000,
     ) -> None:
+
+        """Train model for the specified number of steps.
+
+        Args:
+            train_loader: Data loader, which is an iterator over train instances.
+                          Each batch contains image tensor and heat maps tensor input samples.
+            valid_loader: Data loader used for validation of the model.
+            train_fraction: Fraction used for training. Defaults to 0.95.
+            shuffle: Shuffle id to use from the randomized training sets. Defaults to 0.
+            model_prefix: Defaults to "".
+            epochs: The number of training epochs. Defaults to 10000.
+
+        Returns:
+            None
+
+        Example:
+           solver = Solver(model, criterion, optimizer, predictor, cfg, device='cuda')
+           solver.fit(train_loader, valid_loader, epochs=50)
+        """
+
         model_folder = get_model_folder(
             train_fraction, shuffle, model_prefix, train_loader.dataset.cfg
         )
@@ -113,6 +159,25 @@ class Solver(ABC):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
+
+        """Facilitates training over an epoch. Returns the loss over the batches.
+
+        Args:
+            loader: Data loader, which is an iterator over instances.
+                                                  Each batch contains image tensor and heat maps tensor input samples.
+            mode: str identifier to instruct the Solver whether to train or evaluate.
+                        Possible values are: "train" or "eval".
+                        Defaults to "train".
+            step: the global step in processing, used to log metrics. Defaults to None.
+
+        Raises:
+            ValueError: "Solver mode must be train or eval, found mode={mode}."
+                        This error is raised when the given mode is invalid (eg. not train nor eval)
+
+        Returns:
+            epoch_loss: Average of the loss over the batches.
+        """
+
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
         to_mode = getattr(self.model, mode)
@@ -151,6 +216,19 @@ class Solver(ABC):
     def inference(
         self, dataset: deeplabcut_pose_estimation_pytorch_data_dataset.PoseDataset
     ) -> np.ndarray:
+
+        """Run inference on the given dataset and obtain predicted poses.
+
+        Args:
+            dataset: The dataset  to run the inference over
+
+        Returns:
+            Numpy array containing the predicted poses
+
+        Notes/TODO:
+            Add scale
+        """
+
         predicted_poses = []
         for item in dataset:
             if isinstance(item, tuple) or isinstance(item, list):
@@ -167,9 +245,30 @@ class Solver(ABC):
 
 class BottomUpSolver(Solver):
 
+    """Base solvers for bottom up pose estimation."""
+
     def step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], mode: str = "train"
     ) -> dict:
+
+        """Perform a single epoch gradient update or validation step.
+
+        Args:
+            batch: Tuple of input image(s) and target(s) for train or valid single step.
+            mode: `train` or `eval`. Defaults to "train".
+
+        Raises:
+            ValueError: "Solver must be in train or eval mode, but {mode} was found."
+
+        Returns
+        -------
+        dict : {
+            'batch loss' : torch.Tensor,
+            'heatmap_loss' : torch.Tensor,
+            'locref_loss' : torch.Tensor
+        }
+        """
+
         if mode not in ["train", "eval"]:
             raise ValueError(
                 f"Solver must be in train or eval mode, but {mode} was found."

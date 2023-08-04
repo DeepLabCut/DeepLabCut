@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import inspect
 from functools import partial
 from typing import Any, Dict, Optional
@@ -6,15 +16,31 @@ from typing import Any, Dict, Optional
 def build_from_cfg(
     cfg: Dict, registry: "Registry", default_args: Optional[Dict] = None
 ) -> Any:
-    """Build a module from config dict when it is a class configuration, or
-    call a function from config dict when it is a function configuration.
+    """Builds a module from the configuration dictionary when it represents a class configuration,
+    or call a function from the configuration dictionary when it represents a function configuration.
+
     Args:
-        cfg (dict): Config dict. It should at least contain the key "type".
-        registry (:obj:`Registry`): The registry to search the type from.
-        default_args (dict, optional): Default initialization arguments.
+        cfg: Configuration dictionary. It should at least contain the key "type".
+        registry: The registry to search the type from.
+        default_args: Default initialization arguments.
+                      Defaults to None.
+
     Returns:
-        object: The constructed object.
+        Any: The constructed object.
+
+    Example:
+        >>> from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+        >>> class Model:
+        >>>     def __init__(self, param):
+        >>>         self.param = param
+        >>> cfg = {"type": "Model", "param": 10}
+        >>> registry = Registry("models")
+        >>> registry.register_module(Model)
+        >>> obj = build_from_cfg(cfg, registry)
+        >>> assert isinstance(obj, Model)
+        >>> assert obj.param == 10
     """
+
     args = cfg.copy()
 
     if default_args is not None:
@@ -39,22 +65,30 @@ def build_from_cfg(
 
 class Registry:
     """A registry to map strings to classes or functions.
-    Registered object could be built from registry. Meanwhile, registered
-    functions could be called from registry.
+    Registered objects could be built from the registry. Meanwhile, registered
+    functions could be called from the registry.
 
     Args:
-        name (str): Registry name.
-        build_func(func, optional): Build function to construct instance from
-            Registry, func:`build_from_cfg` is used if neither ``parent`` or
-            ``build_func`` is specified. If ``parent`` is specified and
-            ``build_func`` is not given,  ``build_func`` will be inherited
-            from ``parent``. Default: None.
-        parent (Registry, optional): Parent registry. The class registered in
-            children registry could be built from parent. Default: None.
-        scope (str, optional): The scope of registry. It is the key to search
-            for children registry. If not specified, scope will be the name of
-            the package where class is defined, e.g. mmdet, mmcls, mmseg.
-            Default: None.
+        name: Registry name.
+        build_func: Builds function to construct an instance from
+                    the Registry. If neither ``parent`` nor
+                    ``build_func`` is specified, the ``build_from_cfg``
+                    function is used. If ``parent`` is specified and
+                    ``build_func`` is not given,  ``build_func`` will be
+                    inherited from ``parent``. Default: None.
+        parent: Parent registry. The class registered in
+                children's registry could be built from the parent.
+                Default: None.
+        scope: The scope of the registry. It is the key to search
+               for children's registry. If not specified, scope will be the
+               name of the package where the class is defined, e.g. mmdet, mmcls, mmseg.
+               Default: None.
+
+    Attributes:
+        name: Registry name.
+        module_dict: The dictionary containing registered modules.
+        children: The dictionary containing children registries.
+        scope: The scope of the registry.
     """
 
     def __init__(self, name, build_func=None, parent=None, scope=None):
@@ -127,10 +161,20 @@ class Registry:
 
     def get(self, key):
         """Get the registry record.
+
         Args:
-            key (str): The class name in string format.
+            key: The class name in string format.
+
         Returns:
             class: The corresponding class.
+
+        Example:
+            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
+            >>> registry = Registry("models")
+            >>> class Model:
+            >>>     pass
+            >>> registry.register_module(Model, "Model")
+            >>> assert registry.get("Model") == Model
         """
         scope, real_key = self.split_scope_key(key)
         if scope is None or scope == self._scope:
@@ -149,21 +193,48 @@ class Registry:
                 return parent.get(key)
 
     def build(self, *args, **kwargs):
+        """Builds an instance from the registry.
+
+        Args:
+            *args: Arguments passed to the build function.
+            **kwargs: Keyword arguments passed to the build function.
+
+        Returns:
+            Any: The constructed object.
+
+        Example:
+            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+            >>> class Model:
+            >>>     def __init__(self, param):
+            >>>         self.param = param
+            >>> cfg = {"type": "Model", "param": 10}
+            >>> registry = Registry("models")
+            >>> registry.register_module(Model)
+            >>> obj = registry.build(cfg, param=20)
+            >>> assert isinstance(obj, Model)
+            >>> assert obj.param == 20
+        """
         return self.build_func(*args, **kwargs, registry=self)
 
     def _add_children(self, registry):
         """Add children for a registry.
-        The ``registry`` will be added as children based on its scope.
-        The parent registry could build objects from children registry.
+
+        Args:
+            registry: The registry to be added as children based on its scope.
+
+        Returns:
+            None
+
         Example:
+            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
             >>> models = Registry('models')
             >>> mmdet_models = Registry('models', parent=models)
-            >>> @mmdet_models.register_module()
-            >>> class ResNet:
+            >>> class Model:
             >>>     pass
-            >>> resnet = models.build(dict(type='mmdet.ResNet'))
+            >>> mmdet_models.register_module(Model)
+            >>> obj = models.build(dict(type='mmdet.Model'))
+            >>> assert isinstance(obj, Model)
         """
-
         assert isinstance(registry, Registry)
         assert registry.scope is not None
         assert (
@@ -172,6 +243,26 @@ class Registry:
         self.children[registry.scope] = registry
 
     def _register_module(self, module, module_name=None, force=False):
+        """Register a module.
+
+        Args:
+            module: Module class or function to be registered.
+            module_name: The module name(s) to be registered.
+                                                     If not specified, the class name will be used.
+            force: Whether to override an existing class with the same name.
+                                    Default: False.
+
+        Returns:
+            None
+
+        Example:
+            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
+            >>> registry = Registry("models")
+            >>> class Model:
+            >>>     pass
+            >>> registry._register_module(Model, "Model")
+            >>> assert registry.get("Model") == Model
+        """
         if not inspect.isclass(module) and not inspect.isfunction(module):
             raise TypeError(
                 "module must be a class or a function, " f"but got {type(module)}"
@@ -187,6 +278,24 @@ class Registry:
             self._module_dict[name] = module
 
     def deprecated_register_module(self, cls=None, force=False):
+        """Decorator to register a class in the registry.
+
+        Args:
+            cls: The class to be registered.
+            force: Whether to override an existing class with the same name.
+                                    Default: False.
+
+        Returns:
+            type: The input class.
+
+        Example:
+            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
+            >>> registry = Registry("models")
+            >>> @registry.deprecated_register_module()
+            >>> class Model:
+            >>>     pass
+            >>> assert registry.get("Model") == Model
+        """
         if cls is None:
             return partial(self.deprecated_register_module, force=force)
         self._register_module(cls, force=force)
@@ -198,11 +307,11 @@ class Registry:
         name or the specified name, and value is the class itself.
         It can be used as a decorator or a normal function.
         Args:
-            name (str | None): The module name to be registered. If not
-                specified, the class name will be used.
-            force (bool, optional): Whether to override an existing class with
-                the same name. Default: False.
-            module (type): Module class or function to be registered.
+            name: The module name to be registered. If not
+                  specified, the class name will be used.
+            force: Whether to override an existing class with
+                   the same name. Default: False.
+            module: Module class or function to be registered.
         """
         if not isinstance(force, bool):
             raise TypeError(f"force must be a boolean, but got {type(force)}")

@@ -1,8 +1,40 @@
-import torch
+"""
+DeepLabCut Toolbox (deeplabcut.org)
+© A. & M.W. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+
+Licensed under GNU Lesser General Public License v3.0
+"""
+
 import math
 
+import torch
 
-def make_sine_position_embedding(h, w, d_model, temperature=10000, scale=2 * math.pi):
+
+def make_sine_position_embedding(
+    h: int, w: int, d_model: int, temperature: int = 10000, scale: float = 2 * math.pi
+) -> torch.Tensor:
+    """Generate sine position embeddings for a given height, width, and model dimension.
+
+    Args:
+        h: Height of the embedding.
+        w: Width of the embedding.
+        d_model: Dimension of the model.
+        temperature: Temperature parameter for position embedding calculation.
+                     Defaults to 10000.
+        scale: Scaling factor for position embedding. Defaults to 2 * math.pi.
+
+    Returns:
+        Sine position embeddings with shape (batch_size, d_model, h * w).
+
+    Example:
+        >>> h, w, d_model = 10, 20, 512
+        >>> pos_emb = make_sine_position_embedding(h, w, d_model)
+        >>> print(pos_emb.shape)  # Output: torch.Size([1, 512, 200])
+    """
     area = torch.ones(1, h, w)
     y_embed = area.cumsum(1, dtype=torch.float32)
     x_embed = area.cumsum(2, dtype=torch.float32)

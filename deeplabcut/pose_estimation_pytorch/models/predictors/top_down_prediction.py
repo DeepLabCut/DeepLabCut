@@ -1,6 +1,15 @@
-import torch
-from typing import List
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
+import torch
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     PREDICTORS,
     BasePredictor,
@@ -9,16 +18,15 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import (
 
 @PREDICTORS.register_module
 class TopDownPredictor(BasePredictor):
+    """Predictor for regressing keypoints in a Top Down fashion based on bbox predictions
+    and regressed keypoints in cropped images.
+
+    Args:
+        format_bbox: Format of the bounding box prediction,
+                     either 'xyxy' or 'coco'. Defaults to "xyxy".
+    """
+
     def __init__(self, format_bbox: str = "xyxy"):
-        """
-        Predictor for regressing keypoints in a Top Down fashion based on bbox predictions
-        and regressed keypoints in cropped images
-
-        Thus it should take as keypoint regressions outputs from another standard pose_estimation predictor
-
-        Arguments:
-            - format_bbox : str, format of the bounding box prediction, either 'xyxy' or 'coco'
-        """
         super().__init__()
 
         self.format_bbox = format_bbox
@@ -27,10 +35,10 @@ class TopDownPredictor(BasePredictor):
         """Convert bboxes in the format (x1, y1, x2, y2) to coco format (x, y, w, h)
 
         Args:
-            bboxes (torch.Tensor): bboxes, shape (batch_size, max_num_animals, 4)
+            bboxes: Bounding boxes of the shape (batch_size, max_num_animals, 4)
 
         Returns:
-            torch.Tensor: coco_bboxes, shape (batch_size, max_num_animals, 4)
+            coco_bboxes, shape (batch_size, max_num_animals, 4)
         """
         coco_bboxes = bboxes.clone()
         coco_bboxes[:, :, 2] -= coco_bboxes[:, :, 0]
@@ -42,14 +50,14 @@ class TopDownPredictor(BasePredictor):
         self, bboxes: torch.Tensor, keypoints_cropped: torch.Tensor
     ) -> torch.Tensor:
         """Computes keypoints coordinates in the original image given predicted bbox and predicted
-        keypoints coordinates inside the bbox cropped image
+        keypoints coordinates inside the bbox cropped image.
 
         Args:
-            bboxes (torch.Tensor): shape : (batch_size, max_num_animals, 4),
-            keypoints_cropped (torch.Tensor): shape of keypoints (batch_size, max_num_animals, num_joints, 3)
+            bboxes: Bounding boxes of the shape (batch_size, max_num_animals, 4)
+            keypoints_cropped: Keypoints with the shape (batch_size, max_num_animals, num_joints, 3)
 
         Returns:
-            torch.Tensor: keypoints (batch_size, max_num_animals, num_joints, 3)
+            Keypoints tensor of the shape: (batch_size, max_num_animals, num_joints, 3)
         """
         if self.format_bbox != "coco":
             bboxes = self._convert_bbox_to_coco(bboxes)
@@ -59,7 +67,7 @@ class TopDownPredictor(BasePredictor):
 
         x_corners = (bboxes[:, :, 0]).unsqueeze(2).expand(-1, -1, num_joints)
         y_corners = (bboxes[:, :, 1]).unsqueeze(2).expand(-1, -1, num_joints)
-        # TODO harcoded 256
+        # TODO hardcoded 256
         scales_x = (bboxes[:, :, 2] / 256).unsqueeze(2).expand(-1, -1, num_joints)
         scales_y = (bboxes[:, :, 3] / 256).unsqueeze(2).expand(-1, -1, num_joints)
 

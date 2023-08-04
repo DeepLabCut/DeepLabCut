@@ -1,19 +1,58 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 from abc import ABC, abstractmethod
+
 import torch
-import torch.nn as nn
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 NECKS = Registry("necks", build_func=build_from_cfg)
 
 
-class BaseNeck(ABC, nn.Module):
+class BaseNeck(ABC, torch.nn.Module):
+    """Base Neck class for pose estimation.
+
+    This class defines the base Neck for pose estimation models.
+
+    Attributes:
+        None
+    """
+
     def __init__(self):
+        """Initialize the BaseNeck.
+
+        Args:
+            None
+        """
         super().__init__()
 
     @abstractmethod
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
+        """Abstract method for the forward pass through the Neck.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            Output tensor.
+        """
         pass
 
-    def _init_weights(self, pretrained):
+    def _init_weights(self, pretrained: str):
+        """Initialize the Neck with pretrained weights.
+
+        Args:
+            pretrained: Path to the pretrained weights.
+
+        Returns:
+            None
+        """
         if pretrained:
             self.model.load_state_dict(torch.load(pretrained))

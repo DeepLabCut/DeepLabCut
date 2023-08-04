@@ -1,56 +1,180 @@
+"""
+DeepLabCut Toolbox (deeplabcut.org)
+© A. & M.W. Mathis Labs
+https://github.com/DeepLabCut/DeepLabCut
+
+Please see AUTHORS for contributors.
+https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+
+Licensed under GNU Lesser General Public License v3.0
+"""
+
 import torch
 import torch.nn.functional as F
 from einops import rearrange, repeat
-from torch import nn
 
 
-class Residual(nn.Module):
-    def __init__(self, fn):
+class Residual(torch.nn.Module):
+    """Residual block module.
+
+    This module implements a residual block for the transformer layers.
+
+    Attributes:
+        fn: The function to apply in the residual block.
+    """
+
+    def __init__(self, fn: torch.nn.Module):
+        """Initialize the Residual block.
+
+        Args:
+            fn: The function to apply in the residual block.
+        """
         super().__init__()
         self.fn = fn
 
-    def forward(self, x, **kwargs):
+    def forward(self, x: torch.Tensor, **kwargs):
+        """Forward pass through the Residual block.
+
+        Args:
+            x: Input tensor.
+            **kwargs: Additional keyword arguments for the function.
+
+        Returns:
+            Output tensor.
+        """
         return self.fn(x, **kwargs) + x
 
 
-class PreNorm(nn.Module):
-    def __init__(self, dim, fn, fusion_factor=1):
+class PreNorm(torch.nn.Module):
+    """PreNorm block module.
+
+    This module implements pre-normalization for the transformer layers.
+
+    Attributes:
+        dim: Dimension of the input tensor.
+        fn: The function to apply after normalization.
+        fusion_factor: Fusion factor for layer normalization.
+                       Defaults to 1.
+    """
+
+    def __init__(self, dim: int, fn: torch.nn.Module, fusion_factor: int = 1):
+        """Initialize the PreNorm block.
+
+        Args:
+            dim: Dimension of the input tensor.
+            fn: The function to apply after normalization.
+            fusion_factor: Fusion factor for layer normalization.
+                           Defaults to 1.
+        """
         super().__init__()
-        self.norm = nn.LayerNorm(dim * fusion_factor)
+        self.norm = torch.nn.LayerNorm(dim * fusion_factor)
         self.fn = fn
 
     def forward(self, x, **kwargs):
+        """Forward pass through the PreNorm block.
+
+        Args:
+            x: Input tensor.
+            **kwargs: Additional keyword arguments for the function.
+
+        Returns:
+            Output tensor.
+        """
         return self.fn(self.norm(x), **kwargs)
 
 
-class FeedForward(nn.Module):
-    def __init__(self, dim, hidden_dim, dropout=0.0):
+class FeedForward(torch.nn.Module):
+    """FeedForward block module.
+
+    This module implements the feedforward layer in the transformer layers.
+
+    Attributes:
+        dim: Dimension of the input tensor.
+        hidden_dim: Dimension of the hidden layer.
+        dropout: Dropout rate. Defaults to 0.0.
+    """
+
+    def __init__(self, dim: int, hidden_dim: int, dropout: float = 0.0):
+        """Initialize the FeedForward block.
+
+        Args:
+            dim: Dimension of the input tensor.
+            hidden_dim: Dimension of the hidden layer.
+            dropout: Dropout rate. Defaults to 0.0.
+        """
         super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(dim, hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, dim),
-            nn.Dropout(dropout),
+        self.net = torch.nn.Sequential(
+            torch.nn.Linear(dim, hidden_dim),
+            torch.nn.GELU(),
+            torch.nn.Dropout(dropout),
+            torch.nn.Linear(hidden_dim, dim),
+            torch.nn.Dropout(dropout),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
+        """Forward pass through the FeedForward block.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            Output tensor.
+        """
         return self.net(x)
 
 
-class Attention(nn.Module):
+class Attention(torch.nn.Module):
+    """Attention block module.
+
+    This module implements the attention mechanism in the transformer layers.
+
+    Attributes:
+        dim: Dimension of the input tensor.
+        heads: Number of attention heads. Defaults to 8.
+        dropout: Dropout rate. Defaults to 0.0.
+        num_keypoints: Number of keypoints. Defaults to None.
+        scale_with_head: Scale attention with the number of heads.
+                         Defaults to False.
+    """
+
     def __init__(
-        self, dim, heads=8, dropout=0.0, num_keypoints=None, scale_with_head=False
+        self,
+        dim: int,
+        heads: int = 8,
+        dropout: float = 0.0,
+        num_keypoints: int = None,
+        scale_with_head: bool = False,
     ):
+        """Initialize the Attention block.
+
+        Args:
+            dim: Dimension of the input tensor.
+            heads: Number of attention heads. Defaults to 8.
+            dropout: Dropout rate. Defaults to 0.0.
+            num_keypoints: Number of keypoints. Defaults to None.
+            scale_with_head: Scale attention with the number of heads.
+                             Defaults to False.
+        """
         super().__init__()
         self.heads = heads
         self.scale = (dim // heads) ** -0.5 if scale_with_head else dim**-0.5
 
-        self.to_qkv = nn.Linear(dim, dim * 3, bias=False)
-        self.to_out = nn.Sequential(nn.Linear(dim, dim), nn.Dropout(dropout))
+        self.to_qkv = torch.nn.Linear(dim, dim * 3, bias=False)
+        self.to_out = torch.nn.Sequential(
+            torch.nn.Linear(dim, dim), torch.nn.Dropout(dropout)
+        )
         self.num_keypoints = num_keypoints
 
-    def forward(self, x, mask=None):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
+        """Forward pass through the Attention block.
+
+        Args:
+            x: Input tensor.
+            mask: Attention mask. Defaults to None.
+
+        Returns:
+            Output tensor.
+        """
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=h), qkv)
@@ -74,25 +198,54 @@ class Attention(nn.Module):
         return out
 
 
-class TransformerLayer(nn.Module):
+class TransformerLayer(torch.nn.Module):
+    """TransformerLayer block module.
+
+    This module implements the Transformer layer in the transformer model.
+
+    Attributes:
+        dim: Dimension of the input tensor.
+        depth: Depth of the transformer layer.
+        heads: Number of attention heads.
+        mlp_dim: Dimension of the MLP layer.
+        dropout: Dropout rate.
+        num_keypoints: Number of keypoints. Defaults to None.
+        all_attn: Apply attention to all keypoints.
+                  Defaults to False.
+        scale_with_head: Scale attention with the number of heads.
+                         Defaults to False.
+    """
+
     def __init__(
         self,
-        dim,
-        depth,
-        heads,
-        mlp_dim,
-        dropout,
-        num_keypoints=None,
-        all_attn=False,
-        scale_with_head=False,
+        dim: int,
+        depth: int,
+        heads: int,
+        mlp_dim: int,
+        dropout: float,
+        num_keypoints: int = None,
+        all_attn: bool = False,
+        scale_with_head: bool = False,
     ):
+        """Initialize the TransformerLayer block.
+
+        Args:
+            dim: Dimension of the input tensor.
+            depth: Depth of the transformer layer.
+            heads: Number of attention heads.
+            mlp_dim: Dimension of the MLP layer.
+            dropout: Dropout rate.
+            num_keypoints: Number of keypoints. Defaults to None.
+            all_attn: Apply attention to all keypoints. Defaults to False.
+            scale_with_head: Scale attention with the number of heads. Defaults to False.
+        """
         super().__init__()
-        self.layers = nn.ModuleList([])
+        self.layers = torch.nn.ModuleList([])
         self.all_attn = all_attn
         self.num_keypoints = num_keypoints
         for _ in range(depth):
             self.layers.append(
-                nn.ModuleList(
+                torch.nn.ModuleList(
                     [
                         Residual(
                             PreNorm(
@@ -113,7 +266,19 @@ class TransformerLayer(nn.Module):
                 )
             )
 
-    def forward(self, x, mask=None, pos=None):
+    def forward(
+        self, x: torch.Tensor, mask: torch.Tensor = None, pos: torch.Tensor = None
+    ):
+        """Forward pass through the TransformerLayer block.
+
+        Args:
+            x: Input tensor.
+            mask: Attention mask. Defaults to None.
+            pos: Positional encoding. Defaults to None.
+
+        Returns:
+            Output tensor.
+        """
         for idx, (attn, ff) in enumerate(self.layers):
             if idx > 0 and self.all_attn:
                 x[:, self.num_keypoints :] += pos

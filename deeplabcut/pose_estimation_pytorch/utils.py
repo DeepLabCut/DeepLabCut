@@ -1,10 +1,19 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+import abc
 import os
 
-import abc
 import numpy as np
 import pandas as pd
 import torch
-
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     read_image_shape_fast,
 )
@@ -155,11 +164,10 @@ def df2generic(proj_root, df, image_id_offset=0):
 
 def create_folder(path_to_folder):
     """Creates all folders contained in the path.
-    Parameters
-    ----------
-    path_to_folder : str
-        Path to the folder that should be created
-    """
+
+    Args:
+        path_to_folder: Path to the folder that should be created
+    """    
     if not os.path.exists(path_to_folder):
         os.makedirs(path_to_folder)
 
@@ -179,11 +187,11 @@ def fix_seeds(seed: int):
 def is_seq_of(seq, expected_type, seq_type=None):
     """Check whether it is a sequence of some type.
     Args:
-        seq (Sequence): The sequence to be checked.
-        expected_type (type): Expected type of sequence items.
-        seq_type (type, optional): Expected sequence type.
+        seq: The sequence to be checked.
+        expected_type: Expected type of sequence items.
+        seq_type: Expected sequence type.
     Returns:
-        bool: Whether the sequence is valid.
+        Whether the sequence is valid.
     """
     if seq_type is None:
         exp_seq_type = abc.Sequence

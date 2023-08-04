@@ -1,8 +1,17 @@
-import torch
-import torch.nn as nn
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 from typing import Tuple
 
+import torch
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     PREDICTORS,
     BasePredictor,
@@ -11,8 +20,10 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import (
 
 @PREDICTORS.register_module
 class DEKRPredictor(BasePredictor):
-    """
-    Regresses keypoints and assembles them (if multianimal project) from DEKR output
+    """DEKR Predictor class for multi-animal pose estimation.
+
+    This class regresses keypoints and assembles them (if multianimal project)
+    from the output of DEKR (Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression).
     Based on:
         Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
         Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
@@ -20,6 +31,27 @@ class DEKRPredictor(BasePredictor):
         2021
     Code based on:
         https://github.com/HRNet/DEKR
+
+    Args:
+        num_animals (int): Number of animals in the project.
+        detection_threshold (float, optional): Threshold for detection. Defaults to 0.01.
+        apply_sigmoid (bool, optional): Apply sigmoid to heatmaps. Defaults to True.
+        use_heatmap (bool, optional): Use heatmap. Defaults to True.
+
+    Attributes:
+        num_animals (int): Number of animals in the project.
+        detection_threshold (float): Threshold for detection.
+        apply_sigmoid (bool): Apply sigmoid to heatmaps.
+        use_heatmap (bool): Use heatmap.
+
+    Example:
+        # Create a DEKRPredictor instance with 2 animals.
+        predictor = DEKRPredictor(num_animals=2)
+
+        # Make a forward pass with outputs and scale factors.
+        outputs = (heatmaps, offsets)  # tuple of heatmaps and offsets
+        scale_factors = (0.5, 0.5)  # tuple of scale factors for the poses
+        poses_with_scores = predictor.forward(outputs, scale_factors)
     """
 
     default_init = {"apply_sigmoid": True, "detection_threshold": 0.01}
@@ -29,8 +61,19 @@ class DEKRPredictor(BasePredictor):
         num_animals: int,
         detection_threshold: float = 0.01,
         apply_sigmoid: bool = True,
-        use_heatmap=True,
+        use_heatmap: bool = True,
     ):
+        """Initializes the DEKRPredictor class.
+
+        Args:
+            num_animals: Number of animals in the project.
+            detection_threshold: Threshold for detection. Defaults to 0.01.
+            apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
+            use_heatmap: Use heatmap. Defaults to True.
+
+        Returns:
+            None
+        """
         super().__init__()
 
         self.num_animals = num_animals
@@ -39,11 +82,26 @@ class DEKRPredictor(BasePredictor):
         self.use_heatmap = use_heatmap
         self.max_absorb_distance = 75
 
-    def forward(self, outputs, scale_factors: Tuple[float, float]):
-        # TODO implement confidence scores for each keypoints
+    def forward(self, outputs: Tuple, scale_factors: Tuple[float, float]):
+        """Forward pass of DEKRPredictor.
+
+        Args:
+            outputs: Tuple of heatmaps and offsets.
+            scale_factors: Scale factors for the poses.
+
+        Returns:
+            Poses with scores.
+
+        Example:
+            # Assuming you have 'outputs' (heatmaps and offsets) and 'scale_factors' for poses
+            poses_with_scores = predictor.forward(outputs, scale_factors)
+
+        Notes:
+            TODO: implement confidence scores for each keypoints
+        """
         heatmaps, offsets = outputs
         if self.apply_sigmoid:
-            heatmaps = nn.Sigmoid()(heatmaps)
+            heatmaps = torch.nn.Sigmoid()(heatmaps)
         posemap = self.offset_to_pose(offsets)
 
         batch_size, num_joints_with_center, h, w = heatmaps.shape
@@ -76,7 +134,23 @@ class DEKRPredictor(BasePredictor):
 
         return poses_w_scores
 
-    def get_locations(self, height: int, width: int, device: torch.device):
+    def get_locations(
+        self, height: int, width: int, device: torch.device
+    ) -> torch.Tensor:
+        """Get locations for offsets.
+
+        Args:
+            height: Height of the offsets.
+            width: Width of the offsets.
+            device: Device to use.
+
+        Returns:
+            Offset locations.
+
+        Example:
+            # Assuming you have 'height', 'width', and 'device'
+            locations = predictor.get_locations(height, width, device)
+        """
         shifts_x = torch.arange(0, width, step=1, dtype=torch.float32).to(device)
         shifts_y = torch.arange(0, height, step=1, dtype=torch.float32).to(device)
         shift_y, shift_x = torch.meshgrid(shifts_y, shifts_x, indexing="ij")
@@ -86,9 +160,19 @@ class DEKRPredictor(BasePredictor):
 
         return locations
 
-    def get_reg_poses(self, offsets: torch.Tensor, num_joints: int):
-        """
-        offsets : (batch_size, num_joints*2, h, w)
+    def get_reg_poses(self, offsets: torch.Tensor, num_joints: int) -> torch.Tensor:
+        """Get the regression poses from offsets.
+
+        Args:
+            offsets: Offsets tensor.
+            num_joint: Number of joints.
+
+        Returns:
+            Regression poses.
+
+        Example:
+            # Assuming you have 'offsets' tensor and 'num_joints'
+            regression_poses = predictor.get_reg_poses(offsets, num_joints)
         """
         batch_size, _, h, w = offsets.shape
         offsets = offsets.permute(0, 2, 3, 1).reshape(batch_size, h * w, num_joints, 2)
@@ -98,13 +182,18 @@ class DEKRPredictor(BasePredictor):
 
         return poses
 
-    def offset_to_pose(self, offsets: torch.Tensor):
-        """
-        offsets : (batch_size, num_joints*2, h, w)
+    def offset_to_pose(self, offsets: torch.Tensor) -> torch.Tensor:
+        """Convert offsets to poses.
 
-        RETURN
-        ---------
-        reg_poses : (batch_size, 2*num_joints, h, w)
+        Args:
+            offsets: Offsets tensor.
+
+        Returns:
+            Poses from offsets.
+
+        Example:
+            # Assuming you have 'offsets' tensor
+            poses = predictor.offset_to_pose(offsets)
         """
         batch_size, num_offset, h, w = offsets.shape
         num_joints = int(num_offset / 2)
@@ -119,9 +208,18 @@ class DEKRPredictor(BasePredictor):
 
         return reg_poses
 
-    def max_pool(self, heatmap: torch.Tensor):
-        """
-        heatmap: (batch_size, h, w)
+    def max_pool(self, heatmap: torch.Tensor) -> torch.Tensor:
+        """Apply max pooling to the heatmap.
+
+        Args:
+            heatmap: Heatmap tensor.
+
+        Returns:
+            Max pooled heatmap.
+
+        Example:
+            # Assuming you have 'heatmap' tensor
+            max_pooled_heatmap = predictor.max_pool(heatmap)
         """
         pool1 = torch.nn.MaxPool2d(3, 1, 1)
         pool2 = torch.nn.MaxPool2d(5, 1, 2)
@@ -133,9 +231,20 @@ class DEKRPredictor(BasePredictor):
 
         return maxm
 
-    def get_top_values(self, heatmap: torch.Tensor):
-        """
-        heatmap: (batch_size, h, w)
+    def get_top_values(
+        self, heatmap: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get top values from the heatmap.
+
+        Args:
+            heatmap: Heatmap tensor.
+
+        Returns:
+            Position indices and scores.
+
+        Example:
+            # Assuming you have 'heatmap' tensor
+            positions, scores = predictor.get_top_values(heatmap)
         """
         maximum = self.max_pool(heatmap)
         maximum = torch.eq(maximum, heatmap)
@@ -186,10 +295,21 @@ class DEKRPredictor(BasePredictor):
 
         return poses
 
-    def get_heat_value(self, pose_coords, heatmaps):
-        """
-        pose_coords : (batch_size, num_people, num_joints, 2)
-        heatmaps : (batch_size, 1+num_joints, h, w)
+    def get_heat_value(
+        self, pose_coords: torch.Tensor, heatmaps: torch.Tensor
+    ) -> torch.Tensor:
+        """Get heat values for pose coordinates and heatmaps.
+
+        Args:
+            pose_coords: Pose coordinates tensor (batch_size, num_people, num_joints, 2)
+            heatmaps: Heatmaps tensor (batch_size, 1+num_joints, h, w).
+
+        Returns:
+            Heat values.
+
+        Example:
+            # Assuming you have 'pose_coords' and 'heatmaps' tensors
+            heat_values = predictor.get_heat_value(pose_coords, heatmaps)
         """
         h, w = heatmaps.shape[2:]
         heatmaps_nocenter = heatmaps[:, :-1].flatten(
@@ -204,13 +324,19 @@ class DEKRPredictor(BasePredictor):
 
         return heatvals
 
-    def pose_nms(self, heatmaps, poses):
-        """
-        NMS for the regressed poses results.
+    def pose_nms(self, heatmaps: torch.Tensor, poses: torch.Tensor):
+        """Non-Maximum Suppression (NMS) for regressed poses.
 
         Args:
-            heatmaps (Tensor): Avg of the heatmaps at all scales (batch_size, 1+num_joints, h, w)
-            poses (List): Gather of the pose proposals (batch_size, num_people, num_joints, 3)
+            heatmaps: Heatmaps tensor.
+            poses: Pose proposals.
+
+        Returns:
+            None
+
+        Example:
+            # Assuming you have 'heatmaps' and 'poses' tensors
+            predictor.pose_nms(heatmaps, poses)
         """
         pose_scores = poses[:, :, :, 2]
         pose_coords = poses[:, :, :, :2]
@@ -222,6 +348,7 @@ class DEKRPredictor(BasePredictor):
         heatvals = self.get_heat_value(pose_coords, heatmaps)
         heat_score = (torch.sum(heatvals, dim=1) / num_joints)[:, 0]
 
+        # return heat_score
         # pose_score = pose_score*heatvals
         # poses = torch.cat([pose_coord.cpu(), pose_score.cpu()], dim=2)
 
