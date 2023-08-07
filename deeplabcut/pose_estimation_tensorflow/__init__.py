@@ -29,7 +29,6 @@ from deeplabcut.pose_estimation_tensorflow.visualizemaps import *
 from deeplabcut.pose_estimation_tensorflow.predict_supermodel import (
     video_inference_superanimal,
 )
-from deeplabcut.pose_estimation_tensorflow.finetune_superanimal import finetune_superanimal
 
 
 

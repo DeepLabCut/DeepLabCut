@@ -5,15 +5,18 @@ from argparse import ArgumentParser
 import numpy as np
 import cv2
 
+
 from mmpose.apis import (inference_top_down_pose_model, init_pose_model,
                          process_mmdet_results, vis_pose_result)
 from mmpose.datasets import DatasetInfo
+from collections import deque
 import traceback
 try:
     from mmdet.apis import inference_detector, init_detector
     print (inference_detector, init_detector)
     has_mmdet = True
 except (ImportError, ModuleNotFoundError) as e:
+
     has_mmdet = False
     traceback.print_exc()
 
@@ -25,6 +28,44 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
+import numpy as np
+from scipy.ndimage import median_filter
+
+
+class MedianFilter:
+    def __init__(self, window_size):
+        self.window_size = window_size
+        self.buffer = deque(maxlen=window_size)
+        
+    def update(self, bbox):
+        self.buffer.append(bbox)
+        return self.compute_median()
+        
+    def compute_median(self):
+        # Transpose to get separate arrays of x1, y1, x2, y2
+        transposed = np.transpose(self.buffer)
+        # Compute median for each coordinate
+        return [np.median(coordinate) for coordinate in transposed]
+
+class KeypointsMedianFilter:
+    def __init__(self, num_kpts, window_size):
+        self.window_size = window_size
+        self.num_kpts = num_kpts
+        # A buffer for each keypoint
+        self.buffers = [[deque(maxlen=window_size) for _ in range(2)] for _ in range(num_kpts)]
+        
+    def update(self, keypoints):
+        # Add new keypoints to buffers and compute new median keypoints
+        median_kpts = []
+        for i, (x, y, _) in enumerate(keypoints):
+            self.buffers[i][0].append(x)
+            self.buffers[i][1].append(y)
+            median_x = np.median(self.buffers[i][0])
+            median_y = np.median(self.buffers[i][1])
+            median_kpts.append((median_x, median_y))
+        return np.array(median_kpts)
+
+    
 def main():
     """Visualize the demo images.
 
@@ -42,10 +83,17 @@ def main():
         default=False,
         help='whether to show visualizations.')
     parser.add_argument(
+        '--kpt-median-filter',
+        action='store_true',
+        default = False)
+    parser.add_argument(
         '--out-video-root',
         default='',
         help='Root of the output video file. '
         'Default not saving the visualization video.')
+    parser.add_argument(
+        '--dataset-info',
+        default = '')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
@@ -79,20 +127,27 @@ def main():
     assert args.det_config is not None
     assert args.det_checkpoint is not None
 
+
+    
     det_model = init_detector(
         args.det_config, args.det_checkpoint, device=args.device.lower())
     # build the pose model from a config file and a checkpoint file
     pose_model = init_pose_model(
         args.pose_config, args.pose_checkpoint, device=args.device.lower())
 
+
     dataset = pose_model.cfg.data['test']['type']
-    dataset_info = pose_model.cfg.data['test'].get('dataset_info', None)
+    if args.dataset_info:
+        dataset_info = args.dataset_info
+    else:
+        dataset_info = pose_model.cfg.data['test'].get('dataset_info', None)
     if dataset_info is None:
         warnings.warn(
             'Please set `dataset_info` in the config.'
             'Check https://github.com/open-mmlab/mmpose/pull/663 for details.',
             DeprecationWarning)
     else:
+        
         with open(dataset_info, 'r') as f:
             dataset_info = json.load(f)['dataset_info']        
         dataset_info = DatasetInfo(dataset_info)
@@ -129,6 +184,9 @@ def main():
 
     time_accumulated = 0
     frame_count = 0
+    window_size = 5        
+    median_filter_instance = MedianFilter(window_size)
+    kpt_median_filter_instance = KeypointsMedianFilter(39, 5)
     import time
     while (cap.isOpened()):
         flag, img = cap.read()
@@ -142,9 +200,13 @@ def main():
         
         # keep the person class bounding boxes.
         person_results = process_mmdet_results(mmdet_results, args.det_cat_id)
-
+        
         # test a single image, with a list of bboxes.
 
+        bbox  = person_results[0]['bbox'][:4]
+        bbox = median_filter_instance.update(bbox)
+        person_results[0]['bbox'][:4] = bbox
+        
         pose_results, returned_outputs = inference_top_down_pose_model(
             pose_model,
             img,
@@ -157,6 +219,11 @@ def main():
             outputs=output_layer_names)
         end = time.time()
 
+        if args.kpt_median_filter:
+            kpts = pose_results[0]['keypoints']
+            kpts = kpt_median_filter_instance.update(kpts)
+            pose_results[0]['keypoints'][:,:2] = kpts
+        
         time_accumulated +=  (end - start)
                        
         ret[frame_id] = pose_results        

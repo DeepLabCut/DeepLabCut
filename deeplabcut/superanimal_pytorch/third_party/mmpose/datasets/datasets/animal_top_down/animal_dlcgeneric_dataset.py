@@ -404,7 +404,6 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
                 'image_id': image_id,
                 'bbox': _gt['bbox']})
 
-
         for output in outputs:
             preds = output['preds']
             boxes = output['boxes']
@@ -415,11 +414,10 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
                 # this should work for both relative path and abs path
                 if image_paths[i] in self.name2id:
                     image_id = self.name2id[image_paths[i]]
-                else:
+                else:                    
                     image_id = self.name2id[image_paths[i][len(self.img_prefix):]]
                 
                 _pred_keypoints = preds[i]
-
 
                 bbox = []
 
