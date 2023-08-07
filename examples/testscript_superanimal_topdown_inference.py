@@ -34,7 +34,11 @@ if __name__ == "__main__":
         det_checkpoint,
         pose_config, 
         pose_checkpoint,
-        video_adapt = True)
+        video_adapt = True,
+        device = 'cpu',
+        kpt_threshold = 0.6,
+        videotype = '.mp4',
+        apply_median_filter = True)
                                
     
     
