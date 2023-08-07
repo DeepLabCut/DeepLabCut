@@ -1822,7 +1822,7 @@ def convert_detections2tracklets(
                     assembly_builder.to_pickle(assemblies_filename)
                 else:
                     assembly_builder.from_pickle(assemblies_filename)
-                    print(f"Loading assemblies from {ass_filename}")
+                    print(f"Loading assemblies from {assemblies_filename}")
                 try:
                     data.close()
                 except AttributeError:
