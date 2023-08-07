@@ -97,6 +97,7 @@ class ExtractOutlierFrames(DefaultTab):
         opt_text = QtWidgets.QLabel("Specify the algorithm")
         self.outlier_algorithm_widget = QtWidgets.QComboBox()
         self.outlier_algorithm_widget.addItems(DLCParams.OUTLIER_EXTRACTION_ALGORITHMS)
+        self.outlier_algorithm_widget.setMinimumWidth(200)
         self.outlier_algorithm_widget.currentTextChanged.connect(
             self.update_outlier_algorithm
         )

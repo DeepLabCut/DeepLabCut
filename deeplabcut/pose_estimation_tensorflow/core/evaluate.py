@@ -13,6 +13,7 @@
 import argparse
 import os
 from pathlib import Path
+from typing import List
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -259,7 +260,7 @@ def return_evaluate_network_data(
     >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
     --------
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],True)
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
     """
 
     import os
@@ -494,6 +495,55 @@ def return_evaluate_network_data(
             return results
 
 
+def keypoint_error(
+    df_error: pd.DataFrame,
+    df_error_p_cutoff: pd.DataFrame,
+    train_indices: List[int],
+    test_indices: List[int],
+) -> pd.DataFrame:
+    """Computes the RMSE error for each bodypart
+
+    The error dataframes can be in single animal format (non-hierarchical columns, one
+    column for each bodypart) or multi-animal format (hierarchical columns with 3
+    levels: "scorer", "individuals", "bodyparts").
+
+    Args:
+        df_error: dataframe containing the RMSE error for each image, individual and
+            bodypart
+        df_error_p_cutoff: dataframe containing the RMSE error with p-cutoff for each
+            image, individual and bodypart
+        train_indices: the indices of rows in the dataframe that are in the train set
+        test_indices: the indices of rows in the dataframe that are in the test set
+
+    Returns:
+        A dataframe containing 4 rows (train and test error, with and without p-cutoff)
+        and one column for each bodypart.
+    """
+    df_error = df_error.copy()
+    df_error_p_cutoff = df_error_p_cutoff.copy()
+
+    error_rows = []
+    for row_name, df in [
+        ("Train error (px)", df_error.iloc[train_indices, :]),
+        ("Test error (px)", df_error.iloc[test_indices, :]),
+        ("Train error (px) with p-cutoff", df_error_p_cutoff.iloc[train_indices, :]),
+        ("Test error (px) with p-cutoff", df_error_p_cutoff.iloc[test_indices, :]),
+    ]:
+        df_flat = df.copy()
+        if isinstance(df.columns, pd.MultiIndex):
+            # MA projects have column indices "scorer", "individuals" and "bodyparts"
+            # Drop the scorer level, and put individuals in rows
+            df_flat = df.droplevel("scorer", axis=1).stack(level="individuals").copy()
+
+        bodypart_error = df_flat.mean()
+        bodypart_error["Error Type"] = row_name
+        error_rows.append(bodypart_error)
+
+    # The error rows are series; stack in axis 1 and pivot to get DF
+    keypoint_error_df = pd.concat(error_rows, axis=1)
+    return keypoint_error_df.T.set_index("Error Type")
+
+
 def evaluate_network(
     config,
     Shuffles=[1],
@@ -504,6 +554,7 @@ def evaluate_network(
     gputouse=None,
     rescale=False,
     modelprefix="",
+    per_keypoint_evaluation: bool = False,
 ):
     """Evaluates the network.
 
@@ -557,6 +608,10 @@ def evaluate_network(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    per_keypoint_evaluation: bool, default=False
+        Compute the train and test RMSE for each keypoint, and save the results to
+        a {model_name}-keypoint-results.csv in the evalution-results folder
+
     Returns
     -------
     None
@@ -609,6 +664,7 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
+            per_keypoint_evaluation=per_keypoint_evaluation,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -720,7 +776,9 @@ def evaluate_network(
                         )
                     ),
                 )
-                auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(
+                    evaluationfolder, recursive=True
+                )
                 # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
                 # Check which snapshots are available and sort them by # iterations
@@ -899,6 +957,15 @@ def evaluate_network(
                             np.round(testerrorpcutoff, 2),
                         ]
                         final_result.append(results)
+
+                        if per_keypoint_evaluation:
+                            df_keypoint_error = keypoint_error(
+                                RMSE, RMSEpcutoff, trainIndices, testIndices
+                            )
+                            kpt_filename = DLCscorer + "-keypoint-results.csv"
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
 
                         if show_errors:
                             print(

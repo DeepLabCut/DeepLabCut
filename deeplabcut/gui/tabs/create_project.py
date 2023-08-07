@@ -13,10 +13,12 @@ from datetime import datetime
 
 import deeplabcut
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 
 from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QIcon
 
 
 class ProjectCreator(QtWidgets.QDialog):
@@ -24,6 +26,7 @@ class ProjectCreator(QtWidgets.QDialog):
         super(ProjectCreator, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle("New Project")
+        self.setModal(True)
         self.setMinimumWidth(parent.screen_width // 2)
         today = datetime.today().strftime("%Y-%m-%d")
         self.name_default = "-".join(("{}", "{}", today))
@@ -48,16 +51,24 @@ class ProjectCreator(QtWidgets.QDialog):
 
         proj_label = QtWidgets.QLabel("Project:", user_frame)
         self.proj_line = QtWidgets.QLineEdit(self.proj_default, user_frame)
+        self.proj_line.setPlaceholderText("my project's name")
         self._default_style = self.proj_line.styleSheet()
         self.proj_line.textEdited.connect(self.update_project_name)
 
         exp_label = QtWidgets.QLabel("Experimenter:", user_frame)
         self.exp_line = QtWidgets.QLineEdit(self.exp_default, user_frame)
+        self.exp_line.setPlaceholderText("my nickname")
         self.exp_line.textEdited.connect(self.update_experimenter_name)
 
         loc_label = ClickableLabel("Location:", parent=user_frame)
         loc_label.signal.connect(self.on_click)
         self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
+        self.loc_line.setReadOnly(True)
+        action = self.loc_line.addAction(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            QtWidgets.QLineEdit.TrailingPosition,
+        )
+        action.triggered.connect(self.on_click)
 
         vbox = QtWidgets.QVBoxLayout(user_frame)
         grid = QtWidgets.QGridLayout()
@@ -109,7 +120,6 @@ class ProjectCreator(QtWidgets.QDialog):
             self,
             "Please select a folder",
             self.loc_default,
-            QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if not folder:
             return

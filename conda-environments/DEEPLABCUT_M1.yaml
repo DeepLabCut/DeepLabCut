@@ -35,10 +35,9 @@ dependencies:
   - ipython
   - jupyter
   - nb_conda
+  - notebook<7.0.0
   - python.app
   - ffmpeg
   - apple::tensorflow-deps
   - pip:
-    - tensorflow-macos
-    - tensorflow-metal
-    - -e ../[gui]
+    - -e ../[gui,apple_mchips]

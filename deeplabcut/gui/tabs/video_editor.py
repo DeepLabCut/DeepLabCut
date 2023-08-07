@@ -43,15 +43,15 @@ class VideoEditor(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.trim_button = QtWidgets.QPushButton("Trim")
-        self.trim_button.setMinimumWidth(150)
-        self.trim_button.clicked.connect(self.trim_videos)
-        self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
-
         self.down_button = QtWidgets.QPushButton("Downsample")
         self.down_button.setMinimumWidth(150)
         self.down_button.clicked.connect(self.downsample_videos)
         self.main_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
+
+        self.trim_button = QtWidgets.QPushButton("Trim")
+        self.trim_button.setMinimumWidth(150)
+        self.trim_button.clicked.connect(self.trim_videos)
+        self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
 
         self.crop_button = QtWidgets.QPushButton("Crop")
         self.crop_button.setMinimumWidth(150)

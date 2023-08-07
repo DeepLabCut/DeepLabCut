@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
@@ -162,7 +164,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         if filenames[0]:
             # Qt returns a tuple (list of files, filetype)
-            self.root.video_files = filenames[0]
+            self.root.video_files = [os.path.abspath(vid) for vid in filenames[0]]
 
     def clear_selected_videos(self):
         self.root.video_files = set()
