@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import argparse
 import os
 from typing import Optional, Union
@@ -71,7 +81,9 @@ def train_network(
             modelprefix=modelprefix,
         ),
     )
-    pytorch_config = auxiliaryfunctions.read_plainconfig(os.path.join(modelfolder, "train", "pytorch_config.yaml"))
+    pytorch_config = auxiliaryfunctions.read_plainconfig(
+        os.path.join(modelfolder, "train", "pytorch_config.yaml")
+    )
     update_config_parameters(pytorch_config=pytorch_config, **kwargs)
     if transform is None:
         print("No transform specified... using default")

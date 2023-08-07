@@ -71,7 +71,9 @@ class SinglePredictor(BasePredictor):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(
-        self, output: Tuple[torch.Tensor, torch.Tensor], scale_factors
+        self,
+        output: Tuple[torch.Tensor, torch.Tensor],
+        scale_factors: Tuple[float, float],
     ) -> torch.Tensor:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
@@ -214,7 +216,9 @@ class HeatmapOnlyPredictor(BasePredictor):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(
-        self, output: Tuple[torch.Tensor, torch.Tensor], scale_factors
+        self,
+        output: Tuple[torch.Tensor, torch.Tensor],
+        scale_factors: Tuple[float, float],
     ) -> torch.Tensor:
         """Forward pass of HeatmapOnlyPredictor. Computes predictions from the trained model output.
 
@@ -266,7 +270,9 @@ class HeatmapOnlyPredictor(BasePredictor):
         Y, X = heatmap_top // nx, heatmap_top % nx
         return Y, X
 
-    def get_pose_prediction(self, heatmap: torch.Tensor, scale_factors):
+    def get_pose_prediction(
+        self, heatmap: torch.Tensor, scale_factors: Tuple[float, float]
+    ) -> torch.Tensor:
         """Get the pose prediction from heatmaps.
 
         Args:

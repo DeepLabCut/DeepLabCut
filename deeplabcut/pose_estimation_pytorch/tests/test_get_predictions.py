@@ -1,21 +1,17 @@
 from itertools import product
 
-import deeplabcut
 import pytest
-import torch
+from torchvision.transforms import Resize as TorchResize
+
 from deeplabcut.generate_training_dataset.make_pytorch_config import *
-from deeplabcut.pose_estimation_pytorch.apis import inference_utils, utils
+from deeplabcut.pose_estimation_pytorch.apis import inference, utils
 from deeplabcut.pose_estimation_pytorch.default_config import *
 from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS, BaseDetector
-from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     PREDICTORS,
     BasePredictor,
 )
-from deeplabcut.pose_estimation_pytorch.tests.test_utils import (
-    write_config
-)
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.pose_estimation_pytorch.tests.test_utils import write_config
 
 # Check implemented net types
 single_nets = [
@@ -33,6 +29,7 @@ multi = [ele for ele in product(multi_nets, [True])]
 multi_td = [ele for ele in product(multi_nets_td, [True])]
 
 params_bu = single + multi
+
 
 @pytest.mark.parametrize("net_type, multianimal", params_bu)
 def test_get_predictions_bottom_up(
@@ -65,7 +62,7 @@ def test_get_predictions_bottom_up(
 
     # get predictions
     with torch.no_grad():
-        output = inference_utils.get_predictions_bottom_up(model, predictor, images)
+        output = inference.get_predictions_bottom_up(model, predictor, images)
 
     # Generate test tensor with expected output shape
     test = torch.randint(1, 12, (batch_size, num_animals, num_keypoints, 3))
@@ -73,7 +70,6 @@ def test_get_predictions_bottom_up(
     assert test.shape == output.shape
 
 
-# Doesn't work yet since top down doesn't fully work
 @pytest.mark.parametrize("net_type, multianimal", multi_td)
 def test_get_predicitons_top_down(
     net_type: str,
@@ -112,18 +108,22 @@ def test_get_predicitons_top_down(
         {"type": "TopDownPredictor", "format_bbox": "xyxy"}
     )
     pose_predictor: BasePredictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
+    detector.eval()
+    model.eval()
+    pose_predictor.eval()
+    top_down_predictor.eval()
 
     # get predictions
     with torch.no_grad():
-        output = inference_utils.get_predictions_top_down(
+        output = inference.get_predictions_top_down(
             detector,
-            top_down_predictor,
             model,
             pose_predictor,
+            top_down_predictor,
             images,
             num_animals,
             num_keypoints,
-            device="cpu",
+            TorchResize((256, 256)),
         )
 
     # Generate test tensor with expected output shape

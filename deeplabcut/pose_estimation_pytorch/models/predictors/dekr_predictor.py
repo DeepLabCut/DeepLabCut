@@ -82,7 +82,11 @@ class DEKRPredictor(BasePredictor):
         self.use_heatmap = use_heatmap
         self.max_absorb_distance = 75
 
-    def forward(self, outputs: Tuple, scale_factors: Tuple[float, float]):
+    def forward(
+        self,
+        outputs: Tuple[torch.Tensor, torch.Tensor],
+        scale_factors: Tuple[float, float],
+    ) -> torch.Tensor:
         """Forward pass of DEKRPredictor.
 
         Args:

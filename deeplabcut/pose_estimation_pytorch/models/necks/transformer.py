@@ -14,9 +14,11 @@ import torch
 from einops import rearrange, repeat
 from timm.layers import trunc_normal_
 
-from .base import NECKS
-from .layers import TransformerLayer
-from .utils import make_sine_position_embedding
+from deeplabcut.pose_estimation_pytorch.models.necks.base import NECKS
+from deeplabcut.pose_estimation_pytorch.models.necks.layers import TransformerLayer
+from deeplabcut.pose_estimation_pytorch.models.necks.utils import (
+    make_sine_position_embedding,
+)
 
 MIN_NUM_PATCHES = 16
 BN_MOMENTUM = 0.1
@@ -228,7 +230,7 @@ class Transformer(torch.nn.Module):
             torch.nn.init.constant_(m.bias, 0)
             torch.nn.init.constant_(m.weight, 1.0)
 
-    def forward(self, feature: torch.Tensor, mask = None) -> torch.Tensor:
+    def forward(self, feature: torch.Tensor, mask=None) -> torch.Tensor:
         """Forward pass through the Transformer neck.
 
         Args:

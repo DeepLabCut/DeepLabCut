@@ -111,7 +111,9 @@ def evaluate_snapshot(
     bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
     max_individuals = len(individuals)
     num_joints = len(bodyparts)
-    pytorch_config = auxiliaryfunctions.read_plainconfig(os.path.join(modelfolder, "train", "pytorch_config.yaml"))
+    pytorch_config = auxiliaryfunctions.read_plainconfig(
+        os.path.join(modelfolder, "train", "pytorch_config.yaml")
+    )
     method = pytorch_config.get("method", "bu")
     if method not in ["bu", "td"]:
         raise ValueError(
@@ -224,7 +226,7 @@ def evaluate_snapshot(
     df_all_predictions = df_all_predictions.reindex(project.dlc_df.index)
 
     output_filename = Path(results_filename)
-    output_filename.parent.mkdir(exist_ok=True)
+    output_filename.parent.mkdir(parents=True, exist_ok=True)
 
     df_all_predictions.to_hdf(str(output_filename), "df_with_missing")
 
@@ -269,13 +271,13 @@ def evaluate_network(
         batch_size: the batch size to use for evaluation
 
     Examples:
-        If you want to evaluate without plotting predicitons with shuffle set to 1.
+        If you want to evaluate on shuffle 1 without plotting predictions.
 
         >>> deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml', shuffles=[1],
             )
 
-        If you want to plot and evaluate with shuffle set to 0 and 1.
+        If you want to evaluate shuffles 0 and 1 and plot the predictions.
 
         >>> deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml',

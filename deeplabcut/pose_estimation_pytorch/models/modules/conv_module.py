@@ -1,15 +1,17 @@
-# ------------------------------------------------------------------------------
-# Copyright (c) Microsoft
-# Licensed under the MIT License.
-# The code is based on HigherHRNet-Human-Pose-Estimation.
-# (https://github.com/HRNet/HigherHRNet-Human-Pose-Estimation)
-# Modified by Zigang Geng (zigang@mail.ustc.edu.cn).
-# ------------------------------------------------------------------------------
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+# The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main
 import logging
-import os
-from typing import List, Optional
+from typing import List
 
-import torch
 import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch.models.modules import BasicBlock
@@ -61,7 +63,12 @@ class HighResolutionModule(nn.Module):
         self.relu = nn.ReLU(True)
 
     def _check_branches(
-        self, num_branches: int, block: BasicBlock, num_blocks: int, num_inchannels: int, num_channels: int
+        self,
+        num_branches: int,
+        block: BasicBlock,
+        num_blocks: int,
+        num_inchannels: int,
+        num_channels: int,
     ):
         if num_branches != len(num_blocks):
             error_msg = "NUM_BRANCHES({}) <> NUM_BLOCKS({})".format(
@@ -84,7 +91,14 @@ class HighResolutionModule(nn.Module):
             logger.error(error_msg)
             raise ValueError(error_msg)
 
-    def _make_one_branch(self, branch_index: int, block: BasicBlock, num_blocks: int, num_channels: int, stride: int = 1) -> nn.Sequential:
+    def _make_one_branch(
+        self,
+        branch_index: int,
+        block: BasicBlock,
+        num_blocks: int,
+        num_channels: int,
+        stride: int = 1,
+    ) -> nn.Sequential:
         downsample = None
         if (
             stride != 1
@@ -121,7 +135,9 @@ class HighResolutionModule(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _make_branches(self, num_branches: int, block: BasicBlock, num_blocks: int, num_channels: int) -> nn.ModuleList:
+    def _make_branches(
+        self, num_branches: int, block: BasicBlock, num_blocks: int, num_channels: int
+    ) -> nn.ModuleList:
         branches = []
 
         for i in range(num_branches):

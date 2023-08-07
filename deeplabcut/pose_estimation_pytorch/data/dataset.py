@@ -8,21 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
-import os
-
-import albumentations as A
-#
-# DeepLabCut Toolbox (deeplabcut.org)
-# © A. & M.W. Mathis Labs
-# https://github.com/DeepLabCut/DeepLabCut
-#
-# Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-#
-# Licensed under GNU Lesser General Public License v3.0
-#
-
 import os
 
 import albumentations as A
@@ -120,7 +105,7 @@ class PoseDataset(Dataset, BaseDataset):
         w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
         h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
         return w * h
-    
+
     def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
         """Summary:
         Check if a keypoint lies inside the given shape.
@@ -232,7 +217,7 @@ class PoseDataset(Dataset, BaseDataset):
             # Sometimes bbox coords are larger than the image because of the margin
             bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
             bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.)
+            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.0)
             bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
         else:
             bboxes = np.zeros((0, 4))
@@ -408,7 +393,7 @@ class CroppedDataset(Dataset, BaseDataset):
             keypoint_params=A.KeypointParams(format="xy", remove_invisible=False),
             bbox_params=A.BboxParams(format="coco"),
         )
-        
+
         self.length = len(self.annotations)
 
     def __len__(self):
@@ -422,7 +407,7 @@ class CroppedDataset(Dataset, BaseDataset):
             Number of samples in the dataset
         """
         return self.length
-    
+
     def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
         """Summary:
         Check if a keypoint lies inside the given shape.
@@ -449,15 +434,6 @@ class CroppedDataset(Dataset, BaseDataset):
         )
 
     def _compute_anno(self):
-        """Summary:
-        Compute annotations for the dataset
-
-        Args:
-            None
-
-        Returns:
-            annotations: list of annotations containing information about keypoints and image paths.
-        """
         """Summary:
         Compute annotations for the dataset
 

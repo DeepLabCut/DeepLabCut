@@ -13,12 +13,8 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS
-from deeplabcut.pose_estimation_pytorch.models.modules import (AdaptBlock,
-                                                               BasicBlock)
-from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import BLOCKS
-
-from .base import BaseHead
+from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
+from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 
 
 @HEADS.register_module
@@ -82,7 +78,9 @@ class HeatmapDEKRHead(BaseHead):
             dilation_rate,
         )
 
-    def _make_transition_for_head(self, in_channels: int, out_channels: int) -> nn.Sequential:
+    def _make_transition_for_head(
+        self, in_channels: int, out_channels: int
+    ) -> nn.Sequential:
         """Summary:
         Construct the transition layer for the head.
 
@@ -108,7 +106,7 @@ class HeatmapDEKRHead(BaseHead):
 
         Args:
             block: type of block to use in the head.
-            num_blocks: number of num_blocks in the head.
+            num_blocks: number of blocks in the head.
             num_channels: number of input channels for the head.
             dilation_rate: dilation rate for the head.
 
@@ -149,7 +147,7 @@ class HeatmapDEKRHead(BaseHead):
             block: type of block to use in the head.
             in_channels: number of input channels for the layer.
             out_channels: number of output channels for the layer.
-            num_blocks: number of num_blocks in the layer.
+            num_blocks: number of blocks in the layer.
             stride: stride for the convolutional layer. Defaults to 1.
             dilation: dilation rate for the convolutional layer. Defaults to 1.
 
@@ -166,11 +164,15 @@ class HeatmapDEKRHead(BaseHead):
                     stride=stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(out_channels * block.expansion, momentum=self.bn_momentum),
+                nn.BatchNorm2d(
+                    out_channels * block.expansion, momentum=self.bn_momentum
+                ),
             )
 
         layers = []
-        layers.append(block(in_channels, out_channels, stride, downsample, dilation=dilation))
+        layers.append(
+            block(in_channels, out_channels, stride, downsample, dilation=dilation)
+        )
         in_channels = out_channels * block.expansion
         for _ in range(1, num_blocks):
             layers.append(block(in_channels, out_channels, dilation=dilation))
@@ -212,7 +214,7 @@ class OffsetDEKRHead(BaseHead):
         Args:
             channels: tuple containing the number of input, offset, and output channels.
             num_offset_per_kpt: number of offset values per keypoint.
-            num_blocks: number of num_blocks in the head.
+            num_blocks: number of blocks in the head.
             dilation_rate: dilation rate for convolutional layers.
             final_conv_kernel: kernel size for the final convolution.
             block: type of block to use in the head. Defaults to AdaptBlock.
@@ -290,18 +292,24 @@ class OffsetDEKRHead(BaseHead):
                     stride=stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(out_channels * block.expansion, momentum=self.bn_momentum),
+                nn.BatchNorm2d(
+                    out_channels * block.expansion, momentum=self.bn_momentum
+                ),
             )
 
         layers = []
-        layers.append(block(in_channels, out_channels, stride, downsample, dilation=dilation))
+        layers.append(
+            block(in_channels, out_channels, stride, downsample, dilation=dilation)
+        )
         in_channels = out_channels * block.expansion
         for _ in range(1, num_blocks):
             layers.append(block(in_channels, out_channels, dilation=dilation))
 
         return nn.Sequential(*layers)
 
-    def _make_transition_for_head(self, in_channels: int, out_channels: int) -> nn.Sequential:
+    def _make_transition_for_head(
+        self, in_channels: int, out_channels: int
+    ) -> nn.Sequential:
         """Summary:
         Create a transition layer for the head.
 

@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from typing import Tuple
+from typing import Dict, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -36,7 +36,10 @@ class WeightedMSELoss(nn.MSELoss):
         self.mse_loss = nn.MSELoss(reduction="none")
 
     def __call__(
-        self, prediction: torch.Tensor, target: torch.Tensor, weights: torch.Tensor = 1
+        self,
+        prediction: torch.Tensor,
+        target: torch.Tensor,
+        weights: Union[float, torch.Tensor] = 1,
     ) -> torch.Tensor:
         """Summary:
         Compute the weighted Mean Squared Error loss.
@@ -44,7 +47,8 @@ class WeightedMSELoss(nn.MSELoss):
         Args:
             prediction: predicted tensor
             target: target tensor
-            weights: weights for each element in the loss calculation. Defaults to 1.
+            weights: weights for each element in the loss calculation. If a float,
+                weights all elements by that value. Defaults to 1.
 
         Returns:
             Weighted Mean Squared Error Loss.
@@ -76,7 +80,10 @@ class WeightedHuberLoss(nn.HuberLoss):
         self.huber_loss = nn.HuberLoss(reduction="none")
 
     def __call__(
-        self, prediction: torch.Tensor, target: torch.Tensor, weights: int = 1
+        self,
+        prediction: torch.Tensor,
+        target: torch.Tensor,
+        weights: Union[float, torch.Tensor] = 1,
     ) -> torch.Tensor:
         """Summary:
         Compute the weighted Huber loss.
@@ -84,7 +91,8 @@ class WeightedHuberLoss(nn.HuberLoss):
         Args:
             prediction: predicted tensor
             target: target tensor
-            weights: Weights for each element in the loss calculation. Defaults to 1.
+            weights: weights for each element in the loss calculation. If a float,
+                weights all elements by that value. Defaults to 1.
 
         Returns:
             Weighted Huber loss.
@@ -116,7 +124,10 @@ class WeightedBCELoss(nn.BCEWithLogitsLoss):
         self.BCELoss = nn.BCEWithLogitsLoss(reduction="none")
 
     def __call__(
-        self, prediction: torch.Tensor, target: torch.Tensor, weights: int = 1
+        self,
+        prediction: torch.Tensor,
+        target: torch.Tensor,
+        weights: Union[float, torch.Tensor] = 1,
     ) -> torch.Tensor:
         """Summary:
         Compute the weighted Binary Cross Entropy loss.
@@ -155,13 +166,13 @@ class PoseLoss(nn.Module):
         apply_sigmoid: bool = False,
     ) -> None:
         """Summary:
-        Constructter of the PoseLoss class.
+        Constructor of the PoseLoss class.
 
         Args:
             loss_weight_locref: weight for loss_locref part (parsed from the pose_cfg.yaml from the dlc_models folder)
             locref_huber_loss: if True uses torch.nn.HuberLoss for locref (default is False).
             apply_sigmoid: whether to apply sigmoid to the heatmap predictions should be true
-                                    for MSE, false for BCE (since it already applies it by itself)
+                for MSE, false for BCE (since it already applies it by itself)
 
         Returns:
             None.
@@ -176,34 +187,35 @@ class PoseLoss(nn.Module):
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, prediction: tuple, target: dict) -> tuple:
+    def forward(
+        self, prediction: Tuple[torch.Tensor, torch.Tensor], target: Dict
+    ) -> Dict:
         """Summary:
         Forward pass of the Pose Loss function.
 
         Args:
             prediction: a tuple containing the predicted heatmap and locref of size
                     '(heatmaps, locref)' of size '(batch_size, h, w, number_keypoints), (batch_size, h, w, 2*number_keypoints)'
-            target: dictionary containing the target tensors, including 'heatmaps',
-                'locref_maps', 'locref_masks', and 'weights' (optional, default is None).
+            target: dictionary containing the target tensors, including 'heatmaps', 'heatmaps_ignored'
+                (optional, default is None), 'locref_maps', 'locref_masks'.
             {
-            'heatmaps': (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'heatmaps_ignored': (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1])
-                                weights for the heatmaps
-            'locref_maps': (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-            'locref_masks': (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
+            'heatmaps': (batch_size, number_body_parts, w, h),
+            'heatmaps_ignored': heatmap weights (batch_size, number_body_parts, h, w)
+            'locref_maps': (batch_size, 2 * number_body_parts, h, w),
+            'locref_masks': (batch_size, 2 * number_body_parts, h, w),
             }
         Returns:
-            A tuple containing the total_loss, heatmap_loss and locref_loss.
+            dict of the different unweighted loss components, with keys 'total_loss', 'heatmap_loss' and 'locref_loss'
 
         Examples:
             prediction = (predicted_heatmaps, predicted_locref)
             target = {
                 'heatmaps': torch.tensor([batch_size, num_keypoints, h, w]),
+                'heatmaps_ignored': torch.tensor([batch_size, num_keypoints]),
                 'locref_maps': torch.tensor([batch_size, 2 * num_keypoints, h, w]),
                 'locref_masks': torch.tensor([batch_size, 2 * num_keypoints, h, w]),
-                'weights': torch.tensor([batch_size, num_keypoints])
             }
-            total_loss, heatmap_loss, locref_loss = criterion(prediction, target)
+            losses = criterion(prediction, target)
         """
         heatmaps, locref = prediction
         if self.apply_sigmoid:
@@ -251,22 +263,22 @@ class HeatmapOnlyLoss(nn.Module):
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, prediction: tuple, target) -> torch.Tensor:
+    def forward(
+        self, prediction: Tuple[torch.Tensor, torch.Tensor], target: Dict
+    ) -> Dict:
         """Summary:
         Forward pass of the Heatmap_Only Loss function.
 
         Args:
-            prediction: tuple containing the predicted heatmap and locref of size
-                            (batch_size, h, w, number_keypoints), (batch_size, h, w, 2*number_keypoints)`
+            prediction: tuple of Tensors `(heatmaps, locref)` of size
+                `(batch_size, h, w, number_keypoints), (batch_size, h, w, 2*number_keypoints)`
             target: dictionary containing the target tensors: {
-                'heatmaps': (batch_size x number_body_parts x heatmap_size[0] x heatmap_size[1]),
-                'locref_maps': (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-                'locref_masks': (batch_size x 2 * number_body_parts x heatmap_size[0] x heatmap_size[1]),
-                'weights': (optional, default is None)
+                'heatmaps': (batch_size, number_body_parts, h, w),
+                'heatmaps_ignored': weights for the heatmap of size (batch_size, number_body_parts, h, w)
                 }
 
         Returns:
-            heatmap_loss: the computed heatmap loss.
+            dict with a single 'total_loss' key
         """
         heatmaps = prediction[0]
         if self.apply_sigmoid:

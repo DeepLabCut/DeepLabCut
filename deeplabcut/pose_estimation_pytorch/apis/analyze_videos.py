@@ -76,8 +76,6 @@ def video_inference(
         colormode: RGB or BGR
         method: 'td' (Top Down) or 'bu' (Bottom Up)
         detector: Detector for top down approach
-        top_down_predictor: Makes predictions from the cropped keypoints coordinates and
-                            the detected bbox
         max_num_animals: max number of animals
         num_keypoints: number of keypoints
         frames_resized: Whether the frame are resized for inference or not
@@ -463,14 +461,14 @@ def analyze_videos(
             PyTorch config as a default
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
-        auto_track: By default, tracking and stitching are automatically performed, 
+        auto_track: By default, tracking and stitching are automatically performed,
             producing the final h5 data file. This is equivalent to the behavior for
             single-animal projects.
 
             If ``False``, one must run ``convert_detections2tracklets`` and
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file.
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
-            learned by the model, assembly and tracking rely exclusively on identity 
+            learned by the model, assembly and tracking rely exclusively on identity
             prediction.
 
     Returns:
@@ -507,7 +505,9 @@ def analyze_videos(
     num_keypoints = len(auxiliaryfunctions.get_bodyparts(project.cfg))
 
     # Read the inference configuration, load the model
-    pytorch_config = auxiliaryfunctions.read_plainconfig(model_folder / "train" / "pytorch_config.yaml")
+    pytorch_config = auxiliaryfunctions.read_plainconfig(
+        model_folder / "train" / "pytorch_config.yaml"
+    )
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_config(pose_cfg_path)
     method = pytorch_config.get("method", "bu")
@@ -572,7 +572,6 @@ def analyze_videos(
                 colormode=pytorch_config.get("colormode", "RGB"),
                 method=method,
                 detector=detector,
-                top_down_predictor=top_down_predictor,
                 max_num_animals=max_num_animals,
                 num_keypoints=num_keypoints,
                 frames_resized=frames_resized_with_transform,
@@ -617,7 +616,7 @@ def analyze_videos(
                         shuffle,
                         trainingsetindex,
                         overwrite=False,
-                        identity_only=identity_only
+                        identity_only=identity_only,
                     )
                     stitch_tracklets(
                         config, str(video), videotype, shuffle, trainingsetindex

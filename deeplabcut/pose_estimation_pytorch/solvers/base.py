@@ -13,15 +13,15 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
+import numpy as np
+import torch
+
 import deeplabcut.pose_estimation_pytorch.data.dataset as deeplabcut_pose_estimation_pytorch_data_dataset
 import deeplabcut.pose_estimation_pytorch.models.model as deeplabcut_pose_estimation_pytorch_models_model
 import deeplabcut.pose_estimation_pytorch.models.predictors as deeplabcut_pose_estimation_pytorch_models_predictors
 import deeplabcut.pose_estimation_pytorch.solvers.inference as deeplabcut_pose_estimation_pytorch_solvers_inference
-import numpy as np
-import torch
-
-from ..registry import Registry, build_from_cfg
-from .utils import *
+import deeplabcut.pose_estimation_pytorch.solvers.utils as solver_utils
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 SOLVERS = Registry("solvers", build_func=build_from_cfg)
 
@@ -69,7 +69,7 @@ class Solver(ABC):
         Notes/TODO:
             Read stride from config file
         """
-        
+
         if cfg is None:
             raise ValueError("")
         self.model = model
@@ -102,7 +102,6 @@ class Solver(ABC):
         *,
         epochs: int = 10000,
     ) -> None:
-
         """Train model for the specified number of steps.
 
         Args:
@@ -122,7 +121,7 @@ class Solver(ABC):
            solver.fit(train_loader, valid_loader, epochs=50)
         """
 
-        model_folder = get_model_folder(
+        model_folder = solver_utils.get_model_folder(
             train_fraction, shuffle, model_prefix, train_loader.dataset.cfg
         )
 
@@ -159,7 +158,6 @@ class Solver(ABC):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
-
         """Facilitates training over an epoch. Returns the loss over the batches.
 
         Args:
@@ -211,12 +209,11 @@ class Solver(ABC):
     @abstractmethod
     def step(self, batch: Tuple[torch.Tensor, torch.Tensor], *args) -> dict:
         raise NotImplementedError
-   
+
     @torch.no_grad()
     def inference(
         self, dataset: deeplabcut_pose_estimation_pytorch_data_dataset.PoseDataset
     ) -> np.ndarray:
-
         """Run inference on the given dataset and obtain predicted poses.
 
         Args:
@@ -250,7 +247,6 @@ class BottomUpSolver(Solver):
     def step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], mode: str = "train"
     ) -> dict:
-
         """Perform a single epoch gradient update or validation step.
 
         Args:

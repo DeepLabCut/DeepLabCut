@@ -13,15 +13,18 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
+import torch
+import torch.nn as nn
+
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     Assembly,
     evaluate_assembly,
 )
-from torch import nn
 
-#DEPRECATED
+
+# TODO: DEPRECATED
 def get_prediction(
-    cfg: dict, output: Tuple[np.ndarray, np.ndarray], stride: int = 8
+    cfg: dict, output: Tuple[torch.Tensor, torch.Tensor], stride: int = 8
 ) -> np.ndarray:
     """Generates pose predictions from the model outputwhich is a tuple given by (heatmaps,location refinement fields)).
 

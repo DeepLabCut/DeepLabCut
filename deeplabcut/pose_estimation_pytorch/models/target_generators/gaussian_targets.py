@@ -60,7 +60,7 @@ class GaussianGenerator(BaseGenerator):
         annotations: dict,
         prediction: Tuple[torch.Tensor, torch.Tensor],
         image_size: Tuple[int, int],
-    ):
+    ) -> dict:
         """Summary:
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
@@ -163,7 +163,7 @@ class GaussianWithoutLocref(BaseGenerator):
         annotations: dict,
         prediction: Tuple[torch.Tensor, torch.Tensor],
         image_size: Tuple[int, int],
-    ):
+    ) -> dict:
         """Summary:
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.

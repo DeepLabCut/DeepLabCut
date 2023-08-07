@@ -1,10 +1,14 @@
-# ------------------------------------------------------------------------------
-# Copyright (c) Microsoft
-# Licensed under the MIT License.
-# The code is based on HigherHRNet-Human-Pose-Estimation.
-# (https://github.com/HRNet/HigherHRNet-Human-Pose-Estimation)
-# Modified by Zigang Geng (zigang@mail.ustc.edu.cn).
-# ------------------------------------------------------------------------------
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+# The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -12,8 +16,7 @@ import torch
 import torch.nn as nn
 import torchvision.ops as ops
 
-from deeplabcut.pose_estimation_pytorch.registry import (Registry,
-                                                         build_from_cfg)
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 BLOCKS = Registry("blocks", build_func=build_from_cfg)
 
@@ -79,7 +82,14 @@ class BasicBlock(BaseBlock):
 
     expansion = 1
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int = 1, downsample: Optional[nn.Module] = None, dilation: int = 1):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        dilation: int = 1,
+    ):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(
             in_channels,
@@ -151,7 +161,14 @@ class Bottleneck(BaseBlock):
 
     expansion = 4
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int = 1, downsample: Optional[nn.Module] = None, dilation: int = 1):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        dilation: int = 1,
+    ):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels, momentum=self.bn_momentum)
@@ -168,7 +185,9 @@ class Bottleneck(BaseBlock):
         self.conv3 = nn.Conv2d(
             out_channels, out_channels * self.expansion, kernel_size=1, bias=False
         )
-        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion, momentum=self.bn_momentum)
+        self.bn3 = nn.BatchNorm2d(
+            out_channels * self.expansion, momentum=self.bn_momentum
+        )
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride

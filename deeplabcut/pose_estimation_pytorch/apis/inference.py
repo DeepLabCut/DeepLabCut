@@ -1,4 +1,14 @@
-from typing import Dict, List, Optional, Tuple, Union
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -303,7 +313,6 @@ def inference(
                     images=item["image"],
                     max_num_animals=max_individuals,
                     num_keypoints=num_keypoints,
-                    device=device,
                     resize_object=resize_object,
                 )
             else:

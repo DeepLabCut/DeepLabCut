@@ -15,9 +15,9 @@ class FasterRCNN(BaseDetector):
     Faster Region-based Convolutional Neural Network (R-CNN) is a popular object detection model
     that builds upn the R-CNN framework.
 
-    I. A. Siradjuddin, Reynaldi and A. Muntasa, "Faster Region-based Convolutional Neural Network
-    for Mask Face Detection," 2021 5th International Conference on Informatics and Computational
-    Sciences (ICICoS), Semarang, Indonesia, 2021, pp. 282-286, doi: 10.1109/ICICoS53627.2021.9651744.
+    Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards
+    real-time object detection with region proposal networks." Advances in neural
+    information processing systems 28 (2015).
     """
 
     def __init__(

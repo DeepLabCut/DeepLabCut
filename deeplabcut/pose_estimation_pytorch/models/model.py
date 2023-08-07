@@ -11,12 +11,10 @@
 
 from typing import List, Tuple
 
-import numpy as np
 import torch
+import torch.nn as nn
+
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
-from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
-from deeplabcut.pose_estimation_tensorflow.core.predict import multi_pose_predict
-from torch import nn
 
 
 class PoseModel(nn.Module):

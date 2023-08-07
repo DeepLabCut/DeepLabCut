@@ -58,7 +58,9 @@ class DEKRGenerator(BaseGenerator):
 
         self.num_joints_with_center = self.num_joints + 1
 
-    def get_heat_val(self, sigma: float, x: float, y: float, x0: float, y0: float):
+    def get_heat_val(
+        self, sigma: float, x: float, y: float, x0: float, y0: float
+    ) -> float:
         """Summary:
         Calculates the corresponding heat value of point (x,y) given the heat distribution centered
         at (x0,y0) and spread value of sigma.
@@ -82,7 +84,7 @@ class DEKRGenerator(BaseGenerator):
         annotations: dict,
         prediction: Tuple[torch.Tensor, torch.Tensor],
         image_size: Tuple[int, int],
-    ):
+    ) -> dict:
         """Summary
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
@@ -228,9 +230,7 @@ class DEKRGenerator(BaseGenerator):
                                 )
                                 weight_map[
                                     b, idx * 2 + 1, pos_y, pos_x
-                                ] = 1.0 / np.sqrt(
-                                    area[b, person_id]
-                                ) 
+                                ] = 1.0 / np.sqrt(area[b, person_id])
                                 area_map[b, pos_y, pos_x] = area[b, person_id]
 
         hms_list[1][hms_list[1] == 2] = self.bg_weight
