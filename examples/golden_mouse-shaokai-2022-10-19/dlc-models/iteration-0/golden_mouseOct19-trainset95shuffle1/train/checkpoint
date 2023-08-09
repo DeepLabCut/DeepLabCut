@@ -1,0 +1,2 @@
+model_checkpoint_path: "/mnt/md0/shaokai/integration/DeepLabCut/examples/golden_mouse-shaokai-2022-10-19/dlc-models/iteration-0/golden_mouseOct19-trainset95shuffle1/train/snapshot-2000"
+all_model_checkpoint_paths: "/mnt/md0/shaokai/integration/DeepLabCut/examples/golden_mouse-shaokai-2022-10-19/dlc-models/iteration-0/golden_mouseOct19-trainset95shuffle1/train/snapshot-2000"

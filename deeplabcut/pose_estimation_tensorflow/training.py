@@ -63,6 +63,7 @@ def train_network(
     autotune=False,
     keepdeconvweights=True,
     modelprefix="",
+    superanimal_name = ""
 ):
     """Trains the network with the labels in the training dataset.
 
@@ -127,6 +128,9 @@ def train_network(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    superanimal_name: str, optional, default =""
+        Specified if suepranimal fine-tuning is needed
+
     Returns
     -------
     None
@@ -190,7 +194,54 @@ def train_network(
             os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
     try:
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
-        if "multi-animal" in cfg_dlc["dataset_type"]:
+
+
+        if superanimal_name != "":
+            from deeplabcut.modelzoo.utils import parse_available_supermodels
+            from dlclibrary.dlcmodelzoo.modelzoo_download import (
+                download_huggingface_model,
+                MODELOPTIONS,
+            )
+            import glob
+            dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
+            supermodels = parse_available_supermodels()    
+            weight_folder = str(
+                Path(dlc_root_path)
+                / "pose_estimation_tensorflow"
+                / "models"
+                / "pretrained"
+                / (superanimal_name + "_weights")
+            )    
+
+            if superanimal_name in MODELOPTIONS:
+                if not os.path.exists(weight_folder):
+                    download_huggingface_model(superanimal_name, weight_folder)
+                else:
+                    print(f"{weight_folder} exists, using the downloaded weights")
+            else:
+                print(f"{superanimal_name} not available. Available ones are: ", MODELOPTIONS)
+
+            snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
+            init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
+            
+            from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
+                train,
+            )
+
+            print("Selecting multi-animal trainer")
+            train(
+                str(poseconfigfile),
+                displayiters,
+                saveiters,
+                maxiters,
+                max_to_keep=max_snapshots_to_keep,
+                keepdeconvweights=keepdeconvweights,
+                allow_growth=allow_growth,
+                init_weights=init_weights
+            )  # pass on path and file name for pose_cfg.yaml!        
+
+        
+        elif "multi-animal" in cfg_dlc["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
                 train,
             )

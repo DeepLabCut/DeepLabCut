@@ -31,7 +31,7 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-
+from deeplabcut.pose_estimation_tensorflow.config import load_config
 
 def comparevideolistsanddatafolders(config):
     """
@@ -717,6 +717,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
     return train_data, matlab_data
 
 
+
 def create_training_dataset(
     config,
     num_shuffles=1,
@@ -728,6 +729,7 @@ def create_training_dataset(
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
+    superanimal_name = ""
 ):
     """Creates a training dataset.
 
@@ -791,6 +793,11 @@ def create_training_dataset(
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
+
+    superanimal_name: string, optional, default = ""
+
+    if specified and valid, use the corresponding pose config for superanimal
+
     Returns
     -------
     list(tuple) or None
@@ -832,8 +839,29 @@ def create_training_dataset(
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+
+
+    if superanimal_name !="":
+        from deeplabcut.modelzoo.utils import parse_available_supermodels
+        from dlclibrary.dlcmodelzoo.modelzoo_download import (
+            download_huggingface_model,
+            MODELOPTIONS,
+        )
+        net_type = "resnet_50"
+        dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()        
+        if superanimal_name in MODELOPTIONS:
+            supermodels = parse_available_supermodels()
+
+            posecfg_template  =   os.path.join(
+                    dlc_root_path,
+                    "pose_estimation_tensorflow",
+                    "superanimal_configs",
+                    supermodels[superanimal_name],
+                )
+            
+    
     if posecfg_template:
-        if not posecfg_template.endswith("pose_cfg.yaml"):
+        if not posecfg_template.endswith("pose_cfg.yaml") and not posecfg_template.endswith("superquadruped.yaml") and not posecfg_template.endswith("supertopview.yaml"):
             raise ValueError(
                 "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
@@ -841,7 +869,7 @@ def create_training_dataset(
             print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
-            prior_cfg = read_plainconfig(posecfg_template)
+        prior_cfg = read_plainconfig(posecfg_template)
     if cfg.get("multianimalproject", False):
         from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
             create_multianimaltraining_dataset,
@@ -880,6 +908,7 @@ def create_training_dataset(
                 "resnet" in net_type
                 or "mobilenet" in net_type
                 or "efficientnet" in net_type
+                or "dlcrnet" in net_type
             ):
                 pass
             else:

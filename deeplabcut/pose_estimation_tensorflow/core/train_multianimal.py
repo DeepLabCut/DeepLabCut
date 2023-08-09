@@ -106,6 +106,7 @@ def train(
     if init_weights != "":
         cfg["init_weights"] = init_weights
         cfg["resume_weights_only"] = True
+        print ("replacing default init weights with: ", init_weights)
 
     stem = Path(cfg["init_weights"]).stem
     if "snapshot" in stem and keepdeconvweights:
