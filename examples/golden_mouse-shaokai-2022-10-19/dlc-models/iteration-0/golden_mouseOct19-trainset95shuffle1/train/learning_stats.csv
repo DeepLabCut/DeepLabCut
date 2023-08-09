@@ -1,4 +1,0 @@
-iteration: 500, loss: 0.0086, scmap loss: 0.0008, locref loss: 0.0078, limb loss: 0.0000, lr: 0.0001
-iteration: 1000, loss: 0.0055, scmap loss: 0.0006, locref loss: 0.0049, limb loss: 0.0000, lr: 0.0001
-iteration: 1500, loss: 0.0045, scmap loss: 0.0005, locref loss: 0.0039, limb loss: 0.0000, lr: 0.0001
-iteration: 2000, loss: 0.0037, scmap loss: 0.0005, locref loss: 0.0032, limb loss: 0.0000, lr: 0.0001
