@@ -28,7 +28,7 @@ def df2generic(proj_root, df, image_id_offset=0):
         individuals = df.columns.get_level_values("individuals").unique().tolist()
     except KeyError:
         new_cols = pd.MultiIndex.from_tuples(
-            [(col[0], "single", col[1], col[2]) for col in df.columns],
+            [(col[0], "animal", col[1], col[2]) for col in df.columns],
             names=["scorer", "individuals", "bodyparts", "coords"],
         )
         df.columns = new_cols
@@ -167,7 +167,7 @@ def create_folder(path_to_folder):
 
     Args:
         path_to_folder: Path to the folder that should be created
-    """    
+    """
     if not os.path.exists(path_to_folder):
         os.makedirs(path_to_folder)
 

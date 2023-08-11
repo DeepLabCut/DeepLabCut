@@ -23,7 +23,7 @@ from torchvision.transforms import Resize as TorchResize
 
 def get_predictions_bottom_up(
     model: PoseModel, predictor: BasePredictor, images: torch.Tensor
-) -> np.array:
+) -> Tuple[np.array, Optional[np.ndarray]]:
     """Gets the predicted coordinates tensor for a bottom_up approach
 
     Model and images should already be on the same device
@@ -35,7 +35,9 @@ def get_predictions_bottom_up(
                                 shape (batch_size, 3, height, width)
 
     Returns:
-        np.array: predictions tensor of shape (batch_size, num_animals, num_keypoints, 3)
+        array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
+        None if there are no unique bodyparts, otherwise array of shape (batch_size, num_keypoints, 3)
+            for unique bodypart predictions
     """
     output = model(images)
     shape_image = images.shape
@@ -43,8 +45,13 @@ def get_predictions_bottom_up(
         shape_image[2] / output[0].shape[2],
         shape_image[3] / output[0].shape[3],
     )
-    predictions = predictor(output, scale_factor)
-    return predictions.cpu().numpy()
+    pred_dict = predictor(output, scale_factor)
+    predictions = pred_dict["poses"]
+    unique_bodyparts = pred_dict.get("unique_bodyparts", None)
+    if unique_bodyparts is not None:
+        return predictions.cpu().numpy(), unique_bodyparts["poses"].cpu().numpy()
+    else:
+        return predictions.cpu().numpy(), None
 
 
 def get_predictions_top_down(
@@ -56,7 +63,7 @@ def get_predictions_top_down(
     max_num_animals: int,
     num_keypoints: int,
     resize_object: TorchResize,
-) -> np.array:
+) -> Tuple[np.array, Optional[np.ndarray]]:
     """
     TODO probably quite bad design, most arguments could be stored somewhere else
     Gets the predicted coordinates tensor for a bottom_up approach
@@ -76,7 +83,9 @@ def get_predictions_top_down(
         device (Union[torch.device, str]): device everything should be on
 
     Returns:
-        np.array: predictions tensor of shape (batch_size, num_animals, num_keypoints, 3)
+        array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
+        None as unique bodyparts is currently not supported by top down but still returned by the function
+            for coherence over the repo
     """
     batch_size = images.shape[0]
     output_detector = detector(images)
@@ -104,11 +113,13 @@ def get_predictions_top_down(
                 cropped_image.shape[3] / heatmaps[0].shape[3],
             )
 
-            cropped_kpts = predictor(heatmaps, scale_factors_cropped)
+            pred_dict = predictor(heatmaps, scale_factors_cropped)
+            cropped_kpts = pred_dict["poses"]
             cropped_kpts_total[b, j, :] = cropped_kpts[0, 0]
 
-    final_predictions = top_down_predictor(boxes, cropped_kpts_total)
-    return final_predictions.cpu().numpy()
+    final_pred_dict = top_down_predictor(boxes, cropped_kpts_total)
+    final_predictions = final_pred_dict["poses"]
+    return final_predictions.cpu().numpy(), None
 
 
 def get_detections_batch(
@@ -169,7 +180,8 @@ def get_pose_batch(
 
     # Predictor always returns num_animals as 2nd dimension even for single animal ones
     # Hence the slicing
-    poses = predictor(outputs, scale_factors_cropped)[:, 0]
+    pred_dict = predictor(outputs, scale_factors_cropped)
+    poses = pred_dict["poses"][:, 0]
 
     return poses
 
@@ -209,8 +221,6 @@ def resize_batch_predictions(
     image_shape: Tuple[int, int],
 ) -> None:
     """
-    TODO shifting error when padding
-
     Converts keypoint coordinates to their values in the original image. Call if the
     image was resized during the image augmentation pipeline.
 
@@ -245,7 +255,7 @@ def inference(
     align_predictions_to_ground_truth: bool,
     images_resized_with_transform: bool,
     detector: Optional[BaseDetector] = None,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """
     Runs inference for a pose estimation model.
 
@@ -264,7 +274,9 @@ def inference(
         detector: None when `method="bu"`. The detector to use when `method="td"`.
 
     Returns:
-        shape (num_images, individual, keypoints, 3): the predicted keypoints
+        array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
+        None if there are no unique bodyparts, otherwise array of shape (batch_size, num_keypoints, 3)
+           for unique bodypart predictions
     """
     if method.lower() == "td":
         if detector is None:
@@ -290,6 +302,10 @@ def inference(
 
     top_down_predictor = None
     resize_object = None
+    if hasattr(predictor, "unique_bodyparts"):
+        compute_unique_bpts = predictor.unique_bodyparts
+    else:
+        compute_unique_bpts = False
     if method == "td":
         top_down_predictor = PREDICTORS.build(
             {"type": "TopDownPredictor", "format_bbox": "xyxy"}
@@ -300,12 +316,14 @@ def inference(
         resize_object = TorchResize((256, 256))  # TODO hardcoded 256
 
     predicted_poses = []
+    unique_poses = []
     with torch.no_grad():
         for item in dataloader:
             item["image"] = item["image"].to(device)
             image_shape = item["image"].shape  # b, c, w, h
             if method == "td":
-                predictions = get_predictions_top_down(
+                # TODO unique_bodyparts not supported by top down, it is None here
+                predictions, unique_pred = get_predictions_top_down(
                     detector=detector,
                     model=model,
                     predictor=predictor,
@@ -316,7 +334,7 @@ def inference(
                     resize_object=resize_object,
                 )
             else:
-                predictions = get_predictions_bottom_up(
+                predictions, unique_pred = get_predictions_bottom_up(
                     model=model,
                     predictor=predictor,
                     images=item["image"],
@@ -338,11 +356,28 @@ def inference(
                     original_sizes=original_sizes.cpu().numpy(),
                     image_shape=(image_shape[2], image_shape[3]),
                 )
+                if compute_unique_bpts:
+                    resize_batch_predictions(
+                        predictions=unique_pred,
+                        original_sizes=original_sizes.cpu().numpy(),
+                        image_shape=(image_shape[2], image_shape[3]),
+                    )
             predicted_poses.append(predictions)
+            if compute_unique_bpts:
+                unique_poses.append(unique_pred)
 
     if len(predicted_poses) > 0:
         predicted_poses = np.concatenate(predicted_poses, axis=0)
     else:
         predicted_poses = np.zeros((0, max_individuals, num_keypoints, 3))
 
-    return predicted_poses
+    if compute_unique_bpts:
+        num_unique_bpts = unique_poses[0].shape[2]
+        if len(unique_poses) > 0:
+            unique_poses = np.concatenate(unique_poses, axis=0)
+        else:
+            unique_poses = np.zeros((0, 1, num_unique_bpts, 3))
+    else:
+        unique_poses = None
+
+    return predicted_poses, unique_poses

@@ -46,9 +46,7 @@ class TopDownPredictor(BasePredictor):
 
         return coco_bboxes
 
-    def forward(
-        self, bboxes: torch.Tensor, keypoints_cropped: torch.Tensor
-    ) -> torch.Tensor:
+    def forward(self, bboxes: torch.Tensor, keypoints_cropped: torch.Tensor) -> dict:
         """Computes keypoints coordinates in the original image given predicted bbox and predicted
         keypoints coordinates inside the bbox cropped image.
 
@@ -57,7 +55,8 @@ class TopDownPredictor(BasePredictor):
             keypoints_cropped: Keypoints with the shape (batch_size, max_num_animals, num_joints, 3)
 
         Returns:
-            Keypoints tensor of the shape: (batch_size, max_num_animals, num_joints, 3)
+            A dictionary containing a "poses" key with a keypoints tensor of the shape:
+            (batch_size, max_num_animals, num_joints, 3) as value.
         """
         if self.format_bbox != "coco":
             bboxes = self._convert_bbox_to_coco(bboxes)
@@ -74,4 +73,4 @@ class TopDownPredictor(BasePredictor):
         new_kpts[:, :, :, 0] = scales_x * new_kpts[:, :, :, 0] + x_corners
         new_kpts[:, :, :, 1] = scales_y * new_kpts[:, :, :, 1] + y_corners
 
-        return new_kpts
+        return {"poses": new_kpts}

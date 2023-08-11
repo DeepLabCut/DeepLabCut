@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -24,7 +24,7 @@ from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
 
 # TODO: DEPRECATED
 def get_prediction(
-    cfg: dict, output: Tuple[torch.Tensor, torch.Tensor], stride: int = 8
+    cfg: dict, output: Tuple[np.ndarray, np.ndarray], stride: int = 8
 ) -> np.ndarray:
     """Generates pose predictions from the model outputwhich is a tuple given by (heatmaps,location refinement fields)).
 
@@ -38,7 +38,7 @@ def get_prediction(
                 keypoint occurs at a particular location
             locref: location refinement fields
                 that predict offsets to mitigate quantization errors due to downsampled score maps
-        stride: window stride; defaults to 8
+        stride: window stride; defaults to 8, Optional
 
     Returns:
         Array of poses
@@ -223,19 +223,33 @@ def get_oks(
     mask = prediction[scorer_pred].xs("likelihood", level=2, axis=1) >= pcutoff
 
     # Convert predictions to DLC assemblies
-    assemblies_pred_raw = conv_df_to_assemblies(prediction[scorer_pred])
-    assemblies_gt_raw = conv_df_to_assemblies(target[scorer_target])
+    assemblies_pred_raw, unique_pred_raw = conv_df_to_assemblies(
+        prediction[scorer_pred]
+    )
+    assemblies_gt_raw, unique_gt_raw = conv_df_to_assemblies(target[scorer_target])
 
-    assemblies_pred_masked = conv_df_to_assemblies(prediction[scorer_pred][mask])
-    assemblies_gt_masked = conv_df_to_assemblies(target[scorer_target][mask])
+    assemblies_pred_masked, unique_pred_masked = conv_df_to_assemblies(
+        prediction[scorer_pred][mask]
+    )
+    assemblies_gt_masked, unique_gt_masked = conv_df_to_assemblies(
+        target[scorer_target][mask]
+    )
 
-    oks_raw = evaluate_assembly(
+    oks_assemblies_raw = evaluate_assembly(
         assemblies_pred_raw,
         assemblies_gt_raw,
         oks_sigma,
         margin=margin,
         symmetric_kpts=symmetric_kpts,
     )
+    if unique_pred_raw is not None and unique_gt_raw is not None:
+        oks_unique_raw = evaluate_assembly(
+            unique_pred_raw,
+            unique_gt_raw,
+            oks_sigma,
+            margin=margin,
+            symmetric_kpts=symmetric_kpts,
+        )
 
     oks_pcutoff = evaluate_assembly(
         assemblies_pred_masked,
@@ -244,22 +258,43 @@ def get_oks(
         margin=margin,
         symmetric_kpts=symmetric_kpts,
     )
+    if unique_pred_masked is not None and unique_gt_masked is not None:
+        oks_unique_masked = evaluate_assembly(
+            unique_pred_masked,
+            unique_gt_masked,
+            oks_sigma,
+            margin=margin,
+            symmetric_kpts=symmetric_kpts,
+        )
 
-    return oks_raw, oks_pcutoff
+    return oks_assemblies_raw, oks_pcutoff
 
 
-def conv_df_to_assemblies(df: pd.DataFrame) -> dict:
-    """Convert a dataframe to an assemblies dictionary.
+def conv_df_to_assemblies(df: pd.DataFrame) -> Tuple[dict, Optional[dict]]:
+    """
+    Convert a dataframe to an assemblies dictionary
 
     Args:
         df : dataframe of coordinates/predictions,
         df is expected to have a multi_index of shape (num_animals, num_keypoints, 2 or 3)
-
     Returns:
         assemblies: dictionary of the assemblies of keypoints
+        if there are unique bodyparts, a dictionary containing unique bodyparts
     """
-    assemblies = {}
+    individuals = df.columns.get_level_values(0)
+    df_bodyparts = df.loc[:, individuals != "single"]
+    assemblies = _df_to_dict(df_bodyparts)
 
+    unique_keypoints = None
+    if "single" in individuals:
+        df_unique = df.loc[:, individuals == "single"]
+        unique_keypoints = _df_to_dict(df_unique)
+
+    return assemblies, unique_keypoints
+
+
+def _df_to_dict(df: pd.DataFrame) -> dict:
+    data = {}
     num_animals = len(df.columns.get_level_values(0).unique())
     num_kpts = len(df.columns.get_level_values(1).unique())
     for image_path in df.index:
@@ -272,8 +307,9 @@ def conv_df_to_assemblies(df: pd.DataFrame) -> dict:
             if len(ass):
                 kpt_lst.append(ass)
 
-        assemblies[image_path] = kpt_lst
-    return assemblies
+        data[image_path] = kpt_lst
+
+    return data
 
 
 # DEPRECATED

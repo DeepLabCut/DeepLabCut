@@ -62,7 +62,7 @@ def test_get_predictions_bottom_up(
 
     # get predictions
     with torch.no_grad():
-        output = inference.get_predictions_bottom_up(model, predictor, images)
+        output, _ = inference.get_predictions_bottom_up(model, predictor, images)
 
     # Generate test tensor with expected output shape
     test = torch.randint(1, 12, (batch_size, num_animals, num_keypoints, 3))
@@ -115,7 +115,7 @@ def test_get_predicitons_top_down(
 
     # get predictions
     with torch.no_grad():
-        output = inference.get_predictions_top_down(
+        output, _ = inference.get_predictions_top_down(
             detector,
             model,
             pose_predictor,

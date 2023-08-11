@@ -54,6 +54,9 @@ class PoseDataset(Dataset, BaseDataset):
         self.bodyparts = auxiliaryfunctions.get_bodyparts(self.cfg)
         self.num_joints = len(self.bodyparts)
 
+        self.unique_bpts = auxiliaryfunctions.get_unique_bodyparts(self.cfg)
+        self.num_unique_bpts = len(self.unique_bpts)
+
         self.shuffle = self.project.shuffle
         self.project.convert2dict(mode)
         self.dataframe = self.project.dataframe
@@ -70,7 +73,7 @@ class PoseDataset(Dataset, BaseDataset):
         pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
         pytorch_cfg = read_plainconfig(pytorch_config_path)
         self.with_center = pytorch_cfg.get("with_center", False)
-        self.individuals = self.cfg.get("individuals", ["single"])
+        self.individuals = self.cfg.get("individuals", ["animal"])
         self.individual_to_idx = {}
         for i, indiv in enumerate(self.individuals):
             self.individual_to_idx[indiv] = i
@@ -179,6 +182,8 @@ class PoseDataset(Dataset, BaseDataset):
             num_keypoints_returned = self.num_joints + 1
             bodyparts += ["_center_"]
 
+        unique_bpts_kpts = np.zeros((self.num_unique_bpts, 3))
+
         bbox_list = []
         bbox_label_list = []
         labels = np.zeros((self.max_num_animals), dtype=np.int64)
@@ -189,6 +194,12 @@ class PoseDataset(Dataset, BaseDataset):
             _annotation = self.project.annotations[annotation_idx]
             _keypoints, _undef_ids = self.project.annotation2keypoints(_annotation)
             _keypoints = np.array(_keypoints)
+
+            # Filter out the unique bodyparts
+            if _annotation["individual"] == "single":
+                unique_bpts_kpts[:, :2] = _keypoints
+                unique_bpts_kpts[:, 2] = _undef_ids
+                continue
 
             ids[i] = self.individual_to_idx[_annotation["individual"]]
 
@@ -224,17 +235,19 @@ class PoseDataset(Dataset, BaseDataset):
             bbox_labels = np.zeros((0,))
 
         # Needs two be 2 dimensional for albumentations
-        keypoints = keypoints.reshape((-1, 3))
+        all_keypoints = np.concatenate(
+            (keypoints.reshape((-1, 3)), unique_bpts_kpts), axis=0
+        )
 
         if self.transform:
             class_labels = [
                 f"individual{i}_{bpt}"
                 for i in range(self.max_num_animals)
                 for bpt in bodyparts
-            ]
+            ] + [f"unique_{bpt}" for bpt in self.unique_bpts]
             transformed = self.transform(
                 image=image,
-                keypoints=keypoints[:, :2],
+                keypoints=all_keypoints[:, :2],
                 bboxes=bboxes,
                 class_labels=class_labels,
                 bbox_labels=bbox_labels,
@@ -252,7 +265,7 @@ class PoseDataset(Dataset, BaseDataset):
 
             # Discard keypoints that are undefined
             undef_class_labels = [
-                class_labels[i] for i, kpt in enumerate(keypoints) if kpt[2] == 0
+                class_labels[i] for i, kpt in enumerate(all_keypoints) if kpt[2] == 0
             ]
             for label in undef_class_labels:
                 new_index = transformed["class_labels"].index(label)
@@ -260,7 +273,7 @@ class PoseDataset(Dataset, BaseDataset):
 
         else:
             transformed = {
-                "keypoints": keypoints[:, :2],
+                "keypoints": all_keypoints[:, :2],
                 "image": image,
             }
 
@@ -268,12 +281,15 @@ class PoseDataset(Dataset, BaseDataset):
             2, 0, 1
         )  # channels first
 
-        assert len(transformed["keypoints"]) == len(keypoints)
-        keypoints = (
-            np.array(transformed["keypoints"])
-            .reshape((n_annotations, num_keypoints_returned, 2))
-            .astype(float)
-        )
+        assert len(transformed["keypoints"]) == len(all_keypoints)
+        keypoints = np.array(transformed["keypoints"]).astype(float)
+        if self.num_unique_bpts > 0:
+            keypoints = keypoints[: -self.num_unique_bpts]
+        keypoints = keypoints.reshape((self.max_num_animals, num_keypoints_returned, 2))
+
+        unique_bpts_kpts = np.array(
+            transformed["keypoints"][-self.num_unique_bpts :]
+        ).astype(float)
 
         # Pad bboxes and labels to always have shape (num_animals, 4)
         #  If we want the original index of the bboxes, we can use the bbox labels
@@ -316,6 +332,7 @@ class PoseDataset(Dataset, BaseDataset):
         ] = original_size  # In order to convert back the keypoints to their original space
         res["annotations"] = {}
         res["annotations"]["keypoints"] = keypoints
+        res["annotations"]["unique_kpts"] = unique_bpts_kpts
         res["annotations"]["area"] = area
         res["annotations"]["ids"] = ids
         res["annotations"]["boxes"] = bbox_tensor
@@ -372,7 +389,7 @@ class CroppedDataset(Dataset, BaseDataset):
         pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
         pytorch_cfg = read_plainconfig(pytorch_config_path)
         self.with_center = pytorch_cfg.get("with_center", False)
-        self.individuals = self.cfg.get("individuals", ["single"])
+        self.individuals = self.cfg.get("individuals", ["animal"])
         self.individual_to_idx = {}
         for i, indiv in enumerate(self.individuals):
             self.individual_to_idx[indiv] = i

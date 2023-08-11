@@ -164,6 +164,7 @@ class PoseLoss(nn.Module):
         loss_weight_locref: float = 0.1,
         locref_huber_loss: bool = False,
         apply_sigmoid: bool = False,
+        unique_bodyparts: bool = False,
     ) -> None:
         """Summary:
         Constructor of the PoseLoss class.
@@ -173,6 +174,7 @@ class PoseLoss(nn.Module):
             locref_huber_loss: if True uses torch.nn.HuberLoss for locref (default is False).
             apply_sigmoid: whether to apply sigmoid to the heatmap predictions should be true
                 for MSE, false for BCE (since it already applies it by itself)
+            unique_bodyparts : Is there a unique bodyparts head attached to the model
 
         Returns:
             None.
@@ -186,6 +188,7 @@ class PoseLoss(nn.Module):
         self.heatmap_criterion = WeightedBCELoss()
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
+        self.unique_bodyparts = unique_bodyparts
 
     def forward(
         self, prediction: Tuple[torch.Tensor, torch.Tensor], target: Dict
@@ -217,7 +220,23 @@ class PoseLoss(nn.Module):
             }
             losses = criterion(prediction, target)
         """
-        heatmaps, locref = prediction
+        unique_htmp_loss, unique_locref_loss = 0.0, 0.0
+        if self.unique_bodyparts:
+            heatmaps, locref = prediction[:2]
+            unique_heatmaps, unique_locref = prediction[2:]
+            if self.apply_sigmoid:
+                unique_heatmaps = self.sigmoid(unique_heatmaps)
+
+            unique_htmp_loss = self.heatmap_criterion(
+                unique_heatmaps, target["unique_heatmaps"], 1.0
+            )
+            unique_locref_loss = self.locref_criterion(
+                unique_locref,
+                target["unique_locref_maps"],
+                target["unique_locref_masks"],
+            )
+        else:
+            heatmaps, locref = prediction
         if self.apply_sigmoid:
             heatmap_loss = self.heatmap_criterion(
                 self.sigmoid(heatmaps),
@@ -232,12 +251,27 @@ class PoseLoss(nn.Module):
         locref_loss = self.locref_criterion(
             locref, target["locref_maps"], target["locref_masks"]
         )
-        total_loss = locref_loss * self.loss_weight_locref + heatmap_loss
-        return {
-            "total_loss": total_loss,
-            "heatmap_loss": heatmap_loss,
-            "locref_loss": locref_loss,
-        }
+        total_loss = (
+            locref_loss * self.loss_weight_locref
+            + heatmap_loss
+            + unique_locref_loss * self.loss_weight_locref
+            + unique_htmp_loss
+        )
+
+        if self.unique_bodyparts:
+            return {
+                "total_loss": total_loss,
+                "heatmap_loss": heatmap_loss,
+                "locref_loss": locref_loss,
+                "unique_heatmap_loss": unique_htmp_loss,
+                "unique_locref_loss": unique_locref_loss,
+            }
+        else:
+            return {
+                "total_loss": total_loss,
+                "heatmap_loss": heatmap_loss,
+                "locref_loss": locref_loss,
+            }
 
 
 @LOSSES.register_module
@@ -248,7 +282,7 @@ class HeatmapOnlyLoss(nn.Module):
     This loss function computes the weighted Binary Cross Entropy (BCE) loss for heatmap predictions.
     """
 
-    def __init__(self, apply_sigmoid: bool = False) -> None:
+    def __init__(self, apply_sigmoid: bool = False, unique_bodyparts: bool = False):
         """Summary:
         Constructor for the HeatmapOnlyLoss class.
 
@@ -262,6 +296,9 @@ class HeatmapOnlyLoss(nn.Module):
         self.heatmap_criterion = WeightedBCELoss()
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
+
+        # Unused for now since no model supporting unique_bodyparts use this loss
+        self.unique_bodyparts = unique_bodyparts
 
     def forward(
         self, prediction: Tuple[torch.Tensor, torch.Tensor], target: Dict

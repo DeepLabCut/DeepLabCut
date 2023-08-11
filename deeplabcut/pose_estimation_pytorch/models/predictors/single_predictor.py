@@ -74,7 +74,7 @@ class SinglePredictor(BasePredictor):
         self,
         output: Tuple[torch.Tensor, torch.Tensor],
         scale_factors: Tuple[float, float],
-    ) -> torch.Tensor:
+    ) -> dict:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
         Args:
@@ -85,7 +85,7 @@ class SinglePredictor(BasePredictor):
             scale_factors: Scale factors for the poses.
 
         Returns:
-            Poses with scores.
+            A dictionary containing a "poses" key with the output tensor as value.
 
         Example:
             >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
@@ -106,7 +106,7 @@ class SinglePredictor(BasePredictor):
         poses = self.get_pose_prediction(
             heatmaps, locrefs * self.locref_stdev, scale_factors
         )
-        return poses
+        return {"poses": poses}
 
     def get_top_values(
         self, heatmap: torch.Tensor
@@ -219,7 +219,7 @@ class HeatmapOnlyPredictor(BasePredictor):
         self,
         output: Tuple[torch.Tensor, torch.Tensor],
         scale_factors: Tuple[float, float],
-    ) -> torch.Tensor:
+    ) -> dict:
         """Forward pass of HeatmapOnlyPredictor. Computes predictions from the trained model output.
 
         Args:
@@ -230,7 +230,7 @@ class HeatmapOnlyPredictor(BasePredictor):
             scale_factors: Scale factors for the poses.
 
         Returns:
-            Poses with scores.
+            A dictionary containing a "poses" key with the output tensor as value.
 
         Example:
             >>> predictor = HeatmapOnlyPredictor(num_animals=1, apply_sigmoid=True)
@@ -244,7 +244,7 @@ class HeatmapOnlyPredictor(BasePredictor):
         heatmaps = heatmaps.permute(0, 2, 3, 1)
 
         poses = self.get_pose_prediction(heatmaps, scale_factors)
-        return poses
+        return {"poses": poses}
 
     def get_top_values(
         self, heatmap: torch.Tensor

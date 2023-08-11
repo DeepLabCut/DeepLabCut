@@ -189,7 +189,6 @@ class TopDownSolver(Solver):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
-        
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
         to_mode_detector = getattr(self.detector, mode)
@@ -233,7 +232,6 @@ class TopDownSolver(Solver):
         mode: str = "train",
         step: Optional[int] = None,
     ) -> float:
-        
         if mode not in ["train", "eval"]:
             raise ValueError(f"Solver mode must be train or eval, found mode={mode}.")
         to_mode_pose = getattr(self.model, mode)
@@ -315,7 +313,6 @@ class TopDownSolver(Solver):
             return 0.0
 
     def step_pose(self, batch: dict, mode: str = "train") -> dict:
-        
         if mode not in ["train", "eval"]:
             raise ValueError(
                 f"Solver must be in train or eval mode, but {mode} was found."

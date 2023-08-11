@@ -30,6 +30,7 @@ from deeplabcut.pose_estimation_pytorch.solvers.utils import (
     get_paths,
     get_results_filename,
     get_snapshots,
+    build_entire_pred_df,
 )
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
@@ -50,7 +51,7 @@ def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
         df_predictions_ma.columns.get_level_values("individuals").unique().tolist()
     except KeyError:
         new_cols = pd.MultiIndex.from_tuples(
-            [(col[0], "single", col[1], col[2]) for col in df_predictions_ma.columns],
+            [(col[0], "animal", col[1], col[2]) for col in df_predictions_ma.columns],
             names=["scorer", "individuals", "bodyparts", "coords"],
         )
         df_predictions_ma.columns = new_cols
@@ -107,8 +108,9 @@ def evaluate_snapshot(
             modelprefix=modelprefix,
         ),
     )
-    individuals = cfg.get("individuals", ["single"])
+    individuals = cfg.get("individuals", ["animal"])
     bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
+    unique_bodyparts = auxiliaryfunctions.get_unique_bodyparts(cfg)
     max_individuals = len(individuals)
     num_joints = len(bodyparts)
     pytorch_config = auxiliaryfunctions.read_plainconfig(
@@ -164,7 +166,7 @@ def evaluate_snapshot(
             dataset, batch_size=batch_size, shuffle=False
         )
         target_df = dataset.dataframe.copy()
-        predictions = inference(
+        predictions, unique_poses = inference(
             dataloader=dataloader,
             model=model,
             predictor=predictor,
@@ -176,12 +178,14 @@ def evaluate_snapshot(
             images_resized_with_transform=images_resized_with_transform,
             detector=detector,
         )
-        df_predictions = build_predictions_df(
+        df_predictions = build_entire_pred_df(
             dlc_scorer=names["dlc_scorer"],
             individuals=individuals,
             bodyparts=bodyparts,
             df_index=target_df.index,
             predictions=predictions.reshape(target_df.index.shape[0], -1),
+            unique_bodyparts=unique_bodyparts,
+            unique_predictions=unique_poses.reshape(target_df.index.shape[0], -1),
         )
         df_mode_predictions.append(df_predictions)
 
@@ -202,6 +206,7 @@ def evaluate_snapshot(
             else:
                 plot_mode = "bodypart"
 
+            plot_unique_bodyparts = len(unique_bodyparts) > 0
             plot_evaluation_results(
                 df_combined=df_combined,
                 project_root=cfg["project_path"],
@@ -209,6 +214,7 @@ def evaluate_snapshot(
                 model_name=names["dlc_scorer"],
                 output_folder=folder_name,
                 in_train_set=mode == "train",
+                plot_unique_bodyparts=plot_unique_bodyparts,
                 mode=plot_mode,
                 colormap=cfg["colormap"],
                 dot_size=cfg["dotsize"],

@@ -25,7 +25,7 @@ def rmse_match_prediction_to_gt(
     match predicted individuals to ground truth individuals based on the rmse distance between their corresponding
     keypoints. This algorithm is used to find the optimal matching, taking into account the potential missing animal.
 
-    Raises: 
+    Raises:
         ValueError: if `gt_kpts.shape != pred_kpts.shape`
 
     Args:

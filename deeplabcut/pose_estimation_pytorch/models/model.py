@@ -11,10 +11,17 @@
 
 from typing import List, Tuple
 
+import numpy as np
 import torch
-import torch.nn as nn
-
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.utils import generate_heatmaps
+from deeplabcut.pose_estimation_tensorflow.core.predict import multi_pose_predict
+from torch import nn
+from typing import List
+from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.target_generators.gaussian_targets import (
+    GaussianGenerator,
+)
 
 
 class PoseModel(nn.Module):
@@ -30,6 +37,7 @@ class PoseModel(nn.Module):
         target_generator: BaseGenerator,
         neck: torch.nn.Module = None,
         stride: int = 8,
+        num_unique_bodyparts: int = 0,
     ) -> None:
         """Summary
         Constructor of the PoseModel.
@@ -57,6 +65,14 @@ class PoseModel(nn.Module):
         self.stride = stride
         self.cfg = cfg
         self.target_generator = target_generator
+
+        self.num_unique_bodyparts = num_unique_bodyparts
+        self.compute_unique_bpts = num_unique_bodyparts > 0
+        self.unique_bpts_target_gen = GaussianGenerator(
+            locref_stdev=7.2801,
+            num_joints=self.num_unique_bodyparts,
+            pos_dist_thresh=17,
+        )
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
@@ -99,4 +115,14 @@ class PoseModel(nn.Module):
             targets: dict of the targets needed for model training
         """
 
-        return self.target_generator(annotations, prediction, image_size)
+        targets_dict = self.target_generator(annotations, prediction, image_size)
+        if self.compute_unique_bpts:
+            unique_anno = {"keypoints": annotations["unique_kpts"][:, None, :]}
+            unique_targets = self.unique_bpts_target_gen(
+                unique_anno, prediction[-2:], image_size
+            )
+
+            for key in unique_targets:
+                targets_dict["unique_" + key] = unique_targets[key]
+
+        return targets_dict

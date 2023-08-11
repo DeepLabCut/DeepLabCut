@@ -15,6 +15,7 @@ import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
 from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
+from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import BLOCKS
 
 
 @HEADS.register_module

@@ -1,15 +1,21 @@
-import albumentations as A
-import numpy as np
 import os
-from torch.utils.data import DataLoader
-import pytest
 import random
+from pathlib import Path
+
+import albumentations as A
+import pytest
+from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.utils.auxiliaryfunctions as dlc_auxfun
+from deeplabcut.generate_training_dataset import create_training_dataset
 
 
 def _get_dataset(path, transform, mode="train"):
+    project_root = Path(path)
+    if not (project_root / "training-datasets").exists():
+        create_training_dataset(config=str(project_root / "config.yaml"))
+
     dlc_project = dlc.DLCProject(path, shuffle=1)
     dataset = dlc.PoseDataset(dlc_project, transform=transform, mode=mode)
     return dataset
@@ -35,10 +41,17 @@ def test_iter_all_dataset_no_transform(batch_size):
         transform = None
     dataset = _get_openfield_dataset(transform=transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
-    key_set = set(["image", "original_size", "annotations"])
-    anno_key_set = set(
-        ["keypoints", "area", "ids", "boxes", "image_id", "is_crowd", "labels"]
-    )
+    key_set = {"image", "original_size", "annotations"}
+    anno_key_set = {
+        "keypoints",
+        "area",
+        "ids",
+        "boxes",
+        "image_id",
+        "is_crowd",
+        "labels",
+        "unique_kpts",
+    }
 
     max_num_animals = dataset.max_num_animals
     num_keypoints = dataset.num_joints
@@ -103,10 +116,17 @@ def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exageration):
     )
     dataset = _get_openfield_dataset(transform=transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
-    key_set = set(["image", "original_size", "annotations"])
-    anno_key_set = set(
-        ["keypoints", "area", "ids", "boxes", "image_id", "is_crowd", "labels"]
-    )
+    key_set = {"image", "original_size", "annotations"}
+    anno_key_set = {
+        "keypoints",
+        "area",
+        "ids",
+        "boxes",
+        "image_id",
+        "is_crowd",
+        "labels",
+        "unique_kpts",
+    }
 
     max_num_animals = dataset.max_num_animals
     num_keypoints = dataset.num_joints

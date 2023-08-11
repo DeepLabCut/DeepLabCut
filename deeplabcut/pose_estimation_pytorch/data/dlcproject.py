@@ -6,12 +6,9 @@ import deeplabcut
 import numpy as np
 import pandas as pd
 
-from deeplabcut.pose_estimation_pytorch.utils import (
-    df2generic
-)
-from deeplabcut.pose_estimation_pytorch.data.base import (
-    BaseProject
-)
+from deeplabcut.pose_estimation_pytorch.utils import df2generic
+from deeplabcut.pose_estimation_pytorch.data.base import BaseProject
+
 
 class DLCProject(BaseProject):
     """

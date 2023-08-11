@@ -60,7 +60,7 @@ def video_inference(
     max_num_animals: Optional[int] = 1,
     num_keypoints: Optional[int] = 1,
     frames_resized: Optional[bool] = False,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     TODO: This should be refactored to use the `inference` code with a `video dataset`
 
@@ -81,8 +81,9 @@ def video_inference(
         frames_resized: Whether the frame are resized for inference or not
 
     Returns:
-        for each frame in the video, a numpy array containing the output of the
-        predictor for the frame
+        array of shape (num_frames, max_num_animals, num_keypoints, 3) for pose predictions
+        empty array if unique bodyparts are not handled by the model, or array of shape
+            (num_frames, num_unique_bodyparts, 3) for unique bodypart pose predictions
     """
 
     if method.lower() == "bu":
@@ -121,7 +122,7 @@ def bottom_up_video_inference(
     transform: Optional[A.Compose] = None,
     colormode: Optional[str] = "RGB",
     frames_resized: Optional[bool] = False,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Does batched inference for top down over a video
 
     Args:
@@ -135,7 +136,8 @@ def bottom_up_video_inference(
         frames_resized: Whether the frames were resized or not. Defaults to False.
 
     Returns:
-        List of pose predictions, each element has shape (max_num_animals, num_keypoints, 3)
+        array of shape (num_frames, max_num_animals, num_keypoints, 3) for pose predictions
+        array of shape (num_frames, num_unique_bodyparts, 3) for unique bodypart pose predictions
     """
     if device is None:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -157,6 +159,7 @@ def bottom_up_video_inference(
 
     pbar = tqdm(total=n_frames, file=sys.stdout)
     predictions = []
+    all_unique_predictions = []
     frame = video_reader.read_frame()
     original_size = frame.shape
     transformed_size = original_size
@@ -183,7 +186,7 @@ def bottom_up_video_inference(
                 batch = torch.tensor(
                     batch_frames, device=device, dtype=torch.float
                 ).permute(0, 3, 1, 2)
-                batched_predictions = get_predictions_bottom_up(
+                batched_predictions, unique_predictions = get_predictions_bottom_up(
                     model=model,
                     predictor=predictor,
                     images=batch,
@@ -202,6 +205,21 @@ def bottom_up_video_inference(
                             + resizing_factor[0] / 2
                         )
                     predictions.append(frame_pred)
+                if unique_predictions is not None:
+                    for frame_unique in unique_predictions:
+                        if frames_resized:
+                            resizing_factor = (
+                                original_size[0] / transformed_size[0]
+                            ), (original_size[1] / transformed_size[1])
+                            frame_unique[:, :, 0] = (
+                                frame_unique[:, :, 0] * resizing_factor[1]
+                                + resizing_factor[1] / 2
+                            )
+                            frame_unique[:, :, 1] = (
+                                frame_unique[:, :, 1] * resizing_factor[0]
+                                + resizing_factor[0] / 2
+                            )
+                        all_unique_predictions.append(frame_unique)
 
             frame = video_reader.read_frame()
             batch_ind += 1
@@ -210,7 +228,7 @@ def bottom_up_video_inference(
 
     pbar.close()
 
-    return np.array(predictions)
+    return np.array(predictions), np.array(all_unique_predictions)
 
 
 def top_down_video_inference(
@@ -225,7 +243,7 @@ def top_down_video_inference(
     max_num_animals: Optional[int] = 1,
     num_keypoints: Optional[int] = 1,
     frames_resized: Optional[bool] = False,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Does batched inference for top down over a video
 
     Args:
@@ -242,7 +260,8 @@ def top_down_video_inference(
         frames_resized: Whether the frames were resized or not. Defaults to False.
 
     Returns:
-        tensor of pose predictions, shape (num_frames, max_num_animals, num_keypoints, 3)
+        array of shape (num_frames, max_num_animals, num_keypoints, 3) for pose predictions
+        empty array for unique bodyparts (not handled by top down)
     """
     if device is None:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -257,7 +276,7 @@ def top_down_video_inference(
     )
     print(f"Loading {video_path}")
     video_reader = VideoReader(str(video_path))
-    n_frames = video_reader.get_n_frames()
+    n_frames = video_reader.get_n_frames(robust=False)
     vid_w, vid_h = video_reader.dimensions
     print(
         f"Video metadata: \n"
@@ -267,7 +286,6 @@ def top_down_video_inference(
     )
 
     pbar = tqdm(total=n_frames, file=sys.stdout)
-    predictions = []
     frame = video_reader.read_frame()
     original_size = frame.shape
     transformed_size = original_size
@@ -282,7 +300,6 @@ def top_down_video_inference(
     )
 
     detections_list = []
-    detections = torch.zeros((n_frames, max_num_animals, 4))
     with torch.no_grad():
         while frame is not None:
             if frame.dtype != np.uint8:
@@ -318,10 +335,11 @@ def top_down_video_inference(
                 detections_list.append(detect)
 
     pbar.close()
-
+    detections = torch.stack(detections_list)
     print("Detections are done, moving to estimating poses...")
 
-    detections = torch.stack(detections_list)
+    # update n_frames to have robust value
+    n_frames = len(detections)
 
     # Pose estimation
     batch_ind_pose = 0  # Index of the current pose img in batch
@@ -330,7 +348,7 @@ def top_down_video_inference(
     )  # TODO 256 hardcoded
 
     # This array stores (image_idx, animal_idx, bbox_coords)
-    # To be able to go back to it from bacthed cropepd images
+    # To be able to go back to it from batched cropped images
     batch_image_infos = torch.zeros((batch_size, 6))
     cropped_predictions = torch.full(
         (n_frames, max_num_animals, num_keypoints, 3), -1.0
@@ -373,7 +391,8 @@ def top_down_video_inference(
                         256 / model_outputs[0].shape[2],
                         256 / model_outputs[0].shape[3],
                     )
-                    pose_predictions = predictor(model_outputs, scale_factors)
+                    pose_pred_dict = predictor(model_outputs, scale_factors)
+                    pose_predictions = pose_pred_dict["poses"]
                     for idx, prediction in enumerate(pose_predictions):
                         cropped_predictions[
                             batch_image_infos[idx, 0].detach().int(),
@@ -395,7 +414,8 @@ def top_down_video_inference(
                 256 / model_outputs[0].shape[2],
                 256 / model_outputs[0].shape[3],
             )
-            pose_predictions = predictor(model_outputs, scale_factors)
+            pose_pred_dict = predictor(model_outputs, scale_factors)
+            pose_predictions = pose_pred_dict["poses"]
             for idx, prediction in enumerate(pose_predictions):
                 if batch_image_infos[idx, 0] != -1.0:
                     cropped_predictions[
@@ -403,11 +423,10 @@ def top_down_video_inference(
                         batch_image_infos[idx, 1].detach().int(),
                     ] = prediction[0]
     pbar.close()
-    predictions = top_down_predictor(detections, cropped_predictions)
-
+    pred_dict = top_down_predictor(detections, cropped_predictions)
+    predictions = pred_dict["poses"]
     print("Keypoints coordinate prediction done !")
-
-    return predictions.detach().cpu().numpy()
+    return predictions.detach().cpu().numpy(), np.array([])
 
 
 def analyze_videos(
@@ -501,7 +520,7 @@ def analyze_videos(
         modelprefix=modelprefix,
     )
     # Get general project parameters
-    max_num_animals = len(project.cfg.get("individuals", ["single"]))
+    max_num_animals = len(project.cfg.get("individuals", ["animal"]))
     num_keypoints = len(auxiliaryfunctions.get_bodyparts(project.cfg))
 
     # Read the inference configuration, load the model
@@ -509,7 +528,7 @@ def analyze_videos(
         model_folder / "train" / "pytorch_config.yaml"
     )
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
-    pose_cfg = auxiliaryfunctions.read_config(pose_cfg_path)
+    pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
     method = pytorch_config.get("method", "bu")
 
     # Get model parameters
@@ -518,7 +537,7 @@ def analyze_videos(
     if batchsize is None:
         batchsize = pytorch_config.get("batch_size", 1)
     pose_cfg["batch_size"] = batchsize
-    individuals = project.cfg.get("individuals", ["single"])
+    individuals = project.cfg.get("individuals", ["animal"])
 
     # Get data processing parameters
     # if images are resized for inference,
@@ -527,17 +546,20 @@ def analyze_videos(
 
     # Load model, predictor
     model = build_pose_model(pytorch_config["model"], pose_cfg)
-    model.load_state_dict(torch.load(model_path)["model_state_dict"])
+    try:
+        model.load_state_dict(torch.load(model_path)["model_state_dict"])
+    except KeyError:
+        model.load_state_dict(torch.load(model_path))
     predictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
     detector = None
     top_down_predictor = None
     if method.lower() == "td":
         detector_path = _get_detector_path(model_folder, snapshotindex, project.cfg)
         detector = DETECTORS.build(dict(pytorch_config["detector"]["detector_model"]))
-        detector.load_state_dict(torch.load(detector_path)["detector_state_dict"])
-        top_down_predictor = PREDICTORS.build(
-            {"type": "TopDownPredictor", "format_bbox": "xyxy"}
-        )
+        try:
+            detector.load_state_dict(torch.load(detector_path)["detector_state_dict"])
+        except KeyError:
+            detector.load_state_dict(torch.load(detector_path))
 
     # Load inference
     if transform is None:
@@ -562,7 +584,7 @@ def analyze_videos(
             print(f"Video already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
-            predictions = video_inference(
+            predictions, unique_predictions = video_inference(
                 model=model,
                 predictor=predictor,
                 video_path=video,
@@ -589,6 +611,56 @@ def analyze_videos(
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
+
+            coordinate_labels = ["x", "y", "likelihood"]
+            if len(individuals) > 1:
+                print("Extracting ", len(individuals), "instances per bodypart")
+                # first has empty suffix for backwards compatibility
+                individual_suffixes = [str(s + 1) for s in range(len(individuals))]
+                individual_suffixes[0] = ""
+                coordinate_labels = [
+                    coord_label + s
+                    for s in individual_suffixes
+                    for coord_label in coordinate_labels
+                ]
+
+            results_df_index = pd.MultiIndex.from_product(
+                [
+                    [dlc_scorer],
+                    auxiliaryfunctions.get_bodyparts(project.cfg),
+                    coordinate_labels,
+                ],
+                names=["scorer", "bodyparts", "coords"],
+            )
+            df = pd.DataFrame(
+                predictions.reshape((len(predictions), -1)),
+                columns=results_df_index,
+                index=range(len(predictions)),
+            )
+            if unique_predictions.size:
+                coordinate_labels_unique = ["x", "y", "likelihood"]
+                results_unique_df_index = pd.MultiIndex.from_product(
+                    [
+                        [dlc_scorer],
+                        auxiliaryfunctions.get_unique_bodyparts(project.cfg),
+                        coordinate_labels_unique,
+                    ],
+                    names=["scorer", "bodyparts", "coords"],
+                )
+                df_u = pd.DataFrame(
+                    unique_predictions.reshape((len(unique_predictions), -1)),
+                    columns=results_unique_df_index,
+                    index=range(len(unique_predictions)),
+                )
+                df = df.join(df_u, how="outer")
+
+            df.to_hdf(
+                str(output_h5),
+                "df_with_missing",
+                format="table",
+                mode="w",
+            )
+            results.append((str(video), df))
             output_data = _generate_output_data(pose_cfg, predictions)
             _ = auxfun_multianimal.SaveFullMultiAnimalData(
                 output_data, metadata, str(output_h5)
@@ -606,20 +678,39 @@ def analyze_videos(
                     ass = np.concatenate((prediction, extra_column), axis=-1)
                     assemblies[i] = ass
 
+                if unique_predictions.size:
+                    assemblies["single"] = {}
+                    for i, unique_prediction in enumerate(unique_predictions):
+                        extra_column = np.full(
+                            (unique_prediction.shape[1], 1),
+                            -1.0,
+                            dtype=np.float32,
+                        )
+                        ass = np.concatenate(
+                            (unique_prediction[0], extra_column), axis=-1
+                        )
+                        assemblies["single"][i] = ass
+
                 with open(output_ass, "wb") as handle:
                     pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 if auto_track:
                     convert_detections2tracklets(
+                        config=config,
+                        videos=str(video),
+                        videotype=videotype,
+                        shuffle=shuffle,
+                        trainingsetindex=trainingsetindex,
+                        overwrite=False,
+                        identity_only=identity_only,
+                        destfolder=destfolder,
+                    )
+                    stitch_tracklets(
                         config,
-                        str(video),
+                        [str(video)],
                         videotype,
                         shuffle,
                         trainingsetindex,
-                        overwrite=False,
-                        identity_only=identity_only,
-                    )
-                    stitch_tracklets(
-                        config, str(video), videotype, shuffle, trainingsetindex
+                        destfolder=destfolder,
                     )
 
             else:
@@ -747,7 +838,7 @@ def _get_detector_path(model_folder: Path, snapshot_index: int, config: dict) ->
 
 def _generate_output_data(
     pose_config: dict,
-    predictions: List[np.ndarray],
+    predictions: np.ndarray,
 ) -> dict:
     output = {
         "metadata": {

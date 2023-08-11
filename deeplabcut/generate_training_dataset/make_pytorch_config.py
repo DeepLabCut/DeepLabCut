@@ -1,3 +1,4 @@
+from typing import List
 import torch
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -89,6 +90,10 @@ def make_pytorch_config(
 
     bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
     num_joints = len(bodyparts)
+    unique_bpts = auxiliaryfunctions.get_unique_bodyparts(project_config)
+    num_unique_bpts = len(unique_bpts)
+    compute_unique_bpts = num_unique_bpts > 0
+
     pytorch_config = config_template
     pytorch_config["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     pytorch_config["method"] = "bu"
@@ -123,6 +128,14 @@ def make_pytorch_config(
             pytorch_config["model"]["heads"] = make_dekr_head_cfg(
                 num_joints, backbone_type, num_offset_per_kpt
             )
+            if compute_unique_bpts:
+                pytorch_config["model"]["heads"] += make_unique_bpts_head_cfg(
+                    num_unique_bpts, backbone_type
+                )
+                pytorch_config["model"]["pose_model"]["num_unique_bodyparts"] = len(
+                    unique_bpts
+                )
+                pytorch_config["criterion"]["unique_bodyparts"] = True
             pytorch_config["model"]["target_generator"] = {
                 "type": "DEKRGenerator",
                 "num_joints": num_joints,
@@ -132,10 +145,15 @@ def make_pytorch_config(
             pytorch_config["predictor"] = {
                 "type": "DEKRPredictor",
                 "num_animals": num_animals,
+                "unique_bodyparts": compute_unique_bpts,
             }
 
             pytorch_config["with_center"] = True
         elif "token_pose" in net_type:
+            if compute_unique_bpts:
+                raise NotImplementedError(
+                    "Unique body parts are currently not handled by top down models"
+                )
             pytorch_config["method"] = "td"
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
@@ -196,6 +214,47 @@ def make_single_head_cfg(num_joints: int, net_type: str):
             "strides": [2, 2],
         }
         head_configs.append(locref_head_cfg)
+
+    return head_configs
+
+
+def make_unique_bpts_head_cfg(num_unique_bpts: int, backbone_type: str) -> List[dict]:
+    """Creates a deconvolutional head to predict unique bodyparts
+
+    Args:
+        num_unique_bpts: number of unique bodyparts
+        backbone_type: type of the backbone
+
+    Raises:
+        NotImplementedError if unique bodyparts are not implemented for backbone_type
+
+    Returns:
+        The configs for the unique bodyparts heatmap and locref heads
+    """
+    head_configs = []
+
+    if backbone_type == "hrnet_w32":
+        # Only one deconvolutional layer since hrnet stride is 1/4
+        heatmap_heag_cfg = {
+            "type": "SimpleHead",
+            "channels": [480, num_unique_bpts],
+            "kernel_size": [2, 2],
+            "strides": [2, 2],
+        }
+        head_configs.append(heatmap_heag_cfg)
+
+        locref_head_cfg = {
+            "type": "SimpleHead",
+            "channels": [480, 2 * num_unique_bpts],
+            "kernel_size": [2, 2],
+            "strides": [2, 2],
+        }
+        head_configs.append(locref_head_cfg)
+
+    else:
+        raise NotImplementedError(
+            f"Unique bodyparts prediction is not implemented yet for backbone {backbone_type}"
+        )
 
     return head_configs
 

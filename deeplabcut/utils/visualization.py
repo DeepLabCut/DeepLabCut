@@ -388,6 +388,7 @@ def plot_evaluation_results(
     model_name: str,
     output_folder: str,
     in_train_set: bool,
+    plot_unique_bodyparts: bool = False,
     mode: str = "bodypart",
     colormap: str = "rainbow",
     dot_size: int = 12,
@@ -408,6 +409,7 @@ def plot_evaluation_results(
         model_name: the name of the model for predictions in df_combined
         output_folder: the name of the folder where images should be saved
         in_train_set: whether df_combined is for train set images
+        plot_unique_bodyparts: whether we should plot unique bodyparts
         mode: one of {"bodypart", "individual"}. Determines the keypoint color grouping
         colormap: the colormap to use for keypoints
         dot_size: the dot size to use for keypoints
@@ -419,14 +421,36 @@ def plot_evaluation_results(
         image_path = Path(project_root) / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
-        individuals = len(row.index.levels[1])
-        bodyparts = len(row.index.levels[2])
-        df_gt = row[scorer]
-        df_predictions = row[model_name]
+        row_multi = row.loc[
+            (slice(None), row.index.get_level_values("individuals") != "single")
+        ]
+        individuals = len(row_multi.index.get_level_values("individuals").unique())
+        bodyparts = len(row_multi.index.get_level_values("bodyparts").unique())
+        df_gt = row_multi[scorer]
+        df_predictions = row_multi[model_name]
 
         # Shape (num_individuals, num_bodyparts, xy)
         ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
         predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+
+        if plot_unique_bodyparts:
+            row_unique = row.loc[
+                (slice(None), row.index.get_level_values("individuals") == "single")
+            ]
+            unique_individuals = 1
+            unique_bodyparts = len(
+                row_unique.index.get_level_values("bodyparts").unique()
+            )
+            unique_ground_truth = (
+                row_unique[scorer]
+                .to_numpy()
+                .reshape((unique_individuals, unique_bodyparts, 2))
+            )
+            unique_predictions = (
+                row_unique[model_name]
+                .to_numpy()
+                .reshape((unique_individuals, unique_bodyparts, 3))
+            )
 
         fig, ax = create_minimal_figure()
         h, w, _ = np.shape(frame)
@@ -436,11 +460,11 @@ def plot_evaluation_results(
         ax.invert_yaxis()
 
         if mode == "bodypart":
-            colors = get_cmap(bodyparts, name=colormap)
+            colors = get_cmap(bodyparts + unique_bodyparts, name=colormap)
             predictions = predictions.swapaxes(0, 1)
             ground_truth = ground_truth.swapaxes(0, 1)
         elif mode == "individual":
-            colors = get_cmap(individuals, name=colormap)
+            colors = get_cmap(individuals + 1, name=colormap)
         else:
             colors = []
 
@@ -455,6 +479,20 @@ def plot_evaluation_results(
             p_cutoff,
             ax=ax,
         )
+        if plot_unique_bodyparts:
+            unique_predictions = unique_predictions.swapaxes(0, 1)
+            unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+            ax = make_multianimal_labeled_image(
+                frame,
+                unique_ground_truth,
+                unique_predictions[:, :, :2],
+                unique_predictions[:, :, 2:],
+                colors,
+                dot_size,
+                alpha_value,
+                p_cutoff,
+                ax=ax,
+            )
 
         save_labeled_frame(
             fig,

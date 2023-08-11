@@ -10,7 +10,9 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Tuple
 
+import torch
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 from torch import nn
 
@@ -22,7 +24,7 @@ class BasePredictor(ABC, nn.Module):
 
     This class is an abstract base class (ABC) for defining predictors used in the DeepLabCut Toolbox.
     All predictor classes should inherit from this base class and implement the forward method.
-    Regresses keypoint coordinates from model's output maps 
+    Regresses keypoint coordinates from model's output maps
 
     Attributes:
         num_animals: Number of animals in the project. Should be set in subclasses.
@@ -45,14 +47,18 @@ class BasePredictor(ABC, nn.Module):
         self.num_animals = None
 
     @abstractmethod
-    def forward(self, outputs):
+    def forward(
+        self, outputs: Tuple[torch.Tensor, ...], scale_factors: Tuple[float, float]
+    ) -> dict:
         """Abstract method for the forward pass of the Predictor.
 
         Args:
             outputs: Output tensors from previous layers.
+            scale_factors: Scale factors for the poses.
 
         Returns:
-            Tensor: Output tensor.
+            A dictionary containing a "poses" key with the output tensor as value, and
+            optionally a "unique_bodyparts" with the unique bodyparts tensor as value.
 
         Raises:
             NotImplementedError: This method must be implemented in subclasses.

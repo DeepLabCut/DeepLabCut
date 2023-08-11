@@ -14,7 +14,7 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
@@ -141,7 +141,8 @@ def get_detector_path(model_folder: str, load_epoch: int) -> str:
         Output:
             'proj_name/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/detector-snapshot-10.pt'
     """
-    return get_verified_path(model_folder, load_epoch, mode = "detector")
+    return get_verified_path(model_folder, load_epoch, mode="detector")
+
 
 def get_dlc_scorer(
     train_fraction: float,
@@ -208,9 +209,7 @@ def get_snapshots(model_folder: Path) -> List[str]:
     return sorted(snapshots, key=lambda s: int(s.split("-")[-1]))
 
 
-def get_verified_path(
-    directory_path: str, load_epoch: int, mode: str = "model"
-) -> str:
+def get_verified_path(directory_path: str, load_epoch: int, mode: str = "model") -> str:
     """Helper function for the get_model_path and get_detector_path functions.
 
     Verifies the directories and returns the specific directory given the parameters:
@@ -250,7 +249,9 @@ def get_verified_path(
     # Assigns the proper prefix and paths given the verification mode: for either model paths or detector paths
     if mode == "detector":
         mode_prefix = "detector-"
-    directory_paths = glob.glob(os.path.join(directory_path,"train",f"{mode_prefix}snapshot*"))
+    directory_paths = glob.glob(
+        os.path.join(directory_path, "train", f"{mode_prefix}snapshot*")
+    )
     # else:
     #     directory_paths = glob.glob(f"{directory_path}/train/snapshot*")
 
@@ -470,6 +471,48 @@ def build_predictions_df(
         )
 
     return pd.DataFrame(predictions, columns=index, index=df_index)
+
+
+def build_entire_pred_df(
+    dlc_scorer: str,
+    individuals: List[str],
+    bodyparts: List[str],
+    df_index: pd.Index,
+    predictions: np.ndarray,
+    unique_bodyparts: List[str],
+    unique_predictions: Optional[np.ndarray],
+) -> pd.DataFrame:
+    num_individuals = len(individuals)
+    if num_individuals == 1 or len(unique_bodyparts) == 0 or unique_predictions is None:
+        return build_predictions_df(
+            dlc_scorer,
+            individuals,
+            bodyparts,
+            df_index,
+            predictions,
+        )
+
+    animals_df = build_predictions_df(
+        dlc_scorer,
+        individuals,
+        bodyparts,
+        df_index,
+        predictions,
+    )
+    unique_df = build_predictions_df(
+        dlc_scorer,
+        ["single"],
+        unique_bodyparts,
+        df_index,
+        unique_predictions,
+    )
+    new_cols = pd.MultiIndex.from_tuples(
+        [(col[0], "single", col[1], col[2]) for col in unique_df.columns],
+        names=["scorer", "individuals", "bodyparts", "coords"],
+    )
+    unique_df.columns = new_cols
+    predictions_df = animals_df.merge(unique_df, left_index=True, right_index=True)
+    return predictions_df
 
 
 def get_paths(

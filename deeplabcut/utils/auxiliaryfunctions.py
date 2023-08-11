@@ -275,17 +275,34 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
     Args:
         cfg: a project configuration file
 
-    Returns: all bodyparts listed in the project
+    Returns: bodyparts listed in the project (does not include the unique_bodyparts entry)
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            _,
+            multianimal_bodyparts,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return multianimal_bodyparts
+
+    return cfg["bodyparts"]
+
+def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: all unique bodyparts listed in the project
     """
     if cfg.get("multianimalproject", False):
         (
             _,
             unique_bodyparts,
-            multianimal_bodyparts,
+            _,
         ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-        return multianimal_bodyparts + unique_bodyparts
+        return unique_bodyparts
 
-    return cfg["bodyparts"]
+    return []
 
 
 def write_config_3d(configname, cfg):
@@ -397,10 +414,11 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-
+    if videotype is None:
+        videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
-        v
+        v   
         for v in videos
         if os.path.isfile(v)
         and any(v.endswith(ext) for ext in videotype)

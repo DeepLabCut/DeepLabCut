@@ -4,6 +4,7 @@ colormode: 'RGB'
 criterion:
   locref_huber_loss: true
   loss_weight_locref: 0.02
+  unique_bodyparts: false
   type: PoseLoss
 cropped_data: # Used only for Top-Down approach
   covering: true
@@ -36,6 +37,7 @@ model:
     type: ResNet
   pose_model:
     stride: 8
+    num_unique_bodyparts : 0
   target_generator:
     locref_stdev: 7.2801
     num_joints: -1
