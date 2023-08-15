@@ -159,6 +159,13 @@ def evaluate_snapshot(
             torch.load(names["detector_path"])["detector_state_dict"]
         )
 
+    pcutoff = project.cfg.get("pcutoff")
+    scores = {
+        "Training epochs": int(names["dlc_scorer"].split("_")[-1]),
+        "%Training dataset": train_fraction,
+        "Shuffle number": shuffle,
+        "pcutoff": pcutoff,
+    }
     df_mode_predictions: List[pd.DataFrame] = []
     for mode in ["train", "test"]:
         dataset = dlc.PoseDataset(project, transform=transform, mode=mode)
@@ -222,9 +229,9 @@ def evaluate_snapshot(
                 p_cutoff=cfg["pcutoff"],
             )
 
-        if show_errors:
-            scores = get_scores(pose_cfg, df_predictions, target_df)
-            print(f"Mode {mode} scores:", scores)
+        mode_scores = get_scores(df_predictions, target_df, pcutoff)
+        for k, v in mode_scores.items():
+            scores[f"{mode} {k}"] = round(v, 2)
 
     # Create the output dataframe
     df_all_predictions = pd.concat(df_mode_predictions, axis=0)
@@ -235,6 +242,13 @@ def evaluate_snapshot(
     output_filename.parent.mkdir(parents=True, exist_ok=True)
 
     df_all_predictions.to_hdf(str(output_filename), "df_with_missing")
+
+    df_scores = pd.DataFrame([scores]).set_index(
+        ["Training epochs", "%Training dataset", "Shuffle number", "pcutoff"]
+    )
+    scores_filepath = Path(results_filename).with_suffix(".csv")
+    scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
+    save_evaluation_results(df_scores, scores_filepath, show_errors, pcutoff)
 
 
 def evaluate_network(
@@ -339,6 +353,39 @@ def evaluate_network(
                     modelprefix=modelprefix,
                     batch_size=batch_size,
                 )
+
+
+def save_evaluation_results(
+    df_scores: pd.DataFrame,
+    scores_path: Path,
+    print_results: bool,
+    pcutoff: float,
+) -> None:
+    """
+    Saves the evaluation results to a CSV file. Adds the evaluation results for the
+    model to the combined results file, or creates it if it does not yet exist.
+
+    Args:
+        df_scores: the scores dataframe for a snapshot
+        scores_path: the path where the model scores CSV should be saved
+        print_results: whether to print evaluation results to the console
+        pcutoff: the pcutoff used to get the evaluation results
+    """
+    if print_results:
+        print(f"Evaluation results for {scores_path.name} (pcutoff: {pcutoff}):")
+        print(df_scores.iloc[0])
+
+    # Save scores file
+    df_scores.to_csv(scores_path)
+
+    # Update combined results
+    combined_scores_path = scores_path.parent.parent / "CombinedEvaluation-results.csv"
+    if combined_scores_path.exists():
+        df_existing_results = pd.read_csv(combined_scores_path, index_col=[0, 1, 2, 3])
+        df_scores = df_scores.combine_first(df_existing_results)
+
+    df_scores = df_scores.sort_index()
+    df_scores.to_csv(combined_scores_path)
 
 
 if __name__ == "__main__":

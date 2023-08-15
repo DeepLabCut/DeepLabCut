@@ -146,6 +146,7 @@ def make_pytorch_config(
                 "type": "DEKRPredictor",
                 "num_animals": num_animals,
                 "unique_bodyparts": compute_unique_bpts,
+                "keypoint_score_type": "combined",
             }
 
             pytorch_config["with_center"] = True

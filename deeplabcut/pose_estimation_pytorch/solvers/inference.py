@@ -70,9 +70,9 @@ def get_prediction(
 
 
 def get_scores(
-    cfg: Dict,
     prediction: pd.DataFrame,
     target: pd.DataFrame,
+    pcutoff: Optional[float] = None,
     bodyparts: List[str] = None,
 ) -> Dict:
     """Computes for the different scores given the grount truth and the predictions.
@@ -83,10 +83,10 @@ def get_scores(
     OKS mAR (Mean Average Recall)
 
     Args:
-        cfg: config file in a dictionary
         prediction: prediction df, should already be matched to ground truth using
-                                   Hungarian Algorithm (Ref: https://brilliant.org/wiki/hungarian-matching/)
+            Hungarian Algorithm (Ref: https://brilliant.org/wiki/hungarian-matching/)
         target: ground truth dataframe
+        pcutoff: the value used to compute the pcutoff scores
         bodyparts: names of the bodyparts. Defaults to None.
 
     Returns:
@@ -94,39 +94,35 @@ def get_scores(
                       ['rmse', 'rmse_pcutoff', 'mAP', 'mAR', 'mAP_pcutoff', 'mAR_pcutoff']
 
     Examples:
-        >>> # Define the cfg dictionary, prediction, and target DataFrames
-        >>> cfg = {'pcutoff': 0.5}
+        >>> # Define the p-cutoff, prediction, and target DataFrames
+        >>> pcutoff = 0.5
         >>> prediction = pd.DataFrame(...)  # Your DataFrame here
         >>> target = pd.DataFrame(...)      # Your DataFrame here
         >>> # Compute the scores
-        >>> scores = get_scores(cfg, prediction, target)
+        >>> scores = get_scores(prediction, target, pcutoff)
         >>> print(scores)
         {
             'rmse': 0.156,
             'rmse_pcutoff': 0.115,
-            'mAP': 0.842,
-            'mAR': 0.745,
-            'mAP_pcutoff': 0.913,
-            'mAR_pcutoff': 0.825
+            'mAP': 84.2,
+            'mAR': 74.5,
+            'mAP_pcutoff': 91.3,
+            'mAR_pcutoff': 82.5
         }  # Sample output scores
     """
-    if cfg.get("pcutoff"):
-        pcutoff = cfg["pcutoff"]
-        rmse, rmse_p = get_rmse(prediction, target, pcutoff, bodyparts=bodyparts)
-        oks, oks_p = get_oks(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
-    else:
-        rmse, rmse_p = get_rmse(prediction, target, bodyparts=bodyparts)
-        oks, oks_p = get_oks(prediction, target, bodyparts=bodyparts)
+    if pcutoff is None:
+        pcutoff = -1
 
-    scores = {}
-    scores["rmse"] = np.nanmean(rmse)
-    scores["rmse_pcutoff"] = np.nanmean(rmse_p)
-    scores["mAP"] = oks["mAP"]
-    scores["mAR"] = oks["mAR"]
-    scores["mAP_pcutoff"] = oks_p["mAP"]
-    scores["mAR_pcutoff"] = oks_p["mAR"]
-
-    return scores
+    rmse, rmse_p = get_rmse(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
+    oks, oks_p = get_oks(prediction, target, pcutoff=pcutoff, bodyparts=bodyparts)
+    return {
+        "rmse": np.nanmean(rmse),
+        "rmse_pcutoff": np.nanmean(rmse_p),
+        "mAP": 100 * oks["mAP"],
+        "mAR": 100 * oks["mAR"],
+        "mAP_pcutoff": 100 * oks_p["mAP"],
+        "mAR_pcutoff": 100 * oks_p["mAR"],
+    }
 
 
 def get_rmse(

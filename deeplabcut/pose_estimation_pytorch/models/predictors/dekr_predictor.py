@@ -39,13 +39,21 @@ class DEKRPredictor(BasePredictor):
         num_animals (int): Number of animals in the project.
         detection_threshold (float, optional): Threshold for detection. Defaults to 0.01.
         apply_sigmoid (bool, optional): Apply sigmoid to heatmaps. Defaults to True.
-        use_heatmap (bool, optional): Use heatmap. Defaults to True.
+        use_heatmap (bool, optional): Use heatmap to refine keypoint predictions. Defaults to True.
+        keypoint_score_type (str): Type of score to compute for keypoints. "heatmap" applies the heatmap
+            score to each keypoint. "center" applies the score of the center of each individual to
+            all of its keypoints. "combined" multiplies the score of the heatmap and individual
+            center for each keypoint.
 
     Attributes:
         num_animals (int): Number of animals in the project.
         detection_threshold (float): Threshold for detection.
         apply_sigmoid (bool): Apply sigmoid to heatmaps.
         use_heatmap (bool): Use heatmap.
+        keypoint_score_type (str): Type of score to compute for keypoints. "heatmap" applies the heatmap
+            score to each keypoint. "center" applies the score of the center of each individual to
+            all of its keypoints. "combined" multiplies the score of the heatmap and individual
+            center for each keypoint.
 
     Example:
         # Create a DEKRPredictor instance with 2 animals.
@@ -66,14 +74,20 @@ class DEKRPredictor(BasePredictor):
         apply_sigmoid: bool = True,
         use_heatmap: bool = True,
         unique_bodyparts: bool = False,
+        keypoint_score_type: str = "combined",
     ):
         """Initializes the DEKRPredictor class.
 
         Args:
             num_animals: Number of animals in the project.
-            detection_threshold: Threshold for detection. Defaults to 0.01.
-            apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
-            use_heatmap: Use heatmap. Defaults to True.
+            detection_threshold: Threshold for detection
+            apply_sigmoid: Apply sigmoid to heatmaps
+            use_heatmap: Use heatmap to refine the keypoint predictions.
+            unique_bodyparts: Whether the model predicts unique bodyparts.
+            keypoint_score_type: Type of score to compute for keypoints. "heatmap"
+                applies the heatmap score to each keypoint. "center" applies the score
+                of the center of each individual to all of its keypoints. "combined"
+                multiplies the score of the heatmap and individual for each keypoint.
 
         Returns:
             None
@@ -92,6 +106,12 @@ class DEKRPredictor(BasePredictor):
                 locref_stdev=7.8201,
                 apply_sigmoid=False,
             )
+
+        self.keypoint_score_type = keypoint_score_type
+        if self.keypoint_score_type not in ("heatmap", "center", "combined"):
+            raise ValueError(f"Unknown keypoint score type: {self.keypoint_score_type}")
+
+        # TODO: Set as in HRNet/DEKR configs. Define as a constant.
         self.max_absorb_distance = 75
 
     def forward(
@@ -118,10 +138,10 @@ class DEKRPredictor(BasePredictor):
         else:
             heatmaps, offsets = outputs
         if self.apply_sigmoid and not self.unique_bodyparts:
-            heatmaps = torch.nn.Sigmoid()(heatmaps)
+            heatmaps = torch.nn.Sigmoid()(heatmaps)  # TODO: OPTIMIZE
         elif self.apply_sigmoid:
-            heatmaps = torch.nn.Sigmoid()(heatmaps)
-            unique_heatmaps = torch.nn.Sigmoid()(unique_heatmaps)
+            heatmaps = torch.nn.Sigmoid()(heatmaps)  # TODO: OPTIMIZE
+            unique_heatmaps = torch.nn.Sigmoid()(unique_heatmaps)  # TODO: OPTIMIZE
 
         posemap = self.offset_to_pose(offsets)
 
@@ -129,19 +149,37 @@ class DEKRPredictor(BasePredictor):
         num_joints = num_joints_with_center - 1
 
         center_heatmaps = heatmaps[:, -1]
-        pose_ind, scores = self.get_top_values(center_heatmaps)
+        pose_ind, ctr_scores = self.get_top_values(center_heatmaps)
 
         posemap = posemap.permute(0, 2, 3, 1).view(batch_size, h * w, -1, 2)
         poses = torch.zeros(batch_size, pose_ind.shape[1], num_joints, 2).to(
-            scores.device
+            ctr_scores.device
         )
         for i in range(batch_size):
             pose = posemap[i, pose_ind[i]]
             poses[i] = pose
 
-        poses = self._update_pose_with_heatmaps(poses, heatmaps[:, :-1])
+        if self.use_heatmap:
+            poses = self._update_pose_with_heatmaps(poses, heatmaps[:, :-1])
 
-        ctr_score = scores[:, :, None].expand(batch_size, -1, num_joints)[:, :, :, None]
+        if self.keypoint_score_type == "center":
+            score = (
+                ctr_scores.unsqueeze(-1)
+                .expand(batch_size, -1, num_joints)
+                .unsqueeze(-1)
+            )
+        elif self.keypoint_score_type == "heatmap":
+            score = self.get_heat_value(poses, heatmaps).unsqueeze(-1)
+        elif self.keypoint_score_type == "combined":
+            center_score = (
+                ctr_scores.unsqueeze(-1)
+                .expand(batch_size, -1, num_joints)
+                .unsqueeze(-1)
+            )
+            htmp_score = self.get_heat_value(poses, heatmaps).unsqueeze(-1)
+            score = center_score * htmp_score
+        else:
+            raise ValueError(f"Unknown keypoint score type: {self.keypoint_score_type}")
 
         poses[:, :, :, 0] = (
             poses[:, :, :, 0] * scale_factors[1] + 0.5 * scale_factors[1]
@@ -150,7 +188,7 @@ class DEKRPredictor(BasePredictor):
             poses[:, :, :, 1] * scale_factors[0] + 0.5 * scale_factors[0]
         )
 
-        poses_w_scores = torch.cat([poses, ctr_score], dim=3)
+        poses_w_scores = torch.cat([poses, score], dim=3)
         # self.pose_nms(heatmaps, poses_w_scores)
 
         if self.unique_bodyparts:
@@ -339,7 +377,7 @@ class DEKRPredictor(BasePredictor):
         """Get heat values for pose coordinates and heatmaps.
 
         Args:
-            pose_coords: Pose coordinates tensor (batch_size, num_people, num_joints, 2)
+            pose_coords: Pose coordinates tensor (batch_size, num_animals, num_joints, 2)
             heatmaps: Heatmaps tensor (batch_size, 1+num_joints, h, w).
 
         Returns:
@@ -354,13 +392,12 @@ class DEKRPredictor(BasePredictor):
             2, 3
         )  # (batch_size, num_joints, h*w)
 
-        # Predicted poses based on the offset can be outsied of the image
-        y = torch.clamp(torch.floor(pose_coords[:, :, :, 1]), 0, h - 1).long()
+        # Predicted poses based on the offset can be outside of the image
         x = torch.clamp(torch.floor(pose_coords[:, :, :, 0]), 0, w - 1).long()
-
-        heatvals = torch.gather(heatmaps_nocenter, 2, y * w + x)
-
-        return heatvals
+        y = torch.clamp(torch.floor(pose_coords[:, :, :, 1]), 0, h - 1).long()
+        keypoint_poses = (y * w + x).mT  # (batch, num_joints, num_individuals)
+        heatscores = torch.gather(heatmaps_nocenter, 2, keypoint_poses)
+        return heatscores.mT  # (batch, num_individuals, num_joints)
 
     def pose_nms(self, heatmaps: torch.Tensor, poses: torch.Tensor):
         """Non-Maximum Suppression (NMS) for regressed poses.
