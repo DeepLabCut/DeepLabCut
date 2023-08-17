@@ -729,7 +729,6 @@ def create_training_dataset(
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
-    superanimal_name = ""
 ):
     """Creates a training dataset.
 
@@ -794,10 +793,6 @@ def create_training_dataset(
         ``pose_cfg.yaml``.
 
 
-    superanimal_name: string, optional, default = ""
-
-    if specified and valid, use the corresponding pose config for superanimal
-
     Returns
     -------
     list(tuple) or None
@@ -840,26 +835,6 @@ def create_training_dataset(
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
 
-
-    if superanimal_name !="":
-        from deeplabcut.modelzoo.utils import parse_available_supermodels
-        from dlclibrary.dlcmodelzoo.modelzoo_download import (
-            download_huggingface_model,
-            MODELOPTIONS,
-        )
-        net_type = "resnet_50"
-        dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()        
-        if superanimal_name in MODELOPTIONS:
-            supermodels = parse_available_supermodels()
-
-            posecfg_template  =   os.path.join(
-                    dlc_root_path,
-                    "pose_estimation_tensorflow",
-                    "superanimal_configs",
-                    supermodels[superanimal_name],
-                )
-            
-    
     if posecfg_template:
         if not posecfg_template.endswith("pose_cfg.yaml") and not posecfg_template.endswith("superquadruped.yaml") and not posecfg_template.endswith("supertopview.yaml"):
             raise ValueError(
