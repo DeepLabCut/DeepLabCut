@@ -1,10 +1,23 @@
-ARG CUDA_VERSION=11.4.0-cudnn8-runtime-ubuntu20.04
-ARG DEEPLABCUT_VERSION=2.2.1.1
-FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-gui-cuda${CUDA_VERSION}
+ARG CUDA_VERSION
+ARG DEEPLABCUT_VERSION
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}
 
-RUN pip install --no-cache-dir jupyter
-COPY ./examples /app/examples
-CMD ["jupyter", "notebook", \
-     "--no-browser", \
-     "--NotebookApp.password", "sha3_224:019dc9326f7c:689d6c568f840f6126fb438ba0cdb8ce94ddd0769399e152caf79931", \
-     "--ip", "0.0.0.0" ]
+RUN pip3 install --no-cache-dir \
+        notebook==6.4.12 \
+        && pip3 list
+
+ENV PYTHONPATH "${PYTHONPATH}:/usr/lib/python3"
+
+ARG USER=docker_user
+RUN useradd -m ${USER} \
+    && cp /root/.bashrc /home/${USER}/ \
+    && mkdir /app /data /codebase \
+    && chown -R --from=root ${USER} /home/${SUSER} \
+                                /app /data /codebase
+ENV HOME /home/${USER}
+WORKDIR ${HOME}
+USER ${USER}
+
+RUN jupyter notebook --generate-config
+EXPOSE 8888
+ENTRYPOINT ["jupyter", "notebook", "--no-browser",  "--ip", "0.0.0.0"]
