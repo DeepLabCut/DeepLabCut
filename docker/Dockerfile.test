@@ -1,6 +1,6 @@
-ARG CUDA_VERSION=11.4.0-cudnn8-runtime-ubuntu20.04
-ARG DEEPLABCUT_VERSION=2.2.1.1
-FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}
+ARG CUDA_VERSION
+ARG DEEPLABCUT_VERSION
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}-latest
 
 RUN mkdir test/
 WORKDIR test

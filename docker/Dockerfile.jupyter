@@ -1,6 +1,6 @@
 ARG CUDA_VERSION
 ARG DEEPLABCUT_VERSION
-FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}-latest
 
 RUN pip3 install --no-cache-dir \
         notebook==6.4.12 \

@@ -118,9 +118,8 @@ for arg in "$@"; do
 		iterate_build_matrix push |
 			grep -v '\-test\-' |
 			tr '\n' '\0' |
-			xargs -I@ -0 bash -c "echo docker push @-latest; \
-				docker tag @ @-latest; \
-				docker push @-latest; \
+			xargs -I@ -0 bash -c "echo docker push @; \
+				docker push @; \
 				docker image rm @ |& grep -v 'No such image'"
 		;;
 	*)
