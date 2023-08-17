@@ -129,7 +129,7 @@ def train_network(
         By default, the models are assumed to exist in the project folder.
 
     superanimal_name: str, optional, default =""
-        Specified if suepranimal fine-tuning is needed
+        Specified if superanimal fine-tuning is needed
 
     Returns
     -------
