@@ -5,7 +5,7 @@ ARG DEEPLABCUT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -yy \ 
-    && apt-get install -yy --no-install-recommends python3.8 python3-pip python3-dev ffmpeg libsm6 libxext6 \
+    && apt-get install -yy --no-install-recommends python3.9 python3-pip python3-dev ffmpeg libsm6 libxext6 \
     && apt-get install -yy --no-install-recommends build-essential make cmake gcc g++ \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

@@ -48,11 +48,11 @@ export -f run_test
 # Iterate through build matrix and perform actions
 iterate_build_matrix() {
 	## TODO(stes): Consider adding legacy versions for CUDA
-	## if there is demand from users:
-
+	## if there is demand from users:	
+	#11.4.3-cudnn8-runtime-ubuntu20.04
 	mode=${1:-build}
 	for cuda_version in \
-		11.4.3-cudnn8-runtime-ubuntu20.04; do
+		11.7.1-cudnn8-runtime-ubuntu20.04; do
 		for deeplabcut_version in \
 			2.3.5; do #2.3.2 \
 			for stage in \
