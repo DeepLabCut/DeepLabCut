@@ -4,29 +4,31 @@ FROM nvidia/cuda:${CUDA_VERSION}
 ARG DEEPLABCUT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -yy \ 
-    && apt-get install -yy --no-install-recommends python3.9 python3-pip python3-dev ffmpeg libsm6 libxext6 \
-    && apt-get install -yy --no-install-recommends build-essential make cmake gcc g++ \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+ARG PYTHON_VERSION=3.8
+RUN apt-get update -yy && \
+    apt-get install -yy --no-install-recommends python${PYTHON_VERSION} python3-pip ffmpeg libsm6 libxext6 && \
+    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
+    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
+    ln -s -f /usr/bin/pip3 /usr/bin/pip && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 RUN pip3 install --upgrade \
 		deeplabcut==${DEEPLABCUT_VERSION} \
 		decorator==4.4.2 \ 
 		tensorflow==2.5.0 \
 		torch==1.12 \
-		numpy==1.21 \
+		numpy==1.21.6 \
 	&& pip3 list
 
 # The installed tensorflow version will not work with the latest protocol buffer version,
 # hence we are fixing the version to 3.20.
-#
 # See https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
-# for details on why this is needed.
+# for details on why this is needed. (re: Aug 21: retested, still required)
 RUN pip3 install protobuf==3.20.1
 
 # TODO required to fix permission errors when running the container with limited permission.
-RUN chmod a+rwx -R /usr/local/lib/python3.8/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained
+RUN chmod a+rwx -R /usr/local/lib/python${PYTHON_VERSION}/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained
 
 ENV CUDA_VERSION=${CUDA_VERSION}
 ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}

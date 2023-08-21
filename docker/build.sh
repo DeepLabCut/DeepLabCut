@@ -50,9 +50,10 @@ iterate_build_matrix() {
 	## TODO(stes): Consider adding legacy versions for CUDA
 	## if there is demand from users:	
 	#11.4.3-cudnn8-runtime-ubuntu20.04
+	#11.7.1-cudnn8-runtime-ubuntu20.04
 	mode=${1:-build}
 	for cuda_version in \
-		11.7.1-cudnn8-runtime-ubuntu20.04; do
+		11.4.3-cudnn8-runtime-ubuntu20.04; do
 		for deeplabcut_version in \
 			2.3.5; do #2.3.2 \
 			for stage in \
@@ -65,6 +66,8 @@ iterate_build_matrix() {
 						--build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
 						"--tag=${BASENAME}:$tag" \
 						-f "Dockerfile.${stage}" \.
+
+						# --no-cache \
 					;;
 				push | clean | test)
 					echo ${BASENAME}:${tag}
@@ -84,6 +87,12 @@ githash() {
 mkdir -p logs
 logfile=logs/$(date +%y%m%d-%H%M%S)-$(githash)
 echo "Logging to $logdir.*"
+
+if [ $# -eq 0 ]; then
+    echo "Help: Provide arguments to this script."
+    echo "Usage: $0 [build|test|push]"
+    exit 1
+fi
 
 # Iterate through command line arguments
 for arg in "$@"; do
