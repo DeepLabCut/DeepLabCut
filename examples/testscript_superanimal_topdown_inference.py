@@ -25,8 +25,10 @@ if __name__ == "__main__":
     det_config_path = os.path.join(relative_root, 'det_config_SA_quadruped.py')
     det_checkpoint = '/mnt/md0/shaokai/mmdetection/work_dirs/faster_rcnn_r50_fpn_1x_quadruped/epoch_80.pth'
 
-    pose_config = os.path.join(relative_root, 'hrnet_pose_config_SA_quadruped.py')
-    pose_checkpoint = os.path.join(relative_root, 'work_dirs/hrnet_w32_quadruped_256x256_splitD/latest.pth')
+    #pose_config = os.path.join(relative_root, 'hrnet_pose_config_SA_quadruped.py')
+    pose_config = os.path.join(relative_root, 'tokenpose_pose_config_SA_quadruped.py')
+    #pose_checkpoint = os.path.join(relative_root, 'work_dirs/hrnet_w32_quadruped_256x256_splitD/latest.pth')
+    pose_checkpoint = os.path.join(relative_root, 'work_dirs/Tokenpose_L_quadruped_256x256_data_split_D/latest.pth')
         
     deeplabcut.superanimal_pytorch.topdown_video_inference(
         video_path,
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         det_checkpoint,
         pose_config, 
         pose_checkpoint,
-        video_adapt = True,
+        video_adapt = False,
         device = 'cpu',
         kpt_threshold = 0.6,
         videotype = '.mp4',
