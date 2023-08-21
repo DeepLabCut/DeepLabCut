@@ -2,7 +2,7 @@
 from mmcv.runner import build_optimizer
 from mmcv.utils import Registry
 
-OPTIMIZERS = Registry('optimizers')
+OPTIMIZERS = Registry("optimizers")
 
 
 def build_optimizers(model, cfgs):
@@ -43,7 +43,7 @@ def build_optimizers(model, cfgs):
             The initialized optimizers.
     """
     optimizers = {}
-    if hasattr(model, 'module'):
+    if hasattr(model, "module"):
         model = model.module
     # determine whether 'cfgs' has several dicts for optimizers
     if all(isinstance(v, dict) for v in cfgs.values()):

@@ -11,14 +11,8 @@ class DistributedSampler(_DistributedSampler):
     class will port one to DistributedSampler.
     """
 
-    def __init__(self,
-                 dataset,
-                 num_replicas=None,
-                 rank=None,
-                 shuffle=True,
-                 seed=0):
-        super().__init__(
-            dataset, num_replicas=num_replicas, rank=rank, shuffle=shuffle)
+    def __init__(self, dataset, num_replicas=None, rank=None, shuffle=True, seed=0):
+        super().__init__(dataset, num_replicas=num_replicas, rank=rank, shuffle=shuffle)
         # for the compatibility from PyTorch 1.3+
         self.seed = seed if seed is not None else 0
 
@@ -32,10 +26,10 @@ class DistributedSampler(_DistributedSampler):
             indices = torch.arange(len(self.dataset)).tolist()
 
         # add extra samples to make it evenly divisible
-        indices += indices[:(self.total_size - len(indices))]
+        indices += indices[: (self.total_size - len(indices))]
         assert len(indices) == self.total_size
 
         # subsample
-        indices = indices[self.rank:self.total_size:self.num_replicas]
+        indices = indices[self.rank : self.total_size : self.num_replicas]
         assert len(indices) == self.num_samples
         return iter(indices)

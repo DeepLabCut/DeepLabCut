@@ -53,7 +53,7 @@ class TopdownHeatmapBaseHead(nn.Module):
         """
         batch_size = len(img_metas)
 
-        if 'bbox_id' in img_metas[0]:
+        if "bbox_id" in img_metas[0]:
             bbox_ids = []
         else:
             bbox_ids = None
@@ -63,26 +63,26 @@ class TopdownHeatmapBaseHead(nn.Module):
         image_paths = []
         score = np.ones(batch_size)
         for i in range(batch_size):
-            c[i, :] = img_metas[i]['center']
-            s[i, :] = img_metas[i]['scale']
-            image_paths.append(img_metas[i]['image_file'])
+            c[i, :] = img_metas[i]["center"]
+            s[i, :] = img_metas[i]["scale"]
+            image_paths.append(img_metas[i]["image_file"])
 
-            if 'bbox_score' in img_metas[i]:
-                score[i] = np.array(img_metas[i]['bbox_score']).reshape(-1)
+            if "bbox_score" in img_metas[i]:
+                score[i] = np.array(img_metas[i]["bbox_score"]).reshape(-1)
             if bbox_ids is not None:
-                bbox_ids.append(img_metas[i]['bbox_id'])
+                bbox_ids.append(img_metas[i]["bbox_id"])
 
         preds, maxvals = keypoints_from_heatmaps(
             output,
             c,
             s,
-            unbiased=self.test_cfg.get('unbiased_decoding', False),
-            post_process=self.test_cfg.get('post_process', 'default'),
-            kernel=self.test_cfg.get('modulate_kernel', 11),
-            valid_radius_factor=self.test_cfg.get('valid_radius_factor',
-                                                  0.0546875),
-            use_udp=self.test_cfg.get('use_udp', False),
-            target_type=self.test_cfg.get('target_type', 'GaussianHeatmap'))
+            unbiased=self.test_cfg.get("unbiased_decoding", False),
+            post_process=self.test_cfg.get("post_process", "default"),
+            kernel=self.test_cfg.get("modulate_kernel", 11),
+            valid_radius_factor=self.test_cfg.get("valid_radius_factor", 0.0546875),
+            use_udp=self.test_cfg.get("use_udp", False),
+            target_type=self.test_cfg.get("target_type", "GaussianHeatmap"),
+        )
 
         all_preds = np.zeros((batch_size, preds.shape[1], 3), dtype=np.float32)
         all_boxes = np.zeros((batch_size, 6), dtype=np.float32)
@@ -95,10 +95,10 @@ class TopdownHeatmapBaseHead(nn.Module):
 
         result = {}
 
-        result['preds'] = all_preds
-        result['boxes'] = all_boxes
-        result['image_paths'] = image_paths
-        result['bbox_ids'] = bbox_ids
+        result["preds"] = all_preds
+        result["boxes"] = all_boxes
+        result["image_paths"] = image_paths
+        result["bbox_ids"] = bbox_ids
 
         return result
 
@@ -115,6 +115,6 @@ class TopdownHeatmapBaseHead(nn.Module):
             padding = 0
             output_padding = 0
         else:
-            raise ValueError(f'Not supported num_kernels ({deconv_kernel}).')
+            raise ValueError(f"Not supported num_kernels ({deconv_kernel}).")
 
         return deconv_kernel, padding, output_padding

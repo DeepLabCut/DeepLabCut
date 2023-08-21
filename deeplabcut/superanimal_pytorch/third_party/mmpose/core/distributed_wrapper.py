@@ -47,18 +47,21 @@ class DistributedDataParallelWrapper(nn.Module):
             `torch.nn.parallel.distributed.DistributedDataParallel`.
     """
 
-    def __init__(self,
-                 module,
-                 device_ids,
-                 dim=0,
-                 broadcast_buffers=False,
-                 find_unused_parameters=False,
-                 **kwargs):
+    def __init__(
+        self,
+        module,
+        device_ids,
+        dim=0,
+        broadcast_buffers=False,
+        find_unused_parameters=False,
+        **kwargs,
+    ):
         super().__init__()
         assert len(device_ids) == 1, (
-            'Currently, DistributedDataParallelWrapper only supports one'
-            'single CUDA device for each process.'
-            f'The length of device_ids must be 1, but got {len(device_ids)}.')
+            "Currently, DistributedDataParallelWrapper only supports one"
+            "single CUDA device for each process."
+            f"The length of device_ids must be 1, but got {len(device_ids)}."
+        )
         self.module = module
         self.dim = dim
         self.to_ddp(
@@ -66,11 +69,13 @@ class DistributedDataParallelWrapper(nn.Module):
             dim=dim,
             broadcast_buffers=broadcast_buffers,
             find_unused_parameters=find_unused_parameters,
-            **kwargs)
+            **kwargs,
+        )
         self.output_device = _get_device_index(device_ids[0], True)
 
-    def to_ddp(self, device_ids, dim, broadcast_buffers,
-               find_unused_parameters, **kwargs):
+    def to_ddp(
+        self, device_ids, dim, broadcast_buffers, find_unused_parameters, **kwargs
+    ):
         """Wrap models with separate MMDistributedDataParallel.
 
         It only wraps the modules with parameters.
@@ -87,7 +92,8 @@ class DistributedDataParallelWrapper(nn.Module):
                     dim=dim,
                     broadcast_buffers=broadcast_buffers,
                     find_unused_parameters=find_unused_parameters,
-                    **kwargs)
+                    **kwargs,
+                )
             self.module._modules[name] = module
 
     def scatter(self, inputs, kwargs, device_ids):
@@ -109,8 +115,7 @@ class DistributedDataParallelWrapper(nn.Module):
             kwargs (dict): Args for
                 ``mmcv.parallel.scatter_gather.scatter_kwargs``.
         """
-        inputs, kwargs = self.scatter(inputs, kwargs,
-                                      [torch.cuda.current_device()])
+        inputs, kwargs = self.scatter(inputs, kwargs, [torch.cuda.current_device()])
         return self.module(*inputs[0], **kwargs[0])
 
     def train_step(self, *inputs, **kwargs):
@@ -121,8 +126,7 @@ class DistributedDataParallelWrapper(nn.Module):
             kwargs (dict): Args for
                 ``mmcv.parallel.scatter_gather.scatter_kwargs``.
         """
-        inputs, kwargs = self.scatter(inputs, kwargs,
-                                      [torch.cuda.current_device()])
+        inputs, kwargs = self.scatter(inputs, kwargs, [torch.cuda.current_device()])
         output = self.module.train_step(*inputs[0], **kwargs[0])
         return output
 
@@ -133,7 +137,6 @@ class DistributedDataParallelWrapper(nn.Module):
             inputs (tuple): Input data.
             kwargs (dict): Args for ``scatter_kwargs``.
         """
-        inputs, kwargs = self.scatter(inputs, kwargs,
-                                      [torch.cuda.current_device()])
+        inputs, kwargs = self.scatter(inputs, kwargs, [torch.cuda.current_device()])
         output = self.module.val_step(*inputs[0], **kwargs[0])
         return output

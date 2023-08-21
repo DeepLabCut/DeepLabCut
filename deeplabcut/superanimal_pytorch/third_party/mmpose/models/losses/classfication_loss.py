@@ -9,7 +9,7 @@ from ..builder import LOSSES
 class BCELoss(nn.Module):
     """Binary Cross Entropy loss."""
 
-    def __init__(self, use_target_weight=False, loss_weight=1.):
+    def __init__(self, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.criterion = F.binary_cross_entropy
         self.use_target_weight = use_target_weight
@@ -31,7 +31,7 @@ class BCELoss(nn.Module):
 
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output, target, reduction='none')
+            loss = self.criterion(output, target, reduction="none")
             if target_weight.dim() == 1:
                 target_weight = target_weight[:, None]
             loss = (loss * target_weight).mean()

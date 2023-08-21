@@ -2,8 +2,7 @@
 from collections import OrderedDict
 
 import torch.distributed as dist
-from torch._utils import (_flatten_dense_tensors, _take_tensors,
-                          _unflatten_dense_tensors)
+from torch._utils import _flatten_dense_tensors, _take_tensors, _unflatten_dense_tensors
 
 
 def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
@@ -25,7 +24,8 @@ def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
         dist.all_reduce(flat_tensors)
         flat_tensors.div_(world_size)
         for tensor, synced in zip(
-                bucket, _unflatten_dense_tensors(flat_tensors, bucket)):
+            bucket, _unflatten_dense_tensors(flat_tensors, bucket)
+        ):
             tensor.copy_(synced)
 
 
@@ -40,7 +40,8 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
             Default: -1.
     """
     grads = [
-        param.grad.data for param in params
+        param.grad.data
+        for param in params
         if param.requires_grad and param.grad is not None
     ]
     world_size = dist.get_world_size()

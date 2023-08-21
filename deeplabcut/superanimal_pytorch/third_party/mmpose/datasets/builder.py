@@ -11,17 +11,18 @@ from mmcv.utils.parrots_wrapper import _get_dataloader
 
 from .samplers import DistributedSampler
 
-if platform.system() != 'Windows':
+if platform.system() != "Windows":
     # https://github.com/pytorch/pytorch/issues/973
     import resource
+
     rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
     base_soft_limit = rlimit[0]
     hard_limit = rlimit[1]
     soft_limit = min(max(4096, base_soft_limit), hard_limit)
     resource.setrlimit(resource.RLIMIT_NOFILE, (soft_limit, hard_limit))
 
-DATASETS = Registry('dataset')
-PIPELINES = Registry('pipeline')
+DATASETS = Registry("dataset")
+PIPELINES = Registry("pipeline")
 
 
 def build_dataset(cfg, default_args=None):
@@ -37,24 +38,27 @@ def build_dataset(cfg, default_args=None):
     """
     from .dataset_wrappers import RepeatDataset
 
-    if cfg['type'] == 'RepeatDataset':
+    if cfg["type"] == "RepeatDataset":
         dataset = RepeatDataset(
-            build_dataset(cfg['dataset'], default_args), cfg['times'])
+            build_dataset(cfg["dataset"], default_args), cfg["times"]
+        )
     else:
         dataset = build_from_cfg(cfg, DATASETS, default_args)
     return dataset
 
 
-def build_dataloader(dataset,
-                     samples_per_gpu,
-                     workers_per_gpu,
-                     num_gpus=1,
-                     dist=True,
-                     shuffle=True,
-                     seed=None,
-                     drop_last=True,
-                     pin_memory=True,
-                     **kwargs):
+def build_dataloader(
+    dataset,
+    samples_per_gpu,
+    workers_per_gpu,
+    num_gpus=1,
+    dist=True,
+    shuffle=True,
+    seed=None,
+    drop_last=True,
+    pin_memory=True,
+    **kwargs
+):
     """Build PyTorch DataLoader.
 
     In distributed training, each GPU/process has a dataloader.
@@ -82,7 +86,8 @@ def build_dataloader(dataset,
     rank, world_size = get_dist_info()
     if dist:
         sampler = DistributedSampler(
-            dataset, world_size, rank, shuffle=shuffle, seed=seed)
+            dataset, world_size, rank, shuffle=shuffle, seed=seed
+        )
         shuffle = False
         batch_size = samples_per_gpu
         num_workers = workers_per_gpu
@@ -91,14 +96,14 @@ def build_dataloader(dataset,
         batch_size = num_gpus * samples_per_gpu
         num_workers = num_gpus * workers_per_gpu
 
-    init_fn = partial(
-        worker_init_fn, num_workers=num_workers, rank=rank,
-        seed=seed) if seed is not None else None
+    init_fn = (
+        partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed)
+        if seed is not None
+        else None
+    )
 
     _, DataLoader = _get_dataloader()
 
-
-    
     data_loader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -109,8 +114,8 @@ def build_dataloader(dataset,
         shuffle=shuffle,
         worker_init_fn=init_fn,
         drop_last=drop_last,
-        **kwargs)
-
+        **kwargs
+    )
 
     return data_loader
 

@@ -12,29 +12,33 @@ from mmcv.visualization.color import color_val
 
 try:
     import trimesh
+
     has_trimesh = True
 except (ImportError, ModuleNotFoundError):
     has_trimesh = False
 
 try:
-    os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+    os.environ["PYOPENGL_PLATFORM"] = "osmesa"
     import pyrender
+
     has_pyrender = True
 except (ImportError, ModuleNotFoundError):
     has_pyrender = False
 
 
-def imshow_bboxes(img,
-                  bboxes,
-                  labels=None,
-                  colors='green',
-                  text_color='white',
-                  thickness=1,
-                  font_scale=0.5,
-                  show=True,
-                  win_name='',
-                  wait_time=0,
-                  out_file=None):
+def imshow_bboxes(
+    img,
+    bboxes,
+    labels=None,
+    colors="green",
+    text_color="white",
+    thickness=1,
+    font_scale=0.5,
+    show=True,
+    win_name="",
+    wait_time=0,
+    out_file=None,
+):
     """Draw bboxes with labels (optional) on an image. This is a wrapper of
     mmcv.imshow_bboxes.
 
@@ -57,21 +61,15 @@ def imshow_bboxes(img,
     """
 
     # adapt to mmcv.imshow_bboxes input format
-    bboxes = np.split(
-        bboxes, bboxes.shape[0], axis=0) if bboxes.shape[0] > 0 else []
+    bboxes = np.split(bboxes, bboxes.shape[0], axis=0) if bboxes.shape[0] > 0 else []
     if not isinstance(colors, list):
         colors = [colors for _ in range(len(bboxes))]
     colors = [mmcv.color_val(c) for c in colors]
     assert len(bboxes) == len(colors)
 
     img = mmcv.imshow_bboxes(
-        img,
-        bboxes,
-        colors,
-        top_k=-1,
-        thickness=thickness,
-        show=False,
-        out_file=None)
+        img, bboxes, colors, top_k=-1, thickness=thickness, show=False, out_file=None
+    )
 
     if labels is not None:
         if not isinstance(labels, list):
@@ -83,18 +81,25 @@ def imshow_bboxes(img,
                 continue
             bbox_int = bbox[0, :4].astype(np.int32)
             # roughly estimate the proper font size
-            text_size, text_baseline = cv2.getTextSize(label,
-                                                       cv2.FONT_HERSHEY_DUPLEX,
-                                                       font_scale, thickness)
+            text_size, text_baseline = cv2.getTextSize(
+                label, cv2.FONT_HERSHEY_DUPLEX, font_scale, thickness
+            )
             text_x1 = bbox_int[0]
             text_y1 = max(0, bbox_int[1] - text_size[1] - text_baseline)
             text_x2 = bbox_int[0] + text_size[0]
             text_y2 = text_y1 + text_size[1] + text_baseline
-            cv2.rectangle(img, (text_x1, text_y1), (text_x2, text_y2), color,
-                          cv2.FILLED)
-            cv2.putText(img, label, (text_x1, text_y2 - text_baseline),
-                        cv2.FONT_HERSHEY_DUPLEX, font_scale,
-                        mmcv.color_val(text_color), thickness)
+            cv2.rectangle(
+                img, (text_x1, text_y1), (text_x2, text_y2), color, cv2.FILLED
+            )
+            cv2.putText(
+                img,
+                label,
+                (text_x1, text_y2 - text_baseline),
+                cv2.FONT_HERSHEY_DUPLEX,
+                font_scale,
+                mmcv.color_val(text_color),
+                thickness,
+            )
 
     if show:
         mmcv.imshow(img, win_name, wait_time)
@@ -103,17 +108,19 @@ def imshow_bboxes(img,
     return img
 
 
-@deprecated_api_warning({'pose_limb_color': 'pose_link_color'})
-def imshow_keypoints(img,
-                     pose_result,
-                     skeleton=None,
-                     kpt_score_thr=0.3,
-                     pose_kpt_color=None,
-                     pose_link_color=None,
-                     radius=1,
-                     thickness=1,
-                     draw_gt=False,
-                     show_keypoint_weight=False):
+@deprecated_api_warning({"pose_limb_color": "pose_link_color"})
+def imshow_keypoints(
+    img,
+    pose_result,
+    skeleton=None,
+    kpt_score_thr=0.3,
+    pose_kpt_color=None,
+    pose_link_color=None,
+    radius=1,
+    thickness=1,
+    draw_gt=False,
+    show_keypoint_weight=False,
+):
     """Draw keypoints and links on an image.
 
     Args:
@@ -134,18 +141,18 @@ def imshow_keypoints(img,
     img = mmcv.imread(img)
     img_h, img_w, _ = img.shape
 
-    for i,kpts in enumerate(pose_result):
+    for i, kpts in enumerate(pose_result):
 
         kpts = np.array(kpts, copy=False)
 
         # draw each point on image
         if pose_kpt_color is not None:
 
-            if not isinstance(pose_kpt_color,list):
+            if not isinstance(pose_kpt_color, list):
                 pose_kpt_color = [pose_kpt_color] * len(pose_result)
-            
+
             assert len(pose_kpt_color[i]) == len(kpts)
-            
+
             for kid, kpt in enumerate(kpts):
                 x_coord, y_coord, kpt_score = int(kpt[0]), int(kpt[1]), kpt[2]
                 if kpt_score > kpt_score_thr:
@@ -153,26 +160,32 @@ def imshow_keypoints(img,
                         img_copy = img.copy()
                         r, g, b = pose_kpt_color[i][kid]
 
-                        cv2.circle(img_copy, (int(x_coord), int(y_coord)),
-                                   radius, (int(r), int(g), int(b)), -1)
+                        cv2.circle(
+                            img_copy,
+                            (int(x_coord), int(y_coord)),
+                            radius,
+                            (int(r), int(g), int(b)),
+                            -1,
+                        )
 
                         transparency = max(0, min(1, kpt_score))
                         cv2.addWeighted(
-                            img_copy,
-                            transparency,
-                            img,
-                            1 - transparency,
-                            0,
-                            dst=img)
+                            img_copy, transparency, img, 1 - transparency, 0, dst=img
+                        )
                     else:
                         r, g, b = pose_kpt_color[i][kid]
                         if not draw_gt:
 
-                            #kpts_names = ['nose', 'upper_jaw', 'lower_jaw', 'mouth_end_right', 'mouth_end_left', 'right_eye', 'right_earbase', 'right_earend', 'right_antler_base', 'right_antler_end', 'left_eye', 'left_earbase', 'left_earend', 'left_antler_base', 'left_antler_end', 'neck_base', 'neck_end', 'throat_base', 'throat_end', 'back_base', 'back_end', 'back_middle', 'tail_base', 'tail_end', 'front_left_thai', 'front_left_knee', 'front_left_paw', 'front_right_thai', 'front_right_knee', 'front_right_paw', 'back_left_paw', 'back_left_thai', 'back_right_thai', 'back_left_knee', 'back_right_knee', 'back_right_paw', 'belly_bottom', 'body_middle_right', 'body_middle_left']
-                            #text = kpts_names[kid]
-                                                        
-                            cv2.circle(img, (int(x_coord), int(y_coord)), radius,
-                                       (int(r), int(g), int(b)), -1)
+                            # kpts_names = ['nose', 'upper_jaw', 'lower_jaw', 'mouth_end_right', 'mouth_end_left', 'right_eye', 'right_earbase', 'right_earend', 'right_antler_base', 'right_antler_end', 'left_eye', 'left_earbase', 'left_earend', 'left_antler_base', 'left_antler_end', 'neck_base', 'neck_end', 'throat_base', 'throat_end', 'back_base', 'back_end', 'back_middle', 'tail_base', 'tail_end', 'front_left_thai', 'front_left_knee', 'front_left_paw', 'front_right_thai', 'front_right_knee', 'front_right_paw', 'back_left_paw', 'back_left_thai', 'back_right_thai', 'back_left_knee', 'back_right_knee', 'back_right_paw', 'belly_bottom', 'body_middle_right', 'body_middle_left']
+                            # text = kpts_names[kid]
+
+                            cv2.circle(
+                                img,
+                                (int(x_coord), int(y_coord)),
+                                radius,
+                                (int(r), int(g), int(b)),
+                                -1,
+                            )
                             fontFace = cv2.FONT_HERSHEY_SIMPLEX
                             fontScale = 1
                             color = (0, 0, 255)  # Red color in BGR format
@@ -180,24 +193,36 @@ def imshow_keypoints(img,
                             lineType = cv2.LINE_AA
 
                             # Coordinates for the bottom-left corner of the text
-                            #cv2.putText(img, text, (int(x_coord), int(y_coord)), fontFace, fontScale, color, thickness, lineType)
+                            # cv2.putText(img, text, (int(x_coord), int(y_coord)), fontFace, fontScale, color, thickness, lineType)
                             # Draw the text on the image
 
                         else:
 
-                            cv2.drawMarker(img, (int(x_coord), int(y_coord)),
-                                           (int(r), int(g), int(b)), markerType=cv2.MARKER_CROSS,thickness=2)
+                            cv2.drawMarker(
+                                img,
+                                (int(x_coord), int(y_coord)),
+                                (int(r), int(g), int(b)),
+                                markerType=cv2.MARKER_CROSS,
+                                thickness=2,
+                            )
         # draw links
         if skeleton is not None and pose_link_color is not None and not draw_gt:
             assert len(pose_link_color) == len(skeleton)
             for sk_id, sk in enumerate(skeleton):
                 pos1 = (int(kpts[sk[0], 0]), int(kpts[sk[0], 1]))
                 pos2 = (int(kpts[sk[1], 0]), int(kpts[sk[1], 1]))
-                if (pos1[0] > 0 and pos1[0] < img_w and pos1[1] > 0
-                        and pos1[1] < img_h and pos2[0] > 0 and pos2[0] < img_w
-                        and pos2[1] > 0 and pos2[1] < img_h
-                        and kpts[sk[0], 2] > kpt_score_thr
-                        and kpts[sk[1], 2] > kpt_score_thr):
+                if (
+                    pos1[0] > 0
+                    and pos1[0] < img_w
+                    and pos1[1] > 0
+                    and pos1[1] < img_h
+                    and pos2[0] > 0
+                    and pos2[0] < img_w
+                    and pos2[1] > 0
+                    and pos2[1] < img_h
+                    and kpts[sk[0], 2] > kpt_score_thr
+                    and kpts[sk[1], 2] > kpt_score_thr
+                ):
                     r, g, b = pose_link_color[sk_id]
                     if show_keypoint_weight:
                         img_copy = img.copy()
@@ -205,33 +230,27 @@ def imshow_keypoints(img,
                         Y = (pos1[1], pos2[1])
                         mX = np.mean(X)
                         mY = np.mean(Y)
-                        length = ((Y[0] - Y[1])**2 + (X[0] - X[1])**2)**0.5
-                        angle = math.degrees(
-                            math.atan2(Y[0] - Y[1], X[0] - X[1]))
+                        length = ((Y[0] - Y[1]) ** 2 + (X[0] - X[1]) ** 2) ** 0.5
+                        angle = math.degrees(math.atan2(Y[0] - Y[1], X[0] - X[1]))
                         stickwidth = 2
                         polygon = cv2.ellipse2Poly(
                             (int(mX), int(mY)),
-                            (int(length / 2), int(stickwidth)), int(angle), 0,
-                            360, 1)
-                        cv2.fillConvexPoly(img_copy, polygon,
-                                           (int(r), int(g), int(b)))
-                        transparency = max(
-                            0, min(1, 0.5 * (kpts[sk[0], 2] + kpts[sk[1], 2])))
-                        cv2.addWeighted(
-                            img_copy,
-                            transparency,
-                            img,
-                            1 - transparency,
+                            (int(length / 2), int(stickwidth)),
+                            int(angle),
                             0,
-                            dst=img)
+                            360,
+                            1,
+                        )
+                        cv2.fillConvexPoly(img_copy, polygon, (int(r), int(g), int(b)))
+                        transparency = max(
+                            0, min(1, 0.5 * (kpts[sk[0], 2] + kpts[sk[1], 2]))
+                        )
+                        cv2.addWeighted(
+                            img_copy, transparency, img, 1 - transparency, 0, dst=img
+                        )
                     else:
 
-                        cv2.line(
-                            img,
-                            pos1,
-                            pos2, (int(r), int(g), int(b)),
-                            thickness=1)
-
+                        cv2.line(img, pos1, pos2, (int(r), int(g), int(b)), thickness=1)
 
     return img
 
@@ -302,7 +321,7 @@ def imshow_keypoints_3d(
     fig = plt.figure(figsize=(vis_height * num_axis * 0.01, vis_height * 0.01))
 
     if show_img:
-        img = mmcv.imread(img, channel_order='bgr')
+        img = mmcv.imread(img, channel_order="bgr")
         img = mmcv.bgr2rgb(img)
         img = mmcv.imrescale(img, scale=vis_height / img.shape[0])
 
@@ -310,18 +329,18 @@ def imshow_keypoints_3d(
         ax_img.get_xaxis().set_visible(False)
         ax_img.get_yaxis().set_visible(False)
         ax_img.set_axis_off()
-        ax_img.set_title('Input')
-        ax_img.imshow(img, aspect='equal')
+        ax_img.set_title("Input")
+        ax_img.imshow(img, aspect="equal")
 
     for idx, res in enumerate(pose_result):
         dummy = len(res) == 0
-        kpts = np.zeros((1, 3)) if dummy else res['keypoints_3d']
+        kpts = np.zeros((1, 3)) if dummy else res["keypoints_3d"]
         if kpts.shape[1] == 3:
             kpts = np.concatenate([kpts, np.ones((kpts.shape[0], 1))], axis=1)
         valid = kpts[:, 3] >= kpt_score_thr
 
         ax_idx = idx + 2 if show_img else idx + 1
-        ax = fig.add_subplot(1, num_axis, ax_idx, projection='3d')
+        ax = fig.add_subplot(1, num_axis, ax_idx, projection="3d")
         ax.view_init(
             elev=axis_elev,
             azim=axis_azimuth,
@@ -331,7 +350,7 @@ def imshow_keypoints_3d(
         ax.set_xlim3d([x_c - axis_limit / 2, x_c + axis_limit / 2])
         ax.set_ylim3d([y_c - axis_limit / 2, y_c + axis_limit / 2])
         ax.set_zlim3d([0, axis_limit])
-        ax.set_aspect('auto')
+        ax.set_aspect("auto")
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_zticks([])
@@ -345,12 +364,12 @@ def imshow_keypoints_3d(
             assert len(pose_kpt_color) == len(kpts)
             x_3d, y_3d, z_3d = np.split(kpts[:, :3], [1, 2], axis=1)
             # matplotlib uses RGB color in [0, 1] value range
-            _color = pose_kpt_color[..., ::-1] / 255.
+            _color = pose_kpt_color[..., ::-1] / 255.0
             ax.scatter(
                 x_3d[valid],
                 y_3d[valid],
                 z_3d[valid],
-                marker='o',
+                marker="o",
                 color=_color[valid],
             )
 
@@ -365,18 +384,19 @@ def imshow_keypoints_3d(
                 kpt_score = kpts[link_indices, 3]
                 if kpt_score.min() > kpt_score_thr:
                     # matplotlib uses RGB color in [0, 1] value range
-                    _color = link_color[::-1] / 255.
-                    ax.plot(xs_3d, ys_3d, zs_3d, color=_color, zdir='z')
+                    _color = link_color[::-1] / 255.0
+                    ax.plot(xs_3d, ys_3d, zs_3d, color=_color, zdir="z")
 
-        if 'title' in res:
-            ax.set_title(res['title'])
+        if "title" in res:
+            ax.set_title(res["title"])
 
     # convert figure to numpy array
     fig.tight_layout()
     fig.canvas.draw()
     img_w, img_h = fig.canvas.get_width_height()
-    img_vis = np.frombuffer(
-        fig.canvas.tostring_rgb(), dtype=np.uint8).reshape(img_h, img_w, -1)
+    img_vis = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8).reshape(
+        img_h, img_w, -1
+    )
     img_vis = mmcv.rgb2bgr(img_vis)
 
     plt.close(fig)
@@ -384,12 +404,9 @@ def imshow_keypoints_3d(
     return img_vis
 
 
-def imshow_mesh_3d(img,
-                   vertices,
-                   faces,
-                   camera_center,
-                   focal_length,
-                   colors=(76, 76, 204)):
+def imshow_mesh_3d(
+    img, vertices, faces, camera_center, focal_length, colors=(76, 76, 204)
+):
     """Render 3D meshes on background image.
 
     Args:
@@ -404,18 +421,17 @@ def imshow_mesh_3d(img,
     H, W, C = img.shape
 
     if not has_pyrender:
-        warnings.warn('pyrender package is not installed.')
+        warnings.warn("pyrender package is not installed.")
         return img
 
     if not has_trimesh:
-        warnings.warn('trimesh package is not installed.')
+        warnings.warn("trimesh package is not installed.")
         return img
 
     try:
-        renderer = pyrender.OffscreenRenderer(
-            viewport_width=W, viewport_height=H)
+        renderer = pyrender.OffscreenRenderer(viewport_width=W, viewport_height=H)
     except (ImportError, RuntimeError):
-        warnings.warn('pyrender package is not installed correctly.')
+        warnings.warn("pyrender package is not installed correctly.")
         return img
 
     if not isinstance(colors, list):
@@ -432,16 +448,16 @@ def imshow_mesh_3d(img,
         face = faces[idx]
 
         material = pyrender.MetallicRoughnessMaterial(
-            metallicFactor=0.2, alphaMode='OPAQUE', baseColorFactor=color)
+            metallicFactor=0.2, alphaMode="OPAQUE", baseColorFactor=color
+        )
 
         mesh = trimesh.Trimesh(vert, face)
-        rot = trimesh.transformations.rotation_matrix(
-            np.radians(180), [1, 0, 0])
+        rot = trimesh.transformations.rotation_matrix(np.radians(180), [1, 0, 0])
         mesh.apply_transform(rot)
         mesh = pyrender.Mesh.from_trimesh(mesh, material=material)
 
         scene = pyrender.Scene(ambient_light=(0.5, 0.5, 0.5))
-        scene.add(mesh, 'mesh')
+        scene.add(mesh, "mesh")
 
         camera_pose = np.eye(4)
         camera = pyrender.IntrinsicsCamera(
@@ -449,7 +465,8 @@ def imshow_mesh_3d(img,
             fy=focal_length[1],
             cx=camera_center[0],
             cy=camera_center[1],
-            zfar=1e5)
+            zfar=1e5,
+        )
         scene.add(camera, pose=camera_pose)
 
         light = pyrender.DirectionalLight(color=[1.0, 1.0, 1.0], intensity=1)
@@ -464,13 +481,11 @@ def imshow_mesh_3d(img,
         light_pose[:3, 3] = np.array([1, 1, 2])
         scene.add(light, pose=light_pose)
 
-        color, rend_depth = renderer.render(
-            scene, flags=pyrender.RenderFlags.RGBA)
+        color, rend_depth = renderer.render(scene, flags=pyrender.RenderFlags.RGBA)
 
         valid_mask = (rend_depth < depth_map) * (rend_depth > 0)
         depth_map[valid_mask] = rend_depth[valid_mask]
         valid_mask = valid_mask[:, :, None]
-        output_img = (
-            valid_mask * color[:, :, :3] + (1 - valid_mask) * output_img)
+        output_img = valid_mask * color[:, :, :3] + (1 - valid_mask) * output_img
 
     return output_img

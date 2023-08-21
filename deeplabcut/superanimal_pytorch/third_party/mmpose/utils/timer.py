@@ -33,7 +33,7 @@ class StopWatch:
         self._timer_stack = []
         self.window = window
 
-    def timeit(self, timer_name='_FPS_'):
+    def timeit(self, timer_name="_FPS_"):
         """Timing a code snippet with an assigned name.
 
         Args:
@@ -55,7 +55,7 @@ class StopWatch:
     def __exit__(self, exc_type, exc_value, trackback):
         timer_name, timer = self._timer_stack.pop()
         self._record[timer_name].append(timer.since_start())
-        self._record[timer_name] = self._record[timer_name][-self.window:]
+        self._record[timer_name] = self._record[timer_name][-self.window :]
 
     def report(self):
         """Report timing information.
@@ -64,10 +64,7 @@ class StopWatch:
             dict: The key is the timer name and the value is the \
                 corresponding average time consuming.
         """
-        result = {
-            name: np.mean(vals) * 1000.
-            for name, vals in self._record.items()
-        }
+        result = {name: np.mean(vals) * 1000.0 for name, vals in self._record.items()}
         return result
 
     def report_strings(self):
@@ -81,10 +78,10 @@ class StopWatch:
         """
         result = self.report()
         strings = []
-        if '_FPS_' in result:
-            fps = 1000. / result.pop('_FPS_')
-            strings.append(f'FPS: {fps:>5.1f}')
-        strings += [f'{name}: {val:>3.0f}' for name, val in result.items()]
+        if "_FPS_" in result:
+            fps = 1000.0 / result.pop("_FPS_")
+            strings.append(f"FPS: {fps:>5.1f}")
+        strings += [f"{name}: {val:>3.0f}" for name, val in result.items()]
         return strings
 
     def reset(self):

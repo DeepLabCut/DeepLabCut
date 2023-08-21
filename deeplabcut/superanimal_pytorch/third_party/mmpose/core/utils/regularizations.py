@@ -41,14 +41,14 @@ class PytorchModuleHook(metaclass=ABCMeta):
         """
         assert isinstance(module, torch.nn.Module)
 
-        if self.hook_type == 'forward':
+        if self.hook_type == "forward":
             h = module.register_forward_hook(self.hook)
-        elif self.hook_type == 'forward_pre':
+        elif self.hook_type == "forward_pre":
             h = module.register_forward_pre_hook(self.hook)
-        elif self.hook_type == 'backward':
+        elif self.hook_type == "backward":
             h = module.register_backward_hook(self.hook)
         else:
-            raise ValueError(f'Invalid hook type {self.hook}')
+            raise ValueError(f"Invalid hook type {self.hook}")
 
         return h
 
@@ -65,19 +65,23 @@ class WeightNormClipHook(PytorchModuleHook):
             apply weight norm clip.
     """
 
-    def __init__(self, max_norm=1.0, module_param_names='weight'):
-        self.module_param_names = module_param_names if isinstance(
-            module_param_names, list) else [module_param_names]
+    def __init__(self, max_norm=1.0, module_param_names="weight"):
+        self.module_param_names = (
+            module_param_names
+            if isinstance(module_param_names, list)
+            else [module_param_names]
+        )
         self.max_norm = max_norm
 
     @property
     def hook_type(self):
-        return 'forward_pre'
+        return "forward_pre"
 
     def hook(self, module, _input):
         for name in self.module_param_names:
-            assert name in module._parameters, f'{name} is not a parameter' \
-                f' of the module {type(module)}'
+            assert name in module._parameters, (
+                f"{name} is not a parameter" f" of the module {type(module)}"
+            )
             param = module._parameters[name]
 
             with torch.no_grad():

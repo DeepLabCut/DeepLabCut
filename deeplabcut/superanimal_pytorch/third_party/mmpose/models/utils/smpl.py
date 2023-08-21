@@ -7,6 +7,7 @@ from ..builder import MESH_MODELS
 
 try:
     from smplx import SMPL as SMPL_
+
     has_smpl = True
 except (ImportError, ModuleNotFoundError):
     has_smpl = False
@@ -28,14 +29,15 @@ class SMPL(nn.Module):
     def __init__(self, smpl_path, joints_regressor):
         super().__init__()
 
-        assert has_smpl, 'Please install smplx to use SMPL.'
+        assert has_smpl, "Please install smplx to use SMPL."
 
         self.smpl_neutral = SMPL_(
             model_path=smpl_path,
             create_global_orient=False,
             create_body_pose=False,
             create_transl=False,
-            gender='neutral')
+            gender="neutral",
+        )
 
         self.smpl_male = SMPL_(
             model_path=smpl_path,
@@ -43,7 +45,8 @@ class SMPL(nn.Module):
             create_global_orient=False,
             create_body_pose=False,
             create_transl=False,
-            gender='male')
+            gender="male",
+        )
 
         self.smpl_female = SMPL_(
             model_path=smpl_path,
@@ -51,11 +54,13 @@ class SMPL(nn.Module):
             create_global_orient=False,
             create_body_pose=False,
             create_transl=False,
-            gender='female')
+            gender="female",
+        )
 
-        joints_regressor = torch.tensor(
-            np.load(joints_regressor), dtype=torch.float)[None, ...]
-        self.register_buffer('joints_regressor', joints_regressor)
+        joints_regressor = torch.tensor(np.load(joints_regressor), dtype=torch.float)[
+            None, ...
+        ]
+        self.register_buffer("joints_regressor", joints_regressor)
 
         self.num_verts = self.smpl_neutral.get_num_verts()
         self.num_joints = self.joints_regressor.shape[1]
@@ -75,18 +80,19 @@ class SMPL(nn.Module):
                     from mesh vertices.
         """
 
-        betas = kwargs['betas']
+        betas = kwargs["betas"]
         batch_size = betas.shape[0]
         device = betas.device
         output = {}
         if batch_size == 0:
-            output['vertices'] = betas.new_zeros([0, self.num_verts, 3])
-            output['joints'] = betas.new_zeros([0, self.num_joints, 3])
+            output["vertices"] = betas.new_zeros([0, self.num_verts, 3])
+            output["joints"] = betas.new_zeros([0, self.num_joints, 3])
         else:
             smpl_out = model(**kwargs)
-            output['vertices'] = smpl_out.vertices
-            output['joints'] = torch.matmul(
-                self.joints_regressor.to(device), output['vertices'])
+            output["vertices"] = smpl_out.vertices
+            output["joints"] = torch.matmul(
+                self.joints_regressor.to(device), output["vertices"]
+            )
         return output
 
     def get_faces(self):
@@ -100,12 +106,7 @@ class SMPL(nn.Module):
         """
         return self.smpl_neutral.faces
 
-    def forward(self,
-                betas,
-                body_pose,
-                global_orient,
-                transl=None,
-                gender=None):
+    def forward(self, betas, body_pose, global_orient, transl=None, gender=None):
         """Forward function.
 
         Note:
@@ -136,8 +137,8 @@ class SMPL(nn.Module):
         pose2rot = True if body_pose.dim() == 2 else False
         if batch_size > 0 and gender is not None:
             output = {
-                'vertices': betas.new_zeros([batch_size, self.num_verts, 3]),
-                'joints': betas.new_zeros([batch_size, self.num_joints, 3])
+                "vertices": betas.new_zeros([batch_size, self.num_verts, 3]),
+                "joints": betas.new_zeros([batch_size, self.num_joints, 3]),
             }
 
             mask = gender < 0
@@ -147,9 +148,10 @@ class SMPL(nn.Module):
                 body_pose=body_pose[mask],
                 global_orient=global_orient[mask],
                 transl=transl[mask] if transl is not None else None,
-                pose2rot=pose2rot)
-            output['vertices'][mask] = _out['vertices']
-            output['joints'][mask] = _out['joints']
+                pose2rot=pose2rot,
+            )
+            output["vertices"][mask] = _out["vertices"]
+            output["joints"][mask] = _out["joints"]
 
             mask = gender == 0
             _out = self.smpl_forward(
@@ -158,9 +160,10 @@ class SMPL(nn.Module):
                 body_pose=body_pose[mask],
                 global_orient=global_orient[mask],
                 transl=transl[mask] if transl is not None else None,
-                pose2rot=pose2rot)
-            output['vertices'][mask] = _out['vertices']
-            output['joints'][mask] = _out['joints']
+                pose2rot=pose2rot,
+            )
+            output["vertices"][mask] = _out["vertices"]
+            output["joints"][mask] = _out["joints"]
 
             mask = gender == 1
             _out = self.smpl_forward(
@@ -169,9 +172,10 @@ class SMPL(nn.Module):
                 body_pose=body_pose[mask],
                 global_orient=global_orient[mask],
                 transl=transl[mask] if transl is not None else None,
-                pose2rot=pose2rot)
-            output['vertices'][mask] = _out['vertices']
-            output['joints'][mask] = _out['joints']
+                pose2rot=pose2rot,
+            )
+            output["vertices"][mask] = _out["vertices"]
+            output["joints"][mask] = _out["joints"]
         else:
             return self.smpl_forward(
                 self.smpl_neutral,
@@ -179,6 +183,7 @@ class SMPL(nn.Module):
                 body_pose=body_pose,
                 global_orient=global_orient,
                 transl=transl,
-                pose2rot=pose2rot)
+                pose2rot=pose2rot,
+            )
 
         return output

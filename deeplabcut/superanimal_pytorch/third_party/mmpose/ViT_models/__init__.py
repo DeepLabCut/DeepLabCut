@@ -17,15 +17,3 @@ from __future__ import print_function
 # import pose_tokenpose_s
 # import pose_tokenpose_b
 # import pose_tokenpose_l
-
-
-
-
-
-
-
-
-
-
-
-

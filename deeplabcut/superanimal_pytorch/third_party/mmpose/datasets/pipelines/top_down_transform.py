@@ -2,9 +2,13 @@
 import cv2
 import numpy as np
 
-from mmpose.core.post_processing import (affine_transform, fliplr_joints,
-                                         get_affine_transform, get_warp_matrix,
-                                         warp_affine_joints)
+from mmpose.core.post_processing import (
+    affine_transform,
+    fliplr_joints,
+    get_affine_transform,
+    get_warp_matrix,
+    warp_affine_joints,
+)
 from mmpose.datasets.builder import PIPELINES
 
 
@@ -28,10 +32,10 @@ class TopDownRandomFlip:
 
     def __call__(self, results):
         """Perform data augmentation with random image flip."""
-        img = results['img']
-        joints_3d = results['joints_3d']
-        joints_3d_visible = results['joints_3d_visible']
-        center = results['center']
+        img = results["img"]
+        joints_3d = results["joints_3d"]
+        joints_3d_visible = results["joints_3d_visible"]
+        center = results["center"]
 
         # A flag indicating whether the image is flipped,
         # which can be used by child class.
@@ -44,20 +48,26 @@ class TopDownRandomFlip:
                 img = [i[:, ::-1, :] for i in img]
             if not isinstance(img, list):
                 joints_3d, joints_3d_visible = fliplr_joints(
-                    joints_3d, joints_3d_visible, img.shape[1],
-                    results['ann_info']['flip_pairs'])
+                    joints_3d,
+                    joints_3d_visible,
+                    img.shape[1],
+                    results["ann_info"]["flip_pairs"],
+                )
                 center[0] = img.shape[1] - center[0] - 1
             else:
                 joints_3d, joints_3d_visible = fliplr_joints(
-                    joints_3d, joints_3d_visible, img[0].shape[1],
-                    results['ann_info']['flip_pairs'])
+                    joints_3d,
+                    joints_3d_visible,
+                    img[0].shape[1],
+                    results["ann_info"]["flip_pairs"],
+                )
                 center[0] = img[0].shape[1] - center[0] - 1
 
-        results['img'] = img
-        results['joints_3d'] = joints_3d
-        results['joints_3d_visible'] = joints_3d_visible
-        results['center'] = center
-        results['flipped'] = flipped
+        results["img"] = img
+        results["joints_3d"] = joints_3d
+        results["joints_3d_visible"] = joints_3d_visible
+        results["center"] = center
+        results["flipped"] = flipped
 
         return results
 
@@ -87,9 +97,9 @@ class TopDownHalfBodyTransform:
         """Get center&scale for half-body transform."""
         upper_joints = []
         lower_joints = []
-        for joint_id in range(cfg['num_joints']):
+        for joint_id in range(cfg["num_joints"]):
             if joints_3d_visible[joint_id][0] > 0:
-                if joint_id in cfg['upper_body_ids']:
+                if joint_id in cfg["upper_body_ids"]:
                     upper_joints.append(joints_3d[joint_id])
                 else:
                     lower_joints.append(joints_3d[joint_id])
@@ -114,7 +124,7 @@ class TopDownHalfBodyTransform:
         w = right_bottom[0] - left_top[0]
         h = right_bottom[1] - left_top[1]
 
-        aspect_ratio = cfg['image_size'][0] / cfg['image_size'][1]
+        aspect_ratio = cfg["image_size"][0] / cfg["image_size"][1]
 
         if w > aspect_ratio * h:
             h = w * 1.0 / aspect_ratio
@@ -127,18 +137,21 @@ class TopDownHalfBodyTransform:
 
     def __call__(self, results):
         """Perform data augmentation with half-body transform."""
-        joints_3d = results['joints_3d']
-        joints_3d_visible = results['joints_3d_visible']
+        joints_3d = results["joints_3d"]
+        joints_3d_visible = results["joints_3d_visible"]
 
-        if (np.sum(joints_3d_visible[:, 0]) > self.num_joints_half_body
-                and np.random.rand() < self.prob_half_body):
+        if (
+            np.sum(joints_3d_visible[:, 0]) > self.num_joints_half_body
+            and np.random.rand() < self.prob_half_body
+        ):
 
             c_half_body, s_half_body = self.half_body_transform(
-                results['ann_info'], joints_3d, joints_3d_visible)
+                results["ann_info"], joints_3d, joints_3d_visible
+            )
 
             if c_half_body is not None and s_half_body is not None:
-                results['center'] = c_half_body
-                results['scale'] = s_half_body
+                results["center"] = c_half_body
+                results["scale"] = s_half_body
 
         return results
 
@@ -164,7 +177,7 @@ class TopDownGetRandomScaleRotation:
 
     def __call__(self, results):
         """Perform data augmentation with random scaling & rotating."""
-        s = results['scale']
+        s = results["scale"]
 
         sf = self.scale_factor
         rf = self.rot_factor
@@ -175,8 +188,8 @@ class TopDownGetRandomScaleRotation:
         r_factor = np.clip(np.random.randn() * rf, -rf * 2, rf * 2)
         r = r_factor if np.random.rand() <= self.rot_prob else 0
 
-        results['scale'] = s
-        results['rotation'] = r
+        results["scale"] = s
+        results["rotation"] = r
 
         return results
 
@@ -200,55 +213,63 @@ class TopDownAffine:
         self.use_udp = use_udp
 
     def __call__(self, results):
-        image_size = results['ann_info']['image_size']
-        
-        img = results['img']
-        joints_3d = results['joints_3d']
-        joints_3d_visible = results['joints_3d_visible']
-        c = results['center']
-        s = results['scale']
-        r = results['rotation']
+        image_size = results["ann_info"]["image_size"]
+
+        img = results["img"]
+        joints_3d = results["joints_3d"]
+        joints_3d_visible = results["joints_3d_visible"]
+        c = results["center"]
+        s = results["scale"]
+        r = results["rotation"]
 
         if self.use_udp:
             trans = get_warp_matrix(r, c * 2.0, image_size - 1.0, s * 200.0)
             if not isinstance(img, list):
                 img = cv2.warpAffine(
                     img,
-                    trans, (int(image_size[0]), int(image_size[1])),
-                    flags=cv2.INTER_LINEAR)
+                    trans,
+                    (int(image_size[0]), int(image_size[1])),
+                    flags=cv2.INTER_LINEAR,
+                )
             else:
                 img = [
                     cv2.warpAffine(
                         i,
-                        trans, (int(image_size[0]), int(image_size[1])),
-                        flags=cv2.INTER_LINEAR) for i in img
+                        trans,
+                        (int(image_size[0]), int(image_size[1])),
+                        flags=cv2.INTER_LINEAR,
+                    )
+                    for i in img
                 ]
 
-            joints_3d[:, 0:2] = \
-                warp_affine_joints(joints_3d[:, 0:2].copy(), trans)
+            joints_3d[:, 0:2] = warp_affine_joints(joints_3d[:, 0:2].copy(), trans)
 
         else:
             trans = get_affine_transform(c, s, r, image_size)
             if not isinstance(img, list):
                 img = cv2.warpAffine(
                     img,
-                    trans, (int(image_size[0]), int(image_size[1])),
-                    flags=cv2.INTER_LINEAR)
+                    trans,
+                    (int(image_size[0]), int(image_size[1])),
+                    flags=cv2.INTER_LINEAR,
+                )
             else:
                 img = [
                     cv2.warpAffine(
                         i,
-                        trans, (int(image_size[0]), int(image_size[1])),
-                        flags=cv2.INTER_LINEAR) for i in img
+                        trans,
+                        (int(image_size[0]), int(image_size[1])),
+                        flags=cv2.INTER_LINEAR,
+                    )
+                    for i in img
                 ]
-            for i in range(results['ann_info']['num_joints']):
+            for i in range(results["ann_info"]["num_joints"]):
                 if joints_3d_visible[i, 0] > 0.0:
-                    joints_3d[i,
-                              0:2] = affine_transform(joints_3d[i, 0:2], trans)
+                    joints_3d[i, 0:2] = affine_transform(joints_3d[i, 0:2], trans)
 
-        results['img'] = img
-        results['joints_3d'] = joints_3d
-        results['joints_3d_visible'] = joints_3d_visible
+        results["img"] = img
+        results["joints_3d"] = joints_3d
+        results["joints_3d_visible"] = joints_3d_visible
 
         return results
 
@@ -282,13 +303,15 @@ class TopDownGenerateTarget:
             Unbiased Data Processing for Human Pose Estimation (CVPR 2020).
     """
 
-    def __init__(self,
-                 sigma=2,
-                 kernel=(11, 11),
-                 valid_radius_factor=0.0546875,
-                 target_type='GaussianHeatmap',
-                 encoding='MSRA',
-                 unbiased_encoding=False):
+    def __init__(
+        self,
+        sigma=2,
+        kernel=(11, 11),
+        valid_radius_factor=0.0546875,
+        target_type="GaussianHeatmap",
+        encoding="MSRA",
+        unbiased_encoding=False,
+    ):
         self.sigma = sigma
         self.unbiased_encoding = unbiased_encoding
         self.kernel = kernel
@@ -310,11 +333,11 @@ class TopDownGenerateTarget:
             - target: Target heatmaps.
             - target_weight: (1: visible, 0: invisible)
         """
-        num_joints = cfg['num_joints']
-        image_size = cfg['image_size']
-        W, H = cfg['heatmap_size']
-        joint_weights = cfg['joint_weights']
-        use_different_joint_weights = cfg['use_different_joint_weights']
+        num_joints = cfg["num_joints"]
+        image_size = cfg["image_size"]
+        W, H = cfg["heatmap_size"]
+        joint_weights = cfg["joint_weights"]
+        use_different_joint_weights = cfg["use_different_joint_weights"]
 
         target_weight = np.zeros((num_joints, 1), dtype=np.float32)
         target = np.zeros((num_joints, H, W), dtype=np.float32)
@@ -342,9 +365,9 @@ class TopDownGenerateTarget:
                 y = y[:, None]
 
                 if target_weight[joint_id] > 0.5:
-                    target[joint_id] = np.exp(-((x - mu_x)**2 +
-                                                (y - mu_y)**2) /
-                                              (2 * sigma**2))
+                    target[joint_id] = np.exp(
+                        -((x - mu_x) ** 2 + (y - mu_y) ** 2) / (2 * sigma ** 2)
+                    )
         else:
             for joint_id in range(num_joints):
                 # joints_3d_visible can be 0 or -1 for superanimal setting
@@ -352,7 +375,7 @@ class TopDownGenerateTarget:
 
                 if target_weight[joint_id] < 0:
                     target_weight[joint_id] = 0
-                
+
                 feat_stride = image_size / [W, H]
                 mu_x = int(joints_3d[joint_id][0] / feat_stride[0] + 0.5)
                 mu_y = int(joints_3d[joint_id][1] / feat_stride[1] + 0.5)
@@ -369,7 +392,7 @@ class TopDownGenerateTarget:
                     x0 = y0 = size // 2
                     # The gaussian is not normalized,
                     # we want the center value to equal 1
-                    g = np.exp(-((x - x0)**2 + (y - y0)**2) / (2 * sigma**2))
+                    g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
 
                     # Usable gaussian range
                     g_x = max(0, -ul[0]), min(br[0], W) - ul[0]
@@ -378,16 +401,16 @@ class TopDownGenerateTarget:
                     img_x = max(0, ul[0]), min(br[0], W)
                     img_y = max(0, ul[1]), min(br[1], H)
 
-                    target[joint_id][img_y[0]:img_y[1], img_x[0]:img_x[1]] = \
-                        g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
+                    target[joint_id][img_y[0] : img_y[1], img_x[0] : img_x[1]] = g[
+                        g_y[0] : g_y[1], g_x[0] : g_x[1]
+                    ]
 
         if use_different_joint_weights:
             target_weight = np.multiply(target_weight, joint_weights)
 
         return target, target_weight
 
-    def _megvii_generate_target(self, cfg, joints_3d, joints_3d_visible,
-                                kernel):
+    def _megvii_generate_target(self, cfg, joints_3d, joints_3d_visible, kernel):
         """Generate the target heatmap via "Megvii" approach.
 
         Args:
@@ -403,10 +426,10 @@ class TopDownGenerateTarget:
             - target_weight: (1: visible, 0: invisible)
         """
 
-        num_joints = cfg['num_joints']
-        image_size = cfg['image_size']
-        W, H = cfg['heatmap_size']
-        heatmaps = np.zeros((num_joints, H, W), dtype='float32')
+        num_joints = cfg["num_joints"]
+        image_size = cfg["image_size"]
+        W, H = cfg["heatmap_size"]
+        heatmaps = np.zeros((num_joints, H, W), dtype="float32")
         target_weight = np.zeros((num_joints, 1), dtype=np.float32)
 
         for i in range(num_joints):
@@ -418,8 +441,7 @@ class TopDownGenerateTarget:
             target_y = int(joints_3d[i, 1] * H / image_size[1])
             target_x = int(joints_3d[i, 0] * W / image_size[0])
 
-            if (target_x >= W or target_x < 0) \
-                    or (target_y >= H or target_y < 0):
+            if (target_x >= W or target_x < 0) or (target_y >= H or target_y < 0):
                 target_weight[i] = 0
                 continue
 
@@ -431,8 +453,9 @@ class TopDownGenerateTarget:
 
         return heatmaps, target_weight
 
-    def _udp_generate_target(self, cfg, joints_3d, joints_3d_visible, factor,
-                             target_type):
+    def _udp_generate_target(
+        self, cfg, joints_3d, joints_3d_visible, factor, target_type
+    ):
         """Generate the target heatmap via 'UDP' approach. Paper ref: Huang et
         al. The Devil is in the Details: Delving into Unbiased Data Processing
         for Human Pose Estimation (CVPR 2020).
@@ -462,18 +485,19 @@ class TopDownGenerateTarget:
             - target (np.ndarray[C, H, W]): Target heatmaps.
             - target_weight (np.ndarray[K, 1]): (1: visible, 0: invisible)
         """
-        num_joints = cfg['num_joints']
-        image_size = cfg['image_size']
-        heatmap_size = cfg['heatmap_size']
-        joint_weights = cfg['joint_weights']
-        use_different_joint_weights = cfg['use_different_joint_weights']
+        num_joints = cfg["num_joints"]
+        image_size = cfg["image_size"]
+        heatmap_size = cfg["heatmap_size"]
+        joint_weights = cfg["joint_weights"]
+        use_different_joint_weights = cfg["use_different_joint_weights"]
 
         target_weight = np.ones((num_joints, 1), dtype=np.float32)
         target_weight[:, 0] = joints_3d_visible[:, 0]
 
-        if target_type.lower() == 'GaussianHeatmap'.lower():
-            target = np.zeros((num_joints, heatmap_size[1], heatmap_size[0]),
-                              dtype=np.float32)
+        if target_type.lower() == "GaussianHeatmap".lower():
+            target = np.zeros(
+                (num_joints, heatmap_size[1], heatmap_size[0]), dtype=np.float32
+            )
 
             tmp_size = factor * 3
 
@@ -489,8 +513,12 @@ class TopDownGenerateTarget:
                 # Check that any part of the gaussian is in-bounds
                 ul = [int(mu_x - tmp_size), int(mu_y - tmp_size)]
                 br = [int(mu_x + tmp_size + 1), int(mu_y + tmp_size + 1)]
-                if ul[0] >= heatmap_size[0] or ul[1] >= heatmap_size[1] \
-                        or br[0] < 0 or br[1] < 0:
+                if (
+                    ul[0] >= heatmap_size[0]
+                    or ul[1] >= heatmap_size[1]
+                    or br[0] < 0
+                    or br[1] < 0
+                ):
                     # If not, just return the image as is
                     target_weight[joint_id] = 0
                     continue
@@ -501,7 +529,7 @@ class TopDownGenerateTarget:
                 x0 = y0 = size // 2
                 x0 += mu_x_ac - mu_x
                 y0 += mu_y_ac - mu_y
-                g = np.exp(-((x - x0)**2 + (y - y0)**2) / (2 * factor**2))
+                g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * factor ** 2))
 
                 # Usable gaussian range
                 g_x = max(0, -ul[0]), min(br[0], heatmap_size[0]) - ul[0]
@@ -512,13 +540,14 @@ class TopDownGenerateTarget:
 
                 v = target_weight[joint_id]
                 if v > 0.5:
-                    target[joint_id][img_y[0]:img_y[1], img_x[0]:img_x[1]] = \
-                        g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
+                    target[joint_id][img_y[0] : img_y[1], img_x[0] : img_x[1]] = g[
+                        g_y[0] : g_y[1], g_x[0] : g_x[1]
+                    ]
 
-        elif target_type.lower() == 'CombinedTarget'.lower():
+        elif target_type.lower() == "CombinedTarget".lower():
             target = np.zeros(
-                (num_joints, 3, heatmap_size[1] * heatmap_size[0]),
-                dtype=np.float32)
+                (num_joints, 3, heatmap_size[1] * heatmap_size[0]), dtype=np.float32
+            )
             feat_width = heatmap_size[0]
             feat_height = heatmap_size[1]
             feat_x_int = np.arange(0, feat_width)
@@ -535,18 +564,18 @@ class TopDownGenerateTarget:
                 mu_y = joints_3d[joint_id][1] / feat_stride[1]
                 x_offset = (mu_x - feat_x_int) / valid_radius
                 y_offset = (mu_y - feat_y_int) / valid_radius
-                dis = x_offset**2 + y_offset**2
+                dis = x_offset ** 2 + y_offset ** 2
                 keep_pos = np.where(dis <= 1)[0]
                 v = target_weight[joint_id]
                 if v > 0.5:
                     target[joint_id, 0, keep_pos] = 1
                     target[joint_id, 1, keep_pos] = x_offset[keep_pos]
                     target[joint_id, 2, keep_pos] = y_offset[keep_pos]
-            target = target.reshape(num_joints * 3, heatmap_size[1],
-                                    heatmap_size[0])
+            target = target.reshape(num_joints * 3, heatmap_size[1], heatmap_size[0])
         else:
-            raise ValueError('target_type should be either '
-                             "'GaussianHeatmap' or 'CombinedTarget'")
+            raise ValueError(
+                "target_type should be either " "'GaussianHeatmap' or 'CombinedTarget'"
+            )
 
         if use_different_joint_weights:
             target_weight = np.multiply(target_weight, joint_weights)
@@ -555,89 +584,100 @@ class TopDownGenerateTarget:
 
     def __call__(self, results):
         """Generate the target heatmap."""
-        joints_3d = results['joints_3d']
-        joints_3d_visible = results['joints_3d_visible']
+        joints_3d = results["joints_3d"]
+        joints_3d_visible = results["joints_3d_visible"]
 
-        assert self.encoding in ['MSRA', 'Megvii', 'UDP']
+        assert self.encoding in ["MSRA", "Megvii", "UDP"]
 
-        if self.encoding == 'MSRA':
+        if self.encoding == "MSRA":
             if isinstance(self.sigma, list):
                 num_sigmas = len(self.sigma)
-                cfg = results['ann_info']
-                num_joints = cfg['num_joints']
-                heatmap_size = cfg['heatmap_size']
+                cfg = results["ann_info"]
+                num_joints = cfg["num_joints"]
+                heatmap_size = cfg["heatmap_size"]
 
                 target = np.empty(
-                    (0, num_joints, heatmap_size[1], heatmap_size[0]),
-                    dtype=np.float32)
+                    (0, num_joints, heatmap_size[1], heatmap_size[0]), dtype=np.float32
+                )
                 target_weight = np.empty((0, num_joints, 1), dtype=np.float32)
                 for i in range(num_sigmas):
                     target_i, target_weight_i = self._msra_generate_target(
-                        cfg, joints_3d, joints_3d_visible, self.sigma[i])
+                        cfg, joints_3d, joints_3d_visible, self.sigma[i]
+                    )
                     target = np.concatenate([target, target_i[None]], axis=0)
                     target_weight = np.concatenate(
-                        [target_weight, target_weight_i[None]], axis=0)
+                        [target_weight, target_weight_i[None]], axis=0
+                    )
             else:
                 target, target_weight = self._msra_generate_target(
-                    results['ann_info'], joints_3d, joints_3d_visible,
-                    self.sigma)
+                    results["ann_info"], joints_3d, joints_3d_visible, self.sigma
+                )
 
-        elif self.encoding == 'Megvii':
+        elif self.encoding == "Megvii":
             if isinstance(self.kernel, list):
                 num_kernels = len(self.kernel)
-                cfg = results['ann_info']
-                num_joints = cfg['num_joints']
-                W, H = cfg['heatmap_size']
+                cfg = results["ann_info"]
+                num_joints = cfg["num_joints"]
+                W, H = cfg["heatmap_size"]
 
                 target = np.empty((0, num_joints, H, W), dtype=np.float32)
                 target_weight = np.empty((0, num_joints, 1), dtype=np.float32)
                 for i in range(num_kernels):
                     target_i, target_weight_i = self._megvii_generate_target(
-                        cfg, joints_3d, joints_3d_visible, self.kernel[i])
+                        cfg, joints_3d, joints_3d_visible, self.kernel[i]
+                    )
                     target = np.concatenate([target, target_i[None]], axis=0)
                     target_weight = np.concatenate(
-                        [target_weight, target_weight_i[None]], axis=0)
+                        [target_weight, target_weight_i[None]], axis=0
+                    )
             else:
                 target, target_weight = self._megvii_generate_target(
-                    results['ann_info'], joints_3d, joints_3d_visible,
-                    self.kernel)
+                    results["ann_info"], joints_3d, joints_3d_visible, self.kernel
+                )
 
-        elif self.encoding == 'UDP':
-            if self.target_type.lower() == 'CombinedTarget'.lower():
+        elif self.encoding == "UDP":
+            if self.target_type.lower() == "CombinedTarget".lower():
                 factors = self.valid_radius_factor
                 channel_factor = 3
-            elif self.target_type.lower() == 'GaussianHeatmap'.lower():
+            elif self.target_type.lower() == "GaussianHeatmap".lower():
                 factors = self.sigma
                 channel_factor = 1
             else:
-                raise ValueError('target_type should be either '
-                                 "'GaussianHeatmap' or 'CombinedTarget'")
+                raise ValueError(
+                    "target_type should be either "
+                    "'GaussianHeatmap' or 'CombinedTarget'"
+                )
             if isinstance(factors, list):
                 num_factors = len(factors)
-                cfg = results['ann_info']
-                num_joints = cfg['num_joints']
-                W, H = cfg['heatmap_size']
+                cfg = results["ann_info"]
+                num_joints = cfg["num_joints"]
+                W, H = cfg["heatmap_size"]
 
-                target = np.empty((0, channel_factor * num_joints, H, W),
-                                  dtype=np.float32)
+                target = np.empty(
+                    (0, channel_factor * num_joints, H, W), dtype=np.float32
+                )
                 target_weight = np.empty((0, num_joints, 1), dtype=np.float32)
                 for i in range(num_factors):
                     target_i, target_weight_i = self._udp_generate_target(
-                        cfg, joints_3d, joints_3d_visible, factors[i],
-                        self.target_type)
+                        cfg, joints_3d, joints_3d_visible, factors[i], self.target_type
+                    )
                     target = np.concatenate([target, target_i[None]], axis=0)
                     target_weight = np.concatenate(
-                        [target_weight, target_weight_i[None]], axis=0)
+                        [target_weight, target_weight_i[None]], axis=0
+                    )
             else:
                 target, target_weight = self._udp_generate_target(
-                    results['ann_info'], joints_3d, joints_3d_visible, factors,
-                    self.target_type)
+                    results["ann_info"],
+                    joints_3d,
+                    joints_3d_visible,
+                    factors,
+                    self.target_type,
+                )
         else:
-            raise ValueError(
-                f'Encoding approach {self.encoding} is not supported!')
+            raise ValueError(f"Encoding approach {self.encoding} is not supported!")
 
-        results['target'] = target
-        results['target_weight'] = target_weight
+        results["target"] = target
+        results["target_weight"] = target_weight
 
         return results
 
@@ -664,13 +704,16 @@ class TopDownGenerateTargetRegression:
         Returns:
              target, target_weight(1: visible, 0: invisible)
         """
-        image_size = cfg['image_size']
-        joint_weights = cfg['joint_weights']
-        use_different_joint_weights = cfg['use_different_joint_weights']
+        image_size = cfg["image_size"]
+        joint_weights = cfg["joint_weights"]
+        use_different_joint_weights = cfg["use_different_joint_weights"]
 
-        mask = (joints_3d[:, 0] >= 0) * (
-            joints_3d[:, 0] <= image_size[0] - 1) * (joints_3d[:, 1] >= 0) * (
-                joints_3d[:, 1] <= image_size[1] - 1)
+        mask = (
+            (joints_3d[:, 0] >= 0)
+            * (joints_3d[:, 0] <= image_size[0] - 1)
+            * (joints_3d[:, 1] >= 0)
+            * (joints_3d[:, 1] <= image_size[1] - 1)
+        )
 
         target = joints_3d[:, :2] / image_size
 
@@ -684,15 +727,15 @@ class TopDownGenerateTargetRegression:
 
     def __call__(self, results):
         """Generate the target heatmap."""
-        joints_3d = results['joints_3d']
-        joints_3d_visible = results['joints_3d_visible']
+        joints_3d = results["joints_3d"]
+        joints_3d_visible = results["joints_3d_visible"]
 
-        target, target_weight = self._generate_target(results['ann_info'],
-                                                      joints_3d,
-                                                      joints_3d_visible)
+        target, target_weight = self._generate_target(
+            results["ann_info"], joints_3d, joints_3d_visible
+        )
 
-        results['target'] = target
-        results['target_weight'] = target_weight
+        results["target"] = target
+        results["target_weight"] = target_weight
 
         return results
 
@@ -721,11 +764,10 @@ class TopDownRandomTranslation:
 
     def __call__(self, results):
         """Perform data augmentation with random translation."""
-        center = results['center']
-        scale = results['scale']
+        center = results["center"]
+        scale = results["scale"]
         if np.random.rand() <= self.trans_prob:
             # reference bbox size is [200, 200] pixels
-            center += self.trans_factor * np.random.uniform(
-                -1, 1, size=2) * scale * 200
-        results['center'] = center
+            center += self.trans_factor * np.random.uniform(-1, 1, size=2) * scale * 200
+        results["center"] = center
         return results

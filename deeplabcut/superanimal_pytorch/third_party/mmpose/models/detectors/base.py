@@ -57,12 +57,12 @@ class BasePose(nn.Module, metaclass=ABCMeta):
                 log_vars[loss_name] = sum(_loss.mean() for _loss in loss_value)
             else:
                 raise TypeError(
-                    f'{loss_name} is not a tensor or list of tensors or float')
+                    f"{loss_name} is not a tensor or list of tensors or float"
+                )
 
-        loss = sum(_value for _key, _value in log_vars.items()
-                   if 'loss' in _key)
+        loss = sum(_value for _key, _value in log_vars.items() if "loss" in _key)
 
-        log_vars['loss'] = loss
+        log_vars["loss"] = loss
         for loss_name, loss_value in log_vars.items():
             # reduce loss when distributed training
             if not isinstance(loss_value, float):
@@ -108,7 +108,8 @@ class BasePose(nn.Module, metaclass=ABCMeta):
         outputs = dict(
             loss=loss,
             log_vars=log_vars,
-            num_samples=len(next(iter(data_batch.values()))))
+            num_samples=len(next(iter(data_batch.values()))),
+        )
 
         return outputs
 

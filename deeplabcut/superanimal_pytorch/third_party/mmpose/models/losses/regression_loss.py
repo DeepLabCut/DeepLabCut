@@ -18,7 +18,7 @@ class SmoothL1Loss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, use_target_weight=False, loss_weight=1.):
+    def __init__(self, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.criterion = F.smooth_l1_loss
         self.use_target_weight = use_target_weight
@@ -40,8 +40,7 @@ class SmoothL1Loss(nn.Module):
         """
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output * target_weight,
-                                  target * target_weight)
+            loss = self.criterion(output * target_weight, target * target_weight)
         else:
             loss = self.criterion(output, target)
 
@@ -61,11 +60,9 @@ class WingLoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self,
-                 omega=10.0,
-                 epsilon=2.0,
-                 use_target_weight=False,
-                 loss_weight=1.):
+    def __init__(
+        self, omega=10.0, epsilon=2.0, use_target_weight=False, loss_weight=1.0
+    ):
         super().__init__()
         self.omega = omega
         self.epsilon = epsilon
@@ -91,7 +88,9 @@ class WingLoss(nn.Module):
         delta = (target - pred).abs()
         losses = torch.where(
             delta < self.omega,
-            self.omega * torch.log(1.0 + delta / self.epsilon), delta - self.C)
+            self.omega * torch.log(1.0 + delta / self.epsilon),
+            delta - self.C,
+        )
         return torch.mean(torch.sum(losses, dim=[1, 2]), dim=0)
 
     def forward(self, output, target, target_weight=None):
@@ -110,8 +109,7 @@ class WingLoss(nn.Module):
         """
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output * target_weight,
-                                  target * target_weight)
+            loss = self.criterion(output * target_weight, target * target_weight)
         else:
             loss = self.criterion(output, target)
 
@@ -136,12 +134,14 @@ class SoftWingLoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self,
-                 omega1=2.0,
-                 omega2=20.0,
-                 epsilon=0.5,
-                 use_target_weight=False,
-                 loss_weight=1.):
+    def __init__(
+        self,
+        omega1=2.0,
+        omega2=20.0,
+        epsilon=0.5,
+        use_target_weight=False,
+        loss_weight=1.0,
+    ):
         super().__init__()
         self.omega1 = omega1
         self.omega2 = omega2
@@ -151,8 +151,7 @@ class SoftWingLoss(nn.Module):
 
         # constant that smoothly links the piecewise-defined linear
         # and nonlinear parts
-        self.B = self.omega1 - self.omega2 * math.log(1.0 + self.omega1 /
-                                                      self.epsilon)
+        self.B = self.omega1 - self.omega2 * math.log(1.0 + self.omega1 / self.epsilon)
 
     def criterion(self, pred, target):
         """Criterion of wingloss.
@@ -168,8 +167,10 @@ class SoftWingLoss(nn.Module):
         """
         delta = (target - pred).abs()
         losses = torch.where(
-            delta < self.omega1, delta,
-            self.omega2 * torch.log(1.0 + delta / self.epsilon) + self.B)
+            delta < self.omega1,
+            delta,
+            self.omega2 * torch.log(1.0 + delta / self.epsilon) + self.B,
+        )
         return torch.mean(torch.sum(losses, dim=[1, 2]), dim=0)
 
     def forward(self, output, target, target_weight=None):
@@ -188,8 +189,7 @@ class SoftWingLoss(nn.Module):
         """
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output * target_weight,
-                                  target * target_weight)
+            loss = self.criterion(output * target_weight, target * target_weight)
         else:
             loss = self.criterion(output, target)
 
@@ -206,7 +206,7 @@ class MPJPELoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, use_target_weight=False, loss_weight=1.):
+    def __init__(self, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.use_target_weight = use_target_weight
         self.loss_weight = loss_weight
@@ -228,8 +228,7 @@ class MPJPELoss(nn.Module):
 
         if self.use_target_weight:
             assert target_weight is not None
-            loss = torch.mean(
-                torch.norm((output - target) * target_weight, dim=-1))
+            loss = torch.mean(torch.norm((output - target) * target_weight, dim=-1))
         else:
             loss = torch.mean(torch.norm(output - target, dim=-1))
 
@@ -240,7 +239,7 @@ class MPJPELoss(nn.Module):
 class L1Loss(nn.Module):
     """L1Loss loss ."""
 
-    def __init__(self, use_target_weight=False, loss_weight=1.):
+    def __init__(self, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.criterion = F.l1_loss
         self.use_target_weight = use_target_weight
@@ -261,8 +260,7 @@ class L1Loss(nn.Module):
         """
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output * target_weight,
-                                  target * target_weight)
+            loss = self.criterion(output * target_weight, target * target_weight)
         else:
             loss = self.criterion(output, target)
 
@@ -273,7 +271,7 @@ class L1Loss(nn.Module):
 class MSELoss(nn.Module):
     """MSE loss for coordinate regression."""
 
-    def __init__(self, use_target_weight=False, loss_weight=1.):
+    def __init__(self, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.criterion = F.mse_loss
         self.use_target_weight = use_target_weight
@@ -294,8 +292,7 @@ class MSELoss(nn.Module):
         """
         if self.use_target_weight:
             assert target_weight is not None
-            loss = self.criterion(output * target_weight,
-                                  target * target_weight)
+            loss = self.criterion(output * target_weight, target * target_weight)
         else:
             loss = self.criterion(output, target)
 
@@ -313,7 +310,7 @@ class BoneLoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, joint_parents, use_target_weight=False, loss_weight=1.):
+    def __init__(self, joint_parents, use_target_weight=False, loss_weight=1.0):
         super().__init__()
         self.joint_parents = joint_parents
         self.use_target_weight = use_target_weight
@@ -338,20 +335,24 @@ class BoneLoss(nn.Module):
             target_weight (torch.Tensor[N, K-1]):
                 Weights across different bone types.
         """
-        output_bone = torch.norm(
-            output - output[:, self.joint_parents, :],
-            dim=-1)[:, self.non_root_indices]
-        target_bone = torch.norm(
-            target - target[:, self.joint_parents, :],
-            dim=-1)[:, self.non_root_indices]
+        output_bone = torch.norm(output - output[:, self.joint_parents, :], dim=-1)[
+            :, self.non_root_indices
+        ]
+        target_bone = torch.norm(target - target[:, self.joint_parents, :], dim=-1)[
+            :, self.non_root_indices
+        ]
         if self.use_target_weight:
             assert target_weight is not None
             loss = torch.mean(
-                torch.abs((output_bone * target_weight).mean(dim=0) -
-                          (target_bone * target_weight).mean(dim=0)))
+                torch.abs(
+                    (output_bone * target_weight).mean(dim=0)
+                    - (target_bone * target_weight).mean(dim=0)
+                )
+            )
         else:
             loss = torch.mean(
-                torch.abs(output_bone.mean(dim=0) - target_bone.mean(dim=0)))
+                torch.abs(output_bone.mean(dim=0) - target_bone.mean(dim=0))
+            )
 
         return loss * self.loss_weight
 
@@ -379,16 +380,16 @@ class SemiSupervisionLoss(nn.Module):
             * warmup_epochs
     """
 
-    def __init__(self,
-                 joint_parents,
-                 projection_loss_weight=1.,
-                 bone_loss_weight=1.,
-                 warmup_iterations=0):
+    def __init__(
+        self,
+        joint_parents,
+        projection_loss_weight=1.0,
+        bone_loss_weight=1.0,
+        warmup_iterations=0,
+    ):
         super().__init__()
-        self.criterion_projection = MPJPELoss(
-            loss_weight=projection_loss_weight)
-        self.criterion_bone = BoneLoss(
-            joint_parents, loss_weight=bone_loss_weight)
+        self.criterion_projection = MPJPELoss(loss_weight=projection_loss_weight)
+        self.criterion_bone = BoneLoss(joint_parents, loss_weight=bone_loss_weight)
         self.warmup_iterations = warmup_iterations
         self.num_iterations = 0
 
@@ -411,11 +412,10 @@ class SemiSupervisionLoss(nn.Module):
             k = intrinsics[..., 4:7]
             p = intrinsics[..., 7:9]
 
-            r2 = torch.sum(_x[:, :, :2]**2, dim=-1, keepdim=True)
+            r2 = torch.sum(_x[:, :, :2] ** 2, dim=-1, keepdim=True)
             radial = 1 + torch.sum(
-                k * torch.cat((r2, r2**2, r2**3), dim=-1),
-                dim=-1,
-                keepdim=True)
+                k * torch.cat((r2, r2 ** 2, r2 ** 3), dim=-1), dim=-1, keepdim=True
+            )
             tan = torch.sum(p * _x, dim=-1, keepdim=True)
             _x = _x * (radial + tan) + p * r2
         _x = f * _x + c
@@ -428,21 +428,22 @@ class SemiSupervisionLoss(nn.Module):
         if self.num_iterations <= self.warmup_iterations:
             return losses
 
-        labeled_pose = output['labeled_pose']
-        unlabeled_pose = output['unlabeled_pose']
-        unlabeled_traj = output['unlabeled_traj']
-        unlabeled_target_2d = target['unlabeled_target_2d']
-        intrinsics = target['intrinsics']
+        labeled_pose = output["labeled_pose"]
+        unlabeled_pose = output["unlabeled_pose"]
+        unlabeled_traj = output["unlabeled_traj"]
+        unlabeled_target_2d = target["unlabeled_target_2d"]
+        intrinsics = target["intrinsics"]
 
         # projection loss
         unlabeled_output = unlabeled_pose + unlabeled_traj
         unlabeled_output_2d = self.project_joints(unlabeled_output, intrinsics)
-        loss_proj = self.criterion_projection(unlabeled_output_2d,
-                                              unlabeled_target_2d, None)
-        losses['proj_loss'] = loss_proj
+        loss_proj = self.criterion_projection(
+            unlabeled_output_2d, unlabeled_target_2d, None
+        )
+        losses["proj_loss"] = loss_proj
 
         # bone loss
         loss_bone = self.criterion_bone(unlabeled_pose, labeled_pose, None)
-        losses['bone_loss'] = loss_bone
+        losses["bone_loss"] = loss_bone
 
         return losses

@@ -7,10 +7,10 @@ import mmpose
 
 def collect_env():
     env_info = collect_basic_env()
-    env_info['MMPose'] = (mmpose.__version__ + '+' + get_git_hash(digits=7))
+    env_info["MMPose"] = mmpose.__version__ + "+" + get_git_hash(digits=7)
     return env_info
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for name, val in collect_env().items():
-        print(f'{name}: {val}')
+        print(f"{name}: {val}")

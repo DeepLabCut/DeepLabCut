@@ -15,45 +15,49 @@ class JointsMSELoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, use_target_weight=False, gradient_masking = False, loss_weight=1.):
+    def __init__(
+        self, use_target_weight=False, gradient_masking=False, loss_weight=1.0
+    ):
         super().__init__()
-        self.criterion = nn.MSELoss(reduce = False)
+        self.criterion = nn.MSELoss(reduce=False)
         self.use_target_weight = use_target_weight
         self.loss_weight = loss_weight
         self.gradient_masking = gradient_masking
+
     def forward(self, output, target, target_weight):
 
         """Forward function."""
         batch_size = output.size(0)
         num_joints = output.size(1)
 
-        heatmaps_pred = output.reshape(
-            (batch_size, num_joints, -1)).split(1, 1)
+        heatmaps_pred = output.reshape((batch_size, num_joints, -1)).split(1, 1)
         heatmaps_gt = target.reshape((batch_size, num_joints, -1)).split(1, 1)
 
-        loss = 0.
-        
+        loss = 0.0
+
         for idx in range(num_joints):
             heatmap_pred = heatmaps_pred[idx].squeeze(1)
             heatmap_gt = heatmaps_gt[idx].squeeze(1)
 
             if self.gradient_masking:
-                sparse = torch.sum(heatmap_gt!=0, dim = 1)
+                sparse = torch.sum(heatmap_gt != 0, dim=1)
                 mask = sparse == 0
-                
+
             if self.use_target_weight:
-                loss_batch = self.criterion(heatmap_pred * target_weight[:, idx],
-                                       heatmap_gt * target_weight[:, idx])
+                loss_batch = self.criterion(
+                    heatmap_pred * target_weight[:, idx],
+                    heatmap_gt * target_weight[:, idx],
+                )
             else:
                 loss_batch = self.criterion(heatmap_pred, heatmap_gt)
 
-            '''
+            """
             Not necessary to do so
             if self.gradient_masking:
                 loss_batch[mask] = 0
-            '''
+            """
             loss += loss_batch.mean()
-                
+
         return loss / num_joints * self.loss_weight
 
 
@@ -71,20 +75,18 @@ class CombinedTargetMSELoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, use_target_weight, loss_weight=1.):
+    def __init__(self, use_target_weight, loss_weight=1.0):
         super().__init__()
-        self.criterion = nn.MSELoss(reduction='mean')
+        self.criterion = nn.MSELoss(reduction="mean")
         self.use_target_weight = use_target_weight
         self.loss_weight = loss_weight
 
     def forward(self, output, target, target_weight):
         batch_size = output.size(0)
         num_channels = output.size(1)
-        heatmaps_pred = output.reshape(
-            (batch_size, num_channels, -1)).split(1, 1)
-        heatmaps_gt = target.reshape(
-            (batch_size, num_channels, -1)).split(1, 1)
-        loss = 0.
+        heatmaps_pred = output.reshape((batch_size, num_channels, -1)).split(1, 1)
+        heatmaps_gt = target.reshape((batch_size, num_channels, -1)).split(1, 1)
+        loss = 0.0
         num_joints = num_channels // 3
         for idx in range(num_joints):
             heatmap_pred = heatmaps_pred[idx * 3].squeeze()
@@ -99,10 +101,12 @@ class CombinedTargetMSELoss(nn.Module):
             # classification loss
             loss += 0.5 * self.criterion(heatmap_pred, heatmap_gt)
             # regression loss
-            loss += 0.5 * self.criterion(heatmap_gt * offset_x_pred,
-                                         heatmap_gt * offset_x_gt)
-            loss += 0.5 * self.criterion(heatmap_gt * offset_y_pred,
-                                         heatmap_gt * offset_y_gt)
+            loss += 0.5 * self.criterion(
+                heatmap_gt * offset_x_pred, heatmap_gt * offset_x_gt
+            )
+            loss += 0.5 * self.criterion(
+                heatmap_gt * offset_y_pred, heatmap_gt * offset_y_gt
+            )
         return loss / num_joints * self.loss_weight
 
 
@@ -117,22 +121,21 @@ class JointsOHKMMSELoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self, use_target_weight=False, topk=8, loss_weight=1.):
+    def __init__(self, use_target_weight=False, topk=8, loss_weight=1.0):
         super().__init__()
         assert topk > 0
-        self.criterion = nn.MSELoss(reduction='none')
+        self.criterion = nn.MSELoss(reduction="none")
         self.use_target_weight = use_target_weight
         self.topk = topk
         self.loss_weight = loss_weight
 
     def _ohkm(self, loss):
         """Online hard keypoint mining."""
-        ohkm_loss = 0.
+        ohkm_loss = 0.0
         N = len(loss)
         for i in range(N):
             sub_loss = loss[i]
-            _, topk_idx = torch.topk(
-                sub_loss, k=self.topk, dim=0, sorted=False)
+            _, topk_idx = torch.topk(sub_loss, k=self.topk, dim=0, sorted=False)
             tmp_loss = torch.gather(sub_loss, 0, topk_idx)
             ohkm_loss += torch.sum(tmp_loss) / self.topk
         ohkm_loss /= N
@@ -143,10 +146,11 @@ class JointsOHKMMSELoss(nn.Module):
         batch_size = output.size(0)
         num_joints = output.size(1)
         if num_joints < self.topk:
-            raise ValueError(f'topk ({self.topk}) should not '
-                             f'larger than num_joints ({num_joints}).')
-        heatmaps_pred = output.reshape(
-            (batch_size, num_joints, -1)).split(1, 1)
+            raise ValueError(
+                f"topk ({self.topk}) should not "
+                f"larger than num_joints ({num_joints})."
+            )
+        heatmaps_pred = output.reshape((batch_size, num_joints, -1)).split(1, 1)
         heatmaps_gt = target.reshape((batch_size, num_joints, -1)).split(1, 1)
 
         losses = []
@@ -155,8 +159,11 @@ class JointsOHKMMSELoss(nn.Module):
             heatmap_gt = heatmaps_gt[idx].squeeze(1)
             if self.use_target_weight:
                 losses.append(
-                    self.criterion(heatmap_pred * target_weight[:, idx],
-                                   heatmap_gt * target_weight[:, idx]))
+                    self.criterion(
+                        heatmap_pred * target_weight[:, idx],
+                        heatmap_gt * target_weight[:, idx],
+                    )
+                )
             else:
                 losses.append(self.criterion(heatmap_pred, heatmap_gt))
 

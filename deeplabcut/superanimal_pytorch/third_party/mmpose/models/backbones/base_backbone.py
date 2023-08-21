@@ -26,13 +26,14 @@ class BaseBackbone(nn.Module, metaclass=ABCMeta):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
-            print('I use it')
+            print("I use it")
         elif pretrained is None:
             # use default initializer or customized initializer in subclasses
             pass
         else:
-            raise TypeError('pretrained must be a str or None.'
-                            f' But received {type(pretrained)}.')
+            raise TypeError(
+                "pretrained must be a str or None." f" But received {type(pretrained)}."
+            )
 
     @abstractmethod
     def forward(self, x):

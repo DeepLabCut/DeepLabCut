@@ -2,10 +2,18 @@
 import copy as cp
 
 import torch.nn as nn
-from mmcv.cnn import (ConvModule, DepthwiseSeparableConvModule, Linear,
-                      build_activation_layer, build_conv_layer,
-                      build_norm_layer, build_upsample_layer, constant_init,
-                      kaiming_init, normal_init)
+from mmcv.cnn import (
+    ConvModule,
+    DepthwiseSeparableConvModule,
+    Linear,
+    build_activation_layer,
+    build_conv_layer,
+    build_norm_layer,
+    build_upsample_layer,
+    constant_init,
+    kaiming_init,
+    normal_init,
+)
 
 from mmpose.core.evaluation import pose_pck_accuracy
 from mmpose.core.post_processing import flip_back
@@ -35,17 +43,19 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
         loss_keypoint (dict): Config for keypoint loss. Default: None.
     """
 
-    def __init__(self,
-                 in_channels=512,
-                 out_channels=17,
-                 num_stages=1,
-                 num_deconv_layers=3,
-                 num_deconv_filters=(256, 256, 256),
-                 num_deconv_kernels=(4, 4, 4),
-                 extra=None,
-                 loss_keypoint=None,
-                 train_cfg=None,
-                 test_cfg=None):
+    def __init__(
+        self,
+        in_channels=512,
+        out_channels=17,
+        num_stages=1,
+        num_deconv_layers=3,
+        num_deconv_filters=(256, 256, 256),
+        num_deconv_kernels=(4, 4, 4),
+        extra=None,
+        loss_keypoint=None,
+        train_cfg=None,
+        test_cfg=None,
+    ):
         super().__init__()
 
         self.in_channels = in_channels
@@ -54,10 +64,10 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
 
         self.train_cfg = {} if train_cfg is None else train_cfg
         self.test_cfg = {} if test_cfg is None else test_cfg
-        self.target_type = self.test_cfg.get('target_type', 'GaussianHeatmap')
+        self.target_type = self.test_cfg.get("target_type", "GaussianHeatmap")
 
         if extra is not None and not isinstance(extra, dict):
-            raise TypeError('extra should be dict or None.')
+            raise TypeError("extra should be dict or None.")
 
         # build multi-stage deconv layers
         self.multi_deconv_layers = nn.ModuleList([])
@@ -72,20 +82,21 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
                 deconv_layers = nn.Identity()
             else:
                 raise ValueError(
-                    f'num_deconv_layers ({num_deconv_layers}) should >= 0.')
+                    f"num_deconv_layers ({num_deconv_layers}) should >= 0."
+                )
             self.multi_deconv_layers.append(deconv_layers)
 
         identity_final_layer = False
-        if extra is not None and 'final_conv_kernel' in extra:
-            assert extra['final_conv_kernel'] in [0, 1, 3]
-            if extra['final_conv_kernel'] == 3:
+        if extra is not None and "final_conv_kernel" in extra:
+            assert extra["final_conv_kernel"] in [0, 1, 3]
+            if extra["final_conv_kernel"] == 3:
                 padding = 1
-            elif extra['final_conv_kernel'] == 1:
+            elif extra["final_conv_kernel"] == 1:
                 padding = 0
             else:
                 # 0 for Identity mapping.
                 identity_final_layer = True
-            kernel_size = extra['final_conv_kernel']
+            kernel_size = extra["final_conv_kernel"]
         else:
             kernel_size = 1
             padding = 0
@@ -97,13 +108,15 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
                 final_layer = nn.Identity()
             else:
                 final_layer = build_conv_layer(
-                    cfg=dict(type='Conv2d'),
+                    cfg=dict(type="Conv2d"),
                     in_channels=num_deconv_filters[-1]
-                    if num_deconv_layers > 0 else in_channels,
+                    if num_deconv_layers > 0
+                    else in_channels,
                     out_channels=out_channels,
                     kernel_size=kernel_size,
                     stride=1,
-                    padding=padding)
+                    padding=padding,
+                )
             self.multi_final_layers.append(final_layer)
 
     def get_loss(self, output, target, target_weight):
@@ -140,10 +153,10 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
             else:
                 loss_func = self.loss
             loss_i = loss_func(output[i], target_i, target_weight_i)
-            if 'heatmap_loss' not in losses:
-                losses['heatmap_loss'] = loss_i
+            if "heatmap_loss" not in losses:
+                losses["heatmap_loss"] = loss_i
             else:
-                losses['heatmap_loss'] += loss_i
+                losses["heatmap_loss"] += loss_i
 
         return losses
 
@@ -165,12 +178,13 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
 
         accuracy = dict()
 
-        if self.target_type == 'GaussianHeatmap':
+        if self.target_type == "GaussianHeatmap":
             _, avg_acc, _ = pose_pck_accuracy(
                 output[-1].detach().cpu().numpy(),
                 target.detach().cpu().numpy(),
-                target_weight.detach().cpu().numpy().squeeze(-1) > 0)
-            accuracy['acc_pose'] = float(avg_acc)
+                target_weight.detach().cpu().numpy().squeeze(-1) > 0,
+            )
+            accuracy["acc_pose"] = float(avg_acc)
 
         return accuracy
 
@@ -206,11 +220,10 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
         if flip_pairs is not None:
             # perform flip
             output_heatmap = flip_back(
-                output.detach().cpu().numpy(),
-                flip_pairs,
-                target_type=self.target_type)
+                output.detach().cpu().numpy(), flip_pairs, target_type=self.target_type
+            )
             # feature is not aligned, shift flipped heatmap for higher accuracy
-            if self.test_cfg.get('shift_heatmap', False):
+            if self.test_cfg.get("shift_heatmap", False):
                 output_heatmap[:, :, :, 1:] = output_heatmap[:, :, :, :-1]
         else:
             output_heatmap = output.detach().cpu().numpy()
@@ -220,30 +233,35 @@ class TopdownHeatmapMultiStageHead(TopdownHeatmapBaseHead):
     def _make_deconv_layer(self, num_layers, num_filters, num_kernels):
         """Make deconv layers."""
         if num_layers != len(num_filters):
-            error_msg = f'num_layers({num_layers}) ' \
-                        f'!= length of num_filters({len(num_filters)})'
+            error_msg = (
+                f"num_layers({num_layers}) "
+                f"!= length of num_filters({len(num_filters)})"
+            )
             raise ValueError(error_msg)
         if num_layers != len(num_kernels):
-            error_msg = f'num_layers({num_layers}) ' \
-                        f'!= length of num_kernels({len(num_kernels)})'
+            error_msg = (
+                f"num_layers({num_layers}) "
+                f"!= length of num_kernels({len(num_kernels)})"
+            )
             raise ValueError(error_msg)
 
         layers = []
         for i in range(num_layers):
-            kernel, padding, output_padding = \
-                self._get_deconv_cfg(num_kernels[i])
+            kernel, padding, output_padding = self._get_deconv_cfg(num_kernels[i])
 
             planes = num_filters[i]
             layers.append(
                 build_upsample_layer(
-                    dict(type='deconv'),
+                    dict(type="deconv"),
                     in_channels=self.in_channels,
                     out_channels=planes,
                     kernel_size=kernel,
                     stride=2,
                     padding=padding,
                     output_padding=output_padding,
-                    bias=False))
+                    bias=False,
+                )
+            )
             layers.append(nn.BatchNorm2d(planes))
             layers.append(nn.ReLU(inplace=True))
             self.in_channels = planes
@@ -274,12 +292,14 @@ class PredictHeatmap(nn.Module):
             Default: dict(type='BN')
     """
 
-    def __init__(self,
-                 unit_channels,
-                 out_channels,
-                 out_shape,
-                 use_prm=False,
-                 norm_cfg=dict(type='BN')):
+    def __init__(
+        self,
+        unit_channels,
+        out_channels,
+        out_shape,
+        use_prm=False,
+        norm_cfg=dict(type="BN"),
+    ):
         # Protect mutable default arguments
         norm_cfg = cp.deepcopy(norm_cfg)
         super().__init__()
@@ -297,7 +317,8 @@ class PredictHeatmap(nn.Module):
                 stride=1,
                 padding=0,
                 norm_cfg=norm_cfg,
-                inplace=False),
+                inplace=False,
+            ),
             ConvModule(
                 unit_channels,
                 out_channels,
@@ -306,12 +327,15 @@ class PredictHeatmap(nn.Module):
                 padding=1,
                 norm_cfg=norm_cfg,
                 act_cfg=None,
-                inplace=False))
+                inplace=False,
+            ),
+        )
 
     def forward(self, feature):
         feature = self.conv_layers(feature)
         output = nn.functional.interpolate(
-            feature, size=self.out_shape, mode='bilinear', align_corners=True)
+            feature, size=self.out_shape, mode="bilinear", align_corners=True
+        )
         if self.use_prm:
             output = self.prm(output)
         return output
@@ -330,7 +354,7 @@ class PRM(nn.Module):
             Default: dict(type='BN')
     """
 
-    def __init__(self, out_channels, norm_cfg=dict(type='BN')):
+    def __init__(self, out_channels, norm_cfg=dict(type="BN")):
         # Protect mutable default arguments
         norm_cfg = cp.deepcopy(norm_cfg)
         super().__init__()
@@ -338,12 +362,13 @@ class PRM(nn.Module):
         self.global_pooling = nn.AdaptiveAvgPool2d((1, 1))
         self.middle_path = nn.Sequential(
             Linear(self.out_channels, self.out_channels),
-            build_norm_layer(dict(type='BN1d'), out_channels)[1],
-            build_activation_layer(dict(type='ReLU')),
+            build_norm_layer(dict(type="BN1d"), out_channels)[1],
+            build_activation_layer(dict(type="ReLU")),
             Linear(self.out_channels, self.out_channels),
-            build_norm_layer(dict(type='BN1d'), out_channels)[1],
-            build_activation_layer(dict(type='ReLU')),
-            build_activation_layer(dict(type='Sigmoid')))
+            build_norm_layer(dict(type="BN1d"), out_channels)[1],
+            build_activation_layer(dict(type="ReLU")),
+            build_activation_layer(dict(type="Sigmoid")),
+        )
 
         self.bottom_path = nn.Sequential(
             ConvModule(
@@ -353,7 +378,8 @@ class PRM(nn.Module):
                 stride=1,
                 padding=0,
                 norm_cfg=norm_cfg,
-                inplace=False),
+                inplace=False,
+            ),
             DepthwiseSeparableConvModule(
                 self.out_channels,
                 1,
@@ -361,7 +387,10 @@ class PRM(nn.Module):
                 stride=1,
                 padding=4,
                 norm_cfg=norm_cfg,
-                inplace=False), build_activation_layer(dict(type='Sigmoid')))
+                inplace=False,
+            ),
+            build_activation_layer(dict(type="Sigmoid")),
+        )
         self.conv_bn_relu_prm_1 = ConvModule(
             self.out_channels,
             self.out_channels,
@@ -369,7 +398,8 @@ class PRM(nn.Module):
             stride=1,
             padding=1,
             norm_cfg=norm_cfg,
-            inplace=False)
+            inplace=False,
+        )
 
     def forward(self, x):
         out = self.conv_bn_relu_prm_1(x)
@@ -405,24 +435,26 @@ class TopdownHeatmapMSMUHead(TopdownHeatmapBaseHead):
         loss_keypoint (dict): Config for keypoint loss. Default: None.
     """
 
-    def __init__(self,
-                 out_shape,
-                 unit_channels=256,
-                 out_channels=17,
-                 num_stages=4,
-                 num_units=4,
-                 use_prm=False,
-                 norm_cfg=dict(type='BN'),
-                 loss_keypoint=None,
-                 train_cfg=None,
-                 test_cfg=None):
+    def __init__(
+        self,
+        out_shape,
+        unit_channels=256,
+        out_channels=17,
+        num_stages=4,
+        num_units=4,
+        use_prm=False,
+        norm_cfg=dict(type="BN"),
+        loss_keypoint=None,
+        train_cfg=None,
+        test_cfg=None,
+    ):
         # Protect mutable default arguments
         norm_cfg = cp.deepcopy(norm_cfg)
         super().__init__()
 
         self.train_cfg = {} if train_cfg is None else train_cfg
         self.test_cfg = {} if test_cfg is None else test_cfg
-        self.target_type = self.test_cfg.get('target_type', 'GaussianHeatmap')
+        self.target_type = self.test_cfg.get("target_type", "GaussianHeatmap")
 
         self.out_shape = out_shape
         self.unit_channels = unit_channels
@@ -441,7 +473,9 @@ class TopdownHeatmapMSMUHead(TopdownHeatmapBaseHead):
                         out_channels,
                         out_shape,
                         use_prm,
-                        norm_cfg=norm_cfg))
+                        norm_cfg=norm_cfg,
+                    )
+                )
 
     def get_loss(self, output, target, target_weight):
         """Calculate top-down keypoint loss.
@@ -478,10 +512,10 @@ class TopdownHeatmapMSMUHead(TopdownHeatmapBaseHead):
                 loss_func = self.loss
 
             loss_i = loss_func(output[i], target_i, target_weight_i)
-            if 'heatmap_loss' not in losses:
-                losses['heatmap_loss'] = loss_i
+            if "heatmap_loss" not in losses:
+                losses["heatmap_loss"] = loss_i
             else:
-                losses['heatmap_loss'] += loss_i
+                losses["heatmap_loss"] += loss_i
 
         return losses
 
@@ -503,15 +537,15 @@ class TopdownHeatmapMSMUHead(TopdownHeatmapBaseHead):
 
         accuracy = dict()
 
-        if self.target_type == 'GaussianHeatmap':
+        if self.target_type == "GaussianHeatmap":
             assert isinstance(output, list)
             assert target.dim() == 5 and target_weight.dim() == 4
             _, avg_acc, _ = pose_pck_accuracy(
                 output[-1].detach().cpu().numpy(),
                 target[:, -1, ...].detach().cpu().numpy(),
-                target_weight[:, -1,
-                              ...].detach().cpu().numpy().squeeze(-1) > 0)
-            accuracy['acc_pose'] = float(avg_acc)
+                target_weight[:, -1, ...].detach().cpu().numpy().squeeze(-1) > 0,
+            )
+            accuracy["acc_pose"] = float(avg_acc)
 
         return accuracy
 
@@ -551,11 +585,10 @@ class TopdownHeatmapMSMUHead(TopdownHeatmapBaseHead):
         output = output[-1]
         if flip_pairs is not None:
             output_heatmap = flip_back(
-                output.detach().cpu().numpy(),
-                flip_pairs,
-                target_type=self.target_type)
+                output.detach().cpu().numpy(), flip_pairs, target_type=self.target_type
+            )
             # feature is not aligned, shift flipped heatmap for higher accuracy
-            if self.test_cfg.get('shift_heatmap', False):
+            if self.test_cfg.get("shift_heatmap", False):
                 output_heatmap[:, :, :, 1:] = output_heatmap[:, :, :, :-1]
         else:
             output_heatmap = output.detach().cpu().numpy()

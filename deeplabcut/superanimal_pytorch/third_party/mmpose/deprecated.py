@@ -5,11 +5,15 @@ from .datasets.builder import DATASETS
 from .datasets.datasets.base import Kpt2dSviewRgbImgTopDownDataset
 from .models.builder import HEADS, POSENETS
 from .models.detectors import AssociativeEmbedding
-from .models.heads import (AEHigherResolutionHead, AESimpleHead,
-                           DeepposeRegressionHead, HMRMeshHead,
-                           TopdownHeatmapMSMUHead,
-                           TopdownHeatmapMultiStageHead,
-                           TopdownHeatmapSimpleHead)
+from .models.heads import (
+    AEHigherResolutionHead,
+    AESimpleHead,
+    DeepposeRegressionHead,
+    HMRMeshHead,
+    TopdownHeatmapMSMUHead,
+    TopdownHeatmapMultiStageHead,
+    TopdownHeatmapSimpleHead,
+)
 
 
 @DATASETS.register_module()
@@ -17,10 +21,12 @@ class TopDownFreiHandDataset(Kpt2dSviewRgbImgTopDownDataset):
     """Deprecated TopDownFreiHandDataset."""
 
     def __init__(self, *args, **kwargs):
-        raise (ImportError(
-            'TopDownFreiHandDataset has been renamed into FreiHandDataset,'
-            'check https://github.com/open-mmlab/mmpose/pull/202 for details.')
-               )
+        raise (
+            ImportError(
+                "TopDownFreiHandDataset has been renamed into FreiHandDataset,"
+                "check https://github.com/open-mmlab/mmpose/pull/202 for details."
+            )
+        )
 
     def _get_db(self):
         return []
@@ -34,10 +40,12 @@ class TopDownOneHand10KDataset(Kpt2dSviewRgbImgTopDownDataset):
     """Deprecated TopDownOneHand10KDataset."""
 
     def __init__(self, *args, **kwargs):
-        raise (ImportError(
-            'TopDownOneHand10KDataset has been renamed into OneHand10KDataset,'
-            'check https://github.com/open-mmlab/mmpose/pull/202 for details.')
-               )
+        raise (
+            ImportError(
+                "TopDownOneHand10KDataset has been renamed into OneHand10KDataset,"
+                "check https://github.com/open-mmlab/mmpose/pull/202 for details."
+            )
+        )
 
     def _get_db(self):
         return []
@@ -51,10 +59,12 @@ class TopDownPanopticDataset(Kpt2dSviewRgbImgTopDownDataset):
     """Deprecated TopDownPanopticDataset."""
 
     def __init__(self, *args, **kwargs):
-        raise (ImportError(
-            'TopDownPanopticDataset has been renamed into PanopticDataset,'
-            'check https://github.com/open-mmlab/mmpose/pull/202 for details.')
-               )
+        raise (
+            ImportError(
+                "TopDownPanopticDataset has been renamed into PanopticDataset,"
+                "check https://github.com/open-mmlab/mmpose/pull/202 for details."
+            )
+        )
 
     def _get_db(self):
         return []
@@ -74,10 +84,11 @@ class BottomUpHigherResolutionHead(AEHigherResolutionHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'BottomUpHigherResolutionHead has been renamed into '
-            'AEHigherResolutionHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "BottomUpHigherResolutionHead has been renamed into "
+            "AEHigherResolutionHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -91,10 +102,11 @@ class BottomUpSimpleHead(AESimpleHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'BottomUpHigherResolutionHead has been renamed into '
-            'AEHigherResolutionHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details',
-            DeprecationWarning)
+            "BottomUpHigherResolutionHead has been renamed into "
+            "AEHigherResolutionHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -108,10 +120,11 @@ class TopDownSimpleHead(TopdownHeatmapSimpleHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'TopDownSimpleHead has been renamed into '
-            'TopdownHeatmapSimpleHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "TopDownSimpleHead has been renamed into "
+            "TopdownHeatmapSimpleHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -125,10 +138,11 @@ class TopDownMultiStageHead(TopdownHeatmapMultiStageHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'TopDownMultiStageHead has been renamed into '
-            'TopdownHeatmapMultiStageHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "TopDownMultiStageHead has been renamed into "
+            "TopdownHeatmapMultiStageHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -142,10 +156,11 @@ class TopDownMSMUHead(TopdownHeatmapMSMUHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'TopDownMSMUHead has been renamed into '
-            'TopdownHeatmapMSMUHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "TopDownMSMUHead has been renamed into "
+            "TopdownHeatmapMSMUHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -159,10 +174,11 @@ class MeshHMRHead(HMRMeshHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'MeshHMRHead has been renamed into '
-            'HMRMeshHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "MeshHMRHead has been renamed into "
+            "HMRMeshHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @HEADS.register_module()
@@ -176,10 +192,11 @@ class FcHead(DeepposeRegressionHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'FcHead has been renamed into '
-            'DeepposeRegressionHead, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "FcHead has been renamed into "
+            "DeepposeRegressionHead, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )
 
 
 @POSENETS.register_module()
@@ -193,7 +210,8 @@ class BottomUp(AssociativeEmbedding):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
-            'BottomUp has been renamed into '
-            'AssociativeEmbedding, check '
-            'https://github.com/open-mmlab/mmpose/pull/656 for details.',
-            DeprecationWarning)
+            "BottomUp has been renamed into "
+            "AssociativeEmbedding, check "
+            "https://github.com/open-mmlab/mmpose/pull/656 for details.",
+            DeprecationWarning,
+        )

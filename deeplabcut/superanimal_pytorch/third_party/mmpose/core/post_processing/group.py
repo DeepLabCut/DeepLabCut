@@ -48,12 +48,11 @@ def _match_by_tag(inp, params):
     Returns:
         np.ndarray: result of pose groups.
     """
-    assert isinstance(params, _Params), 'params should be class _Params()'
+    assert isinstance(params, _Params), "params should be class _Params()"
 
     tag_k, loc_k, val_k = inp
 
-    default_ = np.zeros((params.num_joints, 3 + tag_k.shape[2]),
-                        dtype=np.float32)
+    default_ = np.zeros((params.num_joints, 3 + tag_k.shape[2]), dtype=np.float32)
 
     joint_dict = {}
     tag_dict = {}
@@ -75,11 +74,10 @@ def _match_by_tag(inp, params):
                 joint_dict.setdefault(key, np.copy(default_))[idx] = joint
                 tag_dict[key] = [tag]
         else:
-            grouped_keys = list(joint_dict.keys())[:params.max_num_people]
+            grouped_keys = list(joint_dict.keys())[: params.max_num_people]
             grouped_tags = [np.mean(tag_dict[i], axis=0) for i in grouped_keys]
 
-            if (params.ignore_too_much
-                    and len(grouped_keys) == params.max_num_people):
+            if params.ignore_too_much and len(grouped_keys) == params.max_num_people:
                 continue
 
             diff = joints[:, None, 3:] - np.array(grouped_tags)[None, :, :]
@@ -94,22 +92,27 @@ def _match_by_tag(inp, params):
 
             if num_added > num_grouped:
                 diff_normed = np.concatenate(
-                    (diff_normed,
-                     np.zeros((num_added, num_added - num_grouped),
-                              dtype=np.float32) + 1e10),
-                    axis=1)
+                    (
+                        diff_normed,
+                        np.zeros((num_added, num_added - num_grouped), dtype=np.float32)
+                        + 1e10,
+                    ),
+                    axis=1,
+                )
 
             pairs = _py_max_match(diff_normed)
             for row, col in pairs:
-                if (row < num_added and col < num_grouped
-                        and diff_saved[row][col] < params.tag_threshold):
+                if (
+                    row < num_added
+                    and col < num_grouped
+                    and diff_saved[row][col] < params.tag_threshold
+                ):
                     key = grouped_keys[col]
                     joint_dict[key][idx] = joints[row]
                     tag_dict[key].append(tags[row])
                 else:
                     key = tags[row][0]
-                    joint_dict.setdefault(key, np.copy(default_))[idx] = \
-                        joints[row]
+                    joint_dict.setdefault(key, np.copy(default_))[idx] = joints[row]
                     tag_dict[key] = [tags[row]]
 
     results = np.array([joint_dict[i] for i in joint_dict]).astype(np.float32)
@@ -124,18 +127,18 @@ class _Params:
     """
 
     def __init__(self, cfg):
-        self.num_joints = cfg['num_joints']
-        self.max_num_people = cfg['max_num_people']
+        self.num_joints = cfg["num_joints"]
+        self.max_num_people = cfg["max_num_people"]
 
-        self.detection_threshold = cfg['detection_threshold']
-        self.tag_threshold = cfg['tag_threshold']
-        self.use_detection_val = cfg['use_detection_val']
-        self.ignore_too_much = cfg['ignore_too_much']
+        self.detection_threshold = cfg["detection_threshold"]
+        self.tag_threshold = cfg["tag_threshold"]
+        self.use_detection_val = cfg["use_detection_val"]
+        self.ignore_too_much = cfg["ignore_too_much"]
 
         if self.num_joints == 17:
             self.joint_order = [
-                i - 1 for i in
-                [1, 2, 3, 4, 5, 6, 7, 12, 13, 8, 9, 10, 11, 14, 15, 16, 17]
+                i - 1
+                for i in [1, 2, 3, 4, 5, 6, 7, 12, 13, 8, 9, 10, 11, 14, 15, 16, 17]
             ]
         else:
             self.joint_order = list(np.arange(self.num_joints))
@@ -146,10 +149,9 @@ class HeatmapParser:
 
     def __init__(self, cfg):
         self.params = _Params(cfg)
-        self.tag_per_joint = cfg['tag_per_joint']
-        self.pool = torch.nn.MaxPool2d(cfg['nms_kernel'], 1,
-                                       cfg['nms_padding'])
-        self.use_udp = cfg.get('use_udp', False)
+        self.tag_per_joint = cfg["tag_per_joint"]
+        self.pool = torch.nn.MaxPool2d(cfg["nms_kernel"], 1, cfg["nms_padding"])
+        self.use_udp = cfg.get("use_udp", False)
 
     def nms(self, heatmaps):
         """Non-Maximum Suppression for heatmaps.
@@ -224,8 +226,8 @@ class HeatmapParser:
             tags = tags.expand(-1, self.params.num_joints, -1, -1)
 
         tag_k = torch.stack(
-            [torch.gather(tags[..., i], 2, ind) for i in range(tags.size(3))],
-            dim=3)
+            [torch.gather(tags[..., i], 2, ind) for i in range(tags.size(3))], dim=3
+        )
 
         x = ind % W
         y = ind // W
@@ -233,9 +235,9 @@ class HeatmapParser:
         ind_k = torch.stack((x, y), dim=3)
 
         results = {
-            'tag_k': tag_k.cpu().numpy(),
-            'loc_k': ind_k.cpu().numpy(),
-            'val_k': val_k.cpu().numpy()
+            "tag_k": tag_k.cpu().numpy(),
+            "loc_k": ind_k.cpu().numpy(),
+            "val_k": val_k.cpu().numpy(),
         }
 
         return results
@@ -262,19 +264,16 @@ class HeatmapParser:
                         x, y = joint[0:2]
                         xx, yy = int(x), int(y)
                         tmp = heatmaps[batch_id][joint_id]
-                        if tmp[min(H - 1, yy + 1), xx] > tmp[max(0, yy - 1),
-                                                             xx]:
+                        if tmp[min(H - 1, yy + 1), xx] > tmp[max(0, yy - 1), xx]:
                             y += 0.25
                         else:
                             y -= 0.25
 
-                        if tmp[yy, min(W - 1, xx + 1)] > tmp[yy,
-                                                             max(0, xx - 1)]:
+                        if tmp[yy, min(W - 1, xx + 1)] > tmp[yy, max(0, xx - 1)]:
                             x += 0.25
                         else:
                             x -= 0.25
-                        results[batch_id][people_id, joint_id,
-                                          0:2] = (x + 0.5, y + 0.5)
+                        results[batch_id][people_id, joint_id, 0:2] = (x + 0.5, y + 0.5)
         return results
 
     @staticmethod
@@ -319,8 +318,7 @@ class HeatmapParser:
         for _heatmap, _tag in zip(heatmap, tag):
             # distance of all tag values with mean tag of
             # current detected people
-            distance_tag = (((_tag -
-                              prev_tag[None, None, :])**2).sum(axis=2)**0.5)
+            distance_tag = ((_tag - prev_tag[None, None, :]) ** 2).sum(axis=2) ** 0.5
             norm_heatmap = _heatmap - np.round(distance_tag)
 
             # find maximum position
@@ -384,7 +382,8 @@ class HeatmapParser:
                 for i in range(len(results)):
                     if results[i].shape[0] > 0:
                         results[i][..., :2] = post_dark_udp(
-                            results[i][..., :2].copy(), heatmaps[i:i + 1, :])
+                            results[i][..., :2].copy(), heatmaps[i : i + 1, :]
+                        )
             else:
                 results = self.adjust(results, heatmaps)
 
@@ -397,10 +396,10 @@ class HeatmapParser:
                 heatmap_numpy = heatmaps[0].cpu().numpy()
                 tag_numpy = tags[0].cpu().numpy()
                 if not self.tag_per_joint:
-                    tag_numpy = np.tile(tag_numpy,
-                                        (self.params.num_joints, 1, 1, 1))
+                    tag_numpy = np.tile(tag_numpy, (self.params.num_joints, 1, 1, 1))
                 results[i] = self.refine(
-                    heatmap_numpy, tag_numpy, results[i], use_udp=self.use_udp)
+                    heatmap_numpy, tag_numpy, results[i], use_udp=self.use_udp
+                )
             results = [results]
 
         return results, scores

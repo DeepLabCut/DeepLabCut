@@ -3,7 +3,6 @@ import functools
 
 
 class OutputHook:
-
     def __init__(self, module, outputs=None, as_tensor=False):
         self.outputs = outputs
         self.as_tensor = as_tensor
@@ -11,9 +10,7 @@ class OutputHook:
         self.register(module)
 
     def register(self, module):
-
         def hook_wrapper(name):
-
             def hook(model, input, output):
                 if self.as_tensor:
                     self.layer_outputs[name] = output
@@ -23,8 +20,7 @@ class OutputHook:
                             out.detach().cpu().numpy() for out in output
                         ]
                     else:
-                        self.layer_outputs[name] = output.detach().cpu().numpy(
-                        )
+                        self.layer_outputs[name] = output.detach().cpu().numpy()
 
             return hook
 
@@ -36,7 +32,8 @@ class OutputHook:
                     h = layer.register_forward_hook(hook_wrapper(name))
                 except ModuleNotFoundError as module_not_found:
                     raise ModuleNotFoundError(
-                        f'Module {name} not found') from module_not_found
+                        f"Module {name} not found"
+                    ) from module_not_found
                 self.handles.append(h)
 
     def remove(self):
@@ -53,8 +50,7 @@ class OutputHook:
 # using wonder's beautiful simplification:
 # https://stackoverflow.com/questions/31174295/getattr-and-setattr-on-nested-objects
 def rgetattr(obj, attr, *args):
-
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
 
-    return functools.reduce(_getattr, [obj] + attr.split('.'))
+    return functools.reduce(_getattr, [obj] + attr.split("."))

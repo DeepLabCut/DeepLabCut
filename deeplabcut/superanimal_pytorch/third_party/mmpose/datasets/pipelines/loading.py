@@ -25,11 +25,13 @@ class LoadImageFromFile:
             Defaults to ``dict(backend='disk')``.
     """
 
-    def __init__(self,
-                 to_float32=False,
-                 color_type='color',
-                 channel_order='rgb',
-                 file_client_args=dict(backend='disk')):
+    def __init__(
+        self,
+        to_float32=False,
+        color_type="color",
+        channel_order="rgb",
+        file_client_args=dict(backend="disk"),
+    ):
         self.to_float32 = to_float32
         self.color_type = color_type
         self.channel_order = channel_order
@@ -41,48 +43,47 @@ class LoadImageFromFile:
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
 
-        image_file = results['image_file']
+        image_file = results["image_file"]
 
         if isinstance(image_file, (list, tuple)):
             imgs = []
             for image in image_file:
                 img_bytes = self.file_client.get(image)
                 img = mmcv.imfrombytes(
-                    img_bytes,
-                    flag=self.color_type,
-                    channel_order=self.channel_order)
+                    img_bytes, flag=self.color_type, channel_order=self.channel_order
+                )
                 if self.to_float32:
                     img = img.astype(np.float32)
                 if img is None:
-                    raise ValueError(f'Fail to read {image}')
+                    raise ValueError(f"Fail to read {image}")
                 imgs.append(img)
-            results['img'] = imgs
+            results["img"] = imgs
         else:
             img_bytes = self.file_client.get(image_file)
             try:
                 img = mmcv.imfrombytes(
-                    img_bytes,
-                    flag=self.color_type,
-                    channel_order=self.channel_order)
+                    img_bytes, flag=self.color_type, channel_order=self.channel_order
+                )
             except:
-                
-                print ('problematic image {}'.format(image_file))
+
+                print("problematic image {}".format(image_file))
                 # a trick to feed an empty image to prevent program crashing
-                img = np.zeros((256,256,3),np.uint8)
-                
-                
+                img = np.zeros((256, 256, 3), np.uint8)
+
             if self.to_float32:
                 img = img.astype(np.float32)
             if img is None:
-                raise ValueError(f'Fail to read {image_file}')
-            
-            results['img'] = img
+                raise ValueError(f"Fail to read {image_file}")
+
+            results["img"] = img
 
         return results
 
     def __repr__(self):
-        repr_str = (f'{self.__class__.__name__}('
-                    f'to_float32={self.to_float32}, '
-                    f"color_type='{self.color_type}', "
-                    f'file_client_args={self.file_client_args})')
+        repr_str = (
+            f"{self.__class__.__name__}("
+            f"to_float32={self.to_float32}, "
+            f"color_type='{self.color_type}', "
+            f"file_client_args={self.file_client_args})"
+        )
         return repr_str

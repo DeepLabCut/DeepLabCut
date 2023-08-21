@@ -5,8 +5,12 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner, OptimizerHook,
-                         get_dist_info)
+from mmcv.runner import (
+    DistSamplerSeedHook,
+    EpochBasedRunner,
+    OptimizerHook,
+    get_dist_info,
+)
 
 from mmpose.core import DistEvalHook, EvalHook, build_optimizers
 from mmpose.core.distributed_wrapper import DistributedDataParallelWrapper
@@ -17,12 +21,14 @@ try:
     from mmcv.runner import Fp16OptimizerHook
 except ImportError:
     warnings.warn(
-        'Fp16OptimizerHook from mmpose will be deprecated from '
-        'v0.15.0. Please install mmcv>=1.1.4', DeprecationWarning)
+        "Fp16OptimizerHook from mmpose will be deprecated from "
+        "v0.15.0. Please install mmcv>=1.1.4",
+        DeprecationWarning,
+    )
     from mmpose.core import Fp16OptimizerHook
 
 
-def init_random_seed(seed=None, device='cuda'):
+def init_random_seed(seed=None, device="cuda"):
     """Initialize random seed.
 
     If the seed is not set, the seed will be automatically randomized,
@@ -43,7 +49,7 @@ def init_random_seed(seed=None, device='cuda'):
     # some potential bugs. Please refer to
     # https://github.com/open-mmlab/mmdetection/issues/6339
     rank, world_size = get_dist_info()
-    seed = np.random.randint(2**31)
+    seed = np.random.randint(2 ** 31)
     if world_size == 1:
         return seed
 
@@ -55,14 +61,16 @@ def init_random_seed(seed=None, device='cuda'):
     return random_num.item()
 
 
-def train_model(model,
-                dataset,
-                cfg,
-                distributed=False,
-                validate=False,
-                timestamp=None,
-                meta=None,
-                freeze_BN = False):
+def train_model(
+    model,
+    dataset,
+    cfg,
+    distributed=False,
+    validate=False,
+    timestamp=None,
+    meta=None,
+    freeze_BN=False,
+):
     """Train model entry function.
 
     Args:
@@ -83,37 +91,46 @@ def train_model(model,
     # step 1: give default values and override (if exist) from cfg.data
     loader_cfg = {
         **dict(
-            seed=cfg.get('seed'),
+            seed=cfg.get("seed"),
             drop_last=False,
             dist=distributed,
-            num_gpus=len(cfg.gpu_ids)),
-        **({} if torch.__version__ != 'parrots' else dict(
-               prefetch_num=2,
-               pin_memory=False,
-           )),
-        **dict((k, cfg.data[k]) for k in [
-                   'samples_per_gpu',
-                   'workers_per_gpu',
-                   'shuffle',
-                   'seed',
-                   'drop_last',
-                   'prefetch_num',
-                   'pin_memory',
-                   'persistent_workers',
-               ] if k in cfg.data)
+            num_gpus=len(cfg.gpu_ids),
+        ),
+        **(
+            {}
+            if torch.__version__ != "parrots"
+            else dict(
+                prefetch_num=2,
+                pin_memory=False,
+            )
+        ),
+        **dict(
+            (k, cfg.data[k])
+            for k in [
+                "samples_per_gpu",
+                "workers_per_gpu",
+                "shuffle",
+                "seed",
+                "drop_last",
+                "prefetch_num",
+                "pin_memory",
+                "persistent_workers",
+            ]
+            if k in cfg.data
+        ),
     }
 
     # step 2: cfg.data.train_dataloader has highest priority
-    train_loader_cfg = dict(loader_cfg, **cfg.data.get('train_dataloader', {}))
+    train_loader_cfg = dict(loader_cfg, **cfg.data.get("train_dataloader", {}))
 
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
     # determine whether use adversarial training precess or not
-    use_adverserial_train = cfg.get('use_adversarial_train', False)
+    use_adverserial_train = cfg.get("use_adversarial_train", False)
 
     # put model on gpus
     if distributed:
-        find_unused_parameters = cfg.get('find_unused_parameters', True)
+        find_unused_parameters = cfg.get("find_unused_parameters", True)
         # Sets the `find_unused_parameters` parameter in
         # torch.nn.parallel.DistributedDataParallel
 
@@ -123,16 +140,17 @@ def train_model(model,
                 model,
                 device_ids=[torch.cuda.current_device()],
                 broadcast_buffers=False,
-                find_unused_parameters=find_unused_parameters)
+                find_unused_parameters=find_unused_parameters,
+            )
         else:
             model = MMDistributedDataParallel(
                 model.cuda(),
                 device_ids=[torch.cuda.current_device()],
                 broadcast_buffers=False,
-                find_unused_parameters=find_unused_parameters)
+                find_unused_parameters=find_unused_parameters,
+            )
     else:
-        model = MMDataParallel(
-            model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
+        model = MMDataParallel(model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizers(model, cfg.optimizer)
@@ -143,7 +161,8 @@ def train_model(model,
         work_dir=cfg.work_dir,
         logger=logger,
         meta=meta,
-        freeze_BN = freeze_BN)
+        freeze_BN=freeze_BN,
+    )
     # an ugly workaround to make .log and .log.json filenames the same
     runner.timestamp = timestamp
 
@@ -153,36 +172,43 @@ def train_model(model,
         optimizer_config = None
     else:
         # fp16 setting
-        fp16_cfg = cfg.get('fp16', None)
+        fp16_cfg = cfg.get("fp16", None)
         if fp16_cfg is not None:
             optimizer_config = Fp16OptimizerHook(
-                **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
-        elif distributed and 'type' not in cfg.optimizer_config:
+                **cfg.optimizer_config, **fp16_cfg, distributed=distributed
+            )
+        elif distributed and "type" not in cfg.optimizer_config:
             optimizer_config = OptimizerHook(**cfg.optimizer_config)
         else:
             optimizer_config = cfg.optimizer_config
 
     # register hooks
-    runner.register_training_hooks(cfg.lr_config, optimizer_config,
-                                   cfg.checkpoint_config, cfg.log_config,
-                                   cfg.get('momentum_config', None))
+    runner.register_training_hooks(
+        cfg.lr_config,
+        optimizer_config,
+        cfg.checkpoint_config,
+        cfg.log_config,
+        cfg.get("momentum_config", None),
+    )
     if distributed:
         runner.register_hook(DistSamplerSeedHook())
 
     # register eval hooks
     if validate:
-        eval_cfg = cfg.get('evaluation', {})
+        eval_cfg = cfg.get("evaluation", {})
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
         dataloader_setting = dict(
             samples_per_gpu=1,
-            workers_per_gpu=cfg.data.get('workers_per_gpu', 1),
+            workers_per_gpu=cfg.data.get("workers_per_gpu", 1),
             # cfg.gpus will be ignored if distributed
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
             drop_last=False,
-            shuffle=False)
-        dataloader_setting = dict(dataloader_setting,
-                                  **cfg.data.get('val_dataloader', {}))
+            shuffle=False,
+        )
+        dataloader_setting = dict(
+            dataloader_setting, **cfg.data.get("val_dataloader", {})
+        )
         val_dataloader = build_dataloader(val_dataset, **dataloader_setting)
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))

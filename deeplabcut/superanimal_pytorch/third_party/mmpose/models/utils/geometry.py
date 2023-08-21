@@ -17,7 +17,7 @@ def rot6d_to_rotmat(x):
     a1 = x[:, :, 0]
     a2 = x[:, :, 1]
     b1 = F.normalize(a1)
-    b2 = F.normalize(a2 - torch.einsum('bi,bi->b', b1, a2).unsqueeze(-1) * b1)
+    b2 = F.normalize(a2 - torch.einsum("bi,bi->b", b1, a2).unsqueeze(-1) * b1)
     b3 = torch.cross(b1, b2)
     return torch.stack((b1, b2, b3), dim=-1)
 
@@ -50,8 +50,7 @@ def quat_to_rotmat(quat):
     """
     norm_quat = quat
     norm_quat = norm_quat / norm_quat.norm(p=2, dim=1, keepdim=True)
-    w, x, y, z = norm_quat[:, 0], norm_quat[:, 1],\
-        norm_quat[:, 2], norm_quat[:, 3]
+    w, x, y, z = norm_quat[:, 0], norm_quat[:, 1], norm_quat[:, 2], norm_quat[:, 3]
 
     B = quat.size(0)
 
@@ -59,10 +58,18 @@ def quat_to_rotmat(quat):
     wx, wy, wz = w * x, w * y, w * z
     xy, xz, yz = x * y, x * z, y * z
 
-    rotMat = torch.stack([
-        w2 + x2 - y2 - z2, 2 * xy - 2 * wz, 2 * wy + 2 * xz, 2 * wz + 2 * xy,
-        w2 - x2 + y2 - z2, 2 * yz - 2 * wx, 2 * xz - 2 * wy, 2 * wx + 2 * yz,
-        w2 - x2 - y2 + z2
-    ],
-                         dim=1).view(B, 3, 3)
+    rotMat = torch.stack(
+        [
+            w2 + x2 - y2 - z2,
+            2 * xy - 2 * wz,
+            2 * wy + 2 * xz,
+            2 * wz + 2 * xy,
+            w2 - x2 + y2 - z2,
+            2 * yz - 2 * wx,
+            2 * xz - 2 * wy,
+            2 * wx + 2 * yz,
+            w2 - x2 - y2 + z2,
+        ],
+        dim=1,
+    ).view(B, 3, 3)
     return rotMat

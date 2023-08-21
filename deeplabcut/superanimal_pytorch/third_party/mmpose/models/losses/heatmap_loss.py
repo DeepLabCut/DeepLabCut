@@ -18,13 +18,15 @@ class AdaptiveWingLoss(nn.Module):
         loss_weight (float): Weight of the loss. Default: 1.0.
     """
 
-    def __init__(self,
-                 alpha=2.1,
-                 omega=14,
-                 epsilon=1,
-                 theta=0.5,
-                 use_target_weight=False,
-                 loss_weight=1.):
+    def __init__(
+        self,
+        alpha=2.1,
+        omega=14,
+        epsilon=1,
+        theta=0.5,
+        use_target_weight=False,
+        loss_weight=1.0,
+    ):
         super().__init__()
         self.alpha = float(alpha)
         self.omega = float(omega)
@@ -47,20 +49,23 @@ class AdaptiveWingLoss(nn.Module):
         H, W = pred.shape[2:4]
         delta = (target - pred).abs()
 
-        A = self.omega * (
-            1 / (1 + torch.pow(self.theta / self.epsilon, self.alpha - target))
-        ) * (self.alpha - target) * (torch.pow(
-            self.theta / self.epsilon,
-            self.alpha - target - 1)) * (1 / self.epsilon)
+        A = (
+            self.omega
+            * (1 / (1 + torch.pow(self.theta / self.epsilon, self.alpha - target)))
+            * (self.alpha - target)
+            * (torch.pow(self.theta / self.epsilon, self.alpha - target - 1))
+            * (1 / self.epsilon)
+        )
         C = self.theta * A - self.omega * torch.log(
-            1 + torch.pow(self.theta / self.epsilon, self.alpha - target))
+            1 + torch.pow(self.theta / self.epsilon, self.alpha - target)
+        )
 
         losses = torch.where(
             delta < self.theta,
-            self.omega *
-            torch.log(1 +
-                      torch.pow(delta / self.epsilon, self.alpha - target)),
-            A * delta - C)
+            self.omega
+            * torch.log(1 + torch.pow(delta / self.epsilon, self.alpha - target)),
+            A * delta - C,
+        )
 
         return torch.mean(losses)
 
@@ -78,8 +83,10 @@ class AdaptiveWingLoss(nn.Module):
                 Weights across different joint types.
         """
         if self.use_target_weight:
-            loss = self.criterion(output * target_weight.unsqueeze(-1),
-                                  target * target_weight.unsqueeze(-1))
+            loss = self.criterion(
+                output * target_weight.unsqueeze(-1),
+                target * target_weight.unsqueeze(-1),
+            )
         else:
             loss = self.criterion(output, target)
 

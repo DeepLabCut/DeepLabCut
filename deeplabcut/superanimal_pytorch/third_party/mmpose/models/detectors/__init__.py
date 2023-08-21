@@ -2,6 +2,4 @@
 from .posewarper import PoseWarper
 from .top_down import TopDown
 
-__all__ = [
-    'TopDown'
-]
+__all__ = ["TopDown"]

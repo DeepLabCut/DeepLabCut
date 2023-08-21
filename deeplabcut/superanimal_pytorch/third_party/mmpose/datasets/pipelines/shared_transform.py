@@ -28,10 +28,10 @@ class ToTensor:
     """
 
     def __call__(self, results):
-        if isinstance(results['img'], (list, tuple)):
-            results['img'] = [F.to_tensor(img) for img in results['img']]
+        if isinstance(results["img"], (list, tuple)):
+            results["img"] = [F.to_tensor(img) for img in results["img"]]
         else:
-            results['img'] = F.to_tensor(results['img'])
+            results["img"] = F.to_tensor(results["img"])
 
         return results
 
@@ -52,14 +52,12 @@ class NormalizeTensor:
         self.std = std
 
     def __call__(self, results):
-        if isinstance(results['img'], (list, tuple)):
-            results['img'] = [
-                F.normalize(img, mean=self.mean, std=self.std)
-                for img in results['img']
+        if isinstance(results["img"], (list, tuple)):
+            results["img"] = [
+                F.normalize(img, mean=self.mean, std=self.std) for img in results["img"]
             ]
         else:
-            results['img'] = F.normalize(
-                results['img'], mean=self.mean, std=self.std)
+            results["img"] = F.normalize(results["img"], mean=self.mean, std=self.std)
 
         return results
 
@@ -83,8 +81,10 @@ class Compose:
             elif callable(transform):
                 self.transforms.append(transform)
             else:
-                raise TypeError('transform must be callable or a dict, but got'
-                                f' {type(transform)}')
+                raise TypeError(
+                    "transform must be callable or a dict, but got"
+                    f" {type(transform)}"
+                )
 
     def __call__(self, data):
         """Call function to apply transforms sequentially.
@@ -103,10 +103,10 @@ class Compose:
 
     def __repr__(self):
         """Compute the string representation."""
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += f'\n    {t}'
-        format_string += '\n)'
+            format_string += f"\n    {t}"
+        format_string += "\n)"
         return format_string
 
 
@@ -133,7 +133,7 @@ class Collect:
           on `meta_keys`.
     """
 
-    def __init__(self, keys, meta_keys, meta_name='img_metas'):
+    def __init__(self, keys, meta_keys, meta_name="img_metas"):
         self.keys = keys
         self.meta_keys = meta_keys
         self.meta_name = meta_name
@@ -145,8 +145,8 @@ class Collect:
             results (dict): The resulting dict to be modified and passed
               to the next transform in pipeline.
         """
-        if 'ann_info' in results:
-            results.update(results['ann_info'])
+        if "ann_info" in results:
+            results.update(results["ann_info"])
 
         data = {}
         for key in self.keys:
@@ -166,16 +166,18 @@ class Collect:
                 else:
                     key_src = key_tgt = key
                 meta[key_tgt] = results[key_src]
-        if 'bbox_id' in results:
-            meta['bbox_id'] = results['bbox_id']
+        if "bbox_id" in results:
+            meta["bbox_id"] = results["bbox_id"]
         data[self.meta_name] = DC(meta, cpu_only=True)
 
         return data
 
     def __repr__(self):
         """Compute the string representation."""
-        return (f'{self.__class__.__name__}('
-                f'keys={self.keys}, meta_keys={self.meta_keys})')
+        return (
+            f"{self.__class__.__name__}("
+            f"keys={self.keys}, meta_keys={self.meta_keys})"
+        )
 
 
 @PIPELINES.register_module()
@@ -217,17 +219,18 @@ class Albumentation:
 
     def __init__(self, transforms, keymap=None):
         if albumentations is None:
-            raise RuntimeError('albumentations is not installed')
+            raise RuntimeError("albumentations is not installed")
 
         self.transforms = transforms
         self.filter_lost_elements = False
 
         self.aug = albumentations.Compose(
-            [self.albu_builder(t) for t in self.transforms])
+            [self.albu_builder(t) for t in self.transforms]
+        )
 
         if not keymap:
             self.keymap_to_albu = {
-                'img': 'image',
+                "img": "image",
             }
         else:
             self.keymap_to_albu = keymap
@@ -245,24 +248,25 @@ class Albumentation:
             obj: The constructed object.
         """
 
-        assert isinstance(cfg, dict) and 'type' in cfg
+        assert isinstance(cfg, dict) and "type" in cfg
         args = cfg.copy()
 
-        obj_type = args.pop('type')
+        obj_type = args.pop("type")
         if mmcv.is_str(obj_type):
             if albumentations is None:
-                raise RuntimeError('albumentations is not installed')
+                raise RuntimeError("albumentations is not installed")
             if not hasattr(albumentations.augmentations.transforms, obj_type):
-                warnings.warn('{obj_type} is not pixel-level transformations. '
-                              'Please use with caution.')
+                warnings.warn(
+                    "{obj_type} is not pixel-level transformations. "
+                    "Please use with caution."
+                )
             obj_cls = getattr(albumentations, obj_type)
         else:
-            raise TypeError(f'type must be a str, but got {type(obj_type)}')
+            raise TypeError(f"type must be a str, but got {type(obj_type)}")
 
-        if 'transforms' in args:
-            args['transforms'] = [
-                self.albu_builder(transform)
-                for transform in args['transforms']
+        if "transforms" in args:
+            args["transforms"] = [
+                self.albu_builder(transform) for transform in args["transforms"]
             ]
 
         return obj_cls(**args)
@@ -295,7 +299,7 @@ class Albumentation:
         return results
 
     def __repr__(self):
-        repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
+        repr_str = self.__class__.__name__ + f"(transforms={self.transforms})"
         return repr_str
 
 
@@ -321,11 +325,13 @@ class PhotometricDistortion:
         hue_delta (int): delta of hue.
     """
 
-    def __init__(self,
-                 brightness_delta=32,
-                 contrast_range=(0.5, 1.5),
-                 saturation_range=(0.5, 1.5),
-                 hue_delta=18):
+    def __init__(
+        self,
+        brightness_delta=32,
+        contrast_range=(0.5, 1.5),
+        saturation_range=(0.5, 1.5),
+        hue_delta=18,
+    ):
         self.brightness_delta = brightness_delta
         self.contrast_lower, self.contrast_upper = contrast_range
         self.saturation_lower, self.saturation_upper = saturation_range
@@ -341,30 +347,31 @@ class PhotometricDistortion:
         """Brightness distortion."""
         if random.randint(2):
             return self.convert(
-                img,
-                beta=random.uniform(-self.brightness_delta,
-                                    self.brightness_delta))
+                img, beta=random.uniform(-self.brightness_delta, self.brightness_delta)
+            )
         return img
 
     def contrast(self, img):
         """Contrast distortion."""
         if random.randint(2):
             return self.convert(
-                img,
-                alpha=random.uniform(self.contrast_lower, self.contrast_upper))
+                img, alpha=random.uniform(self.contrast_lower, self.contrast_upper)
+            )
         return img
 
     def saturation(self, img):
         # Apply saturation distortion to hsv-formatted img
         img[:, :, 1] = self.convert(
             img[:, :, 1],
-            alpha=random.uniform(self.saturation_lower, self.saturation_upper))
+            alpha=random.uniform(self.saturation_lower, self.saturation_upper),
+        )
         return img
 
     def hue(self, img):
         # Apply hue distortion to hsv-formatted img
-        img[:, :, 0] = (img[:, :, 0].astype(int) +
-                        random.randint(-self.hue_delta, self.hue_delta)) % 180
+        img[:, :, 0] = (
+            img[:, :, 0].astype(int) + random.randint(-self.hue_delta, self.hue_delta)
+        ) % 180
         return img
 
     def swap_channels(self, img):
@@ -383,7 +390,7 @@ class PhotometricDistortion:
             dict: Result dict with images distorted.
         """
 
-        img = results['img']
+        img = results["img"]
         # random brightness
         img = self.brightness(img)
 
@@ -410,17 +417,19 @@ class PhotometricDistortion:
         # randomly swap channels
         self.swap_channels(img)
 
-        results['img'] = img
+        results["img"] = img
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += (f'(brightness_delta={self.brightness_delta}, '
-                     f'contrast_range=({self.contrast_lower}, '
-                     f'{self.contrast_upper}), '
-                     f'saturation_range=({self.saturation_lower}, '
-                     f'{self.saturation_upper}), '
-                     f'hue_delta={self.hue_delta})')
+        repr_str += (
+            f"(brightness_delta={self.brightness_delta}, "
+            f"contrast_range=({self.contrast_lower}, "
+            f"{self.contrast_upper}), "
+            f"saturation_range=({self.saturation_lower}, "
+            f"{self.saturation_upper}), "
+            f"hue_delta={self.hue_delta})"
+        )
         return repr_str
 
 
@@ -450,7 +459,6 @@ class MultiItemProcess:
 
 @PIPELINES.register_module()
 class DiscardDuplicatedItems:
-
     def __init__(self, keys_list):
         """Discard duplicated single-item results.
 
@@ -477,10 +485,9 @@ class MultitaskGatherTarget:
         pipeline_indices (list[int]): Pipeline index of each head.
     """
 
-    def __init__(self,
-                 pipeline_list,
-                 pipeline_indices=None,
-                 keys=('target', 'target_weight')):
+    def __init__(
+        self, pipeline_list, pipeline_indices=None, keys=("target", "target_weight")
+    ):
         self.keys = keys
         self.pipelines = []
         for pipeline in pipeline_list:

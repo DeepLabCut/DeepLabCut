@@ -7,9 +7,12 @@ import numpy as np
 from torch.utils.data import Dataset
 from xtcocotools.coco import COCO
 
-from mmpose.core.evaluation.top_down_eval import (keypoint_auc, keypoint_epe,
-                                                  keypoint_nme,
-                                                  keypoint_pck_accuracy)
+from mmpose.core.evaluation.top_down_eval import (
+    keypoint_auc,
+    keypoint_epe,
+    keypoint_nme,
+    keypoint_pck_accuracy,
+)
 from mmpose.datasets import DatasetInfo
 from mmpose.datasets.pipelines import Compose
 
@@ -35,14 +38,16 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
             validation dataset. Default: False.
     """
 
-    def __init__(self,
-                 ann_file,
-                 img_prefix,
-                 data_cfg,
-                 pipeline,
-                 dataset_info=None,
-                 coco_style=True,
-                 test_mode=False):
+    def __init__(
+        self,
+        ann_file,
+        img_prefix,
+        data_cfg,
+        pipeline,
+        dataset_info=None,
+        coco_style=True,
+        test_mode=False,
+    ):
 
         self.image_info = {}
         self.ann_info = {}
@@ -52,56 +57,53 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         self.pipeline = pipeline
         self.test_mode = test_mode
 
-        self.ann_info['image_size'] = np.array(data_cfg['image_size'])
-        self.ann_info['heatmap_size'] = np.array(data_cfg['heatmap_size'])
-        self.ann_info['num_joints'] = data_cfg['num_joints']
+        self.ann_info["image_size"] = np.array(data_cfg["image_size"])
+        self.ann_info["heatmap_size"] = np.array(data_cfg["heatmap_size"])
+        self.ann_info["num_joints"] = data_cfg["num_joints"]
 
-        self.ann_info['inference_channel'] = data_cfg['inference_channel']
-        self.ann_info['num_output_channels'] = data_cfg['num_output_channels']
-        self.ann_info['dataset_channel'] = data_cfg['dataset_channel']
+        self.ann_info["inference_channel"] = data_cfg["inference_channel"]
+        self.ann_info["num_output_channels"] = data_cfg["num_output_channels"]
+        self.ann_info["dataset_channel"] = data_cfg["dataset_channel"]
 
-        self.ann_info['use_different_joint_weights'] = data_cfg.get(
-            'use_different_joint_weights', False)
+        self.ann_info["use_different_joint_weights"] = data_cfg.get(
+            "use_different_joint_weights", False
+        )
 
         if dataset_info is None:
             raise ValueError(
-                'Check https://github.com/open-mmlab/mmpose/pull/663 '
-                'for details.')
+                "Check https://github.com/open-mmlab/mmpose/pull/663 " "for details."
+            )
 
         dataset_info = DatasetInfo(dataset_info)
 
-        assert self.ann_info['num_joints'] == dataset_info.keypoint_num
-        self.ann_info['flip_pairs'] = dataset_info.flip_pairs
-        self.ann_info['flip_index'] = dataset_info.flip_index
-        self.ann_info['upper_body_ids'] = dataset_info.upper_body_ids
-        self.ann_info['lower_body_ids'] = dataset_info.lower_body_ids
-        self.ann_info['joint_weights'] = dataset_info.joint_weights
-        self.ann_info['skeleton'] = dataset_info.skeleton
+        assert self.ann_info["num_joints"] == dataset_info.keypoint_num
+        self.ann_info["flip_pairs"] = dataset_info.flip_pairs
+        self.ann_info["flip_index"] = dataset_info.flip_index
+        self.ann_info["upper_body_ids"] = dataset_info.upper_body_ids
+        self.ann_info["lower_body_ids"] = dataset_info.lower_body_ids
+        self.ann_info["joint_weights"] = dataset_info.joint_weights
+        self.ann_info["skeleton"] = dataset_info.skeleton
 
-        
         self.sigmas = dataset_info.sigmas
         self.dataset_name = dataset_info.dataset_name
 
         if coco_style:
             self.coco = COCO(ann_file)
-            if 'categories' in self.coco.dataset:
+            if "categories" in self.coco.dataset:
                 cats = [
-                    cat['name']
-                    for cat in self.coco.loadCats(self.coco.getCatIds())
+                    cat["name"] for cat in self.coco.loadCats(self.coco.getCatIds())
                 ]
-                self.classes = ['__background__'] + cats
+                self.classes = ["__background__"] + cats
                 self.num_classes = len(self.classes)
-                self._class_to_ind = dict(
-                    zip(self.classes, range(self.num_classes)))
-                self._class_to_coco_ind = dict(
-                    zip(cats, self.coco.getCatIds()))
+                self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))
+                self._class_to_coco_ind = dict(zip(cats, self.coco.getCatIds()))
                 self._coco_ind_to_class_ind = dict(
                     (self._class_to_coco_ind[cls], self._class_to_ind[cls])
-                    for cls in self.classes[1:])
+                    for cls in self.classes[1:]
+                )
             self.img_ids = self.coco.getImgIds()
             self.num_images = len(self.img_ids)
-            self.id2name, self.name2id = self._get_mapping_id_name(
-                self.coco.imgs)
+            self.id2name, self.name2id = self._get_mapping_id_name(self.coco.imgs)
 
         self.db = []
 
@@ -122,7 +124,7 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         id2name = {}
         name2id = {}
         for image_id, image in imgs.items():
-            file_name = image['file_name']
+            file_name = image["file_name"]
             id2name[image_id] = file_name
             name2id[file_name] = image_id
 
@@ -139,8 +141,7 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
             center (np.ndarray[float32](2,)): center of the bbox (x, y).
             scale (np.ndarray[float32](2,)): scale of the bbox w & h.
         """
-        aspect_ratio = self.ann_info['image_size'][0] / self.ann_info[
-            'image_size'][1]
+        aspect_ratio = self.ann_info["image_size"][0] / self.ann_info["image_size"][1]
         center = np.array([x + w * 0.5, y + h * 0.5], dtype=np.float32)
 
         if (not self.test_mode) and np.random.rand() < 0.3:
@@ -185,15 +186,10 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
     def _write_keypoint_results(keypoints, res_file):
         """Write results into a json file."""
 
-        with open(res_file, 'w') as f:
+        with open(res_file, "w") as f:
             json.dump(keypoints, f, sort_keys=True, indent=4)
 
-    def _report_metric(self,
-                       res_file,
-                       metrics,
-                       pck_thr=0.2,
-                       pckh_thr=0.7,
-                       auc_nor=30):
+    def _report_metric(self, res_file, metrics, pck_thr=0.2, pckh_thr=0.7, auc_nor=30):
         """Keypoint evaluation.
 
         Args:
@@ -209,7 +205,7 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         """
         info_str = []
 
-        with open(res_file, 'r') as fin:
+        with open(res_file, "r") as fin:
             preds = json.load(fin)
         assert len(preds) == len(self.db)
 
@@ -221,18 +217,17 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         threshold_head_box = []
 
         for pred, item in zip(preds, self.db):
-            outputs.append(np.array(pred['keypoints'])[:, :-1])
-            gts.append(np.array(item['joints_3d'])[:, :-1])
-            masks.append((np.array(item['joints_3d_visible'])[:, 0]) > 0)
-            if 'PCK' in metrics:
-                bbox = np.array(item['bbox'])
+            outputs.append(np.array(pred["keypoints"])[:, :-1])
+            gts.append(np.array(item["joints_3d"])[:, :-1])
+            masks.append((np.array(item["joints_3d_visible"])[:, 0]) > 0)
+            if "PCK" in metrics:
+                bbox = np.array(item["bbox"])
                 bbox_thr = np.max(bbox[2:])
                 threshold_bbox.append(np.array([bbox_thr, bbox_thr]))
-            if 'PCKh' in metrics:
-                head_box_thr = item['head_size']
-                threshold_head_box.append(
-                    np.array([head_box_thr, head_box_thr]))
-            box_sizes.append(item.get('box_size', 1))
+            if "PCKh" in metrics:
+                head_box_thr = item["head_size"]
+                threshold_head_box.append(np.array([head_box_thr, head_box_thr]))
+            box_sizes.append(item.get("box_size", 1))
 
         outputs = np.array(outputs)
         gts = np.array(gts)
@@ -241,28 +236,29 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         threshold_head_box = np.array(threshold_head_box)
         box_sizes = np.array(box_sizes).reshape([-1, 1])
 
-        if 'PCK' in metrics:
-            _, pck, _ = keypoint_pck_accuracy(outputs, gts, masks, pck_thr,
-                                              threshold_bbox)
-            info_str.append(('PCK', pck))
+        if "PCK" in metrics:
+            _, pck, _ = keypoint_pck_accuracy(
+                outputs, gts, masks, pck_thr, threshold_bbox
+            )
+            info_str.append(("PCK", pck))
 
-        if 'PCKh' in metrics:
-            _, pckh, _ = keypoint_pck_accuracy(outputs, gts, masks, pckh_thr,
-                                               threshold_head_box)
-            info_str.append(('PCKh', pckh))
+        if "PCKh" in metrics:
+            _, pckh, _ = keypoint_pck_accuracy(
+                outputs, gts, masks, pckh_thr, threshold_head_box
+            )
+            info_str.append(("PCKh", pckh))
 
-        if 'AUC' in metrics:
-            info_str.append(('AUC', keypoint_auc(outputs, gts, masks,
-                                                 auc_nor)))
+        if "AUC" in metrics:
+            info_str.append(("AUC", keypoint_auc(outputs, gts, masks, auc_nor)))
 
-        if 'EPE' in metrics:
-            info_str.append(('EPE', keypoint_epe(outputs, gts, masks)))
+        if "EPE" in metrics:
+            info_str.append(("EPE", keypoint_epe(outputs, gts, masks)))
 
-        if 'NME' in metrics:
-            normalize_factor = self._get_normalize_factor(
-                gts=gts, box_sizes=box_sizes)
+        if "NME" in metrics:
+            normalize_factor = self._get_normalize_factor(gts=gts, box_sizes=box_sizes)
             info_str.append(
-                ('NME', keypoint_nme(outputs, gts, masks, normalize_factor)))
+                ("NME", keypoint_nme(outputs, gts, masks, normalize_factor))
+            )
 
         return info_str
 
@@ -274,10 +270,10 @@ class Kpt2dSviewRgbImgTopDownDataset(Dataset, metaclass=ABCMeta):
         """Get the sample given index."""
         results = copy.deepcopy(self.db[idx])
 
-        results['ann_info'] = self.ann_info
+        results["ann_info"] = self.ann_info
         return self.pipeline(results)
 
-    def _sort_and_unique_bboxes(self, kpts, key='bbox_id'):
+    def _sort_and_unique_bboxes(self, kpts, key="bbox_id"):
         """sort kpts and remove the repeated ones."""
         kpts = sorted(kpts, key=lambda x: x[key])
         num = len(kpts)
