@@ -54,10 +54,11 @@ iterate_build_matrix() {
 	mode=${1:-build}
 	for cuda_version in \
 		11.4.3-cudnn8-runtime-ubuntu20.04; do
+		#11.7.1-cudnn8-runtime-ubuntu20.04; do
 		for deeplabcut_version in \
 			2.3.5; do #2.3.2 \
 			for stage in \
-				base core test gui jupyter; do
+				base test; do # core gui jupyter; do
 				tag=${deeplabcut_version}-${stage}-cuda${cuda_version}-latest
 				case "$mode" in
 				build)
@@ -66,7 +67,6 @@ iterate_build_matrix() {
 						--build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
 						"--tag=${BASENAME}:$tag" \
 						-f "Dockerfile.${stage}" \.
-
 						# --no-cache \
 					;;
 				push | clean | test)

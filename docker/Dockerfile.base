@@ -4,7 +4,7 @@ FROM nvidia/cuda:${CUDA_VERSION}
 ARG DEEPLABCUT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PYTHON_VERSION=3.8
+ARG PYTHON_VERSION=3.9
 RUN apt-get update -yy && \
     apt-get install -yy --no-install-recommends python${PYTHON_VERSION} python3-pip ffmpeg libsm6 libxext6 && \
     ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
@@ -14,11 +14,12 @@ RUN apt-get update -yy && \
     apt-get clean
 
 RUN pip3 install --upgrade \
+		#numpy==1.24.4 \
 		deeplabcut==${DEEPLABCUT_VERSION} \
 		decorator==4.4.2 \ 
-		tensorflow==2.5.0 \
+		tensorflow==2.10 \
+		#opencv-python==4.5.3.56 \
 		torch==1.12 \
-		numpy==1.21.6 \
 	&& pip3 list
 
 # The installed tensorflow version will not work with the latest protocol buffer version,
