@@ -49,16 +49,34 @@ export -f run_test
 iterate_build_matrix() {
 	## TODO(stes): Consider adding legacy versions for CUDA
 	## if there is demand from users:	
-	#11.4.3-cudnn8-runtime-ubuntu20.04
-	#11.7.1-cudnn8-runtime-ubuntu20.04
+
+	
+	#[add other dlc versions to build here]
+	dlc_versions=(
+		"2.3.5"
+		#"2.3.2"
+		) 
+	
+	#[add other cuda versions to build here]
+	cuda_versions=(
+		"11.4.3-cudnn8-runtime-ubuntu20.04"
+		#11.7.1-cudnn8-runtime-ubuntu20.04
+	)
+	
+	docker_types=(
+		"base" 
+		"test" 
+		"core"
+		#"gui"
+	)
+	
 	mode=${1:-build}
 	for cuda_version in \
-		11.4.3-cudnn8-runtime-ubuntu20.04; do
-		#11.7.1-cudnn8-runtime-ubuntu20.04; do
+		${cuda_versions[@]}; do
 		for deeplabcut_version in \
-			2.3.5; do #2.3.2 \
+			${dlc_versions[@]}; do
 			for stage in \
-				base test; do # core gui jupyter; do
+				${docker_types[@]}; do
 				tag=${deeplabcut_version}-${stage}-cuda${cuda_version}-latest
 				case "$mode" in
 				build)

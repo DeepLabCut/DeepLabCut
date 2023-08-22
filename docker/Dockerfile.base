@@ -14,11 +14,10 @@ RUN apt-get update -yy && \
     apt-get clean
 
 RUN pip3 install --upgrade \
-		numpy==1.24.4 \
 		deeplabcut==${DEEPLABCUT_VERSION} \
+		numpy==1.24.0 \
 		decorator==4.4.2 \ 
 		tensorflow==2.10 \
-		#opencv-python==4.5.3.56 \
 		torch==1.12 \
 	&& pip3 list
 
