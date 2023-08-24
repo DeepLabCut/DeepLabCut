@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
+import logging
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
@@ -107,12 +107,12 @@ class TopDownSolver(Solver):
             )
             if self.detector_scheduler:
                 self.detector_scheduler.step()
-            print(f"Training the detector for epoch {i + 1} done")
+            logging.info(f"Training the detector for epoch {i + 1} done")
 
             # TODO no eval pass for the detector since fasterRCNN can't return a loss in eval mode
 
-            if (i + 1) % self.cfg["detector"].get("detector_save_epochs", 1) == 0:
-                print(f"Finished epoch {i + 1}; saving detector")
+            if (i + 1) % self.cfg.get("detector_save_epochs", 10) == 0:
+                logging.info(f"Finished epoch {i + 1}; saving detector")
                 torch.save(
                     {
                         "detector_state_dict": self.detector.state_dict(),
@@ -122,17 +122,17 @@ class TopDownSolver(Solver):
                     },
                     f"{model_folder}/train/detector-snapshot-{i + 1}.pt",
                 )
-            print(
+            logging.info(
                 f"Epoch {i + 1}/{detector_epochs}, "
                 f"train detector loss {train_detector_loss:.5f}"
             )
 
-        if detector_epochs % self.cfg["detector"].get("detector_save_epochs", 1) != 0:
+        if detector_epochs % self.cfg.get("detector_save_epochs", 10) != 0:
             torch.save(
                 self.detector.state_dict(),
                 f"{model_folder}/train/detector-snapshot-{epochs}.pt",
             )
-            print(f"Finished epoch {detector_epochs}; saving model")
+            logging.info(f"Finished epoch {detector_epochs}; saving model")
 
         for i in range(self.starting_epoch, epochs):
             train_pose_loss = self.epoch_pose(
@@ -141,8 +141,9 @@ class TopDownSolver(Solver):
             if self.scheduler:
                 self.scheduler.step()
 
-            print(
-                f"Training the pose estimator for epoch {i + 1} done, starting eval on validation data"
+            logging.info(
+                f"Training the pose estimator for epoch {i + 1} done, starting eval on "
+                f"validation data"
             )
 
             valid_pose_loss = self.epoch_pose(
@@ -150,7 +151,7 @@ class TopDownSolver(Solver):
             )
 
             if (i + 1) % self.cfg["save_epochs"] == 0:
-                print(f"Finished epoch {i + 1}; saving pose model")
+                logging.info(f"Finished epoch {i + 1}; saving pose model")
                 torch.save(
                     {
                         "model_state_dict": self.model.state_dict(),
@@ -162,14 +163,14 @@ class TopDownSolver(Solver):
                     f"{model_folder}/train/snapshot-{i + 1}.pt",
                 )
 
-            print(
+            logging.info(
                 f"Epoch {i + 1}/{epochs}, "
                 f"train pose loss {train_pose_loss:.5f}, "
                 f"valid pose loss {valid_pose_loss:.5f}"
             )
 
         if epochs % self.cfg["save_epochs"] != 0:
-            print(f"Finished epoch {epochs}; saving model")
+            logging.info(f"Finished epoch {epochs}; saving model")
             torch.save(
                 self.model.state_dict(),
                 f"{model_folder}/train/pose-snapshot-{epochs}.pt",
@@ -208,8 +209,10 @@ class TopDownSolver(Solver):
             #     break
 
             if (i + 1) % self.cfg["display_iters"] == 0:
-                print(
-                    f"Number of iterations for detector: {i+1}, loss : {np.mean(metrics['detector_loss']):.5f}, lr : {self.optimizer.param_groups[0]['lr']}"
+                logging.info(
+                    f"Number of iterations for detector: {i+1}, "
+                    f"loss: {np.mean(metrics['detector_loss']):.5f}, "
+                    f"lr: {self.detector_optimizer.param_groups[0]['lr']}"
                 )
         epoch_detector_loss = np.mean(epoch_detector_loss)
 
@@ -252,8 +255,10 @@ class TopDownSolver(Solver):
             #     break
 
             if (i + 1) % self.cfg["display_iters"] == 0:
-                print(
-                    f"Number of iterations for pose: {i+1}, loss : {np.mean(metrics['pose_total_loss']):.5f}, lr : {self.optimizer.param_groups[0]['lr']}"
+                logging.info(
+                    f"Number of iterations for pose: {i+1}, "
+                    f"loss: {np.mean(metrics['pose_total_loss']):.5f}, "
+                    f"lr: {self.optimizer.param_groups[0]['lr']}"
                 )
         epoch_pose_loss = np.mean(epoch_pose_loss)
 

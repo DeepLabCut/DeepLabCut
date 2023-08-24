@@ -9,10 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import argparse
+import logging
 import os
+from pathlib import Path
 from typing import Optional, Union
 
 import albumentations as A
+from torch.utils.data import DataLoader
+
 import deeplabcut.pose_estimation_pytorch as dlc
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -21,7 +25,10 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     update_config_parameters,
 )
 from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
-from torch.utils.data import DataLoader
+from deeplabcut.pose_estimation_pytorch.solvers.logger import (
+    setup_file_logging,
+    destroy_file_logging,
+)
 
 
 def train_network(
@@ -33,7 +40,7 @@ def train_network(
     modelprefix: str = "",
     snapshot_path: Optional[str] = "",
     detector_path: Optional[str] = "",
-    **kwargs
+    **kwargs,
 ) -> Solver:
     """Trains a network for a project
 
@@ -81,12 +88,15 @@ def train_network(
             modelprefix=modelprefix,
         ),
     )
+    log_path = Path(modelfolder) / "train" / "log.txt"
+    setup_file_logging(log_path)
+
     pytorch_config = auxiliaryfunctions.read_plainconfig(
         os.path.join(modelfolder, "train", "pytorch_config.yaml")
     )
     update_config_parameters(pytorch_config=pytorch_config, **kwargs)
     if transform is None:
-        print("No transform specified... using default")
+        logging.info("No transform specified... using default")
         transform = build_transforms(dict(pytorch_config["data"]), augment_bbox=True)
 
     batch_size = pytorch_config["batch_size"]
@@ -109,14 +119,14 @@ def train_network(
     solver = build_solver(pytorch_config, snapshot_path, detector_path)
     if pytorch_config.get("method", "bu").lower() == "td":
         if transform_cropped is None:
-            print(
+            logging.info(
                 "No transform passed to augment cropped images, using default augmentations"
             )
             transform_cropped = build_transforms(
                 pytorch_config["cropped_data"], augment_bbox=False
             )
 
-        detector_epochs = pytorch_config["detector"].get("detector_max_epochs", epochs)
+        detector_epochs = pytorch_config.get("detector_max_epochs", epochs)
         train_cropped_dataset = dlc.CroppedDataset(
             project_train, transform=transform_cropped, mode="train"
         )
@@ -126,7 +136,6 @@ def train_network(
         train_cropped_dataloader = DataLoader(
             train_cropped_dataset, batch_size=batch_size, shuffle=True
         )
-
         valid_cropped_dataloader = DataLoader(
             valid_cropped_dataset, batch_size=batch_size, shuffle=False
         )
@@ -151,9 +160,12 @@ def train_network(
             model_prefix=modelprefix,
         )
     else:
+        destroy_file_logging()
         raise ValueError(
             "Method not supported, should be either 'bu' (Bottom Up) or 'td' (Top Down)"
         )
+
+    destroy_file_logging()
     return solver
 
 

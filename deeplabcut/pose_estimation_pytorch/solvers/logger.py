@@ -8,21 +8,82 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import logging
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, Optional
 
-from typing import Optional
+import wandb as wb
 
 import deeplabcut.pose_estimation_pytorch.registry as deeplabcut_pose_estimation_pytorch_registry
-import wandb as wb
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 
+
 LOGGER = deeplabcut_pose_estimation_pytorch_registry.Registry(
-    "single_animal_solver",
+    "loggers",
     build_func=deeplabcut_pose_estimation_pytorch_registry.build_from_cfg,
 )
 
 
+def setup_file_logging(filepath: Path) -> None:
+    """
+    Sets up logging to a file
+
+    Args:
+        filepath: the path where logs should be saved
+    """
+    logging.basicConfig(
+        filename=filepath,
+        filemode="a",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.INFO,
+        format="%(asctime)-15s %(message)s",
+    )
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(logging.INFO)
+    root = logging.getLogger("")
+    root.addHandler(console_logger)
+
+
+def destroy_file_logging() -> None:
+    """Resets the logging module to log everything to the console"""
+    root = logging.getLogger()
+    handlers = [h for h in root.handlers]
+    for handler in handlers:
+        root.removeHandler(handler)
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(logging.INFO)
+    root.addHandler(console_logger)
+
+
+class BaseLogger(ABC):
+    """Base class for logging training runs"""
+
+    @abstractmethod
+    def log_config(self, config: dict = None) -> None:
+        """Logs the configuration data for a training run
+
+        Args:
+            config: the training configuration used for the run
+        """
+
+    @abstractmethod
+    def log(self, key: str, value: Any, step: Optional[int] = None) -> None:
+        """Logs data from a training run
+
+        Args:
+            key: The name of the logged value.
+            value: Data to log.
+            step: The global step in processing. Defaults to None.
+        """
+
+    @abstractmethod
+    def save(self) -> None:
+        """Saves the current training logs"""
+
+
 @LOGGER.register_module
-class WandbLogger:
+class WandbLogger(BaseLogger):
     """Wandb logger to track experiments and log data.
 
     Refer to: https://docs.wandb.ai/guides for more information on wandb.
@@ -55,13 +116,11 @@ class WandbLogger:
             raise ValueError("Specify the model to track!")
         self.run.watch(model)
 
-    def log(
-        self, key: str = None, value: str = None, step: Optional[int] = None
-    ) -> None:
+    def log(self, key: str, value: Any, step: Optional[int] = None) -> None:
         """Logs data from runs, such as scalars, images, video, histograms, plots, and tables.
 
         Args:
-            key The name of the logged value.
+            key: The name of the logged value.
             value: Data to log.
             step: The global step in processing. Defaults to None.
 
@@ -70,9 +129,9 @@ class WandbLogger:
             logger.log(key="loss", value=0.123, step=100)
 
         """
-        if key is None or value is None:
+        if value is None:
             raise ValueError(
-                f"Nothing to log. Key: {key} and value: {value} expected to be scalar, table or image."
+                f"Nothing to log. Value ({value}) expected to be scalar, table or image."
             )
         self.run.log({key: value}, step=step)
 

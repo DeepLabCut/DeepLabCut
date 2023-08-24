@@ -460,7 +460,11 @@ def plot_evaluation_results(
         ax.invert_yaxis()
 
         if mode == "bodypart":
-            colors = get_cmap(bodyparts + unique_bodyparts, name=colormap)
+            num_colors = bodyparts
+            if plot_unique_bodyparts:
+                num_colors += unique_bodyparts
+
+            colors = get_cmap(num_colors, name=colormap)
             predictions = predictions.swapaxes(0, 1)
             ground_truth = ground_truth.swapaxes(0, 1)
         elif mode == "individual":

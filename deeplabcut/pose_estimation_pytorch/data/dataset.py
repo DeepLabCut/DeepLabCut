@@ -283,13 +283,14 @@ class PoseDataset(Dataset, BaseDataset):
 
         assert len(transformed["keypoints"]) == len(all_keypoints)
         keypoints = np.array(transformed["keypoints"]).astype(float)
+        unique_kpts = np.array([], dtype=float)
         if self.num_unique_bpts > 0:
             keypoints = keypoints[: -self.num_unique_bpts]
-        keypoints = keypoints.reshape((self.max_num_animals, num_keypoints_returned, 2))
+            unique_kpts = np.array(
+                transformed["keypoints"][-self.num_unique_bpts :]
+            ).astype(float)
 
-        unique_bpts_kpts = np.array(
-            transformed["keypoints"][-self.num_unique_bpts :]
-        ).astype(float)
+        keypoints = keypoints.reshape((self.max_num_animals, num_keypoints_returned, 2))
 
         # Pad bboxes and labels to always have shape (num_animals, 4)
         #  If we want the original index of the bboxes, we can use the bbox labels
@@ -324,23 +325,20 @@ class PoseDataset(Dataset, BaseDataset):
 
         np.nan_to_num(keypoints, copy=False, nan=-1)
         area = self._calc_area_from_keypoints(keypoints)
-
-        res = {}
-        res["image"] = image
-        res[
-            "original_size"
-        ] = original_size  # In order to convert back the keypoints to their original space
-        res["annotations"] = {}
-        res["annotations"]["keypoints"] = keypoints
-        res["annotations"]["unique_kpts"] = unique_bpts_kpts
-        res["annotations"]["area"] = area
-        res["annotations"]["ids"] = ids
-        res["annotations"]["boxes"] = bbox_tensor
-        res["annotations"]["image_id"] = image_id
-        res["annotations"]["is_crowd"] = is_crowd
-        res["annotations"]["labels"] = labels
-
-        return res
+        return {
+            "image": image,
+            "original_size": original_size,
+            "annotations": {
+                "keypoints": keypoints,
+                "unique_kpts": unique_kpts,
+                "area": area,
+                "ids": ids,
+                "boxes": bbox_tensor,
+                "image_id": image_id,
+                "is_crowd": is_crowd,
+                "labels": labels,
+            },
+        }
 
 
 class CroppedDataset(Dataset, BaseDataset):

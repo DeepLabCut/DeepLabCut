@@ -57,6 +57,11 @@ def make_pytorch_config(
             - dekr_w32
             - dekr_w48
 
+        Multi Animal top-down models:
+            - token_pose_w18
+            - token_pose_w32
+            - token_pose_w48
+
     """
 
     single_animal_nets = [
@@ -165,6 +170,8 @@ def make_pytorch_config(
                 "pad_height_divisor": 32,
             }
             pytorch_config["detector"] = make_detector_cfg()
+            pytorch_config["detector_max_epochs"] = 500
+            pytorch_config["detector_save_epochs"] = 100
             pytorch_config["model"] = make_token_pose_model_cfg(
                 num_joints, backbone_type
             )
@@ -321,7 +328,7 @@ def make_token_pose_model_cfg(num_joints, backbone_type):
             "heatmap_dim": 4096,
             "apply_multi": True,
             "heatmap_size": [64, 64],
-            "apply_init": False,
+            "apply_init": True,
         }
     )
 
@@ -336,24 +343,16 @@ def make_token_pose_model_cfg(num_joints, backbone_type):
 
 
 def make_detector_cfg():
-    detector_cfg = {}
-
-    detector_cfg["detector_model"] = {
-        "type": "FasterRCNN",
+    return {
+        "detector_model": {
+            "type": "FasterRCNN",
+        },
+        "detector_optimizer": {
+            "type": "AdamW",
+            "params": {"lr": 1e-4},
+        },
+        "detector_scheduler": {
+            "type": "LRListScheduler",
+            "params": {"milestones": [90], "lr_list": [[1e-5]]},
+        },
     }
-
-    detector_cfg["detector_optimizer"] = {
-        "type": "SGD",
-        "params": {"lr": 0.01},
-    }
-
-    detector_cfg["detector_scheduler"] = {
-        "type": "LRListScheduler",
-        "params": {"milestones": [10, 430], "lr_list": [[0.05], [0.005]]},
-    }
-
-    detector_cfg["detector_max_epochs"] = 500
-
-    detector_cfg["detector_save_epochs"] = 100
-
-    return detector_cfg

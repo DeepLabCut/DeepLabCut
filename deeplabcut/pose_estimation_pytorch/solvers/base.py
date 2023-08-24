@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
+import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
@@ -22,6 +22,7 @@ import deeplabcut.pose_estimation_pytorch.models.predictors as deeplabcut_pose_e
 import deeplabcut.pose_estimation_pytorch.solvers.inference as deeplabcut_pose_estimation_pytorch_solvers_inference
 import deeplabcut.pose_estimation_pytorch.solvers.utils as solver_utils
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.pose_estimation_pytorch.solvers.logger import BaseLogger
 
 SOLVERS = Registry("solvers", build_func=build_from_cfg)
 
@@ -42,7 +43,7 @@ class Solver(ABC):
         device: str = "cpu",
         snapshot_path: Optional[str] = "",
         scheduler: torch.optim.lr_scheduler = None,
-        logger: Optional = None,
+        logger: Optional[BaseLogger] = None,
     ):
         """Constructor of the Solver class.
 
@@ -129,11 +130,13 @@ class Solver(ABC):
             train_loss = self.epoch(train_loader, mode="train", step=i + 1)
             if self.scheduler:
                 self.scheduler.step()
-            print(f"Training for epoch {i + 1} done, starting eval on validation data")
+            logging.info(
+                f"Training for epoch {i + 1} done, starting eval on validation data"
+            )
             valid_loss = self.epoch(valid_loader, mode="eval", step=i + 1)
 
             if (i + 1) % self.cfg["save_epochs"] == 0:
-                print(f"Finished epoch {i + 1}; saving model")
+                logging.info(f"Finished epoch {i + 1}; saving model")
                 torch.save(
                     {
                         "model_state_dict": self.model.state_dict(),
@@ -145,7 +148,7 @@ class Solver(ABC):
                     f"{model_folder}/train/snapshot-{i + 1}.pt",
                 )
 
-            print(
+            logging.info(
                 f"Epoch {i + 1}/{epochs}, "
                 f"train loss {float(train_loss):.5f}, "
                 f"valid loss {float(valid_loss):.5f}, "
@@ -190,10 +193,12 @@ class Solver(ABC):
                 metrics[key].append(losses_dict[key])
 
             if (i + 1) % self.cfg["display_iters"] == 0:
-                print(
-                    f"Number of iterations : {i+1}, loss : {losses_dict['total_loss']:.5f}, lr : {self.optimizer.param_groups[0]['lr']}"
+                logging.info(
+                    f"Number of iterations: {i+1}, "
+                    f"loss: {losses_dict['total_loss']:.5f}, "
+                    f"lr: {self.optimizer.param_groups[0]['lr']}"
                 )
-        epoch_loss = np.mean(epoch_loss)
+        epoch_loss = np.mean(epoch_loss).item()
         self.history[f"{mode}_loss"].append(epoch_loss)
 
         if self.logger:

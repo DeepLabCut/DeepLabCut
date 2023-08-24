@@ -29,8 +29,8 @@ data:
   - 1.25
   translation: 40
 device: cuda:0
-display_iters: 1000
-epochs: 1000
+display_iters: 50
+epochs: 200
 model:
   backbone:
     pretrained: https://download.pytorch.org/models/resnet50-19c8e357.pth
@@ -45,8 +45,8 @@ model:
     type: PlateauGenerator
 optimizer:
   params:
-    lr: 0.01
-  type: SGD
+    lr: 0.0001
+  type: AdamW
 pos_dist_thresh: 17
 predictor:
   location_refinement: true
@@ -57,11 +57,11 @@ save_epochs: 50
 scheduler:
   params:
     lr_list:
-    - - 0.05
-    - - 0.005
+    - - 0.00001
+    - - 0.000001
     milestones:
-    - 10
-    - 430
+    - 90
+    - 120
   type: LRListScheduler
 seed: 42
 solver:

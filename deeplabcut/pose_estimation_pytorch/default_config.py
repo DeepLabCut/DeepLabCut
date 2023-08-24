@@ -46,15 +46,21 @@ pytorch_cfg_template["model"] = {
 }
 
 pytorch_cfg_template["optimizer"] = {
-    "type": "SGD",
+    "type": "AdamW",
     "params": {
-        "lr": 0.01,
+        "lr": 1e-4,
     },
 }
 
 pytorch_cfg_template["scheduler"] = {
     "type": "LRListScheduler",
-    "params": {"milestones": [10, 430], "lr_list": [[0.05], [0.005]]},
+    "params": {
+        "milestones": [
+            90,
+            120,
+        ],
+        "lr_list": [[1e-5], [1e-6]],
+    },
 }
 
 pytorch_cfg_template["predictor"] = {
@@ -75,7 +81,7 @@ pytorch_cfg_template["solver"] = {"type": "BottomUpSingleAnimalSolver"}
 pytorch_cfg_template["pos_dist_thresh"] = 17
 pytorch_cfg_template["with_center"] = False
 pytorch_cfg_template["batch_size"] = 1
-pytorch_cfg_template["epochs"] = 1000
+pytorch_cfg_template["epochs"] = 200
 
 if __name__ == "__main__":
     import yaml

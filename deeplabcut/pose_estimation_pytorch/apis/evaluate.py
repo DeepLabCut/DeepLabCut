@@ -185,6 +185,9 @@ def evaluate_snapshot(
             images_resized_with_transform=images_resized_with_transform,
             detector=detector,
         )
+        if unique_poses is not None:
+            unique_poses = unique_poses.reshape(target_df.index.shape[0], -1)
+
         df_predictions = build_entire_pred_df(
             dlc_scorer=names["dlc_scorer"],
             individuals=individuals,
@@ -192,7 +195,7 @@ def evaluate_snapshot(
             df_index=target_df.index,
             predictions=predictions.reshape(target_df.index.shape[0], -1),
             unique_bodyparts=unique_bodyparts,
-            unique_predictions=unique_poses.reshape(target_df.index.shape[0], -1),
+            unique_predictions=unique_poses,
         )
         df_mode_predictions.append(df_predictions)
 
