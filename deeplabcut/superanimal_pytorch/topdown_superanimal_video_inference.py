@@ -14,7 +14,6 @@ import os
 import subprocess
 import deeplabcut
 
-
 def topdown_video_inference(
     video_path,
     det_config,
@@ -148,3 +147,4 @@ def topdown_video_inference(
         run_command(pseudo_label_command)
         run_command(adaptation_command)
         run_command(inference_adapted_model_command)
+        

@@ -150,7 +150,6 @@ def main():
             DeprecationWarning,
         )
     else:
-
         with open(dataset_info, "r") as f:
             dataset_info = json.load(f)["dataset_info"]
         dataset_info = DatasetInfo(dataset_info)
