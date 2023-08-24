@@ -44,7 +44,7 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def check_for_weights(modeltype, parent_path, num_shuffles):
+def check_for_weights(modeltype, parent_path):
     """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
@@ -70,7 +70,7 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
         else:
             download_weights(modeltype, model_path)
 
-    return str(model_path), num_shuffles
+    return str(model_path)
 
 
 def download_weights(modeltype, model_path):
