@@ -1,3 +1,5 @@
+# NOTE: This dockerfile is currently not included in the build process
+# It is still left for reference, but currently untested.
 ARG CUDA_VERSION
 ARG DEEPLABCUT_VERSION
 
