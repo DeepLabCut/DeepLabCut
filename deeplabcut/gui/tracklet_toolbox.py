@@ -1,15 +1,184 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-from threading import Event, Thread
-from deeplabcut.gui import auxfun_drag
+from threading import Event
+from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
+from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import QMutex
+
+
+class DraggablePoint:
+    lock = None  # only one can be animated at a time
+
+    def __init__(self, point, bodyParts, individual_names=None, likelihood=None):
+        self.point = point
+        self.bodyParts = bodyParts
+        self.individual_names = individual_names
+        self.likelihood = likelihood
+        self.press = None
+        self.background = None
+        self.final_point = (0.0, 0.0)
+        self.annot = self.point.axes.annotate(
+            "",
+            xy=(0, 0),
+            xytext=(20, 20),
+            textcoords="offset points",
+            bbox=dict(boxstyle="round", fc="w"),
+            arrowprops=dict(arrowstyle="->"),
+        )
+        self.annot.set_visible(False)
+        self.coords = []
+
+    def connect(self):
+        "connect to all the events we need"
+
+        self.cidpress = self.point.figure.canvas.mpl_connect(
+            "button_press_event", self.on_press
+        )
+        self.cidrelease = self.point.figure.canvas.mpl_connect(
+            "button_release_event", self.on_release
+        )
+        self.cidmotion = self.point.figure.canvas.mpl_connect(
+            "motion_notify_event", self.on_motion
+        )
+        self.cidhover = self.point.figure.canvas.mpl_connect(
+            "motion_notify_event", self.on_hover
+        )
+
+    def on_press(self, event):
+        """
+        Define the event for the button press!
+        """
+        if event.inaxes != self.point.axes:
+            return
+        if DraggablePoint.lock is not None:
+            return
+        contains, attrd = self.point.contains(event)
+        if not contains:
+            return
+        if event.button == 1:
+            """
+            This button press corresponds to the left click
+            """
+            self.press = (self.point.center), event.xdata, event.ydata
+            DraggablePoint.lock = self
+            canvas = self.point.figure.canvas
+            axes = self.point.axes
+            self.point.set_animated(True)
+            canvas.draw()
+            self.background = canvas.copy_from_bbox(self.point.axes.bbox)
+            axes.draw_artist(self.point)
+            canvas.blit(axes.bbox)
+        elif event.button == 2:
+            """
+            To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to middle click for the event. After right
+            click the data point is removed from the plot.
+            """
+            message = f"Do you want to remove the label {self.bodyParts}?"
+            if self.likelihood is not None:
+                message += " You cannot undo this step!"
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning!")
+            msg.setText(message)
+            msg.setStandardButtons(msg.Yes | msg.No)
+            if msg.exec() == msg.Yes:
+                self.delete_data()
+
+    def delete_data(self):
+        self.press = None
+        DraggablePoint.lock = None
+        self.point.set_animated(False)
+        self.background = None
+        self.final_point = (np.nan, np.nan, self.individual_names, self.bodyParts)
+        self.point.center = (np.nan, np.nan)
+        self.coords.append(self.final_point)
+        self.point.figure.canvas.draw()
+
+    def on_motion(self, event):
+        """
+        During the drag!
+        """
+        if DraggablePoint.lock is not self:
+            return
+        if event.inaxes != self.point.axes:
+            return
+
+        if event.button == 1:
+            self.point.center, xpress, ypress = self.press
+            dx = event.xdata - xpress
+            dy = event.ydata - ypress
+            self.point.center = (self.point.center[0] + dx, self.point.center[1] + dy)
+            canvas = self.point.figure.canvas
+            axes = self.point.axes
+            # restore the background region
+            canvas.restore_region(self.background)
+            axes.draw_artist(self.point)
+            canvas.blit(axes.bbox)
+
+    def on_release(self, event):
+        "on release we reset the press data"
+        if DraggablePoint.lock is not self:
+            return
+        if event.button == 1:
+            self.press = None
+            DraggablePoint.lock = None
+            self.point.set_animated(False)
+            self.background = None
+            self.point.figure.canvas.draw()
+            self.final_point = (
+                self.point.center[0],
+                self.point.center[1],
+                self.individual_names,
+                self.bodyParts,
+            )
+            self.coords.append(self.final_point)
+
+    def on_hover(self, event):
+        """
+        Annotate the labels and likelihood when the user hovers over the data points.
+        """
+        vis = self.annot.get_visible()
+
+        if event.inaxes == self.point.axes:
+            contains, attrd = self.point.contains(event)
+            if contains:
+                self.annot.xy = (self.point.center[0], self.point.center[1])
+                text = str(self.bodyParts)
+                if self.individual_names is not None:
+                    text = f"{self.individual_names},{text}"
+                if self.likelihood is not None:
+                    text += f",p={self.likelihood:.2f}"
+                self.annot.set_text(text)
+                self.annot.get_bbox_patch().set_alpha(0.4)
+                self.annot.set_visible(True)
+                self.point.figure.canvas.draw_idle()
+            else:
+                if vis:
+                    self.annot.set_visible(False)
+
+    def disconnect(self):
+        "disconnect all the stored connection ids"
+        self.point.figure.canvas.mpl_disconnect(self.cidpress)
+        self.point.figure.canvas.mpl_disconnect(self.cidrelease)
+        self.point.figure.canvas.mpl_disconnect(self.cidmotion)
+        self.point.figure.canvas.mpl_disconnect(self.cidhover)
 
 
 class BackgroundPlayer:
@@ -35,10 +204,10 @@ class BackgroundPlayer:
                     i -= 1
                 else:
                     i -= 2 * (len(self.speed) - 1)
-            if i > self.viz.manager.nframes:
+            if i >= self.viz.manager.nframes:
                 i = 0
             elif i < 0:
-                i = self.viz.manager.nframes
+                i = self.viz.manager.nframes - 1
             self.viz.slider.set_val(i)
 
     def pause(self):
@@ -80,6 +249,7 @@ class BackgroundPlayer:
         self.resume()
 
     def terminate(self, *args):
+        self.can_run.set()
         self.running = False
 
 
@@ -150,8 +320,9 @@ class TrackletVisualizer:
         self.picked_pair = []
         self.cuts = []
 
+        self.mutex = QMutex()
         self.player = BackgroundPlayer(self)
-        self.thread_player = Thread(target=self.player.run, daemon=True)
+        self.worker, self.thread_player = move_to_separate_thread(self.player.run)
         self.thread_player.start()
 
         self.dps = []
@@ -187,7 +358,7 @@ class TrackletVisualizer:
 
         img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum(
@@ -268,7 +439,7 @@ class TrackletVisualizer:
         self.lasso_toggle.on_clicked(self.selector.toggle)
         self.display_traces(only_picked=False)
         self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
-        plt.show()
+        self.fig.show()
 
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
@@ -307,7 +478,7 @@ class TrackletVisualizer:
     def add_point(self, center, animal, bodypart, **kwargs):
         circle = patches.Circle(center, **kwargs)
         self.ax1.add_patch(circle)
-        dp = auxfun_drag.DraggablePoint(circle, bodypart, animal)
+        dp = DraggablePoint(circle, bodypart, animal)
         dp.connect()
         self.dps.append(dp)
 
@@ -421,7 +592,8 @@ class TrackletVisualizer:
                     ] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
                     self.fill_shaded_areas()
                     self.cuts = []
-                    self.ax_slider.lines.clear()
+                    for line in self.ax_slider.lines:
+                        line.remove()
         elif event.key == "backspace":
             if not self.dps:  # Last flag deletion
                 try:
@@ -513,7 +685,8 @@ class TrackletVisualizer:
                 if len(self.cuts) > 1:
                     mask[self.cuts[-2] : self.cuts[-1] + 1] = True
                     self.cuts = []
-                    self.ax_slider.lines.clear()
+                    for line in self.ax_slider.lines:
+                        line.remove()
                     self.clean_collections()
                 else:
                     return
@@ -617,9 +790,11 @@ class TrackletVisualizer:
         self.vline_y.set_xdata([val, val])
 
     def on_change(self, val):
+        self.mutex.lock()  # Make video frame retrieval thread-safe
         self.curr_frame = int(val)
         self.video.set_to_frame(self.curr_frame)
         img = self.video.read_frame()
+        self.mutex.unlock()
         if img is not None:
             # Automatically disable the draggable points
             if self.draggable:
@@ -632,7 +807,7 @@ class TrackletVisualizer:
 
     def update_dotsize(self, val):
         self.dotsize = val
-        self.scat.set_sizes([self.dotsize ** 2])
+        self.scat.set_sizes([self.dotsize**2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
@@ -663,13 +838,17 @@ class TrackletVisualizer:
                 " already extracted (more will be added)!",
             )
         else:
-            attempttomakefolder(tmpfolder)
+            attempt_to_make_folder(tmpfolder)
         index = []
         for ind in inds:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:]))
+            index.append(
+                tuple(
+                    (os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")
+                )
+            )
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -694,8 +873,11 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1).apply(filter_low_prob, prob=pcutoff)
-        df.index = index
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(
+            filter_low_prob, prob=pcutoff
+        )
+        df.index = pd.MultiIndex.from_tuples(index)
+
         machinefile = os.path.join(
             tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
         )
@@ -710,9 +892,7 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer", inplace=True
-        )
+        df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(
             tmpfolder, f'CollectedData_{self.manager.cfg["scorer"]}.h5'

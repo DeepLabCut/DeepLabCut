@@ -1,9 +1,9 @@
 (overview)=
-## Documentation Overview:
+# Documentation Overview
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
-- [How to install DeepLabCut](how-to-install)
+## [How to install DeepLabCut](how-to-install)
 
 - Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick:
 
@@ -20,14 +20,14 @@ Below we will first outline what you need to get started, the different ways you
 Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
 
 
- ### What you need to get started:
+### What you need to get started:
 
  - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
 
  - **minimally, a computer w/a CPU.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/DeepLabCutDeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md)).
 
 
- ### What you DON'T need to get started:
+### What you DON'T need to get started:
 
  - no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).
 
@@ -72,15 +72,15 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 
 # Specific Advice for Using DeepLabCut:
 
-### Important information on using DeepLabCut:
+## Important information on using DeepLabCut:
 
 We recommend first using **DeepLabCut for a single animal scenario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2...
 
-#### Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):
+### Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):
 
 We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
 
-##### *What scenario do you have?*
+#### *What scenario do you have?*
 
 - **I have single animal videos:**
    - quick start: when you `create_new_project` (and leave the default flag to False in `multianimal=False`). This is the typical work path for many of you.
@@ -104,7 +104,7 @@ We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/
 
 Please read [this convert 2 maDLC guide](convert-maDLC)
 
-### The options for using DeepLabCut:
+# The options for using DeepLabCut:
 
 Great - now that you get the overall workflow let's jump in! Here, you have several options.
 

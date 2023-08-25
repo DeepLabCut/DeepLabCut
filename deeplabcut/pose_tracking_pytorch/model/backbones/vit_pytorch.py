@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """ Vision Transformer (ViT) in PyTorch
 
 A PyTorch implement of Vision Transformers as described in
@@ -101,7 +111,7 @@ class Attention(nn.Module):
         self.num_heads = num_heads
         head_dim = dim // num_heads
         # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights
-        self.scale = qk_scale or head_dim ** -0.5
+        self.scale = qk_scale or head_dim**-0.5
 
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -268,7 +278,6 @@ class DLCTransReID(nn.Module):
         )
 
     def forward_features(self, x):
-
         # x: inputs
         B = x.shape[0]
         # (B, 12, 768)
@@ -335,7 +344,7 @@ class DLCTransReID(nn.Module):
                 )
 
 
-def resize_pos_embed(posemb, posemb_new, hight, width):
+def resize_pos_embed(posemb, posemb_new, height, width):
     # Rescale the grid of position embeddings when loading from state_dict. Adapted from
     # https://github.com/google-research/vision_transformer/blob/00883dd691c63a6830751563748663526e811cee/vit_jax/checkpoint.py#L224
     ntok_new = posemb_new.shape[1]
@@ -346,12 +355,12 @@ def resize_pos_embed(posemb, posemb_new, hight, width):
     gs_old = int(math.sqrt(len(posemb_grid)))
     print(
         "Resized position embedding from size:{} to size: {} with height:{} width: {}".format(
-            posemb.shape, posemb_new.shape, hight, width
+            posemb.shape, posemb_new.shape, height, width
         )
     )
     posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
-    posemb_grid = F.interpolate(posemb_grid, size=(hight, width), mode="bilinear")
-    posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, hight * width, -1)
+    posemb_grid = F.interpolate(posemb_grid, size=(height, width), mode="bilinear")
+    posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, height * width, -1)
     posemb = torch.cat([posemb_token, posemb_grid], dim=1)
     return posemb
 
@@ -366,7 +375,6 @@ def dlc_base_kpt_TransReID(
     kpt_num=12,
     **kwargs,
 ):
-
     embed_dim = 128
     depth = 4
     num_heads = 4

@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import logging
 import os
 import time
@@ -33,7 +35,6 @@ def calc_correct(anchor, pos, neg):
 
 
 def calc_cos_correct(vec1, gt1, vec2, gt2, threshold=0.5):
-
     cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 
     confidence = cos(vec1, vec2)
@@ -44,11 +45,13 @@ def calc_cos_correct(vec1, gt1, vec2, gt2, threshold=0.5):
     n_correct = torch.sum(torch.eq(pred_mask, gt_mask))
     return n_correct
 
-#TODO: maybe find a better spot for this.
-def default_device(device = "cuda"): #setting CPU, if no GPU available
-    #dev =  device if torch.cuda.is_available() else "cpu"
+
+# TODO: maybe find a better spot for this.
+def default_device(device="cuda"):  # setting CPU, if no GPU available
+    # dev =  device if torch.cuda.is_available() else "cpu"
     dev = torch.device(device) if torch.cuda.is_available() else torch.device("cpu")
     return dev
+
 
 def do_dlc_train(
     cfg,
@@ -64,7 +67,6 @@ def do_dlc_train(
     total_epochs=300,
     ckpt_folder="",
 ):
-
     log_period = cfg["log_period"]
     checkpoint_period = cfg["checkpoint_period"]
     eval_period = 10
@@ -76,7 +78,6 @@ def do_dlc_train(
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(device)
-
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -99,7 +100,6 @@ def do_dlc_train(
         total_n = 0.0
         total_correct = 0.0
         for n_iter, (anchor, pos, neg) in enumerate(train_loader):
-
             optimizer.zero_grad()
 
             anchor = anchor.to(device)
@@ -152,7 +152,6 @@ def do_dlc_train(
         model_name = f"dlc_transreid"
 
         if epoch % checkpoint_period == 0:
-
             torch.save(
                 {
                     "state_dict": model.state_dict(),
@@ -196,14 +195,13 @@ def do_dlc_train(
     plot_dict["test_acc"] = test_acc_list
     plot_dict["epochs"] = epoch_list
 
-
-
-    with open(os.path.join(ckpt_folder,"dlc_transreid_results.pickle"), "wb") as handle:
+    with open(
+        os.path.join(ckpt_folder, "dlc_transreid_results.pickle"), "wb"
+    ) as handle:
         pickle.dump(plot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
-
     device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
@@ -227,7 +225,6 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
     total_correct = 0.0
     for n_iter, (anchor, pos, neg) in enumerate(val_loader):
         with torch.no_grad():
-
             anchor = anchor.to(device)
             pos = pos.to(device)
             neg = neg.to(device)
@@ -264,7 +261,6 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
 
 
 def do_dlc_pair_inference(cfg, model, val_loader, num_query):
-
     device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
@@ -286,7 +282,6 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
     total_correct = 0.0
     for n_iter, ((vec1, gt1), (vec2, gt2)) in enumerate(val_loader):
         with torch.no_grad():
-
             gt1 = gt1.to(device)
             gt2 = gt2.to(device)
             vec1 = vec1.to(device)

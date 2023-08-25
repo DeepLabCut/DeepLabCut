@@ -1,17 +1,19 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 
 import argparse
 import os
 from pathlib import Path
+from typing import List
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -20,7 +22,7 @@ from tqdm import tqdm
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
     """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
-    if bodyparts == None:
+    if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
         RMSE = np.sqrt(
             Pointwisesquareddistance.xs("x", level=1, axis=1)
@@ -77,9 +79,9 @@ def calculatepafdistancebounds(
         ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
         modelfolder = os.path.join(
@@ -97,7 +99,7 @@ def calculatepafdistancebounds(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.LoadMetadata(
+        ) = auxiliaryfunctions.load_metadata(
             os.path.join(cfg["project_path"], metadatafn)
         )
         Data = pd.read_hdf(
@@ -258,7 +260,7 @@ def return_evaluate_network_data(
     >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
     --------
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],True)
+    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
     """
 
     import os
@@ -271,18 +273,20 @@ def return_evaluate_network_data(
     cfg = auxiliaryfunctions.read_config(config)
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-        cfg, comparisonbodyparts
+    comparisonbodyparts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
+        )
     )
     ##################################################
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+    datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, trainFraction, shuffle, cfg
     )
     modelfolder = os.path.join(
@@ -295,7 +299,7 @@ def return_evaluate_network_data(
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     # Load meta data
-    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.LoadMetadata(
+    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.load_metadata(
         os.path.join(cfg["project_path"], metadatafn)
     )
 
@@ -357,7 +361,7 @@ def return_evaluate_network_data(
     else:
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
-        if Snapindex == None:
+        if Snapindex is None:
             Snapindex = cfg["snapshotindex"]
 
         if Snapindex == -1:
@@ -383,7 +387,7 @@ def return_evaluate_network_data(
         ]  # read how many training siterations that corresponds to.
 
         # name for deeplabcut net (based on its parameters)
-        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix
         )
         if not returnjustfns:
@@ -398,7 +402,7 @@ def return_evaluate_network_data(
             notanalyzed,
             resultsfilename,
             DLCscorer,
-        ) = auxiliaryfunctions.CheckifNotEvaluated(
+        ) = auxiliaryfunctions.check_if_not_evaluated(
             str(evaluationfolder), DLCscorer, DLCscorerlegacy, Snapshots[snapindex]
         )
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
@@ -491,6 +495,55 @@ def return_evaluate_network_data(
             return results
 
 
+def keypoint_error(
+    df_error: pd.DataFrame,
+    df_error_p_cutoff: pd.DataFrame,
+    train_indices: List[int],
+    test_indices: List[int],
+) -> pd.DataFrame:
+    """Computes the RMSE error for each bodypart
+
+    The error dataframes can be in single animal format (non-hierarchical columns, one
+    column for each bodypart) or multi-animal format (hierarchical columns with 3
+    levels: "scorer", "individuals", "bodyparts").
+
+    Args:
+        df_error: dataframe containing the RMSE error for each image, individual and
+            bodypart
+        df_error_p_cutoff: dataframe containing the RMSE error with p-cutoff for each
+            image, individual and bodypart
+        train_indices: the indices of rows in the dataframe that are in the train set
+        test_indices: the indices of rows in the dataframe that are in the test set
+
+    Returns:
+        A dataframe containing 4 rows (train and test error, with and without p-cutoff)
+        and one column for each bodypart.
+    """
+    df_error = df_error.copy()
+    df_error_p_cutoff = df_error_p_cutoff.copy()
+
+    error_rows = []
+    for row_name, df in [
+        ("Train error (px)", df_error.iloc[train_indices, :]),
+        ("Test error (px)", df_error.iloc[test_indices, :]),
+        ("Train error (px) with p-cutoff", df_error_p_cutoff.iloc[train_indices, :]),
+        ("Test error (px) with p-cutoff", df_error_p_cutoff.iloc[test_indices, :]),
+    ]:
+        df_flat = df.copy()
+        if isinstance(df.columns, pd.MultiIndex):
+            # MA projects have column indices "scorer", "individuals" and "bodyparts"
+            # Drop the scorer level, and put individuals in rows
+            df_flat = df.droplevel("scorer", axis=1).stack(level="individuals").copy()
+
+        bodypart_error = df_flat.mean()
+        bodypart_error["Error Type"] = row_name
+        error_rows.append(bodypart_error)
+
+    # The error rows are series; stack in axis 1 and pivot to get DF
+    keypoint_error_df = pd.concat(error_rows, axis=1)
+    return keypoint_error_df.T.set_index("Error Type")
+
+
 def evaluate_network(
     config,
     Shuffles=[1],
@@ -501,6 +554,7 @@ def evaluate_network(
     gputouse=None,
     rescale=False,
     modelprefix="",
+    per_keypoint_evaluation: bool = False,
 ):
     """Evaluates the network.
 
@@ -554,6 +608,10 @@ def evaluate_network(
         Directory containing the deeplabcut models to use when evaluating the network.
         By default, the models are assumed to exist in the project folder.
 
+    per_keypoint_evaluation: bool, default=False
+        Compute the train and test RMSE for each keypoint, and save the results to
+        a {model_name}-keypoint-results.csv in the evalution-results folder
+
     Returns
     -------
     None
@@ -606,6 +664,7 @@ def evaluate_network(
             comparisonbodyparts=comparisonbodyparts,
             gputouse=gputouse,
             modelprefix=modelprefix,
+            per_keypoint_evaluation=per_keypoint_evaluation,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -650,7 +709,7 @@ def evaluate_network(
                 )
 
         # Loading human annotatated data
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         Data = pd.read_hdf(
             os.path.join(
                 cfg["project_path"],
@@ -660,11 +719,13 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-            cfg, comparisonbodyparts
+        comparisonbodyparts = (
+            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+                cfg, comparisonbodyparts
+            )
         )
         # Make folder for evaluation
-        auxiliaryfunctions.attempttomakefolder(
+        auxiliaryfunctions.attempt_to_make_folder(
             str(cfg["project_path"] + "/evaluation-results/")
         )
         for shuffle in Shuffles:
@@ -672,7 +733,7 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+                datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                     trainingsetfolder, trainFraction, shuffle, cfg
                 )
                 modelfolder = os.path.join(
@@ -691,7 +752,7 @@ def evaluate_network(
                     trainIndices,
                     testIndices,
                     trainFraction,
-                ) = auxiliaryfunctions.LoadMetadata(
+                ) = auxiliaryfunctions.load_metadata(
                     os.path.join(cfg["project_path"], metadatafn)
                 )
 
@@ -715,7 +776,9 @@ def evaluate_network(
                         )
                     ),
                 )
-                auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(
+                    evaluationfolder, recursive=True
+                )
                 # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
                 # Check which snapshots are available and sort them by # iterations
@@ -783,7 +846,7 @@ def evaluate_network(
                     ]  # read how many training siterations that corresponds to.
 
                     # Name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
@@ -800,7 +863,7 @@ def evaluate_network(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
@@ -895,6 +958,15 @@ def evaluate_network(
                         ]
                         final_result.append(results)
 
+                        if per_keypoint_evaluation:
+                            df_keypoint_error = keypoint_error(
+                                RMSE, RMSEpcutoff, trainIndices, testIndices
+                            )
+                            kpt_filename = DLCscorer + "-keypoint-results.csv"
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
+
                         if show_errors:
                             print(
                                 "Results for",
@@ -935,7 +1007,7 @@ def evaluate_network(
                                 + "_"
                                 + Snapshots[snapindex],
                             )
-                            auxiliaryfunctions.attempttomakefolder(foldername)
+                            auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
                                 cfg,
                                 comparisonbodyparts,
@@ -954,9 +1026,6 @@ def evaluate_network(
                             DataCombined = pd.concat(
                                 [Data.T, DataMachine.T], axis=0, sort=False
                             ).T
-                            print(
-                                "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
-                            )
                             foldername = os.path.join(
                                 str(evaluationfolder),
                                 "LabeledImages_"
@@ -964,15 +1033,23 @@ def evaluate_network(
                                 + "_"
                                 + Snapshots[snapindex],
                             )
-                            auxiliaryfunctions.attempttomakefolder(foldername)
-                            Plotting(
-                                cfg,
-                                comparisonbodyparts,
-                                DLCscorer,
-                                trainIndices,
-                                DataCombined * 1.0 / scale,
-                                foldername,
-                            )
+                            if not os.path.exists(foldername):
+                                print(
+                                    "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
+                                )
+                                auxiliaryfunctions.attempt_to_make_folder(foldername)
+                                Plotting(
+                                    cfg,
+                                    comparisonbodyparts,
+                                    DLCscorer,
+                                    trainIndices,
+                                    DataCombined * 1.0 / scale,
+                                    foldername,
+                                )
+                            else:
+                                print(
+                                    "Plots already exist for this snapshot... Skipping to the next one."
+                                )
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
@@ -1010,7 +1087,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     output_path = os.path.join(str(evaluationfolder), DLCscorer + "-results.csv")
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
-        df = pd.concat((df, temp)).reset_index(drop=True)
+        df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
 
@@ -1022,7 +1099,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     )
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
-        df = pd.concat((df, temp)).reset_index(drop=True)
+        df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
 

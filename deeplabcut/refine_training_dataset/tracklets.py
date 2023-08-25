@@ -1,9 +1,19 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import pandas as pd
 import pickle
 import re
 from deeplabcut.post_processing import columnwise_spline_interp
-from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.utils import auxiliaryfunctions
 from tqdm import trange
 
 
@@ -36,7 +46,7 @@ class TrackletManager:
         manager.find_swapping_bodypart_pairs()
         """
         self.config = config
-        self.cfg = read_config(config)
+        self.cfg = auxiliaryfunctions.read_config(config)
         self.min_swap_len = min_swap_len
         self.min_tracklet_len = min_tracklet_len
         self.max_gap = max_gap

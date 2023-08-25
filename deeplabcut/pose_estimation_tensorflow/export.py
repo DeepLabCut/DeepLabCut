@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import glob
 import os
@@ -224,7 +225,9 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
     # create frozen graph from pbtxt file
     pb_file = os.path.normpath(output_dir + "/" + ckpt_base + ".pb")
     frozen_graph_def = tf.compat.v1.graph_util.convert_variables_to_constants(
-        sess, sess.graph_def, output,
+        sess,
+        sess.graph_def,
+        output,
     )
     with open(pb_file, "wb") as file:
         file.write(frozen_graph_def.SerializeToString())

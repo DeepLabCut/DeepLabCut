@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import math
 import logging
 import os
@@ -243,6 +245,7 @@ def dropimagesduetolackofannotation(config):
             len(imagelist),
         )
 
+
 def dropunlabeledframes(config):
     """
     Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files
@@ -260,14 +263,14 @@ def dropunlabeledframes(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file =  os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
-            print("Skipping ",folder,"...")
+            print("Skipping ", folder, "...")
             continue
         before_len = len(DC.index)
-        DC = DC.dropna(how='all') # drop rows where all values are missing(NaN)
+        DC = DC.dropna(how="all")  # drop rows where all values are missing(NaN)
         after_len = len(DC.index)
         dropped = before_len - after_len
         if dropped:
@@ -276,9 +279,10 @@ def dropunlabeledframes(config):
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
             )
 
-            print("Dropped ", dropped, "entries in ",folder)
+            print("Dropped ", dropped, "entries in ", folder)
 
     print("Done.")
+
 
 def check_labels(
     config,
@@ -477,6 +481,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
+            if data.columns.levels[0][0] != cfg["scorer"]:
+                print(f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)")
+                continue
             AnnotationData.append(data)
         except FileNotFoundError:
             print(file_path, " not found (perhaps not annotated).")
@@ -617,10 +624,10 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
         cfg
     )  # Path concatenation OS platform independent
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
     )
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
@@ -771,7 +778,7 @@ def create_training_dataset(
 
     augmenter_type: string, optional, default=None
         Type of augmenter. Currently supported augmenters are
-        
+
         * ``default``
         * ``scalecrop``
         * ``imgaug``
@@ -831,7 +838,7 @@ def create_training_dataset(
                 "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
         else:
-            print("Reloading pose_cfg parameters from " + posecfg_template +'\n')
+            print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
             prior_cfg = read_plainconfig(posecfg_template)
@@ -841,16 +848,19 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles, net_type=net_type
+            config, num_shuffles, Shuffles,
+            net_type=net_type,
+            trainIndices=trainIndices,
+            testIndices=testIndices,
         )
     else:
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
         # Create path for training sets & store data there
-        trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(
+        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
         )  # Path concatenation OS platform independent
-        auxiliaryfunctions.attempttomakefolder(
+        auxiliaryfunctions.attempt_to_make_folder(
             Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
         )
 
@@ -906,7 +916,7 @@ def create_training_dataset(
             defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path, num_shuffles = auxfun_models.Check4weights(
+        model_path, num_shuffles = auxfun_models.check_for_weights(
             net_type, Path(dlcparent_path), num_shuffles
         )
 
@@ -982,7 +992,7 @@ def create_training_dataset(
                 (
                     datafilename,
                     metadatafilename,
-                ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
+                ) = auxiliaryfunctions.get_data_and_metadata_filenames(
                     trainingsetfolder, trainFraction, shuffle, cfg
                 )
 
@@ -999,7 +1009,7 @@ def create_training_dataset(
                 ################################################################################
                 # Saving metadata (Pickle file)
                 ################################################################################
-                auxiliaryfunctions.SaveMetadata(
+                auxiliaryfunctions.save_metadata(
                     os.path.join(project_path, metadatafilename),
                     data,
                     trainIndices,
@@ -1014,13 +1024,13 @@ def create_training_dataset(
                 modelfoldername = auxiliaryfunctions.get_model_folder(
                     trainFraction, shuffle, cfg
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/train"
                 )
-                auxiliaryfunctions.attempttomakefolder(
+                auxiliaryfunctions.attempt_to_make_folder(
                     str(Path(config).parents[0] / modelfoldername) + "/test"
                 )
 

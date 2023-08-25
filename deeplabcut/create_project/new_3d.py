@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 from pathlib import Path
@@ -52,7 +54,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     d = str(month[0:3] + str(day))
     date = dt.today().strftime("%Y-%m-%d")
 
-    if working_directory == None:
+    if working_directory is None:
         working_directory = "."
 
     wd = Path(working_directory).resolve()

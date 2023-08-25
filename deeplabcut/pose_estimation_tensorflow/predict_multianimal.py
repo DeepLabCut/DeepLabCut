@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import os
 import pickle
 import shelve
@@ -42,7 +44,7 @@ def extract_bpt_feature_from_video(
     videofolder = str(Path(video).parents[0])
     if destfolder is None:
         destfolder = videofolder
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
     assemble_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
@@ -99,7 +101,9 @@ def extract_bpt_feature_from_video(
                 extra_dict,
             )
         else:
-            raise NotImplementedError("Not implemented yet, please raise an GitHub issue if you need this.")
+            raise NotImplementedError(
+                "Not implemented yet, please raise an GitHub issue if you need this."
+            )
 
 
 def AnalyzeMultiAnimalVideo(
@@ -122,7 +126,7 @@ def AnalyzeMultiAnimalVideo(
     videofolder = str(Path(video).parents[0])
     if destfolder is None:
         destfolder = videofolder
-    auxiliaryfunctions.attempttomakefolder(destfolder)
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
     dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
     if os.path.isfile(dataname.split(".h5")[0] + "_full.pickle"):
@@ -178,7 +182,14 @@ def AnalyzeMultiAnimalVideo(
             )
         else:
             PredicteData, nframes = GetPoseandCostsS(
-                cfg, dlc_cfg, sess, inputs, outputs, vid, nframes, shelf_path,
+                cfg,
+                dlc_cfg,
+                sess,
+                inputs,
+                outputs,
+                vid,
+                nframes,
+                shelf_path,
             )
 
         stop = time.time()
@@ -227,7 +238,8 @@ def _get_features_dict(raw_coords, features, stride):
     )  # only first two columns are useful
 
     coords_feature_space = convert_coord_from_img_space_to_feature_space(
-        coords_img_space, stride,
+        coords_img_space,
+        stride,
     )
 
     bpt_features = load_features_from_coord(
@@ -249,7 +261,6 @@ def GetPoseandCostsF_from_assemblies(
     feature_dict,
     extra_dict,
 ):
-
     """Batchwise prediction of pose"""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
@@ -282,7 +293,6 @@ def GetPoseandCostsF_from_assemblies(
             inds.append(counter)
 
             if batch_ind == batchsize - 1:
-
                 preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
@@ -297,7 +307,9 @@ def GetPoseandCostsF_from_assemblies(
                         continue
                     fname = "frame" + str(ind).zfill(strwidth)
                     feature_dict[fname] = _get_features_dict(
-                        raw_coords, features[i], dlc_cfg["stride"],
+                        raw_coords,
+                        features[i],
+                        dlc_cfg["stride"],
                     )
 
                 batch_ind = 0
@@ -307,7 +319,6 @@ def GetPoseandCostsF_from_assemblies(
                 batch_ind += 1
         elif counter >= nframes:
             if batch_ind > 0:
-
                 preds = predict.predict_batched_peaks_and_costs(
                     dlc_cfg, frames, sess, inputs, outputs, extra_dict=extra_dict
                 )
@@ -322,7 +333,9 @@ def GetPoseandCostsF_from_assemblies(
                         continue
                     fname = "frame" + str(ind).zfill(strwidth)
                     feature_dict[fname] = _get_features_dict(
-                        raw_coords, features[i], dlc_cfg["stride"],
+                        raw_coords,
+                        features[i],
+                        dlc_cfg["stride"],
                     )
 
             break
@@ -350,7 +363,15 @@ def GetPoseandCostsF_from_assemblies(
 
 
 def GetPoseandCostsF(
-    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize, shelf_path,
+    cfg,
+    dlc_cfg,
+    sess,
+    inputs,
+    outputs,
+    cap,
+    nframes,
+    batchsize,
+    shelf_path,
 ):
     """Batchwise prediction of pose"""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -368,7 +389,10 @@ def GetPoseandCostsF(
     inds = []
 
     if shelf_path:
-        db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL,)
+        db = shelve.open(
+            shelf_path,
+            protocol=pickle.DEFAULT_PROTOCOL,
+        )
     else:
         db = dict()
     db["metadata"] = {
@@ -399,7 +423,11 @@ def GetPoseandCostsF(
             inds.append(counter)
             if batch_ind == batchsize - 1:
                 D = predict.predict_batched_peaks_and_costs(
-                    dlc_cfg, frames, sess, inputs, outputs,
+                    dlc_cfg,
+                    frames,
+                    sess,
+                    inputs,
+                    outputs,
                 )
                 for ind, data in zip(inds, D):
                     db["frame" + str(ind).zfill(strwidth)] = data
@@ -412,7 +440,11 @@ def GetPoseandCostsF(
         elif counter >= nframes:
             if batch_ind > 0:
                 D = predict.predict_batched_peaks_and_costs(
-                    dlc_cfg, frames, sess, inputs, outputs,
+                    dlc_cfg,
+                    frames,
+                    sess,
+                    inputs,
+                    outputs,
                 )
                 for ind, data in zip(inds, D):
                     db["frame" + str(ind).zfill(strwidth)] = data
@@ -437,7 +469,10 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
 
     if shelf_path:
-        db = shelve.open(shelf_path, protocol=pickle.DEFAULT_PROTOCOL,)
+        db = shelve.open(
+            shelf_path,
+            protocol=pickle.DEFAULT_PROTOCOL,
+        )
     else:
         db = dict()
     db["metadata"] = {
@@ -467,7 +502,11 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
             if frame.shape[-1] == 4:
                 frame = rgba2rgb(frame)
             dets = predict.predict_batched_peaks_and_costs(
-                dlc_cfg, np.expand_dims(frame, axis=0), sess, inputs, outputs,
+                dlc_cfg,
+                np.expand_dims(frame, axis=0),
+                sess,
+                inputs,
+                outputs,
             )
             db[key] = dets[0]
             del dets

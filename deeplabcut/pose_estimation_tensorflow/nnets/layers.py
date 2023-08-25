@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import tensorflow as tf
 import tf_slim as slim
 
@@ -56,5 +66,10 @@ def prediction_layer_stage(cfg, input, name, num_outputs):
         weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
     ):
         with tf.compat.v1.variable_scope(name):
-            pred = slim.conv2d(input, num_outputs, kernel_size=[3, 3], stride=1,)
+            pred = slim.conv2d(
+                input,
+                num_outputs,
+                kernel_size=[3, 3],
+                stride=1,
+            )
             return pred

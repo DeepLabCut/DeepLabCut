@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import pandas as pd
 import pytest
@@ -30,7 +40,7 @@ def test_undistort_points(stereo_params):
 
 @pytest.mark.parametrize(
     "n_view_pairs, is_multi",
-    [(i, flag) for i in range(1, 7, 2) for flag in (False, True)]
+    [(i, flag) for i in range(1, 7, 2) for flag in (False, True)],
 )
 def test_undistort_views(n_view_pairs, is_multi, stereo_params):
     df = pd.read_hdf("tests/data/montblanc_tracks.h5")
@@ -38,8 +48,9 @@ def test_undistort_views(n_view_pairs, is_multi, stereo_params):
         df = df.xs("bird1", level="individuals", axis=1)
 
     view_pairs = [(df, df) for _ in range(n_view_pairs)]
-    cam_params = {f"camera-1-camera-{i}": stereo_params
-                  for i in range(2, n_view_pairs + 2)}
+    cam_params = {
+        f"camera-1-camera-{i}": stereo_params for i in range(2, n_view_pairs + 2)
+    }
     dfs = triangulation._undistort_views(view_pairs, cam_params)
     assert len(dfs) == n_view_pairs
     assert all(len(pair) == 2 for pair in dfs)

@@ -1,12 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import os
 import os.path
@@ -32,6 +33,7 @@ from deeplabcut.utils import (
     auxfun_models,
     auxfun_multianimal,
 )
+
 
 def format_multianimal_training_data(
     df,
@@ -113,7 +115,7 @@ def create_multianimaltraining_dataset(
     Only the videos included in the config file are used to create this dataset.\n
     [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
 
-    Imporant differences to standard:
+    Important differences to standard:
      - stores coordinates with numdigits as many digits
      - creates
     Parameter
@@ -165,7 +167,7 @@ def create_multianimaltraining_dataset(
 
     paf_graph_degree: int, optional (default=6)
         Degree of paf_graph when automatically pruning it (before training).
-        
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -196,9 +198,9 @@ def create_multianimaltraining_dataset(
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     full_training_path = Path(project_path, trainingsetfolder)
-    auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
+    auxiliaryfunctions.attempt_to_make_folder(full_training_path, recursive=True)
 
     Data = merge_annotateddatasets(cfg, full_training_path)
     if Data is None:
@@ -238,7 +240,8 @@ def create_multianimaltraining_dataset(
         # see Suppl. Fig S9c in Lauer et al., 2022.
         if n_edges_orig >= n_edges_threshold:
             partaffinityfield_graph = auxfun_multianimal.prune_paf_graph(
-                partaffinityfield_graph, average_degree=paf_graph_degree,
+                partaffinityfield_graph,
+                average_degree=paf_graph_degree,
             )
     else:
         if paf_graph == "config":
@@ -269,7 +272,7 @@ def create_multianimaltraining_dataset(
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
-    model_path, num_shuffles = auxfun_models.Check4weights(
+    model_path, num_shuffles = auxfun_models.check_for_weights(
         net_type, Path(dlcparent_path), num_shuffles
     )
 
@@ -331,13 +334,13 @@ def create_multianimaltraining_dataset(
             (
                 datafilename,
                 metadatafilename,
-            ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            ) = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             ################################################################################
             # Saving metadata and data file (Pickle file)
             ################################################################################
-            auxiliaryfunctions.SaveMetadata(
+            auxiliaryfunctions.save_metadata(
                 os.path.join(project_path, metadatafilename),
                 data,
                 trainIndices,
@@ -360,13 +363,13 @@ def create_multianimaltraining_dataset(
             modelfoldername = auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 Path(config).parents[0] / modelfoldername, recursive=True
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 str(Path(config).parents[0] / modelfoldername / "train")
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 str(Path(config).parents[0] / modelfoldername / "test")
             )
 
@@ -468,8 +471,7 @@ def create_multianimaltraining_dataset(
             )
             items2change = {
                 "minimalnumberofconnections": int(len(cfg["multianimalbodyparts"]) / 2),
-                "topktoretain": len(cfg["individuals"])
-                + 1 * (len(cfg["uniquebodyparts"]) > 0),
+                "topktoretain": len(cfg["individuals"]),
                 "withid": cfg.get("identity", False),
             }
             MakeInference_yaml(
@@ -527,7 +529,7 @@ def convert_cropped_to_standard_dataset(
 
     datasets_folder = os.path.join(
         project_path,
-        auxiliaryfunctions.GetTrainingSetFolder(cfg),
+        auxiliaryfunctions.get_training_set_folder(cfg),
     )
     df_old = pd.read_hdf(
         os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),

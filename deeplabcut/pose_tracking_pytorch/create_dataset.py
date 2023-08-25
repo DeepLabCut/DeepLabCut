@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import numpy as np
 import os
 import pickle
@@ -36,21 +38,23 @@ def save_train_triplets(feature_fname, triplets, out_name):
     zfill_width = int(np.ceil(np.log10(nframes)))
 
     for triplet in triplets:
-
         anchor, pos, neg = triplet[0], triplet[1], triplet[2]
 
         anchor_coord, anchor_frame = anchor
         pos_coord, pos_frame = pos
         neg_coord, neg_frame = neg
-               
-        
+
         anchor_frame = "frame" + str(anchor_frame).zfill(zfill_width)
         pos_frame = "frame" + str(pos_frame).zfill(zfill_width)
         neg_frame = "frame" + str(neg_frame).zfill(zfill_width)
 
-        if anchor_frame in feature_dict and pos_frame in feature_dict and neg_frame in feature_dict:
+        if (
+            anchor_frame in feature_dict
+            and pos_frame in feature_dict
+            and neg_frame in feature_dict
+        ):
             # only try to find these features if they are in the dictionary
-            
+
             anchor_vec = query_feature_by_coord_in_img_space(
                 feature_dict, anchor_frame, anchor_coord
             )
@@ -76,8 +80,9 @@ def create_train_using_pickle(feature_fname, path_to_pickle, out_name, n_triplet
     save_train_triplets(feature_fname, triplets, out_name)
 
 
-def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000, destfolder=None):
-
+def create_triplets_dataset(
+    videos, dlcscorer, track_method, n_triplets=1000, destfolder=None
+):
     # 1) reference to video folder and get the proper bpt_feature file for feature table
     # 2) get either the path to gt or the path to track pickle
 

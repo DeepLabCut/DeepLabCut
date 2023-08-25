@@ -1,30 +1,51 @@
 format: jb-book
-root: docs/intro
+root: README
 parts:
-- caption: Main Documentation
+- caption: Getting Started
   chapters:
   - file: docs/UseOverviewGuide
+- caption: Installation
+  chapters:
   - file: docs/installation
+  - file: docs/recipes/installTips
   - file: docs/docker
+- caption: User Guides
+  chapters:
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
-  - file: docs/PROJECT_GUI
   - file: docs/Overviewof3D
-- caption: Tutorials
+  - file: docs/HelperFunctions
+- caption: Graphical User Interfaces (GUIs)
+  chapters:
+  - file: docs/PROJECT_GUI
+  - file: docs/napariGUI
+  - file: docs/recipes/ClusteringNapari
+- caption: DeepLabCut-Live!
+  chapters:
+  - file: docs/deeplabcutlive
+- caption: DeepLabCut Model Zoo
+  chapters:
+  - file: docs/ModelZoo
+  - file: docs/recipes/UsingModelZooPupil
+  - file: docs/recipes/MegaDetectorDLCLive
+- caption: DeepLabCut Benchmark
+  chapters:
+  - file: docs/benchmark
+- caption: Hardware
+  chapters:
+  - file: docs/recipes/TechHardware
+- caption: Tutorials & Cookbook
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC
-  - file: docs/HelperFunctions
-- caption: Recipes
-  chapters:
-  - file: docs/recipes/installTips
   - file: docs/recipes/io
   - file: docs/recipes/nn
   - file: docs/recipes/post
   - file: docs/recipes/BatchProcessing
-  - file: docs/recipes/TechHardware
   - file: docs/recipes/DLCMethods
   - file: docs/recipes/OpenVINO
+  - file: docs/recipes/flip_and_rotate
+  - file: docs/recipes/pose_cfg_file_breakdown
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES

@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -21,8 +31,7 @@ import warnings
 
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
-SUPPORTED_VIDEOS = 'avi', 'mp4', 'mov', 'mpeg', 'mpg', 'mpv', 'mkv', 'flv', 'qt', 'yuv'
-
+SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
 
 
 class VideoReader:
@@ -354,9 +363,10 @@ def check_video_integrity(video_path):
     vid.check_integrity()
     vid.check_integrity_robust()
 
+
 def imread(image_path, mode="skimage"):
-    ''' Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels. '''
+    """Read image either with skimage or cv2.
+    Returns frame in uint with 3 color channels."""
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:
@@ -366,8 +376,10 @@ def imread(image_path, mode="skimage"):
 
         return img_as_ubyte(image)
 
-    elif mode=="cv2":
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
+    elif mode == "cv2":
+        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[
+            ..., ::-1
+        ]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
@@ -574,7 +586,7 @@ def draw_bbox(video):
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.imshow(frame[:, :, ::-1])
+    ax.imshow(frame)
     ax_help = fig.add_axes([0.9, 0.2, 0.1, 0.1])
     ax_save = fig.add_axes([0.9, 0.1, 0.1, 0.1])
     crop_button = Button(ax_save, "Crop")
@@ -585,14 +597,12 @@ def draw_bbox(video):
     rs = RectangleSelector(
         ax,
         line_select_callback,
-        drawtype="box",
         minspanx=5,
         minspany=5,
         interactive=True,
         spancoords="pixels",
-        rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
-    plt.show()
+    plt.show(block=False)
 
     # import platform
     # if platform.system() == "Darwin":  # for OSX use WXAgg

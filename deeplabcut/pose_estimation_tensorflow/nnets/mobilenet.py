@@ -1,12 +1,15 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
 """
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-
 Also see our paper:
 Pretraining boosts out-of-domain robustness for pose estimation
 by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
@@ -69,9 +72,17 @@ class PoseMobileNet(BasePoseNet):
         return net, end_points
 
     def prediction_layers(
-        self, features, end_points, scope="pose", reuse=None,
+        self,
+        features,
+        end_points,
+        scope="pose",
+        reuse=None,
     ):
-        out = super(PoseMobileNet, self).prediction_layers(features, scope, reuse,)
+        out = super(PoseMobileNet, self).prediction_layers(
+            features,
+            scope,
+            reuse,
+        )
         with tf.compat.v1.variable_scope(scope, reuse=reuse):
             if self.cfg["intermediate_supervision"]:
                 out["part_pred_interm"] = prediction_layer(

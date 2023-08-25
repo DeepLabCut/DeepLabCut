@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import numpy as np
 import tensorflow as tf
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
@@ -19,7 +29,9 @@ def test_extract_detections(model_outputs, ground_truth_detections):
     pos_gt = np.concatenate(ground_truth_detections[0]["coordinates"][0])
     prob_gt = np.concatenate(ground_truth_detections[0]["confidence"])
     inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
-        scmaps, RADIUS, THRESHOLD,
+        scmaps,
+        RADIUS,
+        THRESHOLD,
     )
     with tf.compat.v1.Session() as sess:
         inds = sess.run(inds)
@@ -35,7 +47,9 @@ def test_extract_detections(model_outputs, ground_truth_detections):
 def test_association_costs(model_outputs, ground_truth_detections):
     costs_gt = ground_truth_detections[0]["costs"]
     peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
-        model_outputs[0], RADIUS, THRESHOLD,
+        model_outputs[0],
+        RADIUS,
+        THRESHOLD,
     )
     with tf.compat.v1.Session() as sess:
         peak_inds = sess.run(peak_inds)
@@ -64,7 +78,9 @@ def test_association_costs(model_outputs, ground_truth_detections):
 
 def test_compute_peaks_and_costs_no_graph(model_outputs):
     peak_inds = predict_multianimal.find_local_peak_indices_maxpool_nms(
-        model_outputs[0], RADIUS, THRESHOLD,
+        model_outputs[0],
+        RADIUS,
+        THRESHOLD,
     )
     with tf.compat.v1.Session() as sess:
         peak_inds = sess.run(peak_inds)

@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import torch
 import torch.nn as nn
 import numpy as np
@@ -41,7 +43,6 @@ class DLCTrans:
         self.model.eval()
 
     def _load_params(self, params):
-
         self.model.load_state_dict(params)
 
     def _get_vec(self, inp_a, inp_b, zfill_width, feature_dict):
@@ -59,7 +60,7 @@ class DLCTrans:
 
     def __call__(self, inp_a, inp_b, zfill_width, feature_dict, return_features=False):
         # tracklets
-        device = default_device('cuda')
+        device = default_device("cuda")
 
         _tuple = self._get_vec(inp_a, inp_b, zfill_width, feature_dict)
         if _tuple is None:

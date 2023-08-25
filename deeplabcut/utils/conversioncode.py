@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -82,7 +92,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",listofvideos=False):
+def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """
     By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
     in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
@@ -106,11 +116,13 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4",listofvideos=
 
     """
 
-    if listofvideos: # can also be called with a list of videos (from GUI)
-        videos = video_folder # GUI gives a list of videos
-        if len(videos)>0:
+    if listofvideos:  # can also be called with a list of videos (from GUI)
+        videos = video_folder  # GUI gives a list of videos
+        if len(videos) > 0:
             h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False)
+                auxiliaryfunctions.grab_files_in_folder(
+                    Path(videos[0]).parent, "h5", relative=False
+                )
             )
         else:
             h5_files = []
@@ -152,11 +164,13 @@ def analyze_videos_converth5_to_nwb(
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 
     """
-    if listofvideos: # can also be called with a list of videos (from GUI)
-        videos = video_folder # GUI gives a list of videos
-        if len(videos)>0:
+    if listofvideos:  # can also be called with a list of videos (from GUI)
+        videos = video_folder  # GUI gives a list of videos
+        if len(videos) > 0:
             h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False)
+                auxiliaryfunctions.grab_files_in_folder(
+                    Path(videos[0]).parent, "h5", relative=False
+                )
             )
         else:
             h5_files = []
@@ -207,9 +221,9 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
-    """ If a project was created on Windows (and labeled there,) but ran on unix then the data folders
+    """If a project was created on Windows (and labeled there,) but ran on unix then the data folders
     corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
-    looping over all folders in labeled-data """
+    looping over all folders in labeled-data"""
 
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
@@ -240,6 +254,12 @@ def guarantee_multiindex_rows(df):
             df.index = pd.MultiIndex.from_tuples(splits)
         except TypeError:  #  Ignore numerical index of frame indices
             pass
+
+    # Ensure folder names are strings
+    try:
+        df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)
+    except AttributeError:
+        pass
 
 
 def robust_split_path(s):

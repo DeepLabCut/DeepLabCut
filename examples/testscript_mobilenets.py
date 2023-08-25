@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 Created on Tue Oct  2 13:56:11 2018
 @author: alex
@@ -80,7 +90,7 @@ if __name__ == "__main__":
 
     # to test destination folder:
     dfolder = os.path.join(basepath, "OUT")
-    deeplabcut.auxiliaryfunctions.attempttomakefolder(dfolder)
+    deeplabcut.auxiliaryfunctions.attempt_to_make_folder(dfolder)
 
     # dfolder=None
     augmenter_type = "tensorpack"  # imgaug'

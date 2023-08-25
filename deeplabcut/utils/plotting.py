@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -11,6 +21,7 @@ Licensed under GNU Lesser General Public License v3.0
 import argparse
 import os
 import pickle
+import pandas as pd
 
 ####################################################
 # Dependencies
@@ -45,7 +56,7 @@ def PlottingResults(
     resolution=100,
     linewidth=1.0,
 ):
-    """ Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
+    """Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -258,10 +269,10 @@ def plot_trajectories(
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
-    bodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts
     )
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
@@ -274,7 +285,7 @@ def plot_trajectories(
         )
         return
 
-    failed = []
+    failures, multianimal_errors = [], []
     for video in Videos:
         if destfolder is None:
             videofolder = str(Path(video).parents[0])
@@ -284,80 +295,138 @@ def plot_trajectories(
         vname = str(Path(video).stem)
         print("Loading ", video, "and data.")
         try:
-            df, _, _, suffix = auxiliaryfunctions.load_analyzed_data(
+            df, filepath, _, suffix = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, filtered, track_method
             )
-            failed.append(False)
             tmpfolder = os.path.join(videofolder, "plot-poses", vname)
-            auxiliaryfunctions.attempttomakefolder(tmpfolder, recursive=True)
-            # Keep only the individuals and bodyparts that were labeled
-            labeled_bpts = [
-                bp
-                for bp in df.columns.get_level_values("bodyparts").unique()
-                if bp in bodyparts
-            ]
-            # Either display the animals defined in the config if they are found
-            # in the dataframe, or all the trajectories regardless of their names
-            try:
-                animals = set(df.columns.get_level_values("individuals"))
-            except KeyError:
-                animals = {""}
-            for animal in animals.intersection(individuals) or animals:
-                PlottingResults(
-                    tmpfolder,
-                    df,
-                    cfg,
-                    labeled_bpts,
-                    animal,
-                    showfigures,
-                    suffix + animal + imagetype,
-                    resolution=resolution,
-                    linewidth=linewidth,
-                )
+            _plot_trajectories(
+                filepath,
+                bodyparts,
+                individuals,
+                showfigures,
+                resolution,
+                linewidth,
+                cfg["colormap"],
+                cfg["alphavalue"],
+                cfg["pcutoff"],
+                suffix,
+                imagetype,
+                tmpfolder,
+            )
         except FileNotFoundError as e:
-            failed.append(True)
             print(e)
-            try:
-                _ = auxiliaryfunctions.load_detection_data(
-                    video, DLCscorer, track_method
-                )
-                print(
-                    'Call "deeplabcut.stitch_tracklets()"'
-                    " prior to plotting the trajectories."
-                )
-            except FileNotFoundError as e:
-                print(e)
-                print(
-                    f"Make sure {video} was previously analyzed, and that "
-                    f'detections were successively converted to tracklets using "deeplabcut.convert_detections2tracklets()" '
-                    f'and "deeplabcut.stitch_tracklets()".'
-                )
+            failures.append(video)
+            if track_method != "":
+                # In a multi animal scenario, show more verbose errors.
+                try:
+                    _ = auxiliaryfunctions.load_detection_data(
+                        video, DLCscorer, track_method
+                    )
+                    error_message = 'Call "deeplabcut.stitch_tracklets() prior to plotting the trajectories.'
+                except FileNotFoundError as e:
+                    print(e)
+                    error_message = (
+                        f"Make sure {video} was previously analyzed, and that "
+                        "detections were successively converted to tracklets using "
+                        '"deeplabcut.convert_detections2tracklets()" and "deeplabcut.stitch_tracklets()".'
+                    )
+                multianimal_errors.append(error_message)
 
-    if not all(failed):
+    if len(failures) > 0:
+        # Some vidoes were not evaluated.
+        failed_videos = ",".join(failures)
+        if len(multianimal_errors) > 0:
+            verbose_error = ": " + " ".join(multianimal_errors)
+        else:
+            verbose_error = "."
         print(
-            'Plots created! Please check the directory "plot-poses" within the video directory'
+            f"Plots could not be created for {failed_videos}. "
+            f"Videos were not evaluated with the current scorer {DLCscorer}"
+            + verbose_error
         )
     else:
         print(
-            f"Plots could not be created! "
-            f"Videos were not evaluated with the current scorer {DLCscorer}."
+            'Plots created! Please check the directory "plot-poses" within the video directory'
+        )
+
+
+def _plot_trajectories(
+    h5file,
+    bodyparts=None,
+    individuals=None,
+    show=False,
+    resolution=100,
+    linewidth=1.0,
+    colormap="viridis",
+    alpha=1.0,
+    pcutoff=0.01,
+    suffix="",
+    image_type=".png",
+    dest_folder=None,
+):
+    df = pd.read_hdf(h5file)
+    if bodyparts is None:
+        bodyparts = list(df.columns.get_level_values("bodyparts").unique())
+    if individuals is None:
+        try:
+            individuals = set(df.columns.get_level_values("individuals"))
+        except KeyError:
+            individuals = [""]
+    if dest_folder is None:
+        vname = os.path.basename(h5file).split("DLC")[0]
+        vid_folder = os.path.dirname(h5file)
+        dest_folder = os.path.join(vid_folder, "plot-poses", vname)
+    auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
+    # Keep only the individuals and bodyparts that were labeled
+    labeled_bpts = [
+        bp
+        for bp in df.columns.get_level_values("bodyparts").unique()
+        if bp in bodyparts
+    ]
+    # Either display the animals defined in the config if they are found
+    # in the dataframe, or all the trajectories regardless of their names
+    try:
+        animals = set(df.columns.get_level_values("individuals"))
+    except KeyError:
+        animals = {""}
+    cfg = {
+        "colormap": colormap,
+        "alphavalue": alpha,
+        "pcutoff": pcutoff,
+    }
+    for animal in animals.intersection(individuals) or animals:
+        PlottingResults(
+            dest_folder,
+            df,
+            cfg,
+            labeled_bpts,
+            animal,
+            show,
+            suffix + animal + image_type,
+            resolution=resolution,
+            linewidth=linewidth,
         )
 
 
 def _plot_paf_performance(
-    within, between, nbins=51, kde=True, colors=None, ax=None,
+    within,
+    between,
+    nbins=51,
+    kde=True,
+    colors=None,
+    ax=None,
 ):
     import seaborn as sns
 
     bins = np.linspace(0, 1, nbins)
     if colors is None:
-        colors = '#EFC9AF', '#1F8AC0'
+        colors = "#EFC9AF", "#1F8AC0"
     if ax is None:
         fig, ax = plt.subplots(tight_layout=True, figsize=(3, 3))
-    sns.histplot(within, kde=kde, ax=ax, stat='probability',
-                 color=colors[0], bins=bins)
-    sns.histplot(between, kde=kde, ax=ax, stat='probability',
-                 color=colors[1], bins=bins)
+    sns.histplot(within, kde=kde, ax=ax, stat="probability", color=colors[0], bins=bins)
+    sns.histplot(
+        between, kde=kde, ax=ax, stat="probability", color=colors[1], bins=bins
+    )
     return ax
 
 
@@ -388,25 +457,27 @@ def plot_edge_affinity_distributions(
 
     """
 
-    with open(eval_pickle_file, 'rb') as file:
+    with open(eval_pickle_file, "rb") as file:
         data = pickle.load(file)
-    meta_pickle_file = eval_pickle_file.replace('_full.', '_meta.')
-    with open(meta_pickle_file, 'rb') as file:
+    meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")
+    with open(meta_pickle_file, "rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
-        data, metadata, train_set_only=True,
+        data,
+        metadata,
+        train_set_only=True,
     )
-    data.pop('metadata', None)
+    data.pop("metadata", None)
     nonempty = set(i for i, vals in w_train.items() if vals)
-    meta = metadata['data']['DLC-model-config file']
-    bpts = list(map(str.lower, meta['all_joints_names']))
-    inds_multi = set(b for edge in meta['partaffinityfield_graph'] for b in edge)
-    if include_bodyparts == 'all':
+    meta = metadata["data"]["DLC-model-config file"]
+    bpts = list(map(str.lower, meta["all_joints_names"]))
+    inds_multi = set(b for edge in meta["partaffinityfield_graph"] for b in edge)
+    if include_bodyparts == "all":
         include_bodyparts = inds_multi
     else:
         include_bodyparts = set(bpts.index(bpt) for bpt in include_bodyparts)
     edges_to_keep = set()
-    graph = meta['partaffinityfield_graph']
+    graph = meta["partaffinityfield_graph"]
     for n, edge in enumerate(graph):
         if not any(i in include_bodyparts for i in edge):
             continue
@@ -415,18 +486,28 @@ def plot_edge_affinity_distributions(
     nrows = int(np.ceil(np.sqrt(len(edge_inds))))
     ncols = int(np.ceil(len(edge_inds) / nrows))
     fig, axes_ = plt.subplots(
-        nrows, ncols, figsize=figsize, tight_layout=True, squeeze=False,
+        nrows,
+        ncols,
+        figsize=figsize,
+        tight_layout=True,
+        squeeze=False,
     )
     axes = axes_.flatten()
     for ax in axes:
-        ax.axis('off')
+        ax.axis("off")
     for n, ind in enumerate(edge_inds):
         i1, i2 = graph[ind]
         w_tr = w_train[ind]
         b_tr = b_train[ind]
-        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric='auc')
-        axes[n].text(0.5, 0.8, f'{bpts[i1]}–{bpts[i2]}\n{sep:.2f}', size=8,
-                     ha='center', transform=axes[n].transAxes)
+        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric="auc")
+        axes[n].text(
+            0.5,
+            0.8,
+            f"{bpts[i1]}–{bpts[i2]}\n{sep:.2f}",
+            size=8,
+            ha="center",
+            transform=axes[n].transAxes,
+        )
         _plot_paf_performance(w_tr, b_tr, ax=axes[n], kde=False)
     axes[0].set_xticks([])
     axes[0].set_yticks([])

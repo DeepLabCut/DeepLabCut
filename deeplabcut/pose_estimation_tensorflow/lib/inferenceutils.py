@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import heapq
 import itertools
 import multiprocessing
@@ -293,6 +295,10 @@ class Assembler:
         frac_valid = np.mean(~np.isnan(xy), axis=(1, 2))
         # Only keeps skeletons that are more than 90% complete
         xy = xy[frac_valid >= 0.9]
+        if not xy.size:
+            warnings.warn("No complete poses were found. Skipping calibration...")
+            return
+
         # TODO Normalize dists by longest length?
         # TODO Smarter imputation technique (Bayesian? Grassmann averages?)
         dists = np.vstack([pdist(data, "sqeuclidean") for data in xy])
@@ -353,7 +359,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length ** 2 - mu) / sigma
+        z = (link.length**2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
@@ -803,7 +809,13 @@ class Assembler:
                         if unique is not None:
                             self.unique[i] = unique
                         pbar.update()
-
+    
+    def from_pickle(self, pickle_path):
+        with open(pickle_path, "rb") as file:
+            data = pickle.load(file)
+        self.unique = data.pop("single", {})
+        self.assemblies = data
+        
     @staticmethod
     def parse_metadata(data):
         params = dict()
@@ -854,7 +866,11 @@ class Assembler:
 
 
 def calc_object_keypoint_similarity(
-    xy_pred, xy_true, sigma, margin=0, symmetric_kpts=None,
+    xy_pred,
+    xy_true,
+    sigma,
+    margin=0,
+    symmetric_kpts=None,
 ):
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
@@ -915,7 +931,11 @@ def match_assemblies(
                 xy_true = ass_true[ind_true].xy
                 oks.append(
                     calc_object_keypoint_similarity(
-                        xy_pred, xy_true, sigma, margin, symmetric_kpts,
+                        xy_pred,
+                        xy_true,
+                        sigma,
+                        margin,
+                        symmetric_kpts,
                     )
                 )
             if np.all(np.isnan(oks)):
@@ -932,7 +952,11 @@ def match_assemblies(
         for i, a_pred in enumerate(ass_pred):
             for j, a_true in enumerate(ass_true):
                 oks = calc_object_keypoint_similarity(
-                    a_pred.xy, a_true.xy, sigma, margin, symmetric_kpts,
+                    a_pred.xy,
+                    a_true.xy,
+                    sigma,
+                    margin,
+                    symmetric_kpts,
                 )
                 if ~np.isnan(oks):
                     mat[i, j] = oks
@@ -1013,7 +1037,12 @@ def evaluate_assembly(
     for ind, ass_true in tqdm(ass_true_dict.items()):
         ass_pred = ass_pred_dict.get(ind, [])
         matched, unmatched = match_assemblies(
-            ass_pred, ass_true, oks_sigma, margin, symmetric_kpts, greedy_matching,
+            ass_pred,
+            ass_true,
+            oks_sigma,
+            margin,
+            symmetric_kpts,
+            greedy_matching,
         )
         all_matched.extend(matched)
         all_unmatched.extend(unmatched)

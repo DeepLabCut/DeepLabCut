@@ -1,11 +1,56 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 import imgaug.augmenters as iaa
 import numpy as np
+from imgaug import KeypointsOnImage
 from scipy.spatial.distance import pdist, squareform
+from typing import List, Union, Tuple
+
+
+class KeypointFliplr(iaa.Fliplr):
+    def __init__(
+        self,
+        keypoints: List[str],
+        symmetric_pairs: List[Union[Tuple, List]],
+        p: float = 1.0,
+    ):
+        super().__init__(p=p)
+        self.keypoints = keypoints
+        self.symmetric_pairs = symmetric_pairs
+
+    @property
+    def n_keypoints(self):
+        return len(self.keypoints)
+
+    def _augment_batch_(self, batch, random_state, parents, hooks):
+        batch = super()._augment_batch_(batch, random_state, parents, hooks)
+        keypoints = []
+        for kpts in batch.keypoints:
+            kpts_ = list(kpts)
+            n_kpts = len(kpts_)
+            for i1, i2 in self.symmetric_pairs:
+                for j in range(0, n_kpts, self.n_keypoints):
+                    kpts_[i1 + j], kpts_[i2 + j] = kpts_[i2 + j], kpts_[i1 + j]
+            keypoints.append(KeypointsOnImage(kpts_, kpts.shape))
+        batch.keypoints = keypoints
+        return batch
 
 
 class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
     def __init__(
-        self, width, height, max_shift=0.4, crop_sampling="hybrid",
+        self,
+        width,
+        height,
+        max_shift=0.4,
+        crop_sampling="hybrid",
     ):
         """
         Parameters
@@ -28,7 +73,9 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             or "hybrid" (alternating randomly between "uniform" and "density").
         """
         super(KeypointAwareCropToFixedSize, self).__init__(
-            width, height, name="kptscrop",
+            width,
+            height,
+            name="kptscrop",
         )
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
@@ -61,6 +108,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             else:
                 h, w = batch.images[n].shape[:2]
                 kpts = batch.keypoints[n].to_xy_array()
+                kpts = kpts[~np.isnan(kpts).all(axis=1)]
                 n_kpts = kpts.shape[0]
                 inds = np.arange(n_kpts)
                 if sampling == "density":

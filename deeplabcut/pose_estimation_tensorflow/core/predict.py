@@ -1,26 +1,16 @@
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
-
-To do faster inference on videos (with numpy based code; introduced in Oct 2018)
-"On the inference speed and video-compression robustness of DeepLabCut"
-Alexander Mathis & Richard Warren
-doi: https://doi.org/10.1101/457242
-See https://www.biorxiv.org/content/early/2018/10/30/457242
-
-To do even faster inference on videos (with TensorFlow based code; introduced in Oct 2019)
-Pretraining boosts out-of-domain robustness for pose estimation
-by Alexander Mathis, Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis
-https://arxiv.org/abs/1909.11229
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Adapted from DeeperCut by Eldar Insafutdinov
+# https://github.com/eldar/pose-tensorflow
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import numpy as np
 import tensorflow as tf

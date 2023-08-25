@@ -29,6 +29,8 @@ by DeepLabCut, default values (see the augmentation variables in the
 [default pose_cfg.yaml](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml#L23-L74) file)
 can be readily overwritten prior to training.
 
+Another option we discuss is a different data-efficient approach based on a method called active learning. See this [this blog post](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/recipes/nn.md#using-custom-image-augmentation) for further details. 
+
 When you `create_training_dataset` [you have several options](https://github.com/DeepLabCut/DeepLabCut/wiki/DOCSTRINGS#create_training_dataset) on what types of augmentation to use.
 ```python
 deeplabcut.create_training_dataset(configpath, augmenter_type='imgaug')
@@ -56,6 +58,7 @@ deeplabcut.auxiliaryfunctions.edit_config(
     augs,
 )
 ```
+An in-depth tutorial on image augmentation and training hyperparameters can be found [here](https://deeplabcut.github.io/DeepLabCut/docs/recipes/pose_cfg_file_breakdown.html).
 
 ## Evaluating intermediate (and all) snapshots
 

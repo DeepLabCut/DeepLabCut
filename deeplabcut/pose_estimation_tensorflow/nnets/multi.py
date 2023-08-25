@@ -1,15 +1,13 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-
-Adapted from DeeperCut by Eldar Insafutdinov
-https://github.com/eldar/pose-tensorflow
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import re
 import tensorflow as tf
@@ -97,7 +95,10 @@ def prediction_layer(cfg, input, name, num_outputs):
     ):
         with tf.compat.v1.variable_scope(name):
             pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2,
+                input,
+                num_outputs,
+                kernel_size=[3, 3],
+                stride=2,
             )
             return pred
 
@@ -141,7 +142,12 @@ class PoseMultiNet(BasePoseNet):
         return net, end_points
 
     def prediction_layers(
-        self, features, end_points, input_shape, scope="pose", reuse=None,
+        self,
+        features,
+        end_points,
+        input_shape,
+        scope="pose",
+        reuse=None,
     ):
         net_type = self.cfg["net_type"]
         if self.cfg["multi_stage"]:  # MuNet! (multi_stage decoder + multi_fusion)
@@ -220,7 +226,6 @@ class PoseMultiNet(BasePoseNet):
                 weights_regularizer=slim.l2_regularizer(self.cfg["weight_decay"]),
             ):
                 with tf.compat.v1.variable_scope("upsampled_features"):
-
                     concat_3_s16 = tf.concat([bank_1_s16, bank_2_s16, features], 3)
 
                     if self.cfg["stride"] == 8:
@@ -399,7 +404,11 @@ class PoseMultiNet(BasePoseNet):
                         scope="block4",
                     )
             net = tf.concat([bank_3, upsampled_features], 3)
-            out = super(PoseMultiNet, self).prediction_layers(net, scope, reuse,)
+            out = super(PoseMultiNet, self).prediction_layers(
+                net,
+                scope,
+                reuse,
+            )
             with tf.compat.v1.variable_scope(scope, reuse=reuse):
                 if (
                     self.cfg["intermediate_supervision"]

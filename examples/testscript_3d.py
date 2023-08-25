@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """
 DeepLabCut2.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
@@ -37,7 +47,7 @@ if __name__ == "__main__":
     ]
 
     folder = os.path.join(basepath, "3Dtestviews_videos")
-    deeplabcut.auxiliaryfunctions.attempttomakefolder(folder)
+    deeplabcut.auxiliaryfunctions.attempt_to_make_folder(folder)
 
     # copying demo video from reaching data set and create two "views":
     dst_videoname1 = "vid1_camera-1"

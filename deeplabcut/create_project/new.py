@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 import shutil
@@ -50,7 +52,8 @@ def create_new_project(
 
     copy_videos : bool, optional, Default: False.
         If True, the videos are copied to the ``videos`` directory. If False, symlinks
-        of the videos will be created in the ``project/videos`` directory.
+        of the videos will be created in the ``project/videos`` directory; in the event
+        of a failure to create symbolic links, videos will be moved instead.
 
     multianimal: bool, optional. Default: False.
         For creating a multi-animal project (introduced in DLC 2.2)
@@ -116,7 +119,7 @@ def create_new_project(
     day = date.day
     d = str(month[0:3] + str(day))
     date = dt.today().strftime("%Y-%m-%d")
-    if working_directory == None:
+    if working_directory is None:
         working_directory = "."
     wd = Path(working_directory).resolve()
     project_name = "{pn}-{exp}-{date}".format(pn=project, exp=experimenter, date=date)
@@ -125,7 +128,7 @@ def create_new_project(
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
         print('Project "{}" already exists!'.format(project_path))
-        return  os.path.join(str(project_path), "config.yaml")
+        return os.path.join(str(project_path), "config.yaml")
     video_path = project_path / "videos"
     data_path = project_path / "labeled-data"
     shuffles_path = project_path / "training-datasets"
@@ -171,7 +174,7 @@ def create_new_project(
         p.mkdir(parents=True, exist_ok=True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]
-    if copy_videos == True:
+    if copy_videos:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
             shutil.copy(
@@ -196,13 +199,13 @@ def create_new_project(
                 except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
-                        "cutting/pasting the video instead."
+                        "copying the video instead."
                     )
-                    shutil.move(os.fspath(src), os.fspath(dst))
-                    print("{} moved to {}".format(src, dst))
+                    shutil.copy(os.fspath(src), os.fspath(dst))
+                    print("{} copied to {}".format(src, dst))
             videos = destinations
 
-    if copy_videos == True:
+    if copy_videos:
         videos = destinations  # in this case the *new* location should be added to the config file
 
     # adds the video list to the config.yaml file

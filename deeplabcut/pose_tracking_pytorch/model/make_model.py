@@ -1,12 +1,14 @@
-"""
-DeepLabCut2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import torch
 import torch.nn as nn
 from .backbones.vit_pytorch import dlc_base_kpt_TransReID
@@ -57,7 +59,6 @@ __factory_T_type = {
 
 
 def make_dlc_model(cfg, feature_dim, kpt_num):
-
     model = build_dlc_transformer(cfg, feature_dim, kpt_num, __factory_T_type)
 
     return model

@@ -1,12 +1,13 @@
-"""
-DeepLabCut 2.2 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-
-Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 
 import imgaug.augmenters as iaa
 import os
@@ -17,7 +18,10 @@ import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
+    make_results_file,
+    keypoint_error,
+)
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
@@ -105,6 +109,7 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
+    per_keypoint_evaluation: bool = False,
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -142,7 +147,7 @@ def evaluate_multianimal_full(
         TrainingFractions = [cfg["TrainingFraction"][trainingsetindex]]
 
     # Loading human annotatated data
-    trainingsetfolder = auxiliaryfunctions.GetTrainingSetFolder(cfg)
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     Data = pd.read_hdf(
         os.path.join(
             cfg["project_path"],
@@ -153,15 +158,17 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
-        cfg, comparisonbodyparts
+    comparisonbodyparts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
+        )
     )
     all_bpts = np.asarray(
         len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
     )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         str(cfg["project_path"] + "/evaluation-results/")
     )
     for shuffle in Shuffles:
@@ -169,7 +176,7 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn, metadatafn = auxiliaryfunctions.GetDataandMetaDataFilenames(
+            datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                 trainingsetfolder, trainFraction, shuffle, cfg
             )
             modelfolder = os.path.join(
@@ -188,7 +195,7 @@ def evaluate_multianimal_full(
                 trainIndices,
                 testIndices,
                 trainFraction,
-            ) = auxiliaryfunctions.LoadMetadata(
+            ) = auxiliaryfunctions.load_metadata(
                 os.path.join(cfg["project_path"], metadatafn)
             )
 
@@ -223,7 +230,7 @@ def evaluate_multianimal_full(
                     )
                 ),
             )
-            auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
             # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
             # Check which snapshots are available and sort them by # iterations
@@ -271,7 +278,7 @@ def evaluate_multianimal_full(
                     ]  # read how many training siterations that corresponds to.
 
                     # name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
@@ -288,7 +295,7 @@ def evaluate_multianimal_full(
                         notanalyzed,
                         resultsfilename,
                         DLCscorer,
-                    ) = auxiliaryfunctions.CheckifNotEvaluated(
+                    ) = auxiliaryfunctions.check_if_not_evaluated(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
@@ -302,17 +309,18 @@ def evaluate_multianimal_full(
                             str(evaluationfolder),
                             "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
                         )
-                        auxiliaryfunctions.attempttomakefolder(foldername)
+                        auxiliaryfunctions.attempt_to_make_folder(foldername)
                         if plotting == "bodypart":
                             fig, ax = visualization.create_minimal_figure()
 
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-
-                        (sess, inputs, outputs,) = predict.setup_pose_prediction(
-                            dlc_cfg
-                        )
+                        (
+                            sess,
+                            inputs,
+                            outputs,
+                        ) = predict.setup_pose_prediction(dlc_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -355,7 +363,8 @@ def evaluate_multianimal_full(
                             # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                             temp = df.reset_index(level="bodyparts").dropna()
                             temp["bodyparts"].replace(
-                                dict(zip(joints, range(len(joints)))), inplace=True,
+                                dict(zip(joints, range(len(joints)))),
+                                inplace=True,
                             )
                             temp["sample"] = 0
                             peaks_gt = temp.loc[
@@ -489,6 +498,18 @@ def evaluate_multianimal_full(
                             np.round(error_test_cut, 2),
                         ]
                         final_result.append(results)
+
+                        if per_keypoint_evaluation:
+                            df_keypoint_error = keypoint_error(
+                                error,
+                                error[mask],
+                                trainIndices,
+                                testIndices,
+                            )
+                            kpt_filename = DLCscorer + "-keypoint-results.csv"
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
 
                         if show_errors:
                             string = (
@@ -633,7 +654,10 @@ def evaluate_multianimal_full(
                                 ax=ax,
                             )
                             visualization.save_labeled_frame(
-                                fig, image_path, foldername, k in trainIndices,
+                                fig,
+                                image_path,
+                                foldername,
+                                k in trainIndices,
                             )
                             visualization.erase_artists(ax)
 
