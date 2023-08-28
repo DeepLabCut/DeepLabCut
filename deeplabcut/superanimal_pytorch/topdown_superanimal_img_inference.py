@@ -14,6 +14,7 @@ import os
 import subprocess
 import deeplabcut
 import json
+import numpy as np 
 dlc_path = os.path.dirname(deeplabcut.__file__)
 root = os.path.join(dlc_path, "superanimal_pytorch")
 sys.path.append(os.path.join(root, 'third_party'))
@@ -33,6 +34,17 @@ pose_names = ['superquadruped_hrnetw32',
 
 det_names = ['superquadruped_faster_rcnn']
 
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpEncoder, self).default(obj)
 
 class PoseModel:
     def __init__(self, name, device):
@@ -115,17 +127,46 @@ class SuperAnimalPytorchInference:
         return ret
 
 if __name__ == '__main__':
-    relative_root = '/mnt/md0/shaokai/integration/DeepLabCut/deeplabcut/superanimal_pytorch/third_party/'     
+
+    from argparse import ArgumentParser    
+
+    parser = ArgumentParser()
+    
+    parser.add_argument('det_model_name', help = 'det model name')
+    parser.add_argument('pose_model_name', help = 'pose model name')
+    
+    parser.add_argument('det_checkpoint', help = 'path to checkpoint of the detector')
+
+    parser.add_argument('pose_checkpoint', help = 'path to the checkpoint of the pose estimator')
+
+    parser.add_argument('image_path', help ='path to the image')
+    
+    parser.add_argument('--device', type = str, default = 'cuda')
+
+    parser.add_argument('--out', type = str, help = 'output path (json) of the prediction', default = 'temp.json')
+
+
+    args = parser.parse_args()
+    
+    '''
+    relative_root = '/mnt/md0/shaokai/integration/DeepLabCut/deeplabcut/superanimal_pytorch/third_party/'
     det_model_name = 'superquadruped_faster_rcnn'
     pose_model_name = 'superquadruped_hrnetw32'
     det_checkpoint = '/mnt/md0/shaokai/mmdetection/work_dirs/faster_rcnn_r50_fpn_1x_quadruped/epoch_80.pth'
     pose_checkpoint = os.path.join(relative_root, 'work_dirs/hrnet_w32_quadruped_256x256_splitD/latest.pth')
     device = 'cuda'
-    inference_obj = SuperAnimalPytorchInference(det_model_name,
-                                                pose_model_name,
-                                                device)
-
-    inference_obj.initialize_model(det_checkpoint, pose_checkpoint)
     image_paths = ['/mnt/md0/shaokai/many_dogs.jpeg']
-    inference_obj.predict_frame(image_paths)
+    '''
+        
+    inference_obj = SuperAnimalPytorchInference(args.det_model_name,
+                                                args.pose_model_name,
+                                                args.device)
+
+    inference_obj.initialize_model(args.det_checkpoint, args.pose_checkpoint)
+
+    image_path = [args.image_path]
+        
+    res = inference_obj.predict_frame(image_path)
     
+    with open(args.out, 'w') as f:
+        json.dump(res, f, indent = 4, cls = NpEncoder)
