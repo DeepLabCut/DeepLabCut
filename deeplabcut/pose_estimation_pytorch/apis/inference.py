@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -80,7 +80,7 @@ def get_predictions_top_down(
                                 shape (batch_size, 3, height, width)
         max_num_animals (int) : maximum number of animals to predict
         num_keypoints (int) : number of keypoints per animal in the dataset
-        device (Union[torch.device, str]): device everything should be on
+        resize_object: a torch resize transform to resize the cropped images
 
     Returns:
         array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions

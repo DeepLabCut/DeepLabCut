@@ -417,7 +417,14 @@ def plot_evaluation_results(
         p_cutoff: the p-cutoff for "confident" keypoints
     """
     for row_index, row in df_combined.iterrows():
-        data_folder, video, image = row_index
+        if isinstance(row_index, str):
+            image_rel_path = Path(row_index)
+            data_folder = image_rel_path.parent.parent.name
+            video = image_rel_path.parent.name
+            image = image_rel_path.name
+        else:
+            data_folder, video, image = row_index
+
         image_path = Path(project_root) / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 

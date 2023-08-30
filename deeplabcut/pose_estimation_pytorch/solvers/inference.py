@@ -227,10 +227,6 @@ def get_oks(
     assemblies_pred_masked, unique_pred_masked = conv_df_to_assemblies(
         prediction[scorer_pred][mask]
     )
-    assemblies_gt_masked, unique_gt_masked = conv_df_to_assemblies(
-        target[scorer_target][mask]
-    )
-
     oks_assemblies_raw = evaluate_assembly(
         assemblies_pred_raw,
         assemblies_gt_raw,
@@ -249,15 +245,15 @@ def get_oks(
 
     oks_pcutoff = evaluate_assembly(
         assemblies_pred_masked,
-        assemblies_gt_masked,
+        assemblies_gt_raw,
         oks_sigma,
         margin=margin,
         symmetric_kpts=symmetric_kpts,
     )
-    if unique_pred_masked is not None and unique_gt_masked is not None:
+    if unique_pred_masked is not None and unique_gt_raw is not None:
         oks_unique_masked = evaluate_assembly(
             unique_pred_masked,
-            unique_gt_masked,
+            unique_gt_raw,
             oks_sigma,
             margin=margin,
             symmetric_kpts=symmetric_kpts,

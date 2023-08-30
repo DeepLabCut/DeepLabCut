@@ -25,7 +25,6 @@ from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.solvers.inference import get_scores
 from deeplabcut.pose_estimation_pytorch.solvers.utils import (
-    build_predictions_df,
     get_model_folder,
     get_paths,
     get_results_filename,
@@ -206,7 +205,7 @@ def evaluate_snapshot(
                 f"{names['evaluation_folder']}/"
                 f"LabeledImages_{names['dlc_scorer']}_{snapshot_name}"
             )
-            auxiliaryfunctions.attempttomakefolder(folder_name)
+            auxiliaryfunctions.attempt_to_make_folder(folder_name)
             df_combined = df_predictions_ma.merge(
                 target_df, left_index=True, right_index=True
             )
