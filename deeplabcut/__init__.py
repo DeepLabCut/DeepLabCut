@@ -83,7 +83,6 @@ except ModuleNotFoundError as e:
         Please run `pip install torch`, or ignore this warning.
         """
     )
-    
 from deeplabcut.utils.auxfun_videos import (
     ShortenVideo,
     DownSampleVideo,
