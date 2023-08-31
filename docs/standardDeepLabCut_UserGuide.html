@@ -1406,6 +1406,13 @@ by default. You can also set a destination folder (<code class="docutils literal
 <dd><p>Makes prediction based on a trained network.</p>
 <p>The index of the trained network is specified by parameters in the config file
 (in particular the variable ‘snapshotindex’).</p>
+<p>The labels are stored as MultiIndex Pandas Array, which contains the name of
+the network, body part name, (x, y) label position in pixels, and the
+likelihood for each frame per body part. These arrays are stored in an
+efficient Hierarchical Data Format (HDF) in the same directory where the video
+is stored. However, if the flag save_as_csv is set to True, the data can also
+be exported in comma-separated values format (.csv), which in turn can be
+imported in many programs, such as MATLAB, R, Prism, etc.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
@@ -1498,13 +1505,7 @@ trained on.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>pandas array</dt><dd><p>The labels are stored as MultiIndex Pandas Array, which contains the name of
-the network, body part name, (x, y) label position in pixels, and the
-likelihood for each frame per body part. These arrays are stored in an
-efficient Hierarchical Data Format (HDF) in the same directory, where the video
-is stored. However, if the flag save_as_csv is set to True, the data can also
-be exported in comma-separated values format (.csv), which in turn can be
-imported in many programs, such as MATLAB, R, Prism, etc.</p>
+<dt>DLCScorer: str</dt><dd><p>the scorer used to analyze the videos</p>
 </dd>
 </dl>
 </dd>
