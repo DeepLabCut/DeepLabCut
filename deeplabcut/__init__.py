@@ -107,7 +107,6 @@ from deeplabcut.pose_estimation_tensorflow import (
     extract_save_all_maps,
     export_model,
     video_inference_superanimal,
-
 )
 
 
