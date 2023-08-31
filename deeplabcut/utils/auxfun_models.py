@@ -52,7 +52,7 @@ def check_for_weights(modeltype, parent_path):
             "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
         )
         # Exit the function early if an unknown modeltype is provided.
-        return parent_path, -1
+        return parent_path
 
     exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
