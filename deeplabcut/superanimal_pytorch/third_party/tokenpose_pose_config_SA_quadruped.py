@@ -1,4 +1,3 @@
-# _base_ = ['../../../../_base_/datasets/animalpose.py']
 log_level = "INFO"
 load_from = None
 resume_from = None
@@ -27,12 +26,6 @@ log_config = dict(
     interval=1,
     hooks=[
         dict(type="TextLoggerHook"),
-        # dict(type='TensorboardLoggerHook')
-        # dict(type='WandbLoggerHook',
-        #     init_kwargs=dict(
-        #     project='vit_pose_estimation',
-        #     name='base')
-        #    )
     ],
 )
 
@@ -73,12 +66,6 @@ model = dict(
                 num_channels=(32, 64, 128),
             ),
         )
-        # stage4=dict(
-        #     num_modules=3,
-        #     num_branches=4,
-        #     block='BASIC',
-        #     num_blocks=(4, 4, 4, 4),
-        #     num_channels=(32, 64, 128, 256)))
     ),
     neck=dict(
         type="TokenPose_L",
@@ -125,7 +112,7 @@ data_cfg = dict(
     vis_thr=0.2,
     use_gt_bbox=True,
     det_bbox_thr=0.0,
-    bbox_file="data/allquadruped_val_bbox_AP69.json",
+    #bbox_file="data/allquadruped_val_bbox_AP69.json",
 )
 
 train_pipeline = [
@@ -173,8 +160,8 @@ val_pipeline = [
 
 test_pipeline = val_pipeline
 
-data_root = "data/ma_superquadruped_coco"
-dataset_info = "data/ma_superquadruped_coco/dataset.json"
+#data_root = "data/ma_superquadruped_coco"
+#dataset_info = "data/ma_superquadruped_coco/dataset.json"
 
 data = dict(
     samples_per_gpu=64,
