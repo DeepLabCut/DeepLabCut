@@ -1,4 +1,6 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+"""
+Adapted from https://github.com/open-mmlab/mmpose/blob/31c1e102bb29bdad91acb924c4597a2d3d4c6f6c/demo/top_down_video_demo_with_mmdet.py
+"""
 import os
 import warnings
 from argparse import ArgumentParser
