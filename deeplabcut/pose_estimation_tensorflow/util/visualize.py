@@ -91,7 +91,7 @@ def show_heatmaps(cfg, img, scmap, pose, cmap="jet"):
         plot_j = (pidx + 1) // subplot_width
         plot_i = (pidx + 1) % subplot_width
         scmap_part = np.sum(scmap[:, :, part], axis=2)
-        scmap_part = imresize(scmap_part, 8.0, interp="bicubic")
+        scmap_part = imresize(scmap_part, 8.0, interpolationmethod="bicubic")
         scmap_part = np.lib.pad(scmap_part, ((4, 0), (4, 0)), "minimum")
         curr_plot = axarr[plot_j, plot_i]
         curr_plot.set_title(all_joints_names[pidx])

@@ -65,7 +65,7 @@ def display_dataset():
                     continue
 
                 scmap_part = scmap[:, :, j]
-                scmap_part = imresize(scmap_part, 8.0, interp="nearest")
+                scmap_part = imresize(scmap_part, 8.0, interpolationmethod="nearest")
                 scmap_part = np.lib.pad(scmap_part, ((4, 0), (4, 0)), "minimum")
 
                 curr_plot.set_title("{}".format(j + 1))
