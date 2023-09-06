@@ -12,13 +12,15 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
+from torchvision.ops import box_convert
+from torchvision.transforms import Resize as TorchResize
+
 from deeplabcut.pose_estimation_pytorch.models import PREDICTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.post_processing import (
     rmse_match_prediction_to_gt,
 )
-from torchvision.transforms import Resize as TorchResize
 
 
 def get_predictions_bottom_up(
@@ -63,6 +65,7 @@ def get_predictions_top_down(
     max_num_animals: int,
     num_keypoints: int,
     resize_object: TorchResize,
+    ground_truth_bboxes: Optional[torch.Tensor] = None,
 ) -> Tuple[np.array, Optional[np.ndarray]]:
     """
     TODO probably quite bad design, most arguments could be stored somewhere else
@@ -73,14 +76,18 @@ def get_predictions_top_down(
     Args:
         detector (BaseDetector): detector used to detect bboxes, should be in eval mode
         model (PoseModel): pose model
-        predictor (BasePredictor): predictor used to regress keypoints coordinates and scores in the cropped images
+        predictor (BasePredictor): predictor used to regress keypoints coordinates and
+            scores in the cropped images
         top_down_predictor (BasePredictor): Given the bboxes and the cropped keypoints
             coordinates, outputs the regressed keypoints
-        images (torch.Tensor): input images (should already be normalised and formatted if needed),
-                                shape (batch_size, 3, height, width)
+        images (torch.Tensor): input images (should already be normalised and formatted
+            if needed), shape (batch_size, 3, height, width)
         max_num_animals (int) : maximum number of animals to predict
         num_keypoints (int) : number of keypoints per animal in the dataset
         resize_object: a torch resize transform to resize the cropped images
+        ground_truth_bboxes: if defined, the detector is ignored and the predicted
+            bboxes are taken from this list. If defined, must be of shape (batch_size,
+            max_num_animals, xyxy).
 
     Returns:
         array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
@@ -88,13 +95,17 @@ def get_predictions_top_down(
             for coherence over the repo
     """
     batch_size = images.shape[0]
-    output_detector = detector(images)
 
-    boxes = torch.zeros((batch_size, max_num_animals, 4))
-    for b, item in enumerate(output_detector):
-        boxes[b][: min(max_num_animals, len(item["boxes"]))] = item["boxes"][
-            :max_num_animals
-        ]  # Boxes should be sorted by scores, only keep the maximum number allowed
+    if ground_truth_bboxes is not None:
+        boxes = ground_truth_bboxes
+    else:
+        output_detector = detector(images)
+        boxes = torch.zeros((batch_size, max_num_animals, 4))
+        for b, item in enumerate(output_detector):
+            boxes[b][: min(max_num_animals, len(item["boxes"]))] = item["boxes"][
+                :max_num_animals
+            ]  # Boxes should be sorted by scores, only keep the maximum number allowed
+
     boxes = boxes.int()
     cropped_kpts_total = torch.full(
         (batch_size, max_num_animals, num_keypoints, 3), -1.0
@@ -255,6 +266,7 @@ def inference(
     align_predictions_to_ground_truth: bool,
     images_resized_with_transform: bool,
     detector: Optional[BaseDetector] = None,
+    use_ground_truth_bboxes: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """
     Runs inference for a pose estimation model.
@@ -272,6 +284,8 @@ def inference(
             truth individual i)
         images_resized_with_transform: whether the image is resized by the transform
         detector: None when `method="bu"`. The detector to use when `method="td"`.
+        use_ground_truth_bboxes: For top-down models, whether to make pose predictions
+            using ground truth bbox annotations (which the dataset must contain).
 
     Returns:
         array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
@@ -284,6 +298,7 @@ def inference(
                 f"A detector must be provided when running inference for a top-down "
                 f"pose estimator!"
             )
+
         detector.eval()
         detector.to(device)
     elif method.lower() == "bu":
@@ -323,6 +338,16 @@ def inference(
             image_shape = item["image"].shape  # b, c, w, h
             if method == "td":
                 # TODO unique_bodyparts not supported by top down, it is None here
+                gt_bboxes = None
+                if use_ground_truth_bboxes:
+                    boxes_xywh = item.get("annotations", {}).get("boxes")
+                    if boxes_xywh is None:
+                        raise ValueError(
+                            f"Using ground truth bboxes for inference, but there are none defined"
+                        )
+                    gt_bboxes = box_convert(boxes_xywh.reshape(-1, 4), "xywh", "xyxy")
+                    gt_bboxes = gt_bboxes.reshape(boxes_xywh.shape)
+
                 predictions, unique_pred = get_predictions_top_down(
                     detector=detector,
                     model=model,
@@ -332,6 +357,7 @@ def inference(
                     max_num_animals=max_individuals,
                     num_keypoints=num_keypoints,
                     resize_object=resize_object,
+                    ground_truth_bboxes=gt_bboxes,
                 )
             else:
                 predictions, unique_pred = get_predictions_bottom_up(

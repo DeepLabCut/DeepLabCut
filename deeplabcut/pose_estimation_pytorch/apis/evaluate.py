@@ -183,6 +183,7 @@ def evaluate_snapshot(
             align_predictions_to_ground_truth=True,
             images_resized_with_transform=images_resized_with_transform,
             detector=detector,
+            use_ground_truth_bboxes=False,
         )
         if unique_poses is not None:
             unique_poses = unique_poses.reshape(target_df.index.shape[0], -1)
