@@ -17,6 +17,8 @@ import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
+
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.datasets import (
@@ -65,7 +67,7 @@ def display_dataset():
                     continue
 
                 scmap_part = scmap[:, :, j]
-                scmap_part = imresize(scmap_part, 8.0, interpolationmethod="nearest")
+                scmap_part = imresize(scmap_part, 8.0, interpolationmethod=cv2.INTER_NEAREST)
                 scmap_part = np.lib.pad(scmap_part, ((4, 0), (4, 0)), "minimum")
 
                 curr_plot.set_title("{}".format(j + 1))
