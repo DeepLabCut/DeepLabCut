@@ -63,9 +63,8 @@ scale_list = range(200, 600, 50)  # image height pixel size range and increment
 deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
 ```
 
+#### An example of how you would do transfer learning with superanimal weights.
 ```python
-
-# an example of how you would do transfer learning with superanimal weights.
 
 superanimal_name = "superanimal_topviewmouse"
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
