@@ -55,6 +55,33 @@ scale_list = range(200, 600, 50)  # image height pixel size range and increment
 deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
 ```
 
+```python
+video_path = 'demo-video.mp4'
+superanimal_name = 'superanimal_quadruped'
+scale_list = range(200, 600, 50)  # image height pixel size range and increment
+
+deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
+```
+
+```python
+
+# an example of how you would do transfer learning with superanimal weights.
+
+superanimal_name = "superanimal_topviewmouse"
+config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
+
+deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
+
+
+deeplabcut.train_network(config_path,
+                         maxiters=10,
+                         superanimal_name = superanimal_name)
+
+```
+
+
+
+
 
 ### To see the list of available models, check out the [Home page](http://modelzoo.deeplabcut.org/). 
 
