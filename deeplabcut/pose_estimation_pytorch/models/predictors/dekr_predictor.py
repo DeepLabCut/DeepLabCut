@@ -103,7 +103,7 @@ class DEKRPredictor(BasePredictor):
             self.unique_predictor = SinglePredictor(
                 num_animals=1,
                 location_refinement=True,
-                locref_stdev=7.8201,
+                locref_stdev=7.2801,
                 apply_sigmoid=False,
             )
 
