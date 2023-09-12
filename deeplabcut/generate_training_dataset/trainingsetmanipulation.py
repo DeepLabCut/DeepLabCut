@@ -795,6 +795,9 @@ def create_training_dataset(
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
+    superanimal_name: string, optional, default=""
+        Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+
 
     Returns
     -------
