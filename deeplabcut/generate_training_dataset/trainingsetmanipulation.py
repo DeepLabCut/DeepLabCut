@@ -32,6 +32,8 @@ from deeplabcut.utils import (
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.modelzoo.utils import parse_available_supermodels
+
 
 def comparevideolistsanddatafolders(config):
     """
@@ -729,6 +731,7 @@ def create_training_dataset(
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
+    superanimal_name = ""
 ):
     """Creates a training dataset.
 
@@ -834,6 +837,17 @@ def create_training_dataset(
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
+    
+    if superanimal_name!="":
+        supermodels = parse_available_supermodels()
+        posecfg_template = os.path.join(
+                dlc_root_path,
+                "pose_estimation_tensorflow",
+                "superanimal_configs",
+                supermodels[superanimal_name],
+            )
+
 
     if posecfg_template:
         if not posecfg_template.endswith("pose_cfg.yaml") and not posecfg_template.endswith("superquadruped.yaml") and not posecfg_template.endswith("supertopview.yaml"):

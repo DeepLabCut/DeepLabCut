@@ -45,7 +45,8 @@ def train(
     traintime_resize=False,
     video_path="",
     superanimal=None,
-    trim_ends = None  # trim the both ends of the video for video adaptation
+    trim_ends = None,  # trim the both ends of the video for video adaptation
+    remove_head = False
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -92,6 +93,10 @@ def train(
         cfg["pairwise_predict"] = True
 
     dataset = PoseDatasetFactory.create(cfg)
+
+    print ("debug")
+    print (cfg)
+    
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 
@@ -117,6 +122,14 @@ def train(
         else:
             start_iter = int(stem.split("-")[1])
 
+        if remove_head:
+            # removing the decoding layer from the checkpoint
+            temp = []
+            for variable in variables_to_restore:
+                if 'pose' not in variable.name:
+                    temp.append(variable)                            
+            variables_to_restore = temp
+            
     else:
         print("Loading ImageNet-pretrained", net_type)
         # loading backbone from ResNet, MobileNet etc.

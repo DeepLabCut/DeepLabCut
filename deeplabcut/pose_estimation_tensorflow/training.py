@@ -237,7 +237,8 @@ def train_network(
                 max_to_keep=max_snapshots_to_keep,
                 keepdeconvweights=keepdeconvweights,
                 allow_growth=allow_growth,
-                init_weights=init_weights
+                init_weights=init_weights,
+                remove_head = True if superanimal_name!="" else False
             )  # pass on path and file name for pose_cfg.yaml!        
 
         
