@@ -71,9 +71,14 @@ config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.y
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
 
+# if superanimal_transfer_learning is set True, a new decoding layer is allowed. If it is left False,
+# then it's doing fine-tuning (which means number of keypoints in the dataset has to match superanimals')
+# for example, superquadruped requires 39 keypoints and supertopview requires 27 keypoints.
+
 deeplabcut.train_network(config_path,
                          maxiters=10,
-                         superanimal_name = superanimal_name)
+                         superanimal_name = superanimal_name,
+                         superanimal_transfer_learning = True)
 ```
 
 
