@@ -72,11 +72,9 @@ config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.y
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
 
-
 deeplabcut.train_network(config_path,
                          maxiters=10,
                          superanimal_name = superanimal_name)
-
 ```
 
 
