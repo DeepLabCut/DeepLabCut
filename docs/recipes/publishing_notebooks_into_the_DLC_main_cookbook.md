@@ -1,78 +1,140 @@
 # Publishing Notebooks into the Main DLC Cookbook
-*Date: 13 June 2023*
-
+### Your Recipe Guide to Contributing to the DLC Cookbook
 
 ## Introduction
-Publishing notebooks into the main DLC cookbook can be done in a few easy steps!
+Hey there, DLC enthusiast! 🌟 Ready to sprinkle your magic into the main DLC cookbook? Whether you're introducing a zesty new dish or giving an old one a twist, this guide's got your back. We'll walk you through how to publish a new notebook or spice up an existing one in the DLC cookbook. Let's get cooking! 🍲📘
 
-## Requirements
-To accomplish this, you need `deeplabcut[docs]` installed:
+## Preliminary Checks
+#### Check Existing Recipes or Tutorials
+   - **Search and Review**: Before you start writing a new recipe, go through the existing DLC Jupyter book to ensure there isn't a tutorial or recipe that covers the topic you have in mind.
+   - **Expand Existing Content**: If your content is related to an existing topic, like I/O manipulations, consider expanding or refining that section instead of creating an entirely new recipe. This ensures that the Jupyter book remains concise and that related information is found in one place.
+      - **Locate and Review**: Navigate to the particular recipe or tutorial you wish to update in the DLC Jupyter book.
+      - **Consider Minor vs. Major Changes**: If you're adding a new section or significantly altering the current content, it might be worth noting the changes at the beginning or end of the recipe for clarity.
+      - **Maintain Consistency**: Ensure your updates adhere to the current style, tone, and structure of the existing content to maintain a seamless reading experience.
 
-You can do this by running the following command:
-    
-    pip install deeplabcut[docs]
-    
-    
 
+## Structure of a Recipe
+   When crafting your recipe, adhere to the following structure:
+   - **Introduction**: Begin with an introductory paragraph that highlights the importance and relevance of the recipe. This sets the stage and gives readers context.
+    
+   - **Examples/Workflow**: Provide step-by-step instructions or a workflow, supported by examples. This makes it easy for readers to understand and follow along.
+    
+   - **Conclusion**: Conclude with a summary or highlight the key takeaways of your recipe. You can also provide references or further reading.
+
+
+Now, let's dive into the process of contributing your content to the DLC Jupyter book.
 ## Steps
-1. Double check for spelling and grammatical errors (on Grammarly - https://grammarly.com/ or by using Jupyter notebook's spellcheck extension called `spellchecker`).
-    ***
-    ```
-    jupyter nbextension enable spellchecker/main
-    ```
-    ***
-    Once installed, restart your notebook, and when you load your notebook again, you will see the incorrectly spelled words highlighted in red. See example below:
 
-<img src="https://lh3.googleusercontent.com/pw/AIL4fc8RD-cyD-K_-0AHPiMiFVLwBq98_sPNo_DzNZwbEJ1ogS_f0GHVynW_ax8D3AJkNCtPhPQKHUbTPt64_2Up5W8ejsVgdSLf-8jAIzgsPnSwk0zVpiPG-VBgwn7VpxEcqEqor7TJBtlkvbP6Spob1BJyrIri5MqhX3A7IpyDqU2zGlfWnZNW7JWrvQj4ZxrjyBehyaaDJHiL-F5ru7aHqAP1BfXkYGdMqJcqsFs2ntslnGUPifSdEigv2Mrr5ZR_1U9OW5QlfGDKOIR4dacnrtZHKKQH03oUG3rnfQ8UMfu74gim_uqP3AXe1LIL2jlGe-5iSypFlvNuMNqZ7IobPUs66NhHuESf_hFxBhLQSKGER3H7UwCoh8LmrpM3817Fgfgghu7Vmb3OMx0A_vfg5acgvKtHFl7oC0c9Q_CeGPasATIzlFCwWdHF2snbEXAaZhOhCKuSI6CEK-ktoziqoJrqJLX9E38EceqpfwX0VZU8IEKLdshShUVmknH7QRYPAG18EwPy901bG8quOXOUrHdLMbA8aDhS70N5XVCtM58Gt2tJb0ehduNLlTpIySMJ17GVb_I5v8djlxQ7g1DFPbPGWHV9RDoUDhvOrIUaOeU1S3PVaVtt4i7VvFC5hqjQffig7kYge-zoE1nS2HCQ6Q_NnTQAT0HRKg1egQVj-sCMhSQjOPr9JEmy-2QNmUzCfJ_tA6jSWBRwC4VMatkmPYVRg4bzPE02NZNelHBYlDKO1UKnY3UwEr_sFtbghyK2Fe2mi5s3Xs39kp0mBXVxkd_bbnCNmGurRiM5fzrd4razkamDKGyU31oOGC9Wo3yxQqT7IJmnfRphdah1TqAUJftVQqXil9ksSFPOFLTOAL6earFNPAVvwA2Y_n6NETkdukXYcyz8uZBDJAZB0bVmT9rIohI=w1849-h304-s-no?authuser=0"></img>
+1. **Set-up your local environment.** You need `deeplabcut[docs]` installed:
+   You can do this by running the following command:
+   ```    
+   pip install deeplabcut[docs]
+   ```
 
-2. Copy your notebook (ex: `new_recipe.ipynb`) to the recipe directory: `docs/recipes/`
-    Via terminal:
-    ***
-    ```
-    cp new_recipe.ipynb path/to/DLC-repo/docs/recipes
-    ```
-    ***
-3. Add the path to `new_recipe.ipynb` under the Tutorials & Cookbook section in the `path/to/DLC-repo/_toc.yml`.
-    ***
-    ```
-      - file: docs/recipes/new_recipe
-    ```
-    ***
-    <img src="https://lh3.googleusercontent.com/pw/AIL4fc_mm8j6SnqYG9mLEEkpSNPk_jpM4p0Zyk5Pmie1c06JtOjbCRELwmfl4CxZx0-dxSF_p4DkXKSSl6comBhjgsLHMnAxYyYfgUVVYz9mwL-37Ol6sfdq4QYcjcs5NLqIP2SWZduyvjmoHpj5miJi0c773SgU_RUqCXqCJNFAHr5VxpM8Fz80K2hZHtNkh5hxBc1g4eyGGbM0wYVhQobEUnyveWzJ8lN-J4GMUPHUqh0Bf05Wjc1zdyDtxORzVZ-kIdwmZLKapo-FWG7zLAEa6BpdZpCluGFnnBPnPWtJnpaS4RvST7QBJLNpjiqgR-6NPBUcrHabo7G0RypI-KGJ9ayfw41GZ9U6GS0zJmUEHtAqyhuWyyyDV8hK4q2dy5el9TZ6OTiQ_wBJHfpzLmMiWzORfcDetXS3CCtLvnpT3kGUH8HWqsXHASVEvgNYlMvYObt7X9c7PcX51otfBheuKsQSfxVvPCrvRoVYFtYP-U1GCH8phL3D3kKYLOWdbIoI2NotIaMXp8HXNAle-AFE1snw964ISILKHFhrlbI_EEJQOgk0FmwScmBYLc37DmgjmMNNp5KZaugHJn48tNU4A108bCMfJaB95e_AeloBDIjtzKhkDcPpDRNC_FvUkKQSrjk0QSdM27WFMNH1ph0RW6tZRlZL3e_15ptt2Nowt_M4jbnINTyROKbQA6Xh8VCAh1twZhhFIj6LCURPXtmoMBXYst_V9u-W0cRIgNVV2jZuV2-uoCOpSJPW5z-cSiodGnes7XyqhCKysAAWpepsZPIZHWGwtjq56_txyoMBEV3ce0NaHx0lnrnzEq3-FSV0BAPCJR5WPeugNhDb6BypeFpYMRmEaFS75l7ChVqdcml8kEiP7mf-B10yyojenCn7hOz4AGAYROyxWUFEre1SobZY9NU=w1038-h541-s-no?authuser=0"></img>
-4.  Build your notebook into the DLC recipe book
-    ***
-    ```
-        jupyter book build path/to/DLC-repo
-    ```
-    ***
-    The build log should look like below:
-    <img src="https://lh3.googleusercontent.com/pw/AIL4fc97W2rW08Mgc2I8vL8qi-Oo_a9klpK0Cly-huhENBe7f8BhXOZzASkbkAe2MLxUkRSyn0SvQm5Dc48iHNCxVnTqONtamUwLKXBtRzkHFpNNcGJwqJDuBKZFuA07RKpHm88f-W59Z7aVpYvYOkllUZfkGpj86q6DcYAX9CAuOdDhcnUcuMoLnheOpKtGU12BMJionXoLUhhpumvf7H2G6WL8yPg5PG8_prrjcKLRLznH5K9LqqwoiHKllsdyqqWAr9yycnnhjzjtczbZF2N1aiBt866uvRnYLO1QWyBD8ThwPKD4v2bqIW3DNjhVzcFOKQZFSqDNMeurk2MLfErxnD5gVAe_0n4ULMdQmXGiG5exEYcpINChDelAvyrxXwV2k1O3mEP6u5aYiqyoy4qFq7XtcH2ERnwgwfCWZLXdbBmgQl9kWJxbpPbOhJ9GZJiHswvVzxhEQrtSTLGGMCbF0W5QJYCv5o0Rdv1FYhGDwcgzSNl1W_1iMFoqr7KtUsTDObIZfrpttwBOA5W_-ZD8mlN8G210-ChluZ5poZEjgulZ6K5QcjblRtJCZdxGXYGLH5D1IMd5QCvMEQfmlkmuexzbb45ZicOqlIWdRngfltWmt_WCE86xTN5pVNV2iEnWQySyZ4FCTTwKfbWwsjaxbV0CUcecJFe4pTkfaCGJ5lpFVFIZDh96SBkMW2ma4sOmelHQMwKw5Hvt9THI8V1OlOtukT7xdf6Daal5OcGJ-RWmbwrHJxWFnS974I9FskWoateZw-P_8u8Qi7astUdbPR8zIOUt6iCgTVYlHfzKKhhJG54LL946tqDLVTuGFXo8rci58vQHk3Z8jhLAP0rAmqaILRoYrnsZI9GyuzkNvkwDM7jzstPAjkBy_9PTfJC04Ycw1nNOS5OnQEodxztU_0XGvQ8=w1387-h405-s-no?authuser=0"></img>
+This command installs DeepLabCut along with the dependencies required to build the documentation.
 
-5. Test locally by checking the `index.html` file in `path/to/DLC-repo/_build/html/`
+2. **Fork the DLC Repository**:
+   - Go to the DeepLabCut GitHub repository: [https://github.com/DeepLabCut/DeepLabCut](https://github.com/DeepLabCut/DeepLabCut)
 
-6. When everything is a-okay, commit to Git. If not, edit your file and go to back to step 1.
+
+   - Click on the `Fork` button on the top-right corner of the page. This will create a copy of the repository in your own GitHub account.
+3. **Clone your forked repository**:
+   - Navigate to your forked repo on GitHub.
+   - Click the `Code` button and copy the URL.
+   - Clone the repository to your local machine:
+   ```
+   git clone [REPO_URL]
+   ```
+4. **Create a new branch**:
+   It's a good practice to create a new branch for each new feature or change:
+   ```
+    cd [YOUR_REPO_DIRECTORY]
+    git checkout -b my-new-notebook
+   ```
+5. **Create a new notebook** or **update an existing one**.
+   - **Creating a new notebook**
+      - **Choose Your Topic Wisely:** Before you start, make sure your topic fits the DLC Jupyter book's theme and brings value to its readers. A novel topic or a unique twist on an existing topic can be particularly impactful.
+      - **Craft with Care:** Remember, your notebook will be a reference for many. Begin with an engaging introduction, followed by well-structured content, and wrap it up with a conclusion.
+      - **Interactive Elements:** One of the strengths of Jupyter notebooks is the ability to combine code, visuals, and narrative. Use interactive plots, widgets, or any other tools that enhance the content and make it engaging.
+      - **Save Regularly:** Jupyter auto-saves your work, but it's a good habit to manually save your notebook frequently, especially after making significant changes.
+      - **Naming Convention:** Name your notebook in a way that reflects its content and is consistent with other notebook titles in the DLC Jupyter book. This makes it easier for readers to understand the topic at a glance.      
+   - **Updating an existing notebook** 
+      - Navigate to the location of the existing recipe within the directory: 
+          ```
+          [YOUR_REPO_DIRECTORY]/docs/recipes/
+          ```
+      - Open the corresponding Jupyter notebook (.ipynb file) you wish to update.
+      - Make the necessary changes or additions to the content.
+      - Save the notebook once your updates are finalized.
+      - Proceed to **Step 6** *(Proofreading)* and **9** *(Testing the documentation)* (skip Steps 7 and 8).
+6. **Proofread:** Double check for spelling and grammatical errors by using Jupyter notebook's spellcheck extension called `spellchecker` (or your preferred spell-checker).
+   ```
+   jupyter nbextension enable spellchecker/main
+   ```
+   Once installed, restart your notebook, and when you load your notebook again, you will see the incorrectly spelled words highlighted in red.
+7. **Add your notebook** to the recipe directory at `[YOUR_REPO_DIRECTORY]/docs/recipes/`
+
+    - Navigate to the appropriate directory where the Jupyter notebooks are stored for the Jupyter book.
+    - Add your Jupyter notebook (.ipynb file) to this directory.
     
-    **`git status`** to check the local changes in your current project
-    ```
-    git status
-    ```
-    **`git add`** to add your file/s to the commit bin
-    ```
-    git add [filename]
-    ```
+    To copy via terminal:
     
-    **`git commit`** to add your file/s to the commit bin
-    ```
-    git commit -m "commit message here; make it descriptive!"
-    ```
-    **`git pull`** or **`git rebase`** to update your local copy from the main branch.
-    ```
-    git rebase
-    ```
-    **`git push`** to push your changes to the main branch.
-    ```
-    git push
-    ```
-7. When everything's clear, confirm your pull request on the Git website: https://github.com/DeepLabCut/DeepLabCut
+    - Unix-based OS users
+    
+      ```
+      cp [YOUR_NOTEBOOK_FILENAME].ipynb [YOUR_REPO_DIRECTORY]/docs/recipes
+      ```
+    
+    - WinOS users:
+      ```
+      copy new_recipe.ipynb [YOUR_REPO_DIRECTORY]\docs\recipes
 
-## All done!
+      ```
+
+8. **Update `[YOUR_REPO_DIRECTORY]/_toc.yml`** by adding under the *Tutorials & Cookbook* section a **new line** containing the path to your notebook. This creates a link to your notebook on the main DLC book sidebar.
+
+    * For example:
+      ```      
+      - file: docs/recipes/[YOUR_NOTEBOOK_FILENAME]
+      ```
+
+9. **Test the documentation:**
+
+    - Build your notebook into the DLC recipe book
+      ```
+      jupyter book build [YOUR_REPO_DIRECTORY]
+      ```
+    - Once build is successful, the newly built book can be accessed at `[YOUR_REPO_DIRECTORY]/_build/html/`.
+    - Open `index.html` and check whether your notebook was rendered properly and if the links are working.
+
+10. **Commit your changes:**
+   When everything is a-okay, commit your changes to your branch. If not, edit your file and go to back to step 1.
+    
+    ```
+    git add [YOUR_NOTEBOOK_FILENAME]
+    git commit -m "Added a new notebook about [YOUR_TOPIC]"
+    ```
+
+11. **Push your branch to your fork:**
+
+    ```
+    git push origin my-new-notebook
+    ```
+
+
+12. **Submit a Pull Request (PR):**
+
+    - Go to your forked repository on GitHub.
+    - You'll likely see a message prompting you to create a pull request from your recently pushed branch. Click `Compare & pull request`.
+    - Fill out the PR form with a descriptive title and comments describing your notebook. This will help the maintainers understand the context and purpose of your notebook.
+    - Click `Create pull request`.
+
+13. **Make Necessary Changes**: The DeepLabCut maintainers will then review your PR and provide feedback. If changes are required, make the necessary changes on your local branch, commit them, and push the branch again. The PR will automatically update.
+
+14. **🎉PR Approval:🎉** Once your PR is approved, the maintainers will merge it into the main repository. Your notebook will then be a part of the DeepLabCut Jupyter book! Yay!
+
+Remember to always check the [DLC CONTRIBUTING guidelines](https://github.com/DeepLabCut/DeepLabCut/blob/main/CONTRIBUTING.md).
+
+
+## Wrap-Up 🎉
+Alright! 🌟 By now, you've got the playbook to jazz up the DeepLabCut Jupyter book. Remember, it's not just about cooking up new recipes but also spicing up the old ones. Dive in, have fun, and let's make this book a flavor-packed feast for all DLC enthusiasts out there. High-five for joining the party! 🙌🎈
