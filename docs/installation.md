@@ -56,11 +56,13 @@ To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). 
 Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a RIGHT-click, "open as admin"
 ```
 
--  **Now, in Terminal (or Anaconda Command Prompt for Windows users)**, if you cliked to download, go to your downloads folder. Or, if you cloned the repo, go to the DeepLabCut folder. If you cloned the repo onto your Desktop, the command may look like:
+-  **Now, in Terminal (or Anaconda Command Prompt for Windows users)**, if you clicked to download, go to your downloads folder. Or, if you cloned the repo, go to the DeepLabCut folder.
 
+```{Hint}
+If you cloned the repo onto your Desktop, the command may look like:
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
-
 You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
+```
 
 - Now, in the terminal run (Windows/Linux/MacBook Intel chip):
 
