@@ -21,27 +21,31 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 ## Install:
 
-**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
+**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install 'deeplabcut[tf]'`; if you need GUI support, please use: `pip install 'deeplabcut[tf,gui]'`.
 
 IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
 
 ## Get started in the terminal or Project GUI:
 
-**GUI:** simply open your conda env, and windows/linux type `python -m deeplabcut`. MacOS users: `pythonw -m deeplabcut.`
+**GUI:** simply launch your conda env, and type `python -m deeplabcut` in the terminal.
 Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
 
-**TERMINAL:** To begin, (windows) navigate to anaconda prompt and right-click to "open as admin ", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, [see installation instructions](how-to-install)). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`).
+**TERMINAL:** To begin, 🚨 (windows) navigate to anaconda prompt and right-click to "open as admin", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, [see installation instructions](how-to-install)). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`).
 
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+```{Hint}
+🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```
+ Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```python
 ipython
 import deeplabcut
 ```
-**TIP:** for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
 
+```{TIP:}
+for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
+```
 
 ### Create a New Project:
 
@@ -50,7 +54,7 @@ deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1
               copy_videos=True, multianimal=True)
 ```
 
-Tip: if you want to place the project folder somewhere pass : ``working_directory = 'FullPathOftheworkingDirectory'``
+Tip: if you want to place the project folder somewhere specific, please also pass : ``working_directory = 'FullPathOftheworkingDirectory'``
 
 - Note, if you are a linux/macos user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
