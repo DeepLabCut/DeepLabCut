@@ -44,7 +44,7 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def check_for_weights(modeltype, parent_path, num_shuffles):
+def check_for_weights(modeltype, parent_path):
     """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
@@ -52,7 +52,7 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
             "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
         )
         # Exit the function early if an unknown modeltype is provided.
-        return parent_path, -1
+        return parent_path
 
     exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
@@ -70,7 +70,7 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
         else:
             download_weights(modeltype, model_path)
 
-    return str(model_path), num_shuffles
+    return str(model_path)
 
 
 def download_weights(modeltype, model_path):
