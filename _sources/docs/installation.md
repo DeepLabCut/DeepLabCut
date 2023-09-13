@@ -20,7 +20,7 @@
 Download anaconda for your operating system: https://www.anaconda.com/distribution/.
 ```
 
-- IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run:
+- IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), you should use **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run the code that is supplied below.
 
 #### 💡 miniconda for Mac
 ````{admonition} Click the button to see code for miniconda for Mac
@@ -31,9 +31,9 @@ source ~/miniconda/bin/activate
 conda init zsh
 ````
 
-### Step 2: please use our supplied conda environment
+### Step 2: Build an Env using our Conda file!
 
-You simply need to have this .yaml file anywhere locally on your computer. So, let's download it!
+You simply need to have this `.yaml` file anywhere locally on your computer. So, let's download it!
 
 ```{Hint}
 Windows users: Be sure you have `git` installed along with anaconda: https://gitforwindows.org/
@@ -59,6 +59,7 @@ Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a R
 -  **Now, in Terminal (or Anaconda Command Prompt for Windows users)**, if you clicked to download, go to your downloads folder. Or, if you cloned the repo, go to the DeepLabCut folder.
 
 ```{Hint}
+:class: dropdown
 If you cloned the repo onto your Desktop, the command may look like:
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
 You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
@@ -79,9 +80,9 @@ You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) righ
 Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DEEPLABCUT_M1) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
-**Great, that's it! DeepLabCut is installed!**
+**Great, that's it! DeepLabCut is installed!** 🎉💜
 
-Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed.](https://deeplabcut.github.io/DeepLabCut/docs/README.html)
+🚨 Next, [head over to the Docs to decide which mode to use DeepLabCut in. You have both standard and multi-animal installed!](https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html#what-you-need-to-get-started)
 
 ## PIP:
 
