@@ -63,7 +63,7 @@ def train_network(
     autotune=False,
     keepdeconvweights=True,
     modelprefix="",
-    superanimal_name = ""
+    superanimal_name = "",
     superanimal_transfer_learning = False
 ):
     """Trains the network with the labels in the training dataset.
@@ -243,7 +243,7 @@ and superanimal_name is True, then the training is fine-tuning (reusing the deco
                 keepdeconvweights=keepdeconvweights,
                 allow_growth=allow_growth,
                 init_weights=init_weights,
-                remove_head = True if superanimal_name!="" and superanimal_transfer_learning
+                remove_head = True if superanimal_name!="" and superanimal_transfer_learning else False
             )  # pass on path and file name for pose_cfg.yaml!        
 
         
