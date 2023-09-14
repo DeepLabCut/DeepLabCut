@@ -394,7 +394,7 @@ sudo apt-get -y install cuda
 
 ```
 
-Install nvidia driver for GPU. DEEPLABCUT currently is on CUDA version 11. NOTE: CUDA 11 only supports certain nvida drivers. Installation of the latest driver may not be suppported by the CUDA version. See (here)[https://docs.nvidia.com/deploy/cuda-compatibility/index.html]
+Install nvidia driver for GPU. DEEPLABCUT currently is on CUDA version 11. NOTE: CUDA 11 only supports certain nvidia drivers. Installation of the latest driver may not be suppported by the CUDA version. See [here](https://docs.nvidia.com/deploy/cuda-compatibility/index.html)
 
 Example: the RTX 3080 has a nvidia driver version (525.60) that is unsupported by CUDA 11. But nvidia version 510 is. Therefore this is sufficient:
 
