@@ -26,7 +26,7 @@ class SpatiotemporalAdaptation:
         videotype="mp4",
         adapt_iterations=1000,
         modelfolder="",
-        customized_pose_gconfig="",
+        customized_pose_config="",
         init_weights="",
     ):
         """
