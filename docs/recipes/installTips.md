@@ -464,7 +464,7 @@ Sweet!
 
 Click here to get the ubuntu/linux package: https://www.anaconda.com/products/individual#linux
 
-this downloads a file, save it somewhere. (~/Downloads is OK)
+this downloads a file, save it somewhere. (`~/Downloads` is OK)
 
 then enter the folder:
 
