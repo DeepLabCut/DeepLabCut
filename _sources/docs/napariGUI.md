@@ -16,7 +16,7 @@ A napari plugin for keypoint annotation with DeepLabCut.
 
 You can install the full DeepLabCut napari-based GUI via [pip] by running this in your conda env:
 
-`    pip install 'deeplabcut[gui]'`
+`pip install 'deeplabcut[tf,gui]'` or mac M1/M2 chip users: `pip install 'deeplabcut[apple_mchips,gui]'`
 
 *please note this is available since v2.3
 
