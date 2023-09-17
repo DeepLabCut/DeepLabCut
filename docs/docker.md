@@ -14,7 +14,7 @@ Note that this will *not* disprupt or install Tensorflow, or any other DeepLabCu
 
 ## Usage modes
 
-With `deeplabcut-docker`, you can use the images in three modes.
+With `deeplabcut-docker`, you can use the images in two modes.
 
 - *Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.*
 - *Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS). The GUI images can only be considered stable on Linux systems as of DeepLabCut 2.2.0.2 and need additional configuration on Mac.*
@@ -28,18 +28,6 @@ If you want to mount the whole directory could e.g., pass*
 If read-only access is enough, `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro`
 
 
-### GUI mode
-
-To run DeepLabCut in GUI mode and start the DeepLabCut GUI, simply run
-
-``` bash
-$ deeplabcut-docker gui
-```
-
-which will pull the latest DeepLabCut version along with all dependencies, and afterwards opens the DeepLabCut GUI.
-
-The DeepLabCut version in this container is equivalent to the one you install with `pip install "deeplabcut[gui]"`.
-
 ### Terminal mode 
 
 If you not need the GUI, you can run the light version of DeepLabCut and open a terminal by running
@@ -48,13 +36,11 @@ If you not need the GUI, you can run the light version of DeepLabCut and open a 
 $ deeplabcut-docker bash
 ```
 
-Inside the terminal, you can confirm that DeepLabCut is correctly installed by running
+Inside the terminal, you can confirm that DeepLabCut is correctly installed by running and noting which version installs.
 
 ``` bash
 $ ipython
 >>> import deeplabcut
->>> print(deeplabcut.__version__)
-2.2.0.2
 ```
 
 ### Jupyter Notebook mode
@@ -102,7 +88,7 @@ Add your user to the docker group.
 
 ## Notes and troubleshooting
 
-Running Docker with GUI support can vary across systems. The current images are confirmed to work with different Linux systems, but especially on MacOS additional configuration steps are necessary.
+We dropped GUI support in 2.3.5+ due to too many numerous issues supporting them. Also please note these are tested on unix systems.
 
 When running containers on Linux, in some systems it might be necessary to run `host +local:docker` before starting the image via `deeplabcut-docker`.
 
