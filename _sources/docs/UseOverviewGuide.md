@@ -1,5 +1,5 @@
 (overview)=
-# Documentation Overview
+# 🥳 Get started with DeepLabCut: our key recommendations 
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
@@ -129,8 +129,8 @@ own dataset. See all the demo's [here!](/examples) Please note that GUIs are not
 
 [VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g)
 
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set `DLClight=True`. If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+Start Python by typing ``ipython`` or ``python`` in the terminal (note: using pythonw for Mac users was depreciated in 2022).
+If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Windows, please always open the terminal with administrator privileges. Please read more in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Simply open the terminal and type:
 ```python

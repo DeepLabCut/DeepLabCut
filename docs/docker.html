@@ -168,7 +168,7 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">Documentation Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
 
 
 </ul>
@@ -429,7 +429,6 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-modes">Usage modes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gui-mode">GUI mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal-mode">Terminal mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-usage">Advanced usage</a></li>
@@ -459,7 +458,7 @@ document.write(`
 Note that this will <em>not</em> disprupt or install Tensorflow, or any other DeepLabCut dependencies on your computer—the Docker containers are completely isolated from your existing software installation!</p>
 <section id="usage-modes">
 <h2>Usage modes<a class="headerlink" href="#usage-modes" title="Permalink to this heading">#</a></h2>
-<p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, you can use the images in three modes.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, you can use the images in two modes.</p>
 <ul class="simple">
 <li><p><em>Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.</em></p></li>
 <li><p><em>Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS). The GUI images can only be considered stable on Linux systems as of DeepLabCut 2.2.0.2 and need additional configuration on Mac.</em></p></li>
@@ -469,26 +468,15 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 <p><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT</span></code></p>
 <p>(which will mount the full directory into the container in read/write mode)</p>
 <p>If read-only access is enough, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro</span></code></p>
-<section id="gui-mode">
-<h3>GUI mode<a class="headerlink" href="#gui-mode" title="Permalink to this heading">#</a></h3>
-<p>To run DeepLabCut in GUI mode and start the DeepLabCut GUI, simply run</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>gui
-</pre></div>
-</div>
-<p>which will pull the latest DeepLabCut version along with all dependencies, and afterwards opens the DeepLabCut GUI.</p>
-<p>The DeepLabCut version in this container is equivalent to the one you install with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;deeplabcut[gui]&quot;</span></code>.</p>
-</section>
 <section id="terminal-mode">
 <h3>Terminal mode<a class="headerlink" href="#terminal-mode" title="Permalink to this heading">#</a></h3>
 <p>If you not need the GUI, you can run the light version of DeepLabCut and open a terminal by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash
 </pre></div>
 </div>
-<p>Inside the terminal, you can confirm that DeepLabCut is correctly installed by running</p>
+<p>Inside the terminal, you can confirm that DeepLabCut is correctly installed by running and noting which version installs.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ipython
 &gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>deeplabcut
-&gt;&gt;&gt;<span class="w"> </span>print<span class="o">(</span>deeplabcut.__version__<span class="o">)</span>
-<span class="m">2</span>.2.0.2
 </pre></div>
 </div>
 </section>
@@ -533,7 +521,7 @@ Create the docker group.</p>
 </section>
 <section id="notes-and-troubleshooting">
 <h2>Notes and troubleshooting<a class="headerlink" href="#notes-and-troubleshooting" title="Permalink to this heading">#</a></h2>
-<p>Running Docker with GUI support can vary across systems. The current images are confirmed to work with different Linux systems, but especially on MacOS additional configuration steps are necessary.</p>
+<p>We dropped GUI support in 2.3.5+ due to too many numerous issues supporting them. Also please note these are tested on unix systems.</p>
 <p>When running containers on Linux, in some systems it might be necessary to run <code class="docutils literal notranslate"><span class="pre">host</span> <span class="pre">+local:docker</span></code> before starting the image via <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>.</p>
 <p>If you encounter errors while using the images, please open an issue in the DeepLabCut repo—especially the <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> is still in its alpha version, and we appreciate user feedback to make the tool robust to use across many operating systems!</p>
 </section>
@@ -603,7 +591,6 @@ Create the docker group.</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-modes">Usage modes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gui-mode">GUI mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal-mode">Terminal mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-usage">Advanced usage</a></li>
