@@ -47,37 +47,36 @@ Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not nee
 pip install deeplabcut[tf,modelzoo]
 ```
 
-#### An example of how you would use superanimal models to do inference without training.
+#### Practical example: Using superanimal models for inference without training.
+In the `deeplabcut.video_inference_superanimal` function, if the output video appears to be jittery, consider setting the `video_adapt` option to __True__. Be aware, that enabling this option might extend the processing time. 
 
 ```python
 video_path = 'demo-video.mp4'
 superanimal_name = 'superanimal_quadruped'
-# note scale list is to aggregate predictions from different image sizes. We expect the appearance size of the animal to be around 400 pixels
-scale_list = range(200, 600, 50)  # image height pixel size range and increment
-# set video_adapt to true if the resulted video is jittering. Note setting it true makes the process take longer
+
+# The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.
+scale_list = range(200, 600, 50)
+
 deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list, video_adapt = False)
 ```
 
-#### An example of how you would do transfer learning with superanimal weights.
-```python
+#### Practical example: Using transfer learning with superanimal weights.
+In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
+  Specifically:
+* `superquadruped` uses 39 keypoints and,
+* `supertopview` uses 27 keypoints
 
+```python
 superanimal_name = "superanimal_topviewmouse"
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
-
-# if superanimal_transfer_learning is set True, a new decoding layer will be used. This means
-# you can use superanimal weights in your own project that has arbitrary keypoints
-# If it is left False, then it's doing fine-tuning (which means number of keypoints in the dataset has to match superanimals')
-# for example, superquadruped requires 39 keypoints and supertopview requires 27 keypoints.
 
 deeplabcut.train_network(config_path,
                          maxiters=10,
                          superanimal_name = superanimal_name,
                          superanimal_transfer_learning = True)
 ```
-
-
 
 
 
