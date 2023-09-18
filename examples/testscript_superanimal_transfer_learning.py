@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
 
     superanimal_name = "superanimal_topviewmouse"
-    config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
+    config_path = os.path.join(os.getcwd(), "examples", "openfield-Pranav-2018-10-30", "config.yaml")
     
     deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
     
