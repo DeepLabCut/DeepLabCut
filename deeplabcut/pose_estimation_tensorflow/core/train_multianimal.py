@@ -93,9 +93,6 @@ def train(
         cfg["pairwise_predict"] = True
 
     dataset = PoseDatasetFactory.create(cfg)
-
-    print ("debug")
-    print (cfg)
     
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
