@@ -47,7 +47,7 @@ Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not nee
 pip install deeplabcut[tf,modelzoo]
 ```
 
-#### Practical example: Using superanimal models for inference without training.
+#### Practical example: Using SuperAnimal models for inference without training.
 In the `deeplabcut.video_inference_superanimal` function, if the output video appears to be jittery, consider setting the `video_adapt` option to __True__. Be aware, that enabling this option might extend the processing time. 
 
 ```python
