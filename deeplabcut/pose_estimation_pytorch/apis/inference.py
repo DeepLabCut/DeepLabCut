@@ -80,7 +80,7 @@ def get_predictions_top_down(
             scores in the cropped images
         top_down_predictor (BasePredictor): Given the bboxes and the cropped keypoints
             coordinates, outputs the regressed keypoints
-        images (torch.Tensor): input images (should already be normalised and formatted
+        images (torch.Tensor): input images (should already be normalized and formatted
             if needed), shape (batch_size, 3, height, width)
         max_num_animals (int) : maximum number of animals to predict
         num_keypoints (int) : number of keypoints per animal in the dataset
