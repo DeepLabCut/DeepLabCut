@@ -231,7 +231,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
 
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file)
+deeplabcut.create_multianimaltraining_dataset(config_path)
 ```
 
 - The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
@@ -260,13 +260,13 @@ we leave manually-defining a skeleton as an option for the advanced user:
 
 ```python
 my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
-deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph=my_better_graph)
+deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph=my_better_graph)
 ```
 
 Alternatively, the `skeleton` defined in the `config.yaml` file can also be used:
 
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph='config')
+deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph='config')
 ```
 
 Importantly, if a user-defined graph is used it still is required to cover all multianimalbodyparts at least once.
@@ -529,7 +529,7 @@ Note you should pass the n_tracks (number of animals) you expect to see in the v
 You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` or `.h5'` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
+deeplabcut.refine_tracklets(config_path, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 
 If you use the GUI (or otherwise), here are some settings to consider:
