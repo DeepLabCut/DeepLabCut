@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+import deeplabcut
+
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
     """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
@@ -81,9 +83,6 @@ def calculatepafdistancebounds(
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-            trainingsetfolder, trainFraction, shuffle, cfg
-        )
         modelfolder = os.path.join(
             cfg["project_path"],
             str(
@@ -94,14 +93,6 @@ def calculatepafdistancebounds(
         )
 
         # Load meta data & annotations
-        (
-            data,
-            trainIndices,
-            testIndices,
-            trainFraction,
-        ) = auxiliaryfunctions.load_metadata(
-            os.path.join(cfg["project_path"], metadatafn)
-        )
         Data = pd.read_hdf(
             os.path.join(
                 cfg["project_path"],
@@ -110,7 +101,12 @@ def calculatepafdistancebounds(
             )
         )[cfg["scorer"]]
 
-        path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
+        path_train_config, path_test_config = deeplabcut.return_train_network_path(
+            config=config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            modelprefix=modelprefix,
+        )
         dlc_cfg = load_config(str(path_test_config))
 
         # get the graph!
@@ -146,6 +142,10 @@ def calculatepafdistancebounds(
 
                         if distances is not None:
                             if onlytrain:
+                                train_cfg = load_config(str(path_train_config))
+                                _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
+                                    Path(cfg["project_path"]) / train_cfg['metadataset']
+                                )
                                 distances = distances.iloc[trainIndices]
                             if ind == ind2:
                                 ds_within.extend(distances.values.flatten())
@@ -286,7 +286,7 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
+    _, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
         trainingsetfolder, trainFraction, shuffle, cfg
     )
     modelfolder = os.path.join(
@@ -733,7 +733,7 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
+                _, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
                     trainingsetfolder, trainFraction, shuffle, cfg
                 )
                 modelfolder = os.path.join(
