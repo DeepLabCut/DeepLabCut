@@ -142,9 +142,9 @@ def calculatepafdistancebounds(
 
                         if distances is not None:
                             if onlytrain:
-                                train_cfg = load_config(str(path_train_config))
+                                train_pose_cfg = load_config(str(path_train_config))
                                 _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
-                                    Path(cfg["project_path"]) / train_cfg['metadataset']
+                                    Path(cfg["project_path"]) / train_pose_cfg['metadataset']
                                 )
                                 distances = distances.iloc[trainIndices]
                             if ind == ind2:
@@ -312,7 +312,7 @@ def return_evaluate_network_data(
     train_pose_cfg = load_config(str(path_train_config))
     # Load meta data
     data, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
-        Path(cfg["project_path"]) / train_pose_cfg['metadataset'],
+        Path(cfg["project_path"]) / train_pose_cfg["metadataset"],
     )
 
     ########################### RESCALING (to global scale)
@@ -749,15 +749,11 @@ def evaluate_network(
                     ),
                 )
 
-                path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-                # Load meta data
-                (
-                    data,
-                    trainIndices,
-                    testIndices,
-                    trainFraction,
-                ) = auxiliaryfunctions.load_metadata(
-                    os.path.join(cfg["project_path"], metadatafn)
+                path_train_config, path_test_config = deeplabcut.return_train_network_path(
+                    config=config,
+                    shuffle=shuffle,
+                    trainingsetindex=trainingsetindex,
+                    modelprefix=modelprefix,
                 )
 
                 try:
@@ -767,6 +763,12 @@ def evaluate_network(
                         "It seems the model for shuffle %s and trainFraction %s does not exist."
                         % (shuffle, trainFraction)
                     )
+
+                train_pose_cfg = load_config(str(path_train_config))
+                # Load meta data
+                _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+                    Path(cfg["project_path"], train_pose_cfg["metadataset"])
+                )
 
                 # change batch size, if it was edited during analysis!
                 dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
