@@ -286,9 +286,6 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    _, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainingsetfolder, trainFraction, shuffle, cfg
-    )
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
@@ -297,10 +294,11 @@ def return_evaluate_network_data(
             )
         ),
     )
-    path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-    # Load meta data
-    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.load_metadata(
-        os.path.join(cfg["project_path"], metadatafn)
+    path_train_config, path_test_config = deeplabcut.return_train_network_path(
+        config=config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
     )
 
     try:
@@ -310,6 +308,12 @@ def return_evaluate_network_data(
             "It seems the model for shuffle %s and trainFraction %s does not exist."
             % (shuffle, trainFraction)
         )
+
+    train_pose_cfg = load_config(str(path_train_config))
+    # Load meta data
+    data, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+        Path(cfg["project_path"]) / train_pose_cfg['metadataset'],
+    )
 
     ########################### RESCALING (to global scale)
     if rescale == True:
