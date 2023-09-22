@@ -168,13 +168,12 @@ if __name__ == "__main__":
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
     DLC_config["save_iters"] = N_ITER
     DLC_config["display_iters"] = 2
-    DLC_config["multi_step"] = [[0.001, N_ITER]]
 
     print("CHANGING training parameters to end quickly!")
     deeplabcut.auxiliaryfunctions.write_plainconfig(posefile, DLC_config)
 
     print("TRAIN")
-    deeplabcut.train_network(path_config_file)
+    deeplabcut.train_network(path_config_file, maxiters=N_ITER)
 
     print("EVALUATE")
     deeplabcut.evaluate_network(
@@ -304,13 +303,12 @@ if __name__ == "__main__":
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
     DLC_config["save_iters"] = N_ITER
     DLC_config["display_iters"] = 1
-    DLC_config["multi_step"] = [[0.001, N_ITER]]
 
     print("CHANGING training parameters to end quickly!")
     deeplabcut.auxiliaryfunctions.write_config(posefile, DLC_config)
 
     print("TRAIN")
-    deeplabcut.train_network(path_config_file)
+    deeplabcut.train_network(path_config_file, maxiters=N_ITER)
 
     try:  # you need ffmpeg command line interface
         # subprocess.call(['ffmpeg','-i',video[0],'-ss','00:00:00','-to','00:00:00.4','-c','copy',newvideo])
@@ -400,15 +398,17 @@ if __name__ == "__main__":
     )
 
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config["save_iters"] = 10
+    updated_max_iters = 10
+    DLC_config["save_iters"] = updated_max_iters
     DLC_config["display_iters"] = 2
-    DLC_config["multi_step"] = [[0.001, 10]]
 
     print("CHANGING training parameters to end quickly!")
     deeplabcut.auxiliaryfunctions.write_plainconfig(posefile, DLC_config)
 
     print("TRAINING shuffle 2, with smaller allocated memory")
-    deeplabcut.train_network(path_config_file, shuffle=2, allow_growth=True)
+    deeplabcut.train_network(
+        path_config_file, shuffle=2, allow_growth=True, maxiters=updated_max_iters
+    )
 
     print("ANALYZING some individual frames")
     deeplabcut.analyze_time_lapse_frames(
