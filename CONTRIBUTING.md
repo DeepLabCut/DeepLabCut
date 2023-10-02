@@ -73,4 +73,5 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 **DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
 
 - the [authors](/AUTHORS)
-- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
+- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
+
