@@ -36,9 +36,6 @@ from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 def _format_gt_data(h5file):
     df = pd.read_hdf(h5file)
 
-    def _get_unique_level_values(header, level):
-        return header.get_level_values(level).unique().to_list()
-
     animals = _get_unique_level_values(df.columns, "individuals")
     kpts = _get_unique_level_values(df.columns, "bodyparts")
     try:
@@ -64,26 +61,15 @@ def _format_gt_data(h5file):
     }
 
 
+def _get_unique_level_values(header, level):
+    return header.get_level_values(level).unique().to_list()
+
+
 def calc_prediction_errors(preds, gt):
     kpts_gt = gt["metadata"]["keypoints"]
     kpts_pred = preds["metadata"]["keypoints"]
     map_ = {kpts_gt.index(kpt): i for i, kpt in enumerate(kpts_pred)}
     annot = gt["annotations"]
-
-    # Map image paths from predicted data to GT as the first are typically
-    # absolute whereas the latter are relative to the project path.
-    def _map(strings, substrings):
-        lookup = dict()
-        strings_ = strings.copy()
-        substrings_ = substrings.copy()
-        while strings_:
-            string = strings_.pop()
-            for s in substrings_:
-                if string.endswith(s):
-                    lookup[string] = s
-                    substrings_.remove(s)
-                    break
-        return lookup
 
     map_images = _map(list(preds["predictions"]), list(annot))
 
@@ -122,6 +108,25 @@ def calc_prediction_errors(preds, gt):
                 errors[n, visible[found], i, 0] = min_dists
                 errors[n, visible[found], i, 1] = conf_pred_[neighbors[found], 0]
     return errors
+
+
+def _map(strings, substrings):
+    """
+    Map image paths from predicted data to GT as the first are typically
+    absolute whereas the latter are relative to the project path.
+    """
+
+    lookup = dict()
+    strings_ = strings.copy()
+    substrings_ = substrings.copy()
+    while strings_:
+        string = strings_.pop()
+        for s in substrings_:
+            if string.endswith(s):
+                lookup[string] = s
+                substrings_.remove(s)
+                break
+    return lookup
 
 
 def conv_obj_to_assemblies(eval_results_obj, keypoint_names):

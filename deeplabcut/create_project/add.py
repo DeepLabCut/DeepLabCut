@@ -25,7 +25,7 @@ def add_new_videos(
         A list of strings containing the full paths of the videos to include in the project.
 
     copy_videos : bool, optional
-        If this is set to True, the videos will be copied to your project/videos directory. If False, the symlink of the 
+        If this is set to True, the videos will be copied to your project/videos directory. If False, the symlink of the
         videos will be copied instead. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
 
@@ -99,10 +99,10 @@ def add_new_videos(
                 except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
-                        "cutting/pasting the video instead."
+                        "copying the video instead."
                     )
-                    shutil.move(os.fspath(src), os.fspath(dst))
-                    print("{} moved to {}".format(src, dst))
+                    shutil.copy(os.fspath(src), os.fspath(dst))
+                    print("{} copied to {}".format(src, dst))
             videos = destinations
 
     if copy_videos:

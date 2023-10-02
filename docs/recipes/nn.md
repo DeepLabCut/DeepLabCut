@@ -58,7 +58,7 @@ deeplabcut.auxiliaryfunctions.edit_config(
     augs,
 )
 ```
-
+An in-depth tutorial on image augmentation and training hyperparameters can be found [here](https://deeplabcut.github.io/DeepLabCut/docs/recipes/pose_cfg_file_breakdown.html).
 
 ## Evaluating intermediate (and all) snapshots
 

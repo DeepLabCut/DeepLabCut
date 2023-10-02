@@ -1,6 +1,6 @@
 # napari labeling GUI
 
-We replaced wxPython with PySide6 + as of version 2.3. Here is how to use the napari-aspects of the new GUI. It is available in napari-hub as a stand alone GUI as well as integrated into our main GUI.
+We replaced wxPython with PySide6 + as of version 2.3. Here is how to use the napari-aspects of the new GUI. It is available in napari-hub as a stand alone GUI as well as integrated into our main GUI, [please see docs here](https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html).
 
 [![License: BSD-3](https://img.shields.io/badge/License-BSD3-blue.svg)](https://www.gnu.org/licenses/bsd3)
 [![PyPI](https://img.shields.io/pypi/v/napari-deeplabcut.svg?color=green)](https://pypi.org/project/napari-deeplabcut)
@@ -16,7 +16,7 @@ A napari plugin for keypoint annotation with DeepLabCut.
 
 You can install the full DeepLabCut napari-based GUI via [pip] by running this in your conda env:
 
-`    pip install 'deeplabcut[gui]'`
+`pip install 'deeplabcut[tf,gui]'` or mac M1/M2 chip users: `pip install 'deeplabcut[apple_mchips,gui]'`
 
 *please note this is available since v2.3
 

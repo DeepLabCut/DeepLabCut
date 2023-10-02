@@ -55,7 +55,7 @@ class VideoReader:
 
     def check_integrity(self):
         dest = os.path.join(self.directory, f"{self.name}.log")
-        command = f"ffmpeg -v error -i {self.video_path} -f null - 2>{dest}"
+        command = f'ffmpeg -v error -i "{self.video_path}" -f null - 2>"{dest}"'
         subprocess.call(command, shell=True)
         if os.path.getsize(dest) != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
@@ -267,8 +267,8 @@ class VideoWriter(VideoReader):
 
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} -ss {start} -to {end} "
-            f"-c:a copy {output_path}"
+            f'ffmpeg -n -i "{self.video_path}" -ss {start} -to {end} '
+            f'-c:a copy "{output_path}"'
         )
         subprocess.call(command, shell=True)
         return output_path
@@ -333,8 +333,8 @@ class VideoWriter(VideoReader):
     ):
         output_path = self.make_output_path(suffix, dest_folder)
         command = (
-            f"ffmpeg -n -i {self.video_path} -filter:v "
-            f'"scale={width}:{height}{{}}" -c:a copy {output_path}'
+            f'ffmpeg -n -i "{self.video_path}" -filter:v '
+            f'"scale={width}:{height}{{}}" -c:a copy "{output_path}"'
         )
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
@@ -586,7 +586,7 @@ def draw_bbox(video):
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.imshow(frame[:, :, ::-1])
+    ax.imshow(frame)
     ax_help = fig.add_axes([0.9, 0.2, 0.1, 0.1])
     ax_save = fig.add_axes([0.9, 0.1, 0.1, 0.1])
     crop_button = Button(ax_save, "Crop")
@@ -597,14 +597,12 @@ def draw_bbox(video):
     rs = RectangleSelector(
         ax,
         line_select_callback,
-        drawtype="box",
         minspanx=5,
         minspany=5,
         interactive=True,
         spancoords="pixels",
-        rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
     )
-    plt.show()
+    plt.show(block=False)
 
     # import platform
     # if platform.system() == "Darwin":  # for OSX use WXAgg

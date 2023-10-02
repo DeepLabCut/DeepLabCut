@@ -226,6 +226,8 @@ def train(
     if not info["is_cuda_build"]:  # Apple Silicon is not built with CUDA
         warnings.warn("Switching to Adam, as SGD crashes on Apple Silicon.")
         cfg["optimizer"] = "adam"
+        cfg["lr_init"] = 5e-4
+        cfg["multi_step"] = [[1e-4, 7500], [5e-5, 12000], [1e-5, 200000]]
 
     if cfg.get("freezeencoder", False):
         if "efficientnet" in net_type:

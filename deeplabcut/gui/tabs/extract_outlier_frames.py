@@ -36,7 +36,6 @@ class ExtractOutlierFrames(DefaultTab):
         return self.video_selection_widget.files
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
@@ -60,7 +59,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.extract_outlierframes_button.setMinimumWidth(150)
 
         self.label_outliers_button = QtWidgets.QPushButton("Labeling GUI")
-        self.label_outliers_button.setEnabled(False)
+        self.label_outliers_button.setEnabled(True)
         self.label_outliers_button.clicked.connect(self.launch_refinement_gui)
         self.label_outliers_button.setMinimumWidth(150)
 
@@ -95,10 +94,10 @@ class ExtractOutlierFrames(DefaultTab):
             self.tracker_type_widget.hide()
 
     def _generate_layout_extraction_options(self, layout):
-
         opt_text = QtWidgets.QLabel("Specify the algorithm")
         self.outlier_algorithm_widget = QtWidgets.QComboBox()
         self.outlier_algorithm_widget.addItems(DLCParams.OUTLIER_EXTRACTION_ALGORITHMS)
+        self.outlier_algorithm_widget.setMinimumWidth(200)
         self.outlier_algorithm_widget.currentTextChanged.connect(
             self.update_outlier_algorithm
         )
@@ -115,8 +114,6 @@ class ExtractOutlierFrames(DefaultTab):
         )
 
     def extract_outlier_frames(self):
-        self.label_outliers_button.setEnabled(True)
-
         config = self.root.config
         shuffle = self.root.shuffle_value
         videos = self.files

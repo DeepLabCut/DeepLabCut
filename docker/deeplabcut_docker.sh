@@ -13,8 +13,8 @@ DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 check_system() {
     if [[ $(uname -s) == Linux ]]; then
         if [ $(groups | grep -c docker) -eq 0 ]; then
-        if [[ "$DOCKER" == "sudo docker" ]]; then
-            return 0 
+            if [[ "$DOCKER" == "sudo docker" ]]; then
+                return 0
             fi
             err "The current user $(id -u) is not                      "
             err "part of the \"docker\" group.                         "
@@ -43,9 +43,9 @@ get_x11_args() {
     if [[ $(uname -s) == Linux ]]; then
         err "Using Linux config"
         args=(
-         "-e DISPLAY=unix$DISPLAY"
-         "-v /tmp/.X11-unix:/tmp/.X11-unix" 
-         "-v $XAUTHORITY:/home/developer/.Xauthority"
+            "-e DISPLAY=unix$DISPLAY"
+            "-v /tmp/.X11-unix:/tmp/.X11-unix"
+            "-v $XAUTHORITY:/home/developer/.Xauthority"
         )
     elif [[ $(uname -s) == Darwin ]]; then
         err "Using OSX config"
@@ -57,7 +57,7 @@ get_x11_args() {
         ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
         display_id=$(echo $DISPLAY | sed -e 's/.*\(:[0-9]\)/\1/')
         args=(
-         "-e DISPLAY=${ip}${display_id}"
+            "-e DISPLAY=${ip}${display_id}"
         )
     else
         err "Unknown operating system:"
@@ -72,7 +72,7 @@ get_x11_args() {
 
 get_mount_args() {
     args=(
-        "-v $(pwd):/app -w /app" 
+        "-v $(pwd):/app -w /app"
     )
     echo "${args[@]}"
 }
@@ -90,7 +90,7 @@ get_local_container_name() {
 # Print error messages to stderr
 # Ref. https://google.github.io/styleguide/shellguide.html#stdout-vs-stderr
 err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
 }
 
 # Update the docker container
@@ -115,7 +115,7 @@ _build() {
     gid=$(id -g)
 
     err "Configuring a local container for user $uname ($uid) in group $gname ($gid)"
-    $DOCKER build -q -t ${local_name} - << EOF
+    $DOCKER build -q -t ${local_name} - <<EOF
     from ${remote_name}
 
     # Create same user as on the host system
@@ -144,8 +144,8 @@ gui() {
     update gui || exit 1
     build gui || exit 1
     args="$(get_x11_args) $(get_mount_args) ${extra_args}"
-    $DOCKER run -it --rm ${args} $(get_local_container_name gui) \
-        || err "Failed to launch the DLC GUI. Used args: \"${args}\""
+    $DOCKER run -it --rm ${args} $(get_local_container_name gui) ||
+        err "Failed to launch the DLC GUI. Used args: \"${args}\""
 }
 
 # Launch a Jupyter Server in the current directory
@@ -158,8 +158,8 @@ notebook() {
     err "Open your browser at"
     err "http://127.0.0.1:${DLC_NOTEBOOK_PORT}"
     err "If prompted for a password, enter 'deeplabcut'."
-    $DOCKER run -p 127.0.0.1:${DLC_NOTEBOOK_PORT}:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) \
-        || err "Failed to launch the notebook server. Used args: \"${args}\""
+    $DOCKER run -p 127.0.0.1:${DLC_NOTEBOOK_PORT}:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) ||
+        err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
 # Launch the command line, using DLC in light mode
@@ -186,12 +186,12 @@ check_system
 subcommand=${1:-gui}
 shift 1
 case "${subcommand}" in
-    gui) gui "$@" ;;
-    notebook) notebook "$@" ;;
-    bash) bash "$@" ;;
-    custom) custom "$@" ;;
-    *)
-        echo "Usage"
-        echo "$0 [gui|notebook|bash|help]"
-        ;;
+gui) gui "$@" ;;
+notebook) notebook "$@" ;;
+bash) bash "$@" ;;
+custom) custom "$@" ;;
+*)
+    echo "Usage"
+    echo "$0 [gui|notebook|bash|help]"
+    ;;
 esac

@@ -1,0 +1,8 @@
+ARG CUDA_VERSION
+ARG DEEPLABCUT_VERSION
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-base-cuda${CUDA_VERSION}-latest
+
+ENV DLClight True
+
+COPY motd.sh /home/motd.sh
+RUN echo "source /home/motd.sh" >> /etc/profile

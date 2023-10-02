@@ -34,7 +34,6 @@ class VideoEditor(DefaultTab):
         return self.video_selection_widget.files
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
@@ -44,15 +43,15 @@ class VideoEditor(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.trim_button = QtWidgets.QPushButton("Trim")
-        self.trim_button.setMinimumWidth(150)
-        self.trim_button.clicked.connect(self.trim_videos)
-        self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
-
         self.down_button = QtWidgets.QPushButton("Downsample")
         self.down_button.setMinimumWidth(150)
         self.down_button.clicked.connect(self.downsample_videos)
         self.main_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
+
+        self.trim_button = QtWidgets.QPushButton("Trim")
+        self.trim_button.setMinimumWidth(150)
+        self.trim_button.clicked.connect(self.trim_videos)
+        self.main_layout.addWidget(self.trim_button, alignment=Qt.AlignRight)
 
         self.crop_button = QtWidgets.QPushButton("Crop")
         self.crop_button.setMinimumWidth(150)
@@ -60,7 +59,6 @@ class VideoEditor(DefaultTab):
         self.main_layout.addWidget(self.crop_button, alignment=Qt.AlignRight)
 
     def _generate_layout_attributes(self, layout):
-
         videoheight_label = QtWidgets.QLabel("Video height (aspect ratio fixed)")
         self.video_height = QtWidgets.QSpinBox()
         self.video_height.setMaximum(1000)

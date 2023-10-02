@@ -758,7 +758,7 @@ class SORTBox(SORTBase):
 
 def fill_tracklets(tracklets, trackers, animals, imname):
     for content in trackers:
-        tracklet_id, pred_id = content[-2:].astype(np.int)
+        tracklet_id, pred_id = content[-2:].astype(int)
         if tracklet_id not in tracklets:
             tracklets[tracklet_id] = {}
         if pred_id != -1:

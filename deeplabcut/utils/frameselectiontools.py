@@ -62,7 +62,7 @@ def UniformFrames(clip, numframes2pick, start, stop, Index=None):
     else:
         startindex = int(np.floor(clip.fps * clip.duration * start))
         stopindex = int(np.ceil(clip.fps * clip.duration * stop))
-        Index = np.array(Index, dtype=np.int)
+        Index = np.array(Index, dtype=int)
         Index = Index[(Index > startindex) * (Index < stopindex)]  # crop to range!
         if len(Index) >= numframes2pick:
             return list(np.random.permutation(Index)[:numframes2pick])
@@ -102,7 +102,7 @@ def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
     else:
         startindex = int(np.floor(nframes * start))
         stopindex = int(np.ceil(nframes * stop))
-        Index = np.array(Index, dtype=np.int)
+        Index = np.array(Index, dtype=int)
         Index = Index[(Index > startindex) * (Index < stopindex)]  # crop to range!
         if len(Index) >= numframes2pick:
             return list(np.random.permutation(Index)[:numframes2pick])
@@ -234,7 +234,8 @@ def KmeansbasedFrameselectioncv2(
 
     Note: this method can return fewer images than numframes2pick.
 
-    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetitive."""
+    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetitive.
+    """
     nframes = len(cap)
     nx, ny = cap.dimensions
     ratio = resizewidth * 1.0 / nx

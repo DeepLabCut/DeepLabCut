@@ -33,7 +33,7 @@ def test_ellipse_similarity(ellipse):
 def test_ellipse_fitter():
     fitter = trackingutils.EllipseFitter()
     assert fitter.fit(np.random.rand(2, 2)) is None
-    xy = np.asarray([[-2, 0], [2, 0], [0, 1], [0, -1]], dtype=np.float)
+    xy = np.asarray([[-2, 0], [2, 0], [0, 1], [0, -1]], dtype=float)
     assert fitter.fit(xy) is not None
     fitter.sd = 0
     el = fitter.fit(xy)
@@ -54,9 +54,9 @@ def test_ellipse_tracker(ellipse):
 
 def test_sort_ellipse():
     tracklets = dict()
-    mot = trackingutils.SORTEllipse(1, 1, 0.6)
+    mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
     poses = np.random.rand(2, 10, 3)
-    trackers = mot.track(poses[..., :2])
+    trackers = mot_tracker.track(poses[..., :2])
     assert trackers.shape == (2, 7)
     trackingutils.fill_tracklets(tracklets, trackers, poses, imname=0)
     assert all(id_ in tracklets for id_ in trackers[:, -2])

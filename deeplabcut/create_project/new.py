@@ -199,10 +199,10 @@ def create_new_project(
                 except (OSError, subprocess.CalledProcessError):
                     print(
                         "Symlink creation impossible (exFat architecture?): "
-                        "cutting/pasting the video instead."
+                        "copying the video instead."
                     )
-                    shutil.move(os.fspath(src), os.fspath(dst))
-                    print("{} moved to {}".format(src, dst))
+                    shutil.copy(os.fspath(src), os.fspath(dst))
+                    print("{} copied to {}".format(src, dst))
             videos = destinations
 
     if copy_videos:

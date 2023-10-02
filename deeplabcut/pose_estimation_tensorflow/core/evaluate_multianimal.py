@@ -18,7 +18,10 @@ import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.core.evaluate import make_results_file
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
+    make_results_file,
+    keypoint_error,
+)
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
@@ -106,6 +109,7 @@ def evaluate_multianimal_full(
     comparisonbodyparts="all",
     gputouse=None,
     modelprefix="",
+    per_keypoint_evaluation: bool = False,
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -164,7 +168,7 @@ def evaluate_multianimal_full(
     )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
-    auxiliaryfunctions.attempttomakefolder(
+    auxiliaryfunctions.attempt_to_make_folder(
         str(cfg["project_path"] + "/evaluation-results/")
     )
     for shuffle in Shuffles:
@@ -226,7 +230,7 @@ def evaluate_multianimal_full(
                     )
                 ),
             )
-            auxiliaryfunctions.attempttomakefolder(evaluationfolder, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
             # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
             # Check which snapshots are available and sort them by # iterations
@@ -305,14 +309,13 @@ def evaluate_multianimal_full(
                             str(evaluationfolder),
                             "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
                         )
-                        auxiliaryfunctions.attempttomakefolder(foldername)
+                        auxiliaryfunctions.attempt_to_make_folder(foldername)
                         if plotting == "bodypart":
                             fig, ax = visualization.create_minimal_figure()
 
                     if os.path.isfile(data_path):
                         print("Model already evaluated.", resultsfilename)
                     else:
-
                         (
                             sess,
                             inputs,
@@ -495,6 +498,18 @@ def evaluate_multianimal_full(
                             np.round(error_test_cut, 2),
                         ]
                         final_result.append(results)
+
+                        if per_keypoint_evaluation:
+                            df_keypoint_error = keypoint_error(
+                                error,
+                                error[mask],
+                                trainIndices,
+                                testIndices,
+                            )
+                            kpt_filename = DLCscorer + "-keypoint-results.csv"
+                            df_keypoint_error.to_csv(
+                                Path(evaluationfolder) / kpt_filename
+                            )
 
                         if show_errors:
                             string = (
