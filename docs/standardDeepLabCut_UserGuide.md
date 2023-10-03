@@ -22,7 +22,7 @@ To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admi
 
 As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
 
-## DeepLabCut in the Terminal:
+## DeepLabCut in the Terminal/Command line interface:
 
 To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type `import deeplabcut`.
 
