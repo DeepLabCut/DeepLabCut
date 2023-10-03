@@ -20,10 +20,9 @@ You can install the full DeepLabCut napari-based GUI via [pip] by running this i
 
 *please note this is available since v2.3
 
-You can install the stand-alone `napari-deeplabcut` via [pip]:
+This is not needed if you ran the above installation, but you can install the stand-alone `napari-deeplabcut` via [pip]:
 
 `     pip install napari-deeplabcut `
-
 
 
 To install latest development version:
@@ -39,12 +38,11 @@ To use the full GUI, please run:
 
 To use the stand-alone napari plugin, please launch napari:
 
-`    napari `
+`napari `
 
 Then, activate the plugin in Plugins > napari-deeplabcut: Keypoint controls.
 
-All accepted files (config.yaml, images, h5 data files) can be loaded
-either by dropping them directly onto the canvas or via the File menu.
+All accepted files (`config.yaml`, images, `.h5` data files) can be loaded either by dropping them directly onto the canvas or via the File menu.
 
 The easiest way to get started is to drop a folder (typically a folder from within a DeepLabCut's `labeled-data` directory), and, if labeling from scratch, drop the corresponding `config.yaml` to automatically add a `Points layer` and populate the dropdown menus.
 
@@ -63,6 +61,9 @@ in red)
 - `backspace` to delete a point.
 - Check the box "display text" to show the label names on the canvas.
 - To move to another folder, be sure to save (Ctrl+S), then delete the layers, and re-drag/drop the next folder.
+
+![napari_shortcuts](https://github.com/Timokleia/DeepLabCut/assets/28102185/cafa97da-eb28-470f-8f9a-45d4ac7d91b7)
+
 
 
 ### Save Layers
@@ -186,10 +187,6 @@ the coverage at least stays the same before you submit a pull request.
 
 To locally install the code, please git clone the repo and then run `pip install -e .`
 
-## License
-
-Distributed under the terms of the [BSD-3] license,
-"napari-deeplabcut" is free and open source software.
 
 ## Issues
 
