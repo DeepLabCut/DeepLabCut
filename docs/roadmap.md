@@ -14,7 +14,7 @@
 **General NN Improvements:**
 - [X] EfficientNet backbones added (currently SOTA on ImageNet). https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html https://github.com/DeepLabCut/DeepLabCut/commit/96da2cacf837a9b84ecdeafb50dfb4a93b402f33
 - [X] New multi-fusion multi-scale networks; DLCRNet_ms5
-- [ ] BUCTD integration, see ICCV 2023 paper at https://arxiv.org/abs/2306.07879
+- [ ] BUCTD Integration, see ICCV 2023 paper at https://arxiv.org/abs/2306.07879
 
 **deeplabcut 2.2: multi-animal pose estimation and tracking with DeepLabCut**
 - [X] alpha testing complete (early May 2020)
@@ -29,7 +29,7 @@
 
 **real-time module with DEMO for how to set up on your camera system, integration with our [Camera Control Software]**(https://github.com/AdaptiveMotorControlLab/Camera_Control)
 - [X] Integration with Bonsai completed! See: https://github.com/bonsai-rx/deeplabcut
-- [X] Integreation with Auto-pi-lot. See: https://auto-pi-lot.com/
+- [X] Integration with Auto-pi-lot. See: https://auto-pi-lot.com/
 - [X] DeepLabCut-live! released Aug 5th, 2020: preprint & code: https://www.biorxiv.org/content/10.1101/2020.08.04.236422v1
 - [X] DeepLabCut-live! published in eLife
 
