@@ -80,6 +80,7 @@ def filterpredictions(
     destfolder=None,
     modelprefix="",
     track_method="",
+    return_data=False,
 ):
     """Fits frame-by-frame pose predictions.
 
@@ -146,6 +147,9 @@ def filterpredictions(
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
 
+    return_data: bool, optional, default=False
+        If True, returns a dictionary of the filtered data keyed by video names.
+
     Returns
     -------
     video_to_filtered_df
@@ -209,7 +213,8 @@ def filterpredictions(
 
     if not len(Videos):
         print("No video(s) were found. Please check your paths and/or 'videotype'.")
-        return video_to_filtered_df
+        if return_data:
+            return video_to_filtered_df
 
     for video in Videos:
         if destfolder is None:
@@ -292,7 +297,9 @@ def filterpredictions(
         if save_as_csv:
             print("Saving filtered csv poses!")
             data.to_csv(outdataname.split(".h5")[0] + ".csv")
-    return video_to_filtered_df
+
+    if return_data:
+        return video_to_filtered_df
 
 
 if __name__ == "__main__":

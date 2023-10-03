@@ -177,6 +177,7 @@ def analyzeskeleton(
     destfolder=None,
     modelprefix="",
     track_method="",
+    return_data=False,
 ):
     """Extracts length and orientation of each "bone" of the skeleton.
 
@@ -227,6 +228,9 @@ def analyzeskeleton(
         Empty by default (corresponding to a single animal project).
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
+
+    return_data: bool, optional, default=False
+        If True, returns a dictionary of the filtered data keyed by video names.
 
     Returns
     -------
@@ -292,7 +296,9 @@ def analyzeskeleton(
         skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
         if save_as_csv:
             skeleton.to_csv(output_name.replace(".h5", ".csv"))
-    return video_to_skeleton_df
+
+    if return_data:
+        return video_to_skeleton_df
 
 
 if __name__ == "__main__":
