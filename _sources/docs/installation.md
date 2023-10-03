@@ -73,7 +73,7 @@ You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) righ
 
 ``conda env create -f DEEPLABCUT_M1.yaml``
 
-- You can now use this environment from anywhere on your comptuer (i.e., no need to go back into the conda- folder). Just enter your environment by running:
+- You can now use this environment from anywhere on your computer (i.e., no need to go back into the conda- folder). Just enter your environment by running:
      - Ubuntu/MacOS: ``source/conda activate nameoftheenv`` (i.e. on your Mac: ``conda activate DEEPLABCUT`` or ``conda activate DEEPLABCUT_M1``)
      - Windows: ``activate nameoftheenv`` (i.e. ``activate DEEPLABCUT``)
 
