@@ -7,8 +7,14 @@ To get started, you can use the GUI, or the terminal. See below.
 
 ## DeepLabCut Project Manager GUI (recommended for beginners)
 
+
+
 **GUI:**
-Simply ``python -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more [here](https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html).
+
+To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`). Then, simply run ``python -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more below.
+```{Hint}
+🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
@@ -16,9 +22,9 @@ Simply ``python -m deeplabcut``. The below functions are available to you in an 
 
 As a reminder, the core functions are described in our [Nature Protocols](https://www.nature.com/articles/s41596-019-0176-0) paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
 
-## DeepLabCut in the Terminal:
+## DeepLabCut in the Terminal/Command line interface:
 
-To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`) and then type `ipython`. Then type `import deeplabcut`.
+To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type `import deeplabcut`.
 
 ```{Hint}
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
