@@ -20,9 +20,10 @@ You can install the full DeepLabCut napari-based GUI via [pip] by running this i
 
 *please note this is available since v2.3
 
-This is not needed if you ran the above installation, but you can install the stand-alone `napari-deeplabcut` via [pip]:
+You can install the stand-alone `napari-deeplabcut` via [pip]:
 
 `     pip install napari-deeplabcut `
+
 
 
 To install latest development version:
@@ -38,16 +39,14 @@ To use the full GUI, please run:
 
 To use the stand-alone napari plugin, please launch napari:
 
-`napari `
+`    napari `
 
 Then, activate the plugin in Plugins > napari-deeplabcut: Keypoint controls.
 
-All accepted files (`config.yaml`, images, `.h5` data files) can be loaded either by dropping them directly onto the canvas or via the File menu.
+All accepted files (config.yaml, images, h5 data files) can be loaded
+either by dropping them directly onto the canvas or via the File menu.
 
 The easiest way to get started is to drop a folder (typically a folder from within a DeepLabCut's `labeled-data` directory), and, if labeling from scratch, drop the corresponding `config.yaml` to automatically add a `Points layer` and populate the dropdown menus.
-
-[🎥 DEMO
-](https://youtu.be/hsA9IB5r73E)
 
 **Tools & shortcuts are:**
 
@@ -57,13 +56,9 @@ The easiest way to get started is to drop a folder (typically a folder from with
 - `E`, to enable edge coloring (by default, if using this in refinement GUI mode, points with a confidence lower than 0.6 are marked
 in red)
 - `F`, to toggle between animal and body part color scheme.
-- `V`, to toggle visibility of the selected layer.
 - `backspace` to delete a point.
 - Check the box "display text" to show the label names on the canvas.
 - To move to another folder, be sure to save (Ctrl+S), then delete the layers, and re-drag/drop the next folder.
-
-![napari_shortcuts](https://github.com/Timokleia/DeepLabCut/assets/28102185/cafa97da-eb28-470f-8f9a-45d4ac7d91b7)
-
 
 
 ### Save Layers
@@ -73,7 +68,7 @@ Only when saving segmentation masks does a save file dialog pop up to name the d
 keypoint annotations are otherwise automatically saved in the corresponding folder as `CollectedData_<ScorerName>.h5`.
 - As a reminder, DLC will only use the H5 file; so be sure if you open already labeled images you save/overwrite the H5.
 - Note, before saving a layer, make sure the points layer is selected. If the user clicked on the image(s) layer first, does `Save As`, then closes the window, any labeling work during that session will be lost!
-- Modifying and then saving points in a `machinelabels...` layer will add to or overwrite the existing `CollectedData` layer and will **not** save to the `machinelabels` file.
+
 
 ### Video frame extraction and prediction refinement
 
@@ -113,57 +108,16 @@ Suggested workflows, depending on the image folder contents:
 
     Saving works as described in *1*.
 
-    ***Note that if a new body part has been added to the `config.yaml` file after having started to label, loading the config in the GUI is necessary to update the dropdown menus and other metadata.***
-
-    ***As `viridis` is `napari-deeplabcut` default colormap, selecting the colormap in the GUI or loading the config in the GUI can be used to update the color scheme.***
-
-4. **Refining labels** – the image folder contains a `machinelabels-iter<#>.h5` file.
+3. **Refining labels** – the image folder contains a `machinelabels-iter<#>.h5` file.
 
     The process is analog to *2*.
-   Open *napari* and open an image folder.
-    If the video was originally labeled, *and* had outliers extracted it will contain a `CollectedData_<ScorerName>.h5` file and a `machinelabels-iter<#>.h5` file. In this case, select the `machinelabels` layer in the GUI, and type `e` to show edges. Red indicates likelihood < 0.6. As you navigate through frames, images with labels with edges will need to be refined (moved, deleted, etc). Images with labels without edges will be on the `CollectedData` (previous manual annotations) layer and shouldn't need refining. However, you can switch to that layer and fix errors. You can also right-click on the `CollectedData` layer and select `toggle visibility` to hide that layer. Select the `machinelabels` layer before saving which will append your refined annotations to `CollectedData`.
 
-    If the folder only had outliers extracted and wasn't originally labeled, it will not have a `CollectedData` layer. Work with the `machinelabels` layer selected to refine annotation positions, then save.
-
-    In this case, it is not necessary to open the DLC project's `config.yaml` file, as all necessary metadata is read from the `h5` data file.
-
-    Saving works as described in *1*.
-
-6. **Drawing segmentation masks**
+4. **Drawing segmentation masks**
 
     Drop an image folder as in *1*, manually add a *shapes layer*. Then select the *rectangle* in the layer controls (top left pane),
     and start drawing rectangles over the images. Masks and rectangle vertices are saved as described in [Save Layers](#save-layers).
     Note that masks can be reloaded and edited at a later stage by dropping the `vertices.csv` file onto the canvas.
 
-### Workflow flowchart
-
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
-graph TD
-  id1[What stage of labeling?]
-  id2[deeplabcut.label_frames]
-  id3[deeplabcut.refine_labels]
-  id4[Add labels to, or modify in, \n `CollectedData...` layer and save that layer]
-  id5[Modify labels in `machinelabels` layer and save \n which will create a `CollectedData...` file]
-  id6[Have you refined some labels from the most recent iteration and saved already?]
-  id7["All extracted frames are already saved in `CollectedData...`.
-1. Hide or trash all `machinelabels` layers.
-2. Then modify in and save `CollectedData`"]
-  id8["
-1. hide or trash all `machinelabels` layers except for the most recent.
-2. Select most recent `machinelabels` and hit `e` to show edges.
-3. Modify only in `machinelabels` and skip frames with labels without edges shown.
-4. Save `machinelabels` layer, which will add data to `CollectedData`.
-	- If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`"]
-
-  id1 -->|I need to manually label new frames \n or fix my labels|id2
-  id1 ---->|I need to refine outlier frames \nfrom analyzed videos|id3
-  id2 -->id4
-  id3 -->|I only have a `machinelabels...` file|id5
-  id3 ---->|I have both `machinelabels` and `CollectedData` files|id6
-  id6 -->|yes|id7
-  id6 ---->|no, I just extracted outliers|id8
-```
 
 ### Labeling multiple image folders
 
@@ -187,6 +141,10 @@ the coverage at least stays the same before you submit a pull request.
 
 To locally install the code, please git clone the repo and then run `pip install -e .`
 
+## License
+
+Distributed under the terms of the [BSD-3] license,
+"napari-deeplabcut" is free and open source software.
 
 ## Issues
 
