@@ -429,7 +429,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-project-manager-gui-recommended-for-beginners">DeepLabCut Project Manager GUI (recommended for beginners)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal">DeepLabCut in the Terminal:</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal-command-line-interface">DeepLabCut in the Terminal/Command line interface:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
 </ul>
@@ -513,16 +513,20 @@ document.write(`
 <p>To get started, you can use the GUI, or the terminal. See below.</p>
 <section id="deeplabcut-project-manager-gui-recommended-for-beginners">
 <h2>DeepLabCut Project Manager GUI (recommended for beginners)<a class="headerlink" href="#deeplabcut-project-manager-gui-recommended-for-beginners" title="Permalink to this heading">#</a></h2>
-<p><strong>GUI:</strong>
-Simply <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html">here</a>.</p>
+<p><strong>GUI:</strong></p>
+<p>To begin, navigate to Aanaconda Prompt Terminal and right-click to “open as admin “(Windows), or simply launch “Terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code>). Then, simply run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code>. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more below.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and “run as administrator”.</p>
+</div>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
 </p>
 <p>As a reminder, the core functions are described in our <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols</a> paper (published at the time of 2.0.6). Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!</p>
 </section>
-<section id="deeplabcut-in-the-terminal">
-<h2>DeepLabCut in the Terminal:<a class="headerlink" href="#deeplabcut-in-the-terminal" title="Permalink to this heading">#</a></h2>
-<p>To begin, navigate to Aanaconda Prompt Terminal and right-click to “open as admin “(windows), or simply launch “Terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DLC-CPU</span></code>) and then type <code class="docutils literal notranslate"><span class="pre">ipython</span></code>. Then type <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code>.</p>
+<section id="deeplabcut-in-the-terminal-command-line-interface">
+<h2>DeepLabCut in the Terminal/Command line interface:<a class="headerlink" href="#deeplabcut-in-the-terminal-command-line-interface" title="Permalink to this heading">#</a></h2>
+<p>To begin, navigate to Aanaconda Prompt Terminal and right-click to “open as admin “(Windows), or simply launch “Terminal” (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">DEEPLABCUT</span></code>) and then type <code class="docutils literal notranslate"><span class="pre">ipython</span></code>. Then type <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code>.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p>🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and “run as administrator”.</p>
@@ -2413,7 +2417,7 @@ could be useful (they are all optional).</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-project-manager-gui-recommended-for-beginners">DeepLabCut Project Manager GUI (recommended for beginners)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal">DeepLabCut in the Terminal:</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal-command-line-interface">DeepLabCut in the Terminal/Command line interface:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
 </ul>

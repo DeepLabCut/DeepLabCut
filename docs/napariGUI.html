@@ -435,12 +435,12 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow">Workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-flowchart">Workflow flowchart</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-multiple-image-folders">Labeling multiple image folders</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-cropping-coordinates">Defining cropping coordinates</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issues">Issues</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgements">Acknowledgements</a></li>
 </ul>
@@ -469,7 +469,7 @@ document.write(`
 <p>You can install the full DeepLabCut napari-based GUI via <a class="reference external" href="https://pypi.org/project/pip/">pip</a> by running this in your conda env:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[tf,gui]'</span></code> or mac M1/M2 chip users: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[apple_mchips,gui]'</span></code></p>
 <p>*please note this is available since v2.3</p>
-<p>You can install the stand-alone <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
+<p>This is not needed if you ran the above installation, but you can install the stand-alone <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> via <a class="reference external" href="https://pypi.org/project/pip/">pip</a>:</p>
 <p><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-deeplabcut</span></code></p>
 <p>To install latest development version:</p>
 <p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/DeepLabCut/napari-deeplabcut.git</span></code></p>
@@ -479,11 +479,12 @@ document.write(`
 <p>To use the full GUI, please run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
 <p>To use the stand-alone napari plugin, please launch napari:</p>
-<p><code class="docutils literal notranslate">&#160;&#160; <span class="pre">napari</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">napari</span> </code></p>
 <p>Then, activate the plugin in Plugins &gt; napari-deeplabcut: Keypoint controls.</p>
-<p>All accepted files (config.yaml, images, h5 data files) can be loaded
-either by dropping them directly onto the canvas or via the File menu.</p>
+<p>All accepted files (<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, images, <code class="docutils literal notranslate"><span class="pre">.h5</span></code> data files) can be loaded either by dropping them directly onto the canvas or via the File menu.</p>
 <p>The easiest way to get started is to drop a folder (typically a folder from within a DeepLabCut’s <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> directory), and, if labeling from scratch, drop the corresponding <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to automatically add a <code class="docutils literal notranslate"><span class="pre">Points</span> <span class="pre">layer</span></code> and populate the dropdown menus.</p>
+<p><a class="reference external" href="https://youtu.be/hsA9IB5r73E">🎥 DEMO
+</a></p>
 <p><strong>Tools &amp; shortcuts are:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">3</span></code>, to easily switch between labeling and selection mode</p></li>
@@ -492,10 +493,12 @@ either by dropping them directly onto the canvas or via the File menu.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">E</span></code>, to enable edge coloring (by default, if using this in refinement GUI mode, points with a confidence lower than 0.6 are marked
 in red)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">F</span></code>, to toggle between animal and body part color scheme.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">V</span></code>, to toggle visibility of the selected layer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">backspace</span></code> to delete a point.</p></li>
 <li><p>Check the box “display text” to show the label names on the canvas.</p></li>
 <li><p>To move to another folder, be sure to save (Ctrl+S), then delete the layers, and re-drag/drop the next folder.</p></li>
 </ul>
+<p><img alt="napari_shortcuts" src="https://github.com/Timokleia/DeepLabCut/assets/28102185/cafa97da-eb28-470f-8f9a-45d4ac7d91b7" /></p>
 <section id="save-layers">
 <h3>Save Layers<a class="headerlink" href="#save-layers" title="Permalink to this heading">#</a></h3>
 <p>Annotations and segmentations are saved with <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">&gt;</span> <span class="pre">Save</span> <span class="pre">Selected</span> <span class="pre">Layer(s)...</span></code> (or its shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code>).
@@ -504,6 +507,7 @@ keypoint annotations are otherwise automatically saved in the corresponding fold
 <ul class="simple">
 <li><p>As a reminder, DLC will only use the H5 file; so be sure if you open already labeled images you save/overwrite the H5.</p></li>
 <li><p>Note, before saving a layer, make sure the points layer is selected. If the user clicked on the image(s) layer first, does <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">As</span></code>, then closes the window, any labeling work during that session will be lost!</p></li>
+<li><p>Modifying and then saving points in a <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> layer will add to or overwrite the existing <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> layer and will <strong>not</strong> save to the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> file.</p></li>
 </ul>
 </section>
 <section id="video-frame-extraction-and-prediction-refinement">
@@ -537,9 +541,16 @@ The slider below the displayed image (or the left/right arrow keys) allows selec
 <p>Open <em>napari</em> and open an image folder (which needs to contain a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file).
 In this case, it is not necessary to open the DLC project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, as all necessary metadata is read from the <code class="docutils literal notranslate"><span class="pre">h5</span></code> data file.</p>
 <p>Saving works as described in <em>1</em>.</p>
+<p><em><strong>Note that if a new body part has been added to the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file after having started to label, loading the config in the GUI is necessary to update the dropdown menus and other metadata.</strong></em></p>
+<p><em><strong>As <code class="docutils literal notranslate"><span class="pre">viridis</span></code> is <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> default colormap, selecting the colormap in the GUI or loading the config in the GUI can be used to update the color scheme.</strong></em></p>
 </li>
 <li><p><strong>Refining labels</strong> – the image folder contains a <code class="docutils literal notranslate"><span class="pre">machinelabels-iter&lt;#&gt;.h5</span></code> file.</p>
-<p>The process is analog to <em>2</em>.</p>
+<p>The process is analog to <em>2</em>.
+Open <em>napari</em> and open an image folder.
+If the video was originally labeled, <em>and</em> had outliers extracted it will contain a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file and a <code class="docutils literal notranslate"><span class="pre">machinelabels-iter&lt;#&gt;.h5</span></code> file. In this case, select the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer in the GUI, and type <code class="docutils literal notranslate"><span class="pre">e</span></code> to show edges. Red indicates likelihood &lt; 0.6. As you navigate through frames, images with labels with edges will need to be refined (moved, deleted, etc). Images with labels without edges will be on the <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> (previous manual annotations) layer and shouldn’t need refining. However, you can switch to that layer and fix errors. You can also right-click on the <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> layer and select <code class="docutils literal notranslate"><span class="pre">toggle</span> <span class="pre">visibility</span></code> to hide that layer. Select the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer before saving which will append your refined annotations to <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code>.</p>
+<p>If the folder only had outliers extracted and wasn’t originally labeled, it will not have a <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> layer. Work with the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer selected to refine annotation positions, then save.</p>
+<p>In this case, it is not necessary to open the DLC project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, as all necessary metadata is read from the <code class="docutils literal notranslate"><span class="pre">h5</span></code> data file.</p>
+<p>Saving works as described in <em>1</em>.</p>
 </li>
 <li><p><strong>Drawing segmentation masks</strong></p>
 <p>Drop an image folder as in <em>1</em>, manually add a <em>shapes layer</em>. Then select the <em>rectangle</em> in the layer controls (top left pane),
@@ -547,6 +558,36 @@ and start drawing rectangles over the images. Masks and rectangle vertices are s
 Note that masks can be reloaded and edited at a later stage by dropping the <code class="docutils literal notranslate"><span class="pre">vertices.csv</span></code> file onto the canvas.</p>
 </li>
 </ol>
+<section id="workflow-flowchart">
+<h3>Workflow flowchart<a class="headerlink" href="#workflow-flowchart" title="Permalink to this heading">#</a></h3>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>%%{init: {&quot;flowchart&quot;: {&quot;htmlLabels&quot;: false}} }%%
+graph TD
+  id1[What stage of labeling?]
+  id2[deeplabcut.label_frames]
+  id3[deeplabcut.refine_labels]
+  id4[Add labels to, or modify in, \n `CollectedData...` layer and save that layer]
+  id5[Modify labels in `machinelabels` layer and save \n which will create a `CollectedData...` file]
+  id6[Have you refined some labels from the most recent iteration and saved already?]
+  id7[&quot;All extracted frames are already saved in `CollectedData...`.
+1. Hide or trash all `machinelabels` layers.
+2. Then modify in and save `CollectedData`&quot;]
+  id8[&quot;
+1. hide or trash all `machinelabels` layers except for the most recent.
+2. Select most recent `machinelabels` and hit `e` to show edges.
+3. Modify only in `machinelabels` and skip frames with labels without edges shown.
+4. Save `machinelabels` layer, which will add data to `CollectedData`.
+	- If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`&quot;]
+
+  id1 --&gt;|I need to manually label new frames \n or fix my labels|id2
+  id1 ----&gt;|I need to refine outlier frames \nfrom analyzed videos|id3
+  id2 --&gt;id4
+  id3 --&gt;|I only have a `machinelabels...` file|id5
+  id3 ----&gt;|I have both `machinelabels` and `CollectedData` files|id6
+  id6 --&gt;|yes|id7
+  id6 ----&gt;|no, I just extracted outliers|id8
+</pre></div>
+</div>
+</section>
 <section id="labeling-multiple-image-folders">
 <h3>Labeling multiple image folders<a class="headerlink" href="#labeling-multiple-image-folders" title="Permalink to this heading">#</a></h3>
 <p>Labeling multiple image folders has to be done in sequence; i.e., only one image folder can be opened at a time.
@@ -566,11 +607,6 @@ and hit the button <code class="docutils literal notranslate"><span class="pre">
 <p>Contributions are very welcome. Tests can be run with <a class="reference external" href="https://tox.readthedocs.io/en/latest/">tox</a>, please ensure
 the coverage at least stays the same before you submit a pull request.</p>
 <p>To locally install the code, please git clone the repo and then run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
-</section>
-<section id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this heading">#</a></h2>
-<p>Distributed under the terms of the <a class="reference external" href="http://opensource.org/licenses/BSD-3-Clause">BSD-3</a> license,
-“napari-deeplabcut” is free and open source software.</p>
 </section>
 <section id="issues">
 <h2>Issues<a class="headerlink" href="#issues" title="Permalink to this heading">#</a></h2>
@@ -659,12 +695,12 @@ https://napari.org/plugins/stable/index.html
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow">Workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-flowchart">Workflow flowchart</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-multiple-image-folders">Labeling multiple image folders</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-cropping-coordinates">Defining cropping coordinates</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issues">Issues</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgements">Acknowledgements</a></li>
 </ul>
