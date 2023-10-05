@@ -62,10 +62,6 @@ in red)
 - Check the box "display text" to show the label names on the canvas.
 - To move to another folder, be sure to save (Ctrl+S), then delete the layers, and re-drag/drop the next folder.
 
-![napari_shortcuts](https://github.com/Timokleia/DeepLabCut/assets/28102185/cafa97da-eb28-470f-8f9a-45d4ac7d91b7)
-
-
-
 ### Save Layers
 
 Annotations and segmentations are saved with `File > Save Selected Layer(s)...` (or its shortcut `Ctrl+S`).
