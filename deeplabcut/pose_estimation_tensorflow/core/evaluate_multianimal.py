@@ -22,6 +22,7 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
 )
+import deeplabcut
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
@@ -176,9 +177,6 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-                trainingsetfolder, trainFraction, shuffle, cfg
-            )
             modelfolder = os.path.join(
                 cfg["project_path"],
                 str(
@@ -187,16 +185,12 @@ def evaluate_multianimal_full(
                     )
                 ),
             )
-            path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
 
-            # Load meta data
-            (
-                data,
-                trainIndices,
-                testIndices,
-                trainFraction,
-            ) = auxiliaryfunctions.load_metadata(
-                os.path.join(cfg["project_path"], metadatafn)
+            path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
+                config=config,
+                shuffle=shuffle,
+                trainingsetindex=trainingsetindex,
+                modelprefix=modelprefix,
             )
 
             try:
@@ -206,6 +200,12 @@ def evaluate_multianimal_full(
                     "It seems the model for shuffle %s and trainFraction %s does not exist."
                     % (shuffle, trainFraction)
                 )
+
+            train_pose_cfg = load_config(str(path_train_config))
+            # Load meta data
+            _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+                os.path.join(cfg["project_path"], train_pose_cfg["metadataset"])
+            )
 
             pipeline = iaa.Sequential(random_order=False)
             pre_resize = dlc_cfg.get("pre_resize")

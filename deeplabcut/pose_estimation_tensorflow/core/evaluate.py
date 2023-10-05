@@ -737,9 +737,6 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                _, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-                    trainingsetfolder, trainFraction, shuffle, cfg
-                )
                 modelfolder = os.path.join(
                     cfg["project_path"],
                     str(
