@@ -137,8 +137,7 @@ Suggested workflows, depending on the image folder contents:
 
 ### Workflow flowchart
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+```{mermaid}
 graph TD
   id1[What stage of labeling?]
   id2[deeplabcut.label_frames]
@@ -154,7 +153,7 @@ graph TD
 2. Select most recent `machinelabels` and hit `e` to show edges.
 3. Modify only in `machinelabels` and skip frames with labels without edges shown.
 4. Save `machinelabels` layer, which will add data to `CollectedData`.
-	- If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`"]
+    - If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`"]
 
   id1 -->|I need to manually label new frames \n or fix my labels|id2
   id1 ---->|I need to refine outlier frames \nfrom analyzed videos|id3
