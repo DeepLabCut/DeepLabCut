@@ -749,7 +749,7 @@ def evaluate_network(
                 path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
                     config=config,
                     shuffle=shuffle,
-                    trainingsetindex=trainingsetindex,
+                    trainingsetindex=trainingsetindex,  # TODO Fix for if len(TrainingFractions) > 1 / trainingsetindex="all"
                     modelprefix=modelprefix,
                 )
 
