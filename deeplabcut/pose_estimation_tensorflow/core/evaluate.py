@@ -101,7 +101,7 @@ def calculatepafdistancebounds(
             )
         )[cfg["scorer"]]
 
-        path_train_config, path_test_config = deeplabcut.return_train_network_path(
+        path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
             config=config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
@@ -294,7 +294,7 @@ def return_evaluate_network_data(
             )
         ),
     )
-    path_train_config, path_test_config = deeplabcut.return_train_network_path(
+    path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
         config=config,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
@@ -749,7 +749,7 @@ def evaluate_network(
                     ),
                 )
 
-                path_train_config, path_test_config = deeplabcut.return_train_network_path(
+                path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
                     config=config,
                     shuffle=shuffle,
                     trainingsetindex=trainingsetindex,
