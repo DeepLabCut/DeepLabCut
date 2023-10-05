@@ -18,7 +18,7 @@ parts:
 - caption: Graphical User Interfaces (GUIs)
   chapters:
   - file: docs/PROJECT_GUI
-  - file: docs/napariGUI
+  - file: docs/napari_GUI
   - file: docs/recipes/ClusteringNapari
 - caption: DeepLabCut-Live!
   chapters:
