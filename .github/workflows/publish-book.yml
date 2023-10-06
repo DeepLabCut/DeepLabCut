@@ -20,7 +20,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -e .[tf,docs]
-        pip install jupyter-book
+        pip install jupyter-book sphinxcontrib-mermaid
 
     - name: Build the book
       run: |
