@@ -137,8 +137,7 @@ Suggested workflows, depending on the image folder contents:
 
 ### Workflow flowchart
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+```{mermaid}
 graph TD
   id1[What stage of labeling?]
   id2[deeplabcut.label_frames]

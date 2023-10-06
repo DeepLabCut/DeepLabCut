@@ -62,6 +62,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/napari_GUI';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -560,8 +562,8 @@ Note that masks can be reloaded and edited at a later stage by dropping the <cod
 </ol>
 <section id="workflow-flowchart">
 <h3>Workflow flowchart<a class="headerlink" href="#workflow-flowchart" title="Permalink to this heading">#</a></h3>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>%%{init: {&quot;flowchart&quot;: {&quot;htmlLabels&quot;: false}} }%%
-graph TD
+<div class="mermaid">
+            graph TD
   id1[What stage of labeling?]
   id2[deeplabcut.label_frames]
   id3[deeplabcut.refine_labels]
@@ -585,9 +587,7 @@ graph TD
   id3 ----&gt;|I have both `machinelabels` and `CollectedData` files|id6
   id6 --&gt;|yes|id7
   id6 ----&gt;|no, I just extracted outliers|id8
-</pre></div>
-</div>
-</section>
+        </div></section>
 <section id="labeling-multiple-image-folders">
 <h3>Labeling multiple image folders<a class="headerlink" href="#labeling-multiple-image-folders" title="Permalink to this heading">#</a></h3>
 <p>Labeling multiple image folders has to be done in sequence; i.e., only one image folder can be opened at a time.
