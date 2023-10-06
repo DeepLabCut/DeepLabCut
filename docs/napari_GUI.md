@@ -62,6 +62,10 @@ in red)
 - Check the box "display text" to show the label names on the canvas.
 - To move to another folder, be sure to save (Ctrl+S), then delete the layers, and re-drag/drop the next folder.
 
+![napari_shortcuts](https://github.com/Timokleia/DeepLabCut/assets/28102185/cafa97da-eb28-470f-8f9a-45d4ac7d91b7)
+
+
+
 ### Save Layers
 
 Annotations and segmentations are saved with `File > Save Selected Layer(s)...` (or its shortcut `Ctrl+S`).
@@ -109,6 +113,10 @@ Suggested workflows, depending on the image folder contents:
 
     Saving works as described in *1*.
 
+    ***Note that if a new body part has been added to the `config.yaml` file after having started to label, loading the config in the GUI is necessary to update the dropdown menus and other metadata.***
+
+    ***As `viridis` is `napari-deeplabcut` default colormap, selecting the colormap in the GUI or loading the config in the GUI can be used to update the color scheme.***
+
 4. **Refining labels** – the image folder contains a `machinelabels-iter<#>.h5` file.
 
     The process is analog to *2*.
@@ -145,7 +153,7 @@ graph TD
 2. Select most recent `machinelabels` and hit `e` to show edges.
 3. Modify only in `machinelabels` and skip frames with labels without edges shown.
 4. Save `machinelabels` layer, which will add data to `CollectedData`.
-    - If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`"]
+	- If you need to revisit this video later, ignore `machinelabels` and work only in `CollectedData`"]
 
   id1 -->|I need to manually label new frames \n or fix my labels|id2
   id1 ---->|I need to refine outlier frames \nfrom analyzed videos|id3
