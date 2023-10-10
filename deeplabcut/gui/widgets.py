@@ -432,7 +432,7 @@ class DictViewer(QtWidgets.QWidget):
             for key, val in data.items():
                 self.add_row(key, val, tree_widget)
         elif isinstance(data, list):
-            for i, val in enumerate(data, start=1):
+            for i, val in enumerate(data):
                 self.add_row(str(i), val, tree_widget)
         else:
             print("This should never be reached!")
