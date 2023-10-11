@@ -107,12 +107,12 @@ def calculatepafdistancebounds(
             trainingsetindex=trainingsetindex,
             modelprefix=modelprefix,
         )
-        dlc_cfg = load_config(str(path_test_config))
+        test_pose_cfg = load_config(str(path_test_config))
 
         # get the graph!
-        partaffinityfield_graph = dlc_cfg["partaffinityfield_graph"]
+        partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
         jointnames = [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
+            test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -135,7 +135,7 @@ def calculatepafdistancebounds(
                                     (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
                                     + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
                                 )
-                                / dlc_cfg["stride"]
+                                / test_pose_cfg["stride"]
                             )
                         else:
                             distances = None
@@ -302,7 +302,7 @@ def return_evaluate_network_data(
     )
 
     try:
-        dlc_cfg = load_config(str(path_test_config))
+        test_pose_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
             "It seems the model for shuffle %s and trainFraction %s does not exist."
@@ -317,7 +317,7 @@ def return_evaluate_network_data(
 
     ########################### RESCALING (to global scale)
     if rescale == True:
-        scale = dlc_cfg["global_scale"]
+        scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
             pd.read_hdf(
@@ -383,10 +383,10 @@ def return_evaluate_network_data(
     results = []
     resultsfns = []
     for snapindex in snapindices:
-        dlc_cfg["init_weights"] = os.path.join(
+        test_pose_cfg["init_weights"] = os.path.join(
             str(modelfolder), "train", Snapshots[snapindex]
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -467,7 +467,7 @@ def return_evaluate_network_data(
                     np.round(testerrorpcutoff, 2),
                     Snapshots[snapindex],
                     scale,
-                    dlc_cfg["net_type"],
+                    test_pose_cfg["net_type"],
                 ]
                 results.append(r)
             else:
@@ -754,7 +754,7 @@ def evaluate_network(
                 )
 
                 try:
-                    dlc_cfg = load_config(str(path_test_config))
+                    test_pose_cfg = load_config(str(path_test_config))
                 except FileNotFoundError:
                     raise FileNotFoundError(
                         "It seems the model for shuffle %s and trainFraction %s does not exist."
@@ -768,7 +768,7 @@ def evaluate_network(
                 )
 
                 # change batch size, if it was edited during analysis!
-                dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
+                test_pose_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
                 # Create folder structure to store results.
                 evaluationfolder = os.path.join(
@@ -820,7 +820,7 @@ def evaluate_network(
 
                 ########################### RESCALING (to global scale)
                 if rescale:
-                    scale = dlc_cfg["global_scale"]
+                    scale = test_pose_cfg["global_scale"]
                     Data = (
                         pd.read_hdf(
                             os.path.join(
@@ -839,11 +839,11 @@ def evaluate_network(
                 # Compute predictions over images
                 ##################################################
                 for snapindex in snapindices:
-                    dlc_cfg["init_weights"] = os.path.join(
+                    test_pose_cfg["init_weights"] = os.path.join(
                         str(modelfolder), "train", Snapshots[snapindex]
                     )  # setting weights to corresponding snapshot.
                     trainingsiterations = (
-                        dlc_cfg["init_weights"].split(os.sep)[-1]
+                        test_pose_cfg["init_weights"].split(os.sep)[-1]
                     ).split("-")[
                         -1
                     ]  # read how many training siterations that corresponds to.
@@ -874,10 +874,10 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+                        sess, inputs, outputs = predict.setup_pose_prediction(test_pose_cfg)
                         Numimages = len(Data.index)
                         PredicteData = np.zeros(
-                            (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
+                            (Numimages, 3 * len(test_pose_cfg["all_joints_names"]))
                         )
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -894,12 +894,12 @@ def evaluate_network(
                                 outputs, feed_dict={inputs: image_batch}
                             )
                             scmap, locref = predict.extract_cnn_output(
-                                outputs_np, dlc_cfg
+                                outputs_np, test_pose_cfg
                             )
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
                             pose = predict.argmax_pose_predict(
-                                scmap, locref, dlc_cfg["stride"]
+                                scmap, locref, test_pose_cfg["stride"]
                             )
                             PredicteData[
                                 imageindex, :
@@ -912,7 +912,7 @@ def evaluate_network(
                         index = pd.MultiIndex.from_product(
                             [
                                 [DLCscorer],
-                                dlc_cfg["all_joints_names"],
+                                test_pose_cfg["all_joints_names"],
                                 ["x", "y", "likelihood"],
                             ],
                             names=["scorer", "bodyparts", "coords"],
