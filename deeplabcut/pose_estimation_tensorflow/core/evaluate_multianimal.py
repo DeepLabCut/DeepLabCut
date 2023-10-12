@@ -177,30 +177,28 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            modelfolder = os.path.join(
-                cfg["project_path"],
-                str(
-                    auxiliaryfunctions.get_model_folder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
-                    )
-                ),
-            )
+            modelfolder_rel_path = auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
+            modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
+
+            # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
+            #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
+            #  Not sure if this should throw an exception or just be a warning...
+            if not modelfolder.exists():
+                raise FileNotFoundError(f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist.")
+
+            if trainingsetindex == "all":
+                train_frac_idx = cfg['TrainingFraction'].index(trainFraction)
+            else:
+                train_frac_idx = trainingsetindex
 
             path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
                 config=config,
                 shuffle=shuffle,
-                trainingsetindex=trainingsetindex,  # TODO Fix for if len(TrainingFractions) > 1 / trainingsetindex="all"
+                trainingsetindex=train_frac_idx,
                 modelprefix=modelprefix,
             )
 
-            try:
-                test_pose_cfg = load_config(str(path_test_config))
-            except FileNotFoundError:
-                raise FileNotFoundError(
-                    "It seems the model for shuffle %s and trainFraction %s does not exist."
-                    % (shuffle, trainFraction)
-                )
-
+            test_pose_cfg = load_config(str(path_test_config))
             train_pose_cfg = load_config(str(path_train_config))
             # Load meta data
             _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
@@ -231,7 +229,6 @@ def evaluate_multianimal_full(
                 ),
             )
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
-            # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
             # Check which snapshots are available and sort them by # iterations
             Snapshots = np.array(
