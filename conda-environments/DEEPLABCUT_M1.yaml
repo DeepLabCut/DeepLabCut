@@ -40,4 +40,4 @@ dependencies:
   - ffmpeg
   - apple::tensorflow-deps
   - pip:
-    - -e ../[gui,apple_mchips]
+    - "deeplabcut[gui,apple_mchips]"
