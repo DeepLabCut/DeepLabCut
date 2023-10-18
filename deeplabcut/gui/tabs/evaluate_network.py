@@ -57,7 +57,6 @@ class EvaluateNetwork(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
@@ -123,7 +122,6 @@ class EvaluateNetwork(DefaultTab):
         canvas.show()
 
     def _generate_additional_attributes(self, layout):
-
         tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
         self.plot_predictions = QtWidgets.QCheckBox(
@@ -168,7 +166,6 @@ class EvaluateNetwork(DefaultTab):
             )
 
     def evaluate_network(self):
-
         config = self.root.config
 
         Shuffles = [self.root.shuffle_value]

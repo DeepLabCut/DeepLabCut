@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
@@ -19,7 +21,6 @@ def _create_label_widget(
     style: str = "",
     margins: tuple = (20, 10, 0, 10),
 ) -> QtWidgets.QLabel:
-
     label = QtWidgets.QLabel(text)
     label.setContentsMargins(*margins)
     label.setStyleSheet(style)
@@ -30,7 +31,6 @@ def _create_label_widget(
 def _create_horizontal_layout(
     alignment=None, spacing: int = 20, margins: tuple = (20, 0, 0, 0)
 ) -> QtWidgets.QHBoxLayout():
-
     layout = QtWidgets.QHBoxLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
@@ -42,7 +42,6 @@ def _create_horizontal_layout(
 def _create_vertical_layout(
     alignment=None, spacing: int = 20, margins: tuple = (20, 0, 0, 0)
 ) -> QtWidgets.QVBoxLayout():
-
     layout = QtWidgets.QVBoxLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
@@ -56,7 +55,6 @@ def _create_grid_layout(
     spacing: int = 20,
     margins: tuple = None,
 ) -> QtWidgets.QGridLayout():
-
     layout = QtWidgets.QGridLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
@@ -166,7 +164,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         if filenames[0]:
             # Qt returns a tuple (list of files, filetype)
-            self.root.video_files = filenames[0]
+            self.root.video_files = [os.path.abspath(vid) for vid in filenames[0]]
 
     def clear_selected_videos(self):
         self.root.video_files = set()

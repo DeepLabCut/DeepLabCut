@@ -40,7 +40,6 @@ class AnalyzeVideos(DefaultTab):
         return self.video_selection_widget.files
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
@@ -89,7 +88,6 @@ class AnalyzeVideos(DefaultTab):
         layout.addWidget(self.crop_bodyparts)
 
     def _generate_layout_other_options(self, layout):
-
         tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
         # Save results as csv
@@ -141,7 +139,6 @@ class AnalyzeVideos(DefaultTab):
         layout.addWidget(self.shuffle, 0, 1)
 
     def _generate_layout_multianimal(self, layout):
-
         tmp_layout = QtWidgets.QGridLayout()
 
         opt_text = QtWidgets.QLabel("Tracking method")
@@ -245,14 +242,12 @@ class AnalyzeVideos(DefaultTab):
             self.root.logger.info("Plot trajectories DISABLED.")
 
     def edit_config_file(self):
-
         if not self.root.config:
             return
         editor = ConfigEditor(self.root.config)
         editor.show()
 
     def analyze_videos(self):
-
         config = self.root.config
         shuffle = self.root.shuffle_value
 
@@ -326,8 +321,8 @@ class AnalyzeVideos(DefaultTab):
         videotype = self.video_selection_widget.videotype_widget.currentText()
         try:
             create_video_all_detections = (
-                    self.create_detections_video_checkbox.checkState() == Qt.Checked
-                )
+                self.create_detections_video_checkbox.checkState() == Qt.Checked
+            )
         except AttributeError:
             create_video_all_detections = False
         if create_video_all_detections:
@@ -351,7 +346,9 @@ class AnalyzeVideos(DefaultTab):
 
         if self.plot_trajectories.checkState() == Qt.Checked:
             bdpts = self.bodyparts_list_widget.selected_bodyparts
-            self.root.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
+            self.root.logger.debug(
+                f"Selected body parts for plot_trajectories: {bdpts}"
+            )
             showfig = self.show_trajectory_plots.checkState() == Qt.Checked
             deeplabcut.plot_trajectories(
                 config,

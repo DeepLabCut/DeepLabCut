@@ -311,7 +311,7 @@ def make_labeled_images_from_dataframe(
     if not destfolder:
         destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"
-    auxiliaryfunctions.attempttomakefolder(tmpfolder)
+    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
     ic = io.imread_collection(images_list)
 
     h, w = ic[0].shape[:2]

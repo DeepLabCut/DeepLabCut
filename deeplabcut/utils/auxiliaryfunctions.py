@@ -300,7 +300,7 @@ def write_plainconfig(configname, cfg):
         YAML().dump(cfg, file)
 
 
-def attempttomakefolder(foldername, recursive=False):
+def attempt_to_make_folder(foldername, recursive=False):
     """Attempts to create a folder with specified name. Does nothing if it already exists."""
     try:
         os.path.isdir(foldername)

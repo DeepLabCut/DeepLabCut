@@ -82,7 +82,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if cfg["pseudo_label"].endswith(".h5"):
                 pseudo_threshold = cfg.get("pseudo_threshold", 0)
                 print(f"Loading pseudo labels with threshold > {pseudo_threshold}")
-                return self._load_pseudo_data_from_h5(cfg, threshold=pseudo_threshold)
+
+                # for topview, it's safe to mask keypoints under threshold
+                mask_kpts_below_thresh = "topview" in cfg.get("superanimal", "")
+                return self._load_pseudo_data_from_h5(
+                    cfg,
+                    threshold=pseudo_threshold,
+                    mask_kpts_below_thresh=mask_kpts_below_thresh,
+                )
 
         file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
         with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
@@ -124,12 +131,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5):
+    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, mask_kpts_below_thresh=False):
         gt_file = cfg["pseudo_label"]
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
-
+        num_kpts = len(cfg['all_joints_names'])
         df = pd.read_hdf(gt_file)
         video_name = path_.name.split("DLC")[0]
         video_root = str(path_.parents[0] / video_name)
@@ -153,8 +160,19 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 )
 
             item.joints = {}
-            joints = np.concatenate([joint_ids, kpts], axis=1)
-            joints = np.nan_to_num(joints, nan=0)
+
+            if not mask_kpts_below_thresh:
+                joints = np.concatenate([joint_ids, kpts], axis=1)                
+                joints = np.nan_to_num(joints, nan=0)
+            else:
+                for kpt_id, kpt in enumerate(kpts):
+                    if kpt[-1] < threshold:
+                        kpts[kpt_id][:-1] = -1
+                    if np.isnan(kpt[0]):
+                        kpts[kpt_id][:-1] = -1
+                        kpts[kpt_id][-1] = 1
+                joints = np.concatenate([joint_ids, kpts], axis=1)
+                
             sparse_joints = []
 
             for coord in joints:
@@ -335,14 +353,20 @@ class MAImgaugPoseDataset(BasePoseDataset):
         batch_joints = []
         joint_ids = []
         data_items = []
-        img_idx = np.random.choice(num_images, size=self.batch_size, replace=True)
+        trim_ends = self.cfg.get('trim_ends', None)
+        if trim_ends is None:
+            trim_ends = 0
+        # because of the existence of threshold, sampling population is adjusted to len(self.data)
+        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)        
         for i in range(self.batch_size):
-            data_item = self.data[img_idx[i]]
+            index = img_idx[i]
+            offset = trim_ends
+            data_item = self.data[index + offset]            
             data_items.append(data_item)
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            self.vid.set_to_frame(img_idx[i])
+            self.vid.set_to_frame(index + offset)
             image = self.vid.read_frame()
             if self.has_gt:
                 joints = data_item.joints
@@ -474,7 +498,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 batch_images, joint_ids, batch_joints, data_items = self.get_batch()
 
             # in case it's empty prediction
-            if batch_joints is None:
+            if batch_joints is None or batch_images is None:
                 continue
 
             # Scale is sampled only once (per batch) to transform all of the images into same size.

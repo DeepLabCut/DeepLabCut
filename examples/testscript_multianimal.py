@@ -27,7 +27,6 @@ TESTTRACKER = "ellipse"
 USE_SHELVE = False  # random.choice([True, False])
 
 if __name__ == "__main__":
-
     TASK = "multi_mouse"
     SCORER = "dlc_team"
     NUM_FRAMES = 5
@@ -154,7 +153,9 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(config_path, plotting=True)
+    deeplabcut.evaluate_network(
+        config_path, plotting=True, per_keypoint_evaluation=True
+    )
 
     print("Network evaluated....")
 
@@ -297,7 +298,9 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(config_path, plotting=True)
+    deeplabcut.evaluate_network(
+        config_path, plotting=True, per_keypoint_evaluation=True
+    )
 
     print("Network evaluated....")
 

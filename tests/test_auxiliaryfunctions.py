@@ -121,20 +121,34 @@ def test_get_list_of_videos(tmpdir_factory):
 
 
 def test_write_config_has_skeleton(tmpdir_factory):
-    """ Required for backward compatibility """
+    """Required for backward compatibility"""
     fake_folder = tmpdir_factory.mktemp("fakeConfigs")
     fake_config_file = fake_folder / Path("fakeConfig")
     auxiliaryfunctions.write_config(fake_config_file, {})
-    config_data = auxiliaryfunctions.read_config(fake_config_file)        
+    config_data = auxiliaryfunctions.read_config(fake_config_file)
     assert "skeleton" in config_data
 
 
 @pytest.mark.parametrize(
     "multianimal, bodyparts, ma_bpts, unique_bpts, comparison_bpts, expected_bpts",
     [
-        (False, ["head", "shoulders", "knees", "toes"], None, None, {"knees", "others", "toes"}, ["knees", "toes"]),
-        (True, None, ["head", "shoulders", "knees"], ["toes"], {"knees", "others", "toes"}, ["knees", "toes"]),
-    ]
+        (
+            False,
+            ["head", "shoulders", "knees", "toes"],
+            None,
+            None,
+            {"knees", "others", "toes"},
+            ["knees", "toes"],
+        ),
+        (
+            True,
+            None,
+            ["head", "shoulders", "knees"],
+            ["toes"],
+            {"knees", "others", "toes"},
+            ["knees", "toes"],
+        ),
+    ],
 )
 def test_intersection_of_body_parts_and_ones_given_by_user(
     multianimal, bodyparts, ma_bpts, unique_bpts, comparison_bpts, expected_bpts
@@ -145,22 +159,27 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
         "multianimalbodyparts": ma_bpts,
         "uniquebodyparts": unique_bpts,
     }
-    
+
     if multianimal:
         all_bodyparts = list(set(ma_bpts + unique_bpts))
     else:
         all_bodyparts = bodyparts
 
-    filtered_bpts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts="all"
+    filtered_bpts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts="all"
+        )
     )
     print(all_bodyparts)
     print(filtered_bpts)
     assert len(all_bodyparts) == len(filtered_bpts)
     assert all([bpt in all_bodyparts for bpt in filtered_bpts])
 
-    filtered_bpts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts=comparison_bpts,
+    filtered_bpts = (
+        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg,
+            comparisonbodyparts=comparison_bpts,
+        )
     )
     print(filtered_bpts)
     assert len(expected_bpts) == len(filtered_bpts)
@@ -168,15 +187,13 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
 
 
 class MockPath:
-
     def __init__(self, path: Path, st_mtime: int):
         self.path = path
         self.parent = self.path.parent
         self.st_mtime = st_mtime
-    
+
     def lstat(self):
         return self
-
 
 
 # labeled_folders: (has_H5, H5_st_mtime, folder_name)
@@ -185,10 +202,13 @@ class MockPath:
     [
         ([(True, 1, "a"), (False, None, "b"), (False, None, "c")], "b"),
         ([(False, None, "a"), (True, 123, "d"), (False, None, "f")], "f"),
-    ]
+    ],
 )
 def test_find_next_unlabeled_folder(
-    tmpdir_factory, monkeypatch, labeled_folders, next_folder_name,
+    tmpdir_factory,
+    monkeypatch,
+    labeled_folders,
+    next_folder_name,
 ):
     project_folder = tmpdir_factory.mktemp("project")
     fake_cfg = Path(project_folder / "cfg.yaml")
