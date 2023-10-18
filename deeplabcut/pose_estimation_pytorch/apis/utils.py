@@ -1,178 +1,138 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Callable
 
 import albumentations as A
 import cv2
+import numpy as np
+import pandas as pd
 import torch
-import yaml
+import torch.nn as nn
+
+from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
+    Postprocessor,
+    build_bottom_up_postprocessor,
+    build_detector_postprocessor,
+    build_top_down_postprocessor,
+)
+from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
+    Preprocessor,
+    build_bottom_up_preprocessor,
+    build_top_down_preprocessor,
+)
 from deeplabcut.pose_estimation_pytorch.data.transforms import KeypointAwareCrop
-from deeplabcut.pose_estimation_pytorch.models import (
-    BACKBONES,
-    DETECTORS,
-    HEADS,
-    LOSSES,
-    NECKS,
-    PoseModel,
-)
-from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
-from deeplabcut.pose_estimation_pytorch.models.target_generators import (
-    TARGET_GENERATORS,
-)
-from deeplabcut.pose_estimation_pytorch.solvers import LOGGER, SOLVERS
-from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
-from deeplabcut.pose_estimation_pytorch.solvers.schedulers import LRListScheduler
+from deeplabcut.pose_estimation_pytorch.models import PoseModel, DETECTORS
+from deeplabcut.pose_estimation_pytorch.runners import RUNNERS, Runner
+from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
+from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
 from deeplabcut.utils import auxfun_videos
 
 
-def build_pose_model(cfg: Dict, pytorch_cfg: Dict) -> PoseModel:
+def build_optimizer(optimizer_cfg: dict, model: nn.Module) -> torch.optim.Optimizer:
+    """Builds an optimizer from configuration file
+
+    Args:
+        optimizer_cfg: the optimizer configuration
+        model: the model to optimize
+
+    Returns:
+        the optimizer
     """
-        Returns a pytorch pose model based on pytorch config
+    get_optimizer = getattr(torch.optim, optimizer_cfg["type"])
+    return get_optimizer(params=model.parameters(), **optimizer_cfg["params"])
+
+
+def build_scheduler(
+    scheduler_cfg: dict | None,
+    optimizer: torch.optim.Optimizer,
+) -> torch.optim.lr_scheduler.LRScheduler | None:
+    """Builds a scheduler from a configuration, if defined
+
+    Args:
+        scheduler_cfg: the configuration of the scheduler to build
+        optimizer: the optimizer the scheduler will be built for
+
+    Returns:
+        None if scheduler_cfg is None, otherwise the scheduler
+    """
+    if scheduler_cfg is None:
+        return None
+
+    if scheduler_cfg["type"] == "LRListScheduler":
+        scheduler = LRListScheduler
+    else:
+        scheduler = getattr(torch.optim.lr_scheduler, scheduler_cfg["type"])
+
+    return scheduler(optimizer=optimizer, **scheduler_cfg["params"])
+
+
+def build_pose_model(cfg: dict, pytorch_cfg: dict) -> PoseModel:
+    """
+    TODO: Deprecated but still used in analyze_videos
 
     Args:
         cfg : sub dict of the pytorch config that contains all information about the model
-        pytorch_cfg : entire pytorch config"""
+        pytorch_cfg : entire pytorch config
 
-    # TODO not sure why exactly we would need those two dicts as entries
-    backbone = BACKBONES.build(dict(cfg["backbone"]))
-    heads = []
-    for head_config in cfg["heads"]:
-        heads.append(HEADS.build(dict(head_config)))
-    target_generator = TARGET_GENERATORS.build(dict(cfg["target_generator"]))
-    if cfg.get("neck"):
-        neck = NECKS.build(dict(cfg["neck"]))
-    else:
-        neck = None
-    pose_model = PoseModel(
-        cfg=pytorch_cfg,
-        backbone=backbone,
-        heads=heads,
-        target_generator=target_generator,
-        neck=neck,
-        **cfg["pose_model"],
-    )
-
-    return pose_model
+    Returns a pytorch pose model based on pytorch config
+    """
+    return PoseModel.from_cfg(pytorch_cfg["model"])
 
 
-def build_detector(detector_cfg: Dict):
-    """Builds detector related objects : detector, its optimizer and its scheduler
+def build_runner(
+    run_cfg: dict,
+    model: nn.Module,
+    device: str,
+    snapshot_path: str | None,
+    logger: BaseLogger | None = None,
+    preprocessor: Preprocessor | None = None,
+    postprocessor: Postprocessor | None = None,
+) -> Runner:
+    """
+    Build a runner object according to a pytorch configuration file
 
     Args:
-        detector_cfg (Dict): detector config dictionary
+        run_cfg: config dictionary to build the runner
+        model: the model to run
+        device: the device to run on
+        snapshot_path: the snapshot from which to load the weights
+        logger: the logger to use, if any
+        preprocessor: the preprocessor to use on images before inference
+        postprocessor: the postprocessor to use on images after inference
 
     Returns:
-        detector, detector_optimizer, detector_scheduler
+        the runner
     """
-    detector = DETECTORS.build(detector_cfg["detector_model"])
-
-    get_optimizer = getattr(torch.optim, detector_cfg["detector_optimizer"]["type"])
-    detector_optimizer = get_optimizer(
-        params=detector.parameters(), **detector_cfg["detector_optimizer"]["params"]
+    optimizer = build_optimizer(run_cfg["optimizer"], model)
+    scheduler = build_scheduler(run_cfg["scheduler"], optimizer)
+    return RUNNERS.build(
+        dict(
+            **run_cfg["runner"],
+            model=model,
+            optimizer=optimizer,
+            device=device,
+            snapshot_path=snapshot_path,
+            scheduler=scheduler,
+            logger=logger,
+            preprocessor=preprocessor,
+            postprocessor=postprocessor,
+        )
     )
 
-    if detector_cfg.get("detector_scheduler"):
-        if detector_cfg["detector_scheduler"]["type"] == "LRListScheduler":
-            _scheduler = LRListScheduler
-        else:
-            _scheduler = getattr(
-                torch.optim.lr_scheduler, detector_cfg["detector_scheduler"]["type"]
-            )
-        detector_scheduler = _scheduler(
-            optimizer=detector_optimizer, **detector_cfg["detector_scheduler"]["params"]
-        )
-    else:
-        detector_scheduler = None
 
-    return detector, detector_optimizer, detector_scheduler
-
-
-def build_solver(pytorch_cfg: Dict, snapshot_path: str, detector_path: str) -> Solver:
-    """
-        Build the solver object to run training
-
-    Args:
-        pytorch_cfg: config dictionary to build the solver
-    Returns:
-        solver : solver to train the model
-    """
-    pose_model = build_pose_model(pytorch_cfg["model"], pytorch_cfg)
-
-    get_optimizer = getattr(torch.optim, pytorch_cfg["optimizer"]["type"])
-    optimizer = get_optimizer(
-        params=pose_model.parameters(), **pytorch_cfg["optimizer"]["params"]
-    )
-
-    criterion = LOSSES.build(pytorch_cfg["criterion"])
-
-    predictor = PREDICTORS.build(dict(pytorch_cfg["predictor"]))
-
-    if pytorch_cfg.get("scheduler"):
-        if pytorch_cfg["scheduler"]["type"] == "LRListScheduler":
-            _scheduler = LRListScheduler
-        else:
-            _scheduler = getattr(
-                torch.optim.lr_scheduler, pytorch_cfg["scheduler"]["type"]
-            )
-        scheduler = _scheduler(
-            optimizer=optimizer, **pytorch_cfg["scheduler"]["params"]
-        )
-    else:
-        scheduler = None
-
-    if pytorch_cfg.get("logger"):
-        logger = LOGGER.build(dict(**pytorch_cfg["logger"], model=pose_model))
-    else:
-        logger = None
-
-    if pytorch_cfg.get("method", "bu") == "bu":
-        solver = SOLVERS.build(
-            dict(
-                **pytorch_cfg["solver"],
-                model=pose_model,
-                criterion=criterion,
-                optimizer=optimizer,
-                predictor=predictor,
-                cfg=pytorch_cfg,
-                device=pytorch_cfg["device"],
-                snapshot_path=snapshot_path,
-                scheduler=scheduler,
-                logger=logger,
-            )
-        )
-    elif pytorch_cfg.get("method", "bu") == "td":
-        detector, detector_optimizer, detector_scheduler = build_detector(
-            pytorch_cfg["detector"]
-        )
-
-        solver = SOLVERS.build(
-            dict(
-                **pytorch_cfg["solver"],
-                model=pose_model,
-                criterion=criterion,
-                optimizer=optimizer,
-                predictor=predictor,
-                cfg=pytorch_cfg,
-                device=pytorch_cfg["device"],
-                snapshot_path=snapshot_path,
-                detector_path=detector_path,
-                scheduler=scheduler,
-                logger=logger,
-                detector=detector,
-                detector_optimizer=detector_optimizer,
-                detector_scheduler=detector_scheduler,
-            )
-        )
-    else:
-        raise ValueError(
-            "The method in your pytorch config is invalid, possible values are "
-            "'bu' (Bottom Up) or 'td' (Top Down)."
-        )
-    return solver
-
-
-def build_transforms(
-    aug_cfg: dict, augment_bbox: bool = False
-) -> Union[A.BasicTransform, A.BaseCompose]:
+def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose:
     """
     Returns the transformation pipeline based on config
 
@@ -277,18 +237,7 @@ def build_transforms(
             )
 
     if aug_cfg.get("auto_padding"):
-        params = aug_cfg.get("auto_padding")
-        pad_height_divisor = params.get("pad_height_divisor", 1)
-        pad_width_divisor = params.get("pad_width_divisor", 1)
-        transforms.append(
-            A.PadIfNeeded(
-                min_height=None,
-                min_width=None,
-                pad_height_divisor=pad_height_divisor,
-                pad_width_divisor=pad_width_divisor,
-                position="top_left",
-            )
-        )
+        transforms.append(build_auto_padding(**aug_cfg["auto_padding"]))
     if aug_cfg.get("normalize_images"):
         transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -308,15 +257,15 @@ def build_transforms(
 
 def build_inference_transform(
     transform_cfg: dict, augment_bbox: bool = True
-) -> Union[A.BasicTransform, A.BaseCompose]:
+) -> A.BasicTransform | A.BaseCompose:
     """Build transform pipeline for inference
 
     Mainly about normalising the images a giving them a specific shape
 
     Args:
         transform_cfg (dict): dict containing information about the transforms to apply
-                                should be the same as the one used for build_transforms to
-                                ensure matching distributions between train and test
+            should be the same as the one used for build_transforms to ensure matching
+            distributions between train and test
         augment_bbox (bool): should always be True for inference
 
     Returns:
@@ -329,18 +278,7 @@ def build_inference_transform(
         list_transforms.append(A.Resize(input_size[0], input_size[1]))
 
     if transform_cfg.get("auto_padding"):
-        params = transform_cfg.get("auto_padding")
-        pad_height_divisor = params.get("pad_height_divisor", 1)
-        pad_width_divisor = params.get("pad_width_divisor", 1)
-        list_transforms.append(
-            A.PadIfNeeded(
-                min_height=None,
-                min_width=None,
-                pad_height_divisor=pad_height_divisor,
-                pad_width_divisor=pad_width_divisor,
-                position="top_left",
-            )
-        )
+        list_transforms.append(build_auto_padding(**transform_cfg["auto_padding"]))
     if transform_cfg.get("normalize_images"):
         list_transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -359,13 +297,7 @@ def build_inference_transform(
         )
 
 
-def read_yaml(path):
-    with open(path) as f:
-        file = yaml.safe_load(f)
-    return file
-
-
-def get_model_snapshots(model_folder: Path) -> List[Path]:
+def get_model_snapshots(model_folder: Path) -> list[Path]:
     """
     Assumes that all snapshots are named using the pattern "snapshot-{idx}.pt"
 
@@ -385,7 +317,7 @@ def get_model_snapshots(model_folder: Path) -> List[Path]:
     )
 
 
-def get_detector_snapshots(model_folder: Path) -> List[Path]:
+def get_detector_snapshots(model_folder: Path) -> list[Path]:
     """
     Assumes that all snapshots are named using the pattern "detector-snapshot-{idx}.pt"
 
@@ -405,10 +337,10 @@ def get_detector_snapshots(model_folder: Path) -> List[Path]:
     )
 
 
-def videos_in_folder(
-    data_path: Union[str, List[str]],
-    video_type: Optional[str],
-) -> List[Path]:
+def list_videos_in_folder(
+    data_path: str | list[str],
+    video_type: str | None,
+) -> list[Path]:
     """
     TODO
     """
@@ -442,4 +374,223 @@ def update_config_parameters(pytorch_config: dict, **kwargs) -> None:
     for key in kwargs.keys():
         pytorch_config[key] = kwargs[key]
 
-    return
+
+def build_auto_padding(
+    min_height: int | None = None,
+    min_width: int | None = None,
+    pad_height_divisor: int | None = 1,
+    pad_width_divisor: int | None = 1,
+    position: str = "random",  # TODO: Which default to set?
+    border_mode: str = "reflect_101",  # TODO: Which default to set?
+    border_value: float | None = None,
+    border_mask_value: float | None = None,
+) -> A.PadIfNeeded:
+    """
+    Create an albumentations PadIfNeeded transform from a config
+
+    Args:
+        min_height: the minimum height of the image
+        min_width: the minimum width of the image
+        pad_height_divisor: if not None, ensures height is dividable by value of this argument
+        pad_width_divisor: if not None, ensures width is dividable by value of this argument
+        position: position of the image, one of the possible PadIfNeeded
+        border_mode: 'constant' or 'reflect_101' (see cv2.BORDER modes)
+        border_value: padding value if border_mode is 'constant'
+        border_mask_value: padding value for mask if border_mode is 'constant'
+
+    Raises:
+        ValueError:
+            Only one of 'min_height' and 'pad_height_divisor' parameters must be set
+            Only one of 'min_width' and 'pad_width_divisor' parameters must be set
+
+    Returns:
+        the auto-padding transform
+    """
+    border_modes = {
+        "constant": cv2.BORDER_CONSTANT,
+        "reflect_101": cv2.BORDER_REFLECT_101,
+    }
+    if border_mode not in border_modes:
+        raise ValueError(
+            f"Unknown border mode for auto_padding: {border_mode} "
+            f"(valid values are: {border_modes.keys()})"
+        )
+
+    return A.PadIfNeeded(
+        min_height=min_height,
+        min_width=min_width,
+        pad_height_divisor=pad_height_divisor,
+        pad_width_divisor=pad_width_divisor,
+        position=position,
+        border_mode=border_modes[border_mode],
+        value=border_value,
+        mask_value=border_mask_value,
+    )
+
+
+def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert dataframe to 'multianimal' format (with an "individuals" columns index)
+
+    Args:
+        df_predictions: the dataframe to convert
+
+    Returns:
+        the dataframe in MA format
+    """
+    df_predictions_ma = df_predictions.copy()
+    try:
+        df_predictions_ma.columns.get_level_values("individuals").unique().tolist()
+    except KeyError:
+        new_cols = pd.MultiIndex.from_tuples(
+            [(col[0], "animal", col[1], col[2]) for col in df_predictions_ma.columns],
+            names=["scorer", "individuals", "bodyparts", "coords"],
+        )
+        df_predictions_ma.columns = new_cols
+    return df_predictions_ma
+
+
+def build_predictions_dataframe(
+    scorer: str,
+    images: list[str],
+    bodypart_predictions: dict[str, np.ndarray],
+    unique_bodypart_predictions: dict[str, np.ndarray] | None,
+    parameters: PoseDatasetParameters,
+    image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
+) -> pd.DataFrame:
+    """
+
+    Args:
+        scorer:
+        images:
+        bodypart_predictions:
+        unique_bodypart_predictions:
+        parameters:
+        image_name_to_index:
+
+    Returns:
+
+    """
+    if parameters.num_unique_bpts > 0 and unique_bodypart_predictions is None:
+        raise ValueError(
+            "The parameters contain unique bodyparts but no predictions were given"
+        )
+
+    kpt_entries = ["x", "y", "likelihood"]
+    col_names = ["scorer", "individuals", "bodyparts", "coords"]
+
+    col_values = []
+    for i in parameters.individuals:
+        for b in parameters.bodyparts:
+            col_values += [(scorer, i, b, entry) for entry in kpt_entries]
+    for unique_bpt in parameters.unique_bpts:
+        col_values += [(scorer, "single", unique_bpt, entry) for entry in kpt_entries]
+
+    prediction_data = []
+    index_data = []
+    for image in images:
+        image_data = bodypart_predictions[image].reshape(-1)
+        if unique_bodypart_predictions is not None:
+            image_data = np.concatenate(
+                [image_data, unique_bodypart_predictions[image].reshape(-1)]
+            )
+        prediction_data.append(image_data)
+        if image_name_to_index is not None:
+            index_data.append(image_name_to_index(image))
+
+    if len(index_data) > 0:
+        index = pd.MultiIndex.from_tuples(index_data)
+    else:
+        index = images
+
+    return pd.DataFrame(
+        prediction_data,
+        index=index,
+        columns=pd.MultiIndex.from_tuples(col_values, names=col_names),
+    )
+
+
+def get_runners(
+    pytorch_config: dict,
+    snapshot_path: str,
+    with_unique_bodyparts: bool,
+    transform: A.BaseCompose | None = None,
+    detector_path: str | None = None,
+    detector_transform: A.BaseCompose | None = None,
+) -> tuple[Runner, Runner | None]:
+    """Builds the runners for pose estimation
+
+    Args:
+        pytorch_config: the pytorch configuration file
+        snapshot_path: the path of the snapshot from which to load the weights
+        with_unique_bodyparts: whether there are unique bodyparts to detect
+        transform: the transform for pose estimation. if None, uses the transform
+            defined in the config.
+        detector_path: the path to the detector snapshot from which to load weights,
+            for top-down models (if a detector runner is needed)
+        detector_transform: the transform for object detection. if None, uses the
+            transform defined in the config.
+
+    Returns:
+        a runner for pose estimation
+        a runner for detection, if detector_path is not None
+    """
+    pose_task = pytorch_config.get("method", "BU").upper()
+    if pose_task not in ["BU", "TD"]:
+        raise ValueError(
+            f"Method should be set to either 'BU' (Bottom Up) or 'TD' (Top Down), "
+            f"currently it is {pose_task}"
+        )
+
+    device = pytorch_config["device"]
+    if transform is None:
+        transform = build_inference_transform(pytorch_config["data"])
+
+    detector_runner = None
+    if pose_task == "BU":
+        pose_preprocessor = build_bottom_up_preprocessor(
+            color_mode="RGB",  # TODO: read from Loader
+            transform=transform,
+        )
+        pose_postprocessor = build_bottom_up_postprocessor(
+            with_unique_bodyparts=with_unique_bodyparts
+        )
+    else:
+        pose_preprocessor = build_top_down_preprocessor(
+            color_mode="RGB",  # TODO: read from Loader
+            transform=transform,
+            cropped_image_size=(256, 256),
+        )
+        pose_postprocessor = build_top_down_postprocessor(
+            with_unique_bodyparts=with_unique_bodyparts
+        )
+
+        if detector_path is not None:
+            if detector_transform is None:
+                detector_transform = build_inference_transform(
+                    pytorch_config["data_detector"]
+                )
+
+            detector_runner = build_runner(
+                run_cfg=pytorch_config["detector"],
+                model=DETECTORS.build(pytorch_config["detector"]["model"]),
+                device=device,
+                snapshot_path=detector_path,
+                logger=None,  # No logging for evaluation
+                preprocessor=build_bottom_up_preprocessor(
+                    color_mode="RGB",  # TODO: read from Loader
+                    transform=detector_transform,
+                ),
+                postprocessor=build_detector_postprocessor(),
+            )
+
+    pose_runner = build_runner(
+        run_cfg=pytorch_config,
+        model=PoseModel.from_cfg(pytorch_config["model"]),
+        device=device,
+        snapshot_path=snapshot_path,
+        logger=None,  # No logging for evaluation
+        preprocessor=pose_preprocessor,
+        postprocessor=pose_postprocessor,
+    )
+    return pose_runner, detector_runner

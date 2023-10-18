@@ -4,44 +4,125 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import argparse
+import copy
 import logging
-import os
 from pathlib import Path
-from typing import Optional, Union
 
 import albumentations as A
 from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch as dlc
+import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 from deeplabcut import auxiliaryfunctions
+from deeplabcut.pose_estimation_pytorch import Loader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    build_solver,
+    build_runner,
     build_transforms,
+    build_inference_transform,
     update_config_parameters,
 )
-from deeplabcut.pose_estimation_pytorch.solvers.base import Solver
-from deeplabcut.pose_estimation_pytorch.solvers.logger import (
+from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.runners.logger import (
+    LOGGER,
     setup_file_logging,
     destroy_file_logging,
 )
+
+
+def _train(
+    loader: Loader,
+    model_folder: str,
+    run_config: dict,
+    task: str,
+    device: str,
+    transform_config: dict,
+    logger_config: dict | None = None,
+    snapshot_path: str | None = None,
+    transform: A.BaseCompose | None = None,
+) -> None:
+    """Builds a model from a configuration and fits it to a dataset
+
+    Args:
+        loader: the loader containing the data to train on/validate with
+        model_folder: the folder where the models should be saved
+        run_config: the model and run configuration
+        task: {"TD", "BU", "DT"} the task to train the model for
+        device: the device to train on
+        transform_config: the configuration of the data augmentation to use. Ignored if
+            a transform is given
+        logger_config: the configuration of a logger to use
+        snapshot_path: if continuing to train from a snapshot, the path containing the
+            weights to load
+        transform: if None, a transform is loaded with the given configuration.
+            Otherwise, this transform is used.
+    """
+    if task == "DT":
+        model = DETECTORS.build(run_config["model"])
+    else:
+        model = PoseModel.from_cfg(run_config["model"])
+
+    # TODO: Log the configuration file
+    #  Model should not be needed when building the logger
+    logger = None
+    if logger_config is not None:
+        logger = LOGGER.build(dict(**logger_config, model=model))
+
+    runner = build_runner(
+        run_cfg=run_config,
+        model=model,
+        device=device,
+        snapshot_path=snapshot_path,
+        logger=logger,
+    )
+
+    batch_size = run_config.get("batch_size", 1)
+    epochs = run_config.get("epochs", 200)
+    save_epochs = run_config.get("save_epochs", 50)
+    display_iters = run_config.get("display_iters", 50)
+
+    if transform is None:
+        logging.info(f"No transform passed to augment images for {task}, using default")
+        transform = build_transforms(transform_config, augment_bbox=True)
+    valid_transform = build_inference_transform(transform_config, augment_bbox=True)
+
+    train_dataset = loader.create_dataset(transform=transform, mode="train", task=task)
+    valid_dataset = loader.create_dataset(
+        transform=valid_transform, mode="test", task=task
+    )
+    print(
+        f"Using {len(train_dataset)} images to train {task} and {len(valid_dataset)}"
+        f" for testing"
+    )
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    runner.fit(
+        train_dataloader,
+        valid_dataloader,
+        model_folder=model_folder,
+        epochs=epochs,
+        save_epochs=save_epochs,
+        display_iters=display_iters,
+    )
 
 
 def train_network(
     config: str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    transform: Union[A.BaseCompose, A.BasicTransform] = None,
-    transform_cropped: Union[A.BaseCompose, A.BasicTransform] = None,
+    transform: A.BaseCompose | None = None,
+    transform_cropped: A.BaseCompose | None = None,
     modelprefix: str = "",
-    snapshot_path: Optional[str] = "",
-    detector_path: Optional[str] = "",
+    snapshot_path: str | None = "",
+    detector_path: str | None = "",
     **kwargs,
-) -> Solver:
+) -> None:
     """Trains a network for a project
 
     TODO: max_snapshots_to_keep
@@ -73,100 +154,69 @@ def train_network(
             which to resume
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
-
-    Returns:
-        solver: solver used for training, stores data about losses during training
     """
     cfg = auxiliaryfunctions.read_config(config)
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        auxiliaryfunctions.get_model_folder(
-            train_fraction,
-            shuffle,
-            cfg,
-            modelprefix=modelprefix,
-        ),
+    model_folder = runner_utils.get_model_folder(
+        str(Path(config).parent),
+        cfg,
+        train_fraction,
+        shuffle,
+        modelprefix,
     )
-    log_path = Path(modelfolder) / "train" / "log.txt"
-    setup_file_logging(log_path)
+    train_folder = Path(model_folder) / "train"
+    log_path = train_folder / "log.txt"
+    model_config_path = str(train_folder / "pytorch_config.yaml")
 
-    pytorch_config = auxiliaryfunctions.read_plainconfig(
-        os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    )
-    update_config_parameters(pytorch_config=pytorch_config, **kwargs)
+    setup_file_logging(log_path)
+    pytorch_config = auxiliaryfunctions.read_plainconfig(model_config_path)
+
+    update_config_parameters(pytorch_config=pytorch_config, **kwargs)  # TODO: improve
     if transform is None:
         logging.info("No transform specified... using default")
         transform = build_transforms(dict(pytorch_config["data"]), augment_bbox=True)
 
-    batch_size = pytorch_config["batch_size"]
-    epochs = pytorch_config["epochs"]
-
     dlc.fix_seeds(pytorch_config["seed"])
-    project_train = dlc.DLCProject(
-        proj_root=pytorch_config["project_path"], shuffle=shuffle
+    loader = dlc.DLCLoader(
+        project_root=pytorch_config["project_path"],
+        model_config_path=model_config_path,
+        shuffle=shuffle,
     )
-    project_valid = dlc.DLCProject(
-        proj_root=pytorch_config["project_path"], shuffle=shuffle
-    )
-    train_dataset = dlc.PoseDataset(project_train, transform=transform, mode="train")
-    valid_dataset = dlc.PoseDataset(project_valid, transform=transform, mode="test")
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
-    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-
-    solver = build_solver(pytorch_config, snapshot_path, detector_path)
+    pose_task = "BU"
+    transform_config = pytorch_config["data"]
     if pytorch_config.get("method", "bu").lower() == "td":
-        if transform_cropped is None:
-            logging.info(
-                "No transform passed to augment cropped images, using default augmentations"
-            )
-            transform_cropped = build_transforms(
-                pytorch_config["cropped_data"], augment_bbox=False
-            )
+        pose_task = "TD"
+        transform_config = pytorch_config["data_detector"]
+        logger_config = None
+        if pytorch_config.get("logger"):
+            logger_config = copy.deepcopy(pytorch_config["logger"])
+            logger_config["run_name"] += "-detector"
+        _train(
+            loader=loader,
+            model_folder=model_folder,
+            run_config=pytorch_config["detector"],
+            task="DT",
+            device=pytorch_config["device"],
+            transform_config=pytorch_config["data"],
+            logger_config=logger_config,
+            snapshot_path=detector_path,
+            transform=transform_cropped,
+        )
 
-        detector_epochs = pytorch_config.get("detector_max_epochs", epochs)
-        train_cropped_dataset = dlc.CroppedDataset(
-            project_train, transform=transform_cropped, mode="train"
-        )
-        valid_cropped_dataset = dlc.CroppedDataset(
-            project_valid, transform=transform_cropped, mode="test"
-        )
-        train_cropped_dataloader = DataLoader(
-            train_cropped_dataset, batch_size=batch_size, shuffle=True
-        )
-        valid_cropped_dataloader = DataLoader(
-            valid_cropped_dataset, batch_size=batch_size, shuffle=False
-        )
-        solver.fit(
-            train_dataloader,
-            valid_dataloader,
-            train_cropped_dataloader,
-            valid_cropped_dataloader,
-            train_fraction=train_fraction,
-            epochs=epochs,
-            detector_epochs=detector_epochs,
-            shuffle=shuffle,
-            model_prefix=modelprefix,
-        )
-    elif pytorch_config.get("method", "bu").lower() == "bu":
-        solver.fit(
-            train_dataloader,
-            valid_dataloader,
-            train_fraction=train_fraction,
-            epochs=epochs,
-            shuffle=shuffle,
-            model_prefix=modelprefix,
-        )
-    else:
-        destroy_file_logging()
-        raise ValueError(
-            "Method not supported, should be either 'bu' (Bottom Up) or 'td' (Top Down)"
-        )
+    _train(
+        loader=loader,
+        model_folder=model_folder,
+        run_config=pytorch_config,
+        task=pose_task,
+        device=pytorch_config["device"],
+        transform_config=transform_config,
+        logger_config=pytorch_config.get("logger"),
+        snapshot_path=snapshot_path,
+        transform=transform,
+    )
 
     destroy_file_logging()
-    return solver
 
 
 if __name__ == "__main__":
@@ -176,7 +226,7 @@ if __name__ == "__main__":
     parser.add_argument("--train-ind", type=int, default=0)
     parser.add_argument("--modelprefix", type=str, default="")
     args = parser.parse_args()
-    _ = train_network(
+    train_network(
         config=args.config_path,
         shuffle=args.shuffle,
         trainingsetindex=args.train_ind,

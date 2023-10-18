@@ -110,6 +110,8 @@ class WandbLogger(BaseLogger):
             logger = WandbLogger(project_name="my_project", run_name="exp1", model=my_model)
 
         """
+        if wb.run is not None:
+            wb.finish()
 
         self.run = wb.init(project=project_name, name=run_name)
         if model is None:

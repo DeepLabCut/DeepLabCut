@@ -57,7 +57,7 @@ def get_target(
         )
     }  # 2 for x,y coords
     prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
-    generator = deeplabcut_torch_plateau_targets.PlateauGenerator(
+    generator = deeplabcut_torch_plateau_targets.PlateauLocrefGenerator(
         locref_stdev, num_joints, pos_dist_thresh
     )
 

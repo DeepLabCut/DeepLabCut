@@ -38,8 +38,7 @@ def get_predictions_bottom_up(
 
     Returns:
         array of shape (batch_size, num_animals, num_keypoints, 3) for pose predictions
-        None if there are no unique bodyparts, otherwise array of shape (batch_size, num_keypoints, 3)
-            for unique bodypart predictions
+        If there are unique bodyparts, array of shape (batch_size, num_unique_keypoints, 3)
     """
     output = model(images)
     shape_image = images.shape

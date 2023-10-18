@@ -11,7 +11,9 @@
 from abc import ABC, abstractmethod
 
 import torch
+
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+
 
 BACKBONES = Registry("backbones", build_func=build_from_cfg)
 
@@ -21,6 +23,7 @@ class BaseBackbone(ABC, torch.nn.Module):
 
     Attributes:
         batch_norm_on: Indicates whether batch normalization is activated during training.
+            Batch Norm should not be on for small batch sizes.
     """
 
     def __init__(self):
@@ -29,26 +32,22 @@ class BaseBackbone(ABC, torch.nn.Module):
         self.batch_norm_on = False
 
     @abstractmethod
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Abstract method for the forward pass through the backbone.
 
         Args:
             x: Input tensor of shape (batch_size, channels, height, width).
 
         Returns:
-            Output tensor.
+            a feature map for the input, of shape (batch_size, c', h', w')
         """
         pass
 
-    def _init_weights(self, pretrained: str = None):
+    def _init_weights(self, pretrained: str = None) -> None:
         """Initialize the backbone with pretrained weights.
 
         Args:
             pretrained: Path to the pretrained weights.
-                                        Defaults to None.
-
-        Returns:
-            None
         """
         if not pretrained:
             pass
@@ -58,29 +57,19 @@ class BaseBackbone(ABC, torch.nn.Module):
         else:
             self.model.load_state_dict(torch.load(pretrained), strict=False)
 
-    def activate_batch_norm(self, activation: bool = False):
+    def activate_batch_norm(self, activation: bool = False) -> None:
         """Activate or deactivate batch normalization layers during training.
 
         Args:
             activation: Activate or deactivate batch normalization.
-                                         Defaults to False.
-
-        Returns:
-            None
         """
         self.batch_norm_on = activation
 
-    def train(self, mode=True):
+    def train(self, mode: bool = True) -> None:
         """Set the training mode with optional batch normalization activation.
 
         Args:
             mode: Training mode. Defaults to True.
-
-        Returns:
-            None
-
-        Note:
-            Batch Norm should not be on for small batch sizes.
         """
         super().train(mode)
 
@@ -90,5 +79,3 @@ class BaseBackbone(ABC, torch.nn.Module):
                     module.eval()
                     module.weight.requires_grad = False
                     module.bias.requires_grad = False
-
-        return

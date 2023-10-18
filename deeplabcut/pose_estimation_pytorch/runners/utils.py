@@ -14,7 +14,7 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import List, Tuple, Optional
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
@@ -145,20 +145,21 @@ def get_detector_path(model_folder: str, load_epoch: int) -> str:
 
 
 def get_dlc_scorer(
+    project_path: str,
+    test_cfg: dict,
     train_fraction: float,
     shuffle: int,
     model_prefix: str,
-    test_cfg: dict,
-    train_iterations: str,
-) -> Tuple[str]:
+    train_iterations: int,
+) -> Tuple[str, str]:
     """Return dlc_scorer given the ff parameters:
     train_faction, shuffle, model_prefix, test_cfg, and train_iterations.
 
     Args:
+        project_path:
         train_fraction: fraction of the dataset assigned for training
         shuffle: shuffle id
-        model_prefix: keep as default (included for backwards
-                            compatibility); default value is ""
+        model_prefix: keep as default (included for backwards compatibility); default value is ""
         test_cfg: contents of the config file in a dict
         train_iterations: the iteration number of the snapshot
 
@@ -177,7 +178,9 @@ def get_dlc_scorer(
             ('DLC_model_w32_behaviordateshuffle1_10','DeepCut_model_w32_behaviordateshuffle1_10')
 
     """
-    model_folder = get_model_folder(train_fraction, shuffle, model_prefix, test_cfg)
+    model_folder = get_model_folder(
+        project_path, test_cfg, train_fraction, shuffle, model_prefix
+    )
     snapshots = get_snapshots(Path(model_folder))
     snapshot = snapshots[train_iterations]
     snapshot_epochs = int(snapshot.split("-")[-1])
@@ -324,16 +327,21 @@ def get_results_filename(
 
 
 def get_model_folder(
-    train_fraction: float, shuffle: int, model_prefix: str, test_cfg: dict
+    project_path: str,
+    cfg: dict,
+    train_fraction: float,
+    shuffle: int,
+    model_prefix: str,
 ) -> str:
     """Returns the model folder path given the ff parameters:
     train_faction, shuffle, model_prefix, and test_cfg
 
     Args:
+        project_path:
+        cfg: contents of the config file in a dict
         train_fraction: fraction of the dataset assigned for training
         shuffle: shuffle id
         model_prefix: keep as default (included for backwards compatibility); default value is ""
-        test_cfg: contents of the config file in a dict
 
     Returns:
         model_folder: the path of the model folder
@@ -349,10 +357,10 @@ def get_model_folder(
 
     """
     model_folder = os.path.join(
-        test_cfg["project_path"],
+        project_path,
         str(
             auxiliaryfunctions.get_model_folder(
-                train_fraction, shuffle, test_cfg, modelprefix=model_prefix
+                train_fraction, shuffle, cfg, modelprefix=model_prefix
             )
         ),
     )
@@ -516,6 +524,7 @@ def build_entire_pred_df(
 
 
 def get_paths(
+    project_path: str,
     train_fraction: float = 0.95,
     shuffle: int = 0,
     model_prefix: str = "",
@@ -524,13 +533,20 @@ def get_paths(
     method: str = "bu",
 ):
     dlc_scorer, dlc_scorer_legacy = get_dlc_scorer(
-        train_fraction, shuffle, model_prefix, cfg, train_iterations
+        project_path,
+        cfg,
+        train_fraction,
+        shuffle,
+        model_prefix,
+        train_iterations,
     )
     evaluation_folder = get_evaluation_folder(
         train_fraction, shuffle, model_prefix, cfg
     )
 
-    model_folder = get_model_folder(train_fraction, shuffle, model_prefix, cfg)
+    model_folder = get_model_folder(
+        project_path, cfg, train_fraction, shuffle, model_prefix
+    )
 
     model_path = get_model_path(model_folder, train_iterations)
 
@@ -546,10 +562,3 @@ def get_paths(
         "model_path": model_path,
         "detector_path": detector_path,
     }
-
-
-# def get_detector_path(model_folder: str, load_epoch: int):
-#     detector_paths = glob.glob(f"{model_folder}/train/detector-snapshot*")
-#     sorted_paths = sort_paths(detector_paths)
-#     detector_path = sorted_paths[load_epoch]
-#     return detector_path

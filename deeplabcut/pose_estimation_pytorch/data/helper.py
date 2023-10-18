@@ -6,6 +6,7 @@ from abc import ABCMeta
 def cfg_getter(key, default=None):
     def _getter(cfg):
         return cfg.get(key, default)
+
     return _getter
 
 
@@ -20,10 +21,13 @@ def class_property(func, arg_func):
     Returns:
     - A property with the logic encapsulated in `func` and arguments derived from `arg_func`.
     """
+
     def decorator_wrapper(method):
         def wrapper(self):
             return func(arg_func(self))
+
         return property(wrapper)
+
     return decorator_wrapper
 
 
@@ -54,14 +58,15 @@ class PropertyMeta(type):
     """
 
     def __new__(cls, name, bases, attrs):
-        if 'properties' not in attrs:
+        if "properties" not in attrs:
             raise AttributeError(
                 f"{name} must define a 'properties' dictionary.",
             )
-        properties = attrs.get('properties', {})
+        properties = attrs.get("properties", {})
         for prop_name, (func, arg_func) in properties.items():
             attrs[prop_name] = class_property(
-                func, arg_func,
+                func,
+                arg_func,
             )(lambda self: None)
         return super().__new__(cls, name, bases, attrs)
 

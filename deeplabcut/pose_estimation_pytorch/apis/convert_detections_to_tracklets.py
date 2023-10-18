@@ -20,7 +20,7 @@ import pandas as pd
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
-    videos_in_folder,
+    list_videos_in_folder,
 )
 from deeplabcut.pose_estimation_tensorflow import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
@@ -120,7 +120,7 @@ def convert_detections2tracklets(
     )
 
     # TODO: deal with lists of strings
-    videos = videos_in_folder(videos, videotype)
+    videos = list_videos_in_folder(videos, videotype)
     if len(videos) == 0:
         print(f"No videos were found in {videos}")
         return

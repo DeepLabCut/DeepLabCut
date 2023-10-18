@@ -9,8 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 # The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -31,8 +31,6 @@ class BaseBlock(ABC, nn.Module):
 
     Methods:
         forward(x): Abstract method for defining the forward pass of the block.
-        _init_weights(pretrained): Method for initializing block weights from pretrained models.
-
     """
 
     def __init__(self):
@@ -51,15 +49,13 @@ class BaseBlock(ABC, nn.Module):
         """
         pass
 
-    def _init_weights(self, pretrained):
+    def _init_weights(self, pretrained: str | None):
         """Method for initializing block weights from pretrained models.
 
         Args:
             pretrained: Path to pretrained model weights.
         """
-        if not pretrained:
-            pass
-        else:
+        if pretrained:
             self.load_state_dict(torch.load(pretrained))
 
 
@@ -80,14 +76,14 @@ class BasicBlock(BaseBlock):
         dilation: Dilation rate for the convolutional layers. Default is 1.
     """
 
-    expansion = 1
+    expansion: int = 1
 
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
+        downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
         super(BasicBlock, self).__init__()
@@ -159,14 +155,14 @@ class Bottleneck(BaseBlock):
         dilation: Dilation rate for the convolutional layers. Default is 1.
     """
 
-    expansion = 4
+    expansion: int = 4
 
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
+        downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
         super(Bottleneck, self).__init__()
@@ -241,14 +237,14 @@ class AdaptBlock(BaseBlock):
         deformable_groups: Number of deformable groups in the deformable convolution. Default is 1.
     """
 
-    expansion = 1
+    expansion: int = 1
 
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
+        downsample: nn.Module | None = None,
         dilation: int = 1,
         deformable_groups: int = 1,
     ):

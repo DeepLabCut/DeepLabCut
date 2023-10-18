@@ -8,23 +8,60 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 from abc import ABC, abstractmethod
 
+import torch
 import torch.nn as nn
+
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+
 
 TARGET_GENERATORS = Registry("target_generators", build_func=build_from_cfg)
 
 
-class BaseGenerator(ABC, nn.Module):
-    """
-    Given the ground truth annotation generates the corresponding maps for training the model
+class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
+    """Generates target maps from ground truth annotations to train models
+
+    The outputs of the target generator are used to compute losses for model heads. If
+    the head outputs "heatmap" and "offset" tensors, then the corresponding generator
+    must output target "heatmap" and "offset" tensors. The targets themselves are
+    dictionaries, and passed as keyword-arguments to the criterions. This allows to
+    pass masks to the criterions.
+
+    Generally, this means that for each head output (such as "heatmap"), a dict will be
+    generated with a "target" key (for the target heatmap) and optionally a "weights"
+    key (see the WeightedCriterion classes).
     """
 
-    def __init__(self):
+    def __init__(self, label_keypoint_key: str = "keypoints"):
         super().__init__()
-        self.batch_norm_on = False
+        self.label_keypoint_key = label_keypoint_key
 
     @abstractmethod
-    def forward(self, x):
-        pass
+    def forward(
+        self,
+        inputs: torch.Tensor,
+        outputs: dict[str, torch.Tensor],
+        labels: dict,
+    ) -> dict[str, dict[str, torch.Tensor]]:
+        """Generates targets
+
+        Args:
+            inputs: the input images given to the model, of shape (b, c, w, h)
+            outputs: output of each model head
+            labels: the labels for the inputs (each tensor should have shape (b, ...))
+
+        Returns:
+            a dictionary mapping the heads to the inputs of the criterion
+                {
+                    "heatmap": {
+                        "target": heatmaps,
+                        "weights":  heatmap_weights,
+                    },
+                    "locref": {
+                        "target": locref_map,
+                        "weights": locref_weights,
+                    }
+                }
+        """

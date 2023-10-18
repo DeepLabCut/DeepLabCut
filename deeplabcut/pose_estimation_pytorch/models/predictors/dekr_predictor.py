@@ -9,15 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
+import torch.nn.functional as F
+
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     PREDICTORS,
     BasePredictor,
-)
-from deeplabcut.pose_estimation_pytorch.models.predictors.single_predictor import (
-    SinglePredictor,
 )
 
 
@@ -73,57 +72,42 @@ class DEKRPredictor(BasePredictor):
         detection_threshold: float = 0.01,
         apply_sigmoid: bool = True,
         use_heatmap: bool = True,
-        unique_bodyparts: bool = False,
         keypoint_score_type: str = "combined",
+        max_absorb_distance: int = 75,
     ):
-        """Initializes the DEKRPredictor class.
-
+        """
         Args:
             num_animals: Number of animals in the project.
             detection_threshold: Threshold for detection
             apply_sigmoid: Apply sigmoid to heatmaps
             use_heatmap: Use heatmap to refine the keypoint predictions.
-            unique_bodyparts: Whether the model predicts unique bodyparts.
             keypoint_score_type: Type of score to compute for keypoints. "heatmap"
                 applies the heatmap score to each keypoint. "center" applies the score
                 of the center of each individual to all of its keypoints. "combined"
                 multiplies the score of the heatmap and individual for each keypoint.
-
-        Returns:
-            None
         """
         super().__init__()
-
         self.num_animals = num_animals
         self.detection_threshold = detection_threshold
         self.apply_sigmoid = apply_sigmoid
         self.use_heatmap = use_heatmap
-        self.unique_bodyparts = unique_bodyparts
-        if self.unique_bodyparts:
-            self.unique_predictor = SinglePredictor(
-                num_animals=1,
-                location_refinement=True,
-                locref_stdev=7.2801,
-                apply_sigmoid=False,
-            )
-
         self.keypoint_score_type = keypoint_score_type
         if self.keypoint_score_type not in ("heatmap", "center", "combined"):
             raise ValueError(f"Unknown keypoint score type: {self.keypoint_score_type}")
 
         # TODO: Set as in HRNet/DEKR configs. Define as a constant.
-        self.max_absorb_distance = 75
+        self.max_absorb_distance = max_absorb_distance
 
     def forward(
         self,
-        outputs: Tuple[torch.Tensor, ...],
-        scale_factors: Tuple[float, float],
-    ) -> dict:
+        inputs: torch.Tensor,
+        outputs: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
         """Forward pass of DEKRPredictor.
 
         Args:
-            outputs: Tuple of heatmaps and offsets.
-            scale_factors: Scale factors for the poses.
+            inputs: the input images given to the model, of shape (b, c, w, h)
+            outputs: outputs of the model heads (heatmap, locref)
 
         Returns:
             A dictionary containing a "poses" key with the output tensor as value, and
@@ -133,15 +117,13 @@ class DEKRPredictor(BasePredictor):
             # Assuming you have 'outputs' (heatmaps and offsets) and 'scale_factors' for poses
             poses_with_scores = predictor.forward(outputs, scale_factors)
         """
-        if self.unique_bodyparts:
-            heatmaps, offsets, unique_heatmaps, unique_locref = outputs
-        else:
-            heatmaps, offsets = outputs
-        if self.apply_sigmoid and not self.unique_bodyparts:
-            heatmaps = torch.nn.Sigmoid()(heatmaps)  # TODO: OPTIMIZE
-        elif self.apply_sigmoid:
-            heatmaps = torch.nn.Sigmoid()(heatmaps)  # TODO: OPTIMIZE
-            unique_heatmaps = torch.nn.Sigmoid()(unique_heatmaps)  # TODO: OPTIMIZE
+        heatmaps, offsets = outputs["heatmap"], outputs["offset"]
+        h_in, w_in = inputs.shape[2:]
+        h_out, w_out = heatmaps.shape[2:]
+        scale_factors = h_in / h_out, w_in / w_out
+
+        if self.apply_sigmoid:
+            heatmaps = F.sigmoid(heatmaps)
 
         posemap = self.offset_to_pose(offsets)
 
@@ -190,25 +172,7 @@ class DEKRPredictor(BasePredictor):
 
         poses_w_scores = torch.cat([poses, score], dim=3)
         # self.pose_nms(heatmaps, poses_w_scores)
-
-        if self.unique_bodyparts:
-            # Super trick to compute scale factor without knowing original image size
-            scale_factors_unique = (
-                scale_factors[0] * h / unique_heatmaps.shape[2],
-                scale_factors[0] * w / unique_heatmaps.shape[3],
-            )
-            unique_poses = self.unique_predictor(
-                [unique_heatmaps, unique_locref], scale_factors_unique
-            )
-
-            return {
-                "poses": poses_w_scores,
-                "unique_bodyparts": unique_poses,
-            }
-
-        return {
-            "poses": poses_w_scores,
-        }
+        return {"poses": poses_w_scores}
 
     def get_locations(
         self, height: int, width: int, device: torch.device
@@ -233,7 +197,6 @@ class DEKRPredictor(BasePredictor):
         shift_x = shift_x.reshape(-1)
         shift_y = shift_y.reshape(-1)
         locations = torch.stack((shift_x, shift_y), dim=1)
-
         return locations
 
     def get_reg_poses(self, offsets: torch.Tensor, num_joints: int) -> torch.Tensor:
@@ -309,7 +272,7 @@ class DEKRPredictor(BasePredictor):
 
     def get_top_values(
         self, heatmap: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Get top values from the heatmap.
 
         Args:

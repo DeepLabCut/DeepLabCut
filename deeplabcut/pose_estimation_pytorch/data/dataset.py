@@ -15,7 +15,6 @@ from dataclasses import dataclass
 import albumentations as A
 import cv2
 import numpy as np
-import torch
 from torch.utils.data import Dataset
 
 from deeplabcut.pose_estimation_pytorch.data.utils import (
@@ -26,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import _extract_keypoints_and
 from deeplabcut.pose_estimation_pytorch.data.utils import apply_transform
 from deeplabcut.pose_estimation_pytorch.data.utils import map_id_to_annotations
 from deeplabcut.pose_estimation_pytorch.data.utils import map_image_path_to_id
+from deeplabcut.pose_estimation_pytorch.data.utils import pad_to_length
 
 
 @dataclass(frozen=True)
@@ -63,6 +63,7 @@ class PoseDatasetParameters:
 @dataclass
 class PoseDataset(Dataset):
     """A pose dataset"""
+
     images: list[dict[str, str]]
     annotations: list[dict]
     parameters: PoseDatasetParameters
@@ -75,7 +76,8 @@ class PoseDataset(Dataset):
         self.annotation_idx_map = map_id_to_annotations(self.annotations)
 
     def __len__(self):
-        return len(self.images) if self.task == "BU" else len(self.annotations)
+        # TODO: TD should only return the number of annotations that aren't unique_bodyparts
+        return len(self.images) if self.task in ("BU", "DT") else len(self.annotations)
 
     def _get_raw_item(self, index: int) -> tuple[str, list[dict], int]:
         """
@@ -150,7 +152,7 @@ class PoseDataset(Dataset):
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(
             annotations,
-            image,
+            image.shape,
         )
         offsets = np.zeros((self.parameters.max_num_animals, 2))
         scales = (1, 1)
@@ -183,10 +185,15 @@ class PoseDataset(Dataset):
             #     coords,
             #     self.parameters.cropped_image_size,
             # )
-            bboxes = []  # No more bounding boxes as we cropped around them
+            bboxes = np.zeros(
+                (0, 4)
+            )  # No more bounding boxes as we cropped around them
 
         transformed = self.apply_transform_all_keypoints(
-            image, keypoints, keypoints_unique, bboxes,
+            image,
+            keypoints,
+            keypoints_unique,
+            bboxes,
         )
         keypoints = transformed["keypoints"]
 
@@ -219,28 +226,39 @@ class PoseDataset(Dataset):
         annotations_merged: dict,
         offsets: tuple[int, int],
         scales: tuple[float, float],
-    ) -> dict:
-        area = self.calc_area_from_keypoints(keypoints)
-        image = torch.tensor(image, dtype=torch.float).permute(2, 0, 1)
-        keypoints = torch.tensor(keypoints, dtype=torch.float)
-        keypoints_unique = torch.tensor(keypoints_unique, dtype=torch.float)
-        bboxes = torch.tensor(bboxes, dtype=torch.float)
-
+    ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
         return {
-            "image": image,
+            "image": image.transpose((2, 0, 1)),
             "image_id": image_id,
             "path": image_path,
             "original_size": original_size,
             "offsets": offsets,
             "scales": scales,
-            "annotations": {
-                "keypoints": keypoints,
-                "keypoints_unique": keypoints_unique,
-                "area": area,
-                "boxes": bboxes,
-                "is_crowd": annotations_merged["iscrowd"],
-                "labels": annotations_merged["category_id"],
-            },
+            "annotations": self._prepare_final_annotation_dict(
+                keypoints,
+                keypoints_unique,
+                bboxes,
+                annotations_merged,
+            ),
+        }
+
+    def _prepare_final_annotation_dict(
+        self,
+        keypoints: np.ndarray,
+        keypoints_unique: np.ndarray,
+        bboxes: np.array,
+        annotations_merged: dict,
+    ) -> dict[str, np.ndarray]:
+        num_animals = self.parameters.max_num_animals
+        is_crowd = np.array(annotations_merged["iscrowd"])
+        cat_ids = np.array(annotations_merged["category_id"])
+        return {
+            "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1),
+            "keypoints_unique": keypoints_unique[..., :2],
+            "area": pad_to_length(annotations_merged["area"], num_animals, 0),
+            "boxes": pad_to_length(bboxes, num_animals, 0),
+            "is_crowd": pad_to_length(is_crowd, num_animals, 0),
+            "labels": pad_to_length(cat_ids, num_animals, -1),
         }
 
     def _load_image(self, image_path):
@@ -249,7 +267,7 @@ class PoseDataset(Dataset):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image, image.shape
 
-    def _get_data_based_on_task(self, index: int) -> tuple[str, dict, int]:
+    def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:
         """
         Retrieve data based on the specified task.
 
@@ -271,6 +289,7 @@ class PoseDataset(Dataset):
             return self._get_raw_item_crop(index)
         elif self.task in ["BU", "DT"]:
             return self._get_raw_item(index)
+
         raise ValueError(
             f"Unknown task: {self.task}. " 'Task should be one of: "BU", "TD", "DT"',
         )
@@ -282,7 +301,7 @@ class PoseDataset(Dataset):
         keypoints_unique: np.ndarray,
         bboxes: np.ndarray,
     ) -> dict[str, np.ndarray]:
-        """ Transforms the image using this class's transform
+        """Transforms the image using this class's transform
 
         Args:
             image: the image to transform
@@ -305,7 +324,7 @@ class PoseDataset(Dataset):
             f"individual{i}_{bpt}"
             for i in range(self.parameters.max_num_animals)
             for bpt in self.parameters.bodyparts
-        ] + [f'unique_{bpt}' for bpt in self.parameters.unique_bpts]
+        ] + [f"unique_{bpt}" for bpt in self.parameters.unique_bpts]
 
         all_keypoints = keypoints.reshape(-1, 3)
         if self.parameters.num_unique_bpts > 0:
@@ -319,10 +338,15 @@ class PoseDataset(Dataset):
             class_labels=class_labels,
         )
         if self.parameters.num_unique_bpts > 0:
-            keypoints = transformed["keypoints"][:-self.parameters.num_unique_bpts]
-            keypoints = keypoints.reshape(*keypoints.shape)
-            keypoints_unique = transformed["keypoints"][-self.parameters.num_unique_bpts:]
-            keypoints_unique = keypoints_unique.reshape(self.parameters.num_unique_bpts, 3)
+            keypoints = transformed["keypoints"][
+                : -self.parameters.num_unique_bpts
+            ].reshape(*keypoints.shape)
+            keypoints_unique = transformed["keypoints"][
+                -self.parameters.num_unique_bpts :
+            ]
+            keypoints_unique = keypoints_unique.reshape(
+                self.parameters.num_unique_bpts, 3
+            )
         else:
             keypoints = transformed["keypoints"].reshape(*keypoints.shape)
             keypoints_unique = np.zeros((0,))
@@ -330,19 +354,6 @@ class PoseDataset(Dataset):
         transformed["keypoints"] = keypoints
         transformed["keypoints_unique"] = keypoints_unique
         return transformed
-
-    @staticmethod
-    def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """
-        Calculate the area from keypoints
-
-        Args:
-            keypoints (np.ndarray): array of keypoints
-
-        Returns:
-            np.ndarray: array containing the computed areas based on the keypoints
-        """
-        return (keypoints.max(axis=1) - keypoints.min(axis=1)).prod(axis=-1)
 
     @staticmethod
     def crop(
@@ -369,25 +380,34 @@ class PoseDataset(Dataset):
         """
         return _crop_image_keypoints(image, keypoints, coords, output_size)
 
-    @staticmethod
     def extract_keypoints_and_bboxes(
+        self,
         annotations: list[dict],
-        image: np.ndarray,
+        image_shape: tuple[int, int, int],
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
         """
         Args:
             annotations: COCO-style annotations
-            image: from which extract keypoints and bounding boxes for
+            image_shape: the (h, w, c) shape of the image for which to get annotations
 
         Returns:
-            keypoints, unique_keypoints, bboxes in xywh format, annotations_merged
+            keypoints with shape (n_annotation, num_joints, 3)
+            unique_keypoints with shape (num_unique_bpts, 3)
+            bboxes in xywh format with shape (n_annotation, 4)
+            annotations_merged, where each key contains n_annotation values
         """
-        return _extract_keypoints_and_bboxes(annotations, image)
+        return _extract_keypoints_and_bboxes(
+            annotations,
+            image_shape,
+            self.parameters.num_joints,
+            self.parameters.num_unique_bpts,
+        )
 
     @staticmethod
     def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """ Adds a keypoint in the mean of each individual"""
+        """Adds a keypoint in the mean of each individual"""
         center_keypoints = keypoints.copy()
         center_keypoints[center_keypoints == -1] = np.nan
-        center_keypoints = np.nanmean(keypoints, axis=1)
+        center_keypoints = np.nanmean(center_keypoints, axis=1)
+        np.nan_to_num(center_keypoints, copy=False, nan=-1)
         return np.concatenate((keypoints, center_keypoints[:, None, :]), axis=1)

@@ -8,11 +8,11 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
-from typing import Tuple
+from __future__ import annotations
 
 import numpy as np
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
     TARGET_GENERATORS,
     BaseGenerator,
@@ -22,105 +22,73 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
 @TARGET_GENERATORS.register_module
 class DEKRGenerator(BaseGenerator):
     """
-    Generate ground truth target for DEKR model training
-    based on:
+    Generate ground truth target for DEKR model training based on:
         Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
-        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
-        CVPR
-        2021
+        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang, CVPR 2021
     Code based on:
         https://github.com/HRNet/DEKR
     """
 
-    def __init__(self, num_joints: int, pos_dist_thresh: int, bg_weight: float = 0.1):
-        """Summary:
-        Constructor of the DEKRGenerator class.
-        Loads the data.
-
+    def __init__(
+        self, num_joints: int, pos_dist_thresh: int, bg_weight: float = 0.1, **kwargs
+    ):
+        """
         Args:
             num_joints: number of keypoints
             pos_dist_thresh: 3*std of the gaussian
             bg_weight:background weight. Defaults to 0.1.
-
-        Returns:
-            None
-
-        Examples:
-            num_joints = 6
-            pos_dist_thresh = 17
-            bg_weight = 0.1 (default)
         """
-        super().__init__()
+        super().__init__(**kwargs)
 
         self.num_joints = num_joints
+        self.num_heatmaps = self.num_joints + 1
         self.pos_dist_thresh = pos_dist_thresh
         self.bg_weight = bg_weight
 
-        self.num_joints_with_center = self.num_joints + 1
-
-    def get_heat_val(
-        self, sigma: float, x: float, y: float, x0: float, y0: float
-    ) -> float:
-        """Summary:
-        Calculates the corresponding heat value of point (x,y) given the heat distribution centered
-        at (x0,y0) and spread value of sigma.
-
-        Args:
-            sigma: controls the spread or width of the heat distribution
-            x: x coord of a point on the image grid
-            y: y coord of a point on the image grid
-            x0: x center coordinate of the heat distribution
-            y0: y center coordinate of the heat distribution
-
-        Returns:
-            g: calculated heat value represents the intensity of the heat at a given position
-        """
-        g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
-
-        return g
-
     def forward(
         self,
-        annotations: dict,
-        prediction: Tuple[torch.Tensor, torch.Tensor],
-        image_size: Tuple[int, int],
-    ) -> dict:
-        """Summary
+        inputs: torch.Tensor,
+        outputs: dict[str, torch.Tensor],
+        labels: dict,
+    ) -> dict[str, dict[str, torch.Tensor]]:
+        """
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
         Args:
-            annotations: each entry should begin with the shape batch_size
-            prediction: output of model, format could depend on the model, only used to compute output resolution
-            image_size:size of image (only one tuple since for batch training all images should have the same size)
+            inputs: the input images given to the model, of shape (b, c, w, h)
+            outputs: output of each model head
+            labels: the labels for the inputs (each tensor should have shape (b, ...))
 
         Returns:
-            #TODO locref is a bad name here and should be 'offset to center', but for code's simplicity it
-            is easier to use the same keys as for the SingleAnimal target generators
-            targets, keys:
-                'heatmaps' : heatmaps
-                'heatmaps_ignored': weights to apply to the heatmaps for loss computation
-                'locref_maps' : offset maps
-                'locref_masks' : weights to apply to the offset maps for loss computation
+            The targets for the DEKR heatmap and offset heads:
+                {
+                    "heatmap": {
+                        "target": heatmaps,
+                        "weights":  heatmap_weights,
+                    },
+                    "offset": {
+                        "target": offset_map,
+                        "weights": offset_weights,
+                    }
+                }
 
         Examples:
             input:
-                annotations = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
+                labels = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
                 prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
                 image_size = (256, 256)
             output:
-                targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
+                targets = {
+                    "heatmap": {"target": heatmaps, "weights":  heatmap_weights},
+                    "offset": {"target": offset_map, "weights": offset_masks}
+                }
         """
+        batch_size, _, input_h, input_w = inputs.shape
+        output_h, output_w = outputs["heatmap"].shape[2:]
+        stride_y, stride_x = input_h / output_h, input_w / output_w
 
-        batch_size, _, output_h, output_w = prediction[0].shape
-        output_res = output_h, output_w
-        stride_y, stride_x = image_size[0] / output_h, image_size[1] / output_w
-
-        num_joints_without_center = self.num_joints
-        num_joints_with_center = num_joints_without_center + 1
-
-        coords = annotations["keypoints"].cpu().numpy()
-        num_animals = coords.shape[1]
-        area = annotations["area"].cpu().numpy()
+        coords = labels[self.label_keypoint_key].cpu().numpy()
+        area = labels["area"].cpu().numpy()
 
         assert (
             self.num_joints + 1 == coords.shape[2]
@@ -128,19 +96,19 @@ class DEKRGenerator(BaseGenerator):
 
         # TODO make it possible to differentiate between center sigma and other sigmas
         scale = max(1 / stride_x, 1 / stride_y)
-        sgm, ct_sgm = (self.pos_dist_thresh / 2) * scale, (self.pos_dist_thresh) * scale
+        sgm, ct_sgm = (self.pos_dist_thresh / 2) * scale, self.pos_dist_thresh * scale
         radius = self.pos_dist_thresh * scale
 
-        hms = np.zeros(
-            (batch_size, num_joints_with_center, output_h, output_w), dtype=np.float32
+        heatmaps = np.zeros(
+            (batch_size, self.num_heatmaps, output_h, output_w), dtype=np.float32
         )
-        ignored_hms = 2 * np.ones(
-            (batch_size, num_joints_with_center, output_h, output_w), dtype=np.float32
+        heatmap_weights = 2 * np.ones(
+            (batch_size, self.num_heatmaps, output_h, output_w), dtype=np.float32
         )
         offset_map = np.zeros(
             (
                 batch_size,
-                num_joints_without_center * 2,
+                self.num_joints * 2,
                 output_h,
                 output_w,
             ),
@@ -149,16 +117,13 @@ class DEKRGenerator(BaseGenerator):
         weight_map = np.zeros(
             (
                 batch_size,
-                num_joints_without_center * 2,
+                self.num_joints * 2,
                 output_h,
                 output_w,
             ),
             dtype=np.float32,
         )
         area_map = np.zeros((batch_size, output_h, output_w), dtype=np.float32)
-
-        hms_list = [hms, ignored_hms]
-
         for b in range(batch_size):
             for person_id, p in enumerate(coords[b]):
                 idx_center = len(p) - 1
@@ -190,20 +155,20 @@ class DEKRGenerator(BaseGenerator):
                         np.ceil(y_sm + 3 * sigma + 2)
                     )
 
-                    cc, dd = max(0, ul[0]), min(br[0], output_res[1])
-                    aa, bb = max(0, ul[1]), min(br[1], output_res[0])
+                    cc, dd = max(0, ul[0]), min(br[0], output_w)
+                    aa, bb = max(0, ul[1]), min(br[1], output_h)
 
                     joint_rg = np.zeros((bb - aa, dd - cc))
                     for sy in range(aa, bb):
                         for sx in range(cc, dd):
-                            joint_rg[sy - aa, sx - cc] = self.get_heat_val(
+                            joint_rg[sy - aa, sx - cc] = dekr_heatmap_val(
                                 sigma, sx, sy, x_sm, y_sm
                             )
 
-                    hms_list[0][b, idx, aa:bb, cc:dd] = np.maximum(
-                        hms_list[0][b, idx, aa:bb, cc:dd], joint_rg
+                    heatmaps[b, idx, aa:bb, cc:dd] = np.maximum(
+                        heatmaps[b, idx, aa:bb, cc:dd], joint_rg
                     )
-                    hms_list[1][b, idx, aa:bb, cc:dd] = 1.0
+                    heatmap_weights[b, idx, aa:bb, cc:dd] = 1.0
 
                     # OFFSET COMPUTATION
                     if idx != idx_center:
@@ -233,12 +198,34 @@ class DEKRGenerator(BaseGenerator):
                                 ] = 1.0 / np.sqrt(area[b, person_id])
                                 area_map[b, pos_y, pos_x] = area[b, person_id]
 
-        hms_list[1][hms_list[1] == 2] = self.bg_weight
-
-        targets = {
-            "heatmaps": hms_list[0],
-            "heatmaps_ignored": hms_list[1],
-            "locref_maps": offset_map,
-            "locref_masks": weight_map,
+        heatmap_weights[heatmap_weights == 2] = self.bg_weight
+        return {
+            "heatmap": {
+                "target": torch.tensor(heatmaps, device=outputs["heatmap"].device),
+                "weights": torch.tensor(
+                    heatmap_weights, device=outputs["heatmap"].device
+                ),
+            },
+            "offset": {
+                "target": torch.tensor(offset_map, device=outputs["offset"].device),
+                "weights": torch.tensor(weight_map, device=outputs["offset"].device),
+            },
         }
-        return targets
+
+
+def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> float:
+    """
+    Calculates the corresponding heat value of point (x,y) given the heat distribution centered
+    at (x0,y0) and spread value of sigma.
+
+    Args:
+        sigma: controls the spread or width of the heat distribution
+        x: x coord of a point on the image grid
+        y: y coord of a point on the image grid
+        x0: x center coordinate of the heat distribution
+        y0: y center coordinate of the heat distribution
+
+    Returns:
+        g: calculated heat value represents the intensity of the heat at a given position
+    """
+    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))

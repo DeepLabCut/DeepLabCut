@@ -33,11 +33,10 @@ def rmse_match_prediction_to_gt(
             num_animals: number of animals
             num_keypoints: number of keypoints
             3: (x,y,score) coordinates of each keypoint
-        gt_kpts: ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if with center), 2):
+        gt_kpts: ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints, 2):
             num_animals: number of animals
             num_keypoints: number of keypoints
             2: (x,y) coordinates of each keypoint
-        individual_names: names of individuals
 
     Returns:
         col_ind (np.array): array of the individuals indices for prediction

@@ -294,6 +294,7 @@ def _crop_and_pad_image_torch(
 
     crop_h, crop_w = cropped_image.shape[1:3]
     pad_size = max(crop_h, crop_w)
+    offset = (xmin, ymin)
 
     # Pad image if not square
     if not crop_h == crop_w:
@@ -301,13 +302,31 @@ def _crop_and_pad_image_torch(
             (c, pad_size, pad_size),
             dtype=image.dtype,
         )
-        padded_cropped_image[:, :crop_h, :crop_w] = cropped_image
+        # Try to center bbox in padding
+        w_start = 0
+        if bbox[0] - (crop_size / 2) < 0:
+            # padding on the left
+            w_start = pad_size - crop_w
+        elif bbox[0] + (crop_size / 2) >= w:
+            # padding on the right
+            w_start = 0
+
+        h_start = 0
+        if bbox[1] - (crop_size / 2) < 0:
+            # padding at the top
+            h_start = pad_size - crop_h
+        elif bbox[1] + (crop_size / 2) >= h:
+            # padding at the bottom
+            h_start = 0
+
+        h_end = h_start + crop_h
+        w_end = w_start + crop_w
+        offset = (offset[0] - w_start, offset[1] - h_start)
+        padded_cropped_image[:, h_start:h_end, w_start:w_end] = cropped_image
         cropped_image = padded_cropped_image
 
     scale = pad_size / output_size
-    offset = (xmin, ymin)
-    output = F.resize(cropped_image, [output_size, output_size])
-
+    output = F.resize(cropped_image, [output_size, output_size], antialias=True)
     return output.permute(1, 2, 0).numpy(), offset, (scale, scale)
 
 
@@ -336,52 +355,90 @@ def _compute_crop_bounds(
 
 def _extract_keypoints_and_bboxes(
     annotations: list[dict],
-    image: np.ndarray,
+    image_shape: tuple[int, int, int],
+    num_joints: int,
+    num_unique_bodyparts: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
     """
     Args:
         annotations: COCO-style annotations
-        image: from which extract keypoints and bounding boxes for
+        image_shape: the (h, w, c) shape of the image for which to get annotations
+        num_joints: the number of joints in the annotations
 
     Returns:
         keypoints, unique_keypoints, bboxes in xywh format, annotations_merged
     """
     keypoints = []
-    unique_keypoints = []
     original_bboxes = []
-
-    annotations_merged = merge_list_of_dicts(
-        annotations,
-        keys_to_include=["category_id", "iscrowd"],
-    )
-
+    annotations_to_merge = []
+    unique_keypoints = None
     for i, annotation in enumerate(annotations):
         keypoints_individual = _annotation_to_keypoints(annotation)
         if annotation["individual"] != "single":
             bbox_individual = annotation["bbox"]
             original_bboxes.append(bbox_individual)
             keypoints.append(keypoints_individual)
+            annotations_to_merge.append(annotation)
         else:
             unique_keypoints = keypoints_individual
 
-    unique_keypoints = np.array(unique_keypoints)
+    if unique_keypoints is None:
+        unique_keypoints = -1 * np.ones((num_unique_bodyparts, 3), dtype=float)
 
-    keypoints = np.stack(keypoints, axis=0)
+    keypoints = safe_stack(keypoints, (0, num_joints, 3))
+    original_bboxes = safe_stack(original_bboxes, (0, 4))
+    bboxes = _compute_crop_bounds(original_bboxes, image_shape)
 
-    bboxes = np.array(
-        _compute_crop_bounds(np.stack(original_bboxes, axis=0), image.shape),
-    ).reshape((-1, 4))
+    annotations_merged = merge_list_of_dicts(
+        annotations_to_merge,
+        keys_to_include=["area", "category_id", "iscrowd"],
+    )
+    if len(annotations_merged["area"]) == len(keypoints):
+        area = np.array(annotations_merged["area"])
+        area[area < 1] = 1  # TODO: see comments in calc_area_from_keypoints
+    else:
+        area = calc_area_from_keypoints(keypoints)
+
+    annotations_merged["area"] = area
     return keypoints, unique_keypoints, bboxes, annotations_merged
+
+
+def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:
+    """
+    Calculate the area from keypoints
+
+    TODO: in the pups benchmark, there are 5 keypoints perfectly aligned so
+     the area is 0.
+     How do we deal with that?
+     Makes more sense to compute the area from the bboxes (they are padded)
+     Below is a temporary fix, which sets a min height and width to 5
+     Suggestion: compute min height/width using labeled data
+
+    Args:
+        keypoints (np.ndarray): array of keypoints
+
+    Returns:
+        np.ndarray: array containing the computed areas based on the keypoints
+    """
+    w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
+    h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
+    area = w * h
+    area[area < 1] = 1
+    return area
 
 
 def _annotation_to_keypoints(annotation: dict) -> np.array:
     """
-    Convert the coco annotations into array of keypoints returns the array of the keypoints' visibility
-    If keypoint is not visible, the value for (x,y) coordinates is set to 0
+    Convert the coco annotations into array of keypoints returns the array of the
+    keypoints' visibility. If keypoint is not visible, the value for (x,y) coordinates
+    is set to 0
+
     Args:
-        annotation: dictionary containing coco-like annotations with essential `keypoints` field
+        annotation: dictionary containing coco-like annotations with essential
+            `keypoints` field
     Returns:
-        keypoints: np.array where the first two columns are x and y coordinates of the keypoints and the third column is the visibility of the keypoints
+        keypoints: np.array where the first two columns are x and y coordinates of the
+            keypoints and the third column is the visibility of the keypoints
     """
     keypoints = annotation["keypoints"].reshape(-1, 3)
     visibility_mask = keypoints > -1
@@ -414,6 +471,7 @@ def apply_transform(
     """
 
     if transform:
+        defined_keypoint_mask = _check_keypoints_within_bounds(keypoints, image.shape)
         transformed = _apply_transform(
             transform,
             image,
@@ -422,6 +480,7 @@ def apply_transform(
             class_labels,
         )
         transformed["keypoints"] = np.array(transformed["keypoints"])
+        transformed["keypoints"][~defined_keypoint_mask] = -1
         shape_transformed = transformed["image"].shape
         mask_valid = _check_keypoints_within_bounds(
             transformed["keypoints"],
@@ -520,3 +579,46 @@ def _check_keypoints_within_bounds(keypoints: np.ndarray, shape: tuple) -> np.nd
         & (keypoints[..., :2] < np.array([shape[1], shape[0]])),
         axis=1,
     )
+
+
+def pad_to_length(data: np.array, length: int, value: float) -> np.array:
+    """
+    Pads the first dimension of an array with a given value
+
+    Args:
+        data: the array to pad, of shape (l, ...), where l <= length
+        length: the desired length of the tensor
+        value: the value to pad with
+
+    Returns:
+        the padded array of shape (length, ...)
+    """
+    pad_length = length - len(data)
+    if pad_length == 0:
+        return data
+    elif pad_length > 0:
+        padding = value * np.ones((pad_length, *data.shape[1:]), dtype=data.dtype)
+        return np.concatenate([data, padding])
+
+    raise ValueError(f"Cannot pad! data.shape={data.shape} > length={length}")
+
+
+def safe_stack(
+    data: list[np.ndarray],
+    default_shape: tuple[int, ...],
+) -> np.ndarray:
+    """
+    Stacks a list of arrays if there are any, otherwise returns an array of zeros
+    of a desired shape.
+
+    Args:
+        data: the list of arrays to stack
+        default_shape: the shape of the array to return if the list is empty
+
+    Returns:
+        the stacked data or empty array
+    """
+    if len(data) == 0:
+        return np.zeros(default_shape, dtype=float)
+
+    return np.stack(data, axis=0)

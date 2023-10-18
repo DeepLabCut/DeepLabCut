@@ -8,11 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
+
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+
 
 DETECTORS = Registry("detectors", build_func=build_from_cfg)
 
@@ -27,42 +30,33 @@ class BaseDetector(ABC, nn.Module):
         super().__init__()
 
     @abstractmethod
-    def forward(self, x: torch.Tensor) -> None:
-        """Summary:
+    def forward(
+        self,
+        x: torch.Tensor,
+        targets: list[dict[str, torch.Tensor]] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
+        """
         Forward pass of the detector
 
         Args:
-            x: input tensor representing the image
+            x: images to be processed
+            targets: ground-truth boxes present in each images
 
         Returns:
-            See base class.
+            losses: {'loss_name': loss_value}
+            detections: for each of the b images, {"boxes": bounding_boxes}
         """
         pass
 
     @abstractmethod
-    def get_target(self, annotations) -> None:
-        """Summary:
+    def get_target(self, labels: dict) -> list[dict]:
+        """
         Get the target for training the detector
 
         Args:
-            annotations: annotations containing keypoints, bounding boxes, etc.
+            labels: annotations containing keypoints, bounding boxes, etc.
 
         Returns:
-            None
+            list of dictionaries, each representing target information for a single annotation.
         """
         pass
-
-    def _init_weights(self, pretrained: bool) -> None:
-        """Summary:
-        Initialize weights for the detector
-
-        Args:
-            pretrained: whether to use pretrained weights.
-
-        Returns:
-            None
-        """
-        if not pretrained:
-            pass
-        else:
-            self.model.load_state_dict(torch.load(pretrained))

@@ -1,10 +1,21 @@
-from typing import List
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from __future__ import annotations
+
 import torch
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+
+from deeplabcut.utils import auxiliaryfunctions
+
 
 BACKBONE_OUT_CHANNELS = {
-    "resnet-50": 2048,
-    "resnet-50": 2048,
     "resnet-50": 2048,
     "mobilenet_v2_1.0": 1280,
     "mobilenet_v2_0.75": 1280,
@@ -103,9 +114,9 @@ def make_pytorch_config(
     pytorch_config["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     pytorch_config["method"] = "bu"
     if net_type in single_animal_nets:
-        pytorch_config["model"]["heads"] = make_single_head_cfg(num_joints, net_type)
-        pytorch_config["model"]["target_generator"]["num_joints"] = num_joints
-        pytorch_config["predictor"]["num_animals"] = 1
+        pytorch_config["model"]["heads"] = {
+            "bodypart": make_single_head_cfg(num_joints, net_type),
+        }
 
         if "efficientnet" in net_type:
             raise NotImplementedError("efficientnet config not yet implemented")
@@ -115,14 +126,14 @@ def make_pytorch_config(
             raise NotImplementedError("hrnet config not yet implemented")
 
     elif net_type in multi_animal_nets:
-        num_animals = len(project_config.get("individuals", [0]))
+        num_individuals = len(project_config.get("individuals", [0]))
         if "dekr" in net_type:
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
             num_offset_per_kpt = 15
             pytorch_config["data"]["auto_padding"] = {
-                "min_height": 64,
-                "min_width": 64,
+                "min_height": None,
+                "min_width": None,
                 "pad_width_divisor": 32,
                 "pad_height_divisor": 32,
             }
@@ -130,31 +141,18 @@ def make_pytorch_config(
                 "type": "HRNet",
                 "model_name": "hrnet_" + version,
             }
-            pytorch_config["model"]["heads"] = make_dekr_head_cfg(
-                num_joints, backbone_type, num_offset_per_kpt
-            )
+            pytorch_config["model"]["heads"] = {
+                "bodypart": make_dekr_head_cfg(
+                    num_individuals, num_joints, backbone_type, num_offset_per_kpt
+                ),
+            }
+            pytorch_config["with_center_keypoints"] = True
+
             if compute_unique_bpts:
-                pytorch_config["model"]["heads"] += make_unique_bpts_head_cfg(
+                pytorch_config["model"]["heads"]["unique_bodypart"] = make_unique_bodyparts_head(
                     num_unique_bpts, backbone_type
                 )
-                pytorch_config["model"]["pose_model"]["num_unique_bodyparts"] = len(
-                    unique_bpts
-                )
-                pytorch_config["criterion"]["unique_bodyparts"] = True
-            pytorch_config["model"]["target_generator"] = {
-                "type": "DEKRGenerator",
-                "num_joints": num_joints,
-                "pos_dist_thresh": 17,
-            }
 
-            pytorch_config["predictor"] = {
-                "type": "DEKRPredictor",
-                "num_animals": num_animals,
-                "unique_bodyparts": compute_unique_bpts,
-                "keypoint_score_type": "combined",
-            }
-
-            pytorch_config["with_center"] = True
         elif "token_pose" in net_type:
             if compute_unique_bpts:
                 raise NotImplementedError(
@@ -163,34 +161,21 @@ def make_pytorch_config(
             pytorch_config["method"] = "td"
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
-            pytorch_config["data"]["auto_padding"] = {
-                "min_height": 64,
-                "min_width": 64,
-                "pad_width_divisor": 32,
-                "pad_height_divisor": 32,
-            }
-            pytorch_config["detector"] = make_detector_cfg()
-            pytorch_config["detector_max_epochs"] = 500
-            pytorch_config["detector_save_epochs"] = 100
+            pytorch_config["data_detector"] = make_detector_data_aug()
+            pytorch_config["detector"] = make_detector_cfg(num_individuals)
             pytorch_config["model"] = make_token_pose_model_cfg(
                 num_joints, backbone_type
             )
-            pytorch_config["predictor"] = {
-                "type": "HeatmapOnlyPredictor",
-                "num_animals": 1,
-            }
-            pytorch_config["criterion"] = {"type": "HeatmapOnlyLoss"}
-            pytorch_config["solver"] = {
-                "type": "TopDownSolver",
-            }
-            pytorch_config["with_center"] = False
+            pytorch_config["criterion"] = {"type": "HeatmapOnlyCriterion"}
+            pytorch_config["runner"] = {"type": "PoseRunner"}
+            pytorch_config["with_center_keypoints"] = False
         else:
             raise NotImplementedError(
                 "Currently no other model than dekr and token_pose are implemented"
             )
 
     else:
-        raise ValueError("This net type is not supported by pytorch verison")
+        raise ValueError("This net type is not supported by DeepLabCut PyTorch")
 
     if augmenter_type == None:
         pytorch_config["data"] = {}
@@ -202,35 +187,78 @@ def make_pytorch_config(
     return pytorch_config
 
 
-def make_single_head_cfg(num_joints: int, net_type: str):
-    head_configs = []
-    heatmap_heag_cfg, locref_head_cfg = {}, {}
+def make_heatmap_head(
+    num_joints: int,
+    heatmap_channels: list[int],
+    locref_channels: list[int],
+) -> dict:
+    return {
+            "type": "HeatmapHead",
+            "predictor": {
+                "type": "SinglePredictor",
+                "location_refinement": True,
+                "locref_stdev": 7.2801,
+                "num_animals": 1,
+            },
+            "target_generator": {
+                "type": "PlateauGenerator",
+                "locref_stdev": 7.2801,
+                "num_joints": num_joints,
+                "pos_dist_thresh": 17,
+            },
+            "criterion": {
+                "heatmap": {
+                    "type": "WeightedBCECriterion",
+                    "weight": 1.0,
+                },
+                "locref": {
+                    "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
+                    "weight": 0.03,
+                }
+            },
+            "heatmap_config": {
+                "channels": heatmap_channels,
+                "kernel_size": [2, 2],
+                "strides": [2, 2],
+            },
+            "locref_config": {
+                "channels": locref_channels,
+                "kernel_size": [2, 2],
+                "strides": [2, 2],
+            },
+        }
 
+
+def make_single_head_cfg(num_joints: int, net_type: str) -> dict:
+    """
+    Args:
+        num_joints: the number of keypoints to predict
+        net_type: the type of neural net to make the head for
+
+    Raises:
+        NotImplementedError if unique bodyparts are not implemented for backbone_type
+
+    Returns:
+        the head configuration
+    """
     if "resnet" in net_type:
-        heatmap_heag_cfg = {
-            "type": "SimpleHead",
-            "channels": [2048, 1024, num_joints],
-            "kernel_size": [2, 2],
-            "strides": [2, 2],
-        }
-        head_configs.append(heatmap_heag_cfg)
+        return make_heatmap_head(
+            num_joints,
+            heatmap_channels=[2048, 1024, num_joints],
+            locref_channels=[2048, 1024, 2 * num_joints],
+        )
 
-        locref_head_cfg = {
-            "type": "SimpleHead",
-            "channels": [2048, 1024, 2 * num_joints],
-            "kernel_size": [2, 2],
-            "strides": [2, 2],
-        }
-        head_configs.append(locref_head_cfg)
-
-    return head_configs
+    raise NotImplementedError(
+        f"Heads for single animals are not yet implemented with a {net_type} "
+        f"backbone"
+    )
 
 
-def make_unique_bpts_head_cfg(num_unique_bpts: int, backbone_type: str) -> List[dict]:
+def make_unique_bodyparts_head(num_unique_bodyparts: int, backbone_type: str) -> dict:
     """Creates a deconvolutional head to predict unique bodyparts
 
     Args:
-        num_unique_bpts: number of unique bodyparts
+        num_unique_bodyparts: number of unique bodyparts
         backbone_type: type of the backbone
 
     Raises:
@@ -239,120 +267,152 @@ def make_unique_bpts_head_cfg(num_unique_bpts: int, backbone_type: str) -> List[
     Returns:
         The configs for the unique bodyparts heatmap and locref heads
     """
-    head_configs = []
-
-    if backbone_type == "hrnet_w32":
+    if "hrnet" in backbone_type:
         # Only one deconvolutional layer since hrnet stride is 1/4
-        heatmap_heag_cfg = {
-            "type": "SimpleHead",
-            "channels": [480, num_unique_bpts],
-            "kernel_size": [2, 2],
-            "strides": [2, 2],
-        }
-        head_configs.append(heatmap_heag_cfg)
-
-        locref_head_cfg = {
-            "type": "SimpleHead",
-            "channels": [480, 2 * num_unique_bpts],
-            "kernel_size": [2, 2],
-            "strides": [2, 2],
-        }
-        head_configs.append(locref_head_cfg)
-
-    else:
-        raise NotImplementedError(
-            f"Unique bodyparts prediction is not implemented yet for backbone {backbone_type}"
+        heatmap_in_channels = BACKBONE_OUT_CHANNELS[backbone_type]
+        head = make_heatmap_head(
+            num_unique_bodyparts,
+            heatmap_channels=[heatmap_in_channels, num_unique_bodyparts],
+            locref_channels=[heatmap_in_channels, 2 * num_unique_bodyparts],
         )
+        head["target_generator"]["label_keypoint_key"] = "keypoints_unique"
+        return head
 
-    return head_configs
+    raise NotImplementedError(
+        f"Unique bodyparts prediction is not implemented yet for backbone {backbone_type}"
+    )
 
 
-def make_dekr_head_cfg(num_joints: int, backbone_type: str, num_offset_per_kpt: int):
-    head_configs = []
-    heatmap_heag_cfg, offset_head_cfg = {}, {}
-
-    heatmap_heag_cfg = {
-        "type": "HeatmapDEKRHead",
-        "channels": [
-            BACKBONE_OUT_CHANNELS[backbone_type],
-            64,
-            num_joints + 1,
-        ],  # +1 since we need center
-        "num_blocks": 1,
-        "dilation_rate": 1,
-        "final_conv_kernel": 1,
+def make_dekr_head_cfg(
+    num_individuals: int,
+    num_joints: int,
+    backbone_type: str,
+    num_offset_per_kpt: int,
+):
+    return {
+        "type": "DEKRHead",
+        "target_generator": {
+            "type": "DEKRGenerator",
+            "num_joints": num_joints,
+            "pos_dist_thresh": 17,
+            "bg_weight": 0.1,
+        },
+        "criterion": {
+            "heatmap": {
+                "type": "WeightedBCECriterion",
+                "weight": 1,
+            },
+            "offset": {
+                "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
+                "weight": 0.03,
+            }
+        },
+        "predictor": {
+            "type": "DEKRPredictor",
+            "num_animals": num_individuals,
+            "keypoint_score_type": "combined",
+            "max_absorb_distance": 75,
+        },
+        "heatmap_config": {
+            "channels": [
+                BACKBONE_OUT_CHANNELS[backbone_type],
+                64,
+                num_joints + 1,
+            ],  # +1 since we need center
+            "num_blocks": 1,
+            "dilation_rate": 1,
+            "final_conv_kernel": 1,
+        },
+        "offset_config": {
+            "channels": [
+                BACKBONE_OUT_CHANNELS[backbone_type],
+                num_offset_per_kpt * num_joints,
+                num_joints,
+            ],
+            "num_offset_per_kpt": num_offset_per_kpt,
+            "num_blocks": 2,
+            "dilation_rate": 1,
+            "final_conv_kernel": 1,
+        },
     }
-    head_configs.append(heatmap_heag_cfg)
-
-    offset_head_cfg = {
-        "type": "OffsetDEKRHead",
-        "channels": [
-            BACKBONE_OUT_CHANNELS[backbone_type],
-            num_offset_per_kpt * num_joints,
-            num_joints,
-        ],
-        "num_offset_per_kpt": num_offset_per_kpt,
-        "num_blocks": 1,
-        "dilation_rate": 1,
-        "final_conv_kernel": 1,
-    }
-    head_configs.append(offset_head_cfg)
-
-    return head_configs
 
 
 def make_token_pose_model_cfg(num_joints, backbone_type):
-    model_cfg = {}
-    model_cfg["backbone"] = {
-        "type": "HRNetTopDown",
-        "model_name": backbone_type,
-    }
-
-    model_cfg["neck"] = {
-        "type": "Transformer",
-        "feature_size": [64, 64],
-        "patch_size": [4, 4],
-        "num_keypoints": num_joints,
-        "channels": 32,
-        "dim": 192,
-        "heads": 8,
-        "depth": 6,
-    }
-
-    model_cfg["heads"] = []
-    model_cfg["heads"].append(
-        {
-            "type": "TransformerHead",
-            "dim": 192,
-            "hidden_heatmap_dim": 384,
-            "heatmap_dim": 4096,
-            "apply_multi": True,
-            "heatmap_size": [64, 64],
-            "apply_init": True,
-        }
-    )
-
-    model_cfg["target_generator"] = {
-        "type": "PlateauWithoutLocref",
-        "num_joints": num_joints,
-        "pos_dist_thresh": 17,
-    }
-
-    model_cfg["pose_model"] = {"stride": 4}
-    return model_cfg
-
-
-def make_detector_cfg():
     return {
-        "detector_model": {
-            "type": "FasterRCNN",
+        "backbone": {
+            "type": "HRNet",
+            "model_name": backbone_type,
+            "pretrained": True,
+            "only_high_res": True,
         },
-        "detector_optimizer": {
+        "neck": {
+            "type": "Transformer",
+            "feature_size": [64, 64],
+            "patch_size": [4, 4],
+            "num_keypoints": num_joints,
+            "channels": 32,
+            "dim": 192,
+            "heads": 8,
+            "depth": 6,
+        },
+        "heads": {
+            "bodypart": {
+                "type": "TransformerHead",
+                "target_generator": {
+                    "type": "PlateauGenerator",
+                    "generate_locref": False,
+                    "num_joints": num_joints,
+                    "pos_dist_thresh": 17,
+                },
+                "criterion": {
+                    "type": "WeightedBCECriterion",
+                },
+                "predictor": {
+                    "type": "HeatmapOnlyPredictor",
+                    "num_animals": 1,
+                },
+                "dim": 192,
+                "hidden_heatmap_dim": 384,
+                "heatmap_dim": 4096,
+                "apply_multi": True,
+                "heatmap_size": [64, 64],
+                "apply_init": True,
+            },
+        },
+        "pose_model": {"stride": 4}
+    }
+
+
+def make_detector_cfg(num_individuals: int):
+    return {
+        "model": {"type": "FasterRCNN"},
+        "optimizer": {
             "type": "AdamW",
             "params": {"lr": 1e-4},
         },
-        "detector_scheduler": {
+        "scheduler": {
             "type": "LRListScheduler",
             "params": {"milestones": [90], "lr_list": [[1e-5]]},
         },
+        "runner": {
+            "type": "DetectorRunner",
+            "max_individuals": num_individuals,
+        },
+        "batch_size": 1,
+        "epochs": 500,
+        "save_epochs": 100,
+        "display_iters": 500,
+    }
+
+
+def make_detector_data_aug() -> dict:
+    return {
+        "covering": True,
+        "gaussian_noise": 12.75,
+        "hist_eq": True,
+        "motion_blur": True,
+        "normalize_images": True,
+        "rotation": 30,
+        "scale_jitter": [0.5, 1.25],
+        "translation": 40,
     }

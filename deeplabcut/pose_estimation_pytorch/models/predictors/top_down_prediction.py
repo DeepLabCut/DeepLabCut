@@ -21,14 +21,14 @@ class TopDownPredictor(BasePredictor):
     """Predictor for regressing keypoints in a Top Down fashion based on bbox predictions
     and regressed keypoints in cropped images.
 
+    TODO: Does not respect base class; should not be a predictor
+
     Args:
-        format_bbox: Format of the bounding box prediction,
-                     either 'xyxy' or 'coco'. Defaults to "xyxy".
+        format_bbox: Format of the bounding box prediction, either 'xyxy' or 'coco'. Defaults to "xyxy".
     """
 
     def __init__(self, format_bbox: str = "xyxy"):
         super().__init__()
-
         self.format_bbox = format_bbox
 
     def _convert_bbox_to_coco(self, bboxes: torch.Tensor) -> torch.Tensor:

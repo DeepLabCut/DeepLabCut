@@ -1,22 +1,6 @@
 batch_size: 1
-cfg_path: /data/quentin/datasets/daniel3mouse/config.yaml
+cfg_path: /project/config.yaml
 colormode: 'RGB'
-criterion:
-  locref_huber_loss: true
-  loss_weight_locref: 0.02
-  unique_bodyparts: false
-  type: PoseLoss
-cropped_data: # Used only for Top-Down approach
-  covering: true
-  gaussian_noise: 12.75
-  hist_eq: true
-  motion_blur: true
-  normalize_images: true
-  rotation: 30
-  scale_jitter:
-  - 0.5
-  - 1.25
-  translation: 40
 data:
   covering: true
   gaussian_noise: 12.75
@@ -37,22 +21,10 @@ model:
     type: ResNet
   pose_model:
     stride: 8
-    num_unique_bodyparts : 0
-  target_generator:
-    locref_stdev: 7.2801
-    num_joints: -1
-    pos_dist_thresh: 17
-    type: PlateauGenerator
 optimizer:
   params:
     lr: 0.0001
   type: AdamW
-pos_dist_thresh: 17
-predictor:
-  location_refinement: true
-  locref_stdev: 7.2801
-  num_animals: -1
-  type: SinglePredictor
 save_epochs: 50
 scheduler:
   params:
@@ -64,6 +36,6 @@ scheduler:
     - 120
   type: LRListScheduler
 seed: 42
-solver:
-  type: BottomUpSingleAnimalSolver
+runner:
+  type: PoseRunner
 with_center: false

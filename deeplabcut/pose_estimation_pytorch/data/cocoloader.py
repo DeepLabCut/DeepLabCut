@@ -32,6 +32,7 @@ class COCOLoader(Loader):
             test_json_filename="test.json",
         )
     """
+
     project_root: str
     train_json_filename: str = "train.json"
     test_json_filename: str | None = "test.json"

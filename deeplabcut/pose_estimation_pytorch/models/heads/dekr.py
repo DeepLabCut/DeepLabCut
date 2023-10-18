@@ -8,36 +8,71 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Tuple
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 
+from deeplabcut.pose_estimation_pytorch.models.criterions import (
+    BaseCriterion,
+    BaseLossAggregator,
+)
 from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
-from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
-from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import BLOCKS
+from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
+    AdaptBlock,
+    BaseBlock,
+    BasicBlock,
+)
+from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
+from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 
 
 @HEADS.register_module
-class HeatmapDEKRHead(BaseHead):
+class DEKRHead(BaseHead):
     """
-    DEKR head to compute the heatmaps corresponding to keypoints
-    based on:
+    DEKR head based on:
         Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
-        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
-        CVPR
-        2021
+        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang, CVPR 2021
     Code based on:
         https://github.com/HRNet/DEKR
     """
 
     def __init__(
         self,
-        channels: Tuple[int],
+        predictor: BasePredictor,
+        target_generator: BaseGenerator,
+        criterion: dict[str, BaseCriterion],
+        aggregator: BaseLossAggregator,
+        heatmap_config: dict,
+        offset_config: dict,
+    ) -> None:
+        super().__init__(predictor, target_generator, criterion, aggregator)
+        self.heatmap_head = DEKRHeatmap(**heatmap_config)
+        self.offset_head = DEKROffset(**offset_config)
+
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+        return {
+            "heatmap": self.heatmap_head(x),
+            "offset": self.offset_head(x),
+        }
+
+
+class DEKRHeatmap(nn.Module):
+    """
+    DEKR head to compute the heatmaps corresponding to keypoints based on:
+        Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
+        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang, CVPR 2021
+    Code based on:
+        https://github.com/HRNet/DEKR
+    """
+
+    def __init__(
+        self,
+        channels: tuple[int],
         num_blocks: int,
         dilation_rate: int,
         final_conv_kernel: int,
-        block=BasicBlock,
+        block: type(BaseBlock) = BasicBlock,
     ) -> None:
         """Summary:
         Constructor of the HeatmapDEKRHead.
@@ -100,7 +135,11 @@ class HeatmapDEKRHead(BaseHead):
         return nn.Sequential(*transition_layer)
 
     def _make_heatmap_head(
-        self, block: nn.Module, num_blocks: int, num_channels: int, dilation_rate: int
+        self,
+        block: type(BaseBlock),
+        num_blocks: int,
+        num_channels: int,
+        dilation_rate: int,
     ) -> nn.ModuleList:
         """Summary:
         Construct the heatmap head
@@ -134,7 +173,7 @@ class HeatmapDEKRHead(BaseHead):
 
     def _make_layer(
         self,
-        block: nn.Module,
+        block: type(BaseBlock),
         in_channels: int,
         out_channels: int,
         num_blocks: int,
@@ -170,10 +209,9 @@ class HeatmapDEKRHead(BaseHead):
                 ),
             )
 
-        layers = []
-        layers.append(
+        layers = [
             block(in_channels, out_channels, stride, downsample, dilation=dilation)
-        )
+        ]
         in_channels = out_channels * block.expansion
         for _ in range(1, num_blocks):
             layers.append(block(in_channels, out_channels, dilation=dilation))
@@ -186,41 +224,31 @@ class HeatmapDEKRHead(BaseHead):
         return heatmap
 
 
-@HEADS.register_module
-class OffsetDEKRHead(BaseHead):
+class DEKROffset(nn.Module):
     """
-    DEKR head to compute the offset from the center corresponding to each keypoints
-    based on:
+    DEKR module to compute the offset from the center corresponding to each keypoints:
         Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression
-        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang
-        CVPR
-        2021
+        Zigang Geng, Ke Sun, Bin Xiao, Zhaoxiang Zhang, Jingdong Wang, CVPR 2021
     Code based on:
     https://github.com/HRNet/DEKR
     """
 
     def __init__(
         self,
-        channels: Tuple[int],
+        channels: tuple[int, ...],
         num_offset_per_kpt: int,
         num_blocks: int,
         dilation_rate: int,
         final_conv_kernel: int,
-        block=AdaptBlock,
+        block: type(BaseBlock) = AdaptBlock,
     ) -> None:
-        """Summary:
-        Constructor of the OffsetDEKRHead.
-        Loads the data.
-
-        Args:
-            channels: tuple containing the number of input, offset, and output channels.
-            num_offset_per_kpt: number of offset values per keypoint.
-            num_blocks: number of blocks in the head.
-            dilation_rate: dilation rate for convolutional layers.
-            final_conv_kernel: kernel size for the final convolution.
-            block: type of block to use in the head. Defaults to AdaptBlock.
-
-        Return: None
+        """Args:
+        channels: tuple containing the number of input, offset, and output channels.
+        num_offset_per_kpt: number of offset values per keypoint.
+        num_blocks: number of blocks in the head.
+        dilation_rate: dilation rate for convolutional layers.
+        final_conv_kernel: kernel size for the final convolution.
+        block: type of block to use in the head. Defaults to AdaptBlock.
         """
         super().__init__()
         self.inp_channels = channels[0]
@@ -253,7 +281,7 @@ class OffsetDEKRHead(BaseHead):
 
     def _make_layer(
         self,
-        block: nn.Module,
+        block: type(BaseBlock),
         in_channels: int,
         out_channels: int,
         num_blocks: int,
@@ -330,7 +358,7 @@ class OffsetDEKRHead(BaseHead):
 
     def _make_separete_regression_head(
         self,
-        block: nn.Module,
+        block: type(BaseBlock),
         num_blocks: int,
         num_channels_per_kpt: int,
         dilation_rate: int,

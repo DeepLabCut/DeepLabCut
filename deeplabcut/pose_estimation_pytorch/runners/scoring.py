@@ -8,13 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
-from typing import Dict, List, Tuple, Optional
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
 
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     Assembly,
@@ -22,59 +19,12 @@ from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
 )
 
 
-# TODO: DEPRECATED
-def get_prediction(
-    cfg: dict, output: Tuple[np.ndarray, np.ndarray], stride: int = 8
-) -> np.ndarray:
-    """Generates pose predictions from the model outputwhich is a tuple given by (heatmaps,location refinement fields)).
-
-    It uses the predicted heatmaps to estimate the keypoints' locations and applies location refinement if enabled.
-    Refer to: https://www.nature.com/articles/s41592-022-01443-0 for more information about the overall process.
-
-    Args:
-        cfg: config file in dict
-        output: heatmaps, locref
-            heatmaps: the probability that a
-                keypoint occurs at a particular location
-            locref: location refinement fields
-                that predict offsets to mitigate quantization errors due to downsampled score maps
-        stride: window stride; defaults to 8, Optional
-
-    Returns:
-        Array of poses
-
-    Examples:
-        >>> # Define the cfg dictionary and model output
-        >>> cfg = {'location_refinement': True, 'locref_stdev': 0.1}
-        >>> heatmaps = np.random.rand(1, 17, 128, 128)
-        >>> locref = np.random.rand(1, 17, 128, 128)
-        >>> output = (heatmaps, locref)
-        >>> # Get the predicted poses
-        >>> poses = get_prediction(cfg, output)
-    """
-
-    poses = []
-    heatmaps, locref = output
-    heatmaps = nn.Sigmoid()(heatmaps)
-    heatmaps = heatmaps.permute(0, 2, 3, 1).detach().cpu().numpy()
-    locref = locref.permute(0, 2, 3, 1).detach().cpu().numpy()
-    for i in range(heatmaps.shape[0]):
-        shape = locref[i].shape
-        locref_i = np.reshape(locref, (shape[0], shape[1], -1, 2))
-        if cfg["location_refinement"]:
-            locref_i = locref_i * cfg["locref_stdev"]
-        pose = multi_pose_predict(heatmaps[i], locref_i, stride, 1)
-        poses.append(pose)
-
-    return np.stack(poses, axis=0)
-
-
 def get_scores(
     prediction: pd.DataFrame,
     target: pd.DataFrame,
-    pcutoff: Optional[float] = None,
-    bodyparts: List[str] = None,
-) -> Dict:
+    pcutoff: float | None = None,
+    bodyparts: list[str] | None = None,
+) -> dict[str, float]:
     """Computes for the different scores given the grount truth and the predictions.
 
     The different scores computed are based on the COCO metrics: https://cocodataset.org/#keypoints-eval
@@ -129,8 +79,8 @@ def get_rmse(
     prediction: pd.DataFrame,
     target: pd.DataFrame,
     pcutoff: float = -1,
-    bodyparts: List[str] = None,
-) -> Tuple[float, float]:
+    bodyparts: list[str] | None = None,
+) -> tuple[float, float]:
     """Computes the root mean square error (rmse) for predictions vs the ground truth labels
 
     Assumes hungarian algorithm matching (https://brilliant.org/wiki/hungarian-matching/))
@@ -179,8 +129,8 @@ def get_oks(
     margin=0,
     symmetric_kpts=None,
     pcutoff: float = -1,
-    bodyparts: List[str] = None,
-) -> Tuple[Dict, Dict]:
+    bodyparts: list[str] | None = None,
+) -> tuple[dict, dict]:
     """Computes the object keypoint similarity (OKS) scores for predictions.
 
     OKS is defined in https://cocodataset.org/#keypoints-eval
@@ -262,7 +212,7 @@ def get_oks(
     return oks_assemblies_raw, oks_pcutoff
 
 
-def conv_df_to_assemblies(df: pd.DataFrame) -> Tuple[dict, Optional[dict]]:
+def conv_df_to_assemblies(df: pd.DataFrame) -> tuple[dict, dict | None]:
     """
     Convert a dataframe to an assemblies dictionary
 
@@ -302,71 +252,3 @@ def _df_to_dict(df: pd.DataFrame) -> dict:
         data[image_path] = kpt_lst
 
     return data
-
-
-# DEPRECATED
-def get_top_values(scmap: np.array, n_top: int = 5) -> Tuple[np.array, np.array]:
-    """This function computes for the top n values from a given scoremap.
-
-    Args:
-        scmap: score map;
-            which encode the probability that a keypoint occurs at a particular location
-        n_top: top n elements in the set. Defaults to 5.
-
-    Returns:
-        Top n values of in the scoreemap
-    """
-    batchsize, ny, nx, num_joints = scmap.shape
-    scmap_flat = scmap.reshape(batchsize, nx * ny, num_joints)
-    if n_top == 1:
-        scmap_top = np.argmax(scmap_flat, axis=1)[None]
-    else:
-        scmap_top = np.argpartition(scmap_flat, -n_top, axis=1)[:, -n_top:]
-        for ix in range(batchsize):
-            vals = scmap_flat[ix, scmap_top[ix], np.arange(num_joints)]
-            arg = np.argsort(-vals, axis=0)
-            scmap_top[ix] = scmap_top[ix, arg, np.arange(num_joints)]
-        scmap_top = scmap_top.swapaxes(0, 1)
-
-    Y, X = np.unravel_index(scmap_top, (ny, nx))
-    return Y, X
-
-
-# DEPRECATED
-def multi_pose_predict(
-    scmap: np.array, locref: np.array, stride: int, num_outputs: int
-) -> np.array:
-    """This function generates the multi pose predictions from the model of the output (heatmaps and loc refinement fields).
-
-    Refer to: https://www.nature.com/articles/s41592-022-01443-0 for more information about the overall process.
-
-    Args:
-        scmap: score map; which encode the probability that a keypoint occurs at a particular location
-        locref: location refinement fields that predict offsets to mitigate quantization errors due to downsampled score maps
-        stride: window stride; defaults to 8
-        num_outputs: The expected number of outputs.
-
-    Returns:
-        pose: Multi-pose predictions
-    """
-    Y, X = get_top_values(scmap[None], num_outputs)
-    Y, X = Y[:, 0], X[:, 0]
-    num_joints = scmap.shape[2]
-
-    DZ = np.zeros((num_outputs, num_joints, 3))
-    indices = np.indices((num_outputs, num_joints))
-    x = X[indices[0], indices[1]]
-    y = Y[indices[0], indices[1]]
-    DZ[:, :, :2] = locref[y, x, indices[1], :]
-    DZ[:, :, 2] = scmap[y, x, indices[1]]
-
-    X = X.astype("float32") * stride[1] + 0.5 * stride[1] + DZ[:, :, 0]
-    Y = Y.astype("float32") * stride[0] + 0.5 * stride[0] + DZ[:, :, 1]
-    P = DZ[:, :, 2]
-
-    pose = np.empty((num_joints, num_outputs * 3), dtype="float32")
-    pose[:, 0::3] = X.T
-    pose[:, 1::3] = Y.T
-    pose[:, 2::3] = P.T
-
-    return pose

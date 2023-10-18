@@ -17,9 +17,12 @@ from deeplabcut.utils.auxiliaryfunctions import get_model_folder
 @dataclass
 class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
     """A Loader for DeepLabCut projects"""
+
     project_root: str
+    model_config_path: str
     shuffle: int = 0
     image_id_offset: int = 0
+    # TODO: read train fraction index
 
     properties = {
         "cfg": (
@@ -66,6 +69,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
     }
 
     def __post_init__(self):
+        super().__init__(self.project_root, self.model_config_path)
         self.split, self.df_dlc, self.df_train, self.df_test = self._load_dlc_data()
 
     def _load_dlc_data(self):
@@ -78,7 +82,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
 
     @staticmethod
     def drop_duplicates(dlc_df, df_train, df_test):
-        dlc_df = dlc_df[dlc_df.index.duplicated(keep="first")]
+        dlc_df = dlc_df[~dlc_df.index.duplicated(keep="first")]
         df_train = df_train[
             ~df_train.index.duplicated(
                 keep="first",
@@ -86,14 +90,14 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         ]
         if df_test is not None:
             df_test = df_test[
-                df_test.index.duplicated(
+                ~df_test.index.duplicated(
                     keep="first",
                 )
             ]
         return dlc_df, df_train, df_test
 
     def load_data(self, mode: str = "train") -> dict:
-        """ Loads DeepLabCut data into COCO-style annotations
+        """Loads DeepLabCut data into COCO-style annotations
 
         This function reads data from h5 file, split the data and returns it in
         COCO-like format
@@ -162,11 +166,12 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         Returns:
             df_train, df_test
         """
-        df_test = None
         train_images = dlc_df.index[split["train"]]
+        df_train = dlc_df.loc[train_images]
+
+        df_test = None
         if len(split["test"]) != 0:
             test_images = dlc_df.index[split["test"]]
             df_test = dlc_df.loc[test_images]
-        df_train = dlc_df.loc[train_images]
 
         return df_train, df_test

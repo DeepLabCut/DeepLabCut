@@ -1,0 +1,102 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from __future__ import annotations
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
+    CRITERIONS,
+    BaseCriterion,
+)
+
+
+class WeightedCriterion(BaseCriterion):
+    """Base class for weighted criterions"""
+
+    def __init__(self, criterion: nn.Module, apply_sigmoid: bool = False):
+        super().__init__(apply_sigmoid=apply_sigmoid)
+        self.criterion = criterion
+
+    def forward(
+        self,
+        output: torch.Tensor,
+        target: torch.Tensor,
+        weights: torch.Tensor | float = 1.0,
+        **kwargs,
+    ) -> torch.Tensor:
+        """
+        Args:
+            output: predicted tensor
+            target: target tensor
+            weights: weights for each element in the loss calculation. If a float,
+                weights all elements by that value. Defaults to 1.
+
+        Returns:
+            the weighted loss
+        """
+        if self.apply_sigmoid:
+            output = F.sigmoid(output)
+
+        loss = self.criterion(output, target) * weights
+        loss_without_zeros = loss[loss != 0]
+        if loss_without_zeros.nelement() == 0:
+            return torch.tensor(0.0, device=output.device)
+
+        return torch.mean(loss_without_zeros)
+
+
+@CRITERIONS.register_module
+class WeightedMSECriterion(WeightedCriterion):
+    """
+    Weighted Mean Squared Error (MSE) Loss.
+
+    This loss computes the Mean Squared Error between the prediction and target tensors,
+    but it also incorporates weights to adjust the contribution of each element in the loss
+    calculation. The loss is computed element-wise, and elements with a weight of 0 (masked items)
+    are excluded from the loss calculation.
+    """
+
+    def __init__(self, apply_sigmoid: bool = False) -> None:
+        super().__init__(nn.MSELoss(reduction="none"), apply_sigmoid=apply_sigmoid)
+
+
+@CRITERIONS.register_module
+class WeightedHuberCriterion(WeightedCriterion):
+    """
+    Weighted Huber Loss.
+
+    This loss computes the Huber loss between the prediction and target tensors,
+    but it also incorporates weights to adjust the contribution of each element in the loss
+    calculation. The loss is computed element-wise, and elements with a weight of 0 are
+    excluded from the loss calculation.
+    """
+
+    def __init__(self, apply_sigmoid: bool = False) -> None:
+        super().__init__(nn.HuberLoss(reduction="none"), apply_sigmoid=apply_sigmoid)
+
+
+@CRITERIONS.register_module
+class WeightedBCECriterion(WeightedCriterion):
+    """
+    Weighted Binary Cross Entropy (BCE) Loss.
+
+    This loss computes the Binary Cross Entropy loss between the prediction and target tensors,
+    but it also incorporates weights to adjust the contribution of each element in the loss
+    calculation. The loss is computed element-wise, and elements with a weight of 0 are
+    excluded from the loss calculation.
+    """
+
+    def __init__(self, apply_sigmoid: bool = False) -> None:
+        super().__init__(
+            nn.BCEWithLogitsLoss(reduction="none"), apply_sigmoid=apply_sigmoid
+        )

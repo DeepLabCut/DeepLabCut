@@ -1,11 +1,24 @@
-from typing import List
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from __future__ import annotations
 
 import torch
 import torchvision
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
-from .base import DETECTORS, BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
+    DETECTORS,
+    BaseDetector,
+)
 
 
 @DETECTORS.register_module
@@ -18,53 +31,57 @@ class FasterRCNN(BaseDetector):
     Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards
     real-time object detection with region proposal networks." Advances in neural
     information processing systems 28 (2015).
+
+    See source: https://github.com/pytorch/vision/blob/main/torchvision/models/detection/generalized_rcnn.py
+    See tutorial: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html#defining-your-model
+
+    See validation loss issue:
+    - https://discuss.pytorch.org/t/compute-validation-loss-for-faster-rcnn/62333/12
+    - https://stackoverflow.com/a/65347721
     """
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         """Summary:
         Constructor of the FasterRCNN object.
         Loads the data.
-
-        Args:
-            None
-
-        Return:
-            None
         """
         super().__init__()
         self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
             weights=FasterRCNN_ResNet50_FPN_Weights.COCO_V1
         )
+
+        # Modify the base predictor to output the correct number of classes
         num_classes = 2
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-    def forward(self, x: torch.Tensor, targets: dict = None) -> torch.Tensor:
-        """Summary:
+        # See source:  https://stackoverflow.com/a/65347721
+        self.model.eager_outputs = lambda losses, detections: (losses, detections)
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        targets: list[dict[str, torch.Tensor]] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
+        """
         Forward pass of the Faster R-CNN
 
         Args:
-            x: input tensor to the detector
-            targets: dictionary containing target information for training.
-                                      Defaults to None.
+            x: images to be processed, of shape (b, c, h, w)
+            targets: ground-truth boxes present in the images
 
         Returns:
-            Output tensor from the detector. If targets are provided, returns
-            a tuple of losses (classification and regression).
-            If targets are not provided, returns a tensor with predicted bounding
-            boxes and associated scores.
+            losses: {'loss_name': loss_value}
+            detections: for each of the b images, {"boxes": bounding_boxes}
         """
         return self.model(x, targets)
 
-    def get_target(self, annotations: dict) -> List[dict]:
-        """Summary:
+    def get_target(self, labels: dict) -> list[dict[str, torch.Tensor]]:
+        """
         Returns target in a format FasterRCNN can handle
 
         Args:
-            annotations: dict of annotations, must contain the keys:
+            labels: dict of annotations, must contain the keys:
                          area: tensor containing area information for each annotation.
                          labels: tensor containing class labels for each annotation.
                          is_crowd: tensor indicating if each annotation is a crowd (1) or not (0).
@@ -94,9 +111,7 @@ class FasterRCNN(BaseDetector):
                     tensor([[50., 60., 70., 80.]])}]
         """
         res = []
-        for i, _ in enumerate(annotations["image_id"]):
-            box_ann = annotations["boxes"][i].clone()
-
+        for i, box_ann in enumerate(labels["boxes"]):
             mask = (box_ann[:, 2] > 0.0) & (box_ann[:, 3] > 0.0)
             box_ann = box_ann[mask]
             # bbox format conversion (x, y, w, h) -> (x1, y1, x2, y2)
@@ -104,10 +119,10 @@ class FasterRCNN(BaseDetector):
             box_ann[:, 3] += box_ann[:, 1]
             res.append(
                 {
-                    "area": annotations["area"][i],
-                    "labels": annotations["labels"][i],
-                    "image_id": annotations["image_id"][i],
-                    "is_crowd": annotations["is_crowd"][i],
+                    "area": labels["area"][i],
+                    "labels": labels["labels"][i],
+                    # "image_id": labels["image_id"][i],
+                    "is_crowd": labels["is_crowd"][i],
                     "boxes": box_ann,
                 }
             )

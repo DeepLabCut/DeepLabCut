@@ -22,6 +22,8 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 class SinglePredictor(BasePredictor):
     """Predictor class for single animal pose estimation.
 
+    TODO: Refactor to include HeatmapOnlyPredictor
+
     Args:
         num_animals: Number of animals in the project.
         location_refinement: Enable location refinement.
@@ -45,8 +47,7 @@ class SinglePredictor(BasePredictor):
         locref_stdev: float,
         apply_sigmoid: bool = True,
     ):
-        """Initializes the SinglePredictor class.
-
+        """
         Args:
             num_animals: Number of animals in the project.
             location_refinement : Enable location refinement.
@@ -72,17 +73,14 @@ class SinglePredictor(BasePredictor):
 
     def forward(
         self,
-        output: Tuple[torch.Tensor, torch.Tensor],
-        scale_factors: Tuple[float, float],
-    ) -> dict:
+        inputs: torch.Tensor,
+        outputs: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
         Args:
-            output: Output tensors from previous layers.
-                        output = heatmaps, locref
-                        heatmaps: torch.Tensor([batch_size, num_joints, height, width])
-                        locref: torch.Tensor([batch_size, num_joints, height, width])
-            scale_factors: Scale factors for the poses.
+            inputs: the input images given to the model, of shape (b, c, w, h)
+            outputs: output of the model heads (heatmap, locref)
 
         Returns:
             A dictionary containing a "poses" key with the output tensor as value.
@@ -93,7 +91,11 @@ class SinglePredictor(BasePredictor):
             >>> scale_factors = (0.5, 0.5)
             >>> poses = predictor.forward(output, scale_factors)
         """
-        heatmaps, locrefs = output
+        heatmaps, locrefs = outputs["heatmap"], outputs["locref"]
+        h_in, w_in = inputs.shape[2:]
+        h_out, w_out = heatmaps.shape[2:]
+        scale_factors = h_in / h_out, w_in / w_out
+
         if self.apply_sigmoid:
             heatmaps = self.sigmoid(heatmaps)
         heatmaps = heatmaps.permute(0, 2, 3, 1)
@@ -217,28 +219,29 @@ class HeatmapOnlyPredictor(BasePredictor):
 
     def forward(
         self,
-        output: Tuple[torch.Tensor, torch.Tensor],
-        scale_factors: Tuple[float, float],
-    ) -> dict:
-        """Forward pass of HeatmapOnlyPredictor. Computes predictions from the trained model output.
+        inputs: torch.Tensor,
+        outputs: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
+        """Forward pass of SinglePredictor. Gets predictions from model output.
 
         Args:
-            output: Output tensors from previous layers.
-                    output = heatmaps
-                    heatmaps: torch.Tensor([batch_size, num_joints, height, width])
-                    locref: torch.Tensor([batch_size, num_joints, height, width])
-            scale_factors: Scale factors for the poses.
+            inputs: the input images given to the model, of shape (b, c, w, h)
+            outputs: output of the model heads (heatmap, locref)
 
         Returns:
             A dictionary containing a "poses" key with the output tensor as value.
 
         Example:
-            >>> predictor = HeatmapOnlyPredictor(num_animals=1, apply_sigmoid=True)
+            >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
             >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 17, 64, 64))
             >>> scale_factors = (0.5, 0.5)
             >>> poses = predictor.forward(output, scale_factors)
         """
-        heatmaps = output[0]
+        heatmaps = outputs["heatmap"]
+        h_in, w_in = inputs.shape[2:]
+        h_out, w_out = heatmaps.shape[2:]
+        scale_factors = h_in / h_out, w_in / w_out
+
         if self.apply_sigmoid:
             heatmaps = self.sigmoid(heatmaps)
         heatmaps = heatmaps.permute(0, 2, 3, 1)

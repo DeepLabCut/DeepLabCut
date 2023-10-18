@@ -9,11 +9,12 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import timm
+import torch
+
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BACKBONES,
     BaseBackbone,
 )
-import torch.nn as nn
 
 
 @BACKBONES.register_module
@@ -22,26 +23,21 @@ class ResNet(BaseBackbone):
 
     This class represents a typical ResNet backbone for pose estimation.
 
-    Args:
-        model_name: Name of the ResNet model to use, e.g., 'resnet50', 'resnet101', etc.
-                                   Defaults to 'resnet50'.
-        pretrained: If True, the backbone will be initialized with ImageNet pre-trained weights.
-                                     Defaults to True.
+    Attributes:
+        model: the ResNet model
     """
 
     def __init__(self, model_name: str = "resnet50", pretrained: bool = True) -> None:
         """Initialize the ResNet backbone.
 
         Args:
-            model_name: Name of the ResNet model to use, e.g., 'resnet50', 'resnet101', etc.
-                                       Defaults to 'resnet50'.
-            pretrained: If True, the backbone will be initialized with ImageNet pre-trained weights.
-                                         Defaults to True.
+            model_name: Name of the ResNet model to use, e.g., 'resnet50', 'resnet101'
+            pretrained: If True, initializes with ImageNet pretrained weights.
         """
         super().__init__()
         self.model = timm.create_model(model_name, pretrained=pretrained)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the ResNet backbone.
 
         Args:
@@ -57,6 +53,7 @@ class ResNet(BaseBackbone):
             >>> y = backbone(x)
 
             Expected Output Shape:
-                If input size is (batch_size, 3, shape_x, shape_y), the output shape will be (batch_size, 3, shape_x//32, shape_y//32)
+                If input size is (batch_size, 3, shape_x, shape_y), the output shape
+                will be (batch_size, 3, shape_x//32, shape_y//32)
         """
         return self.model.forward_features(x)
