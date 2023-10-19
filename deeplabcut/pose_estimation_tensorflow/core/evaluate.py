@@ -555,6 +555,7 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
+    snapshots_to_evaluate: list = None,
 ):
     """Evaluates the network.
 
@@ -802,16 +803,23 @@ def evaluate_network(
                 )
                 Snapshots = Snapshots[increasing_indices]
 
-                if cfg["snapshotindex"] == -1:
-                    snapindices = [-1]
-                elif cfg["snapshotindex"] == "all":
-                    snapindices = range(len(Snapshots))
-                elif cfg["snapshotindex"] < len(Snapshots):
-                    snapindices = [cfg["snapshotindex"]]
+                if snapshots_to_evaluate is not None:
+                    snapshot_exists = np.array([True if snap in Snapshots else False for snap in snapshots_to_evaluate])
+                    snapshot_names = list(np.array(snapshots_to_evaluate)[snapshot_exists])
+
+                    if False in snapshot_exists:
+                        print(f"The following requested snapshots were not found and will be skipped: \n"
+                              f"{snapshots_to_evaluate[np.logical_not(snapshot_exists)]}")
+
                 else:
-                    raise ValueError(
-                        "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-                    )
+                    if -len(Snapshots) <= cfg["snapshotindex"] < len(Snapshots):
+                        snapshot_names = [Snapshots[cfg["snapshotindex"]]]
+                    elif cfg["snapshotindex"] == "all":
+                        snapshot_names = Snapshots
+                    else:
+                        raise ValueError(
+                            "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
+                        )
 
                 final_result = []
 
@@ -835,9 +843,9 @@ def evaluate_network(
                 ##################################################
                 # Compute predictions over images
                 ##################################################
-                for snapindex in snapindices:
+                for snapshot_name in snapshot_names:
                     dlc_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", Snapshots[snapindex]
+                        str(modelfolder), "train", snapshot_name
                     )  # setting weights to corresponding snapshot.
                     trainingsiterations = (
                         dlc_cfg["init_weights"].split(os.sep)[-1]
@@ -867,7 +875,7 @@ def evaluate_network(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
-                        Snapshots[snapindex],
+                        snapshot_name,
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
@@ -923,7 +931,7 @@ def evaluate_network(
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
-                            Snapshots[snapindex],
+                            snapshot_name,
                         )
                         DataCombined = pd.concat(
                             [Data.T, DataMachine.T], axis=0, sort=False
@@ -1005,7 +1013,7 @@ def evaluate_network(
                                 "LabeledImages_"
                                 + DLCscorer
                                 + "_"
-                                + Snapshots[snapindex],
+                                + snapshot_name,
                             )
                             auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
@@ -1031,7 +1039,7 @@ def evaluate_network(
                                 "LabeledImages_"
                                 + DLCscorer
                                 + "_"
-                                + Snapshots[snapindex],
+                                + snapshot_name,
                             )
                             if not os.path.exists(foldername):
                                 print(
