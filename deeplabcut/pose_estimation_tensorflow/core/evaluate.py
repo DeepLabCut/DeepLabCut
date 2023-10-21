@@ -804,12 +804,21 @@ def evaluate_network(
                 Snapshots = Snapshots[increasing_indices]
 
                 if snapshots_to_evaluate is not None:
-                    snapshot_exists = np.array([True if snap in Snapshots else False for snap in snapshots_to_evaluate])
-                    snapshot_names = list(np.array(snapshots_to_evaluate)[snapshot_exists])
+                    snapshot_exists = [snap in Snapshots for snap in snapshots_to_evaluate]
 
-                    if False in snapshot_exists:
-                        print(f"The following requested snapshots were not found and will be skipped: \n"
-                              f"{snapshots_to_evaluate[np.logical_not(snapshot_exists)]}")
+                    snapshot_names = []
+                    missing_snapshots = []
+                    for snap, exists in zip(snapshots_to_evaluate, snapshot_exists):
+                        if exists:
+                            snapshot_names.append(snap)
+                        else:
+                            missing_snapshots.append(snap)
+
+                    if not all(snapshot_exists):
+                        raise ValueError(f"None of the requested snapshots were found: \n{missing_snapshots}")
+                    elif False in snapshot_exists:
+                        print(f"The following requested snapshots were not found and will be skipped:\n"
+                              f"{missing_snapshots}")
 
                 else:
                     if -len(Snapshots) <= cfg["snapshotindex"] < len(Snapshots):
