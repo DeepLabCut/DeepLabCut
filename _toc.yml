@@ -1,28 +1,35 @@
 format: jb-book
-root: README
+root: docs/get_started
 parts:
-- caption: Getting Started
+- caption:
+  chapters: 
+  - file: docs/project_types
+- caption: ⚙️ Installation
   chapters:
-  - file: docs/UseOverviewGuide
-- caption: Installation
+  - file: docs/installation/overview
+  - file: docs/installation/install_conda
+  - file: docs/installation/install_docker
+  # - file: docs/installation/install_windows
+  # - file: docs/installation/install_macos
+  # - file: docs/installation/install_linux
+  - file: docs/installation/install_tips
+  # - file: docs/installation/installation
+- caption: 🚴‍♀️ Usage
   chapters:
-  - file: docs/installation
-  - file: docs/recipes/installTips
-  - file: docs/docker
-- caption: User Guides
+  - file: docs/usage/usage_gui
+  - file: docs/usage/usage_cli
+  - file: docs/usage/usage_napari
+- caption: 🚴‍♀️ Project types
   chapters:
-  - file: docs/standardDeepLabCut_UserGuide
-  - file: docs/maDLC_UserGuide
-  - file: docs/Overviewof3D
+  - file: docs/projects/project_overview
+  - file: docs/projects/project_single
+  - file: docs/projects/project_multi
+  - file: docs/projects/project_3D
+  - file: docs/projects/project_live
   - file: docs/HelperFunctions
-- caption: Graphical User Interfaces (GUIs)
+- caption: 📚 Guides
   chapters:
-  - file: docs/PROJECT_GUI
-  - file: docs/napari_GUI
   - file: docs/recipes/ClusteringNapari
-- caption: DeepLabCut-Live!
-  chapters:
-  - file: docs/deeplabcutlive
 - caption: DeepLabCut Model Zoo
   chapters:
   - file: docs/ModelZoo
@@ -34,7 +41,7 @@ parts:
 - caption: Hardware
   chapters:
   - file: docs/recipes/TechHardware
-- caption: Tutorials & Cookbook
+- caption: 📚 Tutorials & Cookbook
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC

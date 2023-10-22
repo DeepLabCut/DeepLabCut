@@ -1,5 +1,5 @@
 (project-manager-gui)=
-# Interactive Project Manager GUI
+# Project Manager GUI
 
 As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.
 
