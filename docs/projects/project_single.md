@@ -1,9 +1,18 @@
 (single-animal-userguide)=
-# DeepLabCut User Guide (for single animal projects)
+# Single-animal tracking
 
 This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look the same), then please see our [maDLC user guide](multi-animal-userguide).
 
 To get started, you can use the GUI, or the terminal. See below.
+
+```{contents} Contents
+---
+local:
+---
+``` 
+
+<!-- Let's make a line to break it up -->
+---
 
 ## DeepLabCut Project Manager GUI (recommended for beginners)
 
@@ -30,7 +39,7 @@ To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admi
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
-### (A) Create a New Project
+### Create a New Project
 
 The function **create\_new\_project** creates a new project directory, required subdirectories, and a basic project configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter (e.g. YourName), as well as the date at creation.
 
@@ -75,7 +84,7 @@ The ``create_new_project`` step writes the following parameters to the configura
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
 </p>
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -83,7 +92,7 @@ The ``create_new_project`` step writes the following parameters to the configura
 ```
 ````
 
-### (B) Configure the Project
+### Configure the Project
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
 
@@ -93,7 +102,7 @@ Please DO NOT have spaces in the names of bodyparts.
 **bodyparts:** are the bodyparts of each individual (in the above list).
 
 
- ### (C) Data Selection (extract frames)
+ ### Data Selection (extract frames)
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below).
 
@@ -134,7 +143,7 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
 </p>
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -142,7 +151,7 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 ```
 ````
 
-### (D) Label Frames
+### Label Frames
 
 The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
 an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
@@ -172,7 +181,7 @@ Keyboard arrows: advance frames
 delete key: delete label
 ```
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -180,7 +189,7 @@ delete key: delete label
 ```
 ````
 
-###  (E) Check Annotated Frames
+### Check Annotated Frames
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -191,7 +200,7 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -199,7 +208,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```
 ````
 
-### (F) Create Training Dataset(s)
+### Create Training Dataset(s)
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).
 
@@ -247,7 +256,7 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570325287859-NHCTKWOFWPVWLH8B79PS/ke17ZwdGBToddI8pDm48kApwhYXjNb7J-ZG10ZuuPUJ7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0uRNgJXBmK_J7vOfsoUyYccR03UZyExumRKzyR7hPRvjPGikK2uEIM-3GOD5thTJoQ/Box2-01.png?format=1000w" width="90%">
 </p>
 
-#### API Docs for deeplabcut.create_training_dataset
+ for deeplabcut.create_training_dataset
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -255,7 +264,7 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 ```
 ````
 
-#### API Docs for deeplabcut.create_training_model_comparison
+ for deeplabcut.create_training_model_comparison
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -263,7 +272,7 @@ Please also consult the following page on selecting models: https://deeplabcut.g
 ```
 ````
 
-### (G) Train The Network
+### Train The Network
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
 ```python
@@ -288,7 +297,7 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 
 **maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -296,7 +305,7 @@ The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file
 ```
 ````
 
-### (H) Evaluate the Trained Network
+### Evaluate the Trained Network
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
@@ -356,7 +365,7 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -364,7 +373,7 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 ```
 ````
 
-### (I) Novel Video Analysis:
+### Novel Video Analysis
 
 The trained network can be used to analyze new videos. The user needs to first choose a checkpoint with the best
 evaluation results for analyzing the videos. In this case, the user can enter the corresponding index of the checkpoint
@@ -383,7 +392,7 @@ However, if the flag ``save_as_csv`` is set to ``True``, the data can also be ex
 (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.; This flag is set to ``False``
 by default. You can also set a destination folder (``destfolder``) for the output files by passing a path of the folder you wish to write to.
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -402,7 +411,7 @@ dynamic: triple containing (state, detectiontreshold, margin)
 
         If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e., any body part > detectiontreshold), then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost; i.e., <detectiontreshold). The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 ```
-### (J) Filter pose data data (RECOMMENDED!):
+### Filter pose data data (RECOMMENDED!):
 
 You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
@@ -422,7 +431,7 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -430,7 +439,7 @@ deeplabcut.filterpredictions(config_path, ['fullpath/analysis/project/videos/rea
 ```
 ````
 
-### (K) Plot Trajectories:
+### Plot Trajectories:
 
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
@@ -447,7 +456,7 @@ It creates a folder called ``plot-poses`` (in the directory of the video). The p
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
 </p>
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -455,7 +464,7 @@ It creates a folder called ``plot-poses`` (in the directory of the video). The p
 ```
 ````
 
-### (L) Create Labeled Videos:
+### Create Labeled Videos:
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher quality!). If you want to create high-quality videos, please add ``save_frames=True``. One can use the command as follows to create multiple labeled videos:
@@ -501,7 +510,7 @@ deeplabcut.create_labeled_video(config_path,['fullpath/afolderofvideos'], videot
 
 This function has various other parameters, in particular the user can set the ``colormap``, the ``dotsize``, and ``alphavalue`` of the labels in **config.yaml** file.
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -517,7 +526,7 @@ NEW, as of 2.0.7+: You can save the "skeleton" that was applied in ``create_labe
 deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingsetindex=0, save_as_csv=False, destfolder=None)
 ```
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -525,7 +534,7 @@ deeplabcut.analyzeskeleton(config, video, videotype='avi', shuffle=1, trainingse
 ```
 ````
 
-### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
+### Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -572,7 +581,7 @@ list (``extractionalgorithm='uniform'``), by performing ``extractionalgorithm='k
 
 In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user can run the extract_outlier_frames iteratively, and (even) extract additional frames from the same video. Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback (see below).
 
-#### API Docs
+
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -580,7 +589,7 @@ In the automatic configuration, before the frame selection happens, the user is 
 ```
 ````
 
- ### (N) Refine Labels: Augmentation of the Training Dataset
+ ### Refine Labels: Augmentation of the Training Dataset
 
  Based on the performance of DeepLabCut, four scenarios are possible:
 
@@ -621,7 +630,7 @@ Now you can run ``create_training_dataset``, then ``train_network``, etc. If you
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling more data.
 
-#### API Docs for deeplabcut.refine_labels
+ for deeplabcut.refine_labels
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -629,7 +638,7 @@ If after training the network generalizes well to the data, proceed to analyze n
 ```
 ````
 
-#### API Docs for deeplabcut.merge_datasets
+ for deeplabcut.merge_datasets
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}

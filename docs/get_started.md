@@ -1,10 +1,29 @@
 (overview)=
-# 🥳 Get started with DeepLabCut: our key recommendations 
+# 🚀 Get started
+We know - you can't wait to get started doing some awesome tracking! And you don't have long to go - **but wait a moment before installing, read on, and follow the guide in the order it's written - it'll save you a lot of troubles**. 
 
+DeepLabCut has grown into a whole ecosystem of pose estimation tools. This ecosystem 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
-## [How to install DeepLabCut](how-to-install)
+## [Installation](how-to-install)
+Now, we can move on to installation. DeepLabCut can be run on **Windows**, **Linux**, or **MacOS**. We provide multiple ways to install, but the two main ways are using either a `conda`-based installation (**recommended**) [`Docker` container](docker-containers) (recommended for Ubuntu advanced users). 
 
+**Our recommended route is to use `conda`**.
+
+::::{grid}
+:gutter: 2
+
+:::{grid-item-card} [Install with `conda`](install-conda)
+[![alt](images/conda_logo.svg)](install-conda)
+:::
+
+:::{grid-item-card} [Install with `Docker`](install-docker)
+[![alt](images/docker_logo.svg)](install-docker)
+:::
+
+::::
+
+## Usage
 - Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick:
 
 - (1) [How to use standard DeepLabCut](single-animal-userguide)

@@ -1,4 +1,5 @@
-# DeepLabCut-Live!
+# Real-time tracking
+## DeepLabCut-Live!
 
 We provide two additional pip packages that allow you to record and stream camera data and run DeeplabCut models in real-time.
 You can get an indepth overview of this work in [Kane et al, 2020 eLife](https://elifesciences.org/articles/61909).
