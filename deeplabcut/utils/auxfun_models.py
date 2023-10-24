@@ -168,6 +168,23 @@ def set_visible_devices(gputouse: int):
     tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
 
 
+def smart_restore(restorer, sess, checkpoint_path, net_type):
+    "Restore pretrained weights, smartly redownloading them if missing."
+    try:
+        restorer.restore(sess, checkpoint_path)
+    except ValueError as e:  # The path may be wrong, or the weights no longer exist
+        dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+        correct_model_path = os.path.join(
+            dlcparent_path, MODELTYPE_FILEPATH_MAP[net_type],
+        )
+        if checkpoint_path == correct_model_path:
+            # The path is right, hence the weights are missing; we'll download them again.
+            _ = check_for_weights(net_type, Path(dlcparent_path))
+            restorer.restore(sess, checkpoint_path)
+        else:
+            raise ValueError(e)
+
+
 # Aliases for backwards-compatibility
 Check4Weights = check_for_weights
 Downloadweights = download_weights
