@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.core.train import (
     get_optimizer,
     LearningRate,
 )
+from deeplabcut.utils import auxfun_models
 
 
 def train(
@@ -157,7 +158,8 @@ def train(
     sess.run(tf.compat.v1.global_variables_initializer())
     sess.run(tf.compat.v1.local_variables_initializer())
 
-    restorer.restore(sess, cfg["init_weights"])
+    auxfun_models.smart_restore(restorer, sess, cfg["init_weights"], net_type)
+
     if maxiters is None:
         max_iter = int(cfg["multi_step"][-1][1])
     else:
