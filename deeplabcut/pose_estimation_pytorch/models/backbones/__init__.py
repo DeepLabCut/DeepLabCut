@@ -13,4 +13,4 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BaseBackbone,
 )
 from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import HRNet
-from deeplabcut.pose_estimation_pytorch.models.backbones.resnet import ResNet
+from deeplabcut.pose_estimation_pytorch.models.backbones.resnet import ResNet, DLCRNet

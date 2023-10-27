@@ -55,7 +55,7 @@ def test_get_predictions_bottom_up(
     # Pretrained set to False to initialize model without using a snapshot
     pytorch_config["model"]["backbone"]["pretrained"] = False
     # build model
-    model = utils.build_pose_model(pytorch_config["model"], pytorch_config)
+    model = utils.build_pose_model(pytorch_config)
 
     # build predictor
     predictor: BasePredictor = PREDICTORS.build(dict(pytorch_config["predictor"]))
@@ -101,7 +101,7 @@ def test_get_predicitons_top_down(
         dict(pytorch_config["detector"]["detector_model"])
     )
     # build model
-    model = utils.build_pose_model(pytorch_config["model"], pytorch_config)
+    model = utils.build_pose_model(pytorch_config)
 
     # build predictors
     top_down_predictor: BasePredictor = PREDICTORS.build(

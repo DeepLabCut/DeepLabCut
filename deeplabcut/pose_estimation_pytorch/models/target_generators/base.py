@@ -40,10 +40,7 @@ class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
 
     @abstractmethod
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
-        labels: dict,
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """Generates targets
 
@@ -65,3 +62,26 @@ class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
                     }
                 }
         """
+
+
+@TARGET_GENERATORS.register_module
+class SequentialGenerator(BaseGenerator):
+    def __init__(self, generators: list[dict], label_keypoint_key: str = "keypoints"):
+        super().__init__(label_keypoint_key)
+        self._generators = [TARGET_GENERATORS.build(dict_) for dict_ in generators]
+
+    @property
+    def generators(self):
+        return self._generators
+
+    def forward(
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+    ) -> dict[str, dict[str, torch.Tensor]]:
+        dict_ = {}
+        for gen in self.generators:
+            dict_.update(gen(inputs, outputs, labels))
+        return dict_
+
+    def __repr__(self):
+        generators_repr = ", ".join(repr(gen) for gen in self._generators)
+        return f"<{self.__class__.__name__}(generators=[{generators_repr}], label_keypoint_key='{self.label_keypoint_key}')>"

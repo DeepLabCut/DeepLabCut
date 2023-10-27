@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import torch
+from itertools import combinations
 
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -75,8 +76,9 @@ def make_pytorch_config(
 
     """
 
+    # FIXME Handle gracefully models that apply to both single- and multi-animal setups
     single_animal_nets = [
-        "resnet_50",
+        # "resnet_50",
         "mobilenet_v2_1.0",
         "mobilenet_v2_0.75",
         "mobilenet_v2_0.5",
@@ -96,6 +98,7 @@ def make_pytorch_config(
     ]
 
     multi_animal_nets = [
+        "resnet_50",
         "dekr_w18",
         "dekr_w32",
         "dekr_w48",
@@ -153,6 +156,32 @@ def make_pytorch_config(
                     num_unique_bpts, backbone_type
                 )
 
+        elif "resnet" in net_type:
+            dim = BACKBONE_OUT_CHANNELS["resnet-50"]
+            graph = [list(edge) for edge in combinations(range(num_joints), 2)]  # TODO Parse from config
+            num_limbs = len(graph)
+            pytorch_config["model"]["backbone"] = {"type": "ResNet"}
+            pytorch_config["model"]["heads"] = {
+                "bodypart": make_dlcrnet_head(
+                    num_joints,
+                    num_unique_bpts,
+                    num_individuals,
+                    graph,
+                    edges_to_keep=list(
+                        pytorch_config.get("paf_best", list(range(num_limbs)))
+                    ),
+                    heatmap_channels=[dim, dim // 2, num_joints],
+                    locref_channels=[dim, dim // 2, 2 * num_joints],
+                    paf_channels=[dim, dim // 2, 2 * num_limbs],
+                    # TODO Set remaining params from config
+                )
+            }
+            # pytorch_config["data"]["crop_sampling"] = {
+            #     "height": 400,
+            #     "width": 400,
+            #     "max_shift": 0.4,
+            #     "method": "hybrid",
+            # }
         elif "token_pose" in net_type:
             if compute_unique_bpts:
                 raise NotImplementedError(
@@ -187,46 +216,91 @@ def make_pytorch_config(
     return pytorch_config
 
 
-def make_heatmap_head(
+def make_dlcrnet_head(
     num_joints: int,
+    num_unique_joints: int,
+    num_animals: int,
+    graph: list[tuple[int, int]],
+    edges_to_keep: list[int],
     heatmap_channels: list[int],
     locref_channels: list[int],
+    paf_channels: list[int],
+    locref_weight: float = 0.05,
+    paf_weight: float = 0.1,
+    paf_width: int = 20,
+    nms_radius: int = 5,
+    sigma: float = 1.0,
+    min_affinity: float = 0.05,
 ) -> dict:
+    dict_ = make_heatmap_head(num_joints, heatmap_channels, locref_channels)
+    dict_["type"] = "DLCRNetHead"
+    dict_["criterion"]["locref"]["weight"] = locref_weight
+    dict_["criterion"]["paf"] = {"type": "WeightedHuberCriterion", "weight": paf_weight}
+    n_deconv_layers = len(paf_channels) - 1
+    dict_["paf_config"] = {
+        "channels": paf_channels,
+        "kernel_size": [3] * n_deconv_layers,
+        "strides": [2] * n_deconv_layers,
+    }
+    dict_["target_generator"] = {
+        "type": "SequentialGenerator",
+        "generators": [
+            dict_["target_generator"],
+            {"type": "PartAffinityFieldGenerator", "graph": graph, "width": paf_width},
+        ],
+    }
+    dict_["predictor"] = {
+        "type": "PartAffinityFieldPredictor",
+        "num_animals": num_animals,
+        "num_multibodyparts": num_joints,
+        "num_uniquebodyparts": num_unique_joints,
+        "nms_radius": nms_radius,
+        "sigma": sigma,
+        "locref_stdev": 7.2801,
+        "min_affinity": min_affinity,
+        "graph": graph,
+        "edges_to_keep": edges_to_keep,
+    }
+    return dict_
+
+
+def make_heatmap_head(
+    num_joints: int, heatmap_channels: list[int], locref_channels: list[int]
+) -> dict:
+    n_deconv_heatmap = len(heatmap_channels) - 1
+    n_deconv_locref = len(locref_channels) - 1
     return {
-            "type": "HeatmapHead",
-            "predictor": {
-                "type": "SinglePredictor",
-                "location_refinement": True,
-                "locref_stdev": 7.2801,
-                "num_animals": 1,
+        "type": "HeatmapHead",
+        "predictor": {
+            "type": "SinglePredictor",
+            "location_refinement": True,
+            "locref_stdev": 7.2801,
+            "num_animals": 1,
+        },
+        "target_generator": {
+            "type": "PlateauGenerator",
+            "locref_stdev": 7.2801,
+            "num_joints": num_joints,
+            "pos_dist_thresh": 17,
+        },
+        "criterion": {
+            "heatmap": {"type": "WeightedBCECriterion", "weight": 1.0},
+            "locref": {
+                "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
+                "weight": 0.03,
             },
-            "target_generator": {
-                "type": "PlateauGenerator",
-                "locref_stdev": 7.2801,
-                "num_joints": num_joints,
-                "pos_dist_thresh": 17,
-            },
-            "criterion": {
-                "heatmap": {
-                    "type": "WeightedBCECriterion",
-                    "weight": 1.0,
-                },
-                "locref": {
-                    "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
-                    "weight": 0.03,
-                }
-            },
-            "heatmap_config": {
-                "channels": heatmap_channels,
-                "kernel_size": [2, 2],
-                "strides": [2, 2],
-            },
-            "locref_config": {
-                "channels": locref_channels,
-                "kernel_size": [2, 2],
-                "strides": [2, 2],
-            },
-        }
+        },
+        "heatmap_config": {
+            "channels": heatmap_channels,
+            "kernel_size": [3] * n_deconv_heatmap,
+            "strides": [2] * n_deconv_heatmap,
+        },
+        "locref_config": {
+            "channels": locref_channels,
+            "kernel_size": [3] * n_deconv_locref,
+            "strides": [2] * n_deconv_locref,
+        },
+    }
 
 
 def make_single_head_cfg(num_joints: int, net_type: str) -> dict:
@@ -284,10 +358,7 @@ def make_unique_bodyparts_head(num_unique_bodyparts: int, backbone_type: str) ->
 
 
 def make_dekr_head_cfg(
-    num_individuals: int,
-    num_joints: int,
-    backbone_type: str,
-    num_offset_per_kpt: int,
+    num_individuals: int, num_joints: int, backbone_type: str, num_offset_per_kpt: int
 ):
     return {
         "type": "DEKRHead",
@@ -298,14 +369,11 @@ def make_dekr_head_cfg(
             "bg_weight": 0.1,
         },
         "criterion": {
-            "heatmap": {
-                "type": "WeightedBCECriterion",
-                "weight": 1,
-            },
+            "heatmap": {"type": "WeightedBCECriterion", "weight": 1},
             "offset": {
                 "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
                 "weight": 0.03,
-            }
+            },
         },
         "predictor": {
             "type": "DEKRPredictor",
@@ -364,32 +432,24 @@ def make_token_pose_model_cfg(num_joints, backbone_type):
                     "num_joints": num_joints,
                     "pos_dist_thresh": 17,
                 },
-                "criterion": {
-                    "type": "WeightedBCECriterion",
-                },
-                "predictor": {
-                    "type": "HeatmapOnlyPredictor",
-                    "num_animals": 1,
-                },
+                "criterion": {"type": "WeightedBCECriterion"},
+                "predictor": {"type": "HeatmapOnlyPredictor", "num_animals": 1},
                 "dim": 192,
                 "hidden_heatmap_dim": 384,
                 "heatmap_dim": 4096,
                 "apply_multi": True,
                 "heatmap_size": [64, 64],
                 "apply_init": True,
-            },
+            }
         },
-        "pose_model": {"stride": 4}
+        "pose_model": {"stride": 4},
     }
 
 
 def make_detector_cfg(num_individuals: int):
     return {
         "model": {"type": "FasterRCNN"},
-        "optimizer": {
-            "type": "AdamW",
-            "params": {"lr": 1e-4},
-        },
+        "optimizer": {"type": "AdamW", "params": {"lr": 1e-4}},
         "scheduler": {
             "type": "LRListScheduler",
             "params": {"milestones": [90], "lr_list": [[1e-5]]},

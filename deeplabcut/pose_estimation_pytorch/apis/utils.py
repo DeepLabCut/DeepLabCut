@@ -78,12 +78,11 @@ def build_scheduler(
     return scheduler(optimizer=optimizer, **scheduler_cfg["params"])
 
 
-def build_pose_model(cfg: dict, pytorch_cfg: dict) -> PoseModel:
+def build_pose_model(pytorch_cfg: dict) -> PoseModel:
     """
     TODO: Deprecated but still used in analyze_videos
 
     Args:
-        cfg : sub dict of the pytorch config that contains all information about the model
         pytorch_cfg : entire pytorch config
 
     Returns a pytorch pose model based on pytorch config
