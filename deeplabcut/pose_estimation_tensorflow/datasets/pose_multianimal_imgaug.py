@@ -162,7 +162,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item.joints = {}
 
             if not mask_kpts_below_thresh:
-                joints = np.concatenate([joint_ids, kpts], axis=1)                
+                joints = np.concatenate([joint_ids, kpts], axis=1)
                 joints = np.nan_to_num(joints, nan=0)
             else:
                 for kpt_id, kpt in enumerate(kpts):
@@ -172,7 +172,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         kpts[kpt_id][:-1] = -1
                         kpts[kpt_id][-1] = 1
                 joints = np.concatenate([joint_ids, kpts], axis=1)
-                
+
             sparse_joints = []
 
             for coord in joints:
@@ -349,21 +349,19 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def get_batch_from_video(self):
         num_images = len(self.vid)
-        size = self.batch_size
         batch_images = []
         batch_joints = []
         joint_ids = []
-        inds_visible = []
         data_items = []
         trim_ends = self.cfg.get('trim_ends', None)
         if trim_ends is None:
             trim_ends = 0
         # because of the existence of threshold, sampling population is adjusted to len(self.data)
-        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)        
+        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
-            data_item = self.data[index + offset]            
+            data_item = self.data[index + offset]
             data_items.append(data_item)
             im_file = data_item.im_path
 
@@ -371,31 +369,29 @@ class MAImgaugPoseDataset(BasePoseDataset):
             self.vid.set_to_frame(index + offset)
             image = self.vid.read_frame()
             if self.has_gt:
-                Joints = data_item.joints
-                if len(Joints[0]) == 0:
+                joints = data_item.joints
+                if len(joints[0]) == 0:
                     # empty prediction for this frame
-                    return None, None, None, None, None
-                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                    return None, None, None, None
+
+                kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
                 for j in range(self._n_animals):
-                    for n, x, y in Joints.get(j, []):
+                    for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
-                joint_id = [
-                    Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
-                ]
+
+                joint_id = np.array(list(range(self._n_kpts)) * self._n_animals)
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
-                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
 
             batch_images.append(image)
 
-        return batch_images, joint_ids, batch_joints, inds_visible, data_items
+        return batch_images, joint_ids, batch_joints, data_items
 
     def get_batch(self):
         img_idx = np.random.choice(self.num_images, size=self.batch_size, replace=True)
         batch_images = []
         batch_joints = []
         joint_ids = []
-        inds_visible = []
         data_items = []
         for i in range(self.batch_size):
             data_item = self.data[img_idx[i]]
@@ -408,21 +404,21 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 os.path.join(self.cfg["project_path"], im_file), mode="skimage"
             )
             if self.has_gt:
-                Joints = data_item.joints
-                kpts = np.zeros((self._n_kpts * self._n_animals, 2))
+                joints = data_item.joints
+                kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
                 for j in range(self._n_animals):
-                    for n, x, y in Joints.get(j, []):
+                    for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
                 joint_id = [
-                    Joints[person_id][:, 0].astype(int) for person_id in Joints.keys()
+                    np.array(list(range(self._n_kpts)))
+                    for _ in range(self._n_animals)
                 ]
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
-                inds_visible.append(np.flatnonzero(np.all(kpts != 0, axis=1)))
 
             batch_images.append(image)
 
-        return batch_images, joint_ids, batch_joints, inds_visible, data_items
+        return batch_images, joint_ids, batch_joints, data_items
 
     def get_targetmaps_update(
         self,
@@ -498,17 +494,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     batch_images,
                     joint_ids,
                     batch_joints,
-                    inds_visible,
                     data_items,
                 ) = self.get_batch_from_video()
             else:
-                (
-                    batch_images,
-                    joint_ids,
-                    batch_joints,
-                    inds_visible,
-                    data_items,
-                ) = self.get_batch()
+                batch_images, joint_ids, batch_joints, data_items = self.get_batch()
+
             # in case it's empty prediction
             if batch_joints is None or batch_images is None:
                 continue
@@ -525,8 +515,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
             # Discard keypoints whose coordinates lie outside the cropped image
             batch_joints_valid = []
             joint_ids_valid = []
-            for joints, ids, visible in zip(batch_joints, joint_ids, inds_visible):
-                joints = joints[visible]
+
+            for joints, ids in zip(batch_joints, joint_ids):
+                # Invisible joints are represented by nans
+                visible = ~np.isnan(joints[:, 0])
                 inside = np.logical_and.reduce(
                     (
                         joints[:, 0] < image_shape[1],
@@ -535,12 +527,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         joints[:, 1] > 0,
                     )
                 )
-                batch_joints_valid.append(joints[inside])
+                mask = visible & inside
+                batch_joints_valid.append(joints[mask])
+
                 temp = []
                 start = 0
                 for array in ids:
                     end = start + array.size
-                    temp.append(array[inside[start:end]])
+                    inds = np.arange(start, end)
+                    temp.append(array[mask[inds]])
                     start = end
                 joint_ids_valid.append(temp)
 
