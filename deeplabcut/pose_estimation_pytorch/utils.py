@@ -8,44 +8,64 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import abc
 import os
 
 import numpy as np
 import pandas as pd
 import torch
+
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     read_image_shape_fast,
 )
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import (
     calc_bboxes_from_keypoints,
 )
-
+from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
 # Shaokai's function
-def df2generic(proj_root, df, image_id_offset=0):
+
+
+def df_to_generic(proj_root: str, df: pd.DataFrame, image_id_offset: int = 0) -> dict:
+    """
+    Convert a pandas DataFrame containing pose estimation data to a dictionary in COCO format.
+
+    Args:
+        proj_root (str): The root directory of the project.
+        df (pd.DataFrame): The DataFrame containing the pose estimation data.
+        image_id_offset (int, optional): The offset to add to the image IDs. Defaults to 0.
+
+    Returns:
+        dict: A dictionary in COCO format containing the images, annotations, and categories.
+    """
     try:
-        individuals = df.columns.get_level_values("individuals").unique().tolist()
+        individuals = df.columns.get_level_values(
+            'individuals',
+        ).unique().tolist()
     except KeyError:
         new_cols = pd.MultiIndex.from_tuples(
-            [(col[0], "animal", col[1], col[2]) for col in df.columns],
-            names=["scorer", "individuals", "bodyparts", "coords"],
+            [(col[0], 'animal', col[1], col[2]) for col in df.columns],
+            names=['scorer', 'individuals', 'bodyparts', 'coords'],
         )
         df.columns = new_cols
 
-        individuals = df.columns.get_level_values("individuals").unique().tolist()
+        individuals = df.columns.get_level_values(
+            'individuals',
+        ).unique().tolist()
 
     unique_bpts = []
 
-    if "single" in individuals:
+    if 'single' in individuals:
         unique_bpts.extend(
-            df.xs("single", level="individuals", axis=1)
-            .columns.get_level_values("bodyparts")
-            .unique()
+            df.xs('single', level='individuals', axis=1)
+            .columns.get_level_values('bodyparts')
+            .unique(),
         )
     multi_bpts = (
-        df.xs(individuals[0], level="individuals", axis=1)
-        .columns.get_level_values("bodyparts")
+        df.xs(individuals[0], level='individuals', axis=1)
+        .columns.get_level_values('bodyparts')
         .unique()
         .tolist()
     )
@@ -57,15 +77,15 @@ def df2generic(proj_root, df, image_id_offset=0):
     individual = individuals[0]
 
     category = {
-        "name": individual,
-        "id": 0,
-        "supercategory": "animal",
+        'name': individual,
+        'id': 0,
+        'supercategory': 'animal',
     }
 
-    if individual == "single":
-        category["keypoints"] = unique_bpts
+    if individual == 'single':
+        category['keypoints'] = unique_bpts
     else:
-        category["keypoints"] = multi_bpts
+        category['keypoints'] = multi_bpts
 
     coco_categories.append(category)
 
@@ -87,13 +107,17 @@ def df2generic(proj_root, df, image_id_offset=0):
             category_id = 1  # 0 is for background by default
             try:
                 kpts = (
-                    data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
+                    data.xs(individual, level='individuals').to_numpy().reshape(
+                        (-1, 2),
+                    )
                 )
             except:
                 # somehow there are duplicates. So only use the first occurrence
                 data = data.iloc[0]
                 kpts = (
-                    data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
+                    data.xs(individual, level='individuals').to_numpy().reshape(
+                        (-1, 2),
+                    )
                 )
 
             keypoints = np.zeros((len(kpts), 3))
@@ -121,15 +145,15 @@ def df2generic(proj_root, df, image_id_offset=0):
 
             annotation_id += 1
             annotation = {
-                "image_id": image_id + image_id_offset,
-                "num_keypoints": num_keypoints,
-                "keypoints": keypoints,
-                "id": annotation_id,
-                "category_id": category_id,
-                "individual": individual,
-                "area": area,
-                "bbox": bbox,
-                "iscrowd": 0,
+                'image_id': image_id + image_id_offset,
+                'num_keypoints': num_keypoints,
+                'keypoints': keypoints,
+                'id': annotation_id,
+                'category_id': category_id,
+                'individual': individual,
+                'area': area,
+                'bbox': bbox,
+                'iscrowd': 0,
             }
 
             # adds an annotation even if no keypoint is annotated for the current individual
@@ -147,17 +171,17 @@ def df2generic(proj_root, df, image_id_offset=0):
         _, height, width = read_image_shape_fast(image_path)
 
         image = {
-            "file_name": image_path,
-            "width": width,
-            "height": height,
-            "id": image_id + image_id_offset,
+            'file_name': image_path,
+            'width': width,
+            'height': height,
+            'id': image_id + image_id_offset,
         }
         coco_images.append(image)
 
     ret_obj = {
-        "images": coco_images,
-        "annotations": coco_annotations,
-        "categories": coco_categories,
+        'images': coco_images,
+        'annotations': coco_annotations,
+        'categories': coco_categories,
     }
     return ret_obj
 
@@ -204,3 +228,12 @@ def is_seq_of(seq, expected_type, seq_type=None):
         if not isinstance(item, expected_type):
             return False
     return True
+
+
+def get_pytorch_config(modelfolder):
+    pytorch_config_path = os.path.join(
+        modelfolder, 'train', 'pytorch_config.yaml',
+    )
+    pytorch_cfg = read_plainconfig(pytorch_config_path)
+
+    return pytorch_cfg

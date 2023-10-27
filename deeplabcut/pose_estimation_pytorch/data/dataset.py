@@ -8,95 +8,332 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from __future__ import annotations
+
+from dataclasses import dataclass
 
 import albumentations as A
 import cv2
 import numpy as np
 import torch
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxiliaryfunctions import get_model_folder, read_plainconfig
 from torch.utils.data import Dataset
 
-from deeplabcut.utils.auxiliaryfunctions import get_model_folder, read_plainconfig
-from torch.utils.data import Dataset
+from deeplabcut.pose_estimation_pytorch.data.utils import (
+    _crop_image_keypoints,
+    _crop_and_pad_image_torch,
+)
+from deeplabcut.pose_estimation_pytorch.data.utils import _extract_keypoints_and_bboxes
+from deeplabcut.pose_estimation_pytorch.data.utils import apply_transform
+from deeplabcut.pose_estimation_pytorch.data.utils import map_id_to_annotations
+from deeplabcut.pose_estimation_pytorch.data.utils import map_image_path_to_id
 
-from .base import BaseDataset
-from .dlcproject import DLCProject
 
+@dataclass(frozen=True)
+class PoseDatasetParameters:
+    """Parameters for a pose dataset
 
-class PoseDataset(Dataset, BaseDataset):
+    Attributes:
+        bodyparts: the names of bodyparts in the dataset
+        unique_bpts: the names of unique bodyparts, or an empty list
+        individuals: the names of individuals
+        with_center_keypoints: whether to compute center keypoints for individuals
+        color_mode: {"RGB", "BGR"} the mode to load images in
     """
-    Dataset for pose estimation
-    """
 
-    def __init__(
-        self, project: DLCProject, transform: object = None, mode: str = "train"
-    ):
-        """Summary:
-        Constructor of the PoseDataset.
-        Loads the data
+    bodyparts: list[str]
+    unique_bpts: list[str]
+    individuals: list[str]
+    with_center_keypoints: bool = False
+    color_mode: str = "RGB"
+    cropped_image_size: tuple[int, int] | None = None
 
-        Args:
-            project: see class Project (wrapper for DLC original project class)
-            transform: augmentation/normalization pipeline
-            mode: 'train' or 'test'
-                this parameter which dataframe parse from the Project (df_tran or df_test)
+    @property
+    def num_joints(self) -> int:
+        return len(self.bodyparts)
 
-        Returns:
-            None
-        """
-        super().__init__()
-        self.transform = transform
-        self.project = project
-        self.cfg = self.project.cfg
+    @property
+    def num_unique_bpts(self) -> int:
+        return len(self.unique_bpts)
 
-        self.bodyparts = auxiliaryfunctions.get_bodyparts(self.cfg)
-        self.num_joints = len(self.bodyparts)
+    @property
+    def max_num_animals(self) -> int:
+        return len(self.individuals)
 
-        self.unique_bpts = auxiliaryfunctions.get_unique_bodyparts(self.cfg)
-        self.num_unique_bpts = len(self.unique_bpts)
 
-        self.shuffle = self.project.shuffle
-        self.project.convert2dict(mode)
-        self.dataframe = self.project.dataframe
+@dataclass
+class PoseDataset(Dataset):
+    """A pose dataset"""
+    images: list[dict[str, str]]
+    annotations: list[dict]
+    parameters: PoseDatasetParameters
+    transform: A.BaseCompose | None = None
+    mode: str = "train"
+    task: str = "BU"
 
-        modelfolder = os.path.join(
-            self.project.proj_root,
-            get_model_folder(
-                self.cfg["TrainingFraction"][0],
-                self.shuffle,
-                self.cfg,
-                "",
-            ),
-        )
-        pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-        pytorch_cfg = read_plainconfig(pytorch_config_path)
-        self.with_center = pytorch_cfg.get("with_center", False)
-        self.individuals = self.cfg.get("individuals", ["animal"])
-        self.individual_to_idx = {}
-        for i, indiv in enumerate(self.individuals):
-            self.individual_to_idx[indiv] = i
-        self.max_num_animals = len(self.individuals)
-        self.color_mode = pytorch_cfg.get("colormode", "RGB")
-
-        self.length = self.dataframe.shape[0]
-        assert self.length == len(self.project.image_path2image_id.keys())
+    def __post_init__(self):
+        self.image_path_id_map = map_image_path_to_id(self.images)
+        self.annotation_idx_map = map_id_to_annotations(self.annotations)
 
     def __len__(self):
-        """Summary:
-        Get the length of the dataset
+        return len(self.images) if self.task == "BU" else len(self.annotations)
+
+    def _get_raw_item(self, index: int) -> tuple[str, list[dict], int]:
+        """
+        Retrieve the image path and annotations for the specified index.
 
         Args:
-            None
+            index (int): The index of the item to retrieve.
 
         Returns:
-            Number of samples in the dataset
-        """
-        return self.length
+            tuple[str, list]: A tuple containing the image path and annotations.
 
-    def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
-        """Summary:
+        Note:
+            This method is used by the __getitem__ method to fetch raw data from the dataset storage.
+            If `self.crop` is True, it returns the image path and a list with a single annotation.
+            Otherwise, it returns the image path and a list of annotations for all instances in the image.
+        """
+        image_path = self.images[index]["file_name"]
+        image_id = self.image_path_id_map[image_path]
+        annotations = [
+            self.annotations[annotations_id]
+            for annotations_id in self.annotation_idx_map[image_id]
+        ]
+        return image_path, annotations, image_id
+
+    def _get_raw_item_crop(self, index: int) -> tuple[str, list[dict], int]:
+        annotations = self.annotations[index]
+        image_id = annotations["image_id"]
+        annotations = [annotations]
+
+        image_id2path = {
+            image_id: image_path
+            for (
+                image_path,
+                image_id,
+            ) in self.image_path_id_map.items()
+        }
+
+        return image_id2path[image_id], annotations, image_id
+
+    def __getitem__(self, index: int) -> dict:
+        """
+        Gets the item at the specified index from the dataset.
+
+        Args:
+            index: ordered number of the items in the dataset
+
+        Returns:
+            dict: corresponding to the image annotations, with keys:
+            {
+                "image": image tensor of shape (c, h, w),
+                "image_id": the ID of the image,
+                "path": the filepath to the image,
+                "original_size": the original (h, w) size before transforms
+                "offsets": the (x, y) offsets to apply to the keypoints in TD mode
+                "scales": the (x, y) scales to apply to the keypoints in TD mode
+                "annotations": {
+                    "keypoints": array of keypoints, invisible keypoints appear as (-1,-1)
+                    "keypoints_unique": the unique keypoints, if there are any
+                    "area": array of animals area in this image
+                    "boxes": the bounding boxes in this image
+                    "is_crowd": is_crowd annotations
+                    "labels": category_id annotations for boxes
+                },
+            }
+        """
+        image_path, annotations, image_id = self._get_data_based_on_task(index)
+        image, original_size = self._load_image(image_path)
+        (
+            keypoints,
+            keypoints_unique,
+            bboxes,
+            annotations_merged,
+        ) = self.extract_keypoints_and_bboxes(
+            annotations,
+            image,
+        )
+        offsets = np.zeros((self.parameters.max_num_animals, 2))
+        scales = (1, 1)
+        if self.task == "TD":
+            if self.parameters.cropped_image_size is None:
+                raise ValueError(
+                    "You must specify a cropped image size for top-down models",
+                )
+            if len(bboxes) > 1:
+                raise ValueError(
+                    "There can only be one bbox per item in TD datasets, found "
+                    f"{bboxes} for {index} (image {image_path})"
+                )
+            bboxes = bboxes.astype(int)
+
+            # TODO: The following code should be replaced by a numpy version
+            image, offsets, scales = _crop_and_pad_image_torch(
+                image, bboxes[0], "xywh", self.parameters.cropped_image_size[0]
+            )
+            keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
+            keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+
+            # coords = [
+            #     (bboxes[0][0], bboxes[0][0] + bboxes[0][2]),  # bboxes=xywh
+            #     (bboxes[0][1], bboxes[0][1] + bboxes[0][3]),
+            # ]
+            # image, keypoints, offsets, scales = self.crop(
+            #     image,
+            #     keypoints,
+            #     coords,
+            #     self.parameters.cropped_image_size,
+            # )
+            bboxes = []  # No more bounding boxes as we cropped around them
+
+        transformed = self.apply_transform_all_keypoints(
+            image, keypoints, keypoints_unique, bboxes,
+        )
+        keypoints = transformed["keypoints"]
+
+        if self.parameters.with_center_keypoints:
+            keypoints = self.add_center_keypoints(keypoints)
+
+        item = self._prepare_final_data_dict(
+            transformed["image"],
+            keypoints,
+            transformed["keypoints_unique"],
+            original_size,
+            image_path,
+            bboxes,
+            image_id,
+            annotations_merged,
+            offsets,
+            scales,
+        )
+        return item
+
+    def _prepare_final_data_dict(
+        self,
+        image: np.ndarray,
+        keypoints: np.ndarray,
+        keypoints_unique: np.ndarray,
+        original_size: tuple[int, int],
+        image_path: str,
+        bboxes: np.array,
+        image_id: int,
+        annotations_merged: dict,
+        offsets: tuple[int, int],
+        scales: tuple[float, float],
+    ) -> dict:
+        area = self.calc_area_from_keypoints(keypoints)
+        image = torch.tensor(image, dtype=torch.float).permute(2, 0, 1)
+        keypoints = torch.tensor(keypoints, dtype=torch.float)
+        keypoints_unique = torch.tensor(keypoints_unique, dtype=torch.float)
+        bboxes = torch.tensor(bboxes, dtype=torch.float)
+
+        return {
+            "image": image,
+            "image_id": image_id,
+            "path": image_path,
+            "original_size": original_size,
+            "offsets": offsets,
+            "scales": scales,
+            "annotations": {
+                "keypoints": keypoints,
+                "keypoints_unique": keypoints_unique,
+                "area": area,
+                "boxes": bboxes,
+                "is_crowd": annotations_merged["iscrowd"],
+                "labels": annotations_merged["category_id"],
+            },
+        }
+
+    def _load_image(self, image_path):
+        image = cv2.imread(image_path)
+        if self.parameters.color_mode == "RGB":
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        return image, image.shape
+
+    def _get_data_based_on_task(self, index: int) -> tuple[str, dict, int]:
+        """
+        Retrieve data based on the specified task.
+
+        For the 'TD' (top-down pose estimation) task:
+        - Provides a cropped image and its annotations.
+        - The shape of annotations['keypoints'] is (1, num_joints, 2).
+
+        For 'BU' and 'DT' tasks:
+        - Provides the full, non-cropped image and its annotations.
+        - The shape of annotations['keypoints'] is (max_num_animals, num_joints, 2).
+
+        Args:
+            index: Index of the item in the dataset.
+
+        Returns:
+            tuple: Tuple containing the image path, annotations, and image ID.
+        """
+        if self.task == "TD":
+            return self._get_raw_item_crop(index)
+        elif self.task in ["BU", "DT"]:
+            return self._get_raw_item(index)
+        raise ValueError(
+            f"Unknown task: {self.task}. " 'Task should be one of: "BU", "TD", "DT"',
+        )
+
+    def apply_transform_all_keypoints(
+        self,
+        image: np.ndarray,
+        keypoints: np.ndarray,
+        keypoints_unique: np.ndarray,
+        bboxes: np.ndarray,
+    ) -> dict[str, np.ndarray]:
+        """ Transforms the image using this class's transform
+
+        Args:
+            image: the image to transform
+            keypoints: an array of shape (num_individuals, num_joints, 3) containing
+                the keypoints in the image
+            keypoints_unique: an array of shape (num_unique_bodyparts, 3) containing
+                the unique keypoints in the image
+            bboxes: the bounding boxes in the image
+
+        Returns:
+            the augmented image, keypoints and bboxes, in format
+            {
+                "image": (h, w, c),
+                "keypoints": (num_individuals, num_joints, 3),
+                "keypoints_unique": (num_unique_bodyparts, 3),
+                "bboxes": (4,),
+            }
+        """
+        class_labels = [
+            f"individual{i}_{bpt}"
+            for i in range(self.parameters.max_num_animals)
+            for bpt in self.parameters.bodyparts
+        ] + [f'unique_{bpt}' for bpt in self.parameters.unique_bpts]
+
+        all_keypoints = keypoints.reshape(-1, 3)
+        if self.parameters.num_unique_bpts > 0:
+            all_keypoints = np.concatenate([all_keypoints, keypoints_unique], axis=0)
+
+        transformed = apply_transform(
+            self.transform,
+            image,
+            all_keypoints,
+            bboxes,
+            class_labels=class_labels,
+        )
+        if self.parameters.num_unique_bpts > 0:
+            keypoints = transformed["keypoints"][:-self.parameters.num_unique_bpts]
+            keypoints = keypoints.reshape(*keypoints.shape)
+            keypoints_unique = transformed["keypoints"][-self.parameters.num_unique_bpts:]
+            keypoints_unique = keypoints_unique.reshape(self.parameters.num_unique_bpts, 3)
+        else:
+            keypoints = transformed["keypoints"].reshape(*keypoints.shape)
+            keypoints_unique = np.zeros((0,))
+
+        transformed["keypoints"] = keypoints
+        transformed["keypoints_unique"] = keypoints_unique
+        return transformed
+
+    @staticmethod
+    def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:
+        """
         Calculate the area from keypoints
 
         Args:
@@ -105,498 +342,52 @@ class PoseDataset(Dataset, BaseDataset):
         Returns:
             np.ndarray: array containing the computed areas based on the keypoints
         """
-        w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
-        h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
-        return w * h
+        return (keypoints.max(axis=1) - keypoints.min(axis=1)).prod(axis=-1)
 
-    def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
-        """Summary:
-        Check if a keypoint lies inside the given shape.
+    @staticmethod
+    def crop(
+        image: np.ndarray,
+        keypoints,
+        coords: tuple[tuple[int, int], tuple[int, int]],
+        output_size: tuple[int, int],
+    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], tuple[int, int]]:
+        """
+        Crop the image based on a given bounding box and resize it to the desired output size.
 
         Args:
-            keypoint: [x,y] coordinates of the keypoints
-            shape: tuple representing the shape of the boundary (height, width)
+            image: the image to transform
+            keypoints: an array of shape (num_individuals, num_joints, 3) containing
+                the keypoints in the image
+            coords: A bounding box defined as ((x_center, y_center), (width, height)).
+            output_size: Desired size for the output cropped, padded and resized image.
 
         Returns:
-            Whether a keypoint lies inside the given shape
-
-        Example:
-            input:
-                keypoint = [100, 50]
-                shape = (200, 300)
-            output:
-                _keypoint_in_boundary(keypoint, shape) = True
+            Cropped (and possibly padded) and resized image.
+            Offsets used for cropping.
+            Padding sizes.
+            Scale factor used to resize the image.
         """
-        return (
-            (keypoint[0] > 0)
-            and (keypoint[1] > 0)
-            and (keypoint[0] < shape[1])
-            and (keypoint[1] < shape[0])
-        )
+        return _crop_image_keypoints(image, keypoints, coords, output_size)
 
-    def __getitem__(self, index: int) -> dict:
-        """Summary:
-        Gets the item at the specified index from the dataset.
-
+    @staticmethod
+    def extract_keypoints_and_bboxes(
+        annotations: list[dict],
+        image: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
+        """
         Args:
-            index: ordered number of the items in the dataset
+            annotations: COCO-style annotations
+            image: from which extract keypoints and bounding boxes for
 
         Returns:
-            dict: corresponding to the image annotations, with keys:
-                - image: image tensor
-                - original_size: original size of the image before applying transforms
-                                 useful to convert the predictions/ground truth back to
-                                 the input space
-                - annotations:
-                    - keypoints: array of keypoints, invisible keypoints appear as (-1,-1)
-                    - area: array of animals area in this image
-                    - ids: array containing the individuals IDs associated with each annotation.
-                    - path
+            keypoints, unique_keypoints, bboxes in xywh format, annotations_merged
         """
-        # load images
-        try:
-            image_file = self.dataframe.index[index]
-            if isinstance(image_file, tuple):
-                image_file = os.path.join(self.cfg["project_path"], *image_file)
-            else:
-                image_file = os.path.join(self.cfg["project_path"], image_file)
-        except:
-            print(len(self.project.images))
-            print(index)
+        return _extract_keypoints_and_bboxes(annotations, image)
 
-        image = cv2.imread(image_file)
-        if self.color_mode == "RGB":
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        original_size = image.shape
-
-        # load annotations
-        image_id = self.project.image_path2image_id[image_file]
-        n_annotations = len(self.project.id2annotations_idx[image_id])
-
-        bodyparts = [bpt for bpt in self.bodyparts]
-        if not self.with_center:
-            keypoints = np.zeros((self.max_num_animals, self.num_joints, 3))
-            num_keypoints_returned = self.num_joints
-        else:
-            keypoints = np.zeros((self.max_num_animals, self.num_joints + 1, 3))
-            num_keypoints_returned = self.num_joints + 1
-            bodyparts += ["_center_"]
-
-        unique_bpts_kpts = np.zeros((self.num_unique_bpts, 3))
-
-        bbox_list = []
-        bbox_label_list = []
-        labels = np.zeros((self.max_num_animals), dtype=np.int64)
-        is_crowd = np.zeros((self.max_num_animals), dtype=np.int64)
-        ids = np.full((self.max_num_animals), -1, dtype=np.int64)
-        image_id = index
-        for i, annotation_idx in enumerate(self.project.id2annotations_idx[image_id]):
-            _annotation = self.project.annotations[annotation_idx]
-            _keypoints, _undef_ids = self.project.annotation2keypoints(_annotation)
-            _keypoints = np.array(_keypoints)
-
-            # Filter out the unique bodyparts
-            if _annotation["individual"] == "single":
-                unique_bpts_kpts[:, :2] = _keypoints
-                unique_bpts_kpts[:, 2] = _undef_ids
-                continue
-
-            ids[i] = self.individual_to_idx[_annotation["individual"]]
-
-            if self.with_center:
-                keypoints[i, :-1, :2] = _keypoints
-                keypoints[i, :-1, 2] = _undef_ids
-
-            else:
-                keypoints[i, :, :2] = _keypoints
-                keypoints[i, :, 2] = _undef_ids
-
-            # If bbox has width and height > 0, add
-            annotation_bbox = np.array(_annotation["bbox"])
-            if 0 < annotation_bbox[2] and 0 < annotation_bbox[3]:
-                bbox_list.append(annotation_bbox)
-                bbox_label_list.append(i)
-
-            is_crowd[i] = _annotation["iscrowd"]
-            labels[i] = _annotation["category_id"]
-
-        if len(bbox_list) > 0:
-            h, w, _ = image.shape
-            bboxes = np.stack(bbox_list, axis=0)
-            bbox_labels = np.array(bbox_label_list)
-
-            # Sometimes bbox coords are larger than the image because of the margin
-            bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
-            bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-            bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.0)
-            bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
-        else:
-            bboxes = np.zeros((0, 4))
-            bbox_labels = np.zeros((0,))
-
-        # Needs two be 2 dimensional for albumentations
-        all_keypoints = np.concatenate(
-            (keypoints.reshape((-1, 3)), unique_bpts_kpts), axis=0
-        )
-
-        if self.transform:
-            class_labels = [
-                f"individual{i}_{bpt}"
-                for i in range(self.max_num_animals)
-                for bpt in bodyparts
-            ] + [f"unique_{bpt}" for bpt in self.unique_bpts]
-            transformed = self.transform(
-                image=image,
-                keypoints=all_keypoints[:, :2],
-                bboxes=bboxes,
-                class_labels=class_labels,
-                bbox_labels=bbox_labels,
-            )
-            bboxes = transformed["bboxes"]
-
-            # Discard keypoints that aren't in the frame anymore
-            shape_transformed = transformed["image"].shape
-            transformed["keypoints"] = [
-                keypoint
-                if self._keypoint_in_boundary(keypoint, shape_transformed)
-                else (-1, -1)
-                for keypoint in transformed["keypoints"]
-            ]
-
-            # Discard keypoints that are undefined
-            undef_class_labels = [
-                class_labels[i] for i, kpt in enumerate(all_keypoints) if kpt[2] == 0
-            ]
-            for label in undef_class_labels:
-                new_index = transformed["class_labels"].index(label)
-                transformed["keypoints"][new_index] = (-1, -1)
-
-        else:
-            transformed = {
-                "keypoints": all_keypoints[:, :2],
-                "image": image,
-            }
-
-        image = torch.tensor(transformed["image"], dtype=torch.float).permute(
-            2, 0, 1
-        )  # channels first
-
-        assert len(transformed["keypoints"]) == len(all_keypoints)
-        keypoints = np.array(transformed["keypoints"]).astype(float)
-        unique_kpts = np.array([], dtype=float)
-        if self.num_unique_bpts > 0:
-            keypoints = keypoints[: -self.num_unique_bpts]
-            unique_kpts = np.array(
-                transformed["keypoints"][-self.num_unique_bpts :]
-            ).astype(float)
-
-        keypoints = keypoints.reshape((self.max_num_animals, num_keypoints_returned, 2))
-
-        # Pad bboxes and labels to always have shape (num_animals, 4)
-        #  If we want the original index of the bboxes, we can use the bbox labels
-        bbox_tensor = torch.tensor(bboxes, dtype=torch.float)
-        if len(bbox_tensor) < self.max_num_animals:
-            missing_animals = self.max_num_animals - len(bbox_tensor)
-            bbox_tensor = torch.cat(
-                [bbox_tensor, torch.zeros((missing_animals, 4))],
-                dim=0,
-            )
-
-        # TODO Quite ugly
-        #
-        # Center keypoint needs to be computed after transformation because
-        # it should depend on visible keypoints only (which may change after augmentation)
-        if self.with_center:
-            try:
-                keypoints[:, -1, :] = (
-                    keypoints[:, :-1, :][~np.any(keypoints[:, :-1, :] == -1, axis=2)]
-                    .reshape(n_annotations, -1, 2)
-                    .mean(axis=1)
-                )
-            except ValueError:
-                # For at least one annotation every keypoint is out of the frame
-                for i in range(keypoints.shape[0]):
-                    try:
-                        keypoints[i, -1, :] = keypoints[i, :-1, :][
-                            ~np.any(keypoints[i, :-1, :] == -1, axis=1)
-                        ].mean(axis=0)
-                    except ValueError:
-                        keypoints[i, -1, :] = np.array([-1, -1])
-
-        np.nan_to_num(keypoints, copy=False, nan=-1)
-        area = self._calc_area_from_keypoints(keypoints)
-        return {
-            "image": image,
-            "original_size": original_size,
-            "annotations": {
-                "keypoints": keypoints,
-                "unique_kpts": unique_kpts,
-                "area": area,
-                "ids": ids,
-                "boxes": bbox_tensor,
-                "image_id": image_id,
-                "is_crowd": is_crowd,
-                "labels": labels,
-            },
-        }
-
-
-class CroppedDataset(Dataset, BaseDataset):
-    """
-    Definition of the class object CroppedDataset: dataset for cropped images and keypoints
-    """
-
-    def __init__(
-        self, project: DLCProject, transform: object = None, mode: str = "train"
-    ):
-        """Summary:
-        Constructor of the CroppedDataset class.
-        Loads the data
-
-        Args:
-            project: DLC original project class
-            transform: transformation function that takes keypoints as inputs
-                       and returns a transformed image with corresponding keypoints.
-                       Defaults to None.
-            mode: 'train' or 'test'. Defaults to "train".
-
-        Returns:
-            None:
-        """
-        super().__init__()
-        self.transform = transform
-        self.project = project
-        self.cfg = self.project.cfg
-        self.bodyparts = auxiliaryfunctions.get_bodyparts(self.cfg)
-        self.num_joints = len(self.bodyparts)
-        self.shuffle = self.project.shuffle
-        self.project.convert2dict(mode)
-        self.dataframe = self.project.dataframe
-
-        self.annotations = self._compute_anno()
-
-        modelfolder = os.path.join(
-            self.project.proj_root,
-            get_model_folder(
-                self.cfg["TrainingFraction"][0],
-                self.shuffle,
-                self.cfg,
-                "",
-            ),
-        )
-        pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-        pytorch_cfg = read_plainconfig(pytorch_config_path)
-        self.with_center = pytorch_cfg.get("with_center", False)
-        self.individuals = self.cfg.get("individuals", ["animal"])
-        self.individual_to_idx = {}
-        for i, indiv in enumerate(self.individuals):
-            self.individual_to_idx[indiv] = i
-        self.max_num_animals = len(self.individuals)
-        self.color_mode = pytorch_cfg.get("colormode", "RGB")
-
-        self.input_size = 256, 256  # (h, w) #TODO make that depend on pytorch config
-        self.crop = A.Compose(
-            [
-                A.RandomCropNearBBox(
-                    max_part_shift=0.0,
-                    cropping_box_key="animal_bbox",
-                    always_apply=True,
-                    p=1.0,
-                ),
-                A.Resize(*self.input_size),
-            ],
-            keypoint_params=A.KeypointParams(format="xy", remove_invisible=False),
-            bbox_params=A.BboxParams(format="coco"),
-        )
-
-        self.length = len(self.annotations)
-
-    def __len__(self):
-        """Summary:
-        Get the length of the dataset
-
-        Args:
-            None
-
-        Returns:
-            Number of samples in the dataset
-        """
-        return self.length
-
-    def _keypoint_in_boundary(self, keypoint: list, shape: tuple):
-        """Summary:
-        Check if a keypoint lies inside the given shape.
-
-        Args:
-            keypoint: [x,y] coordinates of the keypoints
-            shape: tuple representing the shape of the boundary (height, width)
-
-        Returns:
-            Whether a keypoint lies inside the given shape
-
-        Example:
-            input:
-                keypoint = [100, 50]
-                shape = (200, 300)
-            output:
-                _keypoint_in_boundary(keypoint, shape) = True
-        """
-        return (
-            (keypoint[0] > 0)
-            and (keypoint[1] > 0)
-            and (keypoint[0] < shape[1])
-            and (keypoint[1] < shape[0])
-        )
-
-    def _compute_anno(self):
-        """Summary:
-        Compute annotations for the dataset
-
-        Args:
-            None
-
-        Returns:
-            annotations: list of annotations containing information about keypoints and image paths.
-        """
-        annotations = []
-        df_length = self.dataframe.shape[0]
-
-        for index in range(df_length):
-            image_path = self.dataframe.index[index]
-            if isinstance(image_path, tuple):
-                image_path = os.path.join(self.cfg["project_path"], *image_path)
-            else:
-                image_path = os.path.join(self.cfg["project_path"], image_path)
-
-            image_id = self.project.image_path2image_id[image_path]
-            annotations_ids = self.project.id2annotations_idx[image_id]
-            for ann_idx in annotations_ids:
-                ann = self.project.annotations[ann_idx]
-                if (
-                    ann["bbox"] == 0.0
-                ).all():  # I think we don't want unnanotated cropped images
-                    continue
-                ann["image_path"] = image_path
-                annotations.append(ann)
-
-        return annotations
-
-    def _calc_area_from_keypoints(self, keypoints: np.ndarray) -> np.ndarray:
-        """Summary:
-        Calculate the area from keypoints
-
-        Args:
-            keypoints: array of keypoints
-
-        Returns:
-            Array containing the computed areas based on the keypoints
-        """
-        w = keypoints[:, 0].max(axis=0) - keypoints[:, 0].min(axis=0)
-        h = keypoints[:, 1].max(axis=0) - keypoints[:, 1].min(axis=0)
-        return w * h
-
-    def __getitem__(self, index: int) -> dict:
-        """Summary:
-        Get the item at the specified index from the dataset.
-
-        Args:
-            index: ordered number of the item in the dataset
-
-        Returns:
-            dict: dictionary containing following information:
-                - image: tensor representing the cropped image
-                - original_size:tuple representing the original size of the image
-                                        before applying transforms.
-                - annotations: dictionary containing annotation information.
-                    - keypoints: array of keypoints associated with the cropped image
-                    - area: array of animal's area in the image
-                    - ids: individual ids associated with the animals
-                    - path
-        """
-        # load images
-        ann = self.annotations[index]
-        image_file = ann["image_path"]
-
-        image = cv2.imread(image_file)
-        if self.color_mode == "RGB":
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        original_size = image.shape
-
-        if not self.with_center:
-            keypoints = np.zeros((self.num_joints, 3))
-            num_keypoints_returned = self.num_joints
-        else:
-            keypoints = np.zeros((self.num_joints + 1, 3))
-            num_keypoints_returned = self.num_joints + 1
-
-        _keypoints, _undef_ids = self.project.annotation2keypoints(ann)
-        if self.with_center:
-            keypoints[:-1, :2] = np.array(_keypoints)
-            keypoints[:-1, 2] = _undef_ids
-        else:
-            keypoints[:, :2] = np.array(_keypoints)
-            keypoints[:, 2] = _undef_ids
-        animal_id = self.individual_to_idx[ann["individual"]]
-
-        crop_box = ann["bbox"].copy()
-        crop_box[2] += crop_box[0]
-        crop_box[3] += crop_box[1]
-        cropped = self.crop(
-            image=image, keypoints=keypoints[:, :2], bboxes=[], animal_bbox=crop_box
-        )
-        image = cropped["image"]
-        keypoints = [
-            (-1, -1) if (keypoints[i, 2] == 0) else keypoint
-            for i, keypoint in enumerate(cropped["keypoints"])
-        ]
-
-        if self.transform:
-            transformed = self.transform(image=image, keypoints=keypoints)
-            shape_transformed = transformed["image"].shape
-            transformed["keypoints"] = [
-                (-1, -1)
-                if not self._keypoint_in_boundary(keypoint, shape_transformed)
-                else keypoint
-                for i, keypoint in enumerate(transformed["keypoints"])
-            ]
-        else:
-            transformed = {}
-            transformed["keypoints"] = keypoints
-            transformed["image"] = image
-
-        image = torch.tensor(transformed["image"], dtype=torch.float).permute(
-            2, 0, 1
-        )  # channels first
-
-        assert len(transformed["keypoints"]) == len(keypoints)
-        keypoints = np.array(transformed["keypoints"]).astype(float)
-
-        # Center keypoint needs to be computed after transformation because
-        # it should depend on visible keypoints only (which may change after augmentation)
-        if self.with_center:
-            try:
-                keypoints[-1, :] = np.nanmean(
-                    keypoints[:-1, :][~np.any(keypoints[:-1, :] == -1, axis=1)].reshape(
-                        -1, 2
-                    ),
-                    axis=0,
-                )
-            except ValueError:
-                keypoints[-1, :] = np.array([-1, -1])
-        np.nan_to_num(keypoints, copy=False, nan=-1)
-        area = self._calc_area_from_keypoints(keypoints)
-
-        # Animal_idx is always the first dimension even is there is only one animal
-        # This convention is the one adopted int this whole repository
-        res = {}
-        res["image"] = image
-        res[
-            "original_size"
-        ] = original_size  # In order to convert back the keypoints to their original space
-        res["annotations"] = {}
-        res["annotations"]["keypoints"] = keypoints[None, :]
-        res["annotations"]["area"] = np.array(area)[None]
-        res["annotations"]["ids"] = np.array(animal_id)[None]
-        res["annotations"]["path"] = image_file
-
-        return res
+    @staticmethod
+    def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
+        """ Adds a keypoint in the mean of each individual"""
+        center_keypoints = keypoints.copy()
+        center_keypoints[center_keypoints == -1] = np.nan
+        center_keypoints = np.nanmean(keypoints, axis=1)
+        return np.concatenate((keypoints, center_keypoints[:, None, :]), axis=1)

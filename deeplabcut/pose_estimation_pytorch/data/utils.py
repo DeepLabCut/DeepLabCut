@@ -1,0 +1,522 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+from __future__ import annotations
+
+from collections import defaultdict
+from functools import reduce
+
+import albumentations as A
+import numpy as np
+import torch
+from torchvision.ops import box_convert
+from torchvision.transforms import functional as F
+
+
+def merge_list_of_dicts(
+    list_of_dicts: list[dict],
+    keys_to_include: list[str],
+) -> dict[str, list]:
+    """
+    Flattens a list of dictionaries into a dictionary with the lists concatenated.
+
+    Args:
+        list_of_dicts: the dictionaries to merge
+        keys_to_include: the keys to include in the new dictionary
+
+    Returns:
+        the merged dictionary
+
+    Examples:
+        input:
+            list_of_dicts: [{"id": 0, "num": 1}, {"id": 1, "num": 10}]
+            keys_to_include: ["id", "num"]
+        output:
+            {"id": [0, 1], "num": [1, 10]}
+    """
+    return reduce(
+        lambda acc, d: {
+            key: acc.get(key, []) + [value]
+            for key, value in d.items()
+            if key in keys_to_include
+        },
+        list_of_dicts,
+        defaultdict(list),
+    )
+
+
+def map_image_path_to_id(images: list[dict]) -> dict[str, int]:
+    """
+    Binds the image paths to their respective IDs.
+
+    Args:
+        images: List of dictionaries containing image data in COCO-like format.
+            Each dictionary should have 'file_name' and 'id' keys.
+
+    Returns:
+        A dictionary mapping image paths to their respective IDs.
+
+    Examples:
+        images = [{"file_name": "path/to/image1.jpg", "id": 1}, ...]
+    """
+
+    return {image["file_name"]: image["id"] for image in images}
+
+
+def map_id_to_annotations(annotations: list[dict]) -> dict[int, list[int]]:
+    """
+    Maps image IDs to their corresponding annotation indices.
+
+    Args:
+        annotations: List of dictionaries containing annotation data. Each dictionary
+            should have 'image_id' key.
+
+    Returns:
+        A dictionary mapping image IDs to lists of corresponding annotation indices.
+
+    Examples:
+        annotations = [{"image_id": 1, ...}, ...]
+    """
+
+    annotation_idx_map = defaultdict(list)
+    for idx, annotation in enumerate(annotations):
+        annotation_idx_map[annotation["image_id"]].append(idx)
+
+    return annotation_idx_map
+
+
+def _crop_and_pad_image(
+    image: np.ndarray,
+    coords: tuple[tuple[int, int], tuple[int, int]],
+    output_size: tuple[int, int],
+) -> tuple[np.ndarray, tuple[int, int]]:
+    """
+    Crop the image using the given coordinates and pad the larger dimension to change
+    the aspect ratio.
+
+    Args:
+        image: Image to crop, of shape (height, width, channels).
+        coords: Coordinates for cropping as [(xmin, xmax), (ymin, ymax)].
+        output_size: The (output_h, output_w) that this cropped image will be resized
+            to. Used to compute padding to keep aspect ratios.
+
+    Returns:
+        Cropped (and possibly padded) image
+        Padding (pad_h, pad_w)
+    """
+    cropped_image = image[
+        coords[1][0] : coords[1][1],
+        coords[0][0] : coords[0][1],
+        :,
+    ]
+
+    crop_h, crop_w, c = cropped_image.shape
+    pad_h, pad_w = 0, 0
+    target_ratio_h = output_size[0] / crop_h
+    target_ratio_w = output_size[1] / crop_w
+
+    if target_ratio_h != target_ratio_w:
+        if crop_h < crop_w:
+            # Pad the height
+            new_h = int(crop_w * output_size[0] / output_size[1])
+            pad_h = new_h - crop_h
+            pad_image = np.zeros((new_h, crop_w, c))
+            y_offset = pad_h // 2
+            pad_image[y_offset : y_offset + crop_h, :] = cropped_image
+        else:
+            # Pad the width
+            new_w = int(crop_h * output_size[1] / output_size[0])
+            pad_w = new_w - crop_w
+            pad_image = np.zeros((crop_h, new_w, c))
+            x_offset = pad_w // 2
+            pad_image[:, x_offset : x_offset + crop_w] = cropped_image
+    else:
+        pad_image = cropped_image
+
+    return pad_image, (pad_h, pad_w)
+
+
+def _crop_and_pad_keypoints(
+    keypoints: np.ndarray,
+    coords: tuple[int, int],
+    pad_size: tuple[int, int],
+):
+    """
+    Adjust the keypoints after cropping and padding.
+
+    Parameters:
+        keypoints: The original keypoints, typically a 2D array of shape (..., 2).
+        coords: The (xmin, ymin) crop coordinates used for cropping the image.
+        pad_size: The padding sizes added to the cropped image, in the format (pad_h, pad_w).
+
+    Returns:
+        Adjusted keypoints.
+    """
+    keypoints[..., 0] -= coords[0]
+    keypoints[..., 1] -= coords[1]
+    keypoints[..., 0] += pad_size[1] // 2
+    keypoints[..., 1] += pad_size[0] // 2
+    return keypoints
+
+
+def _crop_image_keypoints(
+    image,
+    keypoints,
+    coords,
+    output_size,
+) -> tuple[np.ndarray, np.ndarray, tuple[int, int], tuple[int, int]]:
+    """TODO: Requires fixing
+    Crop the image based on a given bounding box and resize it to the desired output
+    size. Returns offsets and scales to map keypoints in the resized image to
+    coordinates in the original image:
+
+        x_original = (x_cropped * x_scale) + x_offset
+        y_original = (y_cropped * y_scale) + y_offset
+
+    Args:
+        image: Image to crop, of shape (height, width, channels).
+        coords: Coordinates for cropping as ((xmin, xmax), (ymin, ymax)).
+        output_size: The (h, w) that the cropped image should be resized to.
+
+    Returns:
+        Cropped, possibly padded, and resized image.
+        The position of the keypoints in the cropped, resized image
+        Offsets used for cropping.
+        The offsets to map predicted keypoints back to the original image
+        The scale to map predicted keypoints back to the original image
+    """
+
+    cropped_image, pad_size = _crop_and_pad_image(
+        image,
+        coords,
+        output_size,
+    )
+    cropped_keypoints = _crop_and_pad_keypoints(
+        keypoints,
+        (coords[0][0], coords[1][0]),
+        pad_size,
+    )
+
+    offsets = (coords[0][0], coords[1][0])
+    scales = [
+        output_size[0] / cropped_image.shape[0],
+        output_size[1] / cropped_image.shape[1],
+    ]
+
+    # TODO: Fix resizing, use OpenCV
+    cropped_resized_image = np.resize(
+        cropped_image,
+        (*output_size, cropped_image.shape[2]),
+    )
+
+    cropped_resized_keypoints = np.array(
+        cropped_keypoints,
+    ) * np.array(scales + [1])
+
+    return cropped_resized_image, cropped_resized_keypoints, offsets, scales
+
+
+def _crop_and_pad_image_torch(
+    image: np.array,
+    bbox: np.array,
+    bbox_format: str,
+    output_size: int,
+) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
+    """TODO: Reimplement this function with numpy and for non-square resize :)
+    Only works for square cropped bounding boxes. Crops images around bounding boxes
+    for top-down pose estimation in a MMpose style. Computes offsets so that
+    coordinates in the original image can be mapped to the cropped one;
+
+        x_cropped = (x - offset_x) / scale_x
+        x_cropped = (y - offset_y) / scale_y
+
+    Args:
+        image: (h, w, c) the image to crop
+        bbox: (4,) the bounding box to crop around
+        bbox_format: {"xyxy", "xywh", "cxcywh"} the format of the bounding box
+        output_size: the size to resize the image to
+
+    Returns:
+        cropped_image, (offset_x, offset_y), (scale_x, scale_y)
+    """
+    image = torch.tensor(image).permute(2, 0, 1)
+    bbox = torch.tensor(bbox)
+    if bbox_format != "cxcywh":
+        bbox = box_convert(bbox.unsqueeze(0), bbox_format, "cxcywh").squeeze()
+
+    c, h, w = image.shape
+    crop_size = torch.max(bbox[2:])
+
+    xmin = int(
+        torch.clip(
+            bbox[0] - (crop_size / 2),
+            min=0,
+            max=w - 1,
+        )
+        .cpu()
+        .item(),
+    )
+    xmax = int(
+        torch.clip(
+            bbox[0] + (crop_size / 2),
+            min=1,
+            max=w,
+        )
+        .cpu()
+        .item(),
+    )
+    ymin = int(
+        torch.clip(
+            bbox[1] - (crop_size / 2),
+            min=0,
+            max=h - 1,
+        )
+        .cpu()
+        .item(),
+    )
+    ymax = int(
+        torch.clip(
+            bbox[1] + (crop_size / 2),
+            min=1,
+            max=h,
+        )
+        .cpu()
+        .item(),
+    )
+    cropped_image = image[:, ymin:ymax, xmin:xmax]
+
+    crop_h, crop_w = cropped_image.shape[1:3]
+    pad_size = max(crop_h, crop_w)
+
+    # Pad image if not square
+    if not crop_h == crop_w:
+        padded_cropped_image = torch.zeros(
+            (c, pad_size, pad_size),
+            dtype=image.dtype,
+        )
+        padded_cropped_image[:, :crop_h, :crop_w] = cropped_image
+        cropped_image = padded_cropped_image
+
+    scale = pad_size / output_size
+    offset = (xmin, ymin)
+    output = F.resize(cropped_image, [output_size, output_size])
+
+    return output.permute(1, 2, 0).numpy(), offset, (scale, scale)
+
+
+def _compute_crop_bounds(
+    bboxes: np.ndarray,
+    image_shape: tuple[int, int, int],
+) -> np.ndarray:
+    """
+    Compute the boundaries for cropping an image based on a COCO-format bounding box
+    and image shape by clipping values so the bounding boxes are entirely in the image.
+
+    Args:
+        bboxes: COCO-format bounding box of shape (b, xywh)
+        image_shape: Shape of the image defined as (height, width, channels).
+
+    Returns:
+        The bounding boxes, clipped to be entirely inside the image
+    """
+    h, w = image_shape[:2]
+    bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
+    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
+    bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.0)
+    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
+    return bboxes
+
+
+def _extract_keypoints_and_bboxes(
+    annotations: list[dict],
+    image: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
+    """
+    Args:
+        annotations: COCO-style annotations
+        image: from which extract keypoints and bounding boxes for
+
+    Returns:
+        keypoints, unique_keypoints, bboxes in xywh format, annotations_merged
+    """
+    keypoints = []
+    unique_keypoints = []
+    original_bboxes = []
+
+    annotations_merged = merge_list_of_dicts(
+        annotations,
+        keys_to_include=["category_id", "iscrowd"],
+    )
+
+    for i, annotation in enumerate(annotations):
+        keypoints_individual = _annotation_to_keypoints(annotation)
+        if annotation["individual"] != "single":
+            bbox_individual = annotation["bbox"]
+            original_bboxes.append(bbox_individual)
+            keypoints.append(keypoints_individual)
+        else:
+            unique_keypoints = keypoints_individual
+
+    unique_keypoints = np.array(unique_keypoints)
+
+    keypoints = np.stack(keypoints, axis=0)
+
+    bboxes = np.array(
+        _compute_crop_bounds(np.stack(original_bboxes, axis=0), image.shape),
+    ).reshape((-1, 4))
+    return keypoints, unique_keypoints, bboxes, annotations_merged
+
+
+def _annotation_to_keypoints(annotation: dict) -> np.array:
+    """
+    Convert the coco annotations into array of keypoints returns the array of the keypoints' visibility
+    If keypoint is not visible, the value for (x,y) coordinates is set to 0
+    Args:
+        annotation: dictionary containing coco-like annotations with essential `keypoints` field
+    Returns:
+        keypoints: np.array where the first two columns are x and y coordinates of the keypoints and the third column is the visibility of the keypoints
+    """
+    keypoints = annotation["keypoints"].reshape(-1, 3)
+    visibility_mask = keypoints > -1
+    keypoints[~visibility_mask] = 0
+    keypoints[:, -1] = visibility_mask.all(axis=1)
+    return keypoints
+
+
+def apply_transform(
+    transform: A.BaseCompose,
+    image: np.ndarray,
+    keypoints: np.ndarray,
+    bboxes: np.ndarray,
+    class_labels: list[str],
+) -> dict[str, np.ndarray]:
+    """
+    Applies a transformation to the provided image and keypoints.
+
+    Args:
+        transform: The transformation to apply.
+        image: The input image to which the transformation will be applied.
+        keypoints: List of keypoints to be transformed along with the image. Each keypoint
+            is expected to be a tuple or list with at least three values,
+            where the third value indicates the class label index.
+        bboxes: List of bounding boxes to be transformed along with the image.
+        class_labels: List of class labels corresponding to the keypoints.
+
+    Returns:
+        transformed: A dictionary containing the transformed image and keypoints.
+    """
+
+    if transform:
+        transformed = _apply_transform(
+            transform,
+            image,
+            keypoints,
+            bboxes,
+            class_labels,
+        )
+        transformed["keypoints"] = np.array(transformed["keypoints"])
+        shape_transformed = transformed["image"].shape
+        mask_valid = _check_keypoints_within_bounds(
+            transformed["keypoints"],
+            shape_transformed,
+        )
+        transformed["keypoints"][~mask_valid] = -1
+    else:
+        transformed = {"keypoints": keypoints, "image": image}
+    np.nan_to_num(transformed["keypoints"], copy=False, nan=-1)
+
+    return transformed
+
+
+def _apply_transform(
+    transform: A.BaseCompose,
+    image: np.ndarray,
+    keypoints: np.ndarray,
+    bboxes: np.ndarray,
+    class_labels: list[str],
+) -> dict[str, np.ndarray]:
+    """
+    Applies a transformation to the provided image and keypoints.
+
+    Args:
+        image : np.array or similar image data format
+            The input image to which the transformation will be applied.
+
+        keypoints : list or similar data format
+            List of keypoints to be transformed along with the image. Each keypoint
+            is expected to be a tuple or list with at least three values,
+            where the third value indicates the class label index.
+
+    Returns:
+        dict
+            A dictionary containing the transformed image and keypoints.
+    """
+    transformed = transform(
+        image=image,
+        keypoints=keypoints,
+        class_labels=class_labels,
+        bboxes=bboxes,
+        bbox_labels=np.arange(len(bboxes)),
+    )
+    transformed = _set_invalid_keypoints_to_neg_one(
+        transformed,
+        keypoints,
+        class_labels,
+    )
+    return transformed
+
+
+def _set_invalid_keypoints_to_neg_one(
+    transformed: dict[str, list],
+    keypoints: np.ndarray,
+    class_labels: list,
+) -> dict[str, list]:
+    """
+    Updates keypoints that are out of bounds or undefined to (-1, -1).
+
+    Args:
+        transformed: A dictionary containing the transformed image and keypoints.
+        keypoints: Array of keypoints to be transformed along with the image.
+        class_labels: List of class labels corresponding to the keypoints.
+
+    Returns:
+        A dictionary containing the transformed image and with masked invalid keypoints.
+
+    """
+    undef_class_labels = [
+        class_labels[i] for i, kpt in enumerate(keypoints) if kpt[2] == 0
+    ]
+    for label in undef_class_labels:
+        new_index = transformed["class_labels"].index(label)
+        transformed["keypoints"][new_index] = (-1, -1)
+
+    return transformed
+
+
+def _check_keypoints_within_bounds(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
+    """
+    Check if each keypoint in an array of keypoints is within given bounds.
+    Parameters:
+    - keypoints (np.ndarray): A (N, 2) shaped array where N is the number of keypoints
+                            and each keypoint is represented as [x, y] or [width, height].
+    - shape (tuple): A tuple representing the shape or bounds as (height, width).
+    Returns:
+    - np.ndarray: A boolean array of shape (N,) where each element corresponds to whether
+                the respective keypoint is within the bounds. `True` indicates the keypoint
+                is within bounds, while `False` indicates it's outside.
+    Example:
+    >>> are_keypoints_within_bounds(np.array([[5, 5], [15, 15]]), (10, 10))
+    array([ True, False])
+    """
+    return np.all(
+        (keypoints[..., :2] > 0)
+        & (keypoints[..., :2] < np.array([shape[1], shape[0]])),
+        axis=1,
+    )
