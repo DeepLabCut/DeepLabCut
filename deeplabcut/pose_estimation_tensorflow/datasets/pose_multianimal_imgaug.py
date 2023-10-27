@@ -162,7 +162,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item.joints = {}
 
             if not mask_kpts_below_thresh:
-                joints = np.concatenate([joint_ids, kpts], axis=1)                
+                joints = np.concatenate([joint_ids, kpts], axis=1)
                 joints = np.nan_to_num(joints, nan=0)
             else:
                 for kpt_id, kpt in enumerate(kpts):
@@ -172,7 +172,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         kpts[kpt_id][:-1] = -1
                         kpts[kpt_id][-1] = 1
                 joints = np.concatenate([joint_ids, kpts], axis=1)
-                
+
             sparse_joints = []
 
             for coord in joints:
@@ -357,11 +357,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if trim_ends is None:
             trim_ends = 0
         # because of the existence of threshold, sampling population is adjusted to len(self.data)
-        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)        
+        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
-            data_item = self.data[index + offset]            
+            data_item = self.data[index + offset]
             data_items.append(data_item)
             im_file = data_item.im_path
 
@@ -409,8 +409,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 for j in range(self._n_animals):
                     for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
-
-                joint_id = np.array(list(range(self._n_kpts)) * self._n_animals)
+                joint_id = [
+                    np.array(list(range(self._n_kpts)))
+                    for _ in range(self._n_animals)
+                ]
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
 
@@ -515,10 +517,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
             joint_ids_valid = []
 
             for joints, ids in zip(batch_joints, joint_ids):
-                # invisible joints are represented by nans
-                mask = ~np.isnan(joints[:, 0])
-                joints = joints[mask, :]
-                ids = ids[:][mask]
+                # Invisible joints are represented by nans
+                visible = ~np.isnan(joints[:, 0])
                 inside = np.logical_and.reduce(
                     (
                         joints[:, 0] < image_shape[1],
@@ -527,8 +527,17 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         joints[:, 1] > 0,
                     )
                 )
-                batch_joints_valid.append(joints[inside])
-                joint_ids_valid.append([ids[inside]])
+                mask = visible & inside
+                batch_joints_valid.append(joints[mask])
+
+                temp = []
+                start = 0
+                for array in ids:
+                    end = start + array.size
+                    inds = np.arange(start, end)
+                    temp.append(array[mask[inds]])
+                    start = end
+                joint_ids_valid.append(temp)
 
             # If you would like to check the augmented images, script for saving
             # the images with joints on:
