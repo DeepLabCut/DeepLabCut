@@ -2,8 +2,10 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import albumentations as A
+import cv2
 import torch
 import yaml
+from deeplabcut.pose_estimation_pytorch.data.transforms import KeypointAwareCrop
 from deeplabcut.pose_estimation_pytorch.models import (
     BACKBONES,
     DETECTORS,
@@ -185,6 +187,26 @@ def build_transforms(
     if aug_cfg.get("resize", False):
         input_size = aug_cfg.get("resize", False)
         transforms.append(A.Resize(input_size[0], input_size[1]))
+
+    crop_sampling = aug_cfg.get("crop_sampling", False)
+    if crop_sampling:
+        # Add smart, keypoint-aware image cropping
+        transforms.append(
+            A.PadIfNeeded(
+                min_height=crop_sampling["height"],
+                min_width=crop_sampling["width"],
+                border_mode=cv2.BORDER_CONSTANT,
+                always_apply=True,
+            )
+        )
+        transforms.append(
+            KeypointAwareCrop(
+                crop_sampling["width"],
+                crop_sampling["height"],
+                crop_sampling["max_shift"],
+                crop_sampling["method"],
+            )
+        )
 
     # TODO code again this augmentation to match the symmetric_pair syntax in original dlc
     # if aug_cfg.get('flipr', False) and aug_cfg.get('symmetric_pair', False):
