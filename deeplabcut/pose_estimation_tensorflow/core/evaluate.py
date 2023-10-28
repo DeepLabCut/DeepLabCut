@@ -107,7 +107,12 @@ def calculatepafdistancebounds(
             trainingsetindex=trainingsetindex,
             modelprefix=modelprefix,
         )
+        train_pose_cfg = load_config(str(path_train_config))
         test_pose_cfg = load_config(str(path_test_config))
+
+        _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
+            Path(cfg["project_path"]) / train_pose_cfg['metadataset']
+        )
 
         # get the graph!
         partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
@@ -142,10 +147,6 @@ def calculatepafdistancebounds(
 
                         if distances is not None:
                             if onlytrain:
-                                train_pose_cfg = load_config(str(path_train_config))
-                                _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
-                                    Path(cfg["project_path"]) / train_pose_cfg['metadataset']
-                                )
                                 distances = distances.iloc[trainIndices]
                             if ind == ind2:
                                 ds_within.extend(distances.values.flatten())
