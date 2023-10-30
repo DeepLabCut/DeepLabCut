@@ -111,13 +111,14 @@ def calculatepafdistancebounds(
         test_pose_cfg = load_config(str(path_test_config))
 
         _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
-            Path(cfg["project_path"]) / train_pose_cfg['metadataset']
+            Path(cfg["project_path"]) / train_pose_cfg["metadataset"]
         )
 
         # get the graph!
         partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
         jointnames = [
-            test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))
+            test_pose_cfg["all_joints_names"][i]
+            for i in range(len(test_pose_cfg["all_joints"]))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -387,7 +388,9 @@ def return_evaluate_network_data(
         test_pose_cfg["init_weights"] = os.path.join(
             str(modelfolder), "train", Snapshots[snapindex]
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
+            "-"
+        )[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -736,17 +739,21 @@ def evaluate_network(
                 # Load and setup CNN part detector
                 ##################################################
 
-                modelfolder_rel_path = auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
+                modelfolder_rel_path = auxiliaryfunctions.get_model_folder(
+                    trainFraction, shuffle, cfg, modelprefix=modelprefix
+                )
                 modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
                 # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
                 #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
                 #  Not sure if this should throw an exception or just be a warning...
                 if not modelfolder.exists():
-                    raise FileNotFoundError(f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist.")
+                    raise FileNotFoundError(
+                        f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+                    )
 
                 if trainingsetindex == "all":
-                    train_frac_idx = cfg['TrainingFraction'].index(trainFraction)
+                    train_frac_idx = cfg["TrainingFraction"].index(trainFraction)
                 else:
                     train_frac_idx = trainingsetindex
 
@@ -870,7 +877,9 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(test_pose_cfg)
+                        sess, inputs, outputs = predict.setup_pose_prediction(
+                            test_pose_cfg
+                        )
                         Numimages = len(Data.index)
                         PredicteData = np.zeros(
                             (Numimages, 3 * len(test_pose_cfg["all_joints_names"]))

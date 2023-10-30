@@ -177,17 +177,21 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            modelfolder_rel_path = auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
+            modelfolder_rel_path = auxiliaryfunctions.get_model_folder(
+                trainFraction, shuffle, cfg, modelprefix=modelprefix
+            )
             modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
             # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
             #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
             #  Not sure if this should throw an exception or just be a warning...
             if not modelfolder.exists():
-                raise FileNotFoundError(f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist.")
+                raise FileNotFoundError(
+                    f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+                )
 
             if trainingsetindex == "all":
-                train_frac_idx = cfg['TrainingFraction'].index(trainFraction)
+                train_frac_idx = cfg["TrainingFraction"].index(trainFraction)
             else:
                 train_frac_idx = trainingsetindex
 
