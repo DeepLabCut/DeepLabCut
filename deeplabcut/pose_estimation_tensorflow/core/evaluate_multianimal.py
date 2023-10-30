@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
 )
-import deeplabcut
+from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
@@ -191,7 +191,7 @@ def evaluate_multianimal_full(
             else:
                 train_frac_idx = trainingsetindex
 
-            path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
+            path_train_config, path_test_config, _ = return_train_network_path(
                 config=config,
                 shuffle=shuffle,
                 trainingsetindex=train_frac_idx,

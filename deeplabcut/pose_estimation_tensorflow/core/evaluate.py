@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import deeplabcut
+from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
@@ -101,7 +101,7 @@ def calculatepafdistancebounds(
             )
         )[cfg["scorer"]]
 
-        path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
+        path_train_config, path_test_config, _ = return_train_network_path(
             config=config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
@@ -295,7 +295,7 @@ def return_evaluate_network_data(
             )
         ),
     )
-    path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
+    path_train_config, path_test_config, _ = return_train_network_path(
         config=config,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
@@ -750,7 +750,7 @@ def evaluate_network(
                 else:
                     train_frac_idx = trainingsetindex
 
-                path_train_config, path_test_config, _ = deeplabcut.return_train_network_path(
+                path_train_config, path_test_config, _ = return_train_network_path(
                     config=config,
                     shuffle=shuffle,
                     trainingsetindex=train_frac_idx,
