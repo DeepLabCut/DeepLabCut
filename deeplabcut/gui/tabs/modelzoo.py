@@ -65,11 +65,38 @@ class ModelZoo(DefaultTab):
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
 
+        self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
+        self.adapt_checkbox.setChecked(True)
+
+        pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
+            decimals=2,
+            minimum=0.01,
+            maximum=1.0,
+            singleStep=0.05,
+            value=0.1,
+            wrapping=True,
+        )
+        self.pseudo_threshold_spinbox.setMaximumWidth(300)
+
+        adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
+        self.adapt_iter_spinbox = QtWidgets.QSpinBox()
+        self.adapt_iter_spinbox.setRange(100, 10000)
+        self.adapt_iter_spinbox.setValue(1000)
+        self.adapt_iter_spinbox.setSingleStep(100)
+        self.adapt_iter_spinbox.setGroupSeparatorShown(True)
+        self.adapt_iter_spinbox.setMaximumWidth(300)
+
         model_settings_layout.addWidget(section_title, 0, 0)
         model_settings_layout.addWidget(model_combo_text, 1, 0)
         model_settings_layout.addWidget(self.model_combo, 1, 1)
         model_settings_layout.addWidget(scales_label, 2, 0)
         model_settings_layout.addWidget(self.scales_line, 2, 1)
+        model_settings_layout.addWidget(self.adapt_checkbox, 3, 0)
+        model_settings_layout.addWidget(pseudo_threshold_label, 4, 0)
+        model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 4, 1)
+        model_settings_layout.addWidget(adapt_iter_label, 5, 0)
+        model_settings_layout.addWidget(self.adapt_iter_spinbox, 5, 1)
         self.main_layout.addLayout(model_settings_layout)
 
         self.run_button = QtWidgets.QPushButton("Run")
@@ -113,6 +140,8 @@ class ModelZoo(DefaultTab):
             videos,
             supermodel_name,
             videotype=videotype,
-            video_adapt=True,
+            video_adapt=self.adapt_checkbox.isChecked(),
             scale_list=scales,
+            pseudo_threshold=self.pseudo_threshold_spinbox.value(),
+            adapt_iterations=self.adapt_iter_spinbox.value(),
         )
