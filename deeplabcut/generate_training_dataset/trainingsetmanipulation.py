@@ -484,7 +484,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
-                print(f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)")
+                print(
+                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                )
                 continue
             AnnotationData.append(data)
         except FileNotFoundError:
@@ -719,7 +721,6 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
     return train_data, matlab_data
 
 
-
 def create_training_dataset(
     config,
     num_shuffles=1,
@@ -731,7 +732,7 @@ def create_training_dataset(
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
-    superanimal_name = ""
+    superanimal_name="",
 ):
     """Creates a training dataset.
 
@@ -841,19 +842,22 @@ def create_training_dataset(
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-    
-    if superanimal_name!="":
+
+    if superanimal_name != "":
         supermodels = parse_available_supermodels()
         posecfg_template = os.path.join(
-                dlc_root_path,
-                "pose_estimation_tensorflow",
-                "superanimal_configs",
-                supermodels[superanimal_name],
-            )
-
+            dlc_root_path,
+            "pose_estimation_tensorflow",
+            "superanimal_configs",
+            supermodels[superanimal_name],
+        )
 
     if posecfg_template:
-        if not posecfg_template.endswith("pose_cfg.yaml") and not posecfg_template.endswith("superquadruped.yaml") and not posecfg_template.endswith("supertopview.yaml"):
+        if (
+            not posecfg_template.endswith("pose_cfg.yaml")
+            and not posecfg_template.endswith("superquadruped.yaml")
+            and not posecfg_template.endswith("supertopview.yaml")
+        ):
             raise ValueError(
                 "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
@@ -868,7 +872,9 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles,
+            config,
+            num_shuffles,
+            Shuffles,
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,

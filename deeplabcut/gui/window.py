@@ -395,13 +395,17 @@ class MainWindow(QMainWindow):
     def _ask_for_help(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Ask for help")
-        dlg.setText('''Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!''')
+        dlg.setText(
+            """Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!"""
+        )
         _ = dlg.exec()
 
     def _learn_dlc(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Learn DLC")
-        dlg.setText('''Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!''')
+        dlg.setText(
+            """Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!"""
+        )
         _ = dlg.exec()
 
     def _create_project(self):

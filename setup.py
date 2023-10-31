@@ -55,8 +55,10 @@ setuptools.setup(
         ],
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
-        "tf": ["tensorflow>=2.0,<=2.10"],  # Last supported TF version on Windows Native is 2.10
-        "apple_mchips": ["tensorflow-macos<2.13.0","tensorflow-metal"],
+        "tf": [
+            "tensorflow>=2.0,<=2.10"
+        ],  # Last supported TF version on Windows Native is 2.10
+        "apple_mchips": ["tensorflow-macos<2.13.0", "tensorflow-metal"],
         "modelzoo": ["huggingface_hub"],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],

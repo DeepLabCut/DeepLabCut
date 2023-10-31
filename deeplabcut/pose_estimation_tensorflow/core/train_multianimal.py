@@ -45,8 +45,7 @@ def train(
     traintime_resize=False,
     video_path="",
     superanimal=None,
-    trim_ends = None,  # trim the both ends of the video for video adaptation
-    remove_head = False
+    remove_head=False,
 ):
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
@@ -93,7 +92,7 @@ def train(
         cfg["pairwise_predict"] = True
 
     dataset = PoseDatasetFactory.create(cfg)
-    
+
     batch_spec = get_batch_spec(cfg)
     batch, enqueue_op, placeholders = setup_preloading(batch_spec)
 
@@ -108,7 +107,7 @@ def train(
     if init_weights != "":
         cfg["init_weights"] = init_weights
         cfg["resume_weights_only"] = True
-        print ("replacing default init weights with: ", init_weights)
+        print("replacing default init weights with: ", init_weights)
 
     stem = Path(cfg["init_weights"]).stem
     if "snapshot" in stem and keepdeconvweights:
@@ -123,10 +122,10 @@ def train(
             # removing the decoding layer from the checkpoint
             temp = []
             for variable in variables_to_restore:
-                if 'pose' not in variable.name:
-                    temp.append(variable)                            
+                if "pose" not in variable.name:
+                    temp.append(variable)
             variables_to_restore = temp
-            
+
     else:
         print("Loading ImageNet-pretrained", net_type)
         # loading backbone from ResNet, MobileNet etc.

@@ -131,12 +131,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, mask_kpts_below_thresh=False):
+    def _load_pseudo_data_from_h5(
+        self, cfg, threshold=0.5, mask_kpts_below_thresh=False
+    ):
         gt_file = cfg["pseudo_label"]
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
-        num_kpts = len(cfg['all_joints_names'])
+        num_kpts = len(cfg["all_joints_names"])
         df = pd.read_hdf(gt_file)
         video_name = path_.name.split("DLC")[0]
         video_root = str(path_.parents[0] / video_name)
@@ -162,7 +164,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item.joints = {}
 
             if not mask_kpts_below_thresh:
-                joints = np.concatenate([joint_ids, kpts], axis=1)                
+                joints = np.concatenate([joint_ids, kpts], axis=1)
                 joints = np.nan_to_num(joints, nan=0)
             else:
                 for kpt_id, kpt in enumerate(kpts):
@@ -172,7 +174,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         kpts[kpt_id][:-1] = -1
                         kpts[kpt_id][-1] = 1
                 joints = np.concatenate([joint_ids, kpts], axis=1)
-                
+
             sparse_joints = []
 
             for coord in joints:
@@ -355,15 +357,17 @@ class MAImgaugPoseDataset(BasePoseDataset):
         joint_ids = []
         inds_visible = []
         data_items = []
-        trim_ends = self.cfg.get('trim_ends', None)
+        trim_ends = self.cfg.get("trim_ends", None)
         if trim_ends is None:
             trim_ends = 0
         # because of the existence of threshold, sampling population is adjusted to len(self.data)
-        img_idx = np.random.choice(len(self.data) - trim_ends *2, size=self.batch_size, replace=True)        
+        img_idx = np.random.choice(
+            len(self.data) - trim_ends * 2, size=self.batch_size, replace=True
+        )
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
-            data_item = self.data[index + offset]            
+            data_item = self.data[index + offset]
             data_items.append(data_item)
             im_file = data_item.im_path
 
@@ -619,7 +623,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_size = *size, num_joints * 2
         locref_map = np.zeros(locref_size)
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = *size, self.cfg["num_limbs"] * 2
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
@@ -645,7 +649,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         dx_ = dx * locref_scale
         dy = coords[:, 1] - yy * stride - half_stride
         dy_ = dy * locref_scale
-        dist = dx**2 + dy**2
+        dist = dx ** 2 + dy ** 2
         mask1 = dist <= dist_thresh_sq
         mask2 = (xx >= mins[:, 0]) & (xx <= maxs[:, 0])
         mask3 = (yy >= mins[:, 1]) & (yy <= maxs[:, 1])
@@ -752,7 +756,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         partaffinityfield_shape = np.concatenate(
             [size, np.array([self.cfg["num_limbs"] * 2])]
@@ -784,7 +788,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             map_j = grid.copy()
             # Distance between the joint point and each coordinate
             dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
-            scmap_j = np.exp(-dist / (2 * (std**2)))
+            scmap_j = np.exp(-dist / (2 * (std ** 2)))
             scmap[..., j_id] = scmap_j
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 0] = 1
             locref_mask[dist <= dist_thresh_sq, j_id * 2 + 1] = 1

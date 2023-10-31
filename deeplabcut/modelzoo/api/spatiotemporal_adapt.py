@@ -120,7 +120,7 @@ class SpatiotemporalAdaptation:
             )
         if kwargs.pop("plot_trajectories", True):
             if len(datafiles) == 0:
-                print ('No data files found for plotting trajectory')
+                print("No data files found for plotting trajectory")
             else:
                 _plot_trajectories(datafiles[0])
 
