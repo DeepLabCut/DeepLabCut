@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from functools import partial
+
 import deeplabcut
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Signal, QTimer, QRegularExpression
@@ -18,6 +20,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_grid_layout,
 )
+from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
@@ -136,7 +139,8 @@ class ModelZoo(DefaultTab):
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
-        deeplabcut.video_inference_superanimal(
+        func = partial(
+            deeplabcut.video_inference_superanimal,
             videos,
             supermodel_name,
             videotype=videotype,
@@ -145,3 +149,10 @@ class ModelZoo(DefaultTab):
             pseudo_threshold=self.pseudo_threshold_spinbox.value(),
             adapt_iterations=self.adapt_iter_spinbox.value(),
         )
+
+        self.worker, self.thread = move_to_separate_thread(func)
+        self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
+        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+        self.thread.start()
+        self.run_button.setEnabled(False)
+        self.root._progress_bar.show()
