@@ -106,6 +106,18 @@ class ModelZoo(DefaultTab):
         self.run_button.clicked.connect(self.run_video_adaptation)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(deeplabcut.video_inference_superanimal.__doc__, self)
+        layout.addWidget(label)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
     def _handle_validation_change(self, state):
         if state == RegExpValidator.Invalid:
             color = "red"
