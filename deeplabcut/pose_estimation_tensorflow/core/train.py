@@ -49,7 +49,8 @@ class LearningRate(object):
 def get_batch_spec(cfg):
     num_joints = cfg["num_joints"]
     batch_size = cfg["batch_size"]
-    channels = 1 if cfg["dataset_type"] != "imgaug" else 3 
+    channels = 1 if cfg["dataset_type"] != "imgaug" else 3
+    channels = 3 
     return {
         Batch.inputs: [batch_size, None, None, channels],
         Batch.part_score_targets: [batch_size, None, None, num_joints],

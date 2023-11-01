@@ -20,8 +20,13 @@ from .openvino.session import OpenVINOSession
 
 def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
     tf.compat.v1.reset_default_graph()
+    if "dataset_type" in cfg:
+        channels = 1 if cfg["dataset_type"] != "imgaug" else 3 
+    else:
+        channels=3
+    channels = 3
     inputs = tf.compat.v1.placeholder(
-        tf.float32, shape=[cfg["batch_size"], None, None, 3]
+        tf.float32, shape=[cfg["batch_size"], None, None, channels]
     )
     net_heads = PoseNetFactory.create(cfg).test(inputs)
     extra_dict = {}
@@ -51,7 +56,7 @@ def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
 
     # Restore variables from disk.
     restorer.restore(sess, cfg["init_weights"])
-
+    
     if collect_extra:
         return sess, inputs, outputs, extra_dict
     else:
@@ -206,8 +211,13 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
+    if "dataset_type" in cfg:
+        channels = 1 if cfg["dataset_type"] != "imgaug" else 3 
+    else:
+        channels = 3
+    channels = 3
     inputs = tf.compat.v1.placeholder(
-        tf.float32, shape=[cfg["batch_size"], None, None, 3]
+        tf.float32, shape=[cfg["batch_size"], None, None, channels]
     )
     net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]

@@ -442,7 +442,6 @@ class ImgaugPoseDataset(BasePoseDataset):
             #    kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints], shape=batch_images[i].shape)
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
-
             batch = {Batch.inputs: np.array(batch_images).astype(np.float64)}
             if self.has_gt:
                 scmap_update = self.get_scmap_update(
