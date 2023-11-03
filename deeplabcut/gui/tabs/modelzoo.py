@@ -114,7 +114,12 @@ class ModelZoo(DefaultTab):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
         label = QtWidgets.QLabel(deeplabcut.video_inference_superanimal.__doc__, self)
-        layout.addWidget(label)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
         dialog.setLayout(layout)
         dialog.exec_()
 
