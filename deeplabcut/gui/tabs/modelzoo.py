@@ -74,7 +74,9 @@ class ModelZoo(DefaultTab):
         tooltip_label.setPixmap(
             QPixmap(os.path.join(BASE_DIR, "assets", "icons", "help2.png")).scaledToWidth(30)
         )
-        tooltip_label.setToolTip("Approximate animal sizes in pixels, for spatial pyramid search")
+        tooltip_label.setToolTip(
+            "Approximate animal sizes in pixels, for spatial pyramid search. If left blank, defaults to video height +/- 50 pixels",
+        )
 
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
