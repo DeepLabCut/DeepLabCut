@@ -59,15 +59,6 @@ class ModelZoo(DefaultTab):
         supermodels = parse_available_supermodels()
         self.model_combo.addItems(supermodels.keys())
 
-        scales_label = QtWidgets.QLabel("Scale list")
-        self.scales_line = QtWidgets.QLineEdit("", parent=self)
-        self.scales_line.setPlaceholderText(
-            "Optionally input a list of integer sizes separated by commas..."
-        )
-        validator = RegExpValidator(self._val_pattern, self)
-        validator.validationChanged.connect(self._handle_validation_change)
-        self.scales_line.setValidator(validator)
-
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
 
@@ -93,13 +84,11 @@ class ModelZoo(DefaultTab):
         model_settings_layout.addWidget(section_title, 0, 0)
         model_settings_layout.addWidget(model_combo_text, 1, 0)
         model_settings_layout.addWidget(self.model_combo, 1, 1)
-        model_settings_layout.addWidget(scales_label, 2, 0)
-        model_settings_layout.addWidget(self.scales_line, 2, 1)
-        model_settings_layout.addWidget(self.adapt_checkbox, 3, 0)
-        model_settings_layout.addWidget(pseudo_threshold_label, 4, 0)
-        model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 4, 1)
-        model_settings_layout.addWidget(adapt_iter_label, 5, 0)
-        model_settings_layout.addWidget(self.adapt_iter_spinbox, 5, 1)
+        model_settings_layout.addWidget(self.adapt_checkbox, 2, 0)
+        model_settings_layout.addWidget(pseudo_threshold_label, 3, 0)
+        model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 3, 1)
+        model_settings_layout.addWidget(adapt_iter_label, 4, 0)
+        model_settings_layout.addWidget(self.adapt_iter_spinbox, 4, 1)
         self.main_layout.addLayout(model_settings_layout)
 
         self.run_button = QtWidgets.QPushButton("Run")
@@ -118,16 +107,6 @@ class ModelZoo(DefaultTab):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def _handle_validation_change(self, state):
-        if state == RegExpValidator.Invalid:
-            color = "red"
-        elif state == RegExpValidator.Intermediate:
-            color = "gold"
-        elif state == RegExpValidator.Acceptable:
-            color = "lime"
-        self.scales_line.setStyleSheet(f"border: 1px solid {color}")
-        QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
-
     def run_video_adaptation(self):
         videos = list(self.files)
         if not videos:
@@ -140,14 +119,6 @@ class ModelZoo(DefaultTab):
             msg.exec_()
             return
 
-        scales = []
-        scales_ = self.scales_line.text()
-        if scales_:
-            if (
-                self.scales_line.validator().validate(scales_, 0)[0]
-                == RegExpValidator.Acceptable
-            ):
-                scales = list(map(int, scales_.split(",")))
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
@@ -157,7 +128,6 @@ class ModelZoo(DefaultTab):
             supermodel_name,
             videotype=videotype,
             video_adapt=self.adapt_checkbox.isChecked(),
-            scale_list=scales,
             pseudo_threshold=self.pseudo_threshold_spinbox.value(),
             adapt_iterations=self.adapt_iter_spinbox.value(),
         )
