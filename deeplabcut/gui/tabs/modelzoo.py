@@ -8,18 +8,20 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 from functools import partial
 
 import deeplabcut
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Signal, QTimer, QRegularExpression
-from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtGui import QPixmap, QRegularExpressionValidator
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_label_widget,
     _create_grid_layout,
 )
+from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.modelzoo.utils import parse_available_supermodels
 
@@ -68,6 +70,12 @@ class ModelZoo(DefaultTab):
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
 
+        tooltip_label = QtWidgets.QLabel()
+        tooltip_label.setPixmap(
+            QPixmap(os.path.join(BASE_DIR, "assets", "icons", "help2.png")).scaledToWidth(30)
+        )
+        tooltip_label.setToolTip("Approximate animal sizes in pixels, for spatial pyramid search")
+
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
 
@@ -95,6 +103,7 @@ class ModelZoo(DefaultTab):
         model_settings_layout.addWidget(self.model_combo, 1, 1)
         model_settings_layout.addWidget(scales_label, 2, 0)
         model_settings_layout.addWidget(self.scales_line, 2, 1)
+        model_settings_layout.addWidget(tooltip_label, 2, 2)
         model_settings_layout.addWidget(self.adapt_checkbox, 3, 0)
         model_settings_layout.addWidget(pseudo_threshold_label, 4, 0)
         model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 4, 1)
