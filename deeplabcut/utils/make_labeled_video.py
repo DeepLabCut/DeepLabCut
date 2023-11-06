@@ -332,14 +332,14 @@ def CreateVideoSlow(
                             ax.scatter(
                                 df_x[ind][max(0, index - trailpoints) : index],
                                 df_y[ind][max(0, index - trailpoints) : index],
-                                s=dotsize**2,
+                                s=dotsize ** 2,
                                 color=color,
                                 alpha=alphavalue * 0.75,
                             )
                         ax.scatter(
                             df_x[ind, index],
                             df_y[ind, index],
-                            s=dotsize**2,
+                            s=dotsize ** 2,
                             color=color,
                             alpha=alphavalue,
                         )
@@ -967,7 +967,7 @@ def create_video_with_keypoints_only(
     plt.switch_backend("agg")
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
-    scat = ax.scatter([], [], s=dotsize**2, alpha=alpha)
+    scat = ax.scatter([], [], s=dotsize ** 2, alpha=alpha)
     coords = xyp[0, :, :2]
     coords[xyp[0, :, 2] < pcutoff] = np.nan
     scat.set_offsets(coords)

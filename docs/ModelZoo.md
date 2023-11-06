@@ -47,13 +47,37 @@ Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not nee
 pip install deeplabcut[tf,modelzoo]
 ```
 
+#### Practical example: Using SuperAnimal models for inference without training.
+In the `deeplabcut.video_inference_superanimal` function, if the output video appears to be jittery, consider setting the `video_adapt` option to __True__. Be aware, that enabling this option might extend the processing time. 
+
 ```python
 video_path = 'demo-video.mp4'
 superanimal_name = 'superanimal_quadruped'
-scale_list = range(200, 600, 50)  # image height pixel size range and increment
 
-deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list)
+# The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.
+scale_list = range(200, 600, 50)
+
+deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list, video_adapt = False)
 ```
+
+#### Practical example: Using transfer learning with superanimal weights.
+In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
+  Specifically:
+* `superquadruped` uses 39 keypoints and,
+* `supertopview` uses 27 keypoints
+
+```python
+superanimal_name = "superanimal_topviewmouse"
+config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
+
+deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
+
+deeplabcut.train_network(config_path,
+                         maxiters=10,
+                         superanimal_name = superanimal_name,
+                         superanimal_transfer_learning = True)
+```
+
 
 
 ### To see the list of available models, check out the [Home page](http://modelzoo.deeplabcut.org/). 

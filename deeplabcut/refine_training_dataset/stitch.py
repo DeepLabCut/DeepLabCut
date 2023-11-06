@@ -222,13 +222,13 @@ class Tracklet:
         else:
             raise ValueError(f"Unknown where={where}")
         if norm:
-            return np.sqrt(np.sum(vel**2, axis=1)).mean()
+            return np.sqrt(np.sum(vel ** 2, axis=1)).mean()
         return vel.mean(axis=0)
 
     @property
     def maximal_velocity(self):
         vel = np.diff(self.centroid, axis=0) / np.diff(self.inds)[:, np.newaxis]
-        return np.sqrt(np.max(np.sum(vel**2, axis=1)))
+        return np.sqrt(np.max(np.sum(vel ** 2, axis=1)))
 
     def calc_rate_of_turn(self, where="head"):
         """
@@ -267,7 +267,7 @@ class Tracklet:
                 self.centroid[np.isin(self.inds, other_tracklet.inds)]
                 - other_tracklet.centroid[np.isin(other_tracklet.inds, self.inds)]
             )
-            return np.sqrt(np.sum(dist**2, axis=1)).mean()
+            return np.sqrt(np.sum(dist ** 2, axis=1)).mean()
         elif self < other_tracklet:
             return np.sqrt(
                 np.sum((self.centroid[-1] - other_tracklet.centroid[0]) ** 2)
@@ -300,7 +300,7 @@ class Tracklet:
                 d2 = self.centroid[0] - time_gap * self.calc_velocity("tail", False)
                 delta1 = self.centroid[0] - d1
                 delta2 = other_tracklet.centroid[-1] - d2
-            return (np.sqrt(np.sum(delta1**2)) + np.sqrt(np.sum(delta2**2))) / 2
+            return (np.sqrt(np.sum(delta1 ** 2)) + np.sqrt(np.sum(delta2 ** 2))) / 2
         return 0
 
     def time_gap_to(self, other_tracklet):
@@ -417,7 +417,7 @@ class Tracklet:
         # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
         _, s, _ = sli.svd(mat, min(10, min(mat.shape)))
         # return np.argmin(s > omega * np.median(s))
-        eigen = s**2
+        eigen = s ** 2
         diff = np.abs(np.diff(eigen / eigen[0]))
         return np.argmin(diff > tol)
 
@@ -873,7 +873,7 @@ class TrackletStitcher:
             temp = np.full((self.n_frames, flat_data.shape[1]), np.nan)
             temp[track.inds - self._first_frame] = flat_data
             data.append(temp)
-        
+
         # If there isn't a track for each animal, fill in the dataframe with NaNs
         missing_tracks = self.n_tracks - len(self.tracks)
         if missing_tracks > 0:

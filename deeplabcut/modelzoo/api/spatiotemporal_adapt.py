@@ -119,7 +119,10 @@ class SpatiotemporalAdaptation:
                 customized_test_config=self.customized_pose_config,
             )
         if kwargs.pop("plot_trajectories", True):
-            _plot_trajectories(datafiles[0])
+            if len(datafiles) == 0:
+                print("No data files found for plotting trajectory")
+            else:
+                _plot_trajectories(datafiles[0])
 
         if make_video:
             deeplabcut.create_labeled_video(

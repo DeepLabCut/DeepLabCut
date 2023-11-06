@@ -341,7 +341,7 @@ def video_inference(
             print("Loading ", video)
             vid = VideoWriter(video)
             if len(scale_list) == 0:
-                # spatial pyramid can still be useful for reducing jittering and quantization error                
+                # spatial pyramid can still be useful for reducing jittering and quantization error
                 scale_list = [vid.height - 50, vid.height, vid.height + 50]
             if robust_nframes:
                 nframes = vid.get_n_frames(robust=True)

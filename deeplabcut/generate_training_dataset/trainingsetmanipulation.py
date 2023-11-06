@@ -31,6 +31,8 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
+from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
 def comparevideolistsanddatafolders(config):
@@ -482,7 +484,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
-                print(f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)")
+                print(
+                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                )
                 continue
             AnnotationData.append(data)
         except FileNotFoundError:
@@ -728,6 +732,7 @@ def create_training_dataset(
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
+    superanimal_name="",
 ):
     """Creates a training dataset.
 
@@ -791,6 +796,10 @@ def create_training_dataset(
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
+    superanimal_name: string, optional, default=""
+        Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+
+
     Returns
     -------
     list(tuple) or None
@@ -832,8 +841,23 @@ def create_training_dataset(
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
+    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
+
+    if superanimal_name != "":
+        supermodels = parse_available_supermodels()
+        posecfg_template = os.path.join(
+            dlc_root_path,
+            "pose_estimation_tensorflow",
+            "superanimal_configs",
+            supermodels[superanimal_name],
+        )
+
     if posecfg_template:
-        if not posecfg_template.endswith("pose_cfg.yaml"):
+        if (
+            not posecfg_template.endswith("pose_cfg.yaml")
+            and not posecfg_template.endswith("superquadruped.yaml")
+            and not posecfg_template.endswith("supertopview.yaml")
+        ):
             raise ValueError(
                 "posecfg_template argument must contain path to a pose_cfg.yaml file"
             )
@@ -841,14 +865,16 @@ def create_training_dataset(
             print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
-            prior_cfg = read_plainconfig(posecfg_template)
+        prior_cfg = read_plainconfig(posecfg_template)
     if cfg.get("multianimalproject", False):
         from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
             create_multianimaltraining_dataset,
         )
 
         create_multianimaltraining_dataset(
-            config, num_shuffles, Shuffles,
+            config,
+            num_shuffles,
+            Shuffles,
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
@@ -880,6 +906,7 @@ def create_training_dataset(
                 "resnet" in net_type
                 or "mobilenet" in net_type
                 or "efficientnet" in net_type
+                or "dlcrnet" in net_type
             ):
                 pass
             else:

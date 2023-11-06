@@ -1529,7 +1529,9 @@ def _convert_detections_to_tracklets(
         assemblies = assembly_builder.assemblies.get(i)
         if assemblies is None:
             continue
-        animals = np.stack([assembly_builder.data[:, :3] for assembly_builder in assemblies])
+        animals = np.stack(
+            [assembly_builder.data[:, :3] for assembly_builder in assemblies]
+        )
         if track_method == "box":
             xy = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0)
@@ -1813,7 +1815,9 @@ def convert_detections2tracklets(
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
                 if not os.path.exists(assemblies_filename) or overwrite:
                     if calibrate:
-                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
+                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
+                            cfg
+                        )
                         train_data_file = os.path.join(
                             cfg["project_path"],
                             str(trainingsetfolder),
@@ -1857,7 +1861,9 @@ def convert_detections2tracklets(
                         assemblies = assembly_builder.assemblies.get(index)
                         if assemblies is None:
                             continue
-                        animals = np.stack([assembly_builder.data for assembly_builder in assemblies])
+                        animals = np.stack(
+                            [assembly_builder.data for assembly_builder in assemblies]
+                        )
                         if not identity_only:
                             if track_method == "box":
                                 xy = trackingutils.calc_bboxes_from_keypoints(

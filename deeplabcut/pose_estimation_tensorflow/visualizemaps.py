@@ -339,7 +339,7 @@ def visualize_paf(image, paf, step=5, colors=None):
         V = paf[:, :, n, 1]
         X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
         M = np.zeros(U.shape, dtype=bool)
-        M[U**2 + V**2 < 0.5 * 0.5**2] = True
+        M[U ** 2 + V ** 2 < 0.5 * 0.5 ** 2] = True
         U = np.ma.masked_array(U, mask=M)
         V = np.ma.masked_array(V, mask=M)
         ax.quiver(

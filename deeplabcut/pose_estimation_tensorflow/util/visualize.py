@@ -31,7 +31,7 @@ def _npcircle(image, cx, cy, radius, color, transparency=0.0):
     cx = int(cx)
     cy = int(cy)
     y, x = np.ogrid[-radius:radius, -radius:radius]
-    index = x**2 + y**2 <= radius**2
+    index = x ** 2 + y ** 2 <= radius ** 2
     image[cy - radius : cy + radius, cx - radius : cx + radius][index] = (
         image[cy - radius : cy + radius, cx - radius : cx + radius][index].astype(
             "float32"

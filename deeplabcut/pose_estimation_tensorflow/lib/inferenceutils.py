@@ -359,7 +359,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length**2 - mu) / sigma
+        z = (link.length ** 2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
@@ -809,13 +809,13 @@ class Assembler:
                         if unique is not None:
                             self.unique[i] = unique
                         pbar.update()
-    
+
     def from_pickle(self, pickle_path):
         with open(pickle_path, "rb") as file:
             data = pickle.load(file)
         self.unique = data.pop("single", {})
         self.assemblies = data
-        
+
     @staticmethod
     def parse_metadata(data):
         params = dict()
