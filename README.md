@@ -13,8 +13,7 @@
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=300w" height="150">
 
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbd0c898583417a040dfc/1547681053201/rat-grasp.gif?format=300w" height="150">
-</p>
+
   
 
 

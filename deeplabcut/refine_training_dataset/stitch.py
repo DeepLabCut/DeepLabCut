@@ -135,7 +135,12 @@ class Tracklet:
     def identity(self):
         """Return the average predicted identity of all Tracklet detections."""
         try:
-            return mode(self.data[..., 3], axis=None, nan_policy="omit")[0][0]
+            return mode(
+                self.data[..., 3],
+                axis=None,
+                nan_policy="omit",
+                keepdims=False,
+            )[0]
         except IndexError:
             return -1
 

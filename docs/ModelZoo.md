@@ -25,7 +25,7 @@ To provide the community with easy access to such high performance models across
 
 ### We now  introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
 
-#### `superanimal_quadruped` model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is ortholonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:
+#### `superanimal_quadruped` model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:
 
 ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
 

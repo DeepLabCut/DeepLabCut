@@ -21,27 +21,31 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 ## Install:
 
-**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install deeplabcut`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
+**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install 'deeplabcut[tf]'`; if you need GUI support, please use: `pip install 'deeplabcut[tf,gui]'`. On newer Apple computers (with an M1/M2 chip), use `pip install 'deeplabcut[apple_mchips]'` or `pip install 'deeplabcut[apple_mchips,gui]'` instead.
 
 IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
 
 ## Get started in the terminal or Project GUI:
 
-**GUI:** simply open your conda env, and windows/linux type `python -m deeplabcut`. MacOS users: `pythonw -m deeplabcut.`
+**GUI:** simply launch your conda env, and type `python -m deeplabcut` in the terminal.
 Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
 
-**TERMINAL:** To begin, (windows) navigate to anaconda prompt and right-click to "open as admin ", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, [see installation instructions](how-to-install)). Next, launch your conda env (i.e., for example `conda activate DLC-CPU`).
+**TERMINAL:** To begin, 🚨 (windows) navigate to anaconda prompt and right-click to "open as admin", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, [see installation instructions](how-to-install)). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`).
 
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+```{Hint}
+🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```
+ Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```python
 ipython
 import deeplabcut
 ```
-**TIP:** for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
 
+```{TIP:}
+for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
+```
 
 ### Create a New Project:
 
@@ -50,7 +54,7 @@ deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1
               copy_videos=True, multianimal=True)
 ```
 
-Tip: if you want to place the project folder somewhere pass : ``working_directory = 'FullPathOftheworkingDirectory'``
+Tip: if you want to place the project folder somewhere specific, please also pass : ``working_directory = 'FullPathOftheworkingDirectory'``
 
 - Note, if you are a linux/macos user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
@@ -227,7 +231,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
 
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file)
+deeplabcut.create_multianimaltraining_dataset(config_path)
 ```
 
 - The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
@@ -256,13 +260,13 @@ we leave manually-defining a skeleton as an option for the advanced user:
 
 ```python
 my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
-deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph=my_better_graph)
+deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph=my_better_graph)
 ```
 
 Alternatively, the `skeleton` defined in the `config.yaml` file can also be used:
 
 ```python
-deeplabcut.create_multianimaltraining_dataset(path_config_file, paf_graph='config')
+deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph='config')
 ```
 
 Importantly, if a user-defined graph is used it still is required to cover all multianimalbodyparts at least once.
@@ -525,7 +529,7 @@ Note you should pass the n_tracks (number of animals) you expect to see in the v
 You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` or `.h5'` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
 ```python
-deeplabcut.refine_tracklets(path_config_file, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
+deeplabcut.refine_tracklets(config_path, pickle_or_h5_file, videofile_path, max_gap=0, min_swap_len=2, min_tracklet_len=2, trail_len=50)
 ```
 
 If you use the GUI (or otherwise), here are some settings to consider:
