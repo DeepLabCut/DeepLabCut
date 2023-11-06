@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -38,9 +38,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
@@ -438,7 +438,11 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#our-perspective">Our perspective.</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api">To use our models in DeepLabCut (versions 2.3+), please use the following API</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api">To use our models in DeepLabCut (versions 2.3+), please use the following API</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-see-the-list-of-available-models-check-out-the-home-page">To see the list of available models, check out the Home page.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it">Potential failure modes for SuperAnimal Models and how to fix it.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper">To see our first preprint on the work, check out our paper:</a></li>
@@ -500,13 +504,39 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="p">[</span><span class="n">tf</span><span class="p">,</span><span class="n">modelzoo</span><span class="p">]</span>
 </pre></div>
 </div>
+<section id="practical-example-using-superanimal-models-for-inference-without-training">
+<h4>Practical example: Using SuperAnimal models for inference without training.<a class="headerlink" href="#practical-example-using-superanimal-models-for-inference-without-training" title="Permalink to this heading">#</a></h4>
+<p>In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.video_inference_superanimal</span></code> function, if the output video appears to be jittery, consider setting the <code class="docutils literal notranslate"><span class="pre">video_adapt</span></code> option to <strong>True</strong>. Be aware, that enabling this option might extend the processing time.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;demo-video.mp4&#39;</span>
 <span class="n">superanimal_name</span> <span class="o">=</span> <span class="s1">&#39;superanimal_quadruped&#39;</span>
-<span class="n">scale_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>  <span class="c1"># image height pixel size range and increment</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span> <span class="n">superanimal_name</span><span class="p">,</span> <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">)</span>
+<span class="c1"># The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.</span>
+<span class="n">scale_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span> <span class="n">superanimal_name</span><span class="p">,</span> <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">,</span> <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="practical-example-using-transfer-learning-with-superanimal-weights">
+<h4>Practical example: Using transfer learning with superanimal weights.<a class="headerlink" href="#practical-example-using-transfer-learning-with-superanimal-weights" title="Permalink to this heading">#</a></h4>
+<p>In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.train_network</span></code> function, the <code class="docutils literal notranslate"><span class="pre">superanimal_transfer_learning</span></code> option plays a pivotal role. If it’s set to <strong>True</strong>, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it’s set to <strong>False</strong>, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.<br />
+Specifically:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">superquadruped</span></code> uses 39 keypoints and,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">supertopview</span></code> uses 27 keypoints</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;openfield-Pranav-2018-10-30&quot;</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">superanimal_name</span> <span class="o">=</span> <span class="n">superanimal_name</span><span class="p">)</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span>
+                         <span class="n">maxiters</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                         <span class="n">superanimal_name</span> <span class="o">=</span> <span class="n">superanimal_name</span><span class="p">,</span>
+                         <span class="n">superanimal_transfer_learning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="to-see-the-list-of-available-models-check-out-the-home-page">
 <h3>To see the list of available models, check out the <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a>.<a class="headerlink" href="#to-see-the-list-of-available-models-check-out-the-home-page" title="Permalink to this heading">#</a></h3>
@@ -607,7 +637,11 @@ volume={abs/2203.07436}
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#our-perspective">Our perspective.</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api">To use our models in DeepLabCut (versions 2.3+), please use the following API</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api">To use our models in DeepLabCut (versions 2.3+), please use the following API</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-see-the-list-of-available-models-check-out-the-home-page">To see the list of available models, check out the Home page.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it">Potential failure modes for SuperAnimal Models and how to fix it.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper">To see our first preprint on the work, check out our paper:</a></li>
@@ -664,8 +698,8 @@ By The DeepLabCut Team
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
   </footer>
