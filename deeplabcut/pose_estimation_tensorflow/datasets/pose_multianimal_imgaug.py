@@ -383,7 +383,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
 
-                joint_id = np.array(list(range(self._n_kpts)) * self._n_animals)
+                joint_id = [
+                    np.array(list(range(self._n_kpts)))
+                    for _ in range(self._n_animals)
+                ]
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
 
