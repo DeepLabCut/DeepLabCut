@@ -22,7 +22,6 @@ def video_inference_superanimal(
     pcutoff=0.1,
     adapt_iterations=1000,
     pseudo_threshold=0.1,
-    trim_ends=None,
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -60,9 +59,6 @@ def video_inference_superanimal(
 
     pseudo_threshold: float, default 0.1
         Video adaptation only uses predictions that are above pseudo_threshold
-
-    trim_ends: int, optional:
-        In cases where the beginning and ending of the videos have very messy background that impacts predictions of the model, we trim those from adaptation training
 
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
@@ -107,7 +103,6 @@ def video_inference_superanimal(
             adapter.adaptation_training(
                 adapt_iterations=adapt_iterations,
                 pseudo_threshold=pseudo_threshold,
-                trim_ends=trim_ends,
             )
             adapter.after_adapt_inference(
                 pcutoff=pcutoff,
