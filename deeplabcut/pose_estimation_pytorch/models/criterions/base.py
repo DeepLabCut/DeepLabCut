@@ -26,6 +26,10 @@ class BaseCriterion(ABC, nn.Module):
         super().__init__()
         self.apply_sigmoid = apply_sigmoid
 
+    def __init__(self, apply_sigmoid: bool = False) -> None:
+        super().__init__()
+        self.apply_sigmoid = apply_sigmoid
+
     @abstractmethod
     def forward(
         self, output: torch.Tensor, target: torch.Tensor, **kwargs
