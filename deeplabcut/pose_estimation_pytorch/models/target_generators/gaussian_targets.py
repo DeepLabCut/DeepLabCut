@@ -12,9 +12,10 @@ from __future__ import annotations
 
 import numpy as np
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    TARGET_GENERATORS,
     BaseGenerator,
+    TARGET_GENERATORS,
 )
 
 
@@ -46,16 +47,13 @@ class GaussianGenerator(BaseGenerator):
         self.locref_scale = 1.0 / locref_stdev
         self.num_joints = num_joints
         self.dist_thresh = float(pos_dist_thresh)
-        self.dist_thresh_sq = self.dist_thresh**2
+        self.dist_thresh_sq = self.dist_thresh ** 2
         self.std = (
             2 * self.dist_thresh / 3
         )  # We think of dist_thresh as a radius and std is a 'diameter'
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: torch.Tensor,
-        labels: dict,
+        self, inputs: torch.Tensor, outputs: torch.Tensor, labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """Summary:
         Given the annotations and predictions of your keypoints, this function returns the targets,
@@ -109,7 +107,7 @@ class GaussianGenerator(BaseGenerator):
                     if np.any(coord <= 0.0):
                         continue
                     dist = np.linalg.norm(grid - coord, axis=2) ** 2
-                    scmap_j = np.exp(-dist / (2 * self.std**2))
+                    scmap_j = np.exp(-dist / (2 * self.std ** 2))
                     scmap[b, :, :, i] += scmap_j
                     locref_mask[b, dist <= self.dist_thresh_sq, i * 2 : i * 2 + 2] = 1
                     dx = coord[1] - grid.copy()[:, :, 1]
@@ -121,7 +119,7 @@ class GaussianGenerator(BaseGenerator):
         locref_mask = locref_mask.transpose(0, 3, 1, 2)
         return {
             "heatmap": {
-                "target": torch.tensor(scmap, device=outputs["heatmap"].device),
+                "target": torch.tensor(scmap, device=outputs["heatmap"].device)
             },
             "locref": {
                 "target": torch.tensor(locref_map, device=outputs["locref"].device),

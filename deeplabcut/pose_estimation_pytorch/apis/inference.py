@@ -15,7 +15,7 @@ import torch
 from torchvision.ops import box_convert
 from torchvision.transforms import Resize as TorchResize
 
-from deeplabcut.pose_estimation_pytorch.models import PREDICTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.models import PoseModel, PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.post_processing import (
@@ -133,9 +133,7 @@ def get_predictions_top_down(
 
 
 def get_detections_batch(
-    detector: BaseDetector,
-    images: torch.Tensor,
-    max_num_animals: int,
+    detector: BaseDetector, images: torch.Tensor, max_num_animals: int
 ) -> torch.Tensor:
     """Given a batch of images, outputs the predicted bboxes.
 
@@ -162,9 +160,7 @@ def get_detections_batch(
 
 
 def get_pose_batch(
-    pose_model: PoseModel,
-    predictor: BasePredictor,
-    cropped_images: torch.Tensor,
+    pose_model: PoseModel, predictor: BasePredictor, cropped_images: torch.Tensor
 ) -> torch.Tensor:
     """Given a batch of cropped images, outputs a batch of predicted pose coordinates.
     Coordinates are still in cropped image space and needs to be handled accordingly to
@@ -197,9 +193,7 @@ def get_pose_batch(
 
 
 def match_predicted_individuals_to_annotations(
-    predictions: np.ndarray,
-    ground_truth: List[np.ndarray],
-    max_individuals: int,
+    predictions: np.ndarray, ground_truth: List[np.ndarray], max_individuals: int
 ) -> None:
     """
     Uses RMSE to match predicted individuals to frame annotations for a batch of
@@ -219,16 +213,13 @@ def match_predicted_individuals_to_annotations(
     if max_individuals > 1:
         for b in range(predictions.shape[0]):
             match_individuals = rmse_match_prediction_to_gt(
-                predictions[b],
-                ground_truth[b],
+                predictions[b], ground_truth[b]
             )
             predictions[b] = predictions[b][match_individuals]
 
 
 def resize_batch_predictions(
-    predictions: np.ndarray,
-    original_sizes: np.ndarray,
-    image_shape: Tuple[int, int],
+    predictions: np.ndarray, original_sizes: np.ndarray, image_shape: Tuple[int, int]
 ) -> None:
     """
     Converts keypoint coordinates to their values in the original image. Call if the
@@ -360,9 +351,7 @@ def inference(
                 )
             else:
                 predictions, unique_pred = get_predictions_bottom_up(
-                    model=model,
-                    predictor=predictor,
-                    images=item["image"],
+                    model=model, predictor=predictor, images=item["image"]
                 )
 
             if align_predictions_to_ground_truth:

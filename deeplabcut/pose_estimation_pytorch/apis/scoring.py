@@ -75,30 +75,22 @@ def get_scores(
             f"images (poses={len(poses)}, gt={len(ground_truth)})"
         )
 
-    ground_truth = {
-        image: mask_invisible(gt_pose, mask_value=np.nan)
-        for image, gt_pose in ground_truth.items()
-    }
-
-    pred_poses, gt_poses = [], []
-    for image_key in poses.keys():
-        pred_poses.append(poses[image_key])
-        gt_poses.append(ground_truth[image_key])
-
-    keys = list(poses.keys())
-    pred_poses = build_keypoint_array(poses, keys).reshape((-1, 3))
-    gt_poses = build_keypoint_array(ground_truth, keys).reshape((-1, 2))
+    image_paths = list(poses)
+    pred_poses = build_keypoint_array(poses, image_paths)[..., :3].reshape((-1, 3))
+    gt_poses = build_keypoint_array(ground_truth, image_paths).reshape((-1, 2))
     if unique_bodypart_poses is not None:
         pred_poses = np.concatenate(
             [
                 pred_poses,
-                build_keypoint_array(unique_bodypart_poses, keys).reshape((-1, 3)),
+                build_keypoint_array(unique_bodypart_poses, image_paths)[
+                    ..., :3
+                ].reshape((-1, 3)),
             ]
         )
         gt_poses = np.concatenate(
             [
                 gt_poses,
-                build_keypoint_array(unique_bodypart_gt, keys).reshape((-1, 2)),
+                build_keypoint_array(unique_bodypart_gt, image_paths).reshape((-1, 2)),
             ]
         )
 
@@ -136,9 +128,7 @@ def build_keypoint_array(
 
 
 def compute_rmse(
-    pred: np.ndarray,
-    ground_truth: np.ndarray,
-    pcutoff: float = -1,
+    pred: np.ndarray, ground_truth: np.ndarray, pcutoff: float = -1
 ) -> tuple[float, float]:
     """Computes the root mean square error (rmse) for predictions vs the ground truth labels
 
@@ -234,8 +224,7 @@ def build_assemblies(poses: dict[str, np.ndarray]) -> dict[str, list[Assembly]]:
 
 
 def align_predicted_individuals_to_gt(
-    predictions: dict[str, np.ndarray],
-    ground_truth: dict[str, np.ndarray],
+    predictions: dict[str, np.ndarray], ground_truth: dict[str, np.ndarray]
 ) -> dict[str, np.ndarray]:
     """TODO: implement with OKS as well
     Uses RMSE to match predicted individuals to frame annotations for a batch of
@@ -265,8 +254,7 @@ def align_predicted_individuals_to_gt(
 
 
 def mask_invisible(
-    keypoints: np.ndarray,
-    mask_value: int | float | np.nan = -1.0,
+    keypoints: np.ndarray, mask_value: int | float | np.nan = -1.0
 ) -> np.ndarray:
     """
     Masks keypoints that are not visible in an array.
@@ -281,7 +269,7 @@ def mask_invisible(
         as invisible replaced with the mask value
     """
     keypoints = keypoints.copy()
-    visibility = (keypoints[..., 2] == 0)
+    visibility = keypoints[..., 2] == 0
     keypoints[visibility, 0] = mask_value
     keypoints[visibility, 1] = mask_value
     return keypoints[..., :2]

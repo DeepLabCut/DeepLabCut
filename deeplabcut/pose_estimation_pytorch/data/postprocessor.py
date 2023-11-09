@@ -42,9 +42,7 @@ def build_bottom_up_postprocessor(with_unique_bodyparts: bool) -> ComposePostpro
     if with_unique_bodyparts:
         keys_to_concatenate["unique_bodyparts"] = ("unique_bodypart", "poses")
     return ComposePostprocessor(
-        components=[
-            ConcatenateOutputs(keys_to_concatenate=keys_to_concatenate),
-        ]
+        components=[ConcatenateOutputs(keys_to_concatenate=keys_to_concatenate)]
     )
 
 
@@ -129,9 +127,7 @@ class RescaleAndOffset(Postprocessor):
         self.keys_to_rescale = keys_to_rescale
 
     def __call__(
-        self,
-        predictions: dict[str, np.ndarray],
-        context: Context,
+        self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
         if "scales" not in context or "offsets" not in context:
             raise ValueError(
@@ -170,9 +166,7 @@ class BboxToCoco(Postprocessor):
         self.bounding_box_keys = bounding_box_keys
 
     def __call__(
-        self,
-        predictions: dict[str, np.ndarray],
-        context: Context,
+        self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
         for bbox_key in self.bounding_box_keys:
             predictions[bbox_key][:, 2] -= predictions[bbox_key][:, 0]

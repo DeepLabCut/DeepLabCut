@@ -22,19 +22,19 @@ import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
-    Postprocessor,
     build_bottom_up_postprocessor,
     build_detector_postprocessor,
     build_top_down_postprocessor,
+    Postprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
-    Preprocessor,
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
+    Preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import KeypointAwareCrop
-from deeplabcut.pose_estimation_pytorch.models import PoseModel, DETECTORS
-from deeplabcut.pose_estimation_pytorch.runners import RUNNERS, Runner
+from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.runners import Runner, RUNNERS
 from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
 from deeplabcut.utils import auxfun_videos
@@ -55,8 +55,7 @@ def build_optimizer(optimizer_cfg: dict, model: nn.Module) -> torch.optim.Optimi
 
 
 def build_scheduler(
-    scheduler_cfg: dict | None,
-    optimizer: torch.optim.Optimizer,
+    scheduler_cfg: dict | None, optimizer: torch.optim.Optimizer
 ) -> torch.optim.lr_scheduler.LRScheduler | None:
     """Builds a scheduler from a configuration, if defined
 
@@ -114,6 +113,7 @@ def build_runner(
     Returns:
         the runner
     """
+    model.to(device)  # Move model before giving its parameters to the optimizer
     optimizer = build_optimizer(run_cfg["optimizer"], model)
     scheduler = build_scheduler(run_cfg["scheduler"], optimizer)
     return RUNNERS.build(
@@ -183,12 +183,10 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
     #     )
     scale_jitter_lo, scale_jitter_up = aug_cfg.get("scale_jitter", (1, 1))
     rotation = aug_cfg.get("rotation", 0)
-    translation = aug_cfg.get("translation", 0)
     transforms.append(
         A.Affine(
             scale=(scale_jitter_lo, scale_jitter_up),
             rotate=(-rotation, rotation),
-            translate_px=(-translation, translation),
             p=0.5,
         )
     )
@@ -219,7 +217,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
         if type(opt) == int or type(opt) == float:
             transforms.append(
                 A.GaussNoise(
-                    var_limit=(0, opt**2),
+                    var_limit=(0, opt ** 2),
                     mean=0,
                     per_channel=True,  # Albumentations doesn't support per_cahnnel = 0.5
                     p=0.5,
@@ -228,10 +226,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
         else:
             transforms.append(
                 A.GaussNoise(
-                    var_limit=(0, (0.05 * 255) ** 2),
-                    mean=0,
-                    per_channel=True,
-                    p=0.5,
+                    var_limit=(0, (0.05 * 255) ** 2), mean=0, per_channel=True, p=0.5
                 )
             )
 
@@ -337,8 +332,7 @@ def get_detector_snapshots(model_folder: Path) -> list[Path]:
 
 
 def list_videos_in_folder(
-    data_path: str | list[str],
-    video_type: str | None,
+    data_path: str | list[str], video_type: str | None
 ) -> list[Path]:
     """
     TODO
@@ -488,10 +482,10 @@ def build_predictions_dataframe(
     prediction_data = []
     index_data = []
     for image in images:
-        image_data = bodypart_predictions[image].reshape(-1)
+        image_data = bodypart_predictions[image][..., :3].reshape(-1)
         if unique_bodypart_predictions is not None:
             image_data = np.concatenate(
-                [image_data, unique_bodypart_predictions[image].reshape(-1)]
+                [image_data, unique_bodypart_predictions[image][..., :3].reshape(-1)]
             )
         prediction_data.append(image_data)
         if image_name_to_index is not None:
@@ -548,8 +542,7 @@ def get_runners(
     detector_runner = None
     if pose_task == "BU":
         pose_preprocessor = build_bottom_up_preprocessor(
-            color_mode="RGB",  # TODO: read from Loader
-            transform=transform,
+            color_mode="RGB", transform=transform  # TODO: read from Loader
         )
         pose_postprocessor = build_bottom_up_postprocessor(
             with_unique_bodyparts=with_unique_bodyparts

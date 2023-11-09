@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import torch
+from copy import deepcopy
 from itertools import combinations
 
 from deeplabcut.utils import auxiliaryfunctions
@@ -35,6 +36,31 @@ BACKBONE_OUT_CHANNELS = {
     "hrnet_w32": 480,
     "hrnet_w48": 720,
 }
+SUPPORTED_MODELS = (
+    "resnet_50",
+    "mobilenet_v2_1.0",
+    "mobilenet_v2_0.75",
+    "mobilenet_v2_0.5",
+    "mobilenet_v2_0.35",
+    "efficientnet-b0",
+    "efficientnet-b1",
+    "efficientnet-b2",
+    "efficientnet-b3",
+    "efficientnet-b4",
+    "efficientnet-b5",
+    "efficientnet-b6",
+    "efficientnet-b7",
+    "efficientnet-b8",
+    "hrnet_w18",
+    "hrnet_w32",
+    "hrnet_w48",
+    "dekr_w18",
+    "dekr_w32",
+    "dekr_w48",
+    "token_pose_w18",
+    "token_pose_w32",
+    "token_pose_w48",
+)
 
 
 def make_pytorch_config(
@@ -75,37 +101,8 @@ def make_pytorch_config(
             - token_pose_w48
 
     """
-
-    # FIXME Handle gracefully models that apply to both single- and multi-animal setups
-    single_animal_nets = [
-        # "resnet_50",
-        "mobilenet_v2_1.0",
-        "mobilenet_v2_0.75",
-        "mobilenet_v2_0.5",
-        "mobilenet_v2_0.35",
-        "efficientnet-b0",
-        "efficientnet-b1",
-        "efficientnet-b2",
-        "efficientnet-b3",
-        "efficientnet-b4",
-        "efficientnet-b5",
-        "efficientnet-b6",
-        "efficientnet-b7",
-        "efficientnet-b8",
-        "hrnet_w18",
-        "hrnet_w32",
-        "hrnet_w48",
-    ]
-
-    multi_animal_nets = [
-        "resnet_50",
-        "dekr_w18",
-        "dekr_w32",
-        "dekr_w48",
-        "token_pose_w18",
-        "token_pose_w32",
-        "token_pose_w48",
-    ]
+    if net_type not in SUPPORTED_MODELS:
+        raise ValueError(f"Unsupported network {net_type}.")
 
     bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
     num_joints = len(bodyparts)
@@ -113,22 +110,10 @@ def make_pytorch_config(
     num_unique_bpts = len(unique_bpts)
     compute_unique_bpts = num_unique_bpts > 0
 
-    pytorch_config = config_template
+    pytorch_config = deepcopy(config_template)
     pytorch_config["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     pytorch_config["method"] = "bu"
-    if net_type in single_animal_nets:
-        pytorch_config["model"]["heads"] = {
-            "bodypart": make_single_head_cfg(num_joints, net_type),
-        }
-
-        if "efficientnet" in net_type:
-            raise NotImplementedError("efficientnet config not yet implemented")
-        elif "mobilenetv2" in net_type:
-            raise NotImplementedError("mobilenet config not yet implemented")
-        elif "hrnet" in net_type:
-            raise NotImplementedError("hrnet config not yet implemented")
-
-    elif net_type in multi_animal_nets:
+    if pytorch_config.get("multianimal", False):
         num_individuals = len(project_config.get("individuals", [0]))
         if "dekr" in net_type:
             version = net_type.split("_")[-1]
@@ -157,8 +142,11 @@ def make_pytorch_config(
                 )
 
         elif "resnet" in net_type:
-            dim = BACKBONE_OUT_CHANNELS["resnet-50"]
-            graph = [list(edge) for edge in combinations(range(num_joints), 2)]  # TODO Parse from config
+            num_stages = pytorch_config.get("num_stages", 0)
+            dim = BACKBONE_OUT_CHANNELS["resnet-50"] if num_stages == 0 else 2304
+            graph = [
+                list(edge) for edge in combinations(range(num_joints), 2)
+            ]  # TODO Parse from config
             num_limbs = len(graph)
             pytorch_config["model"]["backbone"] = {"type": "ResNet"}
             pytorch_config["model"]["heads"] = {
@@ -170,9 +158,11 @@ def make_pytorch_config(
                     edges_to_keep=list(
                         pytorch_config.get("paf_best", list(range(num_limbs)))
                     ),
+                    # TODO Below is hardcoded for output stride 32;
                     heatmap_channels=[dim, dim // 2, num_joints],
                     locref_channels=[dim, dim // 2, 2 * num_joints],
                     paf_channels=[dim, dim // 2, 2 * num_limbs],
+                    num_stages=num_stages,
                     # TODO Set remaining params from config
                 )
             }
@@ -200,11 +190,19 @@ def make_pytorch_config(
             pytorch_config["with_center_keypoints"] = False
         else:
             raise NotImplementedError(
-                "Currently no other model than dekr and token_pose are implemented"
+                "Currently no other model than dlcrnet, dekr, and token_pose are implemented"
             )
-
     else:
-        raise ValueError("This net type is not supported by DeepLabCut PyTorch")
+        pytorch_config["model"]["heads"] = {
+            "bodypart": make_single_head_cfg(num_joints, net_type)
+        }
+
+        if "efficientnet" in net_type:
+            raise NotImplementedError("efficientnet config not yet implemented")
+        elif "mobilenetv2" in net_type:
+            raise NotImplementedError("mobilenet config not yet implemented")
+        elif "hrnet" in net_type:
+            raise NotImplementedError("hrnet config not yet implemented")
 
     if augmenter_type == None:
         pytorch_config["data"] = {}
@@ -231,6 +229,7 @@ def make_dlcrnet_head(
     nms_radius: int = 5,
     sigma: float = 1.0,
     min_affinity: float = 0.05,
+    num_stages: int = 5,
 ) -> dict:
     dict_ = make_heatmap_head(num_joints, heatmap_channels, locref_channels)
     dict_["type"] = "DLCRNetHead"
@@ -242,6 +241,7 @@ def make_dlcrnet_head(
         "kernel_size": [3] * n_deconv_layers,
         "strides": [2] * n_deconv_layers,
     }
+    dict_["num_stages"] = num_stages
     dict_["target_generator"] = {
         "type": "SequentialGenerator",
         "generators": [
@@ -474,5 +474,4 @@ def make_detector_data_aug() -> dict:
         "normalize_images": True,
         "rotation": 30,
         "scale_jitter": [0.5, 1.25],
-        "translation": 40,
     }

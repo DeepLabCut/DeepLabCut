@@ -51,10 +51,7 @@ class DEKRHead(BaseHead):
         self.offset_head = DEKROffset(**offset_config)
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
-        return {
-            "heatmap": self.heatmap_head(x),
-            "offset": self.offset_head(x),
-        }
+        return {"heatmap": self.heatmap_head(x), "offset": self.offset_head(x)}
 
 
 class DEKRHeatmap(nn.Module):
@@ -104,14 +101,10 @@ class DEKRHeatmap(nn.Module):
         self.final_conv_kernel = final_conv_kernel
 
         self.transition_heatmap = self._make_transition_for_head(
-            self.inp_channels,
-            channels[1],
+            self.inp_channels, channels[1]
         )
         self.head_heatmap = self._make_heatmap_head(
-            block,
-            num_blocks,
-            channels[1],
-            dilation_rate,
+            block, num_blocks, channels[1], dilation_rate
         )
 
     def _make_transition_for_head(
@@ -266,8 +259,7 @@ class DEKROffset(nn.Module):
         self.final_conv_kernel = final_conv_kernel
 
         self.transition_offset = self._make_transition_for_head(
-            self.inp_channels,
-            self.offset_channels,
+            self.inp_channels, self.offset_channels
         )
         (
             self.offset_feature_layers,

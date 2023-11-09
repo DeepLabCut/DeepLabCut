@@ -32,7 +32,7 @@ class ResNet(BaseBackbone):
     def __init__(
         self,
         model_name: str = "resnet50",
-        output_stride: int = 16,
+        output_stride: int = 32,
         pretrained: bool = True,
     ) -> None:
         """Initialize the ResNet backbone.
@@ -73,7 +73,7 @@ class DLCRNet(ResNet):
     def __init__(
         self,
         model_name: str = "resnet50",
-        output_stride: int = 16,
+        output_stride: int = 32,
         pretrained: bool = True,
     ) -> None:
         super().__init__(model_name, output_stride, pretrained)
@@ -122,7 +122,6 @@ class DLCRNet(ResNet):
         out = super().forward(x)
 
         # Fuse intermediate features
-        h, w = out.shape[-2:]
         bank_2_s8 = self.interm_features["bank2"]
         bank_1_s4 = self.interm_features["bank1"]
         bank_2_s16 = self.conv_block1(bank_2_s8)
@@ -132,7 +131,8 @@ class DLCRNet(ResNet):
         bank_1_s16 = self.conv_block5(bank_1_s16)
         # Resizing here is required to guarantee all shapes match, as
         # Conv2D(..., padding='same') is invalid for strided convolutions.
-        bank_1_s16 = resize(bank_1_s16, [h, w], antialias=False)
-        bank_2_s16 = resize(bank_2_s16, [h, w], antialias=False)
+        h, w = out.shape[-2:]
+        bank_1_s16 = resize(bank_1_s16, [h, w], antialias=True)
+        bank_2_s16 = resize(bank_2_s16, [h, w], antialias=True)
 
         return torch.cat((bank_1_s16, bank_2_s16, out), dim=1)

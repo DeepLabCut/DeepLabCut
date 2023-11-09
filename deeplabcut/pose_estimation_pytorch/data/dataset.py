@@ -18,14 +18,14 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from deeplabcut.pose_estimation_pytorch.data.utils import (
-    _crop_image_keypoints,
     _crop_and_pad_image_torch,
+    _crop_image_keypoints,
+    _extract_keypoints_and_bboxes,
+    apply_transform,
+    map_id_to_annotations,
+    map_image_path_to_id,
+    pad_to_length,
 )
-from deeplabcut.pose_estimation_pytorch.data.utils import _extract_keypoints_and_bboxes
-from deeplabcut.pose_estimation_pytorch.data.utils import apply_transform
-from deeplabcut.pose_estimation_pytorch.data.utils import map_id_to_annotations
-from deeplabcut.pose_estimation_pytorch.data.utils import map_image_path_to_id
-from deeplabcut.pose_estimation_pytorch.data.utils import pad_to_length
 
 
 @dataclass(frozen=True)
@@ -109,10 +109,7 @@ class PoseDataset(Dataset):
 
         image_id2path = {
             image_id: image_path
-            for (
-                image_path,
-                image_id,
-            ) in self.image_path_id_map.items()
+            for (image_path, image_id) in self.image_path_id_map.items()
         }
 
         return image_id2path[image_id], annotations, image_id
@@ -150,16 +147,13 @@ class PoseDataset(Dataset):
             keypoints_unique,
             bboxes,
             annotations_merged,
-        ) = self.extract_keypoints_and_bboxes(
-            annotations,
-            image.shape,
-        )
+        ) = self.extract_keypoints_and_bboxes(annotations, image.shape)
         offsets = np.zeros((self.parameters.max_num_animals, 2))
         scales = (1, 1)
         if self.task == "TD":
             if self.parameters.cropped_image_size is None:
                 raise ValueError(
-                    "You must specify a cropped image size for top-down models",
+                    "You must specify a cropped image size for top-down models"
                 )
             if len(bboxes) > 1:
                 raise ValueError(
@@ -190,10 +184,7 @@ class PoseDataset(Dataset):
             )  # No more bounding boxes as we cropped around them
 
         transformed = self.apply_transform_all_keypoints(
-            image,
-            keypoints,
-            keypoints_unique,
-            bboxes,
+            image, keypoints, keypoints_unique, bboxes
         )
         keypoints = transformed["keypoints"]
 
@@ -235,10 +226,7 @@ class PoseDataset(Dataset):
             "offsets": offsets,
             "scales": scales,
             "annotations": self._prepare_final_annotation_dict(
-                keypoints,
-                keypoints_unique,
-                bboxes,
-                annotations_merged,
+                keypoints, keypoints_unique, bboxes, annotations_merged
             ),
         }
 
@@ -291,7 +279,7 @@ class PoseDataset(Dataset):
             return self._get_raw_item(index)
 
         raise ValueError(
-            f"Unknown task: {self.task}. " 'Task should be one of: "BU", "TD", "DT"',
+            f"Unknown task: {self.task}. " 'Task should be one of: "BU", "TD", "DT"'
         )
 
     def apply_transform_all_keypoints(
@@ -331,11 +319,7 @@ class PoseDataset(Dataset):
             all_keypoints = np.concatenate([all_keypoints, keypoints_unique], axis=0)
 
         transformed = apply_transform(
-            self.transform,
-            image,
-            all_keypoints,
-            bboxes,
-            class_labels=class_labels,
+            self.transform, image, all_keypoints, bboxes, class_labels=class_labels
         )
         if self.parameters.num_unique_bpts > 0:
             keypoints = transformed["keypoints"][
@@ -381,9 +365,7 @@ class PoseDataset(Dataset):
         return _crop_image_keypoints(image, keypoints, coords, output_size)
 
     def extract_keypoints_and_bboxes(
-        self,
-        annotations: list[dict],
-        image_shape: tuple[int, int, int],
+        self, annotations: list[dict], image_shape: tuple[int, int, int]
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
         """
         Args:

@@ -14,17 +14,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from deeplabcut.pose_estimation_pytorch.models.criterions import utils
 from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
-    CRITERIONS,
     BaseCriterion,
+    CRITERIONS,
 )
 
 
 class WeightedCriterion(BaseCriterion):
     """Base class for weighted criterions"""
 
-    def __init__(self, criterion: nn.Module, apply_sigmoid: bool = False):
-        super().__init__(apply_sigmoid=apply_sigmoid)
+    def __init__(self, criterion: nn.Module):
+        super().__init__()
         self.criterion = criterion
 
     def forward(
@@ -44,15 +45,11 @@ class WeightedCriterion(BaseCriterion):
         Returns:
             the weighted loss
         """
-        if self.apply_sigmoid:
-            output = F.sigmoid(output)
-
-        loss = self.criterion(output, target) * weights
-        loss_without_zeros = loss[loss != 0]
-        if loss_without_zeros.nelement() == 0:
+        loss = self.criterion(output, target)
+        n_elems = utils.count_nonzero_elems(loss, weights)
+        if n_elems == 0:
             return torch.tensor(0.0, device=output.device)
-
-        return torch.mean(loss_without_zeros)
+        return torch.sum(loss * weights) / n_elems
 
 
 @CRITERIONS.register_module
@@ -66,8 +63,8 @@ class WeightedMSECriterion(WeightedCriterion):
     are excluded from the loss calculation.
     """
 
-    def __init__(self, apply_sigmoid: bool = False) -> None:
-        super().__init__(nn.MSELoss(reduction="none"), apply_sigmoid=apply_sigmoid)
+    def __init__(self) -> None:
+        super().__init__(nn.MSELoss(reduction="none"))
 
 
 @CRITERIONS.register_module
@@ -81,8 +78,8 @@ class WeightedHuberCriterion(WeightedCriterion):
     excluded from the loss calculation.
     """
 
-    def __init__(self, apply_sigmoid: bool = False) -> None:
-        super().__init__(nn.HuberLoss(reduction="none"), apply_sigmoid=apply_sigmoid)
+    def __init__(self) -> None:
+        super().__init__(nn.HuberLoss(reduction="none"))
 
 
 @CRITERIONS.register_module
@@ -96,7 +93,5 @@ class WeightedBCECriterion(WeightedCriterion):
     excluded from the loss calculation.
     """
 
-    def __init__(self, apply_sigmoid: bool = False) -> None:
-        super().__init__(
-            nn.BCEWithLogitsLoss(reduction="none"), apply_sigmoid=apply_sigmoid
-        )
+    def __init__(self) -> None:
+        super().__init__(nn.BCEWithLogitsLoss(reduction="none"))

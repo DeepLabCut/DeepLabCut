@@ -10,13 +10,14 @@
 #
 # The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
 import torchvision.ops as ops
 
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 BLOCKS = Registry("blocks", build_func=build_from_cfg)
 

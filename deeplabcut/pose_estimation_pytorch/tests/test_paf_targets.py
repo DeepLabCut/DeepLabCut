@@ -1,5 +1,6 @@
 import pytest
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.target_generators import pafs_targets
 
 
@@ -8,7 +9,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import pafs_tar
     [(2, 2, (64, 64)), (1, 5, (48, 64)), (8, 50, (64, 48))],
 )
 def test_paf_target_generation(
-    batch_size: int, num_keypoints: int, image_size: tuple, num_animals=2,
+    batch_size: int, num_keypoints: int, image_size: tuple, num_animals=2
 ):
     annotations = {
         "keypoints": torch.randint(

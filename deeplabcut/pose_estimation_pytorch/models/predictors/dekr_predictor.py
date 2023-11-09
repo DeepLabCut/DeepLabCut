@@ -15,8 +15,8 @@ import torch
 import torch.nn.functional as F
 
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
-    PREDICTORS,
     BasePredictor,
+    PREDICTORS,
 )
 
 
@@ -99,9 +99,7 @@ class DEKRPredictor(BasePredictor):
         self.max_absorb_distance = max_absorb_distance
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of DEKRPredictor.
 

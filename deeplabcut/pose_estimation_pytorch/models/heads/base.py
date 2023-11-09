@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import torch
@@ -20,7 +21,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 HEADS = Registry("heads", build_func=build_from_cfg)
 

@@ -14,32 +14,31 @@ import copy
 import pickle
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, Any
+from typing import Any, List, Optional, Tuple, Union
 
 import albumentations as A
 import numpy as np
 import pandas as pd
+
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_detector_snapshots,
     get_model_snapshots,
-    list_videos_in_folder,
     get_runners,
+    list_videos_in_folder,
 )
 from deeplabcut.pose_estimation_pytorch.runners import Runner
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
 
 
 class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self,
-        video_path: str,
-        context: list[dict[str, Any]] | None = None,
+        self, video_path: str, context: list[dict[str, Any]] | None = None
     ) -> None:
         super().__init__(video_path)
         self._context = context
@@ -190,10 +189,7 @@ def analyze_videos(
     project_path = Path(cfg["project_path"])
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction,
-        shuffle,
-        cfg,
-        modelprefix=modelprefix,
+        train_fraction, shuffle, cfg, modelprefix=modelprefix
     )
     model_path = _get_model_path(model_folder, snapshotindex, cfg)
     model_epochs = int(model_path.stem.split("-")[-1])
@@ -314,12 +310,7 @@ def analyze_videos(
                 )
                 df = df.join(df_u, how="outer")
 
-            df.to_hdf(
-                str(output_h5),
-                "df_with_missing",
-                format="table",
-                mode="w",
-            )
+            df.to_hdf(str(output_h5), "df_with_missing", format="table", mode="w")
             results.append((str(video), df))
             output_data = _generate_output_data(pose_cfg, predictions)
             _ = auxfun_multianimal.SaveFullMultiAnimalData(
@@ -342,9 +333,7 @@ def analyze_videos(
                     assemblies["single"] = {}
                     for i, unique_prediction in enumerate(unique_predictions):
                         extra_column = np.full(
-                            (unique_prediction.shape[1], 1),
-                            -1.0,
-                            dtype=np.float32,
+                            (unique_prediction.shape[1], 1), -1.0, dtype=np.float32
                         )
                         ass = np.concatenate(
                             (unique_prediction[0], extra_column), axis=-1
@@ -387,12 +376,7 @@ def analyze_videos(
                     columns=results_df_index,
                     index=range(len(predictions)),
                 )
-                df.to_hdf(
-                    str(output_h5),
-                    "df_with_missing",
-                    format="table",
-                    mode="w",
-                )
+                df.to_hdf(str(output_h5), "df_with_missing", format="table", mode="w")
                 results.append((str(video), df))
     return results
 
@@ -421,12 +405,7 @@ def _generate_metadata(
     w, h = video.dimensions
     cropping = cfg.get("cropping", False)
     if cropping:
-        cropping_parameters = [
-            cfg["x1"],
-            cfg["x2"],
-            cfg["y1"],
-            cfg["y2"],
-        ]
+        cropping_parameters = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
     else:
         cropping_parameters = [0, w, 0, h]
 
@@ -472,9 +451,7 @@ def _get_model_path(model_folder: Path, snapshot_index: int, config: dict) -> Pa
 
 
 def _get_detector_path(
-    model_folder: Path,
-    snapshot_index: int | str,
-    config: dict | None,
+    model_folder: Path, snapshot_index: int | str, config: dict | None
 ) -> Path:
     trained_models = get_detector_snapshots(model_folder / "train")
 
@@ -498,10 +475,7 @@ def _get_detector_path(
     return trained_models[snapshot_index]
 
 
-def _generate_output_data(
-    pose_config: dict,
-    predictions: np.ndarray,
-) -> dict:
+def _generate_output_data(pose_config: dict, predictions: np.ndarray) -> dict:
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),

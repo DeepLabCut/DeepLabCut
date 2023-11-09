@@ -10,9 +10,10 @@
 #
 
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
-    PREDICTORS,
     BasePredictor,
+    PREDICTORS,
 )
 
 

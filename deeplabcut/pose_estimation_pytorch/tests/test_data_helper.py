@@ -12,11 +12,7 @@ from deeplabcut.pose_estimation_pytorch.data.helper import merge_list_of_dicts
 
 @pytest.mark.parametrize("repo_path", ["/home/anastasiia/DLCdev"])
 def test_propertymeta_project(repo_path):
-    project_root = os.path.join(
-        repo_path,
-        "examples",
-        "openfield-Pranav-2018-10-30",
-    )
+    project_root = os.path.join(repo_path, "examples", "openfield-Pranav-2018-10-30")
     dlc_project = DLCProject(project_root, shuffle=1)
 
     for prop in dlc_project.properties:
@@ -31,11 +27,7 @@ def test_propertymeta_dataset(repo_path, mode):
     repo_path = "/home/anastasiia/DLCdev"
     mode = "train"
     mode = "train"
-    project_root = os.path.join(
-        repo_path,
-        "examples",
-        "openfield-Pranav-2018-10-30",
-    )
+    project_root = os.path.join(repo_path, "examples", "openfield-Pranav-2018-10-30")
     dlc_project = DLCProject(project_root, shuffle=1)
     dataset = PoseDataset(dlc_project, mode)
 
@@ -52,13 +44,10 @@ def test_propertymeta_dataset(repo_path, mode):
                 *[
                     {
                         "keypoints": np.random.randn(27, 3),
-                        "images": np.random.randn(
-                            256,
-                            192,
-                        ),
+                        "images": np.random.randn(256, 192),
                     }
                 ]
-                * 10,
+                * 10
             ],
             [*["keypoints", "images"] * 10],
         ),

@@ -10,21 +10,21 @@
 #
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import albumentations as A
 import numpy as np
 
 from deeplabcut import auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
-from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.data.utils import (
-    map_id_to_annotations,
-    _compute_crop_bounds,
+from deeplabcut.pose_estimation_pytorch.data.dataset import (
+    PoseDataset,
+    PoseDatasetParameters,
 )
-from deeplabcut.utils.auxiliaryfunctions import get_bodyparts
-from deeplabcut.utils.auxiliaryfunctions import get_unique_bodyparts
+from deeplabcut.pose_estimation_pytorch.data.utils import (
+    _compute_crop_bounds,
+    map_id_to_annotations,
+)
+from deeplabcut.utils.auxiliaryfunctions import get_bodyparts, get_unique_bodyparts
 
 
 class Loader(ABC):
@@ -73,9 +73,7 @@ class Loader(ABC):
         return [image["file_name"] for image in data["images"]]
 
     def ground_truth_keypoints(
-        self,
-        mode: str = "train",
-        unique_bodypart: bool = False,
+        self, mode: str = "train", unique_bodypart: bool = False
     ) -> dict[str, np.ndarray]:
         """
         Creates a dictionary containing the ground truth data
@@ -263,7 +261,7 @@ class Loader(ABC):
                 if "bbox" not in annotation:
                     # or do something else?
                     raise ValueError(
-                        "Bounding box not found in annotation, please chose another method",
+                        "Bounding box not found in annotation, please chose another method"
                     )
             return annotations
 

@@ -17,6 +17,8 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
@@ -26,7 +28,6 @@ from deeplabcut.pose_estimation_tensorflow import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
 from deeplabcut.utils import auxfun_multianimal, read_pickle
-from tqdm import tqdm
 
 
 def convert_detections2tracklets(
@@ -244,8 +245,7 @@ def convert_detections2tracklets(
                     else:
                         if track_method == "box":
                             xy = trackingutils.calc_bboxes_from_keypoints(
-                                animals[:, keep_inds],
-                                inference_cfg["boundingboxslack"],
+                                animals[:, keep_inds], inference_cfg["boundingboxslack"]
                             )  # TODO: get cropping parameters and utilize!
                         else:
                             xy = animals[:, keep_inds, :2]
@@ -268,8 +268,7 @@ def convert_detections2tracklets(
 
 
 def _conv_predictions_to_assemblies(
-    image_names: List[str],
-    predictions: Dict[str, np.ndarray],
+    image_names: List[str], predictions: Dict[str, np.ndarray]
 ) -> Dict[int, List[Assembly]]:
     """
     Converts predictions to an assemblies dictionary

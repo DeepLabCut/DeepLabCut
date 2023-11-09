@@ -94,10 +94,6 @@ class COCOLoader(Loader):
 
         for image in json_obj["images"]:
             image_path = image["file_name"]
-            image["file_name"] = os.path.join(
-                self.project_root,
-                "images",
-                image_path,
-            )
+            image["file_name"] = os.path.join(self.project_root, "images", image_path)
 
         return json_obj

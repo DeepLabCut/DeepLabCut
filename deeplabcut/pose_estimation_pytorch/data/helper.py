@@ -59,15 +59,10 @@ class PropertyMeta(type):
 
     def __new__(cls, name, bases, attrs):
         if "properties" not in attrs:
-            raise AttributeError(
-                f"{name} must define a 'properties' dictionary.",
-            )
+            raise AttributeError(f"{name} must define a 'properties' dictionary.")
         properties = attrs.get("properties", {})
         for prop_name, (func, arg_func) in properties.items():
-            attrs[prop_name] = class_property(
-                func,
-                arg_func,
-            )(lambda self: None)
+            attrs[prop_name] = class_property(func, arg_func)(lambda self: None)
         return super().__new__(cls, name, bases, attrs)
 
 

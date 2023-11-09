@@ -157,7 +157,7 @@ class Attention(torch.nn.Module):
         """
         super().__init__()
         self.heads = heads
-        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim**-0.5
+        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim ** -0.5
 
         self.to_qkv = torch.nn.Linear(dim, dim * 3, bias=False)
         self.to_out = torch.nn.Sequential(

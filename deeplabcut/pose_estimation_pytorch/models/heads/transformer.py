@@ -16,7 +16,7 @@ from timm.layers import trunc_normal_
 from torch import nn as nn
 
 from deeplabcut.pose_estimation_pytorch.models.criterions import BaseCriterion
-from deeplabcut.pose_estimation_pytorch.models.heads import HEADS, BaseHead
+from deeplabcut.pose_estimation_pytorch.models.heads import BaseHead, HEADS
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 

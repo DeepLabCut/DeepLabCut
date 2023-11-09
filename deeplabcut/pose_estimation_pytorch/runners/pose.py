@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
+
 from typing import Any
 
 import numpy as np
@@ -16,7 +17,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from deeplabcut.pose_estimation_pytorch.models import model as models
-from deeplabcut.pose_estimation_pytorch.runners.base import RUNNERS, Runner
+from deeplabcut.pose_estimation_pytorch.runners.base import Runner, RUNNERS
 from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
 
 
@@ -25,10 +26,7 @@ class PoseRunner(Runner[models.PoseModel]):
     """Runner for pose estimation"""
 
     def __init__(
-        self,
-        model: models.PoseModel,
-        optimizer: torch.optim.Optimizer,
-        **kwargs,
+        self, model: models.PoseModel, optimizer: torch.optim.Optimizer, **kwargs
     ):
         """TODO: Update doc to generic (not pose) runner. Constructor of the Runner class.
         Args:
@@ -45,9 +43,7 @@ class PoseRunner(Runner[models.PoseModel]):
         super().__init__(model, optimizer, **kwargs)
 
     def step(
-        self,
-        batch: dict[str, Any],
-        mode: str = "train",
+        self, batch: dict[str, Any], mode: str = "train"
     ) -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
@@ -77,11 +73,7 @@ class PoseRunner(Runner[models.PoseModel]):
         batch_inputs = batch_inputs.to(self.device)
         head_outputs = self.model(batch_inputs)
 
-        target = self.model.get_target(
-            batch_inputs,
-            head_outputs,
-            batch["annotations"],
-        )
+        target = self.model.get_target(batch_inputs, head_outputs, batch["annotations"])
 
         losses_dict = self.model.get_loss(head_outputs, target)
         if mode == "train":

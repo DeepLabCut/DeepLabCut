@@ -1,20 +1,20 @@
-import yaml
 import os
 import pickle
 import time
 
 import albumentations as A
-import torch
-import torch.nn as nn
 import numpy as np
+import torch
+import yaml
+
 import deeplabcut
 from deeplabcut.pose_estimation_pytorch.apis.utils import build_pose_model
+from deeplabcut.pose_estimation_pytorch.models.criterion import PoseLoss
+from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
 from deeplabcut.pose_estimation_pytorch.solvers.utils import (
     get_paths,
     get_results_filename,
 )
-from deeplabcut.pose_estimation_pytorch.solvers.inference import get_prediction
-from deeplabcut.pose_estimation_pytorch.models.criterion import PoseLoss
 
 
 def read_yaml(path):
@@ -80,10 +80,7 @@ def evaluate_network_custom(
     model_folder = os.path.join(
         cfg["project_path"],
         deeplabcut.auxiliaryfunctions.get_model_folder(
-            train_fraction,
-            shuffle,
-            cfg,
-            modelprefix=model_prefix,
+            train_fraction, shuffle, cfg, modelprefix=model_prefix
         ),
     )
     pytorch_config_path = os.path.join(model_folder, "train", "pytorch_config.yaml")

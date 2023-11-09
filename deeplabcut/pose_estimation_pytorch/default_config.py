@@ -10,7 +10,6 @@
 #
 from typing import Any
 
-
 pytorch_cfg_template: dict[str, Any] = {
     "cfg_path": "/data/quentin/datasets/daniel3mouse/config.yaml",
     "seed": 42,
@@ -20,7 +19,6 @@ pytorch_cfg_template: dict[str, Any] = {
     "data": {
         "scale_jitter": [0.5, 1.25],
         "rotation": 30,
-        "translation": 40,
         "hist_eq": True,
         "motion_blur": True,
         "covering": True,
@@ -50,25 +48,12 @@ pytorch_cfg_template: dict[str, Any] = {
             "num_joints": -1,
             "pos_dist_thresh": 17,
         },
-        "pose_model": {
-            "stride": 8,
-        },
+        "pose_model": {"stride": 8},
     },
-    "optimizer": {
-        "type": "AdamW",
-        "params": {
-            "lr": 1e-4,
-        },
-    },
+    "optimizer": {"type": "AdamW", "params": {"lr": 1e-4}},
     "scheduler": {
         "type": "LRListScheduler",
-        "params": {
-            "milestones": [
-                90,
-                120,
-            ],
-            "lr_list": [[1e-5], [1e-6]],
-        },
+        "params": {"milestones": [90, 120], "lr_list": [[1e-5], [1e-6]]},
     },
     "runner": {"type": "PoseRunner"},
     "with_center_keypoints": False,

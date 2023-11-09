@@ -1,28 +1,15 @@
-import pytest
 import random
+
+import pytest
 import torch
+
 import deeplabcut.pose_estimation_pytorch.models as dlc_models
-from deeplabcut.pose_estimation_pytorch.models.modules import BasicBlock, AdaptBlock
+from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 
 backbones_dicts = [
-    {
-        "type": "HRNet",
-        "model_name": "hrnet_w32",
-        "output_channels": 480,
-        "stride": 4,
-    },
-    {
-        "type": "HRNet",
-        "model_name": "hrnet_w18",
-        "output_channels": 270,
-        "stride": 4,
-    },
-    {
-        "type": "HRNet",
-        "model_name": "hrnet_w48",
-        "output_channels": 720,
-        "stride": 4,
-    },
+    {"type": "HRNet", "model_name": "hrnet_w32", "output_channels": 480, "stride": 4},
+    {"type": "HRNet", "model_name": "hrnet_w18", "output_channels": 270, "stride": 4},
+    {"type": "HRNet", "model_name": "hrnet_w48", "output_channels": 720, "stride": 4},
     {
         "type": "HRNetTopDown",
         "model_name": "hrnet_w32",
@@ -41,12 +28,7 @@ backbones_dicts = [
         "output_channels": 48,
         "stride": 4,
     },
-    {
-        "type": "ResNet",
-        "model_name": "resnet50",
-        "output_channels": 2048,
-        "stride": 32,
-    },
+    {"type": "ResNet", "model_name": "resnet50", "output_channels": 2048, "stride": 32},
 ]
 
 heads_dicts = [

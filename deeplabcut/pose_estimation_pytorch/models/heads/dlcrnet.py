@@ -19,8 +19,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS
 from deeplabcut.pose_estimation_pytorch.models.heads.simple_head import (
-    HeatmapHead,
     DeconvModule,
+    HeatmapHead,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
@@ -42,12 +42,17 @@ class DLCRNetHead(HeatmapHead):
         num_stages: int = 5,
         features_dim: int = 128,
     ) -> None:
+        self.num_stages = num_stages
+        # FIXME Cleaner __init__ to avoid initializing unused layers
         in_channels = heatmap_config["channels"][0]
         num_keypoints = heatmap_config["channels"][-1]
         num_limbs = paf_config["channels"][-1]  # Already has the 2x multiplier
         in_refined_channels = features_dim + num_keypoints + num_limbs
-        heatmap_config["channels"][0] = paf_config["channels"][0] = in_refined_channels
-        locref_config["channels"][0] = locref_config["channels"][-1]
+        if num_stages > 0:
+            heatmap_config["channels"][0] = paf_config["channels"][
+                0
+            ] = in_refined_channels
+            locref_config["channels"][0] = locref_config["channels"][-1]
         super().__init__(
             predictor,
             target_generator,
@@ -114,24 +119,30 @@ class DLCRNetHead(HeatmapHead):
         )
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
-        stage1_hm_out = self.convt1(x)
-        stage1_paf_out = self.convt3(x)
-        features = self.convt4(x)
-        stage2_in = torch.cat((stage1_hm_out, stage1_paf_out, features), dim=1)
-        stage_in = stage2_in
-        stage_paf_out = stage1_paf_out
-        stage_hm_out = stage1_hm_out
-        for i, (hm_ref_layer, paf_ref_layer) in enumerate(
-            zip(self.hm_ref_layers, self.paf_ref_layers)
-        ):
-            pre_stage_hm_out = stage_hm_out
-            stage_hm_out = hm_ref_layer(stage_in)
-            stage_paf_out = paf_ref_layer(stage_in)
-            if i > 0:
-                stage_hm_out += pre_stage_hm_out
-            stage_in = torch.cat((stage_hm_out, stage_paf_out, features), dim=1)
+        if self.num_stages > 0:
+            stage1_hm_out = self.convt1(x)
+            stage1_paf_out = self.convt3(x)
+            features = self.convt4(x)
+            stage2_in = torch.cat((stage1_hm_out, stage1_paf_out, features), dim=1)
+            stage_in = stage2_in
+            stage_paf_out = stage1_paf_out
+            stage_hm_out = stage1_hm_out
+            for i, (hm_ref_layer, paf_ref_layer) in enumerate(
+                zip(self.hm_ref_layers, self.paf_ref_layers)
+            ):
+                pre_stage_hm_out = stage_hm_out
+                stage_hm_out = hm_ref_layer(stage_in)
+                stage_paf_out = paf_ref_layer(stage_in)
+                if i > 0:
+                    stage_hm_out += pre_stage_hm_out
+                stage_in = torch.cat((stage_hm_out, stage_paf_out, features), dim=1)
+            return {
+                "heatmap": self.heatmap_head(stage_in),
+                "locref": self.locref_head(self.convt2(x)),
+                "paf": self.paf_head(stage_in),
+            }
         return {
-            "heatmap": self.heatmap_head(stage_in),
-            "locref": self.locref_head(self.convt2(x)),
-            "paf": self.paf_head(stage_in),
+            "heatmap": self.heatmap_head(x),
+            "locref": self.locref_head(x),
+            "paf": self.paf_head(x),
         }

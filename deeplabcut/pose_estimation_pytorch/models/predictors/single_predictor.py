@@ -12,9 +12,10 @@
 from typing import Tuple
 
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    PREDICTORS,
     BasePredictor,
+    PREDICTORS,
 )
 
 
@@ -72,9 +73,7 @@ class SinglePredictor(BasePredictor):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
@@ -218,9 +217,7 @@ class HeatmapOnlyPredictor(BasePredictor):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 

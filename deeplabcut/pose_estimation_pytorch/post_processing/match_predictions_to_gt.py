@@ -10,15 +10,15 @@
 #
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
+
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     calc_object_keypoint_similarity,
 )
-from scipy.optimize import linear_sum_assignment
 
 
 def rmse_match_prediction_to_gt(
-    pred_kpts: np.ndarray,
-    gt_kpts: np.ndarray,
+    pred_kpts: np.ndarray, gt_kpts: np.ndarray
 ) -> np.ndarray:
     """Summary:
     Hungarian algorithm predicted individuals to ground truth ones, using root mean squared error (rmse). The function provides a way to
@@ -58,11 +58,11 @@ def rmse_match_prediction_to_gt(
     distance_matrix = np.zeros((num_animals_gt, num_animals))
     for g in range(num_animals_gt):
         for p in range(num_animals):
-            distance_matrix[g, p] = np.linalg.norm(
-                gt_kpts_without_ctr[g] - pred_kpts[p, :, :2]
+            distance_matrix[g, p] = np.nansum(
+                (gt_kpts_without_ctr[g] - pred_kpts[p, :, :2]) ** 2
             )
 
-    row_ind, col_ind = linear_sum_assignment(distance_matrix)
+    _, col_ind = linear_sum_assignment(distance_matrix)
     # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
     col_ind = extend_col_ind(col_ind, num_animals)
 

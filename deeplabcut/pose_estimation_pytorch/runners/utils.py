@@ -14,12 +14,13 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
-import numpy as np
-import pandas as pd
 
 
 def verify_paths(
@@ -185,10 +186,7 @@ def get_dlc_scorer(
     snapshot = snapshots[train_iterations]
     snapshot_epochs = int(snapshot.split("-")[-1])
 
-    (
-        dlc_scorer,
-        dlc_scorer_legacy,
-    ) = auxiliaryfunctions.get_scorer_name(
+    (dlc_scorer, dlc_scorer_legacy) = auxiliaryfunctions.get_scorer_name(
         test_cfg, shuffle, train_fraction, snapshot_epochs, modelprefix=model_prefix
     )
 
@@ -315,11 +313,7 @@ def get_results_filename(
         Output:
             'proj_name/evaluation-results/iteration-0/behaviordate-trainset95shuffle1/DLC_dekr_w32_behaviordateshuffle1_1-snapshot-10.h5'
     """
-    (
-        _,
-        results_filename,
-        _,
-    ) = auxiliaryfunctions.check_if_not_evaluated(
+    (_, results_filename, _) = auxiliaryfunctions.check_if_not_evaluated(
         evaluation_folder, dlc_scorer, dlc_scorerlegacy, os.path.basename(model_path)
     )
 
@@ -327,11 +321,7 @@ def get_results_filename(
 
 
 def get_model_folder(
-    project_path: str,
-    cfg: dict,
-    train_fraction: float,
-    shuffle: int,
-    model_prefix: str,
+    project_path: str, cfg: dict, train_fraction: float, shuffle: int, model_prefix: str
 ) -> str:
     """Returns the model folder path given the ff parameters:
     train_faction, shuffle, model_prefix, and test_cfg
@@ -459,22 +449,13 @@ def build_predictions_df(
     if num_individuals == 1:
         # Single animal prediction dataframe
         index = pd.MultiIndex.from_product(
-            [
-                [dlc_scorer],
-                bodyparts,
-                ["x", "y", "likelihood"],
-            ],
+            [[dlc_scorer], bodyparts, ["x", "y", "likelihood"]],
             names=["scorer", "bodyparts", "coords"],
         )
     else:
         # Multi-animal prediction dataframe
         index = pd.MultiIndex.from_product(
-            [
-                [dlc_scorer],
-                individuals,
-                bodyparts,
-                ["x", "y", "likelihood"],
-            ],
+            [[dlc_scorer], individuals, bodyparts, ["x", "y", "likelihood"]],
             names=["scorer", "individuals", "bodyparts", "coords"],
         )
 
@@ -493,26 +474,14 @@ def build_entire_pred_df(
     num_individuals = len(individuals)
     if num_individuals == 1 or len(unique_bodyparts) == 0 or unique_predictions is None:
         return build_predictions_df(
-            dlc_scorer,
-            individuals,
-            bodyparts,
-            df_index,
-            predictions,
+            dlc_scorer, individuals, bodyparts, df_index, predictions
         )
 
     animals_df = build_predictions_df(
-        dlc_scorer,
-        individuals,
-        bodyparts,
-        df_index,
-        predictions,
+        dlc_scorer, individuals, bodyparts, df_index, predictions
     )
     unique_df = build_predictions_df(
-        dlc_scorer,
-        ["single"],
-        unique_bodyparts,
-        df_index,
-        unique_predictions,
+        dlc_scorer, ["single"], unique_bodyparts, df_index, unique_predictions
     )
     new_cols = pd.MultiIndex.from_tuples(
         [(col[0], "single", col[1], col[2]) for col in unique_df.columns],
@@ -533,12 +502,7 @@ def get_paths(
     method: str = "bu",
 ):
     dlc_scorer, dlc_scorer_legacy = get_dlc_scorer(
-        project_path,
-        cfg,
-        train_fraction,
-        shuffle,
-        model_prefix,
-        train_iterations,
+        project_path, cfg, train_fraction, shuffle, model_prefix, train_iterations
     )
     evaluation_folder = get_evaluation_folder(
         train_fraction, shuffle, model_prefix, cfg

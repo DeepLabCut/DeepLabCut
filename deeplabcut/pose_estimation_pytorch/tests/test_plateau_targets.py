@@ -11,10 +11,11 @@
 
 from typing import List, Tuple
 
-import deeplabcut.pose_estimation_pytorch.models.target_generators.plateau_targets as deeplabcut_torch_plateau_targets
 import numpy as np
 import pytest
 import torch
+
+import deeplabcut.pose_estimation_pytorch.models.target_generators.plateau_targets as deeplabcut_torch_plateau_targets
 
 
 def get_target(

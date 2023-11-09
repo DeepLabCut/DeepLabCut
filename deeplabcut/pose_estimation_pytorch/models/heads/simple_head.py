@@ -17,7 +17,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,
     BaseLossAggregator,
 )
-from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS, BaseHead
+from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 
@@ -57,10 +57,7 @@ class DeconvModule(nn.Module):
     """
 
     def __init__(
-        self,
-        channels: list[int],
-        kernel_size: list[int],
-        strides: list[int],
+        self, channels: list[int], kernel_size: list[int], strides: list[int]
     ) -> None:
         """
         Args:

@@ -23,16 +23,16 @@ import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch import Loader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_inference_transform,
     build_runner,
     build_transforms,
-    build_inference_transform,
     update_config_parameters,
 )
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
+    destroy_file_logging,
     LOGGER,
     setup_file_logging,
-    destroy_file_logging,
 )
 
 
@@ -158,11 +158,7 @@ def train_network(
     cfg = auxiliaryfunctions.read_config(config)
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = runner_utils.get_model_folder(
-        str(Path(config).parent),
-        cfg,
-        train_fraction,
-        shuffle,
-        modelprefix,
+        str(Path(config).parent), cfg, train_fraction, shuffle, modelprefix
     )
     train_folder = Path(model_folder) / "train"
     log_path = train_folder / "log.txt"

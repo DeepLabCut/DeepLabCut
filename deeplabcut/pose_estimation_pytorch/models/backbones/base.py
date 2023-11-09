@@ -12,8 +12,7 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 BACKBONES = Registry("backbones", build_func=build_from_cfg)
 

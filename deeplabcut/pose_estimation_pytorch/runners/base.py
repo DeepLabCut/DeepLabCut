@@ -14,18 +14,17 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Generic, TypeVar, Iterable
+from typing import Any, Generic, Iterable, TypeVar
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
-
 
 RUNNERS = Registry("runners", build_func=build_from_cfg)
 ModelType = TypeVar("ModelType", bound=nn.Module)
@@ -80,9 +79,7 @@ class Runner(ABC, Generic[ModelType]):
 
     @abstractmethod
     def step(
-        self,
-        batch: dict[str, Any],
-        mode: str = "train",
+        self, batch: dict[str, Any], mode: str = "train"
     ) -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step"""
 
@@ -128,10 +125,7 @@ class Runner(ABC, Generic[ModelType]):
 
         for i in range(self.starting_epoch, epochs):
             train_loss = self._epoch(
-                train_loader,
-                mode="train",
-                step=i + 1,
-                display_iters=display_iters,
+                train_loader, mode="train", step=i + 1, display_iters=display_iters
             )
             if self.scheduler:
                 self.scheduler.step()
@@ -261,9 +255,7 @@ class Runner(ABC, Generic[ModelType]):
         if self.logger:
             for key in metrics:
                 self.logger.log(
-                    f"{mode} {key}",
-                    np.nanmean(metrics[key]).item(),
-                    step=step,
+                    f"{mode} {key}", np.nanmean(metrics[key]).item(), step=step
                 )
 
         return epoch_loss

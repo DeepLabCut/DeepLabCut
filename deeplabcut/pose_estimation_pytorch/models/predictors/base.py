@@ -14,8 +14,7 @@ from abc import ABC, abstractmethod
 import torch
 from torch import nn
 
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 PREDICTORS = Registry("predictors", build_func=build_from_cfg)
 
@@ -48,9 +47,7 @@ class BasePredictor(ABC, nn.Module):
 
     @abstractmethod
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Abstract method for the forward pass of the Predictor.
 

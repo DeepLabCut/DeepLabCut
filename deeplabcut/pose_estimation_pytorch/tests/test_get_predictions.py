@@ -6,23 +6,17 @@ from torchvision.transforms import Resize as TorchResize
 from deeplabcut.generate_training_dataset.make_pytorch_config import *
 from deeplabcut.pose_estimation_pytorch.apis import inference, utils
 from deeplabcut.pose_estimation_pytorch.default_config import *
-from deeplabcut.pose_estimation_pytorch.models.detectors import DETECTORS, BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector, DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
-    PREDICTORS,
     BasePredictor,
+    PREDICTORS,
 )
 from deeplabcut.pose_estimation_pytorch.tests.test_utils import write_config
 
 # Check implemented net types
-single_nets = [
-    "resnet_50",
-]
-multi_nets = [
-    "dekr_w18",
-]
-multi_nets_td = [
-    "token_pose_w32",
-]
+single_nets = ["resnet_50"]
+multi_nets = ["dekr_w18"]
+multi_nets_td = ["token_pose_w32"]
 
 single = [ele for ele in product(single_nets, [False])]
 multi = [ele for ele in product(multi_nets, [True])]

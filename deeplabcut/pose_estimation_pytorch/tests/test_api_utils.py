@@ -1,22 +1,13 @@
-import os
-import pytest
-import numpy as np
 import random
 
-import deeplabcut.pose_estimation_pytorch as dlc
+import numpy as np
+import pytest
+
 import deeplabcut.pose_estimation_pytorch.apis.utils as dlc_api_utils
-import deeplabcut.utils.auxiliaryfunctions as dlc_auxfun
 
 transform_dicts = [
-    {
-        "auto_padding": {
-            "pad_height_divisor": 64,
-            "pad_width_divisor": 27,
-        }
-    },
-    {
-        "resize": [512, 256],
-    },
+    {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
+    {"resize": [512, 256]},
     {
         "covering": True,
         "gaussian_noise": 12.75,
@@ -25,11 +16,7 @@ transform_dicts = [
         "normalize_images": True,
         "rotation": 30,
         "scale_jitter": [0.5, 1.25],
-        "translation": 40,
-        "auto_padding": {
-            "pad_width_divisor": 64,
-            "pad_height_divisor": 27,
-        },
+        "auto_padding": {"pad_width_divisor": 64, "pad_height_divisor": 27},
     },
     {
         "covering": True,
@@ -39,11 +26,7 @@ transform_dicts = [
         "normalize_images": True,
         "rotation": 180,
         "scale_jitter": [0.03, 20],
-        "translation": 300,
-        "auto_padding": {
-            "pad_width_divisor": 64,
-            "pad_height_divisor": 27,
-        },
+        "auto_padding": {"pad_width_divisor": 64, "pad_height_divisor": 27},
     },
 ]
 
@@ -51,10 +34,7 @@ transform_dicts = [
 def _get_random_params(transform_idx):
     return (
         transform_dicts[transform_idx],
-        (
-            random.randint(100, 1000),
-            random.randint(100, 1000),
-        ),
+        (random.randint(100, 1000), random.randint(100, 1000)),
         random.randint(1, 100),
         random.randint(1, 100),
     )
@@ -72,8 +52,7 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
         transform_dict, augment_bbox=False
     )
     transform_inference = dlc_api_utils.build_inference_transform(
-        transform_dict,
-        augment_bbox=False,
+        transform_dict, augment_bbox=False
     )
 
     w, h = size_image

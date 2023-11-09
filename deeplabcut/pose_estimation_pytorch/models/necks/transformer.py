@@ -111,8 +111,9 @@ class Transformer(torch.nn.Module):
         self.keypoint_token = torch.nn.Parameter(
             torch.zeros(1, self.num_keypoints, dim)
         )
-        h, w = feature_size[0] // (self.patch_size[0]), feature_size[1] // (
-            self.patch_size[1]
+        h, w = (
+            feature_size[0] // (self.patch_size[0]),
+            feature_size[1] // (self.patch_size[1]),
         )
 
         self._make_position_embedding(w, h, dim, pos_embedding_type)

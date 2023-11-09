@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
+
 from typing import Any
 
 import numpy as np
@@ -16,8 +17,7 @@ import torch
 from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch.models.detectors as detectors
-from deeplabcut.pose_estimation_pytorch.runners import PoseRunner
-from deeplabcut.pose_estimation_pytorch.runners.base import RUNNERS, Runner
+from deeplabcut.pose_estimation_pytorch.runners.base import Runner, RUNNERS
 
 
 @RUNNERS.register_module
@@ -44,9 +44,7 @@ class DetectorRunner(Runner[detectors.BaseDetector]):
         self.max_individuals = max_individuals
 
     def step(
-        self,
-        batch: dict[str, Any],
-        mode: str = "train",
+        self, batch: dict[str, Any], mode: str = "train"
     ) -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
@@ -127,8 +125,8 @@ class DetectorRunner(Runner[detectors.BaseDetector]):
                         "detection": {
                             "bboxes": item["boxes"][: self.max_individuals]
                             .cpu()
-                            .numpy(),
-                        },
+                            .numpy()
+                        }
                     }
                 )
 

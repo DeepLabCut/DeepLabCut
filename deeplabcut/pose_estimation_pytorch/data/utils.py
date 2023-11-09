@@ -21,8 +21,7 @@ from torchvision.transforms import functional as F
 
 
 def merge_list_of_dicts(
-    list_of_dicts: list[dict],
-    keys_to_include: list[str],
+    list_of_dicts: list[dict], keys_to_include: list[str]
 ) -> dict[str, list]:
     """
     Flattens a list of dictionaries into a dictionary with the lists concatenated.
@@ -111,11 +110,7 @@ def _crop_and_pad_image(
         Cropped (and possibly padded) image
         Padding (pad_h, pad_w)
     """
-    cropped_image = image[
-        coords[1][0] : coords[1][1],
-        coords[0][0] : coords[0][1],
-        :,
-    ]
+    cropped_image = image[coords[1][0] : coords[1][1], coords[0][0] : coords[0][1], :]
 
     crop_h, crop_w, c = cropped_image.shape
     pad_h, pad_w = 0, 0
@@ -144,9 +139,7 @@ def _crop_and_pad_image(
 
 
 def _crop_and_pad_keypoints(
-    keypoints: np.ndarray,
-    coords: tuple[int, int],
-    pad_size: tuple[int, int],
+    keypoints: np.ndarray, coords: tuple[int, int], pad_size: tuple[int, int]
 ):
     """
     Adjust the keypoints after cropping and padding.
@@ -167,10 +160,7 @@ def _crop_and_pad_keypoints(
 
 
 def _crop_image_keypoints(
-    image,
-    keypoints,
-    coords,
-    output_size,
+    image, keypoints, coords, output_size
 ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], tuple[int, int]]:
     """TODO: Requires fixing
     Crop the image based on a given bounding box and resize it to the desired output
@@ -193,15 +183,9 @@ def _crop_image_keypoints(
         The scale to map predicted keypoints back to the original image
     """
 
-    cropped_image, pad_size = _crop_and_pad_image(
-        image,
-        coords,
-        output_size,
-    )
+    cropped_image, pad_size = _crop_and_pad_image(image, coords, output_size)
     cropped_keypoints = _crop_and_pad_keypoints(
-        keypoints,
-        (coords[0][0], coords[1][0]),
-        pad_size,
+        keypoints, (coords[0][0], coords[1][0]), pad_size
     )
 
     offsets = (coords[0][0], coords[1][0])
@@ -212,22 +196,16 @@ def _crop_image_keypoints(
 
     # TODO: Fix resizing, use OpenCV
     cropped_resized_image = np.resize(
-        cropped_image,
-        (*output_size, cropped_image.shape[2]),
+        cropped_image, (*output_size, cropped_image.shape[2])
     )
 
-    cropped_resized_keypoints = np.array(
-        cropped_keypoints,
-    ) * np.array(scales + [1])
+    cropped_resized_keypoints = np.array(cropped_keypoints) * np.array(scales + [1])
 
     return cropped_resized_image, cropped_resized_keypoints, offsets, scales
 
 
 def _crop_and_pad_image_torch(
-    image: np.array,
-    bbox: np.array,
-    bbox_format: str,
-    output_size: int,
+    image: np.array, bbox: np.array, bbox_format: str, output_size: int
 ) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
     """TODO: Reimplement this function with numpy and for non-square resize :)
     Only works for square cropped bounding boxes. Crops images around bounding boxes
@@ -254,42 +232,10 @@ def _crop_and_pad_image_torch(
     c, h, w = image.shape
     crop_size = torch.max(bbox[2:])
 
-    xmin = int(
-        torch.clip(
-            bbox[0] - (crop_size / 2),
-            min=0,
-            max=w - 1,
-        )
-        .cpu()
-        .item(),
-    )
-    xmax = int(
-        torch.clip(
-            bbox[0] + (crop_size / 2),
-            min=1,
-            max=w,
-        )
-        .cpu()
-        .item(),
-    )
-    ymin = int(
-        torch.clip(
-            bbox[1] - (crop_size / 2),
-            min=0,
-            max=h - 1,
-        )
-        .cpu()
-        .item(),
-    )
-    ymax = int(
-        torch.clip(
-            bbox[1] + (crop_size / 2),
-            min=1,
-            max=h,
-        )
-        .cpu()
-        .item(),
-    )
+    xmin = int(torch.clip(bbox[0] - (crop_size / 2), min=0, max=w - 1).cpu().item())
+    xmax = int(torch.clip(bbox[0] + (crop_size / 2), min=1, max=w).cpu().item())
+    ymin = int(torch.clip(bbox[1] - (crop_size / 2), min=0, max=h - 1).cpu().item())
+    ymax = int(torch.clip(bbox[1] + (crop_size / 2), min=1, max=h).cpu().item())
     cropped_image = image[:, ymin:ymax, xmin:xmax]
 
     crop_h, crop_w = cropped_image.shape[1:3]
@@ -298,10 +244,7 @@ def _crop_and_pad_image_torch(
 
     # Pad image if not square
     if not crop_h == crop_w:
-        padded_cropped_image = torch.zeros(
-            (c, pad_size, pad_size),
-            dtype=image.dtype,
-        )
+        padded_cropped_image = torch.zeros((c, pad_size, pad_size), dtype=image.dtype)
         # Try to center bbox in padding
         w_start = 0
         if bbox[0] - (crop_size / 2) < 0:
@@ -331,8 +274,7 @@ def _crop_and_pad_image_torch(
 
 
 def _compute_crop_bounds(
-    bboxes: np.ndarray,
-    image_shape: tuple[int, int, int],
+    bboxes: np.ndarray, image_shape: tuple[int, int, int]
 ) -> np.ndarray:
     """
     Compute the boundaries for cropping an image based on a COCO-format bounding box
@@ -390,8 +332,7 @@ def _extract_keypoints_and_bboxes(
     bboxes = _compute_crop_bounds(original_bboxes, image_shape)
 
     annotations_merged = merge_list_of_dicts(
-        annotations_to_merge,
-        keys_to_include=["area", "category_id", "iscrowd"],
+        annotations_to_merge, keys_to_include=["area", "category_id", "iscrowd"]
     )
     if len(annotations_merged["area"]) == len(keypoints):
         area = np.array(annotations_merged["area"])
@@ -473,18 +414,13 @@ def apply_transform(
     if transform:
         defined_keypoint_mask = _check_keypoints_within_bounds(keypoints, image.shape)
         transformed = _apply_transform(
-            transform,
-            image,
-            keypoints,
-            bboxes,
-            class_labels,
+            transform, image, keypoints, bboxes, class_labels
         )
         transformed["keypoints"] = np.array(transformed["keypoints"])
         transformed["keypoints"][~defined_keypoint_mask] = -1
         shape_transformed = transformed["image"].shape
         mask_valid = _check_keypoints_within_bounds(
-            transformed["keypoints"],
-            shape_transformed,
+            transformed["keypoints"], shape_transformed
         )
         transformed["keypoints"][~mask_valid] = -1
     else:
@@ -525,17 +461,13 @@ def _apply_transform(
         bbox_labels=np.arange(len(bboxes)),
     )
     transformed = _set_invalid_keypoints_to_neg_one(
-        transformed,
-        keypoints,
-        class_labels,
+        transformed, keypoints, class_labels
     )
     return transformed
 
 
 def _set_invalid_keypoints_to_neg_one(
-    transformed: dict[str, list],
-    keypoints: np.ndarray,
-    class_labels: list,
+    transformed: dict[str, list], keypoints: np.ndarray, class_labels: list
 ) -> dict[str, list]:
     """
     Updates keypoints that are out of bounds or undefined to (-1, -1).
@@ -603,10 +535,7 @@ def pad_to_length(data: np.array, length: int, value: float) -> np.array:
     raise ValueError(f"Cannot pad! data.shape={data.shape} > length={length}")
 
 
-def safe_stack(
-    data: list[np.ndarray],
-    default_shape: tuple[int, ...],
-) -> np.ndarray:
+def safe_stack(data: list[np.ndarray], default_shape: tuple[int, ...]) -> np.ndarray:
     """
     Stacks a list of arrays if there are any, otherwise returns an array of zeros
     of a desired shape.

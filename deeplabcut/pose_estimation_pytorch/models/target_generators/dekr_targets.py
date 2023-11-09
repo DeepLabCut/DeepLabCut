@@ -14,8 +14,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    TARGET_GENERATORS,
     BaseGenerator,
+    TARGET_GENERATORS,
 )
 
 
@@ -46,10 +46,7 @@ class DEKRGenerator(BaseGenerator):
         self.bg_weight = bg_weight
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
-        labels: dict,
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """
         Given the annotations and predictions of your keypoints, this function returns the targets,
@@ -106,22 +103,10 @@ class DEKRGenerator(BaseGenerator):
             (batch_size, self.num_heatmaps, output_h, output_w), dtype=np.float32
         )
         offset_map = np.zeros(
-            (
-                batch_size,
-                self.num_joints * 2,
-                output_h,
-                output_w,
-            ),
-            dtype=np.float32,
+            (batch_size, self.num_joints * 2, output_h, output_w), dtype=np.float32
         )
         weight_map = np.zeros(
-            (
-                batch_size,
-                self.num_joints * 2,
-                output_h,
-                output_w,
-            ),
-            dtype=np.float32,
+            (batch_size, self.num_joints * 2, output_h, output_w), dtype=np.float32
         )
         area_map = np.zeros((batch_size, output_h, output_w), dtype=np.float32)
         for b in range(batch_size):
@@ -140,19 +125,22 @@ class DEKRGenerator(BaseGenerator):
                     if np.any(pt <= 0.0):
                         continue
                     x, y = pt[0], pt[1]
-                    x_sm, y_sm = (x - stride_x / 2) / stride_x, (
-                        y - stride_y / 2
-                    ) / stride_y
+                    x_sm, y_sm = (
+                        (x - stride_x / 2) / stride_x,
+                        (y - stride_y / 2) / stride_y,
+                    )
 
                     if x_sm < 0 or y_sm < 0 or x_sm >= output_w or y_sm >= output_h:
                         continue
 
                     # HEATMAP COMPUTATION
-                    ul = int(np.floor(x_sm - 3 * sigma - 1)), int(
-                        np.floor(y_sm - 3 * sigma - 1)
+                    ul = (
+                        int(np.floor(x_sm - 3 * sigma - 1)),
+                        int(np.floor(y_sm - 3 * sigma - 1)),
                     )
-                    br = int(np.ceil(x_sm + 3 * sigma + 2)), int(
-                        np.ceil(y_sm + 3 * sigma + 2)
+                    br = (
+                        int(np.ceil(x_sm + 3 * sigma + 2)),
+                        int(np.ceil(y_sm + 3 * sigma + 2)),
                     )
 
                     cc, dd = max(0, ul[0]), min(br[0], output_w)
@@ -228,4 +216,4 @@ def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> 
     Returns:
         g: calculated heat value represents the intensity of the heat at a given position
     """
-    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
+    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))

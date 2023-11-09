@@ -9,13 +9,13 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 DETECTORS = Registry("detectors", build_func=build_from_cfg)
 
@@ -31,9 +31,7 @@ class BaseDetector(ABC, nn.Module):
 
     @abstractmethod
     def forward(
-        self,
-        x: torch.Tensor,
-        targets: list[dict[str, torch.Tensor]] | None = None,
+        self, x: torch.Tensor, targets: list[dict[str, torch.Tensor]] | None = None
     ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
         """
         Forward pass of the detector

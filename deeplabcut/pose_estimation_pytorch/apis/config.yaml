@@ -11,7 +11,6 @@ data:
   scale_jitter:
   - 0.5
   - 1.25
-  translation: 40
 device: cuda:0
 display_iters: 50
 epochs: 200

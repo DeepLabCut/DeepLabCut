@@ -30,10 +30,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
             lambda self: os.path.join(self.project_root, "config.yaml"),
         ),
         "model_folder": (
-            lambda x: os.path.join(
-                x[0],
-                get_model_folder(x[1], x[2], x[3]),
-            ),
+            lambda x: os.path.join(x[0], get_model_folder(x[1], x[2], x[3])),
             lambda self: (
                 self.project_root,
                 self.cfg["TrainingFraction"][0],
@@ -43,8 +40,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         ),
         "_datasets_folder": (
             lambda x: os.path.join(
-                x[0],
-                deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(x[1]),
+                x[0], deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(x[1])
             ),
             lambda self: (self.project_root, self.cfg),
         ),
@@ -54,15 +50,12 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         ),
         "_path_dlc_doc": (
             lambda x: os.path.join(
-                x[0],
-                f"Documentation_data-{x[1]}_{x[2]}shuffle{x[3]}.pickle",
+                x[0], f"Documentation_data-{x[1]}_{x[2]}shuffle{x[3]}.pickle"
             ),
             lambda self: (
                 self._datasets_folder,
                 self.cfg["Task"],
-                int(
-                    100 * self.cfg["TrainingFraction"][0],
-                ),
+                int(100 * self.cfg["TrainingFraction"][0]),
                 self.shuffle,
             ),
         ),
@@ -83,17 +76,9 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
     @staticmethod
     def drop_duplicates(dlc_df, df_train, df_test):
         dlc_df = dlc_df[~dlc_df.index.duplicated(keep="first")]
-        df_train = df_train[
-            ~df_train.index.duplicated(
-                keep="first",
-            )
-        ]
+        df_train = df_train[~df_train.index.duplicated(keep="first")]
         if df_test is not None:
-            df_test = df_test[
-                ~df_test.index.duplicated(
-                    keep="first",
-                )
-            ]
+            df_test = df_test[~df_test.index.duplicated(keep="first")]
         return dlc_df, df_train, df_test
 
     def load_data(self, mode: str = "train") -> dict:
@@ -119,14 +104,9 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         else:
             raise AttributeError(f"Unknown mode: {mode}")
 
-        data = df_to_generic(
-            self.project_root,
-            data_dlc_format,
-            self.image_id_offset,
-        )
+        data = df_to_generic(self.project_root, data_dlc_format, self.image_id_offset)
         annotations_with_bbox = self._get_all_bboxes(
-            data["images"],
-            data["annotations"],
+            data["images"], data["annotations"]
         )
         data["annotations"] = annotations_with_bbox
 

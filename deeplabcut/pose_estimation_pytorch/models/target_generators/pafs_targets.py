@@ -14,9 +14,10 @@ from math import sqrt
 
 import numpy as np
 import torch
+
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    TARGET_GENERATORS,
     BaseGenerator,
+    TARGET_GENERATORS,
 )
 
 
@@ -51,10 +52,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
         self.num_limbs = len(graph)
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
-        labels: dict,
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         batch_size, _, input_h, input_w = inputs.shape
         height, width = outputs["heatmap"].shape[2:]
@@ -80,7 +78,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
                     j2_x, j2_y = kpts_animal[bp2]
                     vec_x = j2_x - j1_x
                     vec_y = j2_y - j1_y
-                    dist = sqrt(vec_x**2 + vec_y**2)
+                    dist = sqrt(vec_x ** 2 + vec_y ** 2)
                     if dist > 0:
                         vec_x_norm = vec_x / dist
                         vec_y_norm = vec_y / dist
@@ -110,6 +108,8 @@ class PartAffinityFieldGenerator(BaseGenerator):
         partaffinityfield_map = partaffinityfield_map.transpose(0, 3, 1, 2)
         return {
             "paf": {
-                "target": torch.tensor(partaffinityfield_map, device=outputs["paf"].device),
-            },
+                "target": torch.tensor(
+                    partaffinityfield_map, device=outputs["paf"].device
+                )
+            }
         }

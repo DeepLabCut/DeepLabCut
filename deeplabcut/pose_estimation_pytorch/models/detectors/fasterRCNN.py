@@ -16,8 +16,8 @@ from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
-    DETECTORS,
     BaseDetector,
+    DETECTORS,
 )
 
 
@@ -59,9 +59,7 @@ class FasterRCNN(BaseDetector):
         self.model.eager_outputs = lambda losses, detections: (losses, detections)
 
     def forward(
-        self,
-        x: torch.Tensor,
-        targets: list[dict[str, torch.Tensor]] | None = None,
+        self, x: torch.Tensor, targets: list[dict[str, torch.Tensor]] | None = None
     ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
         """
         Forward pass of the Faster R-CNN

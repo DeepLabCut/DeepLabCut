@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from albumentations.augmentations.crops import RandomCrop
 from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
-from typing import Any
 
 
 class KeypointAwareCrop(RandomCrop):

@@ -20,7 +20,7 @@ import pandas as pd
 
 import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
-from deeplabcut.pose_estimation_pytorch import Loader, DLCLoader
+from deeplabcut.pose_estimation_pytorch import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.apis.scoring import (
     align_predicted_individuals_to_gt,
     get_scores,
@@ -210,11 +210,7 @@ def evaluate_snapshot(
     """
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = runner_utils.get_model_folder(
-        cfg["project_path"],
-        cfg,
-        train_fraction,
-        shuffle,
-        modelprefix,
+        cfg["project_path"], cfg, train_fraction, shuffle, modelprefix
     )
     model_config_path = str(Path(model_folder) / "train" / "pytorch_config.yaml")
     pytorch_config = auxiliaryfunctions.read_plainconfig(model_config_path)
@@ -456,10 +452,7 @@ def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
 
 
 def save_evaluation_results(
-    df_scores: pd.DataFrame,
-    scores_path: Path,
-    print_results: bool,
-    pcutoff: float,
+    df_scores: pd.DataFrame, scores_path: Path, print_results: bool, pcutoff: float
 ) -> None:
     """
     Saves the evaluation results to a CSV file. Adds the evaluation results for the

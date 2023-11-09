@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TypeVar, Any
+from typing import Any, TypeVar
 
 import albumentations as A
 import cv2
@@ -11,7 +11,6 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _crop_and_pad_image_torch
-
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
@@ -44,8 +43,7 @@ class Preprocessor(ABC):
 
 
 def build_bottom_up_preprocessor(
-    color_mode: str,
-    transform: A.BaseCompose,
+    color_mode: str, transform: A.BaseCompose
 ) -> Preprocessor:
     """Creates a preprocessor for bottom-up pose estimation (or object detection)
 
@@ -71,9 +69,7 @@ def build_bottom_up_preprocessor(
 
 
 def build_top_down_preprocessor(
-    color_mode: str,
-    transform: A.BaseCompose,
-    cropped_image_size: tuple[int, int],
+    color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
 ) -> Preprocessor:
     """Creates a preprocessor for top-down pose estimation
 

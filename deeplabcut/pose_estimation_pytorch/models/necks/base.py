@@ -11,7 +11,8 @@
 from abc import ABC, abstractmethod
 
 import torch
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+
+from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 NECKS = Registry("necks", build_func=build_from_cfg)
 

@@ -11,10 +11,11 @@
 
 import random
 
-import deeplabcut.pose_estimation_pytorch.solvers.schedulers as deeplabcut_torch_schedulers
 import pytest
 import torch
 from torch.optim import SGD
+
+import deeplabcut.pose_estimation_pytorch.solvers.schedulers as deeplabcut_torch_schedulers
 
 
 def generate_random_lr_list(num_floats: int):

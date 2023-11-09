@@ -20,7 +20,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,
     LOSS_AGGREGATORS,
 )
-from deeplabcut.pose_estimation_pytorch.models.heads import HEADS, BaseHead
+from deeplabcut.pose_estimation_pytorch.models.heads import BaseHead, HEADS
 from deeplabcut.pose_estimation_pytorch.models.necks import NECKS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import (
@@ -123,9 +123,7 @@ class PoseModel(nn.Module):
         }
 
     def get_predictions(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, dict[str, torch.Tensor]],
+        self, inputs: torch.Tensor, outputs: dict[str, dict[str, torch.Tensor]]
     ) -> dict:
         """Abstract method for the forward pass of the Predictor.
 
@@ -175,9 +173,5 @@ class PoseModel(nn.Module):
             heads[name] = HEADS.build(head_cfg)
 
         return PoseModel(
-            cfg=cfg,
-            backbone=backbone,
-            neck=neck,
-            heads=heads,
-            **cfg["pose_model"],
+            cfg=cfg, backbone=backbone, neck=neck, heads=heads, **cfg["pose_model"]
         )

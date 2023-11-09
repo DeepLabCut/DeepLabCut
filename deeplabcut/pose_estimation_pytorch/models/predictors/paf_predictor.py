@@ -13,9 +13,10 @@ from __future__ import annotations
 import numpy as np
 import torch
 import torch.nn.functional as F
+
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    PREDICTORS,
     BasePredictor,
+    PREDICTORS,
 )
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 
@@ -57,6 +58,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         nms_radius: int,
         sigma: float,
         min_affinity: float,
+        add_discarded: bool = False,
+        force_fusion: bool = False,
     ):
         """Initialize the PartAffinityFieldPredictor class.
 
@@ -91,12 +94,12 @@ class PartAffinityFieldPredictor(BasePredictor):
             graph=graph,
             paf_inds=edges_to_keep,
             min_affinity=min_affinity,
+            add_discarded=add_discarded,
+            force_fusion=force_fusion,
         )
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        outputs: dict[str, torch.Tensor],
+        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of PartAffinityFieldPredictor. Gets predictions from model output.
 
@@ -117,7 +120,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         """
         heatmaps = outputs["heatmap"]
         locrefs = outputs["locref"]
-        pafs = outputs["pafs"]
+        pafs = outputs["paf"]
         h_in, w_in = inputs.shape[2:]
         h_out, w_out = heatmaps.shape[2:]
         scale_factors = h_in / h_out, w_in / w_out
@@ -127,28 +130,21 @@ class PartAffinityFieldPredictor(BasePredictor):
         # Filter predicted heatmaps with a 2D Gaussian kernel as in:
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
         kernel = self.make_2d_gaussian_kernel(
-            sigma=self.sigma,
-            size=self.nms_radius * 2 + 1,
+            sigma=self.sigma, size=self.nms_radius * 2 + 1
         )[None, None]
         kernel = kernel.repeat(n_channels, 1, 1, 1).to(heatmaps.device)
         heatmaps = F.conv2d(
-            heatmaps,
-            kernel,
-            stride=1,
-            padding='same',
-            groups=n_channels,
+            heatmaps, kernel, stride=1, padding="same", groups=n_channels
         )
 
         peaks = self.find_local_peak_indices_maxpool_nms(
-            heatmaps,
-            self.nms_radius,
-            threshold=0.01,
+            heatmaps, self.nms_radius, threshold=0.01
         )
         if ~torch.any(peaks):
             return {"poses": []}
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
-        locrefs *= self.locref_stdev
+        locrefs = locrefs * self.locref_stdev
         pafs = pafs.reshape(batch_size, -1, 2, height, width)
 
         graph = [self.graph[ind] for ind in self.edges_to_keep]
@@ -171,7 +167,8 @@ class PartAffinityFieldPredictor(BasePredictor):
             if unique is not None:
                 poses_unique[i, 0] = torch.from_numpy(unique)
 
-        return {"poses": poses, "unique_bodyparts": {"poses": poses_unique}}
+        # FIXME Handle unique bodyparts in a separate HeatmapHead
+        return {"poses": poses}
 
     @staticmethod
     def find_local_peak_indices_maxpool_nms(input_, radius, threshold):
@@ -187,12 +184,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         return torch.einsum("i,j->ij", k, k)
 
     @staticmethod
-    def calc_peak_locations(
-        locrefs,
-        peak_inds_in_batch,
-        strides,
-        n_decimals=3,
-    ):
+    def calc_peak_locations(locrefs, peak_inds_in_batch, strides, n_decimals=3):
         s, b, r, c = peak_inds_in_batch.T
         stride_y, stride_x = strides
         strides = torch.Tensor((stride_x, stride_y)).to(locrefs.device)
@@ -316,13 +308,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         pafs = pafs.detach().cpu().numpy()
         peak_inds_in_batch = peak_inds_in_batch.detach().cpu().numpy()
         costs = self.compute_edge_costs(
-            pafs,
-            peak_inds_in_batch,
-            graph,
-            paf_inds,
-            n_bodyparts,
-            n_points,
-            n_decimals,
+            pafs, peak_inds_in_batch, graph, paf_inds, n_bodyparts, n_points, n_decimals
         )
         s, b, r, c = peak_inds_in_batch.T
         prob = np.round(heatmaps[s, b, r, c], n_decimals).reshape((-1, 1))
