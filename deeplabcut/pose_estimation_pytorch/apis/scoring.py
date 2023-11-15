@@ -75,10 +75,19 @@ def get_scores(
             f"images (poses={len(poses)}, gt={len(ground_truth)})"
         )
 
+    ground_truth = {
+        image: mask_invisible(gt_pose, mask_value=np.nan)
+        for image, gt_pose in ground_truth.items()
+    }
+
     image_paths = list(poses)
     pred_poses = build_keypoint_array(poses, image_paths)[..., :3].reshape((-1, 3))
     gt_poses = build_keypoint_array(ground_truth, image_paths).reshape((-1, 2))
     if unique_bodypart_poses is not None:
+        unique_bodypart_gt = {
+            image: mask_invisible(gt_pose, mask_value=np.nan)
+            for image, gt_pose in unique_bodypart_gt.items()
+        }
         pred_poses = np.concatenate(
             [
                 pred_poses,
@@ -94,6 +103,7 @@ def get_scores(
             ]
         )
 
+    pred_poses[pred_poses == -1] = np.nan
     rmse, rmse_pcutoff = compute_rmse(pred_poses, gt_poses, pcutoff=pcutoff)
 
     oks = compute_oks(poses, ground_truth, pcutoff=None)
@@ -223,7 +233,7 @@ def build_assemblies(poses: dict[str, np.ndarray]) -> dict[str, list[Assembly]]:
     return assemblies
 
 
-def align_predicted_individuals_to_gt(
+def pair_predicted_individuals_with_gt(
     predictions: dict[str, np.ndarray], ground_truth: dict[str, np.ndarray]
 ) -> dict[str, np.ndarray]:
     """TODO: implement with OKS as well

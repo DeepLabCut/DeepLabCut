@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_image_path_to_id,
     pad_to_length,
 )
+from deeplabcut.pose_estimation_pytorch.runners import Task
 
 
 @dataclass(frozen=True)
@@ -69,7 +70,7 @@ class PoseDataset(Dataset):
     parameters: PoseDatasetParameters
     transform: A.BaseCompose | None = None
     mode: str = "train"
-    task: str = "BU"
+    task: Task = Task.BOTTOM_UP
 
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
@@ -77,7 +78,10 @@ class PoseDataset(Dataset):
 
     def __len__(self):
         # TODO: TD should only return the number of annotations that aren't unique_bodyparts
-        return len(self.images) if self.task in ("BU", "DT") else len(self.annotations)
+        if self.task in (Task.BOTTOM_UP, Task.DETECT):
+            return len(self.images)
+
+        return len(self.annotations)
 
     def _get_raw_item(self, index: int) -> tuple[str, list[dict], int]:
         """
@@ -150,7 +154,7 @@ class PoseDataset(Dataset):
         ) = self.extract_keypoints_and_bboxes(annotations, image.shape)
         offsets = np.zeros((self.parameters.max_num_animals, 2))
         scales = (1, 1)
-        if self.task == "TD":
+        if self.task == Task.TOP_DOWN:
             if self.parameters.cropped_image_size is None:
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
@@ -187,6 +191,7 @@ class PoseDataset(Dataset):
             image, keypoints, keypoints_unique, bboxes
         )
         keypoints = transformed["keypoints"]
+        bboxes = np.array(transformed["bboxes"])
 
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
@@ -273,14 +278,12 @@ class PoseDataset(Dataset):
         Returns:
             tuple: Tuple containing the image path, annotations, and image ID.
         """
-        if self.task == "TD":
+        if self.task == Task.TOP_DOWN:
             return self._get_raw_item_crop(index)
-        elif self.task in ["BU", "DT"]:
+        elif self.task in [Task.BOTTOM_UP, Task.DETECT]:
             return self._get_raw_item(index)
 
-        raise ValueError(
-            f"Unknown task: {self.task}. " 'Task should be one of: "BU", "TD", "DT"'
-        )
+        raise ValueError(f"Unknown task: {self.task}")
 
     def apply_transform_all_keypoints(
         self,

@@ -113,7 +113,7 @@ def make_pytorch_config(
     pytorch_config = deepcopy(config_template)
     pytorch_config["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     pytorch_config["method"] = "bu"
-    if pytorch_config.get("multianimal", False):
+    if project_config.get("multianimalproject", False):
         num_individuals = len(project_config.get("individuals", [0]))
         if "dekr" in net_type:
             version = net_type.split("_")[-1]
@@ -467,10 +467,11 @@ def make_detector_cfg(num_individuals: int):
 
 def make_detector_data_aug() -> dict:
     return {
-        "covering": True,
-        "gaussian_noise": 12.75,
-        "hist_eq": True,
-        "motion_blur": True,
+        "covering": False,
+        "gaussian_noise": False,
+        "hist_eq": False,
+        "hflip": True,
+        "motion_blur": False,
         "normalize_images": True,
         "rotation": 30,
         "scale_jitter": [0.5, 1.25],

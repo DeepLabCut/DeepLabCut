@@ -130,26 +130,146 @@ class LoadImage(Preprocessor):
 
 
 class AugmentImage(Preprocessor):
-    """TODO"""
+    """
+
+    Adds an offset and scale key to the context:
+        offset: (x, y) position of the pixel in the top left corner of the augmented
+            image in the original image
+        scale: size of the original image divided by the size of the new image
+
+    This allows to map the position of predictions in the transformed image back to the
+    original image space.
+        p_original = p_transformed * scale + offset
+        p_transformed = (p_original - offset) / scale
+    """
 
     def __init__(self, transform: A.BaseCompose) -> None:
         self.transform = transform
 
+    @staticmethod
+    def get_offsets_and_scales(
+        h: int,
+        w: int,
+        output_bboxes: list[tuple[float, float, float, float]],
+    ) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+        offsets, scales = [], []
+        for bbox in output_bboxes:
+            x_origin, y_origin, w_out, h_out = bbox
+            x_scale, y_scale = w / w_out, h / h_out
+            x_offset = -x_origin * x_scale
+            y_offset = -y_origin * y_scale
+            offsets.append((x_offset, y_offset))
+            scales.append((x_scale, y_scale))
+
+        return offsets, scales
+
+    @staticmethod
+    def update_offset(
+        offset: tuple[float, float],
+        scale: tuple[float, float],
+        new_offset: tuple[float, float],
+    ) -> tuple[float, float]:
+        return (
+            scale[0] * new_offset[0] + offset[0],
+            scale[1] * new_offset[1] + offset[1],
+        )
+
+    @staticmethod
+    def update_scale(
+        scale: tuple[float, float], new_scale: tuple[float, float]
+    ) -> tuple[float, float]:
+        return scale[0] * new_scale[0], scale[1] * new_scale[1]
+
+    @staticmethod
+    def update_offsets_and_scales(context, new_offsets, new_scales) -> tuple:
+        """
+        x = x' * scale' + offset'
+        x' = x'' * scale'' + offset''
+        -> x = x'' * (scale' * scale'') + (scale' * offset'' + offset')
+        """
+        # scales and offsets are either both lists or both tuples
+        offsets = context.get("offsets", (0, 0))
+        scales = context.get("scales", (1, 1))
+        if isinstance(offsets, tuple):
+            if isinstance(new_offsets, list):
+                updated_offsets = [
+                    AugmentImage.update_offset(offsets, scales, new_offset)
+                    for new_offset in new_offsets
+                ]
+                updated_scales = [
+                    AugmentImage.update_scale(scales, new_scale)
+                    for new_scale in new_scales
+                ]
+            else:
+                if not len(offsets) == len(new_offsets):
+                    raise ValueError("Cannot rescale lists when not same length")
+
+                updated_offsets = AugmentImage.update_offset(
+                    offsets, scales, new_offsets
+                )
+                updated_scales = AugmentImage.update_scale(scales, new_scales)
+        else:
+            if isinstance(new_offsets, list):
+                if not len(offsets) == len(new_offsets):
+                    raise ValueError("Cannot rescale lists when not same length")
+
+                updated_offsets = [
+                    AugmentImage.update_offset(offset, scale, new_offset)
+                    for offset, scale, new_offset in zip(offsets, scales, new_offsets)
+                ]
+                updated_scales = [
+                    AugmentImage.update_scale(scale, new_scale)
+                    for scale, new_scale in zip(scales, new_scales)
+                ]
+            else:
+                updated_offsets = [
+                    AugmentImage.update_offset(offset, scale, new_offsets)
+                    for offset, scale in zip(offsets, scales)
+                ]
+                updated_scales = [
+                    AugmentImage.update_scale(scale, new_scales) for scale in scales
+                ]
+        return updated_offsets, updated_scales
+
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         # If the image is a batch, process each entry
         if len(image.shape) == 4:
-            transformed = [
-                self.transform(
-                    image=img, keypoints=[], class_labels=[], bboxes=[], bbox_labels=[]
-                )["image"]
-                for img in image
-            ]
-            image = np.stack(transformed)
+            batch_size, h, w, _ = image.shape
+            if batch_size == 0:
+                # no images in top-down when no detections
+                offsets, scales = (0, 0), (1, 1)
+            else:
+                transformed = [
+                    self.transform(
+                        image=img,
+                        keypoints=[],
+                        class_labels=[],
+                        bboxes=[[0, 0, w, h]],
+                        bbox_labels=["image"],
+                    )
+                    for img in image
+                ]
+                image = np.stack([t["image"] for t in transformed])
+                output_bboxes = [t["bboxes"][0] for t in transformed]
+                offsets, scales = self.get_offsets_and_scales(h, w, output_bboxes)
         else:
-            image = self.transform(
-                image=image, keypoints=[], class_labels=[], bboxes=[], bbox_labels=[]
-            )["image"]
+            h, w, _ = image.shape
+            transformed = self.transform(
+                image=image,
+                keypoints=[],
+                class_labels=[],
+                bboxes=[[0, 0, w, h]],
+                bbox_labels=["image"],
+            )
+            image = transformed["image"]
+            output_bboxes = [transformed["bboxes"][0]]
+            offsets, scales = self.get_offsets_and_scales(h, w, output_bboxes)
+            offsets = offsets[0]
+            scales = scales[0]
 
+        offsets, scales = self.update_offsets_and_scales(context, offsets, scales)
+        context["offsets"] = offsets
+        context["scales"] = scales
         return image, context
 
 
@@ -179,7 +299,9 @@ class TorchCropDetections(Preprocessor):
         self.cropped_image_size = cropped_image_size
         self.bbox_format = bbox_format
 
-    def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "bboxes" not in context:
             raise ValueError(f"Must include bboxes to CropDetections, found {context}")
@@ -195,4 +317,11 @@ class TorchCropDetections(Preprocessor):
 
         context["offsets"] = offsets
         context["scales"] = scales
-        return np.stack(images, axis=0), context
+
+        # can have no bounding boxes if detector made no detections
+        if len(images) == 0:
+            images = np.zeros((0, *image.shape))
+        else:
+            images = np.stack(images, axis=0)
+
+        return images, context

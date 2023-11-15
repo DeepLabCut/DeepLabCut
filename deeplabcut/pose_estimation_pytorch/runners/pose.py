@@ -14,11 +14,9 @@ from typing import Any
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 from deeplabcut.pose_estimation_pytorch.models import model as models
-from deeplabcut.pose_estimation_pytorch.runners.base import Runner, RUNNERS
-from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
+from deeplabcut.pose_estimation_pytorch.runners.base import RUNNERS, Runner
 
 
 @RUNNERS.register_module

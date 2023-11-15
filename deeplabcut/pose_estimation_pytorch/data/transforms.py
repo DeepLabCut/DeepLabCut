@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Any
 
+import albumentations as A
+import cv2
 import numpy as np
-from albumentations.augmentations.crops import RandomCrop
 from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
 
 
-class KeypointAwareCrop(RandomCrop):
+class KeypointAwareCrop(A.RandomCrop):
     def __init__(
         self,
         width: int,
@@ -84,3 +85,58 @@ class KeypointAwareCrop(RandomCrop):
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return "width", "height", "max_shift", "crop_sampling"
+
+
+class KeepAspectRatioResize(A.DualTransform):
+    """Resizes images while preserving their aspect ratio
+
+    In 'pad' mode, the image will be rescaled to the largest possible size such that
+    it can be padded to the correct size (with PadIfNeeded). So we'll have:
+        output_width <= width, output_height <= height
+
+    In 'crop' mode, the image will be rescaled to the smallest possible size such that
+    it can be cropped to the correct size (with any random crop you want), so:
+        output_width >= width, output_height >= height
+    """
+
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        mode: str = "pad",
+        interpolation: Any = cv2.INTER_LINEAR,
+        p: float = 1.0,
+        always_apply: bool = True,
+    ) -> None:
+        super().__init__(always_apply=always_apply, p=p)
+        self.height = height
+        self.width = width
+        self.mode = mode
+        self.interpolation = interpolation
+
+    def apply(self, img, scale=0, interpolation=cv2.INTER_LINEAR, **params):
+        return A.scale(img, scale, interpolation)
+
+    def apply_to_bbox(self, bbox, **params):
+        # Bounding box coordinates are scale invariant
+        return bbox
+
+    def apply_to_keypoint(self, keypoint, scale=0, **params):
+        keypoint = A.keypoint_scale(keypoint, scale, scale)
+        return keypoint
+
+    @property
+    def targets_as_params(self) -> list[str]:
+        return ["image"]
+
+    def get_params_dependent_on_targets(self, params: dict[str, Any]) -> dict[str, Any]:
+        h, w, _ = params["image"].shape
+        if self.mode == "pad":
+            scale = min(self.height / h, self.width / w)
+        else:
+            scale = max(self.height / h, self.width / w)
+
+        return {"scale": scale}
+
+    def get_transform_init_args_names(self):
+        return "height", "width", "mode", "interpolation"

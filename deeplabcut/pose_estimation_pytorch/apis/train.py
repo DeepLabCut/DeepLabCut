@@ -18,29 +18,30 @@ from pathlib import Path
 import albumentations as A
 from torch.utils.data import DataLoader
 
-import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
+import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut import auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch import Loader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_inference_transform,
     build_runner,
     build_transforms,
     update_config_parameters,
 )
+from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.runners import Task
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
-    destroy_file_logging,
     LOGGER,
+    destroy_file_logging,
     setup_file_logging,
 )
 
 
-def _train(
+def train(
     loader: Loader,
     model_folder: str,
     run_config: dict,
-    task: str,
+    task: Task,
     device: str,
     transform_config: dict,
     logger_config: dict | None = None,
@@ -53,7 +54,7 @@ def _train(
         loader: the loader containing the data to train on/validate with
         model_folder: the folder where the models should be saved
         run_config: the model and run configuration
-        task: {"TD", "BU", "DT"} the task to train the model for
+        task: the task to train the model for
         device: the device to train on
         transform_config: the configuration of the data augmentation to use. Ignored if
             a transform is given
@@ -63,7 +64,7 @@ def _train(
         transform: if None, a transform is loaded with the given configuration.
             Otherwise, this transform is used.
     """
-    if task == "DT":
+    if task == Task.DETECT:
         model = DETECTORS.build(run_config["model"])
     else:
         model = PoseModel.from_cfg(run_config["model"])
@@ -172,41 +173,39 @@ def train_network(
         logging.info("No transform specified... using default")
         transform = build_transforms(dict(pytorch_config["data"]), augment_bbox=True)
 
-    dlc.fix_seeds(pytorch_config["seed"])
-    loader = dlc.DLCLoader(
+    utils.fix_seeds(pytorch_config["seed"])
+    loader = DLCLoader(
         project_root=pytorch_config["project_path"],
         model_config_path=model_config_path,
         shuffle=shuffle,
     )
 
-    pose_task = "BU"
-    transform_config = pytorch_config["data"]
-    if pytorch_config.get("method", "bu").lower() == "td":
-        pose_task = "TD"
-        transform_config = pytorch_config["data_detector"]
+    pose_task = Task(pytorch_config.get("method", "bu"))
+    if pose_task == Task.TOP_DOWN and pytorch_config["detector"]["epochs"] > 0:
         logger_config = None
         if pytorch_config.get("logger"):
             logger_config = copy.deepcopy(pytorch_config["logger"])
             logger_config["run_name"] += "-detector"
-        _train(
+
+        train(
             loader=loader,
             model_folder=model_folder,
             run_config=pytorch_config["detector"],
-            task="DT",
+            task=Task.DETECT,
             device=pytorch_config["device"],
-            transform_config=pytorch_config["data"],
+            transform_config=pytorch_config["data_detector"],
             logger_config=logger_config,
             snapshot_path=detector_path,
             transform=transform_cropped,
         )
 
-    _train(
+    train(
         loader=loader,
         model_folder=model_folder,
         run_config=pytorch_config,
         task=pose_task,
         device=pytorch_config["device"],
-        transform_config=transform_config,
+        transform_config=pytorch_config["data"],
         logger_config=pytorch_config.get("logger"),
         snapshot_path=snapshot_path,
         transform=transform,

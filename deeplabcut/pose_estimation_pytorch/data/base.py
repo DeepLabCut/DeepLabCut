@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     _compute_crop_bounds,
     map_id_to_annotations,
 )
+from deeplabcut.pose_estimation_pytorch.runners import Task
 from deeplabcut.utils.auxiliaryfunctions import get_bodyparts, get_unique_bodyparts
 
 
@@ -34,11 +35,12 @@ class Loader(ABC):
     Methods:
         load_data(mode: str = 'train') -> dict:
             Abstract method to convert the project configuration to a standard COCO format.
-        create_dataset(images: dict = None, annotations: dict = None, transform: object = None, mode: str = "train", task: str = "BU") -> PoseDataset:
+        create_dataset(images: dict = None, annotations: dict = None, transform: object = None,
+            mode: str = "train", task: Task = Task.BOTTOM_UP) -> PoseDataset:
             Creates and returns a PoseDataset given a set of images, annotations, and other parameters.
         _get_all_bboxes(images, annotations, method: str = 'gt') -> dict:
             Retrieves all bounding boxes based on the specified method.
-        _get_dataset_parameters(*args, **kwargs) -> dict:
+        get_dataset_parameters(*args, **kwargs) -> dict:
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
@@ -47,7 +49,6 @@ class Loader(ABC):
         self.model_config_path = model_config_path
         self.model_cfg = auxiliaryfunctions.read_plainconfig(model_config_path)
         self._loaded_data: dict[str, dict[str, dict]] = {}
-        self._get_dataset_parameters()
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, dict]:
@@ -92,7 +93,7 @@ class Loader(ABC):
             the format:
                 {'image': keypoints with shape (num_individuals, num_keypoints, 2)}
         """
-        parameters = self._get_dataset_parameters()
+        parameters = self.get_dataset_parameters()
         if unique_bodypart:
             if not parameters.num_unique_bpts > 0:
                 raise ValueError("There are no unique bodyparts in this dataset!")
@@ -162,7 +163,7 @@ class Loader(ABC):
         self,
         transform: A.BaseCompose | None = None,
         mode: str = "train",
-        task: str = "BU",
+        task: Task = Task.BOTTOM_UP,
     ) -> PoseDataset:
         """
         Creates a PoseDataset based on provided arguments.
@@ -176,9 +177,9 @@ class Loader(ABC):
             PoseDataset: An instance of the PoseDataset class.
 
         Raises:
-            Any exception raised by `_get_dataset_parameters` or `load_data` methods.
+            Any exception raised by `get_dataset_parameters` or `load_data` methods.
         """
-        parameters = self._get_dataset_parameters()
+        parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
         data["annotations"] = self.filter_annotations(data["annotations"])
         dataset = PoseDataset(
@@ -191,25 +192,15 @@ class Loader(ABC):
         )
         return dataset
 
-    def _get_dataset_parameters(self, *args, **kwargs) -> PoseDatasetParameters:
-        """TODO: _get_dataset_parameters should be an abstract method
+    @abstractmethod
+    def get_dataset_parameters(self) -> PoseDatasetParameters:
+        """
         Retrieves dataset parameters based on the instance's configuration.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
 
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
-        return PoseDatasetParameters(
-            bodyparts=get_bodyparts(self.cfg),
-            unique_bpts=get_unique_bodyparts(self.cfg),
-            individuals=self.cfg.get("individuals", ["animal"]),
-            with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
-            color_mode=self.model_cfg.get("color_mode", "RGB"),
-            cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
-        )
+        raise NotImplementedError
 
     @staticmethod
     def filter_annotations(annotations: list[dict]) -> list[dict]:

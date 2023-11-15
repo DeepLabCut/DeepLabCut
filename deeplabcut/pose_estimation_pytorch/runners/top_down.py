@@ -14,10 +14,9 @@ from typing import Any
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch.models.detectors as detectors
-from deeplabcut.pose_estimation_pytorch.runners.base import Runner, RUNNERS
+from deeplabcut.pose_estimation_pytorch.runners.base import RUNNERS, Runner
 
 
 @RUNNERS.register_module
@@ -86,7 +85,7 @@ class DetectorRunner(Runner[detectors.BaseDetector]):
         for item in target:  # target is a list here
             for key in item:
                 if item[key] is not None:
-                    item[key] = torch.tensor(item[key]).to(self.device)
+                    item[key] = item[key].to(self.device)
 
         losses, _ = self.model(images, target)
         losses["total_loss"] = sum(loss_part for loss_part in losses.values())
@@ -126,6 +125,11 @@ class DetectorRunner(Runner[detectors.BaseDetector]):
                             "bboxes": item["boxes"][: self.max_individuals]
                             .cpu()
                             .numpy()
+                            .reshape(-1, 4),
+                            "scores": item["scores"][: self.max_individuals]
+                            .cpu()
+                            .numpy()
+                            .reshape(-1),
                         }
                     }
                 )

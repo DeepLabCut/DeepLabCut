@@ -4,14 +4,18 @@ import os
 import pickle
 from dataclasses import dataclass
 
-import numpy as np
 import pandas as pd
 
 import deeplabcut
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.helper import CombinedPropertyMeta
 from deeplabcut.pose_estimation_pytorch.utils import df_to_generic
-from deeplabcut.utils.auxiliaryfunctions import get_model_folder
+from deeplabcut.utils.auxiliaryfunctions import (
+    get_bodyparts,
+    get_model_folder,
+    get_unique_bodyparts,
+)
 
 
 @dataclass
@@ -64,6 +68,22 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
     def __post_init__(self):
         super().__init__(self.project_root, self.model_config_path)
         self.split, self.df_dlc, self.df_train, self.df_test = self._load_dlc_data()
+
+    def get_dataset_parameters(self) -> PoseDatasetParameters:
+        """
+        Retrieves dataset parameters based on the instance's configuration.
+
+        Returns:
+            An instance of the PoseDatasetParameters with the parameters set.
+        """
+        return PoseDatasetParameters(
+            bodyparts=get_bodyparts(self.cfg),
+            unique_bpts=get_unique_bodyparts(self.cfg),
+            individuals=self.cfg.get("individuals", ["animal"]),
+            with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
+            color_mode=self.model_cfg.get("color_mode", "RGB"),
+            cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
+        )
 
     def _load_dlc_data(self):
         split = self._load_split(self._path_dlc_doc)

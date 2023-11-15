@@ -18,33 +18,33 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 
-import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
-from deeplabcut.pose_estimation_pytorch import DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.apis.scoring import (
-    align_predicted_individuals_to_gt,
     get_scores,
+    pair_predicted_individuals_with_gt,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     ensure_multianimal_df_format,
     get_runners,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Runner
+from deeplabcut.pose_estimation_pytorch.runners import Runner, Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
 
 
 def predict(
-    task: str,
+    pose_task: Task,
     pose_runner: Runner,
     loader: Loader,
     mode: str,
     detector_runner: Runner | None = None,
-) -> tuple[list[str], list[dict[str, dict[str, np.ndarray]]]]:
+) -> dict[str, dict[str, np.ndarray]]:
     """Predicts poses on data contained in a loader
+
     Args:
-        task: {'TD', 'BU'} Whether the model is a top-down or bottom-up model
+        pose_task: Whether the model is a top-down or bottom-up model
         pose_runner: The runner to use for pose estimation
         loader: The loader containing the data to predict poses on
         mode: {"train", "test"} The mode to predict on
@@ -53,19 +53,13 @@ def predict(
             boxes will be used to crop individuals before pose estimation
 
     Returns:
-        The paths of images for which predictions were computed
-        For each image, the predictions made by each model head
+        The paths of images for which predictions were computed mapping to the
+        different predictions made by each model head
     """
-    if task not in ["BU", "TD"]:
-        raise ValueError(
-            f"Task should be set to either 'BU' (Bottom Up) or 'TD' (Top Down), "
-            f"currently it is {task}"
-        )
-
     image_paths = loader.image_filenames(mode)
     context = None
 
-    if task == "TD":
+    if pose_task == Task.TOP_DOWN:
         # Get bounding boxes for context
         if detector_runner is not None:
             bbox_predictions = detector_runner.inference(images=image_paths)
@@ -74,31 +68,32 @@ def predict(
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
             context = [{"bboxes": ground_truth_bboxes[image]} for image in image_paths]
 
-    images = image_paths
+    images_with_context = image_paths
     if context is not None:
         if len(context) != len(image_paths):
             raise ValueError(
                 f"Missing context for some images: {len(context)} != {len(image_paths)}"
             )
-        images = list(zip(image_paths, context))
+        images_with_context = list(zip(image_paths, context))
 
-    predictions = pose_runner.inference(images=images)
-    return image_paths, predictions  # TODO: include bounding boxes if there are any
+    predictions = pose_runner.inference(images=images_with_context)
+    return {
+        image_path: image_predictions
+        for image_path, image_predictions in zip(image_paths, predictions)
+    }
 
 
 def evaluate(
-    scorer: str,
-    task: str,
+    pose_task: Task,
     pose_runner: Runner,
     loader: Loader,
     mode: str,
     detector_runner: Runner | None = None,
     pcutoff: float = 1,
-) -> tuple[dict[str, float], pd.DataFrame]:
+) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
     """
     Args:
-        scorer: The name of the model making the predictions
-        task: {'BU' or 'TD'} Whether to run top-down or bottom-up
+        pose_task: Whether to run top-down or bottom-up
         pose_runner: The runner for pose estimation
         loader: The loader containing the data to evaluate
         mode: Either 'train' or 'test'
@@ -109,41 +104,29 @@ def evaluate(
 
     Returns:
         A dict containing the evaluation results
-        A dataframe in DLC-format containing the predictions
+        A dict mapping the paths of images for which predictions were computed to the
+            different predictions made by each model head
     """
-    parameters = loader._get_dataset_parameters()
-    image_paths, predictions = predict(
-        task=task,
+    parameters = loader.get_dataset_parameters()
+    predictions = predict(
+        pose_task=pose_task,
         pose_runner=pose_runner,
         loader=loader,
         mode=mode,
         detector_runner=detector_runner,
     )
-    # TODO: move this to postprocessing step
-    poses = {}
-    for filename, pred in zip(image_paths, predictions):
-        keypoints = pred["bodyparts"]
-        if len(keypoints) < parameters.max_num_animals:
-            padded_keypoints = np.empty(
-                (parameters.max_num_animals, *keypoints.shape[1:])
-            )
-            padded_keypoints.fill(-1)
-            padded_keypoints[: len(keypoints), ...] = keypoints
-            keypoints = padded_keypoints
-        poses[filename] = keypoints
+    poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
+    gt_keypoints = loader.ground_truth_keypoints(mode)
+    if parameters.max_num_animals > 1:
+        poses = pair_predicted_individuals_with_gt(poses, gt_keypoints)
 
     unique_poses = None
     gt_unique_keypoints = None
     if parameters.num_unique_bpts > 1:
         unique_poses = {
-            filename: pred["unique_bodyparts"]
-            for filename, pred in zip(image_paths, predictions)
+            filename: pred["unique_bodyparts"] for filename, pred in predictions.items()
         }
         gt_unique_keypoints = loader.ground_truth_keypoints(mode, unique_bodypart=True)
-
-    gt_keypoints = loader.ground_truth_keypoints(mode)
-    if parameters.max_num_animals > 1:
-        poses = align_predicted_individuals_to_gt(poses, gt_keypoints)
 
     # TODO: Check single animal mAP computation
     results = get_scores(
@@ -154,19 +137,11 @@ def evaluate(
         unique_bodypart_gt=gt_unique_keypoints,
     )
 
-    image_name_to_index = None
-    if isinstance(loader, DLCLoader):
-        image_name_to_index = image_to_dlc_df_index
+    # Updating poses to be aligned and padded
+    for image, pose in poses.items():
+        predictions[image]["bodyparts"] = pose
 
-    df_predictions = build_predictions_dataframe(
-        scorer=scorer,
-        images=image_paths,
-        bodypart_predictions=poses,
-        unique_bodypart_predictions=unique_poses,
-        parameters=parameters,
-        image_name_to_index=image_name_to_index,
-    )
-    return results, df_predictions
+    return results, predictions
 
 
 def evaluate_snapshot(
@@ -217,19 +192,13 @@ def evaluate_snapshot(
     if device is not None:
         pytorch_config["device"] = device
 
-    method = pytorch_config.get("method", "bu").lower()
-    if method not in ["bu", "td"]:
-        raise ValueError(
-            f"Method should be set to either 'bu' (Bottom Up) or 'td' (Top Down), "
-            f"currently it is {method}"
-        )
-
-    loader = dlc.DLCLoader(
+    pose_task = Task(pytorch_config.get("method", "bu"))
+    loader = DLCLoader(
         project_root=pytorch_config["project_path"],
         model_config_path=model_config_path,
         shuffle=shuffle,
     )
-    parameters = loader._get_dataset_parameters()
+    parameters = loader.get_dataset_parameters()
     names = runner_utils.get_paths(
         project_path=cfg["project_path"],
         train_fraction=train_fraction,
@@ -237,14 +206,16 @@ def evaluate_snapshot(
         shuffle=shuffle,
         cfg=cfg,
         train_iterations=snapshotindex,
-        method=method,
+        task=pose_task,
     )
     pcutoff = cfg.get("pcutoff")
 
     pose_runner, detector_runner = get_runners(
         pytorch_config=pytorch_config,
         snapshot_path=names["model_path"],
-        with_unique_bodyparts=(parameters.num_unique_bpts > 0),
+        max_individuals=parameters.max_num_animals,
+        num_bodyparts=parameters.num_joints,
+        num_unique_bodyparts=parameters.num_unique_bpts,
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,
@@ -258,14 +229,19 @@ def evaluate_snapshot(
         "pcutoff": pcutoff,
     }
     for split in ["train", "test"]:
-        results, df_split_predictions = evaluate(
-            scorer=names["dlc_scorer"],
-            task=pytorch_config.get("method", "BU").upper(),
+        results, predictions_for_split = evaluate(
+            pose_task=pose_task,
             pose_runner=pose_runner,
             loader=loader,
             mode=split,
             pcutoff=pcutoff,
             detector_runner=detector_runner,
+        )
+        df_split_predictions = build_predictions_dataframe(
+            scorer=names["dlc_scorer"],
+            predictions=predictions_for_split,
+            parameters=parameters,
+            image_name_to_index=image_to_dlc_df_index,
         )
         predictions[split] = df_split_predictions
         for k, v in results.items():

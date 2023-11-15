@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import torch
 import torchvision
-from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
+from torchvision.models.detection import FasterRCNN_ResNet50_FPN_V2_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
-    BaseDetector,
     DETECTORS,
+    BaseDetector,
 )
 
 
@@ -32,7 +32,9 @@ class FasterRCNN(BaseDetector):
     real-time object detection with region proposal networks." Advances in neural
     information processing systems 28 (2015).
 
-    See source: https://github.com/pytorch/vision/blob/main/torchvision/models/detection/generalized_rcnn.py
+    See source:
+        https://github.com/pytorch/vision/blob/main/torchvision/models/detection/generalized_rcnn.py
+        https://github.com/pytorch/vision/blob/main/torchvision/models/detection/faster_rcnn.py
     See tutorial: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html#defining-your-model
 
     See validation loss issue:
@@ -40,14 +42,19 @@ class FasterRCNN(BaseDetector):
     - https://stackoverflow.com/a/65347721
     """
 
-    def __init__(self):
-        """Summary:
-        Constructor of the FasterRCNN object.
-        Loads the data.
+    def __init__(
+        self,
+        box_score_thresh: float = 0.01,
+    ):
+        """
+        Args:
+            box_score_thresh: during inference, only return proposals with a
+                classification score greater than box_score_thresh
         """
         super().__init__()
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
-            weights=FasterRCNN_ResNet50_FPN_Weights.COCO_V1
+        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(
+            weights=FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1,
+            box_score_thresh=box_score_thresh,
         )
 
         # Modify the base predictor to output the correct number of classes

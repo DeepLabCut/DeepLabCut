@@ -15,7 +15,7 @@ import torch
 from torchvision.ops import box_convert
 from torchvision.transforms import Resize as TorchResize
 
-from deeplabcut.pose_estimation_pytorch.models import PoseModel, PREDICTORS
+from deeplabcut.pose_estimation_pytorch.models import PREDICTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.post_processing import (

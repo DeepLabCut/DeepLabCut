@@ -13,8 +13,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Optional
 
-import deeplabcut.pose_estimation_pytorch.registry as deeplabcut_pose_estimation_pytorch_registry
 import wandb as wb
+
+import deeplabcut.pose_estimation_pytorch.registry as deeplabcut_pose_estimation_pytorch_registry
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 
 LOGGER = deeplabcut_pose_estimation_pytorch_registry.Registry(

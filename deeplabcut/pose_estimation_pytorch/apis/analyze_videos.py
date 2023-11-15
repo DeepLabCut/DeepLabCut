@@ -29,9 +29,9 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_runners,
     list_videos_in_folder,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Runner
+from deeplabcut.pose_estimation_pytorch.runners import Runner, Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
+from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
 
 
 class VideoIterator(VideoReader):
@@ -82,7 +82,7 @@ class VideoIterator(VideoReader):
 
 def video_inference(
     video_path: str | Path,
-    task: str,
+    task: Task,
     pose_runner: Runner,
     detector_runner: Runner | None = None,
 ) -> tuple[np.ndarray, np.ndarray | None]:
@@ -97,7 +97,7 @@ def video_inference(
         f"  resolution: w={vid_w}, h={vid_h}\n"
     )
 
-    if task == "TD":
+    if task == Task.TOP_DOWN:
         # Get bounding boxes for context
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
@@ -213,13 +213,13 @@ def analyze_videos(
     )
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
-    method = pytorch_config.get("method", "BU").upper()
+    pose_task = Task(pytorch_config.get("method", "BU"))
 
     if device is not None:
         pytorch_config["device"] = device
 
     detector_path = None
-    if method == "TD":
+    if pose_task == Task.TOP_DOWN:
         # TODO: Choose which detector to use
         detector_path = _get_detector_path(model_folder, -1, cfg)
 
@@ -227,7 +227,9 @@ def analyze_videos(
     pose_runner, detector_runner = get_runners(
         pytorch_config=pytorch_config,
         snapshot_path=str(model_path),
-        with_unique_bodyparts=(len(unique_bodyparts) > 0),
+        max_individuals=max_num_animals,
+        num_bodyparts=len(bodyparts),
+        num_unique_bodyparts=len(unique_bodyparts),
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,
@@ -252,7 +254,7 @@ def analyze_videos(
             predictions, unique_predictions = video_inference(
                 video_path=video,
                 pose_runner=pose_runner,
-                task=method,
+                task=pose_task,
                 detector_runner=detector_runner,
             )
             runtime.append(time.time())

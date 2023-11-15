@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import Callable
 
@@ -20,21 +21,24 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
+    Postprocessor,
     build_bottom_up_postprocessor,
     build_detector_postprocessor,
     build_top_down_postprocessor,
-    Postprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
+    Preprocessor,
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
-    Preprocessor,
 )
-from deeplabcut.pose_estimation_pytorch.data.transforms import KeypointAwareCrop
+from deeplabcut.pose_estimation_pytorch.data.transforms import (
+    KeepAspectRatioResize,
+    KeypointAwareCrop,
+)
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
-from deeplabcut.pose_estimation_pytorch.runners import Runner, RUNNERS
+from deeplabcut.pose_estimation_pytorch.runners import RUNNERS, Runner, Task
 from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
 from deeplabcut.utils import auxfun_videos
@@ -143,10 +147,6 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
     """
     transforms = []
 
-    if aug_cfg.get("resize", False):
-        input_size = aug_cfg.get("resize", False)
-        transforms.append(A.Resize(input_size[0], input_size[1]))
-
     crop_sampling = aug_cfg.get("crop_sampling", False)
     if crop_sampling:
         # Add smart, keypoint-aware image cropping
@@ -166,6 +166,19 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
                 crop_sampling["method"],
             )
         )
+
+    if resize_aug := aug_cfg.get("resize", False):
+        transforms += build_resize_transforms(resize_aug)
+
+    if aug_cfg.get("hflip"):
+        warnings.warn(
+            "Be careful! Do not train pose models with horizontal flips if you have"
+            " symmetric keypoints!"
+        )
+        hflip_proba = 0.5
+        if isinstance(aug_cfg["hflip"], float):
+            hflip_proba = aug_cfg["hflip"]
+        transforms.append(A.HorizontalFlip(p=hflip_proba))
 
     # TODO code again this augmentation to match the symmetric_pair syntax in original dlc
     # if aug_cfg.get('flipr', False) and aug_cfg.get('symmetric_pair', False):
@@ -217,7 +230,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
         if type(opt) == int or type(opt) == float:
             transforms.append(
                 A.GaussNoise(
-                    var_limit=(0, opt ** 2),
+                    var_limit=(0, opt**2),
                     mean=0,
                     per_channel=True,  # Albumentations doesn't support per_cahnnel = 0.5
                     p=0.5,
@@ -232,21 +245,21 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
 
     if aug_cfg.get("auto_padding"):
         transforms.append(build_auto_padding(**aug_cfg["auto_padding"]))
+
     if aug_cfg.get("normalize_images"):
         transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         )
 
+    bbox_params = None
     if augment_bbox:
-        return A.Compose(
-            transforms,
-            keypoint_params=A.KeypointParams("xy", remove_invisible=False),
-            bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
-        )
-    else:
-        return A.Compose(
-            transforms, keypoint_params=A.KeypointParams("xy", remove_invisible=False)
-        )
+        bbox_params = A.BboxParams(format="coco", label_fields=["bbox_labels"])
+
+    return A.Compose(
+        transforms,
+        keypoint_params=A.KeypointParams("xy", remove_invisible=False),
+        bbox_params=bbox_params,
+    )
 
 
 def build_inference_transform(
@@ -265,30 +278,27 @@ def build_inference_transform(
     Returns:
         Union[A.BasicTransform, A.BaseCompose]: the transformation pipeline
     """
-
     list_transforms = []
-    if transform_cfg.get("resize", False):
-        input_size = transform_cfg.get("resize", False)
-        list_transforms.append(A.Resize(input_size[0], input_size[1]))
+    if resize_aug := transform_cfg.get("resize"):
+        list_transforms += build_resize_transforms(resize_aug)
 
     if transform_cfg.get("auto_padding"):
         list_transforms.append(build_auto_padding(**transform_cfg["auto_padding"]))
+
     if transform_cfg.get("normalize_images"):
         list_transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         )
 
+    bbox_params = None
     if augment_bbox:
-        return A.Compose(
-            list_transforms,
-            keypoint_params=A.KeypointParams("xy", remove_invisible=False),
-            bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
-        )
-    else:
-        return A.Compose(
-            list_transforms,
-            keypoint_params=A.KeypointParams("xy", remove_invisible=False),
-        )
+        bbox_params = A.BboxParams(format="coco", label_fields=["bbox_labels"])
+
+    return A.Compose(
+        list_transforms,
+        keypoint_params=A.KeypointParams("xy", remove_invisible=False),
+        bbox_params=bbox_params,
+    )
 
 
 def get_model_snapshots(model_folder: Path) -> list[Path]:
@@ -421,6 +431,26 @@ def build_auto_padding(
     )
 
 
+def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
+    height, width = resize_cfg["height"], resize_cfg["width"]
+
+    transforms = []
+    if resize_cfg.get("keep_ratio", True):
+        transforms.append(KeepAspectRatioResize(width=width, height=height, mode="pad"))
+        transforms.append(
+            A.PadIfNeeded(
+                min_height=height,
+                min_width=width,
+                border_mode=cv2.BORDER_CONSTANT,
+                position=A.PadIfNeeded.PositionType.TOP_LEFT,
+            )
+        )
+    else:
+        transforms.append(A.Resize(height, width))
+
+    return transforms
+
+
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
     """
     Convert dataframe to 'multianimal' format (with an "individuals" columns index)
@@ -445,9 +475,7 @@ def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
 
 def build_predictions_dataframe(
     scorer: str,
-    images: list[str],
-    bodypart_predictions: dict[str, np.ndarray],
-    unique_bodypart_predictions: dict[str, np.ndarray] | None,
+    predictions: dict[str, dict[str, np.ndarray]],
     parameters: PoseDatasetParameters,
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.DataFrame:
@@ -455,20 +483,13 @@ def build_predictions_dataframe(
 
     Args:
         scorer:
-        images:
-        bodypart_predictions:
-        unique_bodypart_predictions:
+        predictions
         parameters:
         image_name_to_index:
 
     Returns:
 
     """
-    if parameters.num_unique_bpts > 0 and unique_bodypart_predictions is None:
-        raise ValueError(
-            "The parameters contain unique bodyparts but no predictions were given"
-        )
-
     kpt_entries = ["x", "y", "likelihood"]
     col_names = ["scorer", "individuals", "bodyparts", "coords"]
 
@@ -481,12 +502,13 @@ def build_predictions_dataframe(
 
     prediction_data = []
     index_data = []
-    for image in images:
-        image_data = bodypart_predictions[image][..., :3].reshape(-1)
-        if unique_bodypart_predictions is not None:
+    for image, image_predictions in predictions.items():
+        image_data = image_predictions["bodyparts"].reshape(-1)
+        if "unique_bodyparts" in image_predictions:
             image_data = np.concatenate(
-                [image_data, unique_bodypart_predictions[image][..., :3].reshape(-1)]
+                [image_data, image_predictions["unique_bodyparts"].reshape(-1)]
             )
+
         prediction_data.append(image_data)
         if image_name_to_index is not None:
             index_data.append(image_name_to_index(image))
@@ -494,7 +516,7 @@ def build_predictions_dataframe(
     if len(index_data) > 0:
         index = pd.MultiIndex.from_tuples(index_data)
     else:
-        index = images
+        index = list(predictions.keys())
 
     return pd.DataFrame(
         prediction_data,
@@ -506,7 +528,9 @@ def build_predictions_dataframe(
 def get_runners(
     pytorch_config: dict,
     snapshot_path: str,
-    with_unique_bodyparts: bool,
+    max_individuals: int,
+    num_bodyparts: int,
+    num_unique_bodyparts: int,
     transform: A.BaseCompose | None = None,
     detector_path: str | None = None,
     detector_transform: A.BaseCompose | None = None,
@@ -516,7 +540,11 @@ def get_runners(
     Args:
         pytorch_config: the pytorch configuration file
         snapshot_path: the path of the snapshot from which to load the weights
-        with_unique_bodyparts: whether there are unique bodyparts to detect
+        max_individuals: the maximum number of individuals per image
+        num_bodyparts: the number of bodyparts predicted by the model
+        num_unique_bodyparts: the number of unique_bodyparts predicted by the model
+        pad_outputs_to_full_shape: if true, pose arrays are padded with -1s for missing
+            individuals
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         detector_path: the path to the detector snapshot from which to load weights,
@@ -528,24 +556,20 @@ def get_runners(
         a runner for pose estimation
         a runner for detection, if detector_path is not None
     """
-    pose_task = pytorch_config.get("method", "BU").upper()
-    if pose_task not in ["BU", "TD"]:
-        raise ValueError(
-            f"Method should be set to either 'BU' (Bottom Up) or 'TD' (Top Down), "
-            f"currently it is {pose_task}"
-        )
-
+    pose_task = Task(pytorch_config.get("method", "bu"))
     device = pytorch_config["device"]
     if transform is None:
         transform = build_inference_transform(pytorch_config["data"])
 
     detector_runner = None
-    if pose_task == "BU":
+    if pose_task == Task.BOTTOM_UP:
         pose_preprocessor = build_bottom_up_preprocessor(
             color_mode="RGB", transform=transform  # TODO: read from Loader
         )
         pose_postprocessor = build_bottom_up_postprocessor(
-            with_unique_bodyparts=with_unique_bodyparts
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique_bodyparts,
         )
     else:
         pose_preprocessor = build_top_down_preprocessor(
@@ -554,7 +578,9 @@ def get_runners(
             cropped_image_size=(256, 256),
         )
         pose_postprocessor = build_top_down_postprocessor(
-            with_unique_bodyparts=with_unique_bodyparts
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique_bodyparts,
         )
 
         if detector_path is not None:

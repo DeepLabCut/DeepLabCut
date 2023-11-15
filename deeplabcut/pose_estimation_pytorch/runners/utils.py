@@ -21,6 +21,7 @@ import pandas as pd
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
+from deeplabcut.pose_estimation_pytorch.runners import Task
 
 
 def verify_paths(
@@ -499,7 +500,7 @@ def get_paths(
     model_prefix: str = "",
     cfg: dict = None,
     train_iterations: int = 99,
-    method: str = "bu",
+    task: Task = Task.BOTTOM_UP,
 ):
     dlc_scorer, dlc_scorer_legacy = get_dlc_scorer(
         project_path, cfg, train_fraction, shuffle, model_prefix, train_iterations
@@ -515,7 +516,7 @@ def get_paths(
     model_path = get_model_path(model_folder, train_iterations)
 
     detector_path = None
-    if method.lower() == "td":
+    if task == Task.TOP_DOWN:
         detector_path = get_detector_path(model_folder, train_iterations)
 
     return {

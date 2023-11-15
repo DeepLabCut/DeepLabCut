@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from enum import Enum
 from pathlib import Path
 from typing import Any, Generic, Iterable, TypeVar
 
@@ -23,11 +24,28 @@ from torch.utils.data import DataLoader
 
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
 
 RUNNERS = Registry("runners", build_func=build_from_cfg)
 ModelType = TypeVar("ModelType", bound=nn.Module)
+
+
+class Task(Enum):
+    """A task to solve"""
+
+    BOTTOM_UP = "BU"
+    DETECT = "DT"
+    TOP_DOWN = "TD"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            value = value.upper()
+            for member in cls:
+                if member.value == value:
+                    return member
+        return None
 
 
 class Runner(ABC, Generic[ModelType]):
@@ -197,6 +215,7 @@ class Runner(ABC, Generic[ModelType]):
             image_predictions = self.predict(input_image)
             if self.postprocessor is not None:
                 # TODO: Should we return context?
+                # TODO: typing update - the post-processor can remove a dict level
                 image_predictions, _ = self.postprocessor(image_predictions, context)
 
             results.append(image_predictions)
