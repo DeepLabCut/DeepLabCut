@@ -418,9 +418,9 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
-### -------------------- DECISION POINT -------------------
+**-------------------- DECISION POINT -------------------**
 
-#### ATTENTION!
+**ATTENTION!**
 **Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, please test the "raw" pose estimation performance on a video to validate performance:
 
 Please run:
@@ -446,7 +446,7 @@ where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
 
 
-### ------------------- ANIMAL ASSEMBLY & TRACKING ACROSS FRAMES -------------------
+## Animal Assembly and Tracking across frames
 
 After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the `inference_cfg.yaml` file.
 
@@ -456,11 +456,11 @@ After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a 
 ```python
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
-## IF auto_track = True:
+#### IF auto_track = True:
 
 - *NEW* in 2.2.0.3+: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the `.h5` file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
 
-## IF auto_track = False:
+#### IF auto_track = False:
 
    -  You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
 
@@ -515,7 +515,7 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 ```
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
-## Using Unsupervised Identity Tracking:
+### Using Unsupervised Identity Tracking:
 
 In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:
 
@@ -591,7 +591,7 @@ In python or pythonw:
 help(deeplabcut.nameofthefunction)
 ```
 
-### Tips for "daily" use:
+## Tips for "daily" use:
 
 <p align="center">
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
