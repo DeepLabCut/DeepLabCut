@@ -441,24 +441,22 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-training-dataset">Create Training Dataset:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-network">Train The Network:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-trained-network">Evaluate the Trained Network:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-point">——————– DECISION POINT ——————-</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">ATTENTION!</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">Optimized Animal Assembly + Video Analysis:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-and-tracking-across-frames">Animal Assembly and Tracking across frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">Optimized Animal Assembly + Video Analysis:</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-true">IF auto_track = True:</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-false">IF auto_track = False:</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-true">IF auto_track = True:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-false">IF auto_track = False:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">Using Unsupervised Identity Tracking:</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">Using Unsupervised Identity Tracking:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refine-tracklets">Refine Tracklets:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">Once you have analyzed video data (and refined your maDeepLabCut tracklets):</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-results">Plotting Results:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#help">HELP:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tips-for-daily-use">Tips for “daily” use:</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips-for-daily-use">Tips for “daily” use:</a></li>
 </ul>
 </li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-help-with-madlc">Getting help with maDLC:</a></li>
@@ -815,12 +813,9 @@ but does not guarantee best performance.</p>
 </pre></div>
 </div>
 <p>you can drop “Indices” to run this on all training/testing images (this is very slow!)</p>
-</section>
-<section id="decision-point">
-<h3>——————– DECISION POINT ——————-<a class="headerlink" href="#decision-point" title="Permalink to this heading">#</a></h3>
-<section id="attention">
-<h4>ATTENTION!<a class="headerlink" href="#attention" title="Permalink to this heading">#</a></h4>
-<p><strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
+<p><strong>——————– DECISION POINT ——————-</strong></p>
+<p><strong>ATTENTION!</strong>
+<strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
 <p>Please run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scorername</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_video_with_all_detections</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
@@ -843,10 +838,9 @@ to run:</p></li>
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.</p>
 </section>
 </section>
-<section id="animal-assembly-tracking-across-frames">
-<h3>——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-<a class="headerlink" href="#animal-assembly-tracking-across-frames" title="Permalink to this heading">#</a></h3>
+<section id="animal-assembly-and-tracking-across-frames">
+<h2>Animal Assembly and Tracking across frames<a class="headerlink" href="#animal-assembly-and-tracking-across-frames" title="Permalink to this heading">#</a></h2>
 <p>After pose estimation, now you perform assembly and tracking. <em>NEW</em> in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file.</p>
-</section>
 <section id="optimized-animal-assembly-video-analysis">
 <h3>Optimized Animal Assembly + Video Analysis:<a class="headerlink" href="#optimized-animal-assembly-video-analysis" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
@@ -855,16 +849,14 @@ Flagged frames will be added to your collection of images in the corresponding l
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/&#39;</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.mp4&#39;</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-</section>
 <section id="if-auto-track-true">
-<h2>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this heading">#</a></h2>
+<h4>IF auto_track = True:<a class="headerlink" href="#if-auto-track-true" title="Permalink to this heading">#</a></h4>
 <ul class="simple">
 <li><p><em>NEW</em> in 2.2.0.3+: <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> has a new argument <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you’ll now get the <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file you might be used to getting in standard DLC. If <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code>, one must run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> and <code class="docutils literal notranslate"><span class="pre">stitch_tracklets</span></code> manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).</p></li>
 </ul>
 </section>
 <section id="if-auto-track-false">
-<h2>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this heading">#</a></h2>
+<h4>IF auto_track = False:<a class="headerlink" href="#if-auto-track-false" title="Permalink to this heading">#</a></h4>
 <ul class="simple">
 <li><p>You can validate the tracking parameters. Namely, you can iteratively change the parameters, run <code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code> then load them in the GUI (<code class="docutils literal notranslate"><span class="pre">refine_tracklets</span></code>) if you want to look at the performance. If you want to edit these, you will need to open the <code class="docutils literal notranslate"><span class="pre">inference_cfg.yaml</span></code> file (or click button in GUI). The options are:</p></li>
 </ul>
@@ -911,13 +903,15 @@ can be directly specified as follows:</p>
 </div>
 <p>In such cases, file columns will default to dummy animal names (ind1, ind2, …, up to indn).</p>
 </section>
+</section>
 <section id="using-unsupervised-identity-tracking">
-<h2>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this heading">#</a></h2>
+<h3>Using Unsupervised Identity Tracking:<a class="headerlink" href="#using-unsupervised-identity-tracking" title="Permalink to this heading">#</a></h3>
 <p>In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note you should pass the n_tracks (number of animals) you expect to see in the video.</p>
+</section>
 <section id="refine-tracklets">
 <h3>Refine Tracklets:<a class="headerlink" href="#refine-tracklets" title="Permalink to this heading">#</a></h3>
 <p>You can also optionally <strong>refine the tracklets</strong>. You can fix both “major” ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the <code class="docutils literal notranslate"><span class="pre">...trackertype.pickle</span></code> or <code class="docutils literal notranslate"><span class="pre">.h5'</span></code> file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this <code class="docutils literal notranslate"><span class="pre">.h5</span></code> this to refine (again) in case you find another issue, etc!</p>
@@ -973,8 +967,9 @@ can be directly specified as follows:</p>
 </pre></div>
 </div>
 </section>
+</section>
 <section id="tips-for-daily-use">
-<h3>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this heading">#</a></h3>
+<h2>Tips for “daily” use:<a class="headerlink" href="#tips-for-daily-use" title="Permalink to this heading">#</a></h2>
 <p align="center">
 <img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
  </p>
@@ -994,7 +989,6 @@ can be directly specified as follows:</p>
 </pre></div>
 </div>
 <p>Now, you can run any of the functions described in this documentation.</p>
-</section>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="getting-help-with-madlc">
@@ -1086,24 +1080,22 @@ can be directly specified as follows:</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-training-dataset">Create Training Dataset:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-network">Train The Network:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-trained-network">Evaluate the Trained Network:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-point">——————– DECISION POINT ——————-</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">ATTENTION!</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-tracking-across-frames">——————- ANIMAL ASSEMBLY &amp; TRACKING ACROSS FRAMES ——————-</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">Optimized Animal Assembly + Video Analysis:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-and-tracking-across-frames">Animal Assembly and Tracking across frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-animal-assembly-video-analysis">Optimized Animal Assembly + Video Analysis:</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-true">IF auto_track = True:</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-false">IF auto_track = False:</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-true">IF auto_track = True:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-auto-track-false">IF auto_track = False:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">Using Unsupervised Identity Tracking:</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-unsupervised-identity-tracking">Using Unsupervised Identity Tracking:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refine-tracklets">Refine Tracklets:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#once-you-have-analyzed-video-data-and-refined-your-madeeplabcut-tracklets">Once you have analyzed video data (and refined your maDeepLabCut tracklets):</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-results">Plotting Results:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#help">HELP:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tips-for-daily-use">Tips for “daily” use:</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips-for-daily-use">Tips for “daily” use:</a></li>
 </ul>
 </li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-help-with-madlc">Getting help with maDLC:</a></li>
