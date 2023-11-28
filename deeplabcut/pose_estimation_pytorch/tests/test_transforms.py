@@ -15,3 +15,31 @@ def test_keypoint_aware_cropping(width, height):
     assert transformed["image"].shape[:2] == (height, width)
     # Ensure at least a keypoint is visible in each crop
     assert len(transformed["keypoints"])
+
+
+def test_grayscale():
+    fake_image = np.ones((600, 600, 3))
+    fake_image *= np.random.uniform(0, 255, size=fake_image.shape)
+    fake_image = fake_image.astype(np.uint8)
+    gray = transforms.Grayscale(alpha=1, p=1)
+    aug_image = gray(image=fake_image)["image"]
+    assert aug_image.shape == fake_image.shape
+
+    gray = transforms.Grayscale(alpha=0, p=1)
+    aug_image = gray(image=fake_image)["image"]
+    assert np.allclose(fake_image, aug_image)
+
+    with pytest.warns(UserWarning, match="clipped"):
+        gray = transforms.Grayscale(alpha=1.5)
+    assert gray.alpha == 1
+
+
+def test_coarse_dropout():
+    fake_image = np.ones((300, 300, 3))
+    fake_image *= np.random.uniform(0, 255, size=fake_image.shape)
+    fake_image = fake_image.astype(np.uint8)
+    cd = transforms.CoarseDropout(max_height=0.9999, max_width=0.9999, p=1)
+    kpts = np.random.rand(10, 2) * 300
+    aug_kpts = cd(image=fake_image, keypoints=kpts)["keypoints"]
+    assert len(aug_kpts) == kpts.shape[0]
+    assert np.isnan([c for kpt in aug_kpts for c in kpt]).all()

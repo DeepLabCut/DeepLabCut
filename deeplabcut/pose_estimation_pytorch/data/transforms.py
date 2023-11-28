@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable, Sequence
 
 import albumentations as A
 import cv2
 import numpy as np
+import warnings
+from albumentations.augmentations.geometric import functional as F
 from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
 
@@ -140,3 +142,173 @@ class KeepAspectRatioResize(A.DualTransform):
 
     def get_transform_init_args_names(self):
         return "height", "width", "mode", "interpolation"
+
+
+class Grayscale(A.ToGray):
+    def __init__(
+        self,
+        alpha: float | int | tuple[float] = 1.0,
+        always_apply: bool = False,
+        p: float = 0.5,
+    ):
+        """
+        Args:
+            alpha: int, float or tuple of floats, optional
+            The alpha value of the new colorspace when overlayed over the
+            old one. A value close to 1.0 means that mostly the new
+            colorspace is visible. A value close to 0.0 means that mostly the
+            old image is visible.
+
+            * If a float, exactly that value will be used.
+            * If a tuple ``(a, b)``, a random value from the range
+              ``a <= x <= b`` will be sampled per image.
+        """
+        super().__init__(always_apply, p)
+        if isinstance(alpha, (float, int)):
+            self._alpha = self._validate_alpha(alpha)
+        elif isinstance(alpha, tuple):
+            if len(alpha) != 2:
+                raise ValueError("`alpha` must be a tuple of two numbers.")
+            self._alpha = tuple([self._validate_alpha(val) for val in alpha])
+        else:
+            raise ValueError("")
+
+    @staticmethod
+    def _validate_alpha(val: float) -> float:
+        if not 0.0 <= val <= 1.0:
+            warnings.warn("`alpha` will be clipped to the interval [0.0, 1.0].")
+        return min(1.0, max(0.0, val))
+
+    @property
+    def alpha(self) -> float:
+        if isinstance(self._alpha, float):
+            return self._alpha
+        return np.random.uniform(*self._alpha)
+
+    def apply(self, img: NDArray, **params) -> NDArray:
+        img_gray = super().apply(img, **params)
+        alpha = self.alpha
+        img_blend = img * (1 - alpha) + img_gray * alpha
+        return img_blend.astype(img.dtype)
+
+
+class ElasticTransform(A.ElasticTransform):
+    def __init__(
+        self,
+        alpha: float = 20.0,
+        sigma: float = 5.0,  # As in DLC TF
+        alpha_affine: float = 0.0,  # Deactivate affine transformation prior to elastic deformation
+        interpolation: int = cv2.INTER_CUBIC,  # As in imgaug
+        border_mode: int = cv2.BORDER_CONSTANT,  # As in imgaug
+        value: float | None = None,
+        mask_value: float | None = None,
+        always_apply: bool = False,
+        approximate: bool = True,  # Faster by a factor of 2
+        same_dxdy: bool = True,  # Here too
+        p: float = 0.5,
+    ):
+        super().__init__(
+            alpha,
+            sigma,
+            alpha_affine,
+            interpolation,
+            border_mode,
+            value,
+            mask_value,
+            always_apply,
+            approximate,
+            same_dxdy,
+            p,
+        )
+        self._neighbor_dist = 3
+        self._neighbor_dist_square = self._neighbor_dist ** 2
+
+    def apply_to_keypoints(
+        self, keypoints: Sequence[float], random_state: int | None = None, **params
+    ) -> list[float]:
+        heatmaps = np.zeros(
+            (params["rows"], params["cols"], len(keypoints)), dtype=np.float32
+        )
+        grid = np.mgrid[: params["rows"], : params["cols"]].transpose((1, 2, 0))
+        kpts = np.array([(k[1], k[0]) for k in keypoints])
+        valid_kpts = np.all(kpts > 0.0, axis=1)
+        dist = ((grid - kpts[:, None, None]) ** 2).sum(axis=3)
+        mask = (dist <= self._neighbor_dist_square) & valid_kpts[:, None, None]
+        heatmaps[mask.transpose(1, 2, 0)] = 1
+
+        heatmaps_aug = F.elastic_transform(
+            heatmaps,
+            self.alpha,
+            self.sigma,
+            self.alpha_affine,
+            cv2.INTER_NEAREST,
+            self.border_mode,
+            self.mask_value,
+            np.random.RandomState(random_state),
+            self.approximate,
+            self.same_dxdy,
+        )
+
+        inds = np.indices(heatmaps_aug.shape[:2])[::-1]
+        mask = np.transpose(heatmaps_aug == 1, (2, 0, 1))
+        # Let's compute the average, rather than the median, coordinates
+        div = np.sum(mask, axis=(1, 2))
+        sum_indices = np.sum(inds[:, None] * mask[None], axis=(2, 3)).T
+        xy = sum_indices / div[:, None]
+        new_keypoints = []
+        for kp, new_coords in zip(keypoints, xy):
+            kp = list(kp)
+            kp[:2] = new_coords
+            new_keypoints.append(tuple(kp))
+        return new_keypoints
+
+
+class CoarseDropout(A.CoarseDropout):
+    def __init__(
+        self,
+        max_holes: int = 8,
+        max_height: int = 8,
+        max_width: int = 8,
+        min_holes: int | None = None,
+        min_height: int | None = None,
+        min_width: int | None = None,
+        fill_value: int = 0,
+        mask_fill_value: int | None = None,
+        always_apply: bool = False,
+        p: float = 0.5,
+    ):
+        super().__init__(
+            max_holes,
+            max_height,
+            max_width,
+            min_holes,
+            min_height,
+            min_width,
+            fill_value,
+            mask_fill_value,
+            always_apply,
+            p,
+        )
+
+    def apply_to_bboxes(self, bboxes: Sequence[float], **params) -> list[float]:
+        return list(bboxes)
+
+    def apply_to_keypoints(
+        self,
+        keypoints: Sequence[float],
+        holes: Iterable[tuple[int, int, int, int]] = (),
+        **params,
+    ) -> list[float]:
+        new_keypoints = []
+        for kp in keypoints:
+            in_hole = False
+            for hole in holes:
+                if self._keypoint_in_hole(kp, hole):
+                    in_hole = True
+                    break
+            if in_hole:
+                kp = list(kp)
+                kp[:2] = np.nan, np.nan
+                kp = tuple(kp)
+            new_keypoints.append(kp)
+        return new_keypoints

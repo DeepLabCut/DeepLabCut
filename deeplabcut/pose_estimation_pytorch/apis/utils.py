@@ -34,6 +34,9 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import (
+    CoarseDropout,
+    ElasticTransform,
+    Grayscale,
     KeepAspectRatioResize,
     KeypointAwareCrop,
 )
@@ -207,23 +210,21 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
         transforms.append(A.Equalize(p=0.5))
     if aug_cfg.get("motion_blur", False):
         transforms.append(A.MotionBlur(p=0.5))
-    # TODO Coarse dropout can mask a keypoint which messes up the training, implement new augmentation
-    # if aug_cfg.get('covering', False):
-    #     transforms.append(
-    #         A.CoarseDropout(
-    #             max_holes=10,
-    #             max_height=0.05,
-    #             min_height=0.01,
-    #             max_width=0.05,
-    #             min_width=0.01,
-    #             p=0.5
-    #         )
-    #     )
-    # TODO implement elastic transform apply_to_keypoints in albumentations
-    # if aug_cfg.get('elastic_transform', False):
-    #     transforms.append(A.ElasticTransform(sigma=5, p=0.5))
-    # TODO implement iia grayscale augmentation with albumentation
-    # if aug_cfg.get('grayscale', False):
+    if aug_cfg.get('covering', False):
+        transforms.append(
+            CoarseDropout(
+                max_holes=10,
+                max_height=0.05,
+                min_height=0.01,
+                max_width=0.05,
+                min_width=0.01,
+                p=0.5
+            )
+        )
+    if aug_cfg.get('elastic_transform', False):
+        transforms.append(ElasticTransform(sigma=5, p=0.5))
+    if aug_cfg.get('grayscale', False):
+        transforms.append(Grayscale(alpha=(0.5, 1.0)))
     if aug_cfg.get("gaussian_noise", False):
         opt = aug_cfg.get("gaussian_noise", False)  # std
         # TODO inherit custom gaussian transform to support per_channel = 0.5
@@ -257,7 +258,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
 
     return A.Compose(
         transforms,
-        keypoint_params=A.KeypointParams("xy", remove_invisible=False),
+        keypoint_params=A.KeypointParams("xy", remove_invisible=False, label_fields=["class_labels"]),
         bbox_params=bbox_params,
     )
 
