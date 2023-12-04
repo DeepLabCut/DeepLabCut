@@ -11,14 +11,20 @@
 from __future__ import annotations
 
 import numpy as np
+import pickle
+from sklearn.metrics import accuracy_score
 
 from deeplabcut.pose_estimation_pytorch.post_processing import (
     rmse_match_prediction_to_gt,
+)
+from deeplabcut.pose_estimation_tensorflow.core.evaluate_multianimal import (
+    _find_closest_neighbors,
 )
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
     Assembly,
     evaluate_assembly,
 )
+from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 def get_scores(
@@ -208,6 +214,123 @@ def compute_oks(
         margin=margin,
         symmetric_kpts=symmetric_kpts,
     )
+
+
+def compute_identity_scores(
+    individuals: list[str],
+    bodyparts: list[str],
+    predictions: dict[str, np.ndarray],
+    identity_scores: dict[str, np.ndarray],
+    ground_truth: dict[str, np.ndarray],
+) -> dict[str, float]:
+    """
+    FIXME: With DLCRNet all heatmap "peaks" above 0.01 were kept, with 1 keypoint and
+     1 identity score map per peak. Then, for each ground truth keypoint, we selected
+     the prediction closest to it, and evaluated the identity score in that position.
+     This is no longer the case, as we're now evaluating after assembly. So we only
+     have num_individuals assemblies.
+
+    Args:
+        individuals:
+        bodyparts:
+        predictions: (num_assemblies, num_bodyparts, 3)
+        identity_scores: (num_assemblies, num_bodyparts, num_individuals)
+        ground_truth: (num_individuals, num_bodyparts, 3)
+
+    Returns:
+
+    """
+    if not len(predictions) == len(ground_truth):
+        raise ValueError("Mismatch between number of predictions and ground truth")
+
+    all_bpts = np.asarray(len(individuals) * bodyparts)
+    ids = np.full((len(predictions), len(all_bpts), 2), np.nan)
+    for i, (image, pred) in enumerate(predictions.items()):
+        for j in range(len(individuals)):
+            for k in range(len(bodyparts)):
+                bpt_idx = len(bodyparts) * j + k
+                ids[i, bpt_idx, 0] = j
+
+        gt = mask_invisible(ground_truth[image], mask_value=np.nan)
+        id_scores = identity_scores[image]
+
+        # reorder to (bodypart, individual, ...)
+        gt = gt.transpose((1, 0, 2))
+        pred = pred.transpose((1, 0, 2))[..., :2]
+        id_scores = id_scores.transpose((1, 0, 2))
+        for bpt, bpt_gt, bpt_pred, bpt_id_scores in zip(bodyparts, gt, pred, id_scores):
+            # assign ground truth keypoints to the closest prediction, so the ID score
+            # is the closest possible to the ID score computed with "ground truth"
+            indices_gt = np.flatnonzero(np.all(~np.isnan(bpt_gt), axis=1))
+            neighbors = _find_closest_neighbors(bpt_gt[indices_gt], bpt_pred, k=3)
+            found = neighbors != -1
+            indices = np.flatnonzero(all_bpts == bpt)
+            # Get the predicted identity of each bodypart by taking the argmax
+            ids[i, indices[indices_gt[found]], 1] = np.argmax(
+                bpt_id_scores[neighbors[found]], axis=1
+            )
+
+    ids = ids.reshape((len(predictions), len(individuals), len(bodyparts), 2))
+    results = {}
+    for i, bpt in enumerate(bodyparts):
+        temp = ids[:, :, i].reshape((-1, 2))
+        valid = np.isfinite(temp).all(axis=1)
+        y_true, y_pred = temp[valid].T
+        results[f"{bpt}_accuracy"] = accuracy_score(y_true, y_pred)
+
+    return results
+
+
+def _match_identity_preds_to_gt(
+    config_path: str, full_pickle_path: str
+) -> tuple[np.ndarray, list]:
+    with open(full_pickle_path, "rb") as f:
+        data = pickle.load(f)
+    cfg = read_config(config_path)
+    all_ids = cfg["individuals"]
+    metadata = data.pop("metadata")
+    joints = metadata["all_joints_names"]
+    all_bpts = np.asarray(len(all_ids) * joints + cfg["uniquebodyparts"])
+    ids = np.full((len(data), len(all_bpts), 2), np.nan)
+    for i, dict_ in enumerate(data.values()):
+        id_gt, _, df_gt = dict_["groundtruth"]
+        for j, id_ in enumerate(id_gt):
+            if id_.size:
+                ids[i, j, 0] = all_ids.index(id_)
+
+        df = df_gt.unstack("coords").reindex(joints, level="bodyparts")
+        xy_pred = dict_["prediction"]["coordinates"][0]
+        for bpt, xy_gt in df.groupby(level="bodyparts"):
+            inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
+            n_joint = joints.index(bpt)
+            xy = xy_pred[n_joint]
+            if inds_gt.size and xy.size:
+                # Pick the predictions closest to ground truth,
+                # rather than the ones the model has most confident in
+                xy_gt_values = xy_gt.iloc[inds_gt].values
+                neighbors = _find_closest_neighbors(xy_gt_values, xy, k=3)
+                found = neighbors != -1
+                inds = np.flatnonzero(all_bpts == bpt)
+                id_ = dict_["prediction"]["identity"][n_joint]
+                ids[i, inds[inds_gt[found]], 1] = np.argmax(
+                    id_[neighbors[found]], axis=1
+                )
+    return ids, list(data)
+
+
+def compute_id_accuracy(ids: np.ndarray, mask_test: np.ndarray) -> np.ndarray:
+    ids2 = ids.reshape((ids.shape[0], 2, -1, 2))
+    nbpts = ids2.shape[2]
+    accu = np.empty((nbpts, 2))
+    for i in range(nbpts):
+        temp = ids2[:, :, i].reshape((-1, 2))
+        valid = np.isfinite(temp).all(axis=1)
+        y_true, y_pred = temp[valid].T
+        mask = np.repeat(mask_test, 2)[valid]
+        ac_train = accuracy_score(y_true[~mask], y_pred[~mask])
+        ac_test = accuracy_score(y_true[mask], y_pred[mask])
+        accu[i] = ac_train, ac_test
+    return accu
 
 
 def build_assemblies(poses: dict[str, np.ndarray]) -> dict[str, list[Assembly]]:

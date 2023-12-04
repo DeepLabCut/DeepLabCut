@@ -16,12 +16,10 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
 from deeplabcut.pose_estimation_pytorch.models.target_generators.dekr_targets import (
     DEKRGenerator,
 )
-from deeplabcut.pose_estimation_pytorch.models.target_generators.gaussian_targets import (
-    GaussianGenerator,
+from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets import (
+    HeatmapGaussianGenerator,
+    HeatmapPlateauGenerator,
 )
 from deeplabcut.pose_estimation_pytorch.models.target_generators.pafs_targets import (
     PartAffinityFieldGenerator,
-)
-from deeplabcut.pose_estimation_pytorch.models.target_generators.plateau_targets import (
-    PlateauGenerator,
 )

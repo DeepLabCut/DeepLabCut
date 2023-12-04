@@ -34,7 +34,8 @@ class Preprocessor(ABC):
             image: an image (containing height, width and channel dimensions) or a
                 batch of images linked to a single input (containing an extra batch
                 dimension)
-            context: the context for this image or batch of images (such as )
+            context: the context for this image or batch of images (such as bounding
+                boxes, conditional pose, ...)
 
         Returns:
             the pre-processed image (or batch of images) and their context

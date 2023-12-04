@@ -109,7 +109,7 @@ def make_pytorch_config(
     unique_bpts = auxiliaryfunctions.get_unique_bodyparts(project_config)
     num_unique_bpts = len(unique_bpts)
     compute_unique_bpts = num_unique_bpts > 0
-
+    identification_head = project_config.get("identity")
     pytorch_config = deepcopy(config_template)
     pytorch_config["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     pytorch_config["method"] = "bu"
@@ -141,6 +141,12 @@ def make_pytorch_config(
                     num_unique_bpts, backbone_type
                 )
 
+            if identification_head:
+                pytorch_config["model"]["heads"]["identity"] = make_identity_head(
+                    num_individuals,
+                    backbone_out_channels=BACKBONE_OUT_CHANNELS[backbone_type],
+                )
+
         elif "resnet" in net_type:
             num_stages = pytorch_config.get("num_stages", 0)
             dim = BACKBONE_OUT_CHANNELS["resnet-50"] if num_stages == 0 else 2304
@@ -166,6 +172,11 @@ def make_pytorch_config(
                     # TODO Set remaining params from config
                 )
             }
+            if identification_head:
+                pytorch_config["model"]["heads"]["identity"] = make_identity_head(
+                    num_individuals,
+                    backbone_out_channels=dim,
+                )
             # pytorch_config["data"]["crop_sampling"] = {
             #     "height": 400,
             #     "width": 400,
@@ -177,6 +188,11 @@ def make_pytorch_config(
                 raise NotImplementedError(
                     "Unique body parts are currently not handled by top down models"
                 )
+            if identification_head:
+                raise NotImplementedError(
+                    "Identification heads are currently not handled by top down models"
+                )
+
             pytorch_config["method"] = "td"
             version = net_type.split("_")[-1]
             backbone_type = "hrnet_" + version
@@ -265,42 +281,65 @@ def make_dlcrnet_head(
 
 
 def make_heatmap_head(
-    num_joints: int, heatmap_channels: list[int], locref_channels: list[int]
+    num_heatmaps: int, heatmap_channels: list[int], locref_channels: list[int] | None
 ) -> dict:
     n_deconv_heatmap = len(heatmap_channels) - 1
-    n_deconv_locref = len(locref_channels) - 1
-    return {
+    with_locref = (locref_channels is not None and len(locref_channels) > 0)
+    head_config = {
         "type": "HeatmapHead",
         "predictor": {
             "type": "SinglePredictor",
-            "location_refinement": True,
+            "location_refinement": with_locref,
             "locref_stdev": 7.2801,
             "num_animals": 1,
         },
         "target_generator": {
-            "type": "PlateauGenerator",
-            "locref_stdev": 7.2801,
-            "num_joints": num_joints,
+            "type": "HeatmapPlateauGenerator",
+            "num_heatmaps": num_heatmaps,
             "pos_dist_thresh": 17,
+            "heatmap_mode": "KEYPOINT",
+            "generate_locref": with_locref,
+            "locref_std": 7.2801,
         },
         "criterion": {
             "heatmap": {"type": "WeightedBCECriterion", "weight": 1.0},
-            "locref": {
-                "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
-                "weight": 0.03,
-            },
         },
         "heatmap_config": {
             "channels": heatmap_channels,
             "kernel_size": [3] * n_deconv_heatmap,
             "strides": [2] * n_deconv_heatmap,
         },
-        "locref_config": {
+    }
+
+    if locref_channels:
+        n_deconv_locref = len(locref_channels) - 1
+        head_config["locref_config"] = {
             "channels": locref_channels,
             "kernel_size": [3] * n_deconv_locref,
             "strides": [2] * n_deconv_locref,
-        },
+        }
+        head_config["criterion"]["locref"] = {
+            "type": "WeightedHuberCriterion",  # or WeightedMSECriterion
+            "weight": 0.05,
+        }
+
+    return head_config
+
+
+def make_identity_head(
+    num_individuals: int, backbone_out_channels: list[int]
+) -> dict:
+    heatmap_head = make_heatmap_head(
+        num_individuals,
+        heatmap_channels=[backbone_out_channels, num_individuals],
+        locref_channels=None,
+    )
+    heatmap_head["predictor"] = {
+        "type": "IdentityPredictor",
+        "apply_sigmoid": True,
     }
+    heatmap_head["target_generator"]["heatmap_mode"] = "INDIVIDUAL"
+    return heatmap_head
 
 
 def make_single_head_cfg(num_joints: int, net_type: str) -> dict:
@@ -427,10 +466,10 @@ def make_token_pose_model_cfg(num_joints, backbone_type):
             "bodypart": {
                 "type": "TransformerHead",
                 "target_generator": {
-                    "type": "PlateauGenerator",
-                    "generate_locref": False,
-                    "num_joints": num_joints,
+                    "type": "HeatmapPlateauGenerator",
+                    "num_heatmaps": num_joints,
                     "pos_dist_thresh": 17,
+                    "generate_locref": False,
                 },
                 "criterion": {"type": "WeightedBCECriterion"},
                 "predictor": {"type": "HeatmapOnlyPredictor", "num_animals": 1},

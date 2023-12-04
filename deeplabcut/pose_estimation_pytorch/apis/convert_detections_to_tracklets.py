@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import linear_sum_assignment
 from tqdm import tqdm
 
 from deeplabcut import auxiliaryfunctions
@@ -234,14 +235,14 @@ def convert_detections2tracklets(
 
                     animals = np.stack([a for a in assemblies])
                     if identity_only:
-                        raise ValueError("Identity Only is currently not implemented")
                         # Optimal identity assignment based on soft voting
-                        # mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
-                        # for row, a in enumerate(assemblies):
-                        #     for k, v in a.soft_identity.items():
-                        #         mat[row, k] = v
-                        # inds = linear_sum_assignment(mat, maximize=True)
-                        # trackers = np.c_[inds][:, ::-1]
+                        mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
+                        for row, a in enumerate(assemblies):
+                            assembly = Assembly.from_array(a)
+                            for k, v in assembly.soft_identity.items():
+                                mat[row, k] = v
+                        inds = linear_sum_assignment(mat, maximize=True)
+                        trackers = np.c_[inds][:, ::-1]
                     else:
                         if track_method == "box":
                             xy = trackingutils.calc_bboxes_from_keypoints(
@@ -251,9 +252,9 @@ def convert_detections2tracklets(
                             xy = animals[:, keep_inds, :2]
                         trackers = mot_tracker.track(xy)
 
-                        trackingutils.fill_tracklets(
-                            tracklets, trackers, animals, image_name
-                        )
+                    trackingutils.fill_tracklets(
+                        tracklets, trackers, animals, image_name
+                    )
 
             tracklets["header"] = df_index
             with open(track_filename, "wb") as f:

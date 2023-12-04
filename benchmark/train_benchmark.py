@@ -176,6 +176,7 @@ def run_inference_on_all_images(
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
+        with_identity=False,  # TODO: implement
         transform=transform,
         detector_path=None,  # TODO: Fix for top-down models
         detector_transform=None,

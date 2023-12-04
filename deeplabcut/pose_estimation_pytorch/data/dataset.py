@@ -340,6 +340,10 @@ class PoseDataset(Dataset):
 
         transformed["keypoints"] = keypoints
         transformed["keypoints_unique"] = keypoints_unique
+        transformed["bboxes"] = np.array(transformed["bboxes"])
+        if len(transformed["bboxes"]) == 0:
+            transformed["bboxes"] = np.zeros((0, 4))
+
         return transformed
 
     @staticmethod

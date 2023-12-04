@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 import torch
 
-import deeplabcut.pose_estimation_pytorch.models.target_generators.plateau_targets as deeplabcut_torch_plateau_targets
+from deeplabcut.pose_estimation_pytorch.models.target_generators import HeatmapPlateauGenerator
 
 
 def get_target(
@@ -23,7 +23,7 @@ def get_target(
     num_animals: int,
     num_joints: int,
     image_size: Tuple[int, int],
-    locref_stdev: float,
+    locref_std: float,
     pos_dist_thresh: int,
 ):
     """Summary
@@ -34,7 +34,7 @@ def get_target(
         num_animals (int): number of animals
         num_joints (int): number of bodyparts
         image_size (tuple): image size in pixels
-        locref_stdev (float): scaling factor
+        locref_std (float): scaling factor
         pos_dist_thresh (int): radius plateau on the heatmap
 
     Returns:
@@ -58,8 +58,11 @@ def get_target(
         )
     }  # 2 for x,y coords
     prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
-    generator = deeplabcut_torch_plateau_targets.PlateauLocrefGenerator(
-        locref_stdev, num_joints, pos_dist_thresh
+    generator = HeatmapPlateauGenerator(
+        num_heatmaps=num_joints,
+        pos_dist_thresh=pos_dist_thresh,
+        locref_std=locref_std,
+        generate_locref=True,
     )
 
     targets_output = generator(annotations, prediction, image_size)
@@ -82,7 +85,7 @@ def test_expected_output(
     pos_dist_thresh: int,
 ):
     """Summary:
-    Testing if plateau_targets.py returns the expected output. We take a target generator from
+    Testing if plateau targets return the expected output. We take a target generator from
     get_target function. Given a sequence of random numbers for batch_size, num_animals etc., we assert if
     it returns the expected heatmaps and locrefmaps, as well as checking if the output has the expected shape.
 

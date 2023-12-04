@@ -532,6 +532,7 @@ def get_runners(
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
+    with_identity: bool = False,
     transform: A.BaseCompose | None = None,
     detector_path: str | None = None,
     detector_transform: A.BaseCompose | None = None,
@@ -544,8 +545,7 @@ def get_runners(
         max_individuals: the maximum number of individuals per image
         num_bodyparts: the number of bodyparts predicted by the model
         num_unique_bodyparts: the number of unique_bodyparts predicted by the model
-        pad_outputs_to_full_shape: if true, pose arrays are padded with -1s for missing
-            individuals
+        with_identity: whether the pose model has an identity head
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         detector_path: the path to the detector snapshot from which to load weights,
@@ -571,6 +571,7 @@ def get_runners(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
             num_unique_bodyparts=num_unique_bodyparts,
+            with_identity=with_identity,
         )
     else:
         pose_preprocessor = build_top_down_preprocessor(

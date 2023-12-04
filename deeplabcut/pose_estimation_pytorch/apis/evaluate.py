@@ -22,7 +22,7 @@ import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.apis.scoring import (
     get_scores,
-    pair_predicted_individuals_with_gt,
+    pair_predicted_individuals_with_gt, compute_identity_scores,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
@@ -137,6 +137,22 @@ def evaluate(
         unique_bodypart_gt=gt_unique_keypoints,
     )
 
+    # TODO: Evaluate identity predictions
+    if DLCLoader.has_identity_head(loader.model_cfg):
+        pred_id_scores = {
+            filename: pred["identity_scores"]
+            for filename, pred in predictions.items()
+        }
+        id_scores = compute_identity_scores(
+            individuals=parameters.individuals,
+            bodyparts=parameters.bodyparts,
+            predictions=poses,
+            identity_scores=pred_id_scores,
+            ground_truth=gt_keypoints,
+        )
+        for name, score in id_scores.items():
+            results[f"id_head_{name}"] = score
+
     # Updating poses to be aligned and padded
     for image, pose in poses.items():
         predictions[image]["bodyparts"] = pose
@@ -216,6 +232,7 @@ def evaluate_snapshot(
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
+        with_identity=loader.with_identity,
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,

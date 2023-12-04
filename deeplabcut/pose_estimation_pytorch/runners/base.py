@@ -90,7 +90,7 @@ class Runner(ABC, Generic[ModelType]):
 
         self.starting_epoch = 0
         if snapshot_path:
-            snapshot = torch.load(snapshot_path)
+            snapshot = torch.load(snapshot_path, map_location=device)
             self.model.load_state_dict(snapshot["model_state_dict"])
             self.optimizer.load_state_dict(snapshot["optimizer_state_dict"])
             self.starting_epoch = snapshot["epoch"]
@@ -180,7 +180,7 @@ class Runner(ABC, Generic[ModelType]):
         self,
         images: Iterable[str | np.ndarray]
         | Iterable[tuple[str | np.ndarray, dict[str, Any]]],
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
+    ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
 
         TODO: Add an option to also return head outputs (such as heatmaps)? Can be

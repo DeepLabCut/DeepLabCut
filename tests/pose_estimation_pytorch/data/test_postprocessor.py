@@ -1,11 +1,11 @@
 """Tests the pre-processors"""
-import albumentations as A
 import numpy as np
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.apis.utils import build_resize_transforms
-from deeplabcut.pose_estimation_pytorch.data.preprocessor import AugmentImage
-from deeplabcut.pose_estimation_pytorch.data.postprocessor import RescaleAndOffset
+from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
+    PredictKeypointIdentities,
+    RescaleAndOffset,
+)
 
 
 @pytest.mark.parametrize(
@@ -137,3 +137,45 @@ def test_rescale_detector(data):
     print(predictions["bboxes"].tolist())
     print(data["rescaled"])
     np.testing.assert_array_equal(predictions["bboxes"], np.array(data["rescaled"]))
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "bodyparts": [
+                [[3.1, 1, 0.8], [1, 0, 0.9]],  # assembly 1  (x, y, score)
+                [[2.2, 1.6, 0.5], [3, 3, 0.4]],  # assembly 2  (x, y, score)
+            ],
+            "id_heatmap": [  # id1, id2 score for each pixel
+                [[0.1, 0.1], [0.2, 0.1], [0.3, 0.1], [0.4, 0.1]],
+                [[0.1, 0.2], [0.2, 0.2], [0.3, 0.2], [0.4, 0.2]],
+                [[0.1, 0.3], [0.2, 0.3], [0.3, 0.3], [0.4, 0.3]],
+                [[0.1, 0.4], [0.2, 0.4], [0.3, 0.4], [0.4, 0.4]],
+            ],
+            "id_scores": [  # id1, id2 score for each bodypart
+                [[0.4, 0.2], [0.2, 0.1]],  # assembly 1 (id_1 proba, id_2 proba)
+                [[0.3, 0.3], [0.4, 0.4]],  # assembly 2 (id_1 proba, id_2 proba)
+            ],
+        },
+    ],
+)
+def test_assign_id_scores(data):
+    p = PredictKeypointIdentities(
+        identity_key="keypoint_identity",
+        identity_map_key="identity_map",
+        pose_key="bodyparts",
+    )
+    bodyparts = np.array(data["bodyparts"])
+    id_heatmap = np.array(data["id_heatmap"])
+    expected_ids = np.array(data["id_scores"])
+    print()
+    print(bodyparts.shape)
+    print(id_heatmap.shape)
+    print(expected_ids.shape)
+    predictions_in = {"bodyparts": bodyparts, "identity_map": id_heatmap}
+    predictions, _ = p(predictions_in, {})
+    np.testing.assert_array_equal(
+        predictions["keypoint_identity"],
+        expected_ids,
+    )

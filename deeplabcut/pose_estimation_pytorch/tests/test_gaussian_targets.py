@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from deeplabcut.pose_estimation_pytorch.models.target_generators import gaussian_targets
+from deeplabcut.pose_estimation_pytorch.models.target_generators import HeatmapGaussianGenerator
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,11 @@ def test_gaussian_target_generation(
     ]  # batch size, num keypoints , imageh, imagew
 
     # generate heatmap
-    output = gaussian_targets.GaussianGenerator(5.0, num_keypoints, 17)
+    output = HeatmapGaussianGenerator(
+        num_heatmaps=num_keypoints,
+        pos_dist_thresh=17,
+        locref_std=5.0,
+    )
     output = torch.tensor(
         output(annotations, prediction, image_size)["heatmaps"].reshape(
             batch_size, num_keypoints, image_size[0] * image_size[1]

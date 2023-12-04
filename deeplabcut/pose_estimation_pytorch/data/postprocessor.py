@@ -34,6 +34,7 @@ def build_bottom_up_postprocessor(
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
+    with_identity: bool = False,
 ) -> ComposePostprocessor:
     """Creates a postprocessor for bottom-up pose estimation (or object detection)
 
@@ -41,6 +42,7 @@ def build_bottom_up_postprocessor(
         max_individuals: the maximum number of individuals in a single image
         num_bodyparts: the number of bodyparts output by the model
         num_unique_bodyparts: the number of unique_bodyparts output by the model
+        with_identity: whether the model has an identity head
 
     Returns:
         A default bottom-up Postprocessor
@@ -48,30 +50,50 @@ def build_bottom_up_postprocessor(
     keys_to_concatenate = {"bodyparts": ("bodypart", "poses")}
     empty_shapes = {"bodyparts": (num_bodyparts, 3)}
     keys_to_rescale = ["bodyparts"]
+
     if num_unique_bodyparts > 0:
         keys_to_concatenate["unique_bodyparts"] = ("unique_bodypart", "poses")
-        empty_shapes = {"bodyparts": (num_bodyparts, 3)}
+        empty_shapes["unique_bodyparts"] = (num_bodyparts, 3)
         keys_to_rescale.append("unique_bodyparts")
-    return ComposePostprocessor(
-        components=[
-            ConcatenateOutputs(
-                keys_to_concatenate=keys_to_concatenate,
-                empty_shapes=empty_shapes,
-                create_empty_outputs=True,
-            ),
-            RescaleAndOffset(
-                keys_to_rescale=keys_to_rescale,
-                data=RescaleAndOffset.DataType.KEYPOINT,
-            ),
-            PadOutputs(
-                max_individuals={
-                    "bodyparts": max_individuals,
-                    "unique_bodyparts": 0,  # no need to pad
-                },
-                pad_value=-1,
-            ),
-        ]
-    )
+
+    if with_identity:
+        # TODO: do we really want to return the heatmaps?
+        keys_to_concatenate["identity_heatmap"] = ("identity", "heatmap")
+        empty_shapes["identity_heatmap"] = (1, 1, max_individuals)
+
+    components = [
+        ConcatenateOutputs(
+            keys_to_concatenate=keys_to_concatenate,
+            empty_shapes=empty_shapes,
+            create_empty_outputs=True,
+        ),
+    ]
+
+    if with_identity:
+        components.append(
+            PredictKeypointIdentities(
+                identity_key="identity_scores",
+                identity_map_key="identity_heatmap",
+                pose_key="bodyparts",
+            )
+        )
+
+    components += [
+        RescaleAndOffset(
+            keys_to_rescale=keys_to_rescale,
+            mode=RescaleAndOffset.Mode.KEYPOINT,
+        ),
+        PadOutputs(
+            max_individuals={
+                "bodyparts": max_individuals,
+                "unique_bodyparts": 0,  # no need to pad
+                "identity_heatmap": 0,  # no need to pad
+                "identity_scores": max_individuals,
+            },
+            pad_value=-1,
+        ),
+    ]
+    return ComposePostprocessor(components=components)
 
 
 def build_top_down_postprocessor(
@@ -106,7 +128,7 @@ def build_top_down_postprocessor(
             ),
             RescaleAndOffset(
                 keys_to_rescale=keys_to_rescale,
-                data=RescaleAndOffset.DataType.KEYPOINT_TD,
+                mode=RescaleAndOffset.Mode.KEYPOINT_TD,
             ),
             AddContextToOutput(keys=["bboxes", "bbox_scores"]),
             PadOutputs(
@@ -139,7 +161,7 @@ def build_detector_postprocessor() -> Postprocessor:
             BboxToCoco(bounding_box_keys=["bboxes"]),
             RescaleAndOffset(
                 keys_to_rescale=["bboxes"],
-                data=RescaleAndOffset.DataType.BBOX_XYWH,
+                mode=RescaleAndOffset.Mode.BBOX_XYWH,
             ),
         ]
     )
@@ -177,7 +199,7 @@ class ConcatenateOutputs(Postprocessor):
             if not all([k in self.empty_shapes for k in self.keys_to_concatenate]):
                 raise ValueError(
                     "You must provide the expected shape for all keys to concatenate"
-                    f"when create_empty_outputs is true, found {self.empty_shapes}"
+                    f" when create_empty_outputs is true, found {self.empty_shapes}"
                 )
 
     def __call__(
@@ -338,4 +360,45 @@ class AddContextToOutput(Postprocessor):
         for k in self.keys:
             if k in context:
                 predictions[k] = context[k].copy()
+        return predictions, context
+
+
+class PredictKeypointIdentities(Postprocessor):
+    """Assigns predicted identities to keypoints
+
+    Attributes:
+        identity_key:
+        identity_map_key: shape (h, w, num_ids)
+        pose_key:
+    """
+
+    def __init__(
+        self,
+        identity_key: str,
+        identity_map_key: str,
+        pose_key: str,
+    ) -> None:
+        self.identity_key = identity_key
+        self.identity_map_key = identity_map_key
+        self.pose_key = pose_key
+
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        individuals = predictions[self.pose_key]
+        identity_heatmap = predictions[self.identity_map_key]  # (h, w, num_ids)
+        h, w, num_ids = identity_heatmap.shape
+        num_individuals, num_keypoints, _ = individuals.shape
+
+        assembly_id_scores = []
+        for individual_keypoints in individuals:
+            heatmap_indices = np.rint(individual_keypoints).astype(int)
+            xs = np.clip(heatmap_indices[:, 0], 0, w - 1)
+            ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
+            id_scores = []
+            for x, y in zip(xs, ys):
+                id_scores.append(identity_heatmap[y, x, :])
+            assembly_id_scores.append(np.stack(id_scores))
+
+        predictions[self.identity_key] = np.stack(assembly_id_scores)
         return predictions, context

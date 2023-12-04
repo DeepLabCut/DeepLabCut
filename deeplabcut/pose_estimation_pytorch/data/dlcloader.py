@@ -68,6 +68,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
     def __post_init__(self):
         super().__init__(self.project_root, self.model_config_path)
         self.split, self.df_dlc, self.df_train, self.df_test = self._load_dlc_data()
+        self.with_identity = self.has_identity_head(self.model_cfg)
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """
@@ -175,3 +176,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
             df_test = dlc_df.loc[test_images]
 
         return df_train, df_test
+
+    @staticmethod
+    def has_identity_head(pytorch_config: dict) -> bool:
+        return "identity" in pytorch_config.get("model", {}).get("heads", {})

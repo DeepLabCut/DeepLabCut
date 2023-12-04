@@ -18,10 +18,11 @@ def test_sequential_generator():
         "type": "SequentialGenerator",
         "generators": [
             {
-                "type": "PlateauGenerator",
-                "locref_stdev": 7.2801,
-                "num_joints": num_keypoints,
+                "type": "HeatmapPlateauGenerator",
+                "num_heatmaps": num_keypoints,
                 "pos_dist_thresh": 17,
+                "generate_locref": True,
+                "locref_std": 7.2801,
             },
             {"type": "PartAffinityFieldGenerator", "graph": graph, "width": 20},
         ],

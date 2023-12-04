@@ -80,6 +80,7 @@ def main(
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
+        with_identity=False,
         transform=None,  # Load transform from config
         detector_path=detector_path,
         detector_transform=None,

@@ -14,11 +14,12 @@ import copy
 import pickle
 import time
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 import albumentations as A
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
@@ -29,6 +30,8 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_runners,
     list_videos_in_folder,
 )
+from deeplabcut.pose_estimation_pytorch.data import DLCLoader
+from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 from deeplabcut.pose_estimation_pytorch.runners import Runner, Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
@@ -85,7 +88,8 @@ def video_inference(
     task: Task,
     pose_runner: Runner,
     detector_runner: Runner | None = None,
-) -> tuple[np.ndarray, np.ndarray | None]:
+    with_identity: bool = False,
+) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video"""
     video = VideoIterator(str(video_path))
     n_frames = video.get_n_frames()
@@ -102,33 +106,40 @@ def video_inference(
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
 
-        bbox_predictions = detector_runner.inference(images=video)
+        print("Running Detector")
+        bbox_predictions = detector_runner.inference(images=tqdm(video))
         video.set_context(bbox_predictions)
 
-    predictions = pose_runner.inference(images=video)
-    poses = np.stack([p["bodyparts"] for p in predictions])
-    unique_poses = None
-    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        unique_poses = np.stack([p["unique_bodyparts"] for p in predictions])
-    return poses, unique_poses
+    print("Running Pose Prediction")
+    predictions = pose_runner.inference(images=tqdm(video))
+
+    if with_identity:
+        bodypart_predictions = assign_identity(
+            [p["bodyparts"] for p in predictions],
+            [p["identity_scores"] for p in predictions],
+        )
+        for i, p_with_id in enumerate(bodypart_predictions):
+            predictions[i]["bodyparts"] = p_with_id
+
+    return predictions
 
 
 def analyze_videos(
     config: str,
-    videos: Union[str, List[str]],
-    videotype: Optional[str] = None,
+    videos: str | list[str],
+    videotype: str | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    snapshotindex: Optional[int] = None,
-    device: Optional[str] = None,
-    destfolder: Optional[str] = None,
-    batchsize: Optional[int] = None,
+    snapshotindex: int | None = None,
+    device: str | None = None,
+    destfolder: str | None = None,
+    batchsize: int | None = None,
     modelprefix: str = "",
-    transform: Optional[A.Compose] = None,
-    auto_track: Optional[bool] = True,
-    identity_only: Optional[bool] = False,
+    transform: A.Compose | None = None,
+    auto_track: bool | None = True,
+    identity_only: bool | None = False,
     overwrite: bool = False,
-) -> List[Tuple[str, pd.DataFrame]]:
+) -> list[tuple[str, pd.DataFrame]]:
     """Makes prediction based on a trained network.
 
     # TODO:
@@ -182,7 +193,7 @@ def analyze_videos(
         A list containing tuples (video_name, df_video_predictions)
     """
     # Create the output folder
-    _create_output_folder(destfolder)
+    _validate_destfolder(destfolder)
 
     # Load the project configuration
     cfg = auxiliaryfunctions.read_config(config)
@@ -223,6 +234,8 @@ def analyze_videos(
         # TODO: Choose which detector to use
         detector_path = _get_detector_path(model_folder, -1, cfg)
 
+    with_identity = DLCLoader.has_identity_head(pytorch_config)
+
     print(f"Analyzing videos with {model_path}")
     pose_runner, detector_runner = get_runners(
         pytorch_config=pytorch_config,
@@ -230,6 +243,7 @@ def analyze_videos(
         max_individuals=max_num_animals,
         num_bodyparts=len(bodyparts),
         num_unique_bodyparts=len(unique_bodyparts),
+        with_identity=with_identity,
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,
@@ -251,13 +265,26 @@ def analyze_videos(
             print(f"Video already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
-            predictions, unique_predictions = video_inference(
+            predictions = video_inference(
                 video_path=video,
                 pose_runner=pose_runner,
                 task=pose_task,
                 detector_runner=detector_runner,
             )
             runtime.append(time.time())
+
+            bodyparts = np.stack([p["bodyparts"] for p in predictions])
+            unique_bodyparts = None
+            if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
+                unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
+            bodypart_identities = None
+            if with_identity:
+                # reshape from (num_assemblies, num_bpts, num_individuals)
+                # to (num_assemblies, num_bpts) by taking the maximum
+                # likelihood individual for each bodypart
+                bodypart_identities = np.stack(
+                    [np.argmax(p["identity_scores"], axis=2) for p in predictions]
+                )
 
             print(f"Inference is done for {video}! Saving results...")
             metadata = _generate_metadata(
@@ -291,11 +318,11 @@ def analyze_videos(
                 names=["scorer", "bodyparts", "coords"],
             )
             df = pd.DataFrame(
-                predictions.reshape((len(predictions), -1)),
+                bodyparts.reshape((len(bodyparts), -1)),
                 columns=results_df_index,
-                index=range(len(predictions)),
+                index=range(len(bodyparts)),
             )
-            if unique_predictions is not None:
+            if unique_bodyparts is not None:
                 coordinate_labels_unique = ["x", "y", "likelihood"]
                 results_unique_df_index = pd.MultiIndex.from_product(
                     [
@@ -306,9 +333,9 @@ def analyze_videos(
                     names=["scorer", "bodyparts", "coords"],
                 )
                 df_u = pd.DataFrame(
-                    unique_predictions.reshape((len(unique_predictions), -1)),
+                    unique_bodyparts.reshape((len(unique_bodyparts), -1)),
                     columns=results_unique_df_index,
-                    index=range(len(unique_predictions)),
+                    index=range(len(unique_bodyparts)),
                 )
                 df = df.join(df_u, how="outer")
 
@@ -322,24 +349,25 @@ def analyze_videos(
             if cfg["multianimalproject"] and len(individuals) > 1:
                 output_ass = output_path / f"{output_prefix}_assemblies.pickle"
                 assemblies = {}
-                for i, prediction in enumerate(predictions):
-                    extra_column = np.full(
-                        (prediction.shape[0], prediction.shape[1], 1),
-                        -1.0,
-                        dtype=np.float32,
-                    )
-                    ass = np.concatenate((prediction, extra_column), axis=-1)
+                for i, bpt in enumerate(bodyparts):
+                    if with_identity:
+                        extra_column = np.expand_dims(bodypart_identities[i], axis=-1)
+                    else:
+                        extra_column = np.full(
+                            (bpt.shape[0], bpt.shape[1], 1),
+                            -1.0,
+                            dtype=np.float32,
+                        )
+                    ass = np.concatenate((bpt, extra_column), axis=-1)
                     assemblies[i] = ass
 
-                if unique_predictions is not None:
+                if unique_bodyparts is not None:
                     assemblies["single"] = {}
-                    for i, unique_prediction in enumerate(unique_predictions):
+                    for i, unique_bpt in enumerate(unique_bodyparts):
                         extra_column = np.full(
-                            (unique_prediction.shape[1], 1), -1.0, dtype=np.float32
+                            (unique_bpt.shape[1], 1), -1.0, dtype=np.float32
                         )
-                        ass = np.concatenate(
-                            (unique_prediction[0], extra_column), axis=-1
-                        )
+                        ass = np.concatenate((unique_bpt[0], extra_column), axis=-1)
                         assemblies["single"][i] = ass
 
                 with open(output_ass, "wb") as handle:
@@ -383,9 +411,10 @@ def analyze_videos(
     return results
 
 
-def _create_output_folder(output_folder: Optional[Path]) -> None:
-    if output_folder is not None:
-        output_folder = Path(output_folder)
+def _validate_destfolder(destfolder: str | None) -> None:
+    """Checks that the destfolder for video analysis is valid"""
+    if destfolder is not None and destfolder != "":
+        output_folder = Path(destfolder)
         if not output_folder.exists():
             print(f"Creating the output folder {output_folder}")
             output_folder.mkdir(parents=True)
@@ -401,7 +430,7 @@ def _generate_metadata(
     dlc_scorer: str,
     train_fraction: int,
     batch_size: int,
-    runtime: Tuple[float, float],
+    runtime: tuple[float, float],
     video: VideoReader,
 ) -> dict:
     w, h = video.dimensions
@@ -477,7 +506,10 @@ def _get_detector_path(
     return trained_models[snapshot_index]
 
 
-def _generate_output_data(pose_config: dict, predictions: np.ndarray) -> dict:
+def _generate_output_data(
+    pose_config: dict,
+    predictions: list[dict[str, np.ndarray]],
+) -> dict:
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),
@@ -499,25 +531,35 @@ def _generate_output_data(pose_config: dict, predictions: np.ndarray) -> dict:
 
     str_width = int(np.ceil(np.log10(len(predictions))))
     for frame_num, frame_predictions in enumerate(predictions):
-        key = "frame" + str(frame_num).zfill(str_width)
-        output[key] = frame_predictions.squeeze()
-
         # TODO: Do we want to keep the same format as in the TensorFlow version?
         #  On the one hand, it's "more" backwards compatible.
         #  On the other, might as well simplify the code. These files should only be loaded
         #    by the PyTorch version, and only predictions made by PyTorch models should be
         #    loaded using them
-        # p_bodypart_indv = np.transpose(frame_predictions.squeeze(), axes=[1, 0, 2])
-        # coords = [
-        #     bodypart_predictions[:, :2] for bodypart_predictions in p_bodypart_indv
-        # ]
-        # scores = [
-        #     bodypart_predictions[:, 2:] for bodypart_predictions in p_bodypart_indv
-        # ]
-        # output[key] = {
-        #     "coordinates": (coords,),
-        #     "confidence": scores,
-        #     "costs": None,
-        # }
+
+        key = "frame" + str(frame_num).zfill(str_width)
+        bodyparts = frame_predictions["bodyparts"]  # shape (num_assemblies, num_bpts, 3)
+        bodyparts = bodyparts.transpose((1, 0, 2))  # shape (num_bpts, num_assemblies, 3)
+        coordinates = [bpt[:, :2] for bpt in bodyparts]
+        scores = [bpt[:, 2:] for bpt in bodyparts]
+
+        # full pickle has bodyparts and unique bodyparts in same array
+        if "unique_bodyparts" in frame_predictions:
+            unique_bpts = frame_predictions["unique_bodyparts"].transpose((1, 0, 2))
+            coordinates += [bpt[:, :2] for bpt in unique_bpts]
+            scores += [bpt[:, 2:] for bpt in unique_bpts]
+
+        output[key] = {
+            "coordinates": (coordinates,),
+            "confidence": scores,
+            "costs": None,
+        }
+
+        if "identity_scores" in frame_predictions:
+            # Reshape id scores from (num_assemblies, num_bpts, num_individuals)
+            # to the original DLC full pickle format: (num_bpts, num_assem, num_ind)
+            id_scores = frame_predictions["identity_scores"]
+            id_scores = id_scores.transpose((1, 0, 2))
+            output[key]["identity"] = [bpt_id_scores for bpt_id_scores in id_scores]
 
     return output
