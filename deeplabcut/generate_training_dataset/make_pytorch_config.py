@@ -154,7 +154,13 @@ def make_pytorch_config(
                 list(edge) for edge in combinations(range(num_joints), 2)
             ]  # TODO Parse from config
             num_limbs = len(graph)
-            pytorch_config["model"]["backbone"] = {"type": "ResNet"}
+            pytorch_config["optimizer"]["params"]["lr"] = 5e-4
+            pytorch_config["scheduler"]["params"].update({"lr_list": [[1e-4], [5e-5]]}),
+            pytorch_config["model"]["backbone"]["type"] = "ResNet"
+            _init_output_stride(pytorch_config, output_stride=16)
+            heatmap_channels, locref_channels, paf_channels = _configure_channels(
+                dim, num_joints, num_limbs, pytorch_config
+            )
             pytorch_config["model"]["heads"] = {
                 "bodypart": make_dlcrnet_head(
                     num_joints,
@@ -164,10 +170,9 @@ def make_pytorch_config(
                     edges_to_keep=list(
                         pytorch_config.get("paf_best", list(range(num_limbs)))
                     ),
-                    # TODO Below is hardcoded for output stride 32;
-                    heatmap_channels=[dim, dim // 2, num_joints],
-                    locref_channels=[dim, dim // 2, 2 * num_joints],
-                    paf_channels=[dim, dim // 2, 2 * num_limbs],
+                    heatmap_channels=heatmap_channels,
+                    locref_channels=locref_channels,
+                    paf_channels=paf_channels,
                     num_stages=num_stages,
                     # TODO Set remaining params from config
                 )
@@ -228,6 +233,29 @@ def make_pytorch_config(
         )
 
     return pytorch_config
+
+
+def _init_output_stride(config: dict, output_stride: int):
+    backbone_config = config["model"]["backbone"]
+    if backbone_config.get("output_stride") is None:
+        backbone_config["output_stride"] = output_stride
+
+
+def _configure_channels(dim: int, num_joints: int, num_limbs: int, config: dict):
+    """Configure the channels for heatmap, locref, and paf based on the backbone's output stride."""
+    output_stride = config["model"]["backbone"]["output_stride"]
+    if output_stride not in (16, 32):
+        raise ValueError("`output_stride` must be 16 or 32.")
+
+    base_channels = [dim, dim // 2]
+    if output_stride == 16:
+        base_channels.pop(1)
+
+    heatmap_channels = base_channels + [num_joints]
+    locref_channels = base_channels + [2 * num_joints]
+    paf_channels = base_channels + [2 * num_limbs]
+
+    return heatmap_channels, locref_channels, paf_channels
 
 
 def make_dlcrnet_head(

@@ -272,6 +272,7 @@ def analyze_videos(
                 detector_runner=detector_runner,
             )
             runtime.append(time.time())
+            predictions = predictions[..., :3]
 
             bodyparts = np.stack([p["bodyparts"] for p in predictions])
             unique_bodyparts = None
@@ -297,26 +298,17 @@ def analyze_videos(
                 video=VideoReader(str(video)),
             )
 
-            coordinate_labels = ["x", "y", "likelihood"]
+            cols = [
+                [dlc_scorer],
+                auxiliaryfunctions.get_bodyparts(cfg),
+                ["x", "y", "likelihood"],
+            ]
+            cols_names = ["scorer", "bodyparts", "coords"]
             if len(individuals) > 1:
-                print("Extracting ", len(individuals), "instances per bodypart")
-                # first has empty suffix for backwards compatibility
-                individual_suffixes = [str(s + 1) for s in range(len(individuals))]
-                individual_suffixes[0] = ""
-                coordinate_labels = [
-                    coord_label + s
-                    for s in individual_suffixes
-                    for coord_label in coordinate_labels
-                ]
+                cols.insert(1, individuals)
+                cols_names.insert(1, "individuals")
 
-            results_df_index = pd.MultiIndex.from_product(
-                [
-                    [dlc_scorer],
-                    auxiliaryfunctions.get_bodyparts(cfg),
-                    coordinate_labels,
-                ],
-                names=["scorer", "bodyparts", "coords"],
-            )
+            results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
             df = pd.DataFrame(
                 bodyparts.reshape((len(bodyparts), -1)),
                 columns=results_df_index,

@@ -198,14 +198,16 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
     #         )
     #     )
     scale_jitter_lo, scale_jitter_up = aug_cfg.get("scale_jitter", (1, 1))
-    rotation = aug_cfg.get("rotation", 0)
     transforms.append(
-        A.Affine(
-            scale=(scale_jitter_lo, scale_jitter_up),
-            rotate=(-rotation, rotation),
-            p=0.5,
-        )
+        A.Affine(scale=(scale_jitter_lo, scale_jitter_up), p=1)
     )
+    if rotation := aug_cfg.get("rotation", 0) != 0:
+        transforms.append(
+            A.Affine(
+                rotate=(-rotation, rotation),
+                p=0.5,
+            )
+        )
     if aug_cfg.get("hist_eq", False):
         transforms.append(A.Equalize(p=0.5))
     if aug_cfg.get("motion_blur", False):

@@ -85,6 +85,22 @@ class KeypointAwareCrop(A.RandomCrop):
             center = np.clip(center, 0, np.nextafter(1, 0))  # Clip to 1 exclusive
         return {"h_start": center[1], "w_start": center[0]}
 
+    def apply_to_keypoints(
+        self,
+        keypoints,
+        **params,
+    ) -> list[float]:
+        keypoints = super().apply_to_keypoints(keypoints, **params)
+        new_keypoints = []
+        for kp in keypoints:
+            x, y = kp[:2]
+            if not (0 <= x < self.width and 0 <= y < self.height):
+                kp = list(kp)
+                kp[:2] = np.nan, np.nan
+                kp = tuple(kp)
+            new_keypoints.append(kp)
+        return new_keypoints
+
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return "width", "height", "max_shift", "crop_sampling"
 

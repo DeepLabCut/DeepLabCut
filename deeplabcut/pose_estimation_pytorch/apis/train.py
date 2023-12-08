@@ -102,7 +102,7 @@ def train(
         f" for testing"
     )
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
     runner.fit(
         train_dataloader,
         valid_dataloader,

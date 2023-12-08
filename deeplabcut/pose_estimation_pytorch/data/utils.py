@@ -292,7 +292,8 @@ def _compute_crop_bounds(
     bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
     bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.0)
     bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
-    return bboxes
+    squashed_bbox_mask = np.logical_or(bboxes[:, 2] <= 0, bboxes[:, 3] <= 0)
+    return bboxes[~squashed_bbox_mask]
 
 
 def _extract_keypoints_and_bboxes(

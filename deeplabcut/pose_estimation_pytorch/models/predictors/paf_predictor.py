@@ -13,12 +13,16 @@ from __future__ import annotations
 import numpy as np
 import torch
 import torch.nn.functional as F
+from numpy.typing import NDArray
 
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
     BasePredictor,
     PREDICTORS,
 )
 from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+
+
+Graph = list[tuple[int, int]]
 
 
 @PREDICTORS.register_module
@@ -52,7 +56,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         num_animals: int,
         num_multibodyparts: int,
         num_uniquebodyparts: int,
-        graph: list[tuple[int, int]],
+        graph: Graph,
         edges_to_keep: list[int],
         locref_stdev: float,
         nms_radius: int,
@@ -60,19 +64,21 @@ class PartAffinityFieldPredictor(BasePredictor):
         min_affinity: float,
         add_discarded: bool = False,
         force_fusion: bool = False,
+        return_preds: bool = False,
     ):
         """Initialize the PartAffinityFieldPredictor class.
 
         Args:
-        num_animals: Number of animals in the project.
-        num_multibodyparts: Number of animal's body parts (ignoring unique body parts).
-        num_uniquebodyparts: Number of unique body parts.
-        graph: Part affinity field graph edges.
-        edges_to_keep: List of indices in `graph` of the edges to keep.
-        locref_stdev: Standard deviation for location refinement.
-        nms_radius: Radius of the Gaussian kernel.
-        sigma: Width of the 2D Gaussian distribution.
-        min_affinity: Minimal edge affinity to add a body part to an Assembly.
+            num_animals: Number of animals in the project.
+            num_multibodyparts: Number of animal's body parts (ignoring unique body parts).
+            num_uniquebodyparts: Number of unique body parts.
+            graph: Part affinity field graph edges.
+            edges_to_keep: List of indices in `graph` of the edges to keep.
+            locref_stdev: Standard deviation for location refinement.
+            nms_radius: Radius of the Gaussian kernel.
+            sigma: Width of the 2D Gaussian distribution.
+            min_affinity: Minimal edge affinity to add a body part to an Assembly.
+            return_preds: Whether to return predictions alongside the animals' poses
 
         Returns:
             None
@@ -85,6 +91,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         self.edges_to_keep = edges_to_keep
         self.locref_stdev = locref_stdev
         self.nms_radius = nms_radius
+        self.return_preds = return_preds
         self.sigma = sigma
         self.sigmoid = torch.nn.Sigmoid()
         self.assembler = inferenceutils.Assembler.empty(
@@ -158,33 +165,43 @@ class PartAffinityFieldPredictor(BasePredictor):
             scale_factors,
             n_id_channels=0,  # FIXME Handle identity training
         )
-        poses = torch.empty((batch_size, self.num_animals, self.num_multibodyparts, 4))
+        poses = torch.empty((batch_size, self.num_animals, self.num_multibodyparts, 5))
         poses_unique = torch.empty((batch_size, 1, self.num_uniquebodyparts, 4))
         for i, data_dict in enumerate(preds):
             assemblies, unique = self.assembler._assemble(data_dict, ind_frame=0)
             for j, assembly in enumerate(assemblies):
-                poses[i, j] = torch.from_numpy(assembly.data)
+                poses[i, j, :, :4] = torch.from_numpy(assembly.data)
+                poses[i, j, :, 4] = assembly.affinity
             if unique is not None:
-                poses_unique[i, 0] = torch.from_numpy(unique)
+                poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
 
-        # FIXME Handle unique bodyparts in a separate HeatmapHead
-        return {"poses": poses}
+        out = {"poses": poses}
+        if self.return_preds:
+            out["preds"] = preds
+        return out
 
     @staticmethod
-    def find_local_peak_indices_maxpool_nms(input_, radius, threshold):
+    def find_local_peak_indices_maxpool_nms(
+        input_: torch.Tensor, radius: int, threshold: float
+    ) -> torch.Tensor:
         pooled = F.max_pool2d(input_, kernel_size=radius, stride=1, padding=radius // 2)
         maxima = input_ * torch.eq(input_, pooled).float()
         peak_indices = torch.nonzero(maxima >= threshold, as_tuple=False)
         return peak_indices.int()
 
     @staticmethod
-    def make_2d_gaussian_kernel(sigma, size):
+    def make_2d_gaussian_kernel(sigma: float, size: int) -> torch.Tensor:
         k = torch.arange(-size // 2 + 1, size // 2 + 1, dtype=torch.float32) ** 2
         k = F.softmax(-k / (2 * (sigma ** 2)), dim=0)
         return torch.einsum("i,j->ij", k, k)
 
     @staticmethod
-    def calc_peak_locations(locrefs, peak_inds_in_batch, strides, n_decimals=3):
+    def calc_peak_locations(
+        locrefs: torch.Tensor,
+        peak_inds_in_batch: torch.Tensor,
+        strides: tuple[float, float],
+        n_decimals: int = 3,
+    ) -> torch.Tensor:
         s, b, r, c = peak_inds_in_batch.T
         stride_y, stride_x = strides
         strides = torch.Tensor((stride_x, stride_y)).to(locrefs.device)
@@ -192,16 +209,16 @@ class PartAffinityFieldPredictor(BasePredictor):
         loc = strides * peak_inds_in_batch[:, [3, 2]] + strides // 2 + off
         return torch.round(loc, decimals=n_decimals)
 
+    @staticmethod
     def compute_edge_costs(
-        self,
-        pafs,
-        peak_inds_in_batch,
-        graph,
-        paf_inds,
-        n_bodyparts,
-        n_points=10,
-        n_decimals=3,
-    ):
+        pafs: NDArray,
+        peak_inds_in_batch: NDArray,
+        graph: Graph,
+        paf_inds: list[int],
+        n_bodyparts: int,
+        n_points: int = 10,
+        n_decimals: int = 3,
+    ) -> list[dict[int, NDArray]]:
         # Clip peak locations to PAFs dimensions
         h, w = pafs.shape[-2:]
         peak_inds_in_batch[:, 2] = np.clip(peak_inds_in_batch[:, 2], 0, h - 1)
@@ -289,17 +306,17 @@ class PartAffinityFieldPredictor(BasePredictor):
 
     def compute_peaks_and_costs(
         self,
-        heatmaps,
-        locrefs,
-        pafs,
-        peak_inds_in_batch,
-        graph,
-        paf_inds,
-        strides,
-        n_id_channels,
-        n_points=10,
-        n_decimals=3,
-    ):
+        heatmaps: torch.Tensor,
+        locrefs: torch.Tensor,
+        pafs: torch.Tensor,
+        peak_inds_in_batch: torch.Tensor,
+        graph: Graph,
+        paf_inds: list[int],
+        strides: tuple[float, float],
+        n_id_channels: int,
+        n_points: int = 10,
+        n_decimals: int = 3,
+    ) -> list[dict[str, NDArray]]:
         n_samples, n_channels = heatmaps.shape[:2]
         n_bodyparts = n_channels - n_id_channels
         pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides, n_decimals)

@@ -77,7 +77,7 @@ def get_scores(
     """
     if not len(poses) == len(ground_truth):
         raise ValueError(
-            "The prediction an ground truth dicts must contain the same number of "
+            "The prediction and ground truth dicts must contain the same number of "
             f"images (poses={len(poses)}, gt={len(ground_truth)})"
         )
 
