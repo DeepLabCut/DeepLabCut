@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 from typing import Tuple
 
@@ -20,57 +21,35 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 
 
 @PREDICTORS.register_module
-class SinglePredictor(BasePredictor):
-    """Predictor class for single animal pose estimation.
-
-    TODO: Refactor to include HeatmapOnlyPredictor
+class HeatmapPredictor(BasePredictor):
+    """Predictor class for pose estimation from heatmaps (and optionally locrefs).
 
     Args:
-        num_animals: Number of animals in the project.
         location_refinement: Enable location refinement.
-        locref_stdev: Standard deviation for location refinement.
+        locref_std: Standard deviation for location refinement.
         apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
 
     Returns:
         Regressed keypoints from heatmaps and locref_maps of baseline DLC model (ResNet + Deconv).
     """
 
-    default_init = {
-        "location_refinement": True,
-        "locref_stdev": 7.2801,
-        "apply_sigmoid": True,
-    }
-
     def __init__(
         self,
-        num_animals: int,
-        location_refinement: bool,
-        locref_stdev: float,
         apply_sigmoid: bool = True,
+        location_refinement: bool = True,
+        locref_std: float = 7.2801,
     ):
         """
         Args:
-            num_animals: Number of animals in the project.
-            location_refinement : Enable location refinement.
-            locref_stdev: Standard deviation for location refinement.
             apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
-
-        Returns:
-            None
-
-        Notes:
-            TODO: add num_animals in pytorch_cfg automatically
+            location_refinement : Enable location refinement.
+            locref_std: Standard deviation for location refinement.
         """
         super().__init__()
-        self.num_animals = num_animals
-        assert (
-            self.num_animals == 1,
-            "SinglePredictor must only be used for single animal predictions",
-        )
-        self.location_refinement = location_refinement
-        self.locref_stdev = locref_stdev
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = torch.nn.Sigmoid()
+        self.location_refinement = location_refinement
+        self.locref_std = locref_std
 
     def forward(
         self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
@@ -85,27 +64,32 @@ class SinglePredictor(BasePredictor):
             A dictionary containing a "poses" key with the output tensor as value.
 
         Example:
-            >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
-            >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 17, 64, 64))
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.forward(output, scale_factors)
+            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+            >>> inputs = torch.rand((1, 3, 256, 256))
+            >>> output = {"heatmap": torch.rand(32, 17, 64, 64), "locref": torch.rand(32, 17, 64, 64)}
+            >>> poses = predictor.forward(inputs, output)
         """
-        heatmaps, locrefs = outputs["heatmap"], outputs["locref"]
+        heatmaps = outputs["heatmap"]
         h_in, w_in = inputs.shape[2:]
         h_out, w_out = heatmaps.shape[2:]
         scale_factors = h_in / h_out, w_in / w_out
 
         if self.apply_sigmoid:
             heatmaps = self.sigmoid(heatmaps)
+
         heatmaps = heatmaps.permute(0, 2, 3, 1)
         batch_size, height, width, num_joints = heatmaps.shape
 
-        locrefs = locrefs.permute(0, 2, 3, 1).reshape(
-            batch_size, height, width, num_joints, 2
-        )
+        locrefs = None
+        if self.location_refinement:
+            locrefs = outputs["locref"]
+            locrefs = locrefs.permute(0, 2, 3, 1).reshape(
+                batch_size, height, width, num_joints, 2
+            )
+            locrefs = locrefs * self.locref_std
 
         poses = self.get_pose_prediction(
-            heatmaps, locrefs * self.locref_stdev, scale_factors
+            heatmaps, locrefs, scale_factors
         )
         return {"poses": poses}
 
@@ -121,20 +105,20 @@ class SinglePredictor(BasePredictor):
             Y and X indices of the top values.
 
         Example:
-            >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
+            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
             >>> heatmap = torch.rand(32, 17, 64, 64)
             >>> Y, X = predictor.get_top_values(heatmap)
         """
         batchsize, ny, nx, num_joints = heatmap.shape
         heatmap_flat = heatmap.reshape(batchsize, nx * ny, num_joints)
 
-        heatmap_top = torch.argmax(heatmap_flat, axis=1)
+        heatmap_top = torch.argmax(heatmap_flat, dim=1)
 
         Y, X = heatmap_top // nx, heatmap_top % nx
         return Y, X
 
     def get_pose_prediction(
-        self, heatmap: torch.Tensor, locref: torch.Tensor, scale_factors
+        self, heatmap: torch.Tensor, locref: torch.Tensor | None, scale_factors
     ) -> torch.Tensor:
         """Gets the pose prediction given the heatmaps and locref.
 
@@ -147,7 +131,7 @@ class SinglePredictor(BasePredictor):
             Pose predictions of the format: (batch_size, num_people = 1, num_joints, 3)
 
         Example:
-            >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
+            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
             >>> heatmap = torch.rand(32, 17, 64, 64)
             >>> locref = torch.rand(32, 17, 64, 64, 2)
             >>> scale_factors = (0.5, 0.5)
@@ -159,145 +143,9 @@ class SinglePredictor(BasePredictor):
         DZ = torch.zeros((batch_size, 1, num_joints, 3)).to(X.device)
         for b in range(batch_size):
             for j in range(num_joints):
-                DZ[b, 0, j, :2] = locref[b, Y[b, j], X[b, j], j, :]
                 DZ[b, 0, j, 2] = heatmap[b, Y[b, j], X[b, j], j]
-
-        X, Y = torch.unsqueeze(X, 1), torch.unsqueeze(Y, 1)
-
-        X = X * scale_factors[1] + 0.5 * scale_factors[1] + DZ[:, :, :, 0]
-        Y = Y * scale_factors[0] + 0.5 * scale_factors[0] + DZ[:, :, :, 1]
-        # P = DZ[:, :, 2]
-
-        pose = torch.empty((batch_size, 1, num_joints, 3))
-        pose[:, :, :, 0] = X
-        pose[:, :, :, 1] = Y
-        pose[:, :, :, 2] = DZ[:, :, :, 2]
-
-        return pose
-
-
-@PREDICTORS.register_module
-class HeatmapOnlyPredictor(BasePredictor):
-    """Predictor only intended for single animal pose estimation, without locref.
-
-    Args:
-        num_animals: Number of animals in the project.
-        apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
-
-    Returns:
-        Regressed keypoints from heatmaps.
-    """
-
-    default_init = {
-        "location_refinement": True,
-        "locref_stdev": 7.2801,
-        "apply_sigmoid": True,
-    }
-
-    def __init__(self, num_animals: int, apply_sigmoid: bool = True):
-        """Initializes the HeatmapOnlyPredictor class.
-
-        Args:
-            num_animals: Number of animals in the project.
-            apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
-
-        Returns:
-            None
-
-        Notes:
-            TODO: add num_animals in pytorch_cfg automatically
-        """
-        super().__init__()
-        self.num_animals = num_animals
-        assert (
-            self.num_animals == 1,
-            "SinglePredictor must only be used for single animal predictions",
-        )
-        self.apply_sigmoid = apply_sigmoid
-        self.sigmoid = torch.nn.Sigmoid()
-
-    def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
-        """Forward pass of SinglePredictor. Gets predictions from model output.
-
-        Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
-            outputs: output of the model heads (heatmap, locref)
-
-        Returns:
-            A dictionary containing a "poses" key with the output tensor as value.
-
-        Example:
-            >>> predictor = SinglePredictor(num_animals=1, location_refinement=True, locref_stdev=7.2801)
-            >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 17, 64, 64))
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.forward(output, scale_factors)
-        """
-        heatmaps = outputs["heatmap"]
-        h_in, w_in = inputs.shape[2:]
-        h_out, w_out = heatmaps.shape[2:]
-        scale_factors = h_in / h_out, w_in / w_out
-
-        if self.apply_sigmoid:
-            heatmaps = self.sigmoid(heatmaps)
-        heatmaps = heatmaps.permute(0, 2, 3, 1)
-
-        poses = self.get_pose_prediction(heatmaps, scale_factors)
-        return {"poses": poses}
-
-    def get_top_values(
-        self, heatmap: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Get the top values from the heatmap.
-
-        Args:
-            heatmap: Heatmap tensor.
-
-        Returns:
-            Y and X indices of the top values.
-
-        Example:
-            >>> predictor = HeatmapOnlyPredictor(num_animals=1, apply_sigmoid=True)
-            >>> heatmap = torch.rand(32, 17, 64, 64)
-            >>> Y, X = predictor.get_top_values(heatmap)
-        """
-        batchsize, ny, nx, num_joints = heatmap.shape
-        heatmap_flat = heatmap.reshape(batchsize, nx * ny, num_joints)
-
-        heatmap_top = torch.argmax(heatmap_flat, axis=1)
-
-        Y, X = heatmap_top // nx, heatmap_top % nx
-        return Y, X
-
-    def get_pose_prediction(
-        self, heatmap: torch.Tensor, scale_factors: Tuple[float, float]
-    ) -> torch.Tensor:
-        """Get the pose prediction from heatmaps.
-
-        Args:
-            heatmap: Heatmap tensor with shape (batch_size, height, width, num_joints)
-            scale_factors: Scale factors for the poses.
-
-        Returns:
-            Pose predictions following the format:  (batch_size, num_people = 1, num_joints, 3)
-
-        Notes:
-            TODO: optimize that so DZ looks right
-
-        Example:
-            >>> predictor = HeatmapOnlyPredictor(num_animals=1, apply_sigmoid=True)
-            >>> heatmap = torch.rand(32, 17, 64, 64)
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.get_pose_prediction(heatmap, scale_factors)
-        """
-        Y, X = self.get_top_values(heatmap)
-        batch_size, num_joints = X.shape
-
-        DZ = torch.zeros((batch_size, 1, num_joints, 3)).to(X.device)
-        for b in range(batch_size):
-            for j in range(num_joints):
-                DZ[b, 0, j, 2] = heatmap[b, Y[b, j], X[b, j], j]
+                if locref is not None:
+                    DZ[b, 0, j, :2] = locref[b, Y[b, j], X[b, j], j, :]
 
         X, Y = torch.unsqueeze(X, 1), torch.unsqueeze(Y, 1)
 

@@ -27,7 +27,6 @@ from deeplabcut.generate_training_dataset import (
     MakeTest_pose_yaml,
     MakeInference_yaml,
     pad_train_test_indices,
-    make_pytorch_config,
 )
 from deeplabcut.utils import (
     auxiliaryfunctions,
@@ -211,15 +210,20 @@ def create_multianimaltraining_dataset(
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
 
-    elif not any(
-        net in net_type for net in ("resnet", "eff", "dlc", "mob", "dekr", "token_pose")
-    ):
+    if any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
+        pass
+    elif cfg.get("engine", "pytorch").lower() == "pytorch":
+        pass  # TODO: Change default to tensorflow
+    else:
         raise ValueError(f"Unsupported network {net_type}.")
 
     multi_stage = False
     ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
     ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
-    if all(net in net_type for net in ("dlcr", "_ms5")):
+    if (
+        all(net in net_type for net in ("dlcr", "_ms5"))
+        and cfg.get("engine", "pytorch").lower() != "pytorch"
+    ):  # TODO: Change default to tensorflow
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
@@ -276,9 +280,14 @@ def create_multianimaltraining_dataset(
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
-    model_path = auxfun_models.check_for_weights(
-        net_type, Path(dlcparent_path)
-    )
+
+    # TODO: Clean this
+    if cfg.get("engine", "pytorch") == "pytorch":
+        model_path = dlcparent_path
+    else:
+        model_path = auxfun_models.check_for_weights(
+            net_type, Path(dlcparent_path)
+        )
 
     if Shuffles is None:
         Shuffles = range(1, num_shuffles + 1, 1)
@@ -406,6 +415,7 @@ def create_multianimaltraining_dataset(
             jointnames.extend([str(bpt) for bpt in uniquebodyparts])
             items2change = {
                 "dataset": datafilename,
+                "engine": cfg.get("engine", "pytorch"),  # TODO: Default to tensorflow
                 "metadataset": metadatafilename,
                 "num_joints": len(multianimalbodyparts)
                 + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
@@ -413,7 +423,7 @@ def create_multianimaltraining_dataset(
                     [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
                 ],  # cfg["uniquebodyparts"]))],
                 "all_joints_names": jointnames,
-                "init_weights": model_path,
+                "init_weights": str(model_path),
                 "project_path": str(cfg["project_path"]),
                 "net_type": net_type,
                 "multi_stage": multi_stage,
@@ -483,25 +493,23 @@ def create_multianimaltraining_dataset(
             )
 
             # Populate the pytorch config yaml file
-            pytorch_config_path = os.path.join(
-                dlcparent_path,
-                "pose_estimation_pytorch",
-                "apis",
-                "pytorch_config.yaml",
-            )
-            pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(
-                pytorch_config_path
-            )
-            pytorch_cfg = make_pytorch_config(
-                cfg, net_type, config_template=pytorch_cfg_template
-            )
-            pytorch_cfg["project_path"] = os.path.dirname(config)
-            pytorch_cfg["pose_cfg_path"] = path_train_config
-            pytorch_cfg["cfg_path"] = config
-            auxiliaryfunctions.write_plainconfig(
-                path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml"),
-                pytorch_cfg,
-            )
+            # TODO: Add switch for PyTorch projects
+            if cfg.get("engine", "pytorch").lower() == "pytorch":
+                from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
+
+                top_down = False
+                if net_type.startswith("top_down_"):
+                    top_down = True
+                    net_type = net_type[len("top_down_"):]
+
+                pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
+                pytorch_cfg = make_pytorch_pose_config(
+                    project_config=cfg,
+                    pose_config_path=path_train_config,
+                    net_type=net_type,
+                    top_down=top_down,
+                )
+                auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
             print(
                 "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"

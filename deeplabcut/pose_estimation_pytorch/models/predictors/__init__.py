@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import (
     PartAffinityFieldPredictor,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors.single_predictor import (
-    SinglePredictor,
+    HeatmapPredictor,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors.top_down_prediction import (
     TopDownPredictor,

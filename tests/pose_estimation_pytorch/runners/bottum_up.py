@@ -4,8 +4,8 @@ from typing import Dict, Any
 
 import pytest
 import torch
+from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
 
-from deeplabcut.generate_training_dataset import make_pytorch_config
 from deeplabcut.pose_estimation_pytorch.models import PoseModel, LOSSES, PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.criterion import WeightedAggregateLoss
 from deeplabcut.pose_estimation_pytorch.runners import RUNNERS
@@ -45,7 +45,7 @@ def test_build_bottom_up_runner(
     root_path = Path(auxiliaryfunctions.get_deeplabcut_path())
     template_path = root_path / "pose_estimation_pytorch" / "apis" / "pytorch_config.yaml"
     template = auxiliaryfunctions.read_plainconfig(str(template_path))
-    pytorch_cfg = make_pytorch_config(project_cfg, net_type, config_template=template)
+    pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
     print_dict(pytorch_cfg)
 
     pose_model = PoseModel.from_cfg(pytorch_cfg["model"])

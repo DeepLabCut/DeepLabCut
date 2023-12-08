@@ -1,0 +1,11 @@
+data:
+  auto_padding:  # Required for HRNet backbones
+    pad_width_divisor: 32
+    pad_height_divisor: 32
+model:
+  backbone:
+    type: HRNet
+    model_name: hrnet_w32
+    pretrained: true
+    only_high_res: false
+  backbone_output_channels: 480

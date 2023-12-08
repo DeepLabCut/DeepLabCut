@@ -173,5 +173,5 @@ class PoseModel(nn.Module):
             heads[name] = HEADS.build(head_cfg)
 
         return PoseModel(
-            cfg=cfg, backbone=backbone, neck=neck, heads=heads, **cfg["pose_model"]
+            cfg=cfg, backbone=backbone, neck=neck, heads=heads, **cfg.get("pose_model", {})
         )

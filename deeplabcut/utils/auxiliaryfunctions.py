@@ -645,7 +645,9 @@ def get_scorer_name(
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-    if "resnet" in dlc_cfg["net_type"]:
+    if dlc_cfg.get("engine", "pytorch") == "pytorch":  # TODO: default should be TF
+        netname = "".join([p.capitalize() for p in dlc_cfg["net_type"].split("_")])
+    elif "resnet" in dlc_cfg["net_type"]:
         if dlc_cfg.get("multi_stage", False):
             netname = "dlcrnetms5"
         else:
@@ -654,10 +656,8 @@ def get_scorer_name(
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
         netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
-    elif "dekr" in dlc_cfg["net_type"]:
-        netname = "dekr_" + dlc_cfg["net_type"].split("_")[-1]
-    elif "token_pose" in dlc_cfg["net_type"]:
-        netname = "token_pose" + dlc_cfg["net_type"].split("_")[-1]
+    else:
+        raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
 
     scorer = (
         "DLC_"

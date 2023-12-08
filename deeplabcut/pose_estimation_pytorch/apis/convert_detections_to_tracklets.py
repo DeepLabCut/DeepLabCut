@@ -20,7 +20,8 @@ import pandas as pd
 from scipy.optimize import linear_sum_assignment
 from tqdm import tqdm
 
-from deeplabcut import auxiliaryfunctions
+import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
+import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     list_videos_in_folder,
@@ -28,7 +29,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 from deeplabcut.pose_estimation_tensorflow import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
-from deeplabcut.utils import auxfun_multianimal, read_pickle
 
 
 def convert_detections2tracklets(
@@ -204,7 +204,7 @@ def convert_detections2tracklets(
                     "analyzing the video!"
                 )
 
-            ass = read_pickle(ass_filename)
+            ass = auxiliaryfunctions.read_pickle(ass_filename)
 
             # Initialize storage of the 'single' individual track
             if cfg["uniquebodyparts"]:

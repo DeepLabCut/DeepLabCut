@@ -15,7 +15,6 @@ from abc import ABC, abstractmethod
 import albumentations as A
 import numpy as np
 
-from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
@@ -25,7 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.runners import Task
-from deeplabcut.utils.auxiliaryfunctions import get_bodyparts, get_unique_bodyparts
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class Loader(ABC):
@@ -48,10 +47,10 @@ class Loader(ABC):
         self.project_root = project_root
         self.model_config_path = model_config_path
         self.model_cfg = auxiliaryfunctions.read_plainconfig(model_config_path)
-        self._loaded_data: dict[str, dict[str, dict]] = {}
+        self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
     @abstractmethod
-    def load_data(self, mode: str = "train") -> dict[str, dict]:
+    def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
         """Abstract method to convert the project configuration to a standard coco format.
 
         Raises:
@@ -107,7 +106,7 @@ class Loader(ABC):
             self._loaded_data[mode] = self.load_data(mode)
         data = self._loaded_data[mode]
 
-        annotations = self.filter_annotations(data["annotations"])
+        annotations = self.filter_annotations(data["annotations"], task=Task.BOTTOM_UP)
         img_to_ann_map = map_id_to_annotations(annotations)
 
         ground_truth_dict = {}
@@ -145,7 +144,7 @@ class Loader(ABC):
             self._loaded_data[mode] = self.load_data(mode)
         data = self._loaded_data[mode]
 
-        annotations = self.filter_annotations(data["annotations"])
+        annotations = self.filter_annotations(data["annotations"], task=Task.DETECT)
         img_to_ann_map = map_id_to_annotations(annotations)
 
         ground_truth_dict = {}
@@ -181,7 +180,7 @@ class Loader(ABC):
         """
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
-        data["annotations"] = self.filter_annotations(data["annotations"])
+        data["annotations"] = self.filter_annotations(data["annotations"], task)
         dataset = PoseDataset(
             images=data["images"],
             annotations=data["annotations"],
@@ -203,21 +202,30 @@ class Loader(ABC):
         raise NotImplementedError
 
     @staticmethod
-    def filter_annotations(annotations: list[dict]) -> list[dict]:
-        """Filters annotations based on the keypoints, removing empty annotations
+    def filter_annotations(annotations: list[dict], task: Task) -> list[dict]:
+        """Filters annotations based on the task, removing empty annotations
+
+        For pose estimation tasks, annotations with empty keypoints are removed. For
+        detection task, annotations with no bounding boxes are removed
 
         Args:
-            annotations: A list of annotations.
+            annotations: the annotations to filter
+            task: the task for which to filter
 
         Returns:
-            list: A list of filtered annotations.
+            list: the filtered annotations
         """
         filtered_annotations = []
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
-            annotation["bbox"].reshape(-1, 4)
-            if np.all(keypoints[:, :2] <= 0):
+            if (
+                task == Task.DETECT and
+                (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0)
+            ):
                 continue
+            elif task != Task.DETECT and np.all(keypoints[:, :2] <= 0):
+                continue
+
             filtered_annotations.append(annotation)
 
         return filtered_annotations

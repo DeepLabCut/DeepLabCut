@@ -1,0 +1,6 @@
+model:
+  backbone:
+    type: ResNet
+    model_name: resnet101
+    pretrained: true
+  backbone_output_channels: 2048

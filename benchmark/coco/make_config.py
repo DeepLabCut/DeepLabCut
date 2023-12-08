@@ -9,29 +9,31 @@ from pathlib import Path
 import torch
 
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.generate_training_dataset import MakeInference_yaml, make_pytorch_config
+from deeplabcut.generate_training_dataset import MakeInference_yaml
 from deeplabcut.pose_estimation_pytorch import COCOLoader
+from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
 
 
 def get_base_config(
-    dlc_path: str,
+    project_path: str,
+    pose_config_path: str,
     model_architecture: str,
     bodyparts: list[str],
     unique_bodyparts: list[str],
     individuals: list[str],
 ) -> dict:
-    pytorch_cfg_template = af.read_plainconfig(
-        str(Path(dlc_path) / "pose_estimation_pytorch" / "apis" / "pytorch_config.yaml")
-    )
     cfg = {
+        "project_path": project_path,
+        "multianimalproject": True,
         "bodyparts": bodyparts,
-        "unique_bodyparts": unique_bodyparts,
+        "multianimalbodyparts": bodyparts,
+        "uniquebodyparts": unique_bodyparts,
         "individuals": individuals,
     }
-    return make_pytorch_config(
-        cfg,
-        model_architecture,
-        config_template=pytorch_cfg_template,
+    return make_pytorch_pose_config(
+        project_config=cfg,
+        pose_config_path=pose_config_path,
+        net_type=model_architecture,
     )
 
 
@@ -61,19 +63,21 @@ def main(project_root: str, train_file: str, output: str, model_arch: str):
     train_dict = COCOLoader.load_json(project_root, train_file)
     num_individuals, bodyparts = COCOLoader.get_project_parameters(train_dict)
     dlc_path = af.get_deeplabcut_path()
-    pytorch_cfg = get_base_config(
-        dlc_path=dlc_path,
-        model_architecture=model_arch,
-        bodyparts=bodyparts,
-        unique_bodyparts=[],
-        individuals=[f"individual{i}" for i in range(num_individuals)],
-    )
     output_path.mkdir(parents=True)
     train_dir = output_path / "train"
     test_dir = output_path / "test"
     train_dir.mkdir()
     test_dir.mkdir()
 
+    pose_config_path = str(train_dir / "pytorch_config.yaml")
+    pytorch_cfg = get_base_config(
+        project_path=project_root,
+        pose_config_path=pose_config_path,
+        model_architecture=model_arch,
+        bodyparts=bodyparts,
+        unique_bodyparts=[],
+        individuals=[f"individual{i}" for i in range(num_individuals)],
+    )
     af.write_plainconfig(str(train_dir / "pytorch_config.yaml"), pytorch_cfg)
     make_inference_config(
         dlc_path,

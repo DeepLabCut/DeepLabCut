@@ -1,11 +1,11 @@
 from itertools import product
 
 import pytest
+import torch
 from torchvision.transforms import Resize as TorchResize
 
-from deeplabcut.generate_training_dataset.make_pytorch_config import *
+from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
 from deeplabcut.pose_estimation_pytorch.apis import inference, utils
-from deeplabcut.pose_estimation_pytorch.default_config import *
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector, DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.predictors import (
     BasePredictor,
@@ -43,8 +43,8 @@ def test_get_predictions_bottom_up(
         if cfg["multianimalproject"]
         else len(cfg["bodyparts"])
     )
-    pytorch_config = make_pytorch_config(
-        cfg, net_type, config_template=pytorch_cfg_template.copy()
+    pytorch_config = make_pytorch_pose_config(
+        project_config=cfg, pose_config_path="my/pytorch_config.yaml", net_type=net_type
     )
     # Pretrained set to False to initialize model without using a snapshot
     pytorch_config["model"]["backbone"]["pretrained"] = False
@@ -77,8 +77,8 @@ def test_get_predicitons_top_down(
     images = torch.rand((batch_size, 3, image_shape[1], image_shape[0])) * 100
     # Create config and pytorch_config dicts
     cfg = write_config(multianimal)
-    pytorch_config = make_pytorch_config(
-        cfg, net_type, config_template=pytorch_cfg_template.copy()
+    pytorch_config = make_pytorch_pose_config(
+        project_config=cfg, pose_config_path="my/pytorch_config.yaml", net_type=net_type
     )
     # Pretrained set to False to initialize model without using a snapshot
     pytorch_config["model"]["backbone"]["pretrained"] = False

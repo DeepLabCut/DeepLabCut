@@ -24,7 +24,6 @@ import pandas as pd
 import yaml
 
 from deeplabcut.pose_estimation_tensorflow import training
-from deeplabcut.generate_training_dataset.make_pytorch_config import make_pytorch_config
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -902,18 +901,10 @@ def create_training_dataset(
         # loading & linking pretrained models
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
+        elif cfg.get("engine", "pytorch").lower() == "pytorch":  # TODO: Change default to tensorflow
+            pass
         else:
-            if (
-                "resnet" in net_type
-                or "mobilenet" in net_type
-                or "efficientnet" in net_type
-                or "dlcrnet" in net_type
-                or "dekr" in net_type
-                or "token_pose" in net_type
-            ):
-                pass
-            else:
-                raise ValueError("Invalid network type:", net_type)
+            raise ValueError("Invalid network type:", net_type)
 
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", "imgaug")
@@ -946,9 +937,14 @@ def create_training_dataset(
             defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path = auxfun_models.check_for_weights(
-            net_type, Path(dlcparent_path)
-        )
+
+        # TODO: Clean this
+        if cfg.get("engine", "pytorch") == "pytorch":
+            model_path = dlcparent_path
+        else:
+            model_path = auxfun_models.check_for_weights(
+                net_type, Path(dlcparent_path)
+            )
 
         if Shuffles is None:
             Shuffles = range(1, num_shuffles + 1)
@@ -1083,6 +1079,7 @@ def create_training_dataset(
                 # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
                 items2change = {
                     "dataset": datafilename,
+                    "engine": cfg.get("engine", "pytorch"),  # TODO: Default to tensorflow
                     "metadataset": metadatafilename,
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
@@ -1123,25 +1120,24 @@ def create_training_dataset(
                 )
 
                 # Populate the pytorch config yaml file
-                pytorch_config_path = os.path.join(
-                    dlcparent_path,
-                    "pose_estimation_pytorch",
-                    "apis",
-                    "pytorch_config.yaml",
-                )
-                pytorch_cfg_template = auxiliaryfunctions.read_plainconfig(
-                    pytorch_config_path
-                )
-                pytorch_cfg = make_pytorch_config(
-                    cfg, net_type, config_template=pytorch_cfg_template
-                )
-                pytorch_cfg["project_path"] = os.path.dirname(config)
-                pytorch_cfg["pose_cfg_path"] = path_train_config
-                pytorch_cfg["cfg_path"] = config
-                auxiliaryfunctions.write_plainconfig(
-                    path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml"),
-                    pytorch_cfg,
-                )
+                # TODO: Add switch for PyTorch projects
+                if cfg.get("engine", "pytorch").lower() == "pytorch":
+                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
+
+                    top_down = False
+                    if net_type.startswith("top_down_"):
+                        top_down = True
+                        net_type = net_type[len("top_down_"):]
+
+                    pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
+                    pytorch_cfg = make_pytorch_pose_config(
+                        project_config=cfg,
+                        pose_config_path=path_train_config,
+                        net_type=net_type,
+                        top_down=top_down,
+                    )
+                    auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
+
         return splits
 
 

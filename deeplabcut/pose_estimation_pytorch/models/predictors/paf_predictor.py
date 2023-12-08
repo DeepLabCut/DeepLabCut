@@ -32,7 +32,7 @@ class PartAffinityFieldPredictor(BasePredictor):
     Args:
         num_animals: Number of animals in the project.
         num_multibodyparts: Number of animal's body parts (ignoring unique body parts).
-        num_uniquebodyparts: Number of unique body parts.
+        num_uniquebodyparts: Number of unique body parts.  # FIXME - should not be needed here if we separate the unique bodypart head
         graph: Part affinity field graph edges.
         edges_to_keep: List of indices in `graph` of the edges to keep.
         locref_stdev: Standard deviation for location refinement.
