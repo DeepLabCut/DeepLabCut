@@ -9,6 +9,11 @@ parts:
   - file: docs/installation
   - file: docs/recipes/installTips
   - file: docs/docker
+- caption: Tutorial
+  chapters:
+  - file: docs/beginners-guide
+  - file: docs/manage-project
+  - file: docs/labelling
 - caption: User Guides
   chapters:
   - file: docs/standardDeepLabCut_UserGuide
