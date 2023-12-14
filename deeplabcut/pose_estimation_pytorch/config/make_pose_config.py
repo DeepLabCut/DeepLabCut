@@ -74,7 +74,7 @@ def make_pytorch_pose_config(
 
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
-        if multianimal_project:
+        if not top_down and multianimal_project:
             model_cfg = create_backbone_with_paf_model(
                 configs_dir=configs_dir,
                 net_type=net_type,
@@ -82,7 +82,6 @@ def make_pytorch_pose_config(
                 bodyparts=bodyparts,
                 paf_parameters=_get_paf_parameters(project_config, bodyparts)
             )
-
         else:
             model_cfg = create_backbone_with_heatmap_model(
                 configs_dir=configs_dir,

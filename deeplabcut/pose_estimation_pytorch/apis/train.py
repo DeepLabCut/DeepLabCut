@@ -25,7 +25,11 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_inference_transform,
     build_runner,
     build_transforms,
-    update_config_parameters,
+)
+from deeplabcut.pose_estimation_pytorch.config import (
+    pretty_print_config,
+    read_config_as_dict,
+    update_config,
 )
 from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -74,6 +78,7 @@ def train(
     logger = None
     if logger_config is not None:
         logger = LOGGER.build(dict(**logger_config, model=model))
+        logger.log_config(run_config)
 
     runner = build_runner(
         run_cfg=run_config,
@@ -166,9 +171,12 @@ def train_network(
     model_config_path = str(train_folder / "pytorch_config.yaml")
 
     setup_file_logging(log_path)
-    pytorch_config = auxiliaryfunctions.read_plainconfig(model_config_path)
 
-    update_config_parameters(pytorch_config=pytorch_config, **kwargs)  # TODO: improve
+    pytorch_config = read_config_as_dict(model_config_path)
+    pytorch_config = update_config(pytorch_config, kwargs)
+    print("Training with configuration:")
+    pretty_print_config(pytorch_config)
+
     if transform is None:
         logging.info("No transform specified... using default")
         transform = build_transforms(dict(pytorch_config["data"]), augment_bbox=True)

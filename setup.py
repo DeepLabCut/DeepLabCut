@@ -8,11 +8,26 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from __future__ import annotations
 
 import setuptools
+from pathlib import Path
+
 
 with open("README.md", encoding="utf-8", errors="replace") as fh:
     long_description = fh.read()
+
+
+def pytorch_config_paths() -> list[str]:
+    pytorch_configs = []
+    config_dir = Path("deeplabcut") / "pose_estimation_pytorch" / "config"
+    config_subdirs = [p for p in config_dir.iterdir() if p.is_dir()]
+    for subdir in config_subdirs:
+        for p in subdir.iterdir():
+            if p.suffix == ".yaml":
+                pytorch_configs.append(str(p))
+
+    return pytorch_configs
 
 
 setuptools.setup(
@@ -75,7 +90,6 @@ setuptools.setup(
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
-                "deeplabcut/pose_estimation_pytorch/apis/pytorch_config.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/pose_estimation_tensorflow/superanimal_configs/superquadruped.yaml",
                 "deeplabcut/pose_estimation_tensorflow/superanimal_configs/supertopview.yaml",
@@ -92,7 +106,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
                 "deeplabcut/modelzoo/models.json",
-            ],
+            ] + pytorch_config_paths(),
         )
     ],
     include_package_data=True,

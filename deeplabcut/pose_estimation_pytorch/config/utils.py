@@ -159,7 +159,7 @@ def load_backbones(configs_dir: Path) -> list[str]:
     return backbones
 
 
-def read_config_as_dict(config_path: Path) -> dict:
+def read_config_as_dict(config_path: str | Path) -> dict:
     """
     Args:
         config_path: the path to the configuration file to load
@@ -167,4 +167,22 @@ def read_config_as_dict(config_path: Path) -> dict:
     Returns:
         The configuration file with pure Python classes
     """
-    return YAML(typ='safe', pure=True).load(config_path)
+    with open(config_path, "r") as f:
+        cfg = YAML(typ='safe', pure=True).load(f)
+
+    return cfg
+
+
+def pretty_print_config(config: dict, indent: int = 0) -> None:
+    """Prints a model configuration in a pretty and readable way
+
+    Args:
+        config: the config to print
+        indent: the base indent on all keys
+    """
+    for k, v in config.items():
+        if isinstance(v, dict):
+            print(f"{indent * ' '}{k}:")
+            pretty_print_config(v, indent + 2)
+        else:
+            print(f"{indent * ' '}{k}: {v}")

@@ -10,9 +10,8 @@ import torch
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.generate_training_dataset import MakeInference_yaml
-from deeplabcut.pose_estimation_pytorch import COCOLoader
 from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
-
+from deeplabcut.pose_estimation_pytorch.data import COCOLoader
 
 def get_base_config(
     project_path: str,
@@ -30,10 +29,17 @@ def get_base_config(
         "uniquebodyparts": unique_bodyparts,
         "individuals": individuals,
     }
+
+    top_down = False
+    if model_architecture.startswith("top_down_"):
+        top_down = True
+        model_architecture = model_architecture[len("top_down_"):]
+
     return make_pytorch_pose_config(
         project_config=cfg,
         pose_config_path=pose_config_path,
         net_type=model_architecture,
+        top_down=top_down,
     )
 
 

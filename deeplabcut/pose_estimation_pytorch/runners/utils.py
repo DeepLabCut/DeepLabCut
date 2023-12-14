@@ -516,8 +516,8 @@ def get_paths(
     model_path = get_model_path(model_folder, train_iterations)
 
     detector_path = None
-    if task == Task.TOP_DOWN:
-        detector_path = get_detector_path(model_folder, train_iterations)
+    if task == Task.TOP_DOWN:  # always take the last detector
+        detector_path = get_detector_path(model_folder, -1)
 
     return {
         "dlc_scorer": dlc_scorer,

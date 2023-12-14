@@ -61,7 +61,9 @@ model:
         - "num_bodyparts x 2"
         kernel_size:
         - 3
+        - 3
         strides:
+        - 2
         - 2
       paf_config:
         channels:
@@ -70,6 +72,8 @@ model:
         - "num_limbs x 2"  # num_limbs = len(graph)
         kernel_size:
         - 3
+        - 3
         strides:
+        - 2
         - 2
       num_stages: 5

@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -35,6 +37,7 @@ class COCOLoader(Loader):
     Examples:
         loader = COCOLoader(
             project_root='/path/to/project/',
+            model_config_path='/path/to/project/experiments/train/pytorch_config.yaml'
             train_json_filename="train.json",
             test_json_filename="test.json",
         )
@@ -100,6 +103,120 @@ class COCOLoader(Loader):
 
         return json_obj
 
+    @staticmethod
+    def validate_categories(coco_json: dict) -> dict:
+        """Checks that the categories for the COCO project are valid.
+
+        Checks that there is no category with ID 0 in the dataset, as this causes issues
+        with torchvision object detectors (label 0 is reserved for background
+        detections). If that's the case, all category IDs are shifted by 1 such that
+        there is no longer a category 0.
+
+        Currently, detectors can only be trained with a single category. This also
+        ensures that all annotations have `category_id` set to 1.
+
+        Args:
+            coco_json: the COCO dictionary containing the annotations
+
+        Returns:
+            the validated COCO object
+        """
+        cat_0 = False
+        for cat in coco_json["categories"]:
+            if cat["id"] == 0:
+                cat_0 = cat
+                warnings.warn(
+                    f"Found a category with ID 0 ({cat}) in the COCO dataset. This is not"
+                    f" allowed, as category ID 0 is reserved as the background ID for"
+                    f" torchvision detectors. All category IDs have been shifted by 1."
+                )
+
+        if len(coco_json["categories"]) > 1:
+            warnings.warn(
+                f"Found more than 1 category in the project. This is currently not"
+                f" supported in DeepLabCut. All annotations will be given category 1"
+            )
+
+        if cat_0:
+            for cat in coco_json["categories"]:
+                cat["id"] = 1
+
+        if cat_0 or len(coco_json["categories"]) > 1:
+            for ann in coco_json["annotations"]:
+                ann["category_id"] = 1
+
+        return coco_json
+
+    @staticmethod
+    def validate_images(project_root: str, coco_json: dict) -> dict:
+        """Goes over images and annotations to look for potential errors
+
+        This code tries to ensure that training a model on this project does not crash
+        down the line
+
+        Completes relative image filepaths to '/project_root/images/file_name'. Absolute
+        filepaths are not updated (which allows storing images to be stored in a folder
+        other than the project root) Then checks that all images files exist in the file
+        system.
+
+        Args:
+            project_root: the root path of the COCO project
+            coco_json: the COCO dictionary containing the annotations
+
+        Returns:
+            the validated COCO object
+        """
+        image_ids = set()
+        missing_images = {}
+        validated_images = []
+        for image in coco_json["images"]:
+            image_filename = Path(image["file_name"])
+            if image_filename.is_absolute():
+                image_path = image_filename
+            else:
+                image_path = Path(project_root) / "images" / image["file_name"]
+                image["file_name"] = str(image_path)
+
+            if not image_path.exists():
+                missing_images[image["id"]] = image["file_name"]
+            else:
+                validated_images.append(image)
+                image_ids.add(image["id"])
+
+        if len(missing_images) > 0:
+            warnings.warn(
+                f"There are {len(missing_images)} images that cannot be found (here"
+                " are some):"
+            )
+            for img_id, file_name in missing_images.items():
+                print(f"  * {img_id}: {file_name}")
+
+        coco_json["images"] = validated_images
+
+        if len(missing_images) > 0:
+            validated_annotations = []
+            for ann in coco_json["annotations"]:
+                if ann["image_id"] not in missing_images:
+                    validated_annotations.append(ann)
+
+            coco_json["annotations"] = validated_annotations
+
+        validated_annotations = []
+        for ann in coco_json["annotations"]:
+            if ann["image_id"] in image_ids:
+                validated_annotations.append(ann)
+
+        if len(coco_json["annotations"]) < len(validated_annotations):
+            warnings.warn(
+                f"Found some annotations for which the image ID was not in the images."
+                f" Removing them from the dataset."
+            )
+            print(f"  All annotations: {len(coco_json['annotations'])}")
+            print(f"  Annotations with correct image IDs: {len(validated_annotations)}")
+            coco_json["annotations"] = validated_annotations
+
+        return coco_json
+
     def load_data(self, mode: str = "train") -> dict:
         """Convert data from JSON object to dictionary.
         Args:
@@ -116,9 +233,8 @@ class COCOLoader(Loader):
         else:
             raise AttributeError(f"Unknown mode: {mode}")
 
-        for image in data["images"]:
-            image_path = image["file_name"]
-            image["file_name"] = os.path.join(self.project_root, "images", image_path)
+        data = COCOLoader.validate_categories(data)
+        data = COCOLoader.validate_images(self.project_root, data)
 
         for annotation in data["annotations"]:
             annotation["keypoints"] = np.array(annotation["keypoints"], dtype=float)

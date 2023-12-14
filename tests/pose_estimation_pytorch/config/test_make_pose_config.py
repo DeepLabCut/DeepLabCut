@@ -2,6 +2,7 @@
 import pytest
 
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
+from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print_config, update_config
 
 
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
@@ -23,7 +24,7 @@ def test_make_single_animal_config(bodyparts: list[str], net_type: str):
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    _print_pose_config(pytorch_pose_config)
+    pretty_print_config(pytorch_pose_config)
 
     # check heads are there
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
@@ -67,7 +68,7 @@ def test_backbone_plus_paf_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    _print_pose_config(pytorch_pose_config)
+    pretty_print_config(pytorch_pose_config)
 
     graph = [
         [i, j]
@@ -140,7 +141,7 @@ def test_make_dekr_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    _print_pose_config(pytorch_pose_config)
+    pretty_print_config(pytorch_pose_config)
 
     # check heads are there
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
@@ -200,8 +201,7 @@ def test_make_dlcrnet_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    _print_pose_config(pytorch_pose_config)
-
+    pretty_print_config(pytorch_pose_config)
     paf_graph = [
         [i, j]
         for i in range(len(bodyparts))
@@ -276,10 +276,39 @@ def test_make_tokenpose_config(
             "pytorch_config.yaml",
             net_type=net_type,
         )
-        _print_pose_config(pytorch_pose_config)
+        pretty_print_config(pytorch_pose_config)
         # check detector is there
         assert "detector" in pytorch_pose_config
         assert "data_detector" in pytorch_pose_config
+
+
+@pytest.mark.parametrize("data", [
+    {
+        "config": {"a": 0, "b": 0},
+        "updates": {"b": 1},
+        "expected_result": {"a": 0, "b": 1},
+    },
+    {
+        "config": {"a": 0, "b": {"i0": 1, "i1": 2}},
+        "updates": {"b": 1},
+        "expected_result": {"a": 0, "b": 1},
+    },
+    {
+        "config": {"a": 0, "b": {"i0": 1, "i1": 2}},
+        "updates": {"b": {"i0": [1, 2, 3]}},
+        "expected_result": {"a": 0, "b": {"i0": [1, 2, 3], "i1": 2}},
+    },
+    {
+        "config": {"detector": {"batch_size": 1, "epochs": 10, "save_epochs": 5}},
+        "updates": {"batch_size": 1, "detector": {"batch_size": 8, "save_epochs": 1}},
+        "expected_result": {"batch_size": 1, "detector": {"batch_size": 8, "epochs": 10, "save_epochs": 1}},
+    },
+])
+def test_update_config(data: dict):
+    result = update_config(config=data["config"], updates=data["updates"])
+    print("\nResult")
+    pretty_print_config(result)
+    assert result == data["expected_result"]
 
 
 def _make_project_config(
@@ -305,15 +334,3 @@ def _make_project_config(
         project_config["bodyparts"] = bodyparts
 
     return project_config
-
-
-def _print_pose_config(pose_config: dict, indent: int = 0) -> None:
-    if indent == 0:
-        print()
-        print("Pose config")
-    for k, v in pose_config.items():
-        if isinstance(v, dict):
-            print(f"{indent * ' '}{k}:")
-            _print_pose_config(v, indent + 2)
-        else:
-            print(f"{indent * ' '}{k}: {v}")
