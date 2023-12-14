@@ -73,13 +73,16 @@ When you first launch the GUI, you'll come across three primary main options:
    - Tick the 'Multi-Animal' option in the menu, but only if that's the mode of the project.
    - Choose the 'Number of Cameras' as per your experiment.
 
-5. **Incorporating Your Project's Videos:**
-   - First, click on `**Browse Videos**` to search for the video contents.
+5. **Adding Videos:**
+   - First, click on **`Browse Videos`** button on the right side of the window, to search for the video contents.
    - Once the media selection tool opens, navigate and select the folder with your videos.
+     
+     > **💡 Tip:** DeepLabCut supports **`.mp4`**, **`.avi`**, and **`.mov`** files.
    - A list will be created with all the videos inside this folder.
    - Unselect the videos you wish to remove from the project.
      
-6. **Click on Create:**
+6. **Create your project:**
+   - Click on **`Create`** button on the bottom, right side of the main window.
    - A new folder named after your project's name will be created in the location you chose above. 
   
 
