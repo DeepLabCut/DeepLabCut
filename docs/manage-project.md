@@ -2,25 +2,36 @@
 
 ## Editing the Configuration File
 
-Upon creating your project, you will return to the main GUI window and start your work at the **Project Management Tab**.
-You will notice the file path to the configuration file at the top of the window and the option **Edit config.yaml**. 
+After creating your DeepLabCut project, you'll return to the main GUI window, where you'll start managing your project from the **Project Management Tab**.
 
-Click on **`Edit config.yaml`** to :
--  Define the bodyparts you wish to track.
--  Define the skeleton.
+### Accessing the Configuration File
 
-A new window called **`Configuration Editor`** will appear with all the configuration information. Modify the information on this file based on the needs of your research.
+- **Locate the Configuration File:** At the top of the window, you'll find the file path to the configuration file.
+- **Edit the File:** Click on **`Edit config.yaml`**. This action allows you to:
+  - Define the bodyparts you wish to track.
+  - Outline the skeleton structure.
 
-### Defining bodyparts
+A **`Configuration Editor`** window will open, displaying all the configuration details. You'll need to modify some of these settings to align with your research requirements.
 
-One of the categories on this window is called **`bodyparts`**. Click on the arrow next to this choice and a list will unfold underneath. Modify this list with the correct names. Insert additional rows as needed - just right click on the number and choose **`Insert`**.
+### Steps to Edit the Configuration
 
-### Defining the skeleton
+#### 1. Defining Bodyparts
 
-When you are happy with your bodyparts list, continue down the window to modify the skeleton. Similarly, click on the arrow next to the skeleton, unravel the skeleton list and adjust the bodyparts pairs. 
+- **Locate the Bodyparts Section:** In the Configuration Editor, find the **`bodyparts`** category.
+- **Modify the List:** Click on the arrow next to **`bodyparts`** to expand the list. Here, you can:
+  - Update the list with the names of the bodyparts relevant to your study.
+  - Add more entries by right-clicking on a row number and selecting **`Insert`**.
 
->**💡Tip: If it is your first time spent some time to visualise your chosen bodyparts and how best to connect them to create a nice skeleton.**
+#### 2. Defining the Skeleton
 
-### Save
+- **Navigate to the Skeleton Section:** Scroll down to the **`skeleton`** category.
+- **Adjust the Skeleton List:** Click on the arrow to expand this section. You can then:
+  - Update the pairs of bodyparts to define the skeleton structure of your model.
 
-When you finish editing, click on **`Save`**, to save your changes and return to the main GUI window. 
+> 💡 **Tip:** If you're new to DeepLabCut, spend some time visualizing how the chosen bodyparts can be connected effectively to form a coherent skeleton.
+
+### Saving Your Changes
+
+- **Save the Configuration:** Once you're satisfied with the modifications, click **`Save`**. This will store your changes and return you to the main GUI window.
+
+
