@@ -1,4 +1,4 @@
-# Starting DeepLabCut
+# Using DeepLabCut
 
 ## Installation
 
@@ -38,4 +38,51 @@ python -m deeplabcut
 This will open a new DeepLabCut window.
 
 ## Starting a New Project
+
+### Navigating the GUI on Initial Launch
+
+When you first launch the GUI, you'll come across three primary main options:
+
+1. **Create New Project:** Geared towards new initiatives. A good choice if you're here to start something new.
+2. **Load Project:** Use this to resume your on-hold or past work.
+3. **Model Zoo:** Best suited for those who want to explore Model Zoo.
+
+#### Commencing a Your Work:
+
+- For a first-time or new user, please click on **`Start New Project`**.
+
+## Steps to Start a New Project
+
+1. **Launch New Project:**
+   - When you start a new project, you'll be presented with an empty project window.
+
+2. **Filling in Project Details:**
+   - **Naming Your Project:**
+     - Give a specific, well-defined name to your project.
+      
+      > **💡 Tip:** Avoid empty spaces in your project name.
+
+   - **Naming the Experimenter:**
+     - Fill in the name of the experimenter or the project head. This part of the data remains immutable.
+
+3. **Determine Project Location:** 
+   - By default, your project will be located on the **Desktop**.
+   - To pick a different home, modify the path as needed.
+
+4. **Multi-Animal or Single-Animal Project:**
+   - Tick the 'Multi-Animal' option in the menu, but only if that's the mode of the project.
+   - Choose the 'Number of Cameras' as per your experiment.
+
+5. **Incorporating Your Project's Videos:**
+   - First, click on `**Browse Videos**` to search for the video contents.
+   - Once the media selection tool opens, navigate and select the folder with your videos.
+   - A list will be created with all the videos inside this folder.
+   - Unselect the videos you wish to remove from the project.
+     
+6. **Click on Create:**
+   - A new folder named after your project's name will be created in the location you chose above. 
+  
+
+
+
 
