@@ -23,6 +23,7 @@ for mod_name in MOCK_MODULES:
 import os
 import pickle
 from collections import defaultdict
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -33,7 +34,7 @@ from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
-def _format_gt_data(h5file):
+def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
     df = pd.read_hdf(h5file)
 
     animals = _get_unique_level_values(df.columns, "individuals")
@@ -54,11 +55,21 @@ def _format_gt_data(h5file):
         .reindex(kpts, level="bodyparts", axis=1)
     )
     data = temp.to_numpy().reshape((len(file_paths), len(animals), -1, 2))
+    if test_indices is not None:
+        file_paths = [file_paths[i] for i in test_indices]
+        data = [data[i] for i in test_indices]
+
     meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
     return {
         "annotations": dict(zip(file_paths, data)),
         "metadata": meta,
     }
+
+
+def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
+    with open(shuffle_metadata_path, "rb") as f:
+        test_indices = set([int(i) for i in pickle.load(f)[2]])
+    return list(sorted(test_indices))
 
 
 def _get_unique_level_values(header, level):
@@ -160,23 +171,35 @@ def calc_map_from_obj(
     drop_kpts=None,
 ):
     """Calculate mean average precision (mAP) based on predictions."""
-    df = pd.read_hdf(h5_file)
+    df: pd.DataFrame = pd.read_hdf(h5_file)
     try:
         df.drop("single", level="individuals", axis=1, inplace=True)
     except KeyError:
         pass
     n_animals = len(df.columns.get_level_values("individuals").unique())
     kpts = list(df.columns.get_level_values("bodyparts").unique())
-    image_paths = list(eval_results_obj)
-    ground_truth = (
-        df.loc[image_paths].to_numpy().reshape((len(image_paths), n_animals, -1, 2))
-    )
+
+    test_indices = _load_test_indices(metadata_file)
+    df_test = df.iloc[test_indices]
+    test_images = []
+    for img_path in df_test.index:
+        if isinstance(img_path, tuple):
+            img_path = os.path.join(*img_path)
+
+        if img_path not in eval_results_obj:
+            raise ValueError(
+                f"Missing image {img_path} in prediction object. You must make a prediction "
+                "for each test image"
+            )
+        test_images.append(img_path)
+
+    ground_truth = df_test.to_numpy().reshape((len(test_indices), n_animals, -1, 2))
     temp = np.ones((*ground_truth.shape[:3], 3))
     temp[..., :2] = ground_truth
-    assemblies_gt = inferenceutils._parse_ground_truth_data(temp)
-    with open(metadata_file, "rb") as f:
-        inds_test = set(pickle.load(f)[2])
-    assemblies_gt_test = {k: v for k, v in assemblies_gt.items() if k in inds_test}
+    assemblies_gt_test = {
+        test_images[i]: assembly
+        for i, assembly in inferenceutils._parse_ground_truth_data(temp).items()
+    }
 
     # TODO(stes): remove/rewrite
     if drop_kpts is not None:
@@ -192,9 +215,7 @@ def calc_map_from_obj(
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
 
-    assemblies_pred_ = conv_obj_to_assemblies(eval_results_obj, kpts)
-    assemblies_pred = dict(enumerate(assemblies_pred_.values()))
-
+    assemblies_pred = conv_obj_to_assemblies(eval_results_obj, kpts)
     with deeplabcut.benchmark.utils.DisableOutput():
         oks = inferenceutils.evaluate_assembly(
             assemblies_pred,
@@ -213,18 +234,28 @@ def calc_rmse_from_obj(
     drop_kpts=None,
 ):
     """Calc prediction errors for submissions."""
-    gt = _format_gt_data(h5_file)
+    test_indices = _load_test_indices(metadata_file)
+    gt = _format_gt_data(h5_file, test_indices=test_indices)
     kpts = gt["metadata"]["keypoints"]
     if drop_kpts:
         for k, v in gt["annotations"].items():
             gt["annotations"][k] = np.delete(v, drop_kpts, axis=1)
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
-    with open(metadata_file, "rb") as f:
-        inds_test = set(pickle.load(f)[2])
+
     test_objects = {
-        k: v for i, (k, v) in enumerate(eval_results_obj.items()) if i in inds_test
+        k: v
+        for k, v in eval_results_obj.items()
+        if k in gt["annotations"].keys()
     }
+    if len(gt["annotations"]) != len(test_objects):
+        gt_images = list(gt["annotations"].keys())
+        missing_images = [img for img in gt_images if img not in test_objects]
+        raise ValueError(
+            "Failed to compute the test RMSE: there are test images missing from the"
+            f"prediction object: {missing_images}"
+        )
+
     assemblies_pred = conv_obj_to_assemblies(test_objects, kpts)
     preds = defaultdict(dict)
     preds["metadata"]["keypoints"] = kpts
