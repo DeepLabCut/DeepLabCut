@@ -15,7 +15,7 @@ With your training dataset ready, it's time to train your model.
 - **Navigate to Train Network:** Head over to the **`Train Network`** tab.
 - **Set Training Parameters:** Here, you'll specify:
   - **`Display iterations`:** To specify how often the training progress will be visually updated.
-  - **`Maximum Iterations`:** Decide how many iterations to run. For this tutorial, let's set it to 10,000.
+  - **`Maximum Iterations`:** Decide how many iterations to run. For this tutorial, let's set it to 100,000.
   - **`Number of Snapshots to keep`:** Choose how many snapshots of the model you want to keep, **`Save iterations`:** and at what iteration intervals they should be saved.
 - **Launch Training:** Click on **`Train Network`** to begin.
 
