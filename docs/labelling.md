@@ -47,6 +47,8 @@ Alright, you've got your extracted frames ready. Now comes the labeling!
 
 > 💡 **Note:** For a detailed walkthrough on using the Napari labeling GUI, have a look at the [DeepLabCut Napari Guide](https://deeplabcut.github.io/DeepLabCut/docs/napari_GUI.html). Additionally, you can watch our instructional [YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
 
+![Label your First Frame](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/first-frame.gif?raw=true)
+
 ### Completing the Set
 
 Work through all the frames in the first folder. Then, proceed to the next, continuing this way until each folder in your **labeled-data** directory is done. 
