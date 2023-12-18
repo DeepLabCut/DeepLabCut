@@ -15,6 +15,7 @@ parts:
   - file: docs/manage-project
   - file: docs/labelling
   - file: docs/Training-Evaluation
+  - file: docs/video-analysis
 - caption: User Guides
   chapters:
   - file: docs/standardDeepLabCut_UserGuide
