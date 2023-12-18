@@ -127,6 +127,7 @@ def add_new_videos(
         else:
             cfg["video_sets_original"].update(params)
     videos_str = [str(video) for video in videos]
+    auxiliaryfunctions.write_config(config, cfg)
     if extract_frames:
         frame_extraction.extract_frames(
             config, userfeedback=False, videos_list=videos_str
@@ -138,4 +139,3 @@ def add_new_videos(
         print(
             "New videos were added to the project! Use the function 'extract_frames' to select frames for labeling."
         )
-    auxiliaryfunctions.write_config(config, cfg)
