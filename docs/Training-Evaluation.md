@@ -21,6 +21,8 @@ With your training dataset ready, it's time to train your model.
 
 You can keep an eye on the training progress via your terminal window. This will give you a real-time update on how your model is learning.
 
+![DeepLabCut Training in Terminal](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/training-terminal.png?raw=true)
+
 ## Evaluate the Network
 
 After training, it's time to see how well your model performs.
@@ -33,12 +35,19 @@ After training, it's time to see how well your model performs.
    - **Compare Bodyparts:** Opt to compare all the bodyparts for a comprehensive evaluation.
 3. Click the **`Evaluate Network`** button, located on the right side of the main window.
 
+>💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`. 
+
+
 ### Understanding the Evaluation Results
 
 - **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance metrics. This file is stored in the **`evaluate network`** folder within your project.
+
+
+![Combined Evaluation Results in DeepLabCut](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/combined-evaluation-results.png?raw=true)
 - **Visual Feedback:** Additionally, DLC creates subfolders containing your frames overlaid with both the labeled bodyparts and the model's predictions, allowing you to visually gauge the network's performance.
 
->💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`. 
+![Evaluation Example in DeepLabCut](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/evaluation-example.png?raw=true)
+
 
 
 
