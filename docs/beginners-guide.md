@@ -39,6 +39,8 @@ This will open a new DeepLabCut window.
 
 ![DeepLabCut GUI Screenshot](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/GUI-screenshot.png?raw=true)
 
+> 💡 **Note:** For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
+
 ## Starting a New Project
 
 ### Navigating the GUI on Initial Launch
