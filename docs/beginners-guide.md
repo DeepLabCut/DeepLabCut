@@ -2,7 +2,7 @@
 
 ## Installation
 
-Before you begin, make sure that DeepLabCut is installed on your system. For detailed installation instructions, refer to the Installation guide.
+Before you begin, make sure that DeepLabCut is installed on your system. For detailed installation instructions, refer to the [Installation Guide](https://deeplabcut.github.io/DeepLabCut/docs/installation.html).
 
 ## Starting DeepLabCut
 >### 🔔 Reminder: How to Open a Terminal
@@ -36,6 +36,8 @@ In the terminal, enter:
 python -m deeplabcut
 ```
 This will open a new DeepLabCut window.
+
+![DeepLabCut GUI Screenshot](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/GUI-screenshot.png?raw=true)
 
 ## Starting a New Project
 
