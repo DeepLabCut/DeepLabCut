@@ -53,7 +53,7 @@ When you first launch the GUI, you'll come across three primary main options:
 
 - For a first-time or new user, please click on **`Start New Project`**.
 
-## Steps to Start a New Project
+## 🐾 Steps to Start a New Project
 
 1. **Launch New Project:**
    - When you start a new project, you'll be presented with an empty project window.
@@ -85,8 +85,11 @@ When you first launch the GUI, you'll come across three primary main options:
      
 6. **Create your project:**
    - Click on **`Create`** button on the bottom, right side of the main window.
-   - A new folder named after your project's name will be created in the location you chose above. 
-  
+   - A new folder named after your project's name will be created in the location you chose above.
+     
+
+### 📽 Video Tutorial: Setting Up Your Project in DeepLabCut
+
 ![DeepLabCut Create Project GIF](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/create-project.gif)
 
 
