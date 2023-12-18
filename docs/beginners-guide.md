@@ -87,6 +87,7 @@ When you first launch the GUI, you'll come across three primary main options:
    - Click on **`Create`** button on the bottom, right side of the main window.
    - A new folder named after your project's name will be created in the location you chose above. 
   
+![DeepLabCut Create Project GIF](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/create-project.gif)
 
 
 
