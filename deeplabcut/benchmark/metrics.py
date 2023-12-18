@@ -66,12 +66,6 @@ def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
     }
 
 
-def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
-    with open(shuffle_metadata_path, "rb") as f:
-        test_indices = set([int(i) for i in pickle.load(f)[2]])
-    return list(sorted(test_indices))
-
-
 def _get_unique_level_values(header, level):
     return header.get_level_values(level).unique().to_list()
 
@@ -181,19 +175,15 @@ def calc_map_from_obj(
 
     test_indices = _load_test_indices(metadata_file)
     df_test = df.iloc[test_indices]
-    test_images = []
-    for img_path in df_test.index:
-        if isinstance(img_path, tuple):
-            img_path = os.path.join(*img_path)
+    test_images = load_test_images(h5_file, metadata_file)
+    missing_images = set(test_images) - set(eval_results_obj.keys())
+    if len(missing_images) > 0:
+        raise ValueError(
+            "Failed to compute the test mAP: there are test images missing from the"
+            f"prediction object: {missing_images}"
+        )
 
-        if img_path not in eval_results_obj:
-            raise ValueError(
-                f"Missing image {img_path} in prediction object. You must make a prediction "
-                "for each test image"
-            )
-        test_images.append(img_path)
-
-    ground_truth = df_test.to_numpy().reshape((len(test_indices), n_animals, -1, 2))
+    ground_truth = df_test.to_numpy().reshape((len(test_images), n_animals, -1, 2))
     temp = np.ones((*ground_truth.shape[:3], 3))
     temp[..., :2] = ground_truth
     assemblies_gt_test = {
@@ -271,3 +261,25 @@ def calc_rmse_from_obj(
     with deeplabcut.benchmark.utils.DisableOutput():
         errors = calc_prediction_errors(preds, gt)
     return np.nanmean(errors[..., 0])
+
+
+def load_test_images(h5file: str, metadata: str) -> List[str]:
+    """
+    Returns the names of the test images for the benchmark, in the order corresponding
+    to the test indices.
+    """
+    df = pd.read_hdf(h5file)
+    test_indices = _load_test_indices(metadata)
+    df_test = df.iloc[test_indices]
+    test_images = []
+    for img_path in df_test.index:
+        if not isinstance(img_path, str):
+            img_path = os.path.join(*img_path)
+        test_images.append(img_path)
+    return test_images
+
+
+def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
+    with open(shuffle_metadata_path, "rb") as f:
+        test_indices = set([int(i) for i in pickle.load(f)[2]])
+    return list(sorted(test_indices))

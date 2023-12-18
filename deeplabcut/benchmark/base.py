@@ -23,6 +23,7 @@ into this evaluation framework, please feel free to extend the base classes
 
 import abc
 import dataclasses
+import warnings
 from typing import Iterable
 from typing import Tuple
 
@@ -89,6 +90,7 @@ class Benchmark(abc.ABC):
         root_mean_squared_error = float("nan")
         try:
             predictions = self.get_predictions(name)
+            predictions = self._validate_predictions(name, predictions)
             mean_avg_precision = self.compute_pose_map(predictions)
             root_mean_squared_error = self.compute_pose_rmse(predictions)
         except Exception as exception:
@@ -113,6 +115,28 @@ class Benchmark(abc.ABC):
             mean_avg_precision=mean_avg_precision,
             root_mean_squared_error=root_mean_squared_error,
         )
+
+    def _validate_predictions(self, name: str, predictions: dict) -> dict:
+        """Validates the submitted predictions object
+
+        Checks that there is a prediction for each test image, and raises a warning if
+        that is not the case. Returns only predictions made for test images.
+        """
+        test_images = deeplabcut.benchmark.metrics.load_test_images(
+            self.ground_truth, self.metadata
+        )
+        missing_images = set(test_images) - set(predictions.keys())
+        if len(missing_images) > 0:
+            warnings.warn(
+                f"Missing {len(missing_images)} test images in the predictions for "
+                f"{name}: {list(missing_images)} Metrics will be computed as if no "
+                "individuals were detected in those images."
+            )
+
+        return {
+            img: predictions.get(img, tuple())
+            for img in test_images
+        }
 
 
 @dataclasses.dataclass
