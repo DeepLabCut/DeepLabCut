@@ -58,6 +58,10 @@ def add_new_videos(
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
 
+    # deal with user passing a single video to add
+    if isinstance(videos, str):
+        videos = [videos]
+
     video_path = Path(config).parents[0] / "videos"
     data_path = Path(config).parents[0] / "labeled-data"
     videos = [Path(vp) for vp in videos]
