@@ -23,13 +23,11 @@ import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
-    Postprocessor,
     build_bottom_up_postprocessor,
     build_detector_postprocessor,
     build_top_down_postprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
-    Preprocessor,
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
 )
@@ -41,9 +39,11 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import (
     KeypointAwareCrop,
 )
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
-from deeplabcut.pose_estimation_pytorch.runners import RUNNERS, Runner, Task
-from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
-from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
+from deeplabcut.pose_estimation_pytorch.runners import (
+    InferenceRunner,
+    Task,
+    build_inference_runner,
+)
 from deeplabcut.utils import auxfun_videos
 
 
@@ -59,83 +59,6 @@ def build_optimizer(optimizer_cfg: dict, model: nn.Module) -> torch.optim.Optimi
     """
     get_optimizer = getattr(torch.optim, optimizer_cfg["type"])
     return get_optimizer(params=model.parameters(), **optimizer_cfg["params"])
-
-
-def build_scheduler(
-    scheduler_cfg: dict | None, optimizer: torch.optim.Optimizer
-) -> torch.optim.lr_scheduler.LRScheduler | None:
-    """Builds a scheduler from a configuration, if defined
-
-    Args:
-        scheduler_cfg: the configuration of the scheduler to build
-        optimizer: the optimizer the scheduler will be built for
-
-    Returns:
-        None if scheduler_cfg is None, otherwise the scheduler
-    """
-    if scheduler_cfg is None:
-        return None
-
-    if scheduler_cfg["type"] == "LRListScheduler":
-        scheduler = LRListScheduler
-    else:
-        scheduler = getattr(torch.optim.lr_scheduler, scheduler_cfg["type"])
-
-    return scheduler(optimizer=optimizer, **scheduler_cfg["params"])
-
-
-def build_pose_model(pytorch_cfg: dict) -> PoseModel:
-    """
-    TODO: Deprecated but still used in analyze_videos
-
-    Args:
-        pytorch_cfg : entire pytorch config
-
-    Returns a pytorch pose model based on pytorch config
-    """
-    return PoseModel.from_cfg(pytorch_cfg["model"])
-
-
-def build_runner(
-    run_cfg: dict,
-    model: nn.Module,
-    device: str,
-    snapshot_path: str | None,
-    logger: BaseLogger | None = None,
-    preprocessor: Preprocessor | None = None,
-    postprocessor: Postprocessor | None = None,
-) -> Runner:
-    """
-    Build a runner object according to a pytorch configuration file
-
-    Args:
-        run_cfg: config dictionary to build the runner
-        model: the model to run
-        device: the device to run on
-        snapshot_path: the snapshot from which to load the weights
-        logger: the logger to use, if any
-        preprocessor: the preprocessor to use on images before inference
-        postprocessor: the postprocessor to use on images after inference
-
-    Returns:
-        the runner
-    """
-    model.to(device)  # Move model before giving its parameters to the optimizer
-    optimizer = build_optimizer(run_cfg["optimizer"], model)
-    scheduler = build_scheduler(run_cfg["scheduler"], optimizer)
-    return RUNNERS.build(
-        dict(
-            **run_cfg["runner"],
-            model=model,
-            optimizer=optimizer,
-            device=device,
-            snapshot_path=snapshot_path,
-            scheduler=scheduler,
-            logger=logger,
-            preprocessor=preprocessor,
-            postprocessor=postprocessor,
-        )
-    )
 
 
 def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose:
@@ -366,21 +289,6 @@ def list_videos_in_folder(
     return [video_path]
 
 
-def update_config_parameters(pytorch_config: dict, **kwargs) -> None:
-    """
-    Overwrites the pytorch config dictionary to correspond to the command line input keys
-
-    Args:
-        pytorch_config
-        **kwargs : any arguments that can be found as entry for the pytorch config
-
-    Return:
-        None
-    """
-    for key in kwargs.keys():
-        pytorch_config[key] = kwargs[key]
-
-
 def build_auto_padding(
     min_height: int | None = None,
     min_width: int | None = None,
@@ -538,7 +446,7 @@ def get_runners(
     transform: A.BaseCompose | None = None,
     detector_path: str | None = None,
     detector_transform: A.BaseCompose | None = None,
-) -> tuple[Runner, Runner | None]:
+) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
     Args:
@@ -593,12 +501,11 @@ def get_runners(
                     pytorch_config["data_detector"]
                 )
 
-            detector_runner = build_runner(
-                run_cfg=pytorch_config["detector"],
+            detector_runner = build_inference_runner(
+                task=Task.DETECT,
                 model=DETECTORS.build(pytorch_config["detector"]["model"]),
                 device=device,
-                snapshot_path=detector_path,
-                logger=None,  # No logging for evaluation
+                snapshot_path=snapshot_path,
                 preprocessor=build_bottom_up_preprocessor(
                     color_mode="RGB",  # TODO: read from Loader
                     transform=detector_transform,
@@ -606,12 +513,11 @@ def get_runners(
                 postprocessor=build_detector_postprocessor(),
             )
 
-    pose_runner = build_runner(
-        run_cfg=pytorch_config,
-        model=PoseModel.from_cfg(pytorch_config["model"]),
+    pose_runner = build_inference_runner(
+        task=pose_task,
+        model=PoseModel.build(pytorch_config["model"]),
         device=device,
         snapshot_path=snapshot_path,
-        logger=None,  # No logging for evaluation
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
     )

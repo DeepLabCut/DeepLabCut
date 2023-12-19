@@ -14,14 +14,11 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import List, Optional, Tuple
-
-import numpy as np
-import pandas as pd
+from typing import List, Tuple
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
-import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.runners.base import Task
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def verify_paths(
@@ -418,79 +415,6 @@ def get_evaluation_folder(
         ),
     )
     return evaluation_folder
-
-
-def build_predictions_df(
-    dlc_scorer: str,
-    individuals: List[str],
-    bodyparts: List[str],
-    df_index: pd.Index,
-    predictions: np.ndarray,
-) -> pd.DataFrame:
-    """Builds a predictions dataframe in the DLC format
-
-    Builds a DataFrame in the DeepLabCut format, with MultiIndex columns. If there is
-    only one individual, the column levels are ("scorer", "bodyparts", "coords"). If
-    there are multiple individuals, the column levels are ("scorer", "individuals",
-    "bodyparts", "coords").
-
-    Args:
-        dlc_scorer: the DLC scorer that generated the predictions
-        individuals: the names of individuals in the project
-        bodyparts: the names of bodyparts in the project
-        df_index: the index to apply to the dataframe
-        predictions: the predictions made by the scorer. should be of shape
-        (len(df_index), len(bodyparts), 3) if len(individuals) == 1, and otherwise
-        (len(df_index), len(individuals), len(bodyparts), 3)
-
-    Returns:
-        the dataframe containing the predictions in DLC format
-    """
-    num_individuals = len(individuals)
-    if num_individuals == 1:
-        # Single animal prediction dataframe
-        index = pd.MultiIndex.from_product(
-            [[dlc_scorer], bodyparts, ["x", "y", "likelihood"]],
-            names=["scorer", "bodyparts", "coords"],
-        )
-    else:
-        # Multi-animal prediction dataframe
-        index = pd.MultiIndex.from_product(
-            [[dlc_scorer], individuals, bodyparts, ["x", "y", "likelihood"]],
-            names=["scorer", "individuals", "bodyparts", "coords"],
-        )
-
-    return pd.DataFrame(predictions, columns=index, index=df_index)
-
-
-def build_entire_pred_df(
-    dlc_scorer: str,
-    individuals: List[str],
-    bodyparts: List[str],
-    df_index: pd.Index,
-    predictions: np.ndarray,
-    unique_bodyparts: List[str],
-    unique_predictions: Optional[np.ndarray],
-) -> pd.DataFrame:
-    num_individuals = len(individuals)
-    if num_individuals == 1 or len(unique_bodyparts) == 0 or unique_predictions is None:
-        return build_predictions_df(
-            dlc_scorer, individuals, bodyparts, df_index, predictions
-        )
-
-    animals_df = build_predictions_df(
-        dlc_scorer, individuals, bodyparts, df_index, predictions
-    )
-    unique_df = build_predictions_df(
-        dlc_scorer, ["single"], unique_bodyparts, df_index, unique_predictions
-    )
-    new_cols = pd.MultiIndex.from_tuples(
-        [(col[0], "single", col[1], col[2]) for col in unique_df.columns],
-        names=["scorer", "individuals", "bodyparts", "coords"],
-    )
-    unique_df.columns = new_cols
-    predictions_df = animals_df.merge(unique_df, left_index=True, right_index=True)
-    return predictions_df
 
 
 def get_paths(

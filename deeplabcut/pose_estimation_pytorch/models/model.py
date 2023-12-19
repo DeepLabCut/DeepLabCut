@@ -140,7 +140,7 @@ class PoseModel(nn.Module):
         }
 
     @staticmethod
-    def from_cfg(cfg: dict) -> "PoseModel":
+    def build(cfg: dict) -> "PoseModel":
         backbone = BACKBONES.build(dict(cfg["backbone"]))
 
         neck = None
@@ -173,5 +173,9 @@ class PoseModel(nn.Module):
             heads[name] = HEADS.build(head_cfg)
 
         return PoseModel(
-            cfg=cfg, backbone=backbone, neck=neck, heads=heads, **cfg.get("pose_model", {})
+            cfg=cfg,
+            backbone=backbone,
+            neck=neck,
+            heads=heads,
+            **cfg.get("pose_model", {})
         )

@@ -48,7 +48,7 @@ def test_build_bottom_up_runner(
     pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
     print_dict(pytorch_cfg)
 
-    pose_model = PoseModel.from_cfg(pytorch_cfg["model"])
+    pose_model = PoseModel.build(pytorch_cfg["model"])
 
     head_criterions = []
     for head_cfg in pytorch_cfg["model"]["heads"]:

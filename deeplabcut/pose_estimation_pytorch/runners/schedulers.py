@@ -8,7 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
+import torch
 from torch.optim.lr_scheduler import _LRScheduler
 
 
@@ -65,3 +67,26 @@ class LRListScheduler(_LRScheduler):
         if self.last_epoch not in self.milestones:
             return [group["lr"] for group in self.optimizer.param_groups]
         return [lr for lr in self.lr_list[self.milestones.index(self.last_epoch)]]
+
+
+def build_scheduler(
+    scheduler_cfg: dict | None, optimizer: torch.optim.Optimizer
+) -> torch.optim.lr_scheduler.LRScheduler | None:
+    """Builds a scheduler from a configuration, if defined
+
+    Args:
+        scheduler_cfg: the configuration of the scheduler to build
+        optimizer: the optimizer the scheduler will be built for
+
+    Returns:
+        None if scheduler_cfg is None, otherwise the scheduler
+    """
+    if scheduler_cfg is None:
+        return None
+
+    if scheduler_cfg["type"] == "LRListScheduler":
+        scheduler = LRListScheduler
+    else:
+        scheduler = getattr(torch.optim.lr_scheduler, scheduler_cfg["type"])
+
+    return scheduler(optimizer=optimizer, **scheduler_cfg["params"])

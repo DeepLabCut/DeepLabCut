@@ -23,9 +23,10 @@ import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut import auxiliaryfunctions
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_inference_transform,
-    build_runner,
+    build_optimizer,
     build_transforms,
 )
+from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
 from deeplabcut.pose_estimation_pytorch.config import (
     pretty_print_config,
     read_config_as_dict,
@@ -33,7 +34,7 @@ from deeplabcut.pose_estimation_pytorch.config import (
 )
 from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.runners import Task, build_training_runner
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     LOGGER,
     destroy_file_logging,
@@ -71,19 +72,23 @@ def train(
     if task == Task.DETECT:
         model = DETECTORS.build(run_config["model"])
     else:
-        model = PoseModel.from_cfg(run_config["model"])
+        model = PoseModel.build(run_config["model"])
 
-    # TODO: Log the configuration file
-    #  Model should not be needed when building the logger
     logger = None
     if logger_config is not None:
         logger = LOGGER.build(dict(**logger_config, model=model))
         logger.log_config(run_config)
 
-    runner = build_runner(
-        run_cfg=run_config,
+    model.to(device)  # Move model before giving its parameters to the optimizer
+    optimizer = build_optimizer(run_config["optimizer"], model)
+    scheduler = build_scheduler(run_config["scheduler"], optimizer)
+
+    runner = build_training_runner(
+        task=task,
         model=model,
+        optimizer=optimizer,
         device=device,
+        scheduler=scheduler,
         snapshot_path=snapshot_path,
         logger=logger,
     )

@@ -21,25 +21,26 @@ import pandas as pd
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.apis.scoring import (
+    compute_identity_scores,
     get_scores,
-    pair_predicted_individuals_with_gt, compute_identity_scores,
+    pair_predicted_individuals_with_gt,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     ensure_multianimal_df_format,
     get_runners,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Runner, Task
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
 
 
 def predict(
     pose_task: Task,
-    pose_runner: Runner,
+    pose_runner: InferenceRunner,
     loader: Loader,
     mode: str,
-    detector_runner: Runner | None = None,
+    detector_runner: InferenceRunner | None = None,
 ) -> dict[str, dict[str, np.ndarray]]:
     """Predicts poses on data contained in a loader
 
@@ -85,10 +86,10 @@ def predict(
 
 def evaluate(
     pose_task: Task,
-    pose_runner: Runner,
+    pose_runner: InferenceRunner,
     loader: Loader,
     mode: str,
-    detector_runner: Runner | None = None,
+    detector_runner: InferenceRunner | None = None,
     pcutoff: float = 1,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
     """

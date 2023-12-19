@@ -32,7 +32,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
-from deeplabcut.pose_estimation_pytorch.runners import Runner, Task
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
 
@@ -86,8 +86,8 @@ class VideoIterator(VideoReader):
 def video_inference(
     video_path: str | Path,
     task: Task,
-    pose_runner: Runner,
-    detector_runner: Runner | None = None,
+    pose_runner: InferenceRunner,
+    detector_runner: InferenceRunner | None = None,
     with_identity: bool = False,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video"""
@@ -272,9 +272,9 @@ def analyze_videos(
                 detector_runner=detector_runner,
             )
             runtime.append(time.time())
-            predictions = predictions[..., :3]
 
-            bodyparts = np.stack([p["bodyparts"] for p in predictions])
+            # poses must have shape (x, y, score, ...)
+            bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
             unique_bodyparts = None
             if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
                 unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
