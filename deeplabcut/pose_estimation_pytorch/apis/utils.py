@@ -510,7 +510,9 @@ def get_runners(
                     color_mode="RGB",  # TODO: read from Loader
                     transform=detector_transform,
                 ),
-                postprocessor=build_detector_postprocessor(),
+                postprocessor=build_detector_postprocessor(
+                    max_individuals=max_individuals,
+                ),
             )
 
     pose_runner = build_inference_runner(

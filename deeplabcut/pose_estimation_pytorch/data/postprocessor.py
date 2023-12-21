@@ -144,8 +144,11 @@ def build_top_down_postprocessor(
     )
 
 
-def build_detector_postprocessor() -> Postprocessor:
+def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
     """Creates a postprocessor for top-down pose estimation
+
+    Args:
+        max_individuals: the maximum number of detections to keep in a single image
 
     Returns:
         A default top-down Postprocessor
@@ -157,6 +160,12 @@ def build_detector_postprocessor() -> Postprocessor:
                     "bboxes": ("detection", "bboxes"),
                     "bbox_scores": ("detection", "scores"),
                 }
+            ),
+            TrimOutputs(
+                max_individuals={
+                    "bboxes": max_individuals,
+                    "bbox_scores": max_individuals,
+                },
             ),
             BboxToCoco(bounding_box_keys=["bboxes"]),
             RescaleAndOffset(
@@ -241,8 +250,29 @@ class PadOutputs(Postprocessor):
             if len(output) < self.max_individuals[name]:
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
-                padding = -np.ones((pad_size, *tail_shape))
+                padding = self.pad_value * np.ones((pad_size, *tail_shape))
                 predictions[name] = np.concatenate([output, padding])
+
+        return predictions, context
+
+
+class TrimOutputs(Postprocessor):
+    """Ensures all outputs have at most `max_individuals` detections
+
+    Assumes that the outputs are sorted by decreasing score, such that the first
+    `max_individuals` predictions are the ones to keep.
+    """
+
+    def __init__(self, max_individuals: dict[str, int]):
+        self.max_individuals = max_individuals
+
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        for name in predictions:
+            output = predictions[name]
+            if len(output) > self.max_individuals[name]:
+                predictions[name] = output[:self.max_individuals[name]]
 
         return predictions, context
 

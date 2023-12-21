@@ -5,6 +5,7 @@ import pytest
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     PredictKeypointIdentities,
     RescaleAndOffset,
+    TrimOutputs,
 )
 
 
@@ -55,6 +56,33 @@ def test_rescale_topdown(data):
     print(predictions["bodyparts"].tolist())
     print(data["rescaled"])
     np.testing.assert_array_equal(predictions["bodyparts"], np.array(data["rescaled"]))
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "bboxes": [[0, 0, 0, 0], [1, 1, 1, 1]],
+            "bbox_scores": [0, 0],
+            "max_individuals": {"bboxes": 1, "bbox_scores": 1},
+        },
+        {
+            "bboxes": [[0, 0, 0, 0], [1, 1, 1, 1]],
+            "bbox_scores": [0, 0],
+            "max_individuals": {"bboxes": 2, "bbox_scores": 2},
+        },
+    ],
+)
+def test_trim_outputs(data):
+    """expects x_processed = x * scale + offset"""
+    postprocessor = TrimOutputs(max_individuals=data["max_individuals"])
+    context = {}
+    predictions = {"bboxes": np.array(data["bboxes"]), "bbox_scores": np.array(data["bbox_scores"])}
+    predictions, context = postprocessor(predictions, context=context)
+    print(predictions["bboxes"].tolist())
+    print(predictions["bbox_scores"].tolist())
+    assert len(predictions["bboxes"]) == data["max_individuals"]["bboxes"]
+    assert len(predictions["bbox_scores"]) == data["max_individuals"]["bbox_scores"]
 
 
 @pytest.mark.parametrize(

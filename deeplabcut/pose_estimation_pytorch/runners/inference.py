@@ -155,17 +155,13 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
     """Runner for object detection inference"""
 
-    def __init__(self, model: BaseDetector, max_individuals: int, **kwargs):
+    def __init__(self, model: BaseDetector, **kwargs):
         """
         Args:
             model: The detector to use for inference.
-            max_individuals: The maximum number of detections to make for a single
-                frame. When calling predict, at most `max_individuals` bounding boxes
-                will be returned.
             **kwargs: Inference runner kwargs.
         """
         super().__init__(model, **kwargs)
-        self.max_individuals = max_individuals
 
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
@@ -194,11 +190,11 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 batch_predictions.append(
                     {
                         "detection": {
-                            "bboxes": item["boxes"][: self.max_individuals]
+                            "bboxes": item["boxes"]
                             .cpu()
                             .numpy()
                             .reshape(-1, 4),
-                            "scores": item["scores"][: self.max_individuals]
+                            "scores": item["scores"]
                             .cpu()
                             .numpy()
                             .reshape(-1),
