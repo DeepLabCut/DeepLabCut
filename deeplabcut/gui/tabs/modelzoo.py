@@ -23,7 +23,7 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.utils import move_to_separate_thread
-from deeplabcut.modelzoo.utils import parse_available_supermodels
+from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -58,8 +58,8 @@ class ModelZoo(DefaultTab):
 
         model_combo_text = QtWidgets.QLabel("Supermodel name")
         self.model_combo = QtWidgets.QComboBox()
-        supermodels = parse_available_supermodels()
-        self.model_combo.addItems(supermodels.keys())
+        supermodels = [model for model in MODELOPTIONS if "superanimal" in model]
+        self.model_combo.addItems(supermodels)
 
         scales_label = QtWidgets.QLabel("Scale list")
         self.scales_line = QtWidgets.QLineEdit("", parent=self)

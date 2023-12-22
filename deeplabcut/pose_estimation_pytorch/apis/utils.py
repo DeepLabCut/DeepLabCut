@@ -40,9 +40,9 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import (
 )
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
+    build_inference_runner,
     InferenceRunner,
     Task,
-    build_inference_runner,
 )
 from deeplabcut.utils import auxfun_videos
 
@@ -121,9 +121,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
     #         )
     #     )
     scale_jitter_lo, scale_jitter_up = aug_cfg.get("scale_jitter", (1, 1))
-    transforms.append(
-        A.Affine(scale=(scale_jitter_lo, scale_jitter_up), p=1)
-    )
+    transforms.append(A.Affine(scale=(scale_jitter_lo, scale_jitter_up), p=1))
     if rotation := aug_cfg.get("rotation", 0) != 0:
         transforms.append(
             A.Affine(
@@ -135,7 +133,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
         transforms.append(A.Equalize(p=0.5))
     if aug_cfg.get("motion_blur", False):
         transforms.append(A.MotionBlur(p=0.5))
-    if aug_cfg.get('covering', False):
+    if aug_cfg.get("covering", False):
         transforms.append(
             CoarseDropout(
                 max_holes=10,
@@ -143,12 +141,12 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
                 min_height=0.01,
                 max_width=0.05,
                 min_width=0.01,
-                p=0.5
+                p=0.5,
             )
         )
-    if aug_cfg.get('elastic_transform', False):
+    if aug_cfg.get("elastic_transform", False):
         transforms.append(ElasticTransform(sigma=5, p=0.5))
-    if aug_cfg.get('grayscale', False):
+    if aug_cfg.get("grayscale", False):
         transforms.append(Grayscale(alpha=(0.5, 1.0)))
     if aug_cfg.get("gaussian_noise", False):
         opt = aug_cfg.get("gaussian_noise", False)  # std
@@ -183,7 +181,9 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
 
     return A.Compose(
         transforms,
-        keypoint_params=A.KeypointParams("xy", remove_invisible=False, label_fields=["class_labels"]),
+        keypoint_params=A.KeypointParams(
+            "xy", remove_invisible=False, label_fields=["class_labels"]
+        ),
         bbox_params=bbox_params,
     )
 
@@ -505,7 +505,7 @@ def get_runners(
                 task=Task.DETECT,
                 model=DETECTORS.build(pytorch_config["detector"]["model"]),
                 device=device,
-                snapshot_path=snapshot_path,
+                snapshot_path=detector_path,
                 preprocessor=build_bottom_up_preprocessor(
                     color_mode="RGB",  # TODO: read from Loader
                     transform=detector_transform,

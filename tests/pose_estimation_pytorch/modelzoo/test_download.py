@@ -8,8 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import dlclibrary
 import os
+
+import dlclibrary
 import pytest
 from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 

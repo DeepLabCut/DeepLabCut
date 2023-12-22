@@ -41,7 +41,7 @@ setuptools.setup(
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
         "albumentations",
-        "dlclibrary",
+        "dlclibrary>=0.0.5",
         "einops",
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",

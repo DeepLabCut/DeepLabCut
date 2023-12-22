@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import copy
+import os
 import pickle
 import time
 from pathlib import Path
@@ -34,7 +35,7 @@ from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import VideoReader, auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
 
 
 class VideoIterator(VideoReader):
@@ -89,6 +90,7 @@ def video_inference(
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     with_identity: bool = False,
+    return_video_metadata: bool = False,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video"""
     video = VideoIterator(str(video_path))
@@ -100,6 +102,11 @@ def video_inference(
         f"  fps:        {video.fps}\n"
         f"  resolution: w={vid_w}, h={vid_h}\n"
     )
+    video_metadata = {
+        "n_frames": n_frames,
+        "fps": video.fps,
+        "resolution": (vid_w, vid_h),
+    }
 
     if task == Task.TOP_DOWN:
         # Get bounding boxes for context
@@ -120,7 +127,8 @@ def video_inference(
         )
         for i, p_with_id in enumerate(bodypart_predictions):
             predictions[i]["bodyparts"] = p_with_id
-
+    if return_video_metadata:
+        return predictions, video_metadata
     return predictions
 
 
@@ -261,6 +269,7 @@ def analyze_videos(
         output_prefix = video.stem + dlc_scorer
         output_h5 = output_path / f"{output_prefix}.h5"
         output_pkl = output_path / f"{output_prefix}_full.pickle"
+
         if not overwrite and output_pkl.exists():
             print(f"Video already analyzed at {output_pkl}!")
         else:
@@ -272,22 +281,6 @@ def analyze_videos(
                 detector_runner=detector_runner,
             )
             runtime.append(time.time())
-
-            # poses must have shape (x, y, score, ...)
-            bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-            unique_bodyparts = None
-            if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-                unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
-            bodypart_identities = None
-            if with_identity:
-                # reshape from (num_assemblies, num_bpts, num_individuals)
-                # to (num_assemblies, num_bpts) by taking the maximum
-                # likelihood individual for each bodypart
-                bodypart_identities = np.stack(
-                    [np.argmax(p["identity_scores"], axis=2) for p in predictions]
-                )
-
-            print(f"Inference is done for {video}! Saving results...")
             metadata = _generate_metadata(
                 cfg=cfg,
                 pytorch_config=pytorch_config,
@@ -297,73 +290,36 @@ def analyze_videos(
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
-
-            cols = [
-                [dlc_scorer],
-                auxiliaryfunctions.get_bodyparts(cfg),
-                ["x", "y", "likelihood"],
-            ]
-            cols_names = ["scorer", "bodyparts", "coords"]
-            if len(individuals) > 1:
-                cols.insert(1, individuals)
-                cols_names.insert(1, "individuals")
-
-            results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
-            df = pd.DataFrame(
-                bodyparts.reshape((len(bodyparts), -1)),
-                columns=results_df_index,
-                index=range(len(bodyparts)),
-            )
-            if unique_bodyparts is not None:
-                coordinate_labels_unique = ["x", "y", "likelihood"]
-                results_unique_df_index = pd.MultiIndex.from_product(
-                    [
-                        [dlc_scorer],
-                        auxiliaryfunctions.get_unique_bodyparts(cfg),
-                        coordinate_labels_unique,
-                    ],
-                    names=["scorer", "bodyparts", "coords"],
-                )
-                df_u = pd.DataFrame(
-                    unique_bodyparts.reshape((len(unique_bodyparts), -1)),
-                    columns=results_unique_df_index,
-                    index=range(len(unique_bodyparts)),
-                )
-                df = df.join(df_u, how="outer")
-
-            df.to_hdf(str(output_h5), "df_with_missing", format="table", mode="w")
-            results.append((str(video), df))
             output_data = _generate_output_data(pose_cfg, predictions)
             _ = auxfun_multianimal.SaveFullMultiAnimalData(
                 output_data, metadata, str(output_h5)
             )
 
+            df = create_df_from_prediction(
+                predictions=predictions,
+                cfg=cfg,
+                dlc_scorer=dlc_scorer,
+                output_path=output_path,
+                output_prefix=output_prefix,
+            )
+            results.append((str(video), df))
+
             if cfg["multianimalproject"] and len(individuals) > 1:
-                output_ass = output_path / f"{output_prefix}_assemblies.pickle"
-                assemblies = {}
-                for i, bpt in enumerate(bodyparts):
-                    if with_identity:
-                        extra_column = np.expand_dims(bodypart_identities[i], axis=-1)
-                    else:
-                        extra_column = np.full(
-                            (bpt.shape[0], bpt.shape[1], 1),
-                            -1.0,
-                            dtype=np.float32,
-                        )
-                    ass = np.concatenate((bpt, extra_column), axis=-1)
-                    assemblies[i] = ass
+                bodypart_identities = None
+                if with_identity:
+                    # reshape from (num_assemblies, num_bpts, num_individuals)
+                    # to (num_assemblies, num_bpts) by taking the maximum
+                    # likelihood individual for each bodypart
+                    bodypart_identities = [np.argmax(p["identity_scores"], axis=2) for p in predictions]
 
-                if unique_bodyparts is not None:
-                    assemblies["single"] = {}
-                    for i, unique_bpt in enumerate(unique_bodyparts):
-                        extra_column = np.full(
-                            (unique_bpt.shape[1], 1), -1.0, dtype=np.float32
-                        )
-                        ass = np.concatenate((unique_bpt[0], extra_column), axis=-1)
-                        assemblies["single"][i] = ass
-
-                with open(output_ass, "wb") as handle:
-                    pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                _save_assemblies(
+                    output_path,
+                    output_prefix,
+                    bodyparts,
+                    bodypart_identities,
+                    unique_bodyparts,
+                    with_identity,
+                )
                 if auto_track:
                     convert_detections2tracklets(
                         config=config,
@@ -384,23 +340,97 @@ def analyze_videos(
                         destfolder=destfolder,
                     )
 
-            else:
-                results_df_index = pd.MultiIndex.from_product(
-                    [
-                        [dlc_scorer],
-                        pose_cfg["all_joints_names"],
-                        ["x", "y", "likelihood"],
-                    ],
-                    names=["scorer", "bodyparts", "coords"],
-                )
-                df = pd.DataFrame(
-                    np.array(predictions).reshape((len(predictions), -1)),
-                    columns=results_df_index,
-                    index=range(len(predictions)),
-                )
-                df.to_hdf(str(output_h5), "df_with_missing", format="table", mode="w")
-                results.append((str(video), df))
     return results
+
+
+def create_df_from_prediction(
+    predictions: list[dict[str, np.ndarray]],
+    dlc_scorer: str,
+    cfg: dict,
+    output_path: str | Path,
+    output_prefix: str | Path,
+) -> pd.DataFrame:
+    output_h5 = Path(output_path) / f"{output_prefix}.h5"
+    output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
+
+    print(f"Saving results in {output_h5} and {output_pkl}")
+    bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    unique_bodyparts = None
+
+    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
+        unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
+
+    cols = [
+        [dlc_scorer],
+        list(auxiliaryfunctions.get_bodyparts(cfg)),
+        ["x", "y", "likelihood"],
+    ]
+    cols_names = ["scorer", "bodyparts", "coords"]
+    individuals = cfg.get("individuals", ["animal"])
+    n_individuals = len(individuals)
+    if n_individuals > 1:
+        cols.insert(1, individuals)
+        cols_names.insert(1, "individuals")
+
+    results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
+    bodyparts = bodyparts[:, :n_individuals]
+    df = pd.DataFrame(
+        bodyparts.reshape((len(bodyparts), -1)),
+        columns=results_df_index,
+        index=range(len(bodyparts)),
+    )
+    if unique_bodyparts is not None:
+        coordinate_labels_unique = ["x", "y", "likelihood"]
+        results_unique_df_index = pd.MultiIndex.from_product(
+            [
+                [dlc_scorer],
+                auxiliaryfunctions.get_unique_bodyparts(cfg),
+                coordinate_labels_unique,
+            ],
+            names=["scorer", "bodyparts", "coords"],
+        )
+        df_u = pd.DataFrame(
+            unique_bodyparts.reshape((len(unique_bodyparts), -1)),
+            columns=results_unique_df_index,
+            index=range(len(unique_bodyparts)),
+        )
+        df = df.join(df_u, how="outer")
+
+    df.to_hdf(output_h5, "df_with_missing", format="table", mode="w")
+    return df
+
+
+def _save_assemblies(
+    output_path: Path,
+    output_prefix: str,
+    bodyparts: list,
+    bodypart_identities: list,
+    unique_bodyparts: list,
+    with_identity: bool,
+) -> None:
+    output_ass = output_path / f"{output_prefix}_assemblies.pickle"
+    assemblies = {}
+    for i, bpt in enumerate(bodyparts):
+        if with_identity:
+            extra_column = np.expand_dims(bodypart_identities[i], axis=-1)
+        else:
+            extra_column = np.full(
+                (bpt.shape[0], bpt.shape[1], 1),
+                -1.0,
+                dtype=np.float32,
+            )
+        ass = np.concatenate((bpt, extra_column), axis=-1)
+        assemblies[i] = ass
+
+    if unique_bodyparts is not None:
+        assemblies["single"] = {}
+        for i, unique_bpt in enumerate(unique_bodyparts):
+            extra_column = np.full((unique_bpt.shape[1], 1), -1.0, dtype=np.float32)
+            ass = np.concatenate((unique_bpt[0], extra_column), axis=-1)
+            assemblies["single"][i] = ass
+
+    with open(output_ass, "wb") as handle:
+        pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
@@ -530,8 +560,12 @@ def _generate_output_data(
         #    loaded using them
 
         key = "frame" + str(frame_num).zfill(str_width)
-        bodyparts = frame_predictions["bodyparts"]  # shape (num_assemblies, num_bpts, 3)
-        bodyparts = bodyparts.transpose((1, 0, 2))  # shape (num_bpts, num_assemblies, 3)
+        bodyparts = frame_predictions[
+            "bodyparts"
+        ]  # shape (num_assemblies, num_bpts, 3)
+        bodyparts = bodyparts.transpose(
+            (1, 0, 2)
+        )  # shape (num_bpts, num_assemblies, 3)
         coordinates = [bpt[:, :2] for bpt in bodyparts]
         scores = [bpt[:, 2:] for bpt in bodyparts]
 

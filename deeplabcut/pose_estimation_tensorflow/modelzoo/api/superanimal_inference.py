@@ -8,10 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import glob
 import os
 import os.path
 import pickle
 import time
+import warnings
 from pathlib import Path
 
 import imgaug.augmenters as iaa
@@ -20,18 +22,11 @@ import pandas as pd
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.modelzoo.utils import parse_available_supermodels
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
-from dlclibrary.dlcmodelzoo.modelzoo_download import (
-    download_huggingface_model,
-    MODELOPTIONS,
-)
-import glob
-import warnings
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -260,7 +255,8 @@ def _video_inference(
 
 def video_inference(
     videos,
-    superanimal_name,
+    project_name,
+    model_name,
     scale_list=[],
     videotype="avi",
     destfolder=None,
@@ -273,35 +269,40 @@ def video_inference(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
-        supermodels = parse_available_supermodels()
-        test_cfg = load_config(
+        project_cfg = load_config(
             os.path.join(
                 dlc_root_path,
-                "pose_estimation_tensorflow",
-                "superanimal_configs",
-                supermodels[superanimal_name],
+                "modelzoo",
+                "project_configs",
+                f"{project_name}.yaml",
             )
         )
+        model_cfg = load_config(
+            os.path.join(
+                dlc_root_path,
+                "modelzoo",
+                "model_configs",
+                f"{model_name}.yaml",
+            )
+        )
+        test_cfg = {**project_cfg, **model_cfg}
+        test_cfg["all_joints"] = [i for i in range(len(test_cfg["bobyparts"]))]
+        test_cfg["all_joints_names"] = test_cfg["bobyparts"]
+        num_joints = len(test_cfg["all_joints"])
+        test_cfg["num_joints"] = num_joints
+        test_cfg["num_limbs"] = int((num_joints * (num_joints - 1)) // 2)
+
     else:
-        test_cfg = load_config(customized_test_config)
+        test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
 
     weight_folder = str(
         Path(dlc_root_path)
-        / "pose_estimation_tensorflow"
-        / "models"
-        / "pretrained"
-        / (superanimal_name + "_weights")
+        / "modelzoo"
+        / "checkpoints"
+        / f"{project_name}_{model_name}"
     )
-
-    if superanimal_name in MODELOPTIONS:
-        if not os.path.exists(weight_folder):
-            download_huggingface_model(superanimal_name, weight_folder)
-        else:
-            print(f"{weight_folder} exists, using the downloaded weights")
-    else:
-        print(f"{superanimal_name} not available. Available ones are: ", MODELOPTIONS)
 
     snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
 
@@ -311,6 +312,11 @@ def video_inference(
     if init_weights != "":
         test_cfg["init_weights"] = init_weights
     else:
+        if len(snapshots) == 0:
+            raise FileNotFoundError(
+                f"Did not find any super animal snapshots in {weight_folder}"
+            )
+
         init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
         test_cfg["init_weights"] = init_weights
 
@@ -436,3 +442,102 @@ def video_inference(
             df.to_hdf(dataname, key="df_with_missing")
 
     return init_weights, datafiles
+
+
+def _video_inference_superanimal(
+    videos,
+    project_name,
+    model_name,
+    scale_list=[],
+    videotype=".mp4",
+    video_adapt=False,
+    plot_trajectories=True,
+    pcutoff=0.1,
+    adapt_iterations=1000,
+    pseudo_threshold=0.1,
+):
+    """
+    WARNING: This function is an internal utility function and should not be
+    called directly. It is designed to be used by deeplabcut.modelzoo.api.video_inference.py
+
+    Makes prediction based on a super animal model. Note right now we only support single animal video inference
+
+    The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+
+    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
+            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
+            in the same directory, where the video is stored.
+
+    Parameters
+    ----------
+    videos: list
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+
+    superanimal_name: str
+        The name of the superanimal model. We currently only support "superanimal_quadruped" and "superanimal_topviewmouse"
+    scale_list: list
+        A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
+
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+
+    video_adapt: bool, optional
+        Set True if you want to apply video adaptation to make the resulted video less jittering and better. However, adaptation training takes more time than usual video inference
+
+    plot_trajectories: bool, optional (default=True)
+        By default, plot the trajectories of various body parts across the video.
+
+    pcutoff: float, optional
+        Keypoints confidence that are under pcutoff will not be shown in the resulted video
+
+    adapt_iterations: int, optional:
+        Number of iterations for adaptation training
+
+    pseudo_threshold: float, default 0.1
+        Video adaptation only uses predictions that are above pseudo_threshold
+
+    Given a list of scales for spatial pyramid, i.e. [600, 700]
+
+    scale_list = range(600,800,100)
+
+    superanimal_name = 'superanimal_topviewmouse'
+    videotype = 'mp4'
+    scale_list = [200, 300, 400]
+    deeplabcut.video_inference_superanimal(
+         video,
+         superanimal_name,
+         videotype = '.avi',
+         scale_list = scale_list,
+    )
+    >>>
+    """
+    from deeplabcut.pose_estimation_tensorflow.modelzoo.api import (
+        SpatiotemporalAdaptation,
+    )
+
+    superanimal_name = project_name + "_" + model_name
+    for video in videos:
+        modelfolder = Path(video).parent / f"{Path(video).stem}_video_adaptation"
+        modelfolder.mkdir(exist_ok=True, parents=True)
+
+        adapter = SpatiotemporalAdaptation(
+            video,
+            superanimal_name,
+            modelfolder=str(modelfolder),
+            videotype=video.split(".")[-1],
+            scale_list=scale_list,
+        )
+        if not video_adapt:
+            adapter.before_adapt_inference(
+                make_video=True, pcutoff=pcutoff, plot_trajectories=plot_trajectories
+            )
+        else:
+            adapter.before_adapt_inference(make_video=False)
+            adapter.adaptation_training(
+                adapt_iterations=adapt_iterations,
+                pseudo_threshold=pseudo_threshold,
+            )
+            adapter.after_adapt_inference(
+                pcutoff=pcutoff,
+                plot_trajectories=plot_trajectories,
+            )

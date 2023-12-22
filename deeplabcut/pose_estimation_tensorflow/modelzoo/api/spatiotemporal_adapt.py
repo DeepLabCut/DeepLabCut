@@ -8,13 +8,21 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import deeplabcut
 import glob
 import os
-from deeplabcut.modelzoo.utils import parse_available_supermodels
-from deeplabcut.modelzoo.api import superanimal_inference
-from deeplabcut.utils.plotting import _plot_trajectories
+import io
 from pathlib import Path
+import yaml
+from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
+    video_inference,
+)
+from deeplabcut.utils.auxiliaryfunctions import (
+    get_deeplabcut_path,
+    load_analyzed_data,
+    read_config,
+)
+from deeplabcut.utils.make_labeled_video import create_labeled_video
+from deeplabcut.utils.plotting import _plot_trajectories
 
 
 class SpatiotemporalAdaptation:
@@ -72,12 +80,6 @@ class SpatiotemporalAdaptation:
         if scale_list is None:
             scale_list = []
 
-        supermodels = parse_available_supermodels()
-        if supermodel_name not in supermodels:
-            raise ValueError(
-                f"`supermodel_name` should be one of: {', '.join(supermodels)}."
-            )
-
         self.video_path = video_path
         self.supermodel_name = supermodel_name
         self.scale_list = scale_list
@@ -88,32 +90,53 @@ class SpatiotemporalAdaptation:
         self.modelfolder = modelfolder
         self.init_weights = init_weights
 
+        project_name = "_".join(supermodel_name.split("_")[:-1])
+        model_name = supermodel_name.split("_")[-1]
+        self.project_name = project_name
+        self.model_name = model_name
+
         if not customized_pose_config:
-            dlc_root_path = os.sep.join(deeplabcut.__file__.split(os.sep)[:-1])
-            self.customized_pose_config = os.path.join(
-                dlc_root_path,
-                "pose_estimation_tensorflow",
-                "superanimal_configs",
-                supermodels[self.supermodel_name],
+            dlc_root_path = get_deeplabcut_path()
+
+            project_config = read_config(
+                os.path.join(
+                    dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml"
+                )
             )
+
+            model_config = read_config(
+                os.path.join(
+                    dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"
+                )
+            )
+
+            joints = [i for i in range(len(project_config["bodyparts"]))]
+            num_joints = len(joints)
+            model_config["all_joints"] = joints
+            model_config["all_joints_names"] = project_config["bodyparts"]
+            model_config["num_joints"] = num_joints
+            model_config["num_limbs"] = int((num_joints * (num_joints - 1)) // 2)
+            self.customized_pose_config = {**project_config, **model_config}
         else:
             self.customized_pose_config = customized_pose_config
 
     def before_adapt_inference(self, make_video=False, **kwargs):
         if self.init_weights != "":
             print("using customized weights", self.init_weights)
-            _, datafiles = superanimal_inference.video_inference(
+            _, datafiles = video_inference(
                 [self.video_path],
-                self.supermodel_name,
+                self.project_name,
+                self.model_name,
                 videotype=self.videotype,
                 scale_list=self.scale_list,
                 init_weights=self.init_weights,
                 customized_test_config=self.customized_pose_config,
             )
         else:
-            self.init_weights, datafiles = superanimal_inference.video_inference(
+            self.init_weights, datafiles = video_inference(
                 [self.video_path],
-                self.supermodel_name,
+                self.project_name,
+                self.model_name,
                 videotype=self.videotype,
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
@@ -125,7 +148,7 @@ class SpatiotemporalAdaptation:
                 _plot_trajectories(datafiles[0])
 
         if make_video:
-            deeplabcut.create_labeled_video(
+            create_labeled_video(
                 "",
                 [self.video_path],
                 videotype=self.videotype,
@@ -167,7 +190,7 @@ class SpatiotemporalAdaptation:
         vname = str(Path(self.video_path).stem)
         video_root = Path(self.video_path).parent
 
-        _, pseudo_label_path, _, _ = deeplabcut.auxiliaryfunctions.load_analyzed_data(
+        _, pseudo_label_path, _, _ = load_analyzed_data(
             video_root, vname, DLCscorer, False, ""
         )
         if self.modelfolder != "":
@@ -175,19 +198,13 @@ class SpatiotemporalAdaptation:
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
-        if os.path.exists(
-            os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
-        ):
-            print(
-                f"model checkpoint snapshot-{self.adapt_iterations}.index exists, skipping the video adaptation"
-            )
-        else:
-            self.train_without_project(
-                pseudo_label_path,
-                displayiters=displayiters,
-                saveiters=saveiters,
-                **kwargs,
-            )
+
+        self.train_without_project(
+            pseudo_label_path,
+            displayiters=displayiters,
+            saveiters=saveiters,
+            **kwargs,
+        )
 
     def after_adapt_inference(self, **kwargs):
         pattern = os.path.join(
@@ -208,9 +225,10 @@ class SpatiotemporalAdaptation:
 
         # spatial pyramid can still be useful for reducing jittering and quantization error
 
-        _, datafiles = superanimal_inference.video_inference(
+        _, datafiles = video_inference(
             [self.video_path],
-            self.supermodel_name,
+            self.project_name,
+            self.model_name,
             videotype=self.videotype,
             init_weights=adapt_weights,
             scale_list=scale_list,
@@ -220,7 +238,7 @@ class SpatiotemporalAdaptation:
         if kwargs.pop("plot_trajectories", True):
             _plot_trajectories(datafiles[0])
 
-        deeplabcut.create_labeled_video(
+        create_labeled_video(
             ref_proj_config_path,
             [self.video_path],
             videotype=self.videotype,
