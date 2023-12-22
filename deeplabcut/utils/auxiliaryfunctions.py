@@ -29,7 +29,7 @@ import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
-from deeplabcut.utils import auxfun_videos
+from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
 def create_config_template(multianimal=False):
@@ -270,6 +270,41 @@ def edit_config(configname, edits, output_name=""):
     return cfg
 
 
+def get_bodyparts(cfg: dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: bodyparts listed in the project (does not include the unique_bodyparts entry)
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            _,
+            multianimal_bodyparts,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return multianimal_bodyparts
+
+    return cfg["bodyparts"]
+
+def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: all unique bodyparts listed in the project
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            unique_bodyparts,
+            _,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return unique_bodyparts
+
+    return []
+
+
 def write_config_3d(configname, cfg):
     """
     Write structured 3D config file.
@@ -379,10 +414,11 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-
+    if videotype is None:
+        videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
-        v
+        v   
         for v in videos
         if os.path.isfile(v)
         and any(v.endswith(ext) for ext in videotype)
@@ -589,7 +625,11 @@ def get_scorer_name(
             "train",
         )
         Snapshots = np.array(
-            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
+            [
+                fn.split(".")[0]
+                for fn in os.listdir(modelfolder)
+                if ("index" in fn) or ("snapshot" in fn and not "detector" in fn)
+            ]
         )
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
@@ -605,7 +645,9 @@ def get_scorer_name(
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-    if "resnet" in dlc_cfg["net_type"]:
+    if dlc_cfg.get("engine", "tensorflow") == "pytorch":
+        netname = "".join([p.capitalize() for p in dlc_cfg["net_type"].split("_")])
+    elif "resnet" in dlc_cfg["net_type"]:
         if dlc_cfg.get("multi_stage", False):
             netname = "dlcrnetms5"
         else:
@@ -614,6 +656,8 @@ def get_scorer_name(
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
         netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
+    else:
+        raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
 
     scorer = (
         "DLC_"
@@ -848,3 +892,5 @@ GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated
+GetEvaluationFolder = get_evaluation_folder
+GetModelFolder = get_model_folder

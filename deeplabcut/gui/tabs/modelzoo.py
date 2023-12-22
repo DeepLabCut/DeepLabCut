@@ -23,7 +23,7 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.utils import move_to_separate_thread
-from deeplabcut.modelzoo.utils import parse_available_supermodels
+from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -58,8 +58,11 @@ class ModelZoo(DefaultTab):
 
         model_combo_text = QtWidgets.QLabel("Supermodel name")
         self.model_combo = QtWidgets.QComboBox()
-        supermodels = parse_available_supermodels()
-        self.model_combo.addItems(supermodels.keys())
+        self.supermodels = [model for model in MODELOPTIONS if "superanimal" in model]
+        self.model_combo.addItems(self.supermodels)
+        self.model_combo.currentIndexChanged.connect(
+            lambda new_index: self._handle_model_change(new_index)
+        )
 
         scales_label = QtWidgets.QLabel("Scale list")
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
@@ -80,6 +83,9 @@ class ModelZoo(DefaultTab):
 
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
+        self.adapt_checkbox.setToolTip(
+            "Video Adaptation is only available for Tensorflow models (not HRNets!)"
+        )
 
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
@@ -144,6 +150,14 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
+    def _handle_model_change(self, new_supermodel_index: int) -> None:
+        supermodel = self.supermodels[new_supermodel_index]
+        if "hrnet" in supermodel:
+            self.adapt_checkbox.setChecked(False)
+            self.adapt_checkbox.setEnabled(False)
+        else:
+            self.adapt_checkbox.setEnabled(True)
+
     def run_video_adaptation(self):
         videos = list(self.files)
         if not videos:
@@ -167,20 +181,33 @@ class ModelZoo(DefaultTab):
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
-        func = partial(
-            deeplabcut.video_inference_superanimal,
-            videos,
-            supermodel_name,
-            videotype=videotype,
-            video_adapt=self.adapt_checkbox.isChecked(),
-            scale_list=scales,
-            pseudo_threshold=self.pseudo_threshold_spinbox.value(),
-            adapt_iterations=self.adapt_iter_spinbox.value(),
-        )
+        can_run_in_background = False
+        if can_run_in_background:
+            func = partial(
+                deeplabcut.video_inference_superanimal,
+                videos,
+                supermodel_name,
+                videotype=videotype,
+                video_adapt=self.adapt_checkbox.isChecked(),
+                scale_list=scales,
+                pseudo_threshold=self.pseudo_threshold_spinbox.value(),
+                adapt_iterations=self.adapt_iter_spinbox.value(),
+            )
 
-        self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
-        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
-        self.thread.start()
-        self.run_button.setEnabled(False)
-        self.root._progress_bar.show()
+            self.worker, self.thread = move_to_separate_thread(func)
+            self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
+            self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+            self.thread.start()
+            self.run_button.setEnabled(False)
+            self.root._progress_bar.show()
+
+        else:
+            deeplabcut.video_inference_superanimal(
+                videos,
+                supermodel_name,
+                videotype=videotype,
+                video_adapt=self.adapt_checkbox.isChecked(),
+                scale_list=scales,
+                pseudo_threshold=self.pseudo_threshold_spinbox.value(),
+                adapt_iterations=self.adapt_iter_spinbox.value(),
+            )

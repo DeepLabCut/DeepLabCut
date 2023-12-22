@@ -28,10 +28,10 @@ import os
 # Dependencies
 ####################################################
 import os.path
-from pathlib import Path
 from functools import partial
-from multiprocessing import Pool, get_start_method
-from typing import Iterable, Callable, Optional, Union
+from multiprocessing import get_start_method, Pool
+from pathlib import Path
+from typing import Callable, Iterable, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -42,13 +42,13 @@ from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
-from deeplabcut.modelzoo.utils import parse_available_supermodels
+
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
-from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):
@@ -587,17 +587,18 @@ def create_labeled_video(
 
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-        supermodels = parse_available_supermodels()
+        dataset_name = "_".join(superanimal_name.split("_")[:-1])
+
         test_cfg = load_config(
             os.path.join(
                 dlc_root_path,
-                "pose_estimation_tensorflow",
-                "superanimal_configs",
-                supermodels[superanimal_name],
+                "modelzoo",
+                "project_configs",
+                f"{dataset_name}.yaml",
             )
         )
 
-        bodyparts = test_cfg["all_joints_names"]
+        bodyparts = test_cfg["bodyparts"]
         cfg = {
             "skeleton": skeleton,
             "skeleton_color": skeleton_color,
@@ -1049,8 +1050,9 @@ def create_video_with_all_detections(
         keypoint will be set as a function of its score: alpha = f(score). The default
         function used when True is f(x) = x.
     """
-    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import re
+
+    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -1148,6 +1150,7 @@ def create_video_with_all_detections(
 
 def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, scale=1):
     import subprocess
+
     from tqdm import tqdm
 
     if not os.path.isdir(destfolder):

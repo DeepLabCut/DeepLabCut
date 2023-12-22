@@ -1,0 +1,4 @@
+{
+    "hrnetw32": "pytorch",
+    "dlcrnet": "tensorflow"
+}

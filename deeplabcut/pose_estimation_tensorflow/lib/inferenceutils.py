@@ -276,6 +276,55 @@ class Assembler:
     def __getitem__(self, item):
         return self.data[self.metadata["imnames"][item]]
 
+    @classmethod
+    def empty(
+        cls,
+        max_n_individuals,
+        n_multibodyparts,
+        n_uniquebodyparts,
+        graph,
+        paf_inds,
+        greedy=False,
+        pcutoff=0.1,
+        min_affinity=0.05,
+        min_n_links=2,
+        max_overlap=0.8,
+        identity_only=False,
+        nan_policy="little",
+        force_fusion=False,
+        add_discarded=False,
+        window_size=0,
+        method="m1",
+    ):
+        # Dummy data
+        n_bodyparts = n_multibodyparts + n_uniquebodyparts
+        data = {
+            "metadata": {
+                "all_joints_names": ["" for _ in range(n_bodyparts)],
+                "PAFgraph": graph,
+                "PAFinds": paf_inds,
+            },
+            "0": {},
+        }
+        return cls(
+            data,
+            max_n_individuals=max_n_individuals,
+            n_multibodyparts=n_multibodyparts,
+            graph=graph,
+            paf_inds=paf_inds,
+            greedy=greedy,
+            pcutoff=pcutoff,
+            min_affinity=min_affinity,
+            min_n_links=min_n_links,
+            max_overlap=max_overlap,
+            identity_only=identity_only,
+            nan_policy=nan_policy,
+            force_fusion=force_fusion,
+            add_discarded=add_discarded,
+            window_size=window_size,
+            method=method,
+        )
+
     @property
     def n_keypoints(self):
         return self.metadata["num_joints"]

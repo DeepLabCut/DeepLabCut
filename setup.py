@@ -1,18 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
+DeepLabCut2.0-2.3 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from __future__ import annotations
 
 import setuptools
+from pathlib import Path
+
 
 with open("README.md", encoding="utf-8", errors="replace") as fh:
     long_description = fh.read()
+
+
+def pytorch_config_paths() -> list[str]:
+    pytorch_configs = []
+    config_dir = Path("deeplabcut") / "pose_estimation_pytorch" / "config"
+    config_subdirs = [p for p in config_dir.iterdir() if p.is_dir()]
+    for subdir in config_subdirs:
+        for p in subdir.iterdir():
+            if p.suffix == ".yaml":
+                pytorch_configs.append(str(p))
+
+    return pytorch_configs
 
 
 setuptools.setup(
@@ -25,7 +40,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
-        "dlclibrary",
+        "albumentations",
+        "dlclibrary>=0.0.5",
+        "einops",
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
@@ -37,10 +54,12 @@ setuptools.setup(
         "pandas>=1.0.1,!=1.5.0",
         "scikit-image>=0.17",
         "scikit-learn>=1.0",
-        "scipy>=1.9",
+        "scipy>=1.4,<1.11.0",
         "statsmodels>=0.11",
         "tables>=3.7.0",
-        "torch<=1.12",
+        "timm",
+        "torch>=2.0.0",
+        "torchvision",
         "tensorpack>=0.11",
         "tf_slim>=1.1.0",
         "tqdm",
@@ -60,6 +79,7 @@ setuptools.setup(
         ],  # Last supported TF version on Windows Native is 2.10
         "apple_mchips": ["tensorflow-macos<2.13.0", "tensorflow-metal"],
         "modelzoo": ["huggingface_hub"],
+        "wandb": ["wandb"],
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
@@ -70,9 +90,12 @@ setuptools.setup(
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
+                "deeplabcut/modelzoo/model_configs/dlcrnet.yaml",
+                "deeplabcut/modelzoo/model_configs/hrnetw32.yaml",
+                "deeplabcut/modelzoo/models_to_framework.json",
+                "deeplabcut/modelzoo/project_configs/superanimal_quadruped.yaml",
+                "deeplabcut/modelzoo/project_configs/superanimal_topviewmouse.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
-                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/superquadruped.yaml",
-                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/supertopview.yaml",
                 "deeplabcut/gui/style.qss",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
@@ -85,8 +108,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
-                "deeplabcut/modelzoo/models.json",
-            ],
+            ] + pytorch_config_paths(),
         )
     ],
     include_package_data=True,
