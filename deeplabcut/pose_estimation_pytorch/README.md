@@ -1,6 +1,6 @@
 # PyTorch DeepLabCut API
 
-##### Structure of the repo:
+- **Structure of the repo:**
 
 Like any ML model this repo contains: models (architectures), solvers (losses and optimizers), and data (data loaders).
 
