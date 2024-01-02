@@ -10,6 +10,7 @@
 #
 import json
 import os
+from typing import Tuple
 
 import warnings
 from glob import glob
@@ -17,10 +18,15 @@ from glob import glob
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
 
-def parse_project_model_name(superanimal_name: str) -> str:
-    """
-    TODO
+def parse_project_model_name(superanimal_name: str) -> Tuple[str, str]:
+    """Parses model zoo model names for SuperAnimal models
 
+    Args:
+        superanimal_name: the name of the SuperAnimal model name to parse
+
+    Returns:
+        project_name: the parsed SuperAnimal model name
+        model_name: the model architecture (e.g., dlcrnet, hrnetw32)
     """
 
     if superanimal_name == "superanimal_quadruped":

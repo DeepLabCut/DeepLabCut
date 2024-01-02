@@ -1,4 +1,6 @@
-# TODO: MATCH https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
+# TODO: This default configuration file needs to be reviewed so it matches the original
+#  base TokenPose configuration, as defined in
+#  https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
 # See https://arxiv.org/pdf/2104.03516.pdf
 data:
   auto_padding:  # Required for HRNet backbones
