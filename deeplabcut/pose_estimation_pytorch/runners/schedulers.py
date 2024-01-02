@@ -31,7 +31,7 @@ class LRListScheduler(_LRScheduler):
 
         Args:
             optimizer: optimizer used for learning.
-            last_epoch: where to start the scheduler. Defaults to -1, starts from beggining.
+            last_epoch: where to start the scheduler. Defaults to -1, starts from beginning.
             verbose: prints model summary. Defaults to False.
             milestones: number of epochs. Defaults to [10].
             lr_list: learning rate list. Defaults to [0.001].

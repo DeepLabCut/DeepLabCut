@@ -180,7 +180,7 @@ class Grayscale(A.ToGray):
         """
         Args:
             alpha: int, float or tuple of floats, optional
-            The alpha value of the new colorspace when overlayed over the
+            The alpha value of the new colorspace when overlaid over the
             old one. A value close to 1.0 means that mostly the new
             colorspace is visible. A value close to 0.0 means that mostly the
             old image is visible.
