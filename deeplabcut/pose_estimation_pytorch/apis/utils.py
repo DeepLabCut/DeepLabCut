@@ -156,7 +156,7 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
                 A.GaussNoise(
                     var_limit=(0, opt**2),
                     mean=0,
-                    per_channel=True,  # Albumentations doesn't support per_cahnnel = 0.5
+                    per_channel=True,  # Albumentations doesn't support per_channel = 0.5
                     p=0.5,
                 )
             )
@@ -414,10 +414,10 @@ def build_predictions_dataframe(
     prediction_data = []
     index_data = []
     for image, image_predictions in predictions.items():
-        image_data = image_predictions["bodyparts"].reshape(-1)
+        image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
             image_data = np.concatenate(
-                [image_data, image_predictions["unique_bodyparts"].reshape(-1)]
+                [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
             )
 
         prediction_data.append(image_data)

@@ -9,7 +9,7 @@ dlclibrary
 ipython
 filterpy
 ruamel.yaml>=0.15.0
-# intel-openmp
+intel-openmp
 imageio-ffmpeg
 imgaug>=0.4.0
 numba>=0.54.0
@@ -21,9 +21,9 @@ Pillow>=7.1
 pyyaml
 scikit-image>=0.17
 scikit-learn>=1.0
-scipy>=1.9
+scipy>=1.4,<1.11.0
 statsmodels>=0.11
-tensorflow>=2.0,<=2.10
+tensorflow>=2.0,<2.13.0
 tables>=3.7.0
 tensorpack>=0.11
 tf_slim>=1.1.0

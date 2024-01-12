@@ -191,7 +191,7 @@ class PoseDataset(Dataset):
             image, keypoints, keypoints_unique, bboxes
         )
         keypoints = transformed["keypoints"]
-        bboxes = np.array(transformed["bboxes"])
+        bboxes = transformed["bboxes"]
 
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
@@ -250,8 +250,8 @@ class PoseDataset(Dataset):
             "keypoints_unique": keypoints_unique[..., :2],
             "area": pad_to_length(annotations_merged["area"], num_animals, 0),
             "boxes": pad_to_length(bboxes, num_animals, 0),
-            "is_crowd": pad_to_length(is_crowd, num_animals, 0),
-            "labels": pad_to_length(cat_ids, num_animals, -1),
+            "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
+            "labels": pad_to_length(cat_ids, num_animals, -1).astype(int),
         }
 
     def _load_image(self, image_path):
@@ -313,7 +313,7 @@ class PoseDataset(Dataset):
         """
         class_labels = [
             f"individual{i}_{bpt}"
-            for i in range(self.parameters.max_num_animals)
+            for i in range(len(keypoints))
             for bpt in self.parameters.bodyparts
         ] + [f"unique_{bpt}" for bpt in self.parameters.unique_bpts]
 

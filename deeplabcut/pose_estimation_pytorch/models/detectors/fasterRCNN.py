@@ -98,7 +98,6 @@ class FasterRCNN(BaseDetector):
                  Each dictionary contains the following keys:
                  'area'
                  'labels'
-                 'image_id'
                  'is_crowd'
                  'boxes'
 
@@ -107,13 +106,24 @@ class FasterRCNN(BaseDetector):
                 annotations = {"area": torch.Tensor([100, 200]),
                     "labels": torch.Tensor([1, 2]),
                     "is_crowd": torch.Tensor([0, 1]),
-                    "image_id": torch.Tensor([1, 1]),
                     "boxes": torch.Tensor([[10, 20, 30, 40], [50, 60, 70, 80]])}
             output:
-                res =  [{'area': tensor([100.]), 'labels': tensor([1]), 'image_id': tensor([1]), 'is_crowd': tensor([0]),
-                    'boxes': tensor([[10., 20., 40., 60.]])},
-                    {'area': tensor([200.]), 'labels': tensor([2]), 'image_id': tensor([1]), 'is_crowd': tensor([1]), 'boxes':
-                    tensor([[50., 60., 70., 80.]])}]
+                res =  [
+                    {
+                        'area': tensor([100.]),
+                        'labels': tensor([1]),
+                        'image_id': tensor([1]),
+                        'is_crowd': tensor([0]),
+                        'boxes': tensor([[10., 20., 40., 60.]])
+                    },
+                    {
+                        'area': tensor([200.]),
+                        'labels': tensor([2]),
+                        'image_id': tensor([1]),
+                        'is_crowd': tensor([1]),
+                        'boxes': tensor([[50., 60., 70., 80.]])
+                    }
+                ]
         """
         res = []
         for i, box_ann in enumerate(labels["boxes"]):
@@ -124,10 +134,9 @@ class FasterRCNN(BaseDetector):
             box_ann[:, 3] += box_ann[:, 1]
             res.append(
                 {
-                    "area": labels["area"][i],
-                    "labels": labels["labels"][i],
-                    # "image_id": labels["image_id"][i],
-                    "is_crowd": labels["is_crowd"][i],
+                    "area": labels["area"][i][mask],
+                    "labels": labels["labels"][i][mask],
+                    "is_crowd": labels["is_crowd"][i][mask],
                     "boxes": box_ann,
                 }
             )

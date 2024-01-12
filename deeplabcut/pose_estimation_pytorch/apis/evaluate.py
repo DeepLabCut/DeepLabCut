@@ -17,9 +17,10 @@ from typing import Iterable
 import albumentations as A
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
-from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
 from deeplabcut.pose_estimation_pytorch.apis.scoring import (
     compute_identity_scores,
     get_scores,
@@ -63,7 +64,7 @@ def predict(
     if pose_task == Task.TOP_DOWN:
         # Get bounding boxes for context
         if detector_runner is not None:
-            bbox_predictions = detector_runner.inference(images=image_paths)
+            bbox_predictions = detector_runner.inference(images=tqdm(image_paths))
             context = bbox_predictions
         else:
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
@@ -77,7 +78,7 @@ def predict(
             )
         images_with_context = list(zip(image_paths, context))
 
-    predictions = pose_runner.inference(images=images_with_context)
+    predictions = pose_runner.inference(images=tqdm(images_with_context))
     return {
         image_path: image_predictions
         for image_path, image_predictions in zip(image_paths, predictions)

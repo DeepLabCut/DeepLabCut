@@ -5,7 +5,7 @@ DeepLabCut2.0-2.3 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 from __future__ import annotations
@@ -90,9 +90,12 @@ setuptools.setup(
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
+                "deeplabcut/modelzoo/model_configs/dlcrnet.yaml",
+                "deeplabcut/modelzoo/model_configs/hrnetw32.yaml",
+                "deeplabcut/modelzoo/models_to_framework.json",
+                "deeplabcut/modelzoo/project_configs/superanimal_quadruped.yaml",
+                "deeplabcut/modelzoo/project_configs/superanimal_topviewmouse.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
-                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/superquadruped.yaml",
-                "deeplabcut/pose_estimation_tensorflow/superanimal_configs/supertopview.yaml",
                 "deeplabcut/gui/style.qss",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
@@ -105,7 +108,6 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
-                "deeplabcut/modelzoo/models.json",
             ] + pytorch_config_paths(),
         )
     ],

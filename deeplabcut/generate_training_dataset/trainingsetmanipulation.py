@@ -31,8 +31,6 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
 def comparevideolistsanddatafolders(config):
@@ -904,7 +902,15 @@ def create_training_dataset(
         elif cfg.get("engine", "pytorch").lower() == "pytorch":  # TODO: Change default to tensorflow
             pass
         else:
-            raise ValueError("Invalid network type:", net_type)
+            if (
+                "resnet" in net_type
+                or "mobilenet" in net_type
+                or "efficientnet" in net_type
+                or "dlcrnet" in net_type
+            ):
+                pass
+            else:
+                raise ValueError("Invalid network type:", net_type)
 
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", "imgaug")

@@ -420,10 +420,19 @@ def apply_transform(
         transformed["keypoints"] = np.array(transformed["keypoints"])
         transformed["keypoints"][~defined_keypoint_mask] = -1
         shape_transformed = transformed["image"].shape
-        mask_valid = _check_keypoints_within_bounds(
-            transformed["keypoints"], shape_transformed
-        )
-        transformed["keypoints"][~mask_valid] = -1
+
+        if len(transformed["keypoints"]) > 0:
+            mask_valid = _check_keypoints_within_bounds(
+                transformed["keypoints"], shape_transformed
+            )
+            transformed["keypoints"][~mask_valid] = -1
+
+        # TODO: Check that the transformed bboxes are still within the image
+        if len(transformed["bboxes"]) > 0:
+            transformed["bboxes"] = np.array(transformed["bboxes"])
+        else:
+            transformed["bboxes"] = np.zeros(shape=(0, 4))
+
     else:
         transformed = {"keypoints": keypoints, "image": image}
     np.nan_to_num(transformed["keypoints"], copy=False, nan=-1)
@@ -487,7 +496,7 @@ def _set_invalid_keypoints_to_neg_one(
     ]
     for label in undef_class_labels:
         new_index = transformed["class_labels"].index(label)
-        transformed["keypoints"][new_index] = (-1, -1)
+        transformed["keypoints"][new_index] = (-1, -1, -1)
 
     return transformed
 

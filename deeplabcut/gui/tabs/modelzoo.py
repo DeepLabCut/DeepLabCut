@@ -167,20 +167,33 @@ class ModelZoo(DefaultTab):
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
-        func = partial(
-            deeplabcut.video_inference_superanimal,
-            videos,
-            supermodel_name,
-            videotype=videotype,
-            video_adapt=self.adapt_checkbox.isChecked(),
-            scale_list=scales,
-            pseudo_threshold=self.pseudo_threshold_spinbox.value(),
-            adapt_iterations=self.adapt_iter_spinbox.value(),
-        )
+        can_run_in_background = False
+        if can_run_in_background:
+            func = partial(
+                deeplabcut.video_inference_superanimal,
+                videos,
+                supermodel_name,
+                videotype=videotype,
+                video_adapt=self.adapt_checkbox.isChecked(),
+                scale_list=scales,
+                pseudo_threshold=self.pseudo_threshold_spinbox.value(),
+                adapt_iterations=self.adapt_iter_spinbox.value(),
+            )
 
-        self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
-        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
-        self.thread.start()
-        self.run_button.setEnabled(False)
-        self.root._progress_bar.show()
+            self.worker, self.thread = move_to_separate_thread(func)
+            self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
+            self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+            self.thread.start()
+            self.run_button.setEnabled(False)
+            self.root._progress_bar.show()
+
+        else:
+            deeplabcut.video_inference_superanimal(
+                videos,
+                supermodel_name,
+                videotype=videotype,
+                video_adapt=self.adapt_checkbox.isChecked(),
+                scale_list=scales,
+                pseudo_threshold=self.pseudo_threshold_spinbox.value(),
+                adapt_iterations=self.adapt_iter_spinbox.value(),
+            )
