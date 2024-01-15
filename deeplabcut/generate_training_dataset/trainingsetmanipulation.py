@@ -31,8 +31,6 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
 def comparevideolistsanddatafolders(config):
@@ -844,12 +842,8 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
-        supermodels = parse_available_supermodels()
-        posecfg_template = os.path.join(
-            dlc_root_path,
-            "pose_estimation_tensorflow",
-            "superanimal_configs",
-            supermodels[superanimal_name],
+        raise ValueError(
+            f"Transfer learning from superanimal models is temporarily not available"
         )
 
     if posecfg_template:

@@ -60,6 +60,9 @@ from deeplabcut.generate_training_dataset import (
     dropduplicatesinannotatinfiles,
     dropunlabeledframes,
 )
+
+from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+
 from deeplabcut.utils import (
     create_labeled_video,
     create_video_with_all_detections,
@@ -107,7 +110,6 @@ from deeplabcut.pose_estimation_tensorflow import (
     visualize_paf,
     extract_save_all_maps,
     export_model,
-    video_inference_superanimal,
 )
 
 

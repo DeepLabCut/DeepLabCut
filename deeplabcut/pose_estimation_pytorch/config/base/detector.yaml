@@ -1,0 +1,22 @@
+data_detector:
+  hflip: true
+  normalize_images: true
+detector:
+  model:
+    type: "FasterRCNN"
+  optimizer:
+    type: "AdamW"
+    params:
+      lr: 1e-4
+  scheduler:
+    type: "LRListScheduler"
+    params:
+      milestones: [90]
+      lr_list: [[1e-5]]
+  runner:
+    type: "DetectorRunner"
+    max_individuals: "num_individuals"
+  batch_size: 1
+  epochs: 500
+  save_epochs: 100
+  display_iters: 500

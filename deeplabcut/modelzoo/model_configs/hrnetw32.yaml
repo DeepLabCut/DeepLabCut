@@ -1,0 +1,100 @@
+corner2move2:
+move2corner:
+cfg_path:
+colormode: RGB
+data:
+  covering: true
+  gaussian_noise: 12.75
+  hist_eq: true
+  motion_blur: true
+  normalize_images: true
+  rotation: 30
+  scale_jitter:
+  - 0.5
+  - 1.25
+  auto_padding:
+    pad_width_divisor: 32
+    pad_height_divisor: 32
+data_detector:
+  hflip: true
+  normalize_images: true
+detector:
+  model:
+    type: FasterRCNN
+    box_score_thresh: 0.6
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+  scheduler:
+    type: LRListScheduler
+    params:
+      milestones:
+      - 90
+      lr_list:
+      - - 1e-05
+  runner:
+    type: DetectorRunner
+    max_individuals:
+  batch_size: 1
+  epochs: 500
+  save_epochs: 100
+  display_iters: 500
+device: cuda
+display_iters: 50
+epochs: 200
+method: td
+model:
+  backbone:
+    type: HRNet
+    model_name: hrnet_w32
+    pretrained: true
+    only_high_res: true
+  backbone_output_channels: 32
+  heads:
+    bodypart:
+      type: HeatmapHead
+      predictor:
+        type: HeatmapPredictor
+        location_refinement: false
+        locref_std: 7.2801
+      target_generator:
+        type: HeatmapPlateauGenerator
+        num_heatmaps: # number of bodyparts
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+        locref_std: 7.2801
+      criterion:
+        heatmap:
+          type: WeightedBCECriterion
+          weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0
+      heatmap_config:
+        channels:
+        - 32
+        - 0 # number of bodyparts
+        kernel_size:
+        - 1
+        strides:
+        - 1
+optimizer:
+  params:
+    lr: 0.0001
+  type: AdamW
+pose_config_path:
+runner:
+  type: PoseRunner
+save_epochs: 50
+scheduler:
+  params:
+    lr_list:
+    - - 1e-05
+    - - 1e-06
+    milestones:
+    - 90
+    - 120
+  type: LRListScheduler
+seed: 42
