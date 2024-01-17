@@ -23,7 +23,7 @@ def test_class_init(project_name, pose_model_type, max_individuals):
     assert len(inference_pipeline.config["bodyparts"]) > 0
 
 
-@pytest.mark.require_models
+@pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize(
     "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
 )
@@ -42,7 +42,7 @@ def test_runner_init(project_name, pose_model_type):
     assert inference_pipeline.models.detector_runner
 
 
-@pytest.mark.require_models
+@pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize("max_individuals", [10, 4, 1])
 @pytest.mark.parametrize(
     "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]

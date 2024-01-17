@@ -1,7 +1,14 @@
-"""Predictor to generate identity maps from head outputs
-
-
-"""
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+"""Predictor to generate identity maps from head outputs"""
 from __future__ import annotations
 
 import torch

@@ -58,7 +58,7 @@ def test_plateau_heatmap_generation_single_keypoint(data):
     generator = HeatmapPlateauGenerator(
         num_heatmaps=data["num_heatmaps"],
         pos_dist_thresh=dist_thresh,
-        heatmap_mode=HeatmapGenerator.Mode.INDIVIDUAL,
+        heatmap_mode=HeatmapGenerator.Mode.KEYPOINT,
         generate_locref=False,
     )
     inputs = torch.zeros((1, 3, *data["in_shape"]))

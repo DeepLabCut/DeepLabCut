@@ -1,6 +1,7 @@
 import os
 import random
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import albumentations as A
 import pytest
@@ -11,13 +12,21 @@ import deeplabcut.utils.auxiliaryfunctions as dlc_auxfun
 from deeplabcut.generate_training_dataset import create_training_dataset
 
 
+def mock_aux() -> Mock:
+    aux_functions = Mock()
+    aux_functions.read_plainconfig = Mock()
+    aux_functions.read_plainconfig.return_value = {}
+    return aux_functions
+
+
+@patch("deeplabcut.pose_estimation_pytorch.data.base.auxiliaryfunctions", mock_aux())
 def _get_dataset(path, transform, mode="train"):
     project_root = Path(path)
     if not (project_root / "training-datasets").exists():
         create_training_dataset(config=str(project_root / "config.yaml"))
 
-    dlc_project = dlc.DLCProject(path, shuffle=1)
-    dataset = dlc.PoseDataset(dlc_project, transform=transform, mode=mode)
+    loader = dlc.DLCLoader(path, model_config_path="", shuffle=1)
+    dataset = loader.create_dataset(transform=transform, mode=mode)
     return dataset
 
 
@@ -29,6 +38,25 @@ def _get_openfield_dataset(transform=None):
     return _get_dataset(openfield_path, transform=transform)
 
 
+key_set = {
+    "offsets",
+    "path",
+    "scales",
+    "image",
+    "original_size",
+    "annotations",
+    "image_id",
+}
+anno_key_set = {
+    "keypoints",
+    "keypoints_unique",
+    "area",
+    "boxes",
+    "is_crowd",
+    "labels",
+}
+
+
 @pytest.mark.parametrize("batch_size", [1, 2, random.randint(2, 20)])
 def test_iter_all_dataset_no_transform(batch_size):
     if batch_size > 1:  # if batched, all images need to be the same size
@@ -38,23 +66,15 @@ def test_iter_all_dataset_no_transform(batch_size):
             bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
         )
     else:
-        transform = None
+        transform = A.Compose(
+            [A.Normalize()],
+            keypoint_params=A.KeypointParams(format="xy"),
+            bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
+        )
     dataset = _get_openfield_dataset(transform=transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
-    key_set = {"image", "original_size", "annotations"}
-    anno_key_set = {
-        "keypoints",
-        "area",
-        "ids",
-        "boxes",
-        "image_id",
-        "is_crowd",
-        "labels",
-        "unique_kpts",
-    }
-
-    max_num_animals = dataset.max_num_animals
-    num_keypoints = dataset.num_joints
+    max_num_animals = dataset.parameters.max_num_animals
+    num_keypoints = dataset.parameters.num_joints
     for i, item in enumerate(dataloader):
         is_last_batch = i == (len(dataloader) - 1)
         assert (
@@ -88,26 +108,26 @@ def _generate_random_test_values_aug(min_exa):
     batch_size = random.randint(1, 20)
     x_size = random.randint(50, 600)
     y_size = random.randint(50, 600)
-    exageration = random.randint(min_exa, 99)
+    exaggeration = random.randint(min_exa, 99)
 
-    return (batch_size, x_size, y_size, exageration)
+    return batch_size, x_size, y_size, exaggeration
 
 
 @pytest.mark.parametrize(
-    "batch_size, x_size, y_size, exageration",
+    "batch_size, x_size, y_size, exaggeration",
     [
         (1, 512, 512, 1),
         _generate_random_test_values_aug(1),
         _generate_random_test_values_aug(50),
     ],
 )
-def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exageration):
+def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):
     transform = A.Compose(
         [
             A.Affine(
-                scale=(1 - exageration * 0.01, 1 + exageration),
-                rotate=(-exageration * 2, exageration * 2),
-                translate_px=(-exageration * 10, exageration * 10),
+                scale=(1 - exaggeration * 0.01, 1 + exaggeration),
+                rotate=(-exaggeration * 2, exaggeration * 2),
+                translate_px=(-exaggeration * 10, exaggeration * 10),
             ),
             A.Resize(y_size, x_size),
         ],
@@ -116,20 +136,8 @@ def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exageration):
     )
     dataset = _get_openfield_dataset(transform=transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
-    key_set = {"image", "original_size", "annotations"}
-    anno_key_set = {
-        "keypoints",
-        "area",
-        "ids",
-        "boxes",
-        "image_id",
-        "is_crowd",
-        "labels",
-        "unique_kpts",
-    }
-
-    max_num_animals = dataset.max_num_animals
-    num_keypoints = dataset.num_joints
+    max_num_animals = dataset.parameters.max_num_animals
+    num_keypoints = dataset.parameters.num_joints
     for i, item in enumerate(dataloader):
         is_last_batch = i == (len(dataloader) - 1)
         assert (

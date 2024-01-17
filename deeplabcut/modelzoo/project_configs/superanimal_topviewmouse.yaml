@@ -1,14 +1,14 @@
-# Project definitions (do not edit)
+    # Project definitions (do not edit)
 Task:
 scorer:
 date:
 multianimalproject:
 identity:
 
-# Project path (change when moving around)
+    # Project path (change when moving around)
 project_path:
 
-# Annotation data set configuration (and individual video cropping parameters)
+    # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
 bodyparts:
 - nose
@@ -40,11 +40,13 @@ bodyparts:
 - head_midpoint
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
 start:
 stop:
 numframes2pick:
 
-# Plotting configuration
+    # Plotting configuration
 skeleton: []
 skeleton_color: black
 pcutoff:
@@ -52,7 +54,7 @@ dotsize:
 alphavalue:
 colormap:
 
-# Training,Evaluation and Analysis configuration
+    # Training,Evaluation and Analysis configuration
 TrainingFraction:
 iteration:
 default_net_type:
@@ -60,9 +62,9 @@ default_augmenter:
 snapshotindex:
 batch_size: 1
 
-# Cropping Parameters (for analysis and outlier frame detection)
+    # Cropping Parameters (for analysis and outlier frame detection)
 cropping:
-# if cropping is true for analysis, then set the values here:
+    #if cropping is true for analysis, then set the values here:
 x1:
 x2:
 y1:

@@ -1,5 +1,6 @@
-# TODO: MATCH https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
-# See https://arxiv.org/pdf/2104.03516.pdf
+# TODO: This default configuration file needs to be reviewed so it matches the original
+ #  base TokenPose configuration, as defined in
+ #  https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
 data:
   auto_padding:  # Required for HRNet backbones
     pad_width_divisor: 32
@@ -29,10 +30,11 @@ model:
     bodypart:
       type: TransformerHead
       target_generator:
-        type: PlateauGenerator
-        generate_locref: false
-        num_joints: "num_bodyparts"
+        type: HeatmapPlateauGenerator
+        num_heatmaps: "num_bodyparts"
         pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
       criterion:
         type: WeightedBCECriterion
       predictor:

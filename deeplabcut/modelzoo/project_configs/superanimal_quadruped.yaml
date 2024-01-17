@@ -6,8 +6,7 @@ multianimalproject:
 identity:
 
     # Project path (change when moving around)
-project_path: 
-  /Users/niels/Documents/upamathis/repos/DLCdev/deeplabcut/modelzoo/project_configs
+project_path:
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:

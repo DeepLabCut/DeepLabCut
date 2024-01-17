@@ -9,9 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from typing import List, Tuple
+from typing import Tuple
 
-import numpy as np
 import pytest
 import torch
 
@@ -52,12 +51,16 @@ def get_target(
         output:
 
     """
-    annotations = {
+    labels = {
         "keypoints": torch.randint(
             1, min(image_size), (batch_size, num_animals, num_joints, 2)
         )
     }  # 2 for x,y coords
-    prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
+    inputs = torch.rand((batch_size, 3, image_size[0], image_size[1]))
+    prediction = {
+        "heatmap": torch.rand((batch_size, num_joints, image_size[0], image_size[1])),
+        "locref": torch.rand((batch_size, 2 * num_joints, image_size[0], image_size[1])),
+    }
     generator = HeatmapPlateauGenerator(
         num_heatmaps=num_joints,
         pos_dist_thresh=pos_dist_thresh,
@@ -65,8 +68,8 @@ def get_target(
         generate_locref=True,
     )
 
-    targets_output = generator(annotations, prediction, image_size)
-    return targets_output, annotations
+    targets_output = generator(inputs, prediction, labels)
+    return targets_output, labels
 
 
 data = [(1, 1, 10, (256, 256), 7.2801, 17)]
@@ -113,23 +116,21 @@ def test_expected_output(
         batch_size, num_animals, num_joints, image_size, locref_stdev, pos_dist_thresh
     )
 
-    assert "heatmaps" in targets_output
-    assert "locref_maps" in targets_output
-    assert "locref_masks" in targets_output
-
-    assert targets_output["heatmaps"].shape == (
+    assert "heatmap" in targets_output
+    assert "locref" in targets_output
+    assert targets_output["heatmap"]["target"].shape == (
         batch_size,
         num_joints,
         image_size[0],
         image_size[1],
     )  # heatmaps score output
-    assert targets_output["locref_masks"].shape == (
+    assert targets_output["locref"]["weights"].shape == (
         batch_size,
         num_joints * 2,
         image_size[0],
         image_size[1],
     )
-    assert targets_output["locref_maps"].shape == (
+    assert targets_output["locref"]["target"].shape == (
         batch_size,
         num_joints * 2,
         image_size[0],
@@ -188,7 +189,7 @@ def test_single_animal(
     )
 
     targets_output = torch.tensor(
-        targets_output["heatmaps"].reshape(1, 10, image_size[0] * image_size[1])
+        targets_output["heatmap"]["target"].reshape(1, 10, image_size[0] * image_size[1])
     )  # converting from dict to tensor. 'argmax' works on tensors.
 
     plt_max = torch.argmax(targets_output, dim=2)

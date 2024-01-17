@@ -30,7 +30,7 @@ def test_download_huggingface_wrong_model():
         dlclibrary.download_huggingface_model("wrong_model_name")
 
 
-@pytest.mark.skip
+@pytest.mark.skip(reason="slow")
 @pytest.mark.parametrize("model", MODELOPTIONS)
 def test_download_all_models(tmp_path_factory, model):
     test_download_huggingface_model(tmp_path_factory, model)

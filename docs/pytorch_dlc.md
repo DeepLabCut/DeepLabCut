@@ -6,7 +6,7 @@
 The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch 
 dataset creation and test/train splitting.
   - `Project` class provides train and test splitting and converts dataset to required
-  format. For intance, to [COCO]() format.
+  format. For instance, to [COCO]() format.
   - `PoseTrainDataset` class is a [torch.utils.Dataset](https://pytorch.org/docs/stable/data.html) class, which converts raw 
   images and keypoints to a tensor dataset for training and evaluation.
 - [models](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):

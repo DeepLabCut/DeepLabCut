@@ -12,15 +12,17 @@ def test_gaussian_target_generation(
     batch_size: int, num_keypoints: int, image_size: tuple, num_animals=1
 ):
     # generate annotations
-    annotations = {
+    labels = {
         "keypoints": torch.randint(
             1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
         )
     }  # batch size, num animals, num keypoints, 2 for x,y
     # generate predictions
-    prediction = [
-        torch.rand((batch_size, num_keypoints, image_size[0], image_size[1]))
-    ]  # batch size, num keypoints , imageh, imagew
+    inputs = torch.rand((batch_size, 3, *image_size[:2]))
+    prediction = {
+        "heatmap": torch.rand((batch_size, num_keypoints, *image_size[:2])),
+        "locref": torch.rand((batch_size, 2 * num_keypoints, *image_size[:2])),
+    }
 
     # generate heatmap
     output = HeatmapGaussianGenerator(
@@ -29,7 +31,7 @@ def test_gaussian_target_generation(
         locref_std=5.0,
     )
     output = torch.tensor(
-        output(annotations, prediction, image_size)["heatmaps"].reshape(
+        output(inputs, prediction, labels)["heatmap"]["target"].reshape(
             batch_size, num_keypoints, image_size[0] * image_size[1]
         )
     )
@@ -44,7 +46,7 @@ def test_gaussian_target_generation(
     # get heatmap center tensor
     predict_kp = torch.stack((x, y), dim=-1)
     # Remove num_animals dimension - only one animal is supported
-    annotations["keypoints"] = torch.squeeze(annotations["keypoints"], dim=1)
+    labels["keypoints"] = torch.squeeze(labels["keypoints"], dim=1)
 
     # compare heatmap center to annotation
-    assert torch.eq(annotations["keypoints"], predict_kp).all().item()
+    assert torch.eq(labels["keypoints"], predict_kp).all().item()

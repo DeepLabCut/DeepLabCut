@@ -15,7 +15,7 @@ import pytest
 import torch
 from torch.optim import SGD
 
-import deeplabcut.pose_estimation_pytorch.solvers.schedulers as deeplabcut_torch_schedulers
+import deeplabcut.pose_estimation_pytorch.runners.schedulers as deeplabcut_torch_schedulers
 
 
 def generate_random_lr_list(num_floats: int):
@@ -42,13 +42,13 @@ def generate_random_lr_list(num_floats: int):
 milestones = random.sample(range(0, 999), 2)
 milestones.sort()
 data = [([10, 430], [[0.05], [0.005]]), (milestones, generate_random_lr_list(2))]
-# tetsing for default values in pytorch_config and also for random values with pytest parametrize
+# testing for default values in pytorch_config and also for random values with pytest parametrize
 
 
 @pytest.mark.parametrize("milestones, lr_list", data)
 def test_scheduler(milestones, lr_list):
     """Summary:
-    Testing shedulers.py.
+    Testing schedulers.py.
     Given a list of milestones and a list of learning rates, this function tests
     if the length of each list is the same. Furthermore, it will assess if
     the current learning rate (output from the function we are testing) is a float

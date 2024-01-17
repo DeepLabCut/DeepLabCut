@@ -5,6 +5,7 @@ import pytest
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import _get_config_model_paths
 
 
+@pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize(
     "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
 )

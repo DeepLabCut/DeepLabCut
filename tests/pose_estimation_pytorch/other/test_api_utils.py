@@ -7,7 +7,7 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as dlc_api_utils
 
 transform_dicts = [
     {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
-    {"resize": [512, 256]},
+    {"resize": {"height": 512, "width": 256, "keep_ration": True}},
     {
         "covering": True,
         "gaussian_noise": 12.75,
@@ -48,11 +48,8 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
     transform_bbox_aug = dlc_api_utils.build_transforms(
         transform_dict, augment_bbox=True
     )
-    transform_no_bbox_aug = dlc_api_utils.build_transforms(
-        transform_dict, augment_bbox=False
-    )
     transform_inference = dlc_api_utils.build_inference_transform(
-        transform_dict, augment_bbox=False
+        transform_dict, augment_bbox=True
     )
 
     w, h = size_image
@@ -62,11 +59,6 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
         bboxes[:, 2] = w - bboxes[:, 0]
         bboxes[:, 3] = h - bboxes[:, 1]
         keypoints = np.random.randint(0, min(w, h), (num_keypoints, 2))
-
-        with pytest.raises(Exception):
-            transformed = transform_no_bbox_aug(
-                image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy()
-            )
 
         with pytest.raises(Exception):
             transformed = transform_inference(image=test_image)
@@ -80,24 +72,24 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
             keypoints=keypoints.copy(),
             bboxes=bboxes.copy(),
             bbox_labels=np.arange(num_animals),
+            class_labels=[0 for _ in range(len(keypoints))]
         )
-        transformed_without_bbox = transform_no_bbox_aug(
-            image=test_image, keypoints=keypoints.copy()
+        transformed_inference = transform_inference(
+            image=test_image,
+            keypoints=[],
+            bboxes=bboxes.copy(),
+            bbox_labels=np.arange(num_animals),
+            class_labels=[0 for _ in range(len(keypoints))]
         )
-        transformed_inference = transform_inference(image=test_image, keypoints=[])
 
         if "resize" in transform_dict.keys():
             assert transformed_inference["image"].shape[:2] == (
-                transform_dict["resize"][0],
-                transform_dict["resize"][1],
+                transform_dict["resize"]["height"],
+                transform_dict["resize"]["width"],
             )
             assert transformed_with_bbox["image"].shape[:2] == (
-                transform_dict["resize"][0],
-                transform_dict["resize"][1],
-            )
-            assert transformed_without_bbox["image"].shape[:2] == (
-                transform_dict["resize"][0],
-                transform_dict["resize"][1],
+                transform_dict["resize"]["height"],
+                transform_dict["resize"]["width"],
             )
 
         if "auto_padding" in transform_dict.keys():
@@ -107,10 +99,7 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
             )
             assert transformed_inference["image"].shape[0] % modh == 0
             assert transformed_with_bbox["image"].shape[0] % modh == 0
-            assert transformed_without_bbox["image"].shape[0] % modh == 0
             assert transformed_inference["image"].shape[1] % modw == 0
             assert transformed_with_bbox["image"].shape[1] % modw == 0
-            assert transformed_without_bbox["image"].shape[1] % modw == 0
 
         assert len(transformed_with_bbox["keypoints"]) == len(keypoints)
-        assert len(transformed_without_bbox["keypoints"]) == len(keypoints)

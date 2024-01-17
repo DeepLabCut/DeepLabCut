@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -247,7 +247,7 @@ class HeatmapGaussianGenerator(HeatmapGenerator):
             locref_map[:, :, 0] = dx * self.locref_scale
             locref_map[:, :, 1] = dy * self.locref_scale
 
-        if locref_mask:
+        if locref_mask is not None:
             locref_mask[dist <= self.dist_thresh_sq] = 1
 
 

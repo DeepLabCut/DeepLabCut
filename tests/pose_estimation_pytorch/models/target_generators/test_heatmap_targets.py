@@ -56,7 +56,7 @@ def test_gaussian_heatmap_generation_single_keypoint(data):
     generator = HeatmapGaussianGenerator(
         num_heatmaps=data["num_heatmaps"],
         pos_dist_thresh=dist_thresh,
-        heatmap_mode=HeatmapGaussianGenerator.Mode.INDIVIDUAL,
+        heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
         generate_locref=False,
     )
     inputs = torch.zeros((1, 3, *data["in_shape"]))
@@ -103,7 +103,7 @@ def test_random_gaussian_target_generation(
     generator = HeatmapGaussianGenerator(
         num_heatmaps=num_keypoints,
         pos_dist_thresh=17,
-        heatmap_mode=HeatmapGaussianGenerator.Mode.INDIVIDUAL,
+        heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
         generate_locref=False,
     )
     targets = generator(inputs, predicted_heatmaps, annotations)

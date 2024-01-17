@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -18,10 +18,15 @@ from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
 
 def parse_project_model_name(superanimal_name: str) -> str:
-    """
-    TODO
+    """Parses model zoo model names for SuperAnimal models
 
-    """
+     Args:
+         superanimal_name: the name of the SuperAnimal model name to parse
+
+     Returns:
+         project_name: the parsed SuperAnimal model name
+         model_name: the model architecture (e.g., dlcrnet, hrnetw32)
+     """
 
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
