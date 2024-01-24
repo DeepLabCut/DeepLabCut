@@ -48,18 +48,3 @@ After training, it's time to see how well your model performs.
 
 ![Evaluation Example in DeepLabCut](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/evaluation-example.png?raw=true)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
