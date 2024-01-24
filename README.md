@@ -223,7 +223,14 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
+- January 2024: Our landmark paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 citations! 
 
+- December 2023: DeepLabCut hit 600,000 downloads!
+  
+- October 2023: DeepLabCut celebrates a milestone with 4,000 🌟 in Github!
+  
+- May 2023: The Model Zoo is now fully integrated into the DeepLabCut GUI, making it easier than ever to access a variety of pre-trained models!
+  
 - December 2022: DeepLabCut hits 450,000 downloads and 2.3 is the new stable release!
 
 - August 2022: DeepLabCut hit 400,000 downloads!
