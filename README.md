@@ -98,7 +98,7 @@ In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthyl
 
 ## Code contributors:
 
-DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with [Tanmay Nath](http://www.mousemotorlab.org/team), and currently (2.1+) actively developed with [Jessy Lauer](https://github.com/jeylau). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
+DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with the core dev team consisting of [Tanmay Nath](https://github.com/meet10may) (2.0-2.1), and currently (2.1+) with [Jessy Lauer](https://github.com/jeylau) and (2.3+) [Niels Poulsen](https://github.com/n-poulsen). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [100+ contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
 
 This is an actively developed package and we welcome community development and involvement.
 
