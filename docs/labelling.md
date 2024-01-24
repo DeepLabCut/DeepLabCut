@@ -8,7 +8,7 @@ In DeepLabCut, choosing the right frames for labeling is a key step. You've got 
    - **Uniform:** This is like taking a snapshot at regular time intervals.
    - **K-means:** This one looks for frames where things are happening differently, giving you a variety of actions and poses.
 
-2. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye. Choose the **`automatic`** extraction method.
+2. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye. Choose the **`manual`** extraction method.
 
 #### Here's how to get started:
 
