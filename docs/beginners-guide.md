@@ -21,7 +21,7 @@ Before you begin, make sure that DeepLabCut is installed on your system. For det
 If you have installed DeepLabCut via conda, activate the environment with the following command:
 
 ```bash
-conda activate DeepLabCut
+conda activate DEEPLABCUT
 ```
 >**⚠️ Attention macOS M1 Users:**
 ><br/>
