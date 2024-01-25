@@ -223,24 +223,16 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
-- January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 citations! 
-
+- January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 Google Scholar citations! 
 - December 2023: DeepLabCut hit 600,000 downloads!
-  
 - October 2023: DeepLabCut celebrates a milestone with 4,000 🌟 in Github!
-  
-- May 2023: The Model Zoo is now fully integrated into the DeepLabCut GUI, making it easier than ever to access a variety of pre-trained models
-  
+- July 2023: The user forum is very active with more than 1k questions and answers: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut)
+- May 2023: The Model Zoo is now fully integrated into the DeepLabCut GUI, making it easier than ever to access a variety of pre-trained models. Check out the accompanying paper: [SuperAnimal pretrained pose estimation models for behavioral analysis by Ye et al.](https://arxiv.org/abs/2203.07436)
 - December 2022: DeepLabCut hits 450,000 downloads and 2.3 is the new stable release
-
 - August 2022: DeepLabCut hit 400,000 downloads
-
 - August 2021: 2.2 becomes the new stable release for DeepLabCut.
-
 - July 2021: Docs are now at https://deeplabcut.github.io/DeepLabCut and we now include TensorFlow 2 support!
-
 - May 2021: DeepLabCut hit 200,000 downloads! Also, Our preprint on 2.2, multi-animal DeepLabCut is released!
-
 - Jan 2021: [Pretraining boosts out-of-domain robustness for pose estimation](https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html) published in the IEEE Winter Conference on Applications of Computer Vision. We also added EfficientNet backbones to DeepLabCut, those are best trained with cosine decay (see paper). To use them, just pass "`efficientnet-b0`" to "`efficientnet-b6`" when creating the trainingset!
 - Dec 2020: We released a real-time package that allows for online pose estimation and real-time feedback. See [DLClive.deeplabcut.org](http://DLClive.deeplabcut.org).
 - 5/22 2020: We released 2.2beta5. This beta release has some of the features of DeepLabCut 2.2, whose major goal is to integrate multi-animal pose estimation to DeepLabCut.
