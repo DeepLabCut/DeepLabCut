@@ -20,7 +20,7 @@ parts:
   - file: docs/PROJECT_GUI
   - file: docs/napari_GUI
   - file: docs/recipes/ClusteringNapari
-- caption: Tutorials
+- caption: Detailed GUI Tutorials
   chapters:
   - file: docs/beginners-guide
   - file: docs/manage-project
