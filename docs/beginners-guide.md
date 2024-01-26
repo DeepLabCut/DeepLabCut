@@ -94,6 +94,3 @@ When you first launch the GUI, you'll find three primary main options:
 
 ![DeepLabCut Create Project GIF](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/create-project.gif)
 
-
-
-
