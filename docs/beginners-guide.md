@@ -45,7 +45,7 @@ This will open a new DeepLabCut window.
 
 ### Navigating the GUI on Initial Launch
 
-When you first launch the GUI, you'll come across three primary main options:
+When you first launch the GUI, you'll find three primary main options:
 
 1. **Create New Project:** Geared towards new initiatives. A good choice if you're here to start something new.
 2. **Load Project:** Use this to resume your on-hold or past work.
