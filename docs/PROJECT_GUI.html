@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Interactive Project Manager GUI &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/PROJECT_GUI';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -453,11 +467,11 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="interactive-project-manager-gui">
-<span id="project-manager-gui"></span><h1>Interactive Project Manager GUI<a class="headerlink" href="#interactive-project-manager-gui" title="Permalink to this heading">#</a></h1>
+<span id="project-manager-gui"></span><h1>Interactive Project Manager GUI<a class="headerlink" href="#interactive-project-manager-gui" title="Link to this heading">#</a></h1>
 <p>As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.</p>
 <p><strong>Release notes:</strong> As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide6 with napari support.</p>
 <section id="get-started">
-<h2>Get Started:<a class="headerlink" href="#get-started" title="Permalink to this heading">#</a></h2>
+<h2>Get Started:<a class="headerlink" href="#get-started" title="Link to this heading">#</a></h2>
 <p>(1) Install DeepLabCut using the simple-install with Anaconda found <a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">here!</span></a>*.
 Now you have DeepLabCut installed, but if you want to update it, either follow the prompt in the GUI which will ask you to upgrade when a new version is available, or just go into your env (activate DEEPLABCUT) then run:</p>
 <p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf,modelzoo]'</span></code> *but please see <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html">full install guide</a>!</p>
@@ -477,23 +491,23 @@ We recommend to keep the terminal visible (as well as the GUI) so you can see th
 </p>
 </section>
 <section id="video-demos-how-to-launch-and-run-the-project-manager-gui">
-<h2>VIDEO DEMOS: How to launch and run the Project Manager GUI:<a class="headerlink" href="#video-demos-how-to-launch-and-run-the-project-manager-gui" title="Permalink to this heading">#</a></h2>
+<h2>VIDEO DEMOS: How to launch and run the Project Manager GUI:<a class="headerlink" href="#video-demos-how-to-launch-and-run-the-project-manager-gui" title="Link to this heading">#</a></h2>
 <p><strong>Click on the images!</strong></p>
 <p>Note that currently the video demo is the wxPython version, but the logic is the same!</p>
 <p><a class="reference external" href="https://youtu.be/KcXogR-p5Ak"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" /></a></p>
 <section id="using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down">
-<h3>Using the Project Manager GUI with the latest DLC code (single animals, plus objects): :arrow_down:<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down" title="Permalink to this heading">#</a></h3>
+<h3>Using the Project Manager GUI with the latest DLC code (single animals, plus objects): :arrow_down:<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects-arrow-down" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=JDsa8R5J0nQ"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589046800303-OV1CCNZINWDMF1PZWCWE/ke17ZwdGBToddI8pDm48kB4PVlRPKDmSlQNbUD3wvXgUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcaja1QZ1SznGf7WzFOi-J6zLusnaF2VdeZcKivwxvFiDfGDqVYuwbAlftad9hfoui/dlc_gui_22.png?format=1000w" /></a></p>
 <p><a class="reference internal" href="UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">READ MORE HERE</span></a></p>
 </section>
 <section id="using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">
-<h3>Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects" title="Permalink to this heading">#</a></h3>
+<h3>Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=Kp-stcTm77g"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589047147498-G1KTFA5BXR4PVHOOR7OG/ke17ZwdGBToddI8pDm48kJDij24pM2COisBTLIGjR1pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIel60EThn7SDFlTiSprUhmjQQHn9bhdY9dnQSKs8bCCo/Untitled.png?format=1000w" /></a></p>
 <p><a class="reference internal" href="UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">READ MORE HERE</span></a></p>
 </section>
 </section>
 <section id="video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
-<h2>VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:<a class="headerlink" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines" title="Permalink to this heading">#</a></h2>
+<h2>VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:<a class="headerlink" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://youtu.be/WXCVr6xAcCA">Watch the video</a></p>
 </section>
 </section>
@@ -593,7 +607,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Improving network performance on unbalanced data via augmentation 🦇 &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/flip_and_rotate';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -525,24 +539,24 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="improving-network-performance-on-unbalanced-data-via-augmentation">
-<h1>Improving network performance on unbalanced data via augmentation 🦇<a class="headerlink" href="#improving-network-performance-on-unbalanced-data-via-augmentation" title="Permalink to this heading">#</a></h1>
+<h1>Improving network performance on unbalanced data via augmentation 🦇<a class="headerlink" href="#improving-network-performance-on-unbalanced-data-via-augmentation" title="Link to this heading">#</a></h1>
 <p>By Jonas Bengt Carina Håkansson</p>
 <p>Part of the 2022 AI Residency Program</p>
 <section id="background">
-<h2>Background<a class="headerlink" href="#background" title="Permalink to this heading">#</a></h2>
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
 <p>Read the <a class="reference external" href="https://deeplabcut.medium.com/balancing-bats-d3c5bcfb71e1">DeepLabCut Blog post</a> about how one can solve unbalanced data with flipping-keypoint augmentation, then see below for the process and code to do so!</p>
 </section>
 <section id="the-dataset">
-<h2>The dataset<a class="headerlink" href="#the-dataset" title="Permalink to this heading">#</a></h2>
+<h2>The dataset<a class="headerlink" href="#the-dataset" title="Link to this heading">#</a></h2>
 <p>This dataset consists of videos of bats flying freely at the <a class="reference external" href="https://austinbatrefuge.org/">Austin Bat Refuge</a>. The videos were shot by Dr. Aaron Corcoran, Head of the <a class="reference external" href="https://sonarjamming.com/">Sensory &amp; Aerial Ecology lab</a> at the University of Colorado, Colorado Sprungs (UCCS) in 2020. The dataset is comprised of 26 video triplets. Each triplet consists of three videos depicting the same bat flight from different angles.</p>
 <p>The videos have been partially digitized in <a class="reference external" href="https://github.com/tlhedrick/dltdv">DLTdv</a> after which custom MATLAB code has been used to extract the digitized frames and coordinates in a format that DeepLabCut can read.</p>
 </section>
 <section id="id1">
-<h2>Background<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h2>
+<h2>Background<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <p>This text documents my experience in using data augmentation to improve the accuracy of DeepLabCut in tracking bodyparts of the bats in the videos during my time as a <a class="reference external" href="https://www.deeplabcutairesidency.org/">DeepLabCut AI Resident</a> during the summer of 2022.</p>
 </section>
 <section id="creating-the-deeplabcut-project">
-<h2>Creating the DeepLabCut project<a class="headerlink" href="#creating-the-deeplabcut-project" title="Permalink to this heading">#</a></h2>
+<h2>Creating the DeepLabCut project<a class="headerlink" href="#creating-the-deeplabcut-project" title="Link to this heading">#</a></h2>
 <p>We start by defining the path we will be working in. Then we create the project.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -556,7 +570,7 @@ document.write(`
 </div>
 </section>
 <section id="edit-the-config-file">
-<h2>Edit the config file<a class="headerlink" href="#edit-the-config-file" title="Permalink to this heading">#</a></h2>
+<h2>Edit the config file<a class="headerlink" href="#edit-the-config-file" title="Link to this heading">#</a></h2>
 <p>Now that the project is created we need to modify our project config file. Open config.yaml in the project folder.</p>
 <p>The config file can be modified with any text editor, but I will do it via Python commands to highlight the possibility of automating this process.</p>
 <p><img alt="what to change in the config file" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950854851-BEJVFJYTWOZDXFFF1091/config001_videos_and_bodyparts.png?format=750w" /></p>
@@ -593,7 +607,7 @@ document.write(`
 </div>
 </section>
 <section id="convert-training-data-to-dlc-format">
-<h2>Convert training data to DLC format<a class="headerlink" href="#convert-training-data-to-dlc-format" title="Permalink to this heading">#</a></h2>
+<h2>Convert training data to DLC format<a class="headerlink" href="#convert-training-data-to-dlc-format" title="Link to this heading">#</a></h2>
 <p>Since this data was labeled outside of DeepLabCut, we first used our own code to convert it into csv formatted csv files, we then use the function <code class="docutils literal notranslate"><span class="pre">convertcsv2h5</span></code> to convert these csv:s into h5 files that DeepLabCut can read.</p>
 <p>After doing this, I like to use the function <code class="docutils literal notranslate"><span class="pre">check_labels</span></code> to make sure that the conversion was successful.</p>
 <div class="cell tag_hide-output docutils container">
@@ -612,22 +626,22 @@ document.write(`
 <p><em>The labels appear to be in the right place.</em></p>
 </section>
 <section id="structuring-the-project-for-testing">
-<h2>Structuring the project for testing<a class="headerlink" href="#structuring-the-project-for-testing" title="Permalink to this heading">#</a></h2>
+<h2>Structuring the project for testing<a class="headerlink" href="#structuring-the-project-for-testing" title="Link to this heading">#</a></h2>
 <p>Since bats are such a challenging animal to automatcially digitize, in my lab, we’ve been relying on what I call “refining” to improve DLC accuracy. This just means that for each video that we want to analyze, we first digitize a few frames from it and include those frames as training data for the DeepLabCut network.</p>
 <p>We typically digitize approximately one frame per wingbeat. For a wingbeat frequency of 15 and a framerate of 800, this means approximately every 50th frame. For a lower framerate, say 400, we instead need to digitize every 50th frame. This is obviously less labour than digitizing every frame, but the workflow still scales poorly with increased acquisition. Therefore, I want to reduce the required amount of manual digitization. The challenge I’ve set myself is therefore this - <strong>to use augmentation to match or beat the accuracy of refining</strong>.</p>
 <section id="test-data">
-<h3>Test data<a class="headerlink" href="#test-data" title="Permalink to this heading">#</a></h3>
+<h3>Test data<a class="headerlink" href="#test-data" title="Link to this heading">#</a></h3>
 <p>I randomly chose seven digitized triplets of videos for testing. Every 50th frame of these will be used for testing.</p>
 </section>
 <section id="treatments">
-<h3>Treatments<a class="headerlink" href="#treatments" title="Permalink to this heading">#</a></h3>
+<h3>Treatments<a class="headerlink" href="#treatments" title="Link to this heading">#</a></h3>
 <p>I will use two “treatments” for testing. Firstly, I simply test how increasing the amount of training data affects accuracy. Secondly, I test how adding refining data affects accuracy. The result is a four permutations of treatments in total, sorted into four shuffles as shown in <em>table 1</em>.</p>
 <section id="refining">
-<h4>Refining<a class="headerlink" href="#refining" title="Permalink to this heading">#</a></h4>
+<h4>Refining<a class="headerlink" href="#refining" title="Link to this heading">#</a></h4>
 <p>The seven testing video triplets have had every 25th frame digitized. Frames 50, 100, 150, … is used for testing. In this treatment, frames 25, 75, 175, … will be used for used as training data, i.e. refining. I call the networks not trained on refining data OOD for out of domain and the ones traioned on refining data Ref for refining.</p>
 </section>
 <section id="amount-of-base-training-data">
-<h4>Amount of base training data<a class="headerlink" href="#amount-of-base-training-data" title="Permalink to this heading">#</a></h4>
+<h4>Amount of base training data<a class="headerlink" href="#amount-of-base-training-data" title="Link to this heading">#</a></h4>
 <p>Subtracting the seven testing video triplets, I’m left with 19 (57 videos in total). I then randomly split these into two groups of 9 and 10. I will either train on only 10 of these video triplets, or on all 19. I call these treatments “half” and “full”.</p>
 <p>This treatment might not seem relevant for figuring out how augmentation affects performance, and in truth, I chose to perform this test to answer another question, but you will see that the results of this test are very relevant to the challenge written in bold above.</p>
 <p>I will refer to training data from the 19 videos not tested on as “base training data”.</p>
@@ -641,7 +655,7 @@ document.write(`
 </section>
 </section>
 <section id="training-data-indices">
-<h3>Training data indices<a class="headerlink" href="#training-data-indices" title="Permalink to this heading">#</a></h3>
+<h3>Training data indices<a class="headerlink" href="#training-data-indices" title="Link to this heading">#</a></h3>
 <p>By default, DeepLabCut assumes that we want to randomly divide the data into training and testing data. But for testing, you might want more control of this. Therefore, we will manually define which frames are for training and which are for testing. More on this later, but for now, we need to create a dummy training dataset as this will make DeepLabCut create a nice list of all the frames in the dataset.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -659,7 +673,7 @@ document.write(`
 </div>
 </section>
 <section id="define-shuffles">
-<h3>Define shuffles<a class="headerlink" href="#define-shuffles" title="Permalink to this heading">#</a></h3>
+<h3>Define shuffles<a class="headerlink" href="#define-shuffles" title="Link to this heading">#</a></h3>
 <p>Now that we have created a dummy training dataset, we can parse its list of files and add the indices of the ones we want to train on to the list of training data indices, and the ones we want to test on to the test data indices.</p>
 <p>This is easy to do since when I converted our training data from DLTdv, I made sure to name the folders with endings indicating where they belong with regards to our treatments.</p>
 <p>The naming convention looks like this:</p>
@@ -776,7 +790,7 @@ document.write(`
 </section>
 </section>
 <section id="using-modelprefixes-to-keep-track-of-augmentations">
-<h2>Using modelprefixes to keep track of augmentations<a class="headerlink" href="#using-modelprefixes-to-keep-track-of-augmentations" title="Permalink to this heading">#</a></h2>
+<h2>Using modelprefixes to keep track of augmentations<a class="headerlink" href="#using-modelprefixes-to-keep-track-of-augmentations" title="Link to this heading">#</a></h2>
 <p>Now we are using the shuffles to keep track of the training data used for our different networks, but we will also be trying different augmentatns. So how do we keep track of that? We could just keep making new shuffles and keep a list of what shuffle is what, but that can quickly become unwieldy.</p>
 <p>Instead, we can use modelprefixes. They provide a way to structure a DLC project into something like subprojects. Basically, if you copy a dlc-model folder (in my case, found in <code class="docutils literal notranslate"><span class="pre">/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/dlc-models/iteration-0</span></code>) into a subfolder in the project, you can then interact with the copied dlc model by using the argument <code class="docutils literal notranslate"><span class="pre">modelprefix</span></code>.</p>
 <p>Say, for example, that I want to try a more aggressive motion blur augmentation, then I could create a folder called <code class="docutils literal notranslate"><span class="pre">extra_blurry</span></code> in my project, copy the dlc-models into it, and then change the pose_cfg.yaml files that contain the augmentation parameters to increase the motion blur augmentation.</p>
@@ -790,7 +804,7 @@ document.write(`
 </div>
 <p>Our first networks will be trained with the default augmentation, but it’s still useful to create a folder for them as we will want to copy the dlc-models in the root project folder for later augmentations, so it makes sense to keep those clean and do all training with model prefixes.</p>
 <section id="regarding-trainingsetindex">
-<h3>Regarding trainingsetindex<a class="headerlink" href="#regarding-trainingsetindex" title="Permalink to this heading">#</a></h3>
+<h3>Regarding trainingsetindex<a class="headerlink" href="#regarding-trainingsetindex" title="Link to this heading">#</a></h3>
 <p>Before we can create our subfolders, we need to spend a minute on the trainingset indices.</p>
 <p>We often use different splits between training and testing data. This is a number &lt; 1 that sets the proportion of the training dataset that should be used for training and testing. The default is 0.95, meaning 95% is used for training, and 5% for testing. This can be either be specified in the config.yaml file or deduced automatically by DeepLabCut if we manually specify the training and testing indices (like we did). In the case of the latter, the split is indicated by the filenames of the the files in the training-dataset folder in the project folder. In my case this would be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">bat_augmentation_austin_2020_bat_data</span><span class="o">-</span><span class="n">DLC</span><span class="o">-</span><span class="mi">2022</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">18</span><span class="o">/</span><span class="n">training</span><span class="o">-</span><span class="n">datasets</span><span class="o">/</span><span class="n">iteration</span><span class="o">-</span><span class="mi">0</span><span class="o">/</span><span class="n">UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18</span>
@@ -901,7 +915,7 @@ document.write(`
 </section>
 </section>
 <section id="edit-pose-cfg-yaml">
-<h2>Edit pose_cfg.yaml<a class="headerlink" href="#edit-pose-cfg-yaml" title="Permalink to this heading">#</a></h2>
+<h2>Edit pose_cfg.yaml<a class="headerlink" href="#edit-pose-cfg-yaml" title="Link to this heading">#</a></h2>
 <p>We will also edit the settings for this network to use the adam optimizer.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -931,7 +945,7 @@ document.write(`
 </div>
 </section>
 <section id="train-networks">
-<h2>Train networks<a class="headerlink" href="#train-networks" title="Permalink to this heading">#</a></h2>
+<h2>Train networks<a class="headerlink" href="#train-networks" title="Link to this heading">#</a></h2>
 <p>Now we need to train our four shuffles. This will take several hours.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -965,7 +979,7 @@ document.write(`
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="perform-evaluation">
-<h1>Perform evaluation<a class="headerlink" href="#perform-evaluation" title="Permalink to this heading">#</a></h1>
+<h1>Perform evaluation<a class="headerlink" href="#perform-evaluation" title="Link to this heading">#</a></h1>
 <p>After training the networks, we need to test how they perform. To do that, we first need to evaluate them using the buil-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -998,7 +1012,7 @@ document.write(`
 </div>
 </div>
 <section id="get-data-for-plotting-and-statistical-comparison">
-<h2>Get data for plotting and statistical comparison<a class="headerlink" href="#get-data-for-plotting-and-statistical-comparison" title="Permalink to this heading">#</a></h2>
+<h2>Get data for plotting and statistical comparison<a class="headerlink" href="#get-data-for-plotting-and-statistical-comparison" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> function calculates the euclidean distances between predicted points and groundtruth (i.e. human labels), but it only shows the average for that snapshot and shuffle over all the test data. What we want are long lists of the distances between ground truth points and predicted points. That way, on top of calculating the average, we can also perform stastistical testing.</p>
 <p>We will use a function I wrote called <code class="docutils literal notranslate"><span class="pre">getErrorDistribution</span></code> to get the list mentioned above. We will do this for each shuffle.</p>
 <div class="cell tag_hide-output docutils container">
@@ -1098,7 +1112,7 @@ document.write(`
 <p><img alt="download.png" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950856669-RVS6GMR4411BUVXY74FN/pre_aug_performance.png?format=750w" /></p>
 </section>
 <section id="interpret-plot">
-<h2>Interpret plot<a class="headerlink" href="#interpret-plot" title="Permalink to this heading">#</a></h2>
+<h2>Interpret plot<a class="headerlink" href="#interpret-plot" title="Link to this heading">#</a></h2>
 <p>Just looking at the plot, a few things seem clear, let’s start with the obvious and least surprising. By training a network on a subset of frames of the videos to be analyzed, we really improve accuracy. When doing this, i.e. when refining, increasing the amount of training data, i.e. frames not belonging to the videos to be analyzed, has little effect on accuracy.</p>
 <p>But surprisingly, when not refining, it appears that increasing the amount of training data can worsen performance. What’s going on? We will get back to this later, but for now, let’s just confirm my points here with some statistical testing.</p>
 <p>For the statistical comparison, we’ll use a paired Wilcoxon ranked sum test, since we can’t assume the data to be normally distributed. We’ll do this for the set of errors with P-cut filter applied since doing it on both would be tedious and I assume most users will use some form of P-cut on their data. Furthermore, I will do the statistical comparison only on  the last snapshot since, again, doing it on all three would be tedious.</p>
@@ -1122,7 +1136,7 @@ document.write(`
 </div>
 </section>
 <section id="plot-per-video">
-<h2>Plot per video<a class="headerlink" href="#plot-per-video" title="Permalink to this heading">#</a></h2>
+<h2>Plot per video<a class="headerlink" href="#plot-per-video" title="Link to this heading">#</a></h2>
 <p>The statistics are in line with expectations, except for regarding the difference between the two refined shuffles (shuffle2: “half, ref” and shuffle4: “full, ref”). The two of them being significantly different surprises me and makes me want to investigate the error distributions more in detail.</p>
 <p>To that end, let’s plot the error distributions of the four shuffles per camera and per video number. Remember, out seven test video triplets each consist of three videos depicting the same bat flight.</p>
 <div class="cell docutils container">
@@ -1281,11 +1295,11 @@ document.write(`
 <p><img alt="download2.png" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950857302-7FYQ87AQ5OKGV6D8D9DF/pre_aug_per_video.png?format=500w" /></p>
 </section>
 <section id="interpret-per-video-plot">
-<h2>Interpret per video plot<a class="headerlink" href="#interpret-per-video-plot" title="Permalink to this heading">#</a></h2>
+<h2>Interpret per video plot<a class="headerlink" href="#interpret-per-video-plot" title="Link to this heading">#</a></h2>
 <p>The first thing that becomes clear to me from inspecting this plot is that there are some videos on which all shuffles perform well no matter refining. These would be video 3, 6 and 7. The second thing is that there are instances where “half, ref” does better than “full, ref” and vice versa, which could explain why they are significantly different according to the statistical test performed above, despite their overall means being relatively similar according to the plot of the mean errors on the full error distributions.</p>
 </section>
 <section id="compare-easy-and-difficult-videos">
-<h2>Compare “easy” and “difficult” videos<a class="headerlink" href="#compare-easy-and-difficult-videos" title="Permalink to this heading">#</a></h2>
+<h2>Compare “easy” and “difficult” videos<a class="headerlink" href="#compare-easy-and-difficult-videos" title="Link to this heading">#</a></h2>
 <p>For shuffle3, “full, OOD”, video 1, 2, 4, and 5 does poorly whereas video 3, 6, and 7 do rather well. Why is this? To get an idea of if the videos on which the network does well differs from the one on which it does poorly, we can create labeled frames with the predicted positions of the bodyparts and the correct positions (human labels). This is done with the <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> function using the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> input parameter.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -1311,7 +1325,7 @@ document.write(`
 </div>
 </section>
 <section id="inspect-deeplabcut-predictions-from-evaluations">
-<h2>Inspect DeepLabCut predictions from evaluations<a class="headerlink" href="#inspect-deeplabcut-predictions-from-evaluations" title="Permalink to this heading">#</a></h2>
+<h2>Inspect DeepLabCut predictions from evaluations<a class="headerlink" href="#inspect-deeplabcut-predictions-from-evaluations" title="Link to this heading">#</a></h2>
 <p>Inspecting and comparing frames reveal an interesting relationship. It appears the network does well when the bat is flying left-right, and bad when the bat is flying right to left.</p>
 <p>The two following example images reveal what I mean.</p>
 <p><img alt="&quot;bad&quot;" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661950853195-EBZD23OVFO0NUSW94CUT/Test-IL5-519-Cam2_2020-06-25_000103Track3_50_test-103_103_100_AS_c2_frame200.png?format=500w" /></p>
@@ -1321,7 +1335,7 @@ document.write(`
 <p>The inspection of the predicted bodypart locations reveal that the low accuracy for some videos is caused by the network mixing up left and right. This could also explain why the performance goes down when we add more data. It appears that the added data results in the network becoming biased towards one flight direction.</p>
 </section>
 <section id="augment-to-reduce-left-right-bias">
-<h2>Augment to reduce left-right bias<a class="headerlink" href="#augment-to-reduce-left-right-bias" title="Permalink to this heading">#</a></h2>
+<h2>Augment to reduce left-right bias<a class="headerlink" href="#augment-to-reduce-left-right-bias" title="Link to this heading">#</a></h2>
 <p>Our evaluation showed that our network has a bias towards bats flying in one direction. In an attempt to reduce that bias and make the network better at telling left from right independent of flight direction, we will use a left-right flipping augmentaton.</p>
 <p>First up, let’s make another modelprefix folder in our project. It basically the same code as before but with some minor modifications, I’ll highlight the changes.</p>
 <div class="cell tag_hide-output docutils container">
@@ -1404,7 +1418,7 @@ document.write(`
 </div>
 </section>
 <section id="edit-pose-cfg-yaml-for-fliplr-augmentation">
-<h2>Edit pose_cfg.yaml for fliplr augmentation<a class="headerlink" href="#edit-pose-cfg-yaml-for-fliplr-augmentation" title="Permalink to this heading">#</a></h2>
+<h2>Edit pose_cfg.yaml for fliplr augmentation<a class="headerlink" href="#edit-pose-cfg-yaml-for-fliplr-augmentation" title="Link to this heading">#</a></h2>
 <p>As before, we will edit the settings for this network to use the adam optimizer. More importantly, though, we will apply the <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> augmentation.</p>
 <p>This randomly flips some training frames left and right during training. Now, this alone would lead to worse performance, since we would be training the network to think that the left wing is the right wing, and vice versa. But this augmentation method takes that into account, and in addition to mirroring the image, it also swaps the labels from left to right and vice versa. To accomlish this, we need to supply the pose_cfg.yaml file with a list of which points should be swapped.</p>
 <p>The image of a bat outline above shows he locations of the labels/bodyparts on the bats, and from it, it’s clear which points should be swapped, all points that aren’t on the bilateral have a name and end in eithr R or L. So t3R should be swapped with t3L when flipping, and so on.</p>
@@ -1474,7 +1488,7 @@ document.write(`
 </div>
 </section>
 <section id="train-network-with-fliplr-augmentation">
-<h2>Train network with <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> augmentation<a class="headerlink" href="#train-network-with-fliplr-augmentation" title="Permalink to this heading">#</a></h2>
+<h2>Train network with <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> augmentation<a class="headerlink" href="#train-network-with-fliplr-augmentation" title="Link to this heading">#</a></h2>
 <p>Now let’s train the network with the new augmentation. Again, this will take several hours.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -1507,7 +1521,7 @@ document.write(`
 </div>
 </section>
 <section id="compare-performance-of-fliplr-augmented-network-to-refined-baseline">
-<h2>Compare performance of fliplr augmented network to refined baseline<a class="headerlink" href="#compare-performance-of-fliplr-augmented-network-to-refined-baseline" title="Permalink to this heading">#</a></h2>
+<h2>Compare performance of fliplr augmented network to refined baseline<a class="headerlink" href="#compare-performance-of-fliplr-augmented-network-to-refined-baseline" title="Link to this heading">#</a></h2>
 <p>Since the challenge I set is <strong>to use augmentation to match or beat the accuracy of refining</strong>, let’s stick to comparing baseline “Full, ref” to fliplr augmented “Full, OOD”.</p>
 <p>The process is similar to what we’ve already done, but now we are only comparing two networks.</p>
 <p>We will use <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> to get create accuracy data, then we will use <code class="docutils literal notranslate"><span class="pre">getErrorDistribution</span></code> to access that data and plot the average performance with error bars. Same as before.</p>
@@ -1610,7 +1624,7 @@ document.write(`
 </div>
 </section>
 <section id="interpret-performance-of-network-after-fliplr-augmentation">
-<h2>Interpret performance of network after “fliplr” augmentation<a class="headerlink" href="#interpret-performance-of-network-after-fliplr-augmentation" title="Permalink to this heading">#</a></h2>
+<h2>Interpret performance of network after “fliplr” augmentation<a class="headerlink" href="#interpret-performance-of-network-after-fliplr-augmentation" title="Link to this heading">#</a></h2>
 <p>That is a significant improvement in accuracy. The <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> augmentation seems to prevent the network from becoming biased to one flight direction. It is however, not quite beating the performance of the baseline refined case (shuffle4: full, Ref).</p>
 <p>There is another augmentation that, in our case, is related to the flight direction, namely the rotation augmentation. The idea here is that in order to prevent the network from associating absolute in-image spatial orientation with positions for certain labels, we want to randomly rotate some of the training data. The degree to which this makes sense is context dependent. If you are analyzing a horse walking in a horizontal direction from the camera’s point of view, large degrees of rotation make little sense as the network will never encounter a horse walking upside down. But if you are filming an animal from above, or below if the animal is flying or swimming, such that the animal is free to move in any direction, then this type of augmentation makes sense.</p>
 <p>By default, DeepLabCut applies a 25° rotation augmentation, I tried increasing that, first to 90°, then to 180°. I will only cover the 180° case here as the 90° case is exactly the same, only with slightly worse performance.</p>
@@ -1738,7 +1752,7 @@ document.write(`
 </div>
 </section>
 <section id="train-network-with-fliplr-and-stronger-rotation-augmentation">
-<h2>Train network with <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> and stronger <code class="docutils literal notranslate"><span class="pre">rotation</span></code> augmentation<a class="headerlink" href="#train-network-with-fliplr-and-stronger-rotation-augmentation" title="Permalink to this heading">#</a></h2>
+<h2>Train network with <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> and stronger <code class="docutils literal notranslate"><span class="pre">rotation</span></code> augmentation<a class="headerlink" href="#train-network-with-fliplr-and-stronger-rotation-augmentation" title="Link to this heading">#</a></h2>
 <p>Now let’s train the network with the new augmentation. Again, this will take several hours.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
@@ -2037,19 +2051,19 @@ document.write(`
 </div>
 </section>
 <section id="interpret-performance-of-network-after-fliplr-and-180-rotation-augmentation">
-<h2>Interpret performance of network after <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> and 180° rotation augmentation<a class="headerlink" href="#interpret-performance-of-network-after-fliplr-and-180-rotation-augmentation" title="Permalink to this heading">#</a></h2>
+<h2>Interpret performance of network after <code class="docutils literal notranslate"><span class="pre">fliplr</span></code> and 180° rotation augmentation<a class="headerlink" href="#interpret-performance-of-network-after-fliplr-and-180-rotation-augmentation" title="Link to this heading">#</a></h2>
 <p>The results look very promising. Video 1 keeps being difficult. This is likely due to this video depicting a bat flying in a manner that is atypical for the dataset used here. Most videos in the dataset depict rather straight-forward flybys, but video 1 shows a bat slowly ascending while turning. Even so, the augmentation has lowered the pixel error for video 1 compared to the baseline, and for all other videos, the augmentation has led to performance close to, or better than, the refined case.</p>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="conclusion">
-<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">#</a></h1>
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h1>
 <p>What follows are some of my conclusions from using augmentation to improve performance when tracking wing movement of bats using DeepLabCut.</p>
 <section id="where-scalability-is-not-important-consider-refining">
-<h2>Where scalability is not important, consider refining<a class="headerlink" href="#where-scalability-is-not-important-consider-refining" title="Permalink to this heading">#</a></h2>
+<h2>Where scalability is not important, consider refining<a class="headerlink" href="#where-scalability-is-not-important-consider-refining" title="Link to this heading">#</a></h2>
 <p>We saw from our baseline accuracy tests that when refining, there was no gain from increasing the amount of base training data. In practical terms this means that if you know which videos you want to analyze, and when you do not plan on using the network for analyzing other videos in the future, then it makes sense to prioritize digitizing frames from the videos to be analyzed.</p>
 </section>
 <section id="inspect-bodypart-predictions-and-augment-with-purpose">
-<h2>Inspect bodypart predictions and augment with purpose<a class="headerlink" href="#inspect-bodypart-predictions-and-augment-with-purpose" title="Permalink to this heading">#</a></h2>
+<h2>Inspect bodypart predictions and augment with purpose<a class="headerlink" href="#inspect-bodypart-predictions-and-augment-with-purpose" title="Link to this heading">#</a></h2>
 <p>At first, I tried a couple of permutations of different image augmentations and saw no or little performance improvement. I tried augmentations related to scale, brightness, blurriness, and probably some other that slip my mind at the moment. I more or less concluded that augmentations have little effect and that for a given set of training and test data, DeepLabCut’s default training parameters are close to optimal and little can be gained by augmenting the training data. But then I looked closer at the labeled frames from <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> and realized that the high pixel errors were mainly caused by the network getting left and right mixed up and augmented accordingly. Doing that, I saw an average accuracy improvement of more than 10 pixels. For this dataset, 10 pixels is quite big, for comparison, on the largest image in the test dataset, the forearm of the bat is less than 70 pixels long.</p>
 </section>
 </section>
@@ -2190,7 +2204,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

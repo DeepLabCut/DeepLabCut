@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>napari labeling GUI &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true});</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/napari_GUI';</script>
@@ -162,7 +165,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -463,7 +477,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="napari-labeling-gui">
-<h1>napari labeling GUI<a class="headerlink" href="#napari-labeling-gui" title="Permalink to this heading">#</a></h1>
+<h1>napari labeling GUI<a class="headerlink" href="#napari-labeling-gui" title="Link to this heading">#</a></h1>
 <p>We replaced wxPython with PySide6 + as of version 2.3. Here is how to use the napari-aspects of the new GUI. It is available in napari-hub as a stand alone GUI as well as integrated into our main GUI, <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html">please see docs here</a>.</p>
 <p><a class="reference external" href="https://www.gnu.org/licenses/bsd3"><img alt="License: BSD-3" src="https://img.shields.io/badge/License-BSD3-blue.svg" /></a>
 <a class="reference external" href="https://pypi.org/project/napari-deeplabcut"><img alt="PyPI" src="https://img.shields.io/pypi/v/napari-deeplabcut.svg?color=green" /></a>
@@ -473,7 +487,7 @@ document.write(`
 <a class="reference external" href="https://napari-hub.org/plugins/napari-deeplabcut"><img alt="napari hub" src="https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-deeplabcut" /></a></p>
 <p>A napari plugin for keypoint annotation with DeepLabCut.</p>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p>You can install the full DeepLabCut napari-based GUI via <a class="reference external" href="https://pypi.org/project/pip/">pip</a> by running this in your conda env:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[tf,gui]'</span></code> or mac M1/M2 chip users: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[apple_mchips,gui]'</span></code></p>
 <p>*please note this is available since v2.3</p>
@@ -483,7 +497,7 @@ document.write(`
 <p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/DeepLabCut/napari-deeplabcut.git</span></code></p>
 </section>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
 <p>To use the full GUI, please run:</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
 <p>To use the stand-alone napari plugin, please launch napari:</p>
@@ -508,7 +522,7 @@ in red)</p></li>
 </ul>
 <p><img alt="napari_shortcuts" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=1500w" /></p>
 <section id="save-layers">
-<h3>Save Layers<a class="headerlink" href="#save-layers" title="Permalink to this heading">#</a></h3>
+<h3>Save Layers<a class="headerlink" href="#save-layers" title="Link to this heading">#</a></h3>
 <p>Annotations and segmentations are saved with <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">&gt;</span> <span class="pre">Save</span> <span class="pre">Selected</span> <span class="pre">Layer(s)...</span></code> (or its shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code>).
 Only when saving segmentation masks does a save file dialog pop up to name the destination folder;
 keypoint annotations are otherwise automatically saved in the corresponding folder as <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code>.</p>
@@ -519,7 +533,7 @@ keypoint annotations are otherwise automatically saved in the corresponding fold
 </ul>
 </section>
 <section id="video-frame-extraction-and-prediction-refinement">
-<h3>Video frame extraction and prediction refinement<a class="headerlink" href="#video-frame-extraction-and-prediction-refinement" title="Permalink to this heading">#</a></h3>
+<h3>Video frame extraction and prediction refinement<a class="headerlink" href="#video-frame-extraction-and-prediction-refinement" title="Link to this heading">#</a></h3>
 <p>Since v0.0.4, videos can be viewed in the GUI.</p>
 <p>Since v0.0.5, trailing points can be visualized; e.g., helping in the identification
 of swaps or outlier, jittery predictions.</p>
@@ -530,18 +544,18 @@ Note that keypoints can be displaced and saved, as when annotating individual fr
 </section>
 </section>
 <section id="workflow">
-<h2>Workflow<a class="headerlink" href="#workflow" title="Permalink to this heading">#</a></h2>
+<h2>Workflow<a class="headerlink" href="#workflow" title="Link to this heading">#</a></h2>
 <p>Suggested workflows, depending on the image folder contents:</p>
 <ol class="arabic">
 <li><p><strong>Labeling from scratch</strong> – the image folder does not contain <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.</p>
-<p>Open <em>napari</em> as described in <span class="xref myst">Usage</span> and open an image folder together with the DeepLabCut project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.
+<p>Open <em>napari</em> as described in <a class="reference internal" href="#usage"><span class="xref myst">Usage</span></a> and open an image folder together with the DeepLabCut project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.
 The image folder creates an <em>image layer</em> with the images to label.
 Supported image formats are: <code class="docutils literal notranslate"><span class="pre">jpg</span></code>, <code class="docutils literal notranslate"><span class="pre">jpeg</span></code>, <code class="docutils literal notranslate"><span class="pre">png</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file creates a <em>Points layer</em>, which holds metadata (such as keypoints read from the config file) necessary for labeling.
 Select the <em>Points layer</em> in the layer list (lower left pane on the GUI) and click on the <em>+</em>-symbol in the layer controls menu (upper left pane) to start labeling.
 The current keypoint can be viewed/selected in the keypoints dropdown menu (right pane).
 The slider below the displayed image (or the left/right arrow keys) allows selecting the image to label.</p>
-<p>To save the labeling progress refer to <span class="xref myst">Save Layers</span>.
+<p>To save the labeling progress refer to <a class="reference internal" href="#save-layers"><span class="xref myst">Save Layers</span></a>.
 <code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">successfully</span> <span class="pre">saved</span></code> should be shown in the status bar, and the image folder should now contain a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.
 (Note: For convenience, a CSV file with the same name is also saved.)</p>
 </li>
@@ -562,12 +576,12 @@ If the video was originally labeled, <em>and</em> had outliers extracted it will
 </li>
 <li><p><strong>Drawing segmentation masks</strong></p>
 <p>Drop an image folder as in <em>1</em>, manually add a <em>shapes layer</em>. Then select the <em>rectangle</em> in the layer controls (top left pane),
-and start drawing rectangles over the images. Masks and rectangle vertices are saved as described in <span class="xref myst">Save Layers</span>.
+and start drawing rectangles over the images. Masks and rectangle vertices are saved as described in <a class="reference internal" href="#save-layers"><span class="xref myst">Save Layers</span></a>.
 Note that masks can be reloaded and edited at a later stage by dropping the <code class="docutils literal notranslate"><span class="pre">vertices.csv</span></code> file onto the canvas.</p>
 </li>
 </ol>
 <section id="workflow-flowchart">
-<h3>Workflow flowchart<a class="headerlink" href="#workflow-flowchart" title="Permalink to this heading">#</a></h3>
+<h3>Workflow flowchart<a class="headerlink" href="#workflow-flowchart" title="Link to this heading">#</a></h3>
 <div class="mermaid">
             graph TD
   id1[What stage of labeling?]
@@ -595,13 +609,13 @@ Note that masks can be reloaded and edited at a later stage by dropping the <cod
   id6 ----&gt;|no, I just extracted outliers|id8
         </div></section>
 <section id="labeling-multiple-image-folders">
-<h3>Labeling multiple image folders<a class="headerlink" href="#labeling-multiple-image-folders" title="Permalink to this heading">#</a></h3>
+<h3>Labeling multiple image folders<a class="headerlink" href="#labeling-multiple-image-folders" title="Link to this heading">#</a></h3>
 <p>Labeling multiple image folders has to be done in sequence; i.e., only one image folder can be opened at a time.
 After labeling the images of a particular folder is done and the associated <em>Points layer</em> has been saved, <em>all</em> layers should be removed from the layers list (lower left pane on the GUI) by selecting them and clicking on the trashcan icon.
 Now, another image folder can be labeled, following the process described in <em>1</em>, <em>2</em>, or <em>3</em>, depending on the particular image folder.</p>
 </section>
 <section id="defining-cropping-coordinates">
-<h3>Defining cropping coordinates<a class="headerlink" href="#defining-cropping-coordinates" title="Permalink to this heading">#</a></h3>
+<h3>Defining cropping coordinates<a class="headerlink" href="#defining-cropping-coordinates" title="Link to this heading">#</a></h3>
 <p>Prior to defining cropping coordinates, two elements should be loaded in the GUI:
 a video and the DLC project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file (into which the crop dimensions will be stored).
 Then it suffices to add a <code class="docutils literal notranslate"><span class="pre">Shapes</span> <span class="pre">layer</span></code>, draw a <code class="docutils literal notranslate"><span class="pre">rectangle</span></code> in it with the desired area,
@@ -609,17 +623,17 @@ and hit the button <code class="docutils literal notranslate"><span class="pre">
 </section>
 </section>
 <section id="contributing">
-<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">#</a></h2>
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
 <p>Contributions are very welcome. Tests can be run with <a class="reference external" href="https://tox.readthedocs.io/en/latest/">tox</a>, please ensure
 the coverage at least stays the same before you submit a pull request.</p>
 <p>To locally install the code, please git clone the repo and then run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
 </section>
 <section id="issues">
-<h2>Issues<a class="headerlink" href="#issues" title="Permalink to this heading">#</a></h2>
+<h2>Issues<a class="headerlink" href="#issues" title="Link to this heading">#</a></h2>
 <p>If you encounter any problems, please <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/issues">file an issue</a> along with a detailed description.</p>
 </section>
 <section id="acknowledgements">
-<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this heading">#</a></h2>
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading">#</a></h2>
 <p>This <a class="reference external" href="https://github.com/napari/napari">napari</a> plugin was generated with <a class="reference external" href="https://github.com/audreyr/cookiecutter">Cookiecutter</a> using <a class="reference external" href="https://github.com/napari">&#64;napari</a>’s <a class="reference external" href="https://github.com/napari/cookiecutter-napari-plugin">cookiecutter-napari-plugin</a> template. We thank the Chan Zuckerberg Initiative (CZI) for funding this work!</p>
 <!--
 Don't miss the full getting started guide to set up your new package:
@@ -734,7 +748,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

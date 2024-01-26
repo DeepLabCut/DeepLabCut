@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Installation Tips &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/installTips';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -465,9 +479,9 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="installation-tips">
-<span id="id1"></span><h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Permalink to this heading">#</a></h1>
+<span id="id1"></span><h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Link to this heading">#</a></h1>
 <section id="how-to-use-the-latest-updates-directly-from-github">
-<h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Permalink to this heading">#</a></h2>
+<h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Link to this heading">#</a></h2>
 <p>We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code> code from!</p>
 <p>But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.</p>
 <p><strong>Step 1:</strong></p>
@@ -498,7 +512,7 @@ document.write(`
 </pre></div>
 </div>
 <section id="quick-pull-and-install-from-the-github-repository">
-<h3>Quick pull and install from the github repository<a class="headerlink" href="#quick-pull-and-install-from-the-github-repository" title="Permalink to this heading">#</a></h3>
+<h3>Quick pull and install from the github repository<a class="headerlink" href="#quick-pull-and-install-from-the-github-repository" title="Link to this heading">#</a></h3>
 <p>If you just want to install the latest pre-release without editing, you can activate your anaconda env, and run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
@@ -510,9 +524,9 @@ document.write(`
 </section>
 </section>
 <section id="installation-on-ubuntu-18-04-lts">
-<h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Permalink to this heading">#</a></h2>
+<h2>Installation on Ubuntu 18.04 LTS<a class="headerlink" href="#installation-on-ubuntu-18-04-lts" title="Link to this heading">#</a></h2>
 <section id="here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts">
-<h3>Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)<a class="headerlink" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts" title="Permalink to this heading">#</a></h3>
+<h3>Here are our tips for an easy installation. This is done on a fresh computer installation (Ubuntu 18.04 LTS)<a class="headerlink" href="#here-are-our-tips-for-an-easy-installation-this-is-done-on-a-fresh-computer-installation-ubuntu-18-04-lts" title="Link to this heading">#</a></h3>
 <p>install gcc:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
 </pre></div>
@@ -555,10 +569,10 @@ document.write(`
 </section>
 </section>
 <section id="installation-on-ubuntu-20-04-lts">
-<h2>Installation on Ubuntu 20.04 LTS<a class="headerlink" href="#installation-on-ubuntu-20-04-lts" title="Permalink to this heading">#</a></h2>
+<h2>Installation on Ubuntu 20.04 LTS<a class="headerlink" href="#installation-on-ubuntu-20-04-lts" title="Link to this heading">#</a></h2>
 <p>Hello! Another cookbook entry on how to install your freshly installed 20.04 LTS system for DLC use. Namely, CUDA, drivers, Docker, and anaconda!</p>
 <section id="let-s-start-with-cuda-support-for-your-gpu">
-<h3>Let’s start with CUDA support for your GPU:<a class="headerlink" href="#let-s-start-with-cuda-support-for-your-gpu" title="Permalink to this heading">#</a></h3>
+<h3>Let’s start with CUDA support for your GPU:<a class="headerlink" href="#let-s-start-with-cuda-support-for-your-gpu" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">gcc</span></code></p>
 <p>then:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
@@ -616,7 +630,7 @@ document.write(`
 </div>
 </section>
 <section id="next-docker">
-<h3>Next, Docker!<a class="headerlink" href="#next-docker" title="Permalink to this heading">#</a></h3>
+<h3>Next, Docker!<a class="headerlink" href="#next-docker" title="Link to this heading">#</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> \
     <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> \
     <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> \
@@ -664,7 +678,7 @@ For more examples and ideas, visit:
 </div>
 </section>
 <section id="next-anaconda">
-<h3>Next, Anaconda!<a class="headerlink" href="#next-anaconda" title="Permalink to this heading">#</a></h3>
+<h3>Next, Anaconda!<a class="headerlink" href="#next-anaconda" title="Link to this heading">#</a></h3>
 <p>Click here to get the ubuntu/linux package: <a class="reference external" href="https://www.anaconda.com/products/individual#linux">https://www.anaconda.com/products/individual#linux</a></p>
 <p>this downloads a file, save it (I save into downloads)</p>
 <p>then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Downloads</span></code>:</p>
@@ -682,7 +696,7 @@ For more examples and ideas, visit:
 <p>Follow prompts!</p>
 </section>
 <section id="next-deeplabcut">
-<h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Permalink to this heading">#</a></h3>
+<h3>Next, DeepLabCut!<a class="headerlink" href="#next-deeplabcut" title="Link to this heading">#</a></h3>
 <p>Given this is a totally fresh install, here are a few things that I also needed: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libcanberra-gtk-module</span> <span class="pre">libcanberra-gtk3-module</span></code></p>
 <p>We strongly recommend for Ubuntu users to use Docker (<a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">https://hub.docker.com/r/deeplabcut/deeplabcut</a>) - it’s a much more reproducible environment.</p>
 <p>If you want to use our conda file, then I proceeded below:</p>
@@ -692,7 +706,7 @@ For more examples and ideas, visit:
 </section>
 </section>
 <section id="troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e">
-<h2>Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e" title="Permalink to this heading">#</a></h2>
+<h2>Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:<a class="headerlink" href="#troubleshooting-note-if-you-get-a-failed-build-due-to-wxpython-note-this-does-not-happen-on-ubuntu-18-16-etc-i-e" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Command</span> <span class="n">errored</span> <span class="n">out</span> <span class="k">with</span> <span class="n">exit</span> <span class="n">status</span> <span class="mi">1</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import io, os, sys, setuptools, tokenize; sys.argv[0] = &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;; __file__=&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;;f = getattr(tokenize, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;open&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, open)(__file__) if os.path.exists(__file__) else io.StringIO(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;from setuptools import setup; setup()&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);code = f.read().replace(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);f.close();exec(compile(code, __file__, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;exec&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;))&#39;</span> <span class="n">install</span> <span class="o">--</span><span class="n">record</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="n">record</span><span class="o">-</span><span class="n">pzy9q5u2</span><span class="o">/</span><span class="n">install</span><span class="o">-</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="nb">compile</span> <span class="o">--</span><span class="n">install</span><span class="o">-</span><span class="n">headers</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mackenzie</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">DLC</span><span class="o">-</span><span class="n">GPU</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="n">m</span><span class="o">/</span><span class="n">wxpython</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">logs</span> <span class="k">for</span> <span class="n">full</span> <span class="n">command</span> <span class="n">output</span><span class="o">.</span>
 
 <span class="n">failed</span>
@@ -721,7 +735,7 @@ For more examples and ideas, visit:
 <p>Then run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> which launches the DLC GUI.</p>
 </section>
 <section id="deeplabcut-macos-m1-and-m2-chip-installation-environment-instructions">
-<h2>DeepLabCut MacOS M1 and M2 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-macos-m1-and-m2-chip-installation-environment-instructions" title="Permalink to this heading">#</a></h2>
+<h2>DeepLabCut MacOS M1 and M2 chip installation environment instructions:<a class="headerlink" href="#deeplabcut-macos-m1-and-m2-chip-installation-environment-instructions" title="Link to this heading">#</a></h2>
 <p>This only assumes you have anaconda installed.</p>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT_M1.yaml</span></code> conda file if you have an Macbok with an M1 or M2 chip, and follow these steps:</p>
 <p>(1) git clone the deeplabcut cut repo:</p>
@@ -741,7 +755,7 @@ python<span class="w"> </span>-m<span class="w"> </span>deeplabcut
 <p>The GUI will open. Of course, you can also run DeepLabCut in headless mode.</p>
 </section>
 <section id="how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut">
-<h2>How to confirm that your GPU is being used by DeepLabCut<a class="headerlink" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut" title="Permalink to this heading">#</a></h2>
+<h2>How to confirm that your GPU is being used by DeepLabCut<a class="headerlink" href="#how-to-confirm-that-your-gpu-is-being-used-by-deeplabcut" title="Link to this heading">#</a></h2>
 <p>During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:</p>
 <p><strong>On Windows</strong>:</p>
 <p>(1) Open the task manager. If it looks like the image below, click on “More Details”</p>
@@ -754,7 +768,7 @@ python<span class="w"> </span>-m<span class="w"> </span>deeplabcut
 <p>(5) If you don’t see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cudnn</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code> after installing DeepLabCut.</p>
 </section>
 <section id="how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows">
-<h2>How to install DeepLabCut for Intel and  AMD GPUs on Windows<a class="headerlink" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows" title="Permalink to this heading">#</a></h2>
+<h2>How to install DeepLabCut for Intel and  AMD GPUs on Windows<a class="headerlink" href="#how-to-install-deeplabcut-for-intel-and-amd-gpus-on-windows" title="Link to this heading">#</a></h2>
 <p>If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU acceleration for inference, with an installation that is consistent between devices. This method uses <a class="reference external" href="https://github.com/microsoft/tensorflow-directml">Tensorflow-directml</a> which uses DirectML instead of Cuda for ML training and inference.</p>
 <p>To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.</p>
 <p>The following instructions are using conda and pip for environment management, executing within the Anaconda prompt program that was installed along with Anaconda python. The # lines are not to be typed, they are for guidance.</p>
@@ -878,7 +892,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>How To Install DeepLabCut &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/installation';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -474,19 +488,19 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-install-deeplabcut">
-<span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this heading">#</a></h1>
+<span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Link to this heading">#</a></h1>
 <ul class="simple">
 <li><p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p></li>
 <li><p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference internal" href="#system-wide-considerations-during-install"><span class="std std-ref">note below</span></a>), <strong>conda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref"><strong>Docker container</strong></span></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p></li>
 <li><p>We recommend for most users to use our supplied CONDA environment.</p></li>
 </ul>
 <section id="conda-the-installation-process-is-as-easy-as-this-figure">
-<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Permalink to this heading">#</a></h2>
+<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Link to this heading">#</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 <section id="step-1-install-python-via-anaconda">
-<h3>Step 1: Install Python via Anaconda<a class="headerlink" href="#step-1-install-python-via-anaconda" title="Permalink to this heading">#</a></h3>
+<h3>Step 1: Install Python via Anaconda<a class="headerlink" href="#step-1-install-python-via-anaconda" title="Link to this heading">#</a></h3>
 <section id="install-anaconda-or-use-miniconda3-for-macos-users-see-below">
-<h4>Install <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Permalink to this heading">#</a></h4>
+<h4>Install <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Link to this heading">#</a></h4>
 <ul class="simple">
 <li><p>Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> on your machine.</p></li>
 </ul>
@@ -499,7 +513,7 @@ document.write(`
 </ul>
 </section>
 <section id="miniconda-for-mac">
-<h4>💡 miniconda for Mac<a class="headerlink" href="#miniconda-for-mac" title="Permalink to this heading">#</a></h4>
+<h4>💡 miniconda for Mac<a class="headerlink" href="#miniconda-for-mac" title="Link to this heading">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see code for miniconda for Mac</p>
 <p>wget <a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh">https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh</a> -O ~/miniconda.sh
@@ -510,7 +524,7 @@ conda init zsh</p>
 </section>
 </section>
 <section id="step-2-build-an-env-using-our-conda-file">
-<h3>Step 2: Build an Env using our Conda file!<a class="headerlink" href="#step-2-build-an-env-using-our-conda-file" title="Permalink to this heading">#</a></h3>
+<h3>Step 2: Build an Env using our Conda file!<a class="headerlink" href="#step-2-build-an-env-using-our-conda-file" title="Link to this heading">#</a></h3>
 <p>You simply need to have this <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file anywhere locally on your computer. So, let’s download it!</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
@@ -567,13 +581,13 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="pip">
-<h2>PIP:<a class="headerlink" href="#pip" title="Permalink to this heading">#</a></h2>
+<h2>PIP:<a class="headerlink" href="#pip" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf]'</span></code> (for GUI support w/tensorflow) or without the gui: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[tf]'</span></code>.</p></li>
 <li><p>If you want to use the SuperAnimal models, then please use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf,modelzoo]'</span></code>.</p></li>
 </ul>
 <section id="we-recommend-having-a-gpu">
-<h3>We recommend having a GPU.<a class="headerlink" href="#we-recommend-having-a-gpu" title="Permalink to this heading">#</a></h3>
+<h3>We recommend having a GPU.<a class="headerlink" href="#we-recommend-having-a-gpu" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>You <strong>need to decide if you want to use a CPU or GPU for your models</strong>: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus">here</a> and there are a lot of helper videos on <a class="reference external" href="https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi">our YouTube channel!</a>).</p>
 <ul>
@@ -586,19 +600,19 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="docker">
-<h2>DOCKER:<a class="headerlink" href="#docker" title="Permalink to this heading">#</a></h2>
+<h2>DOCKER:<a class="headerlink" href="#docker" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>We also have docker containers. Docker is the most reproducible way to use and deploy code. Please see our dedicated docker package and page <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/docker.html">here</a>.</p></li>
 </ul>
 </section>
 <section id="pro-tips">
-<h2>Pro Tips:<a class="headerlink" href="#pro-tips" title="Permalink to this heading">#</a></h2>
-<p>More <span class="xref myst">installation ProTips</span> are also available.</p>
+<h2>Pro Tips:<a class="headerlink" href="#pro-tips" title="Link to this heading">#</a></h2>
+<p>More <a class="reference internal" href="#installTips"><span class="xref myst">installation ProTips</span></a> are also available.</p>
 <p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==2.2</span></code>. Once installed, you can check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.</p>
 <p>Here are some conda environment management tips: <a class="reference external" href="https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index">https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index</a></p>
-<p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see <span class="xref myst">here</span> on how to get the latest GitHub code, and how to test your installation by following this video: <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
+<p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see <a class="reference internal" href="#installTips"><span class="xref myst">here</span></a> on how to get the latest GitHub code, and how to test your installation by following this video: <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
 <section id="creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
-<h3>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Permalink to this heading">#</a></h3>
+<h3>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Link to this heading">#</a></h3>
 <p>*Note in a fresh ubuntu install, you will often have to run: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-dev</span></code> to install the GNU Compiler Collection and the python developing environment.</p>
 <p>Some users might want to create their own customize env. -  Here is an example.</p>
 <p>In the terminal type:</p>
@@ -609,14 +623,14 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="gpu-support">
-<h2><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Permalink to this heading">#</a></h2>
+<h2><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Link to this heading">#</a></h2>
 <p>The ONLY thing you need to do <strong>first</strong> if you have an NVIDIA GPU and the matching NVIDIA CUDA+driver installed.</p>
 <ul class="simple">
 <li><p>CUDA: <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">https://developer.nvidia.com/cuda-downloads</a> (just follow the prompts here!)</p></li>
 <li><p>DRIVERS: <a class="reference external" href="https://www.nvidia.com/Download/index.aspx">https://www.nvidia.com/Download/index.aspx</a></p></li>
 </ul>
 <section id="the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
-<h3>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Permalink to this heading">#</a></h3>
+<h3>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Link to this heading">#</a></h3>
 <p><strong>CRITICAL:</strong> If you have a GPU, you should FIRST <strong>install the NVIDIA CUDA package and an appropriate driver for your specific GPU</strong>, then you can use the supplied conda file. Please follow the instructions found here <a class="reference external" href="https://www.tensorflow.org/install/gpu">https://www.tensorflow.org/install/gpu</a>, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.</p>
 <ul class="simple">
 <li><p>Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.</p></li>
@@ -628,7 +642,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p><strong>SECOND</strong>, install CUDA: <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
 <p><strong>THIRD:</strong> Follow the steps above to get the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT</span></code> conda file and install it!</p>
 <section id="notes">
-<h4>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h4>
+<h4>Notes:<a class="headerlink" href="#notes" title="Link to this heading">#</a></h4>
 <ul class="simple">
 <li><p><strong>All of the TensorFlow versions work with DeepLabCut</strong>. But, please be mindful different versions of TensorFlow require different CUDA versions.</p></li>
 <li><p>As the combination of TensorFlow and CUDA matters, we strongly encourage you to <strong>check your driver/cuDNN/CUDA/TensorFlow versions</strong> <a class="reference external" href="https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690">on this StackOverflow post</a>.</p></li>
@@ -645,7 +659,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 </section>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting:<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">#</a></h2>
+<h2>Troubleshooting:<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
 <p>TensorFlow:
 Here are some additional resources users have found helpful (posted without endorsement):</p>
 <ul class="simple">
@@ -670,11 +684,11 @@ Here are some additional resources users have found helpful (posted without endo
 </ul>
 </section>
 <section id="system-wide-considerations">
-<span id="system-wide-considerations-during-install"></span><h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Permalink to this heading">#</a></h2>
+<span id="system-wide-considerations-during-install"></span><h2>System-wide considerations:<a class="headerlink" href="#system-wide-considerations" title="Link to this heading">#</a></h2>
 <p>If you perform the system-wide installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them. If you have a dedicated machine for DeepLabCut, this is fine. If there are other applications that require different versions of libraries, then one would potentially break those applications. The solution to this problem is to create a virtual environment, a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages. One way to manage virtual environments is to use conda environments (for which you need Anaconda installed).</p>
 </section>
 <section id="technical-considerations">
-<span id="tech-considerations-during-install"></span><h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Permalink to this heading">#</a></h2>
+<span id="tech-considerations-during-install"></span><h2>Technical Considerations:<a class="headerlink" href="#technical-considerations" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Computer:</p>
 <ul>
@@ -706,7 +720,7 @@ Here are some additional resources users have found helpful (posted without endo
 </ul>
 </li>
 </ul>
-<p>Return to <span class="xref myst">readme</span>.</p>
+<p>Return to <a class="reference internal" href="#readme"><span class="xref myst">readme</span></a>.</p>
 </section>
 </section>
 
@@ -826,7 +840,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>The DeepLabCut Model Zoo! &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/ModelZoo';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -465,10 +479,10 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="the-deeplabcut-model-zoo">
-<h1>The DeepLabCut Model Zoo!<a class="headerlink" href="#the-deeplabcut-model-zoo" title="Permalink to this heading">#</a></h1>
+<h1>The DeepLabCut Model Zoo!<a class="headerlink" href="#the-deeplabcut-model-zoo" title="Link to this heading">#</a></h1>
 <p>🦒 🐈 🐕‍🦺 🐀 🐁 🦡 🦦 🐏 🐫 🐆 🦓 🐖 🐄 🐂 🦖 🐿 🦍 🦥</p>
 <section id="home-page">
-<h2>🏠 <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a><a class="headerlink" href="#home-page" title="Permalink to this heading">#</a></h2>
+<h2>🏠 <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a><a class="headerlink" href="#home-page" title="Link to this heading">#</a></h2>
 <p>Started in 2020 and expanded in 2022, the model zoo is four things:</p>
 <ul class="simple">
 <li><p>(1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself</p></li>
@@ -479,38 +493,38 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 </ul>
 </section>
 <section id="quick-start">
-<h2>Quick Start:<a class="headerlink" href="#quick-start" title="Permalink to this heading">#</a></h2>
+<h2>Quick Start:<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="p">[</span><span class="n">tf</span><span class="p">,</span><span class="n">gui</span><span class="p">,</span><span class="n">modelzoo</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
 <section id="about-the-superanimal-models">
-<h2>About the SuperAnimal Models<a class="headerlink" href="#about-the-superanimal-models" title="Permalink to this heading">#</a></h2>
+<h2>About the SuperAnimal Models<a class="headerlink" href="#about-the-superanimal-models" title="Link to this heading">#</a></h2>
 <p>Animal pose estimation is critical in applications ranging from neuroscience to veterinary medicine. However, reliable inference of animal poses currently requires domain knowledge and labeling effort. To ease access to high-performance animal pose estimation models across diverse environments and species, we present a new paradigm for pre-training and fine-tuning that provides excellent zero-shot (no training required) performance on two major classes of animal pose data: quadrupeds and lab mice.</p>
 <p>To provide the community with easy access to such high performance models across diverse environments and species, we present a new paradigm for building pre-trained animal pose models – which we call SuperAnimal models – and the ability to use them for transfer learning (e.g., fine-tune them if needed).</p>
 <section id="we-now-introduce-two-superanimal-members-namely-superanimal-quadruped-and-superanimal-topviewmouse">
-<h3>We now  introduce two SuperAnimal members, namely, <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code> and <code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse</span></code>.<a class="headerlink" href="#we-now-introduce-two-superanimal-members-namely-superanimal-quadruped-and-superanimal-topviewmouse" title="Permalink to this heading">#</a></h3>
+<h3>We now  introduce two SuperAnimal members, namely, <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code> and <code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse</span></code>.<a class="headerlink" href="#we-now-introduce-two-superanimal-members-namely-superanimal-quadruped-and-superanimal-topviewmouse" title="Link to this heading">#</a></h3>
 <section id="superanimal-quadruped-model-aim-to-work-across-a-large-range-of-quadruped-animals-from-horses-dogs-sheep-rodents-to-elephants-the-camera-perspective-is-orthogonal-to-the-animal-side-view-and-most-of-the-data-includes-the-animals-face-thus-the-front-and-side-of-the-animal-here-are-example-images-of-what-the-model-is-trained-on">
-<h4><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code> model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal (“side view”), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:<a class="headerlink" href="#superanimal-quadruped-model-aim-to-work-across-a-large-range-of-quadruped-animals-from-horses-dogs-sheep-rodents-to-elephants-the-camera-perspective-is-orthogonal-to-the-animal-side-view-and-most-of-the-data-includes-the-animals-face-thus-the-front-and-side-of-the-animal-here-are-example-images-of-what-the-model-is-trained-on" title="Permalink to this heading">#</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code> model aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal (“side view”), and most of the data includes the animals face (thus the front and side of the animal). Here are example images of what the model is trained on:<a class="headerlink" href="#superanimal-quadruped-model-aim-to-work-across-a-large-range-of-quadruped-animals-from-horses-dogs-sheep-rodents-to-elephants-the-camera-perspective-is-orthogonal-to-the-animal-side-view-and-most-of-the-data-includes-the-animals-face-thus-the-front-and-side-of-the-animal-here-are-example-images-of-what-the-model-is-trained-on" title="Link to this heading">#</a></h4>
 <p><img alt="SA_Q" src="https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png" /></p>
 </section>
 <section id="superanimal-topviewmouse-aims-to-work-across-lab-mice-in-different-lab-settings-from-a-top-view-perspective-this-is-very-polar-in-many-behavioral-assays-in-freely-moving-mice-here-are-example-images-of-what-the-model-is-trained-on">
-<h4><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse</span></code> aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:<a class="headerlink" href="#superanimal-topviewmouse-aims-to-work-across-lab-mice-in-different-lab-settings-from-a-top-view-perspective-this-is-very-polar-in-many-behavioral-assays-in-freely-moving-mice-here-are-example-images-of-what-the-model-is-trained-on" title="Permalink to this heading">#</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse</span></code> aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:<a class="headerlink" href="#superanimal-topviewmouse-aims-to-work-across-lab-mice-in-different-lab-settings-from-a-top-view-perspective-this-is-very-polar-in-many-behavioral-assays-in-freely-moving-mice-here-are-example-images-of-what-the-model-is-trained-on" title="Link to this heading">#</a></h4>
 <p><img alt="SA-TVM" src="https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png" /></p>
 <p>IMPORTANT:  we currently only support single animal scenarios</p>
 </section>
 </section>
 <section id="our-perspective">
-<h3>Our perspective.<a class="headerlink" href="#our-perspective" title="Permalink to this heading">#</a></h3>
+<h3>Our perspective.<a class="headerlink" href="#our-perspective" title="Link to this heading">#</a></h3>
 <p>Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.</p>
 </section>
 <section id="to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api">
-<h3>To use our models in DeepLabCut (versions 2.3+), please use the following API<a class="headerlink" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api" title="Permalink to this heading">#</a></h3>
+<h3>To use our models in DeepLabCut (versions 2.3+), please use the following API<a class="headerlink" href="#to-use-our-models-in-deeplabcut-versions-2-3-please-use-the-following-api" title="Link to this heading">#</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="p">[</span><span class="n">tf</span><span class="p">,</span><span class="n">modelzoo</span><span class="p">]</span>
 </pre></div>
 </div>
 <section id="practical-example-using-superanimal-models-for-inference-without-training">
-<h4>Practical example: Using SuperAnimal models for inference without training.<a class="headerlink" href="#practical-example-using-superanimal-models-for-inference-without-training" title="Permalink to this heading">#</a></h4>
+<h4>Practical example: Using SuperAnimal models for inference without training.<a class="headerlink" href="#practical-example-using-superanimal-models-for-inference-without-training" title="Link to this heading">#</a></h4>
 <p>In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.video_inference_superanimal</span></code> function, if the output video appears to be jittery, consider setting the <code class="docutils literal notranslate"><span class="pre">video_adapt</span></code> option to <strong>True</strong>. Be aware, that enabling this option might extend the processing time.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;demo-video.mp4&#39;</span>
 <span class="n">superanimal_name</span> <span class="o">=</span> <span class="s1">&#39;superanimal_quadruped&#39;</span>
@@ -523,7 +537,7 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 </div>
 </section>
 <section id="practical-example-using-transfer-learning-with-superanimal-weights">
-<h4>Practical example: Using transfer learning with superanimal weights.<a class="headerlink" href="#practical-example-using-transfer-learning-with-superanimal-weights" title="Permalink to this heading">#</a></h4>
+<h4>Practical example: Using transfer learning with superanimal weights.<a class="headerlink" href="#practical-example-using-transfer-learning-with-superanimal-weights" title="Link to this heading">#</a></h4>
 <p>In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.train_network</span></code> function, the <code class="docutils literal notranslate"><span class="pre">superanimal_transfer_learning</span></code> option plays a pivotal role. If it’s set to <strong>True</strong>, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it’s set to <strong>False</strong>, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.<br />
 Specifically:</p>
 <ul class="simple">
@@ -544,17 +558,17 @@ Specifically:</p>
 </section>
 </section>
 <section id="to-see-the-list-of-available-models-check-out-the-home-page">
-<h3>To see the list of available models, check out the <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a>.<a class="headerlink" href="#to-see-the-list-of-available-models-check-out-the-home-page" title="Permalink to this heading">#</a></h3>
+<h3>To see the list of available models, check out the <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a>.<a class="headerlink" href="#to-see-the-list-of-available-models-check-out-the-home-page" title="Link to this heading">#</a></h3>
 <p><strong>Coming soon:</strong> The DeepLabCut Project Manager GUI will allow you to use the SuperAnimal Models. You can run the model and do ``active learning” to improve performance on your data.
 Specifically, we have <em>new</em> video adaptation methods to make your tracking extra smooth and robust!</p>
 </section>
 <section id="potential-failure-modes-for-superanimal-models-and-how-to-fix-it">
-<h3>Potential failure modes for SuperAnimal Models and how to fix it.<a class="headerlink" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it" title="Permalink to this heading">#</a></h3>
+<h3>Potential failure modes for SuperAnimal Models and how to fix it.<a class="headerlink" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it" title="Link to this heading">#</a></h3>
 <p>Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the API (details in the API docs). For <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code>, we empirically observe that if your video is larger than 1500 pixels, it is better to pass <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the range within 1000.</p>
 <p>Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). You can use our “video adaptation” model (released soon) to counter this.</p>
 </section>
 <section id="to-see-our-first-preprint-on-the-work-check-out-our-paper">
-<h3>To see our first preprint on the work, check out <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">our paper</a>:<a class="headerlink" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper" title="Permalink to this heading">#</a></h3>
+<h3>To see our first preprint on the work, check out <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">our paper</a>:<a class="headerlink" href="#to-see-our-first-preprint-on-the-work-check-out-our-paper" title="Link to this heading">#</a></h3>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p>Here is the citation:
@@ -677,7 +691,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

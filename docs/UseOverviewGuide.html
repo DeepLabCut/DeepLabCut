@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>🥳 Get started with DeepLabCut: our key recommendations &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/UseOverviewGuide';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -473,10 +487,10 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="get-started-with-deeplabcut-our-key-recommendations">
-<span id="overview"></span><h1>🥳 Get started with DeepLabCut: our key recommendations<a class="headerlink" href="#get-started-with-deeplabcut-our-key-recommendations" title="Permalink to this heading">#</a></h1>
+<span id="overview"></span><h1>🥳 Get started with DeepLabCut: our key recommendations<a class="headerlink" href="#get-started-with-deeplabcut-our-key-recommendations" title="Link to this heading">#</a></h1>
 <p>Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a>, which is (still) fully relevant to standard DeepLabCut.</p>
 <section id="how-to-install-deeplabcut">
-<h2><a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">How to install DeepLabCut</span></a><a class="headerlink" href="#how-to-install-deeplabcut" title="Permalink to this heading">#</a></h2>
+<h2><a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">How to install DeepLabCut</span></a><a class="headerlink" href="#how-to-install-deeplabcut" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Decide on your needs: there are <strong>two main modes, standard DeepLabCut or multi-animal DeepLabCut</strong>. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. <strong><a class="reference internal" href="#important-info-regd-usage"><span class="std std-ref">Important Information on how to use DLC in different scenarios (single vs multi animal)</span></a></strong> Then pick:</p></li>
 <li><p>(1) <a class="reference internal" href="standardDeepLabCut_UserGuide.html#single-animal-userguide"><span class="std std-ref">How to use standard DeepLabCut</span></a></p></li>
@@ -491,39 +505,39 @@ document.write(`
 </ul>
 <p>Getting Started: <a class="reference external" href="https://www.youtube.com/watch?v=A9qZidI7tL8">a video tutorial on navigating the documentation!</a></p>
 <section id="what-you-need-to-get-started">
-<h3>What you need to get started:<a class="headerlink" href="#what-you-need-to-get-started" title="Permalink to this heading">#</a></h3>
+<h3>What you need to get started:<a class="headerlink" href="#what-you-need-to-get-started" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>a set of videos that span the types of behaviors you want to track.</strong> Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is <strong>much better</strong> than 50-100 frames from 2 videos).</p></li>
 <li><p><strong>minimally, a computer w/a CPU.</strong> If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/FAQ">here</a>. You can also use cloud computing resources, including COLAB (<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md">see how</a>).</p></li>
 </ul>
 </section>
 <section id="what-you-don-t-need-to-get-started">
-<h3>What you DON’T need to get started:<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Permalink to this heading">#</a></h3>
+<h3>What you DON’T need to get started:<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).</p></li>
 <li><p>no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu.</p></li>
 </ul>
 </section>
 <section id="id1">
-<h3>Overview:<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<h3>Overview:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p><strong>DeepLabCut</strong> is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (a text document) file containing various (project) parameters as well as links the data of the project.</p>
 <p align="center">
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
  </p>
 </section>
 <section id="overview-of-the-workflow">
-<h3>Overview of the workflow:<a class="headerlink" href="#overview-of-the-workflow" title="Permalink to this heading">#</a></h3>
-<p>This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find <span class="xref myst">here</span>. For additional assistance, you can use the <span class="xref myst">help</span> function to better understand what each function does.</p>
+<h3>Overview of the workflow:<a class="headerlink" href="#overview-of-the-workflow" title="Link to this heading">#</a></h3>
+<p>This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find <a class="reference internal" href="#functionDetails.md"><span class="xref myst">here</span></a>. For additional assistance, you can use the <a class="reference internal" href="#help"><span class="std std-ref">help</span></a> function to better understand what each function does.</p>
  <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" height="270">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
 </p>
 <p><strong>NOTE:</strong> There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!).</p>
-<p>** DLC 2.2:** as of 2.2 we support “multi-animal projects,” but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for <strong>maDeepLabCut</strong> for specific steps that are changed, or see this more comprehensive guide <span class="xref myst">here</span></p>
+<p>** DLC 2.2:** as of 2.2 we support “multi-animal projects,” but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for <strong>maDeepLabCut</strong> for specific steps that are changed, or see this more comprehensive guide <a class="reference internal" href="#/docs/maDLC_AdvUserGuide.md"><span class="xref myst">here</span></a></p>
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" height="570">
  </p>
-<p>You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an <span class="xref myst">environment</span> and always exit and return to this environment to run the code. You just need to point to the correct <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file to <span class="xref myst">jump back in</span>! The documentation below will take you through the individual steps.</p>
+<p>You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an <a class="reference internal" href="#/conda-environments"><span class="xref myst">environment</span></a> and always exit and return to this environment to run the code. You just need to point to the correct <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file to <a class="reference internal" href="#tips-for-daily-use"><span class="std std-ref">jump back in</span></a>! The documentation below will take you through the individual steps.</p>
 <p align="center">
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
  </p>
@@ -531,15 +545,15 @@ document.write(`
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="specific-advice-for-using-deeplabcut">
-<span id="important-info-regd-usage"></span><h1>Specific Advice for Using DeepLabCut:<a class="headerlink" href="#specific-advice-for-using-deeplabcut" title="Permalink to this heading">#</a></h1>
+<span id="important-info-regd-usage"></span><h1>Specific Advice for Using DeepLabCut:<a class="headerlink" href="#specific-advice-for-using-deeplabcut" title="Link to this heading">#</a></h1>
 <section id="important-information-on-using-deeplabcut">
-<h2>Important information on using DeepLabCut:<a class="headerlink" href="#important-information-on-using-deeplabcut" title="Permalink to this heading">#</a></h2>
+<h2>Important information on using DeepLabCut:<a class="headerlink" href="#important-information-on-using-deeplabcut" title="Link to this heading">#</a></h2>
 <p>We recommend first using <strong>DeepLabCut for a single animal scenario</strong> to understand the workflow - even if it’s just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2…</p>
 <section id="additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2">
-<h3>Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):<a class="headerlink" href="#additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2" title="Permalink to this heading">#</a></h3>
-<p>We highly recommend using 2.2 first in the Project Manager GUI (<span class="xref myst">Option 3</span>). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.</p>
+<h3>Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):<a class="headerlink" href="#additional-information-for-getting-started-with-madeeplabcut-aka-deeplabcut-2-2" title="Link to this heading">#</a></h3>
+<p>We highly recommend using 2.2 first in the Project Manager GUI (<a class="reference internal" href="#docs/functionDetails.md#deeplabcut-project-manager-gui"><span class="xref myst">Option 3</span></a>). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.</p>
 <section id="what-scenario-do-you-have">
-<h4><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Permalink to this heading">#</a></h4>
+<h4><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Link to this heading">#</a></h4>
 <ul class="simple">
 <li><p><strong>I have single animal videos:</strong></p>
 <ul>
@@ -578,7 +592,7 @@ document.write(`
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="the-options-for-using-deeplabcut">
-<h1>The options for using DeepLabCut:<a class="headerlink" href="#the-options-for-using-deeplabcut" title="Permalink to this heading">#</a></h1>
+<h1>The options for using DeepLabCut:<a class="headerlink" href="#the-options-for-using-deeplabcut" title="Link to this heading">#</a></h1>
 <p>Great - now that you get the overall workflow let’s jump in! Here, you have several options.</p>
 <p><a class="reference internal" href="#using-demo-notebooks"><span class="std std-ref"><strong>Option 1</strong></span></a> DEMOs: for a quick introduction to DLC on our data.</p>
 <p><a class="reference internal" href="#using-project-manager-gui"><span class="std std-ref"><strong>Option 2</strong></span></a> Standalone GUI: is the perfect place for
@@ -586,13 +600,13 @@ beginners who want to start using DeepLabCut on your own data.</p>
 <p><a class="reference internal" href="#using-the-terminal"><span class="std std-ref"><strong>Option 3</strong></span></a> In the terminal: is best for more advanced users, as
 with the terminal interface you get the most versatility and options.</p>
 <section id="option-1-demo-notebooks">
-<span id="using-demo-notebooks"></span><h2>Option 1: Demo Notebooks:<a class="headerlink" href="#option-1-demo-notebooks" title="Permalink to this heading">#</a></h2>
+<span id="using-demo-notebooks"></span><h2>Option 1: Demo Notebooks:<a class="headerlink" href="#option-1-demo-notebooks" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=DRT-Cq2vdWs">VIDEO TUTORIAL AVAILABLE!</a></p>
 <p>We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
-own dataset. See all the demo’s <span class="xref myst">here!</span> Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it’s possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.</p>
+own dataset. See all the demo’s <a class="reference internal" href="#/examples"><span class="xref myst">here!</span></a> Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it’s possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.</p>
 </section>
 <section id="option-2-using-the-project-manager-gui">
-<span id="using-project-manager-gui"></span><h2>Option 2: using the Project Manager GUI:<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Permalink to this heading">#</a></h2>
+<span id="using-project-manager-gui"></span><h2>Option 2: using the Project Manager GUI:<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=KcXogR-p5Ak">VIDEO TUTORIAL!</a></p>
 <p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL#2!</a></p>
 <p>Start Python by typing <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or <code class="docutils literal notranslate"><span class="pre">python</span></code> in the terminal (note: using pythonw for Mac users was depreciated in 2022).
@@ -604,7 +618,7 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Wi
 <p>That’s it! Follow the GUI for details</p>
 </section>
 <section id="option-3-using-the-program-terminal-start-ipython">
-<span id="using-the-terminal"></span><h2>Option 3: using the program terminal, Start iPython*:<a class="headerlink" href="#option-3-using-the-program-terminal-start-ipython" title="Permalink to this heading">#</a></h2>
+<span id="using-the-terminal"></span><h2>Option 3: using the program terminal, Start iPython*:<a class="headerlink" href="#option-3-using-the-program-terminal-start-ipython" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=7xwOhUcIGio">VIDEO TUTORIAL AVAILABLE!</a></p>
 <p>Please decide with mode you want to use DeepLabCut, and follow one of the following:</p>
 <ul class="simple">
@@ -729,7 +743,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

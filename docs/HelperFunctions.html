@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Helper &amp; Advanced Optional Function Documentation &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/HelperFunctions';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -451,7 +465,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="helper-advanced-optional-function-documentation">
-<span id="helper-functions"></span><h1>Helper &amp; Advanced Optional Function Documentation<a class="headerlink" href="#helper-advanced-optional-function-documentation" title="Permalink to this heading">#</a></h1>
+<span id="helper-functions"></span><h1>Helper &amp; Advanced Optional Function Documentation<a class="headerlink" href="#helper-advanced-optional-function-documentation" title="Link to this heading">#</a></h1>
 <p>There are additional functions that are not required, but can be extremely helpful.</p>
 <p>First off, if you are new to Python, you might not know this handy trick: you can see
 ALL the functions in deeplabcut by typing <code class="docutils literal notranslate"><span class="pre">deeplabcut.</span></code> then hitting “tab.” You will see a massive list!</p>
@@ -463,27 +477,27 @@ ALL the functions in deeplabcut by typing <code class="docutils literal notransl
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1567907844296-STHTZ2SD6UB5WCVEN2I8/ke17ZwdGBToddI8pDm48kJEw9Z-3B5ptjcdSkknf02DlfiSMXz2YNBs8ylwAJx2qgRUppHe6ToX8uSOdETM-XipuQpH02DE1EkoTaghKW779xRs5veesYFcByqmynT9oByNVWkh1tiIAZLs8gRhPycqbSMdPDHKAvTCdk8NbVnE/optionsA.png?format=1000w" width="90%">
 </p>
 <p>Now, for any of these functions, you type <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos_converth5_to_csv?</span></code> you get:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype=&#39;.avi&#39;)
-Docstring:
-By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Signature</span><span class="p">:</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos_converth5_to_csv</span><span class="p">(</span><span class="n">videopath</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;.avi&#39;</span><span class="p">)</span>
+<span class="n">Docstring</span><span class="p">:</span>
+<span class="n">By</span> <span class="n">default</span> <span class="n">the</span> <span class="n">output</span> <span class="n">poses</span> <span class="p">(</span><span class="n">when</span> <span class="n">running</span> <span class="n">analyze_videos</span><span class="p">)</span> <span class="n">are</span> <span class="n">stored</span> <span class="k">as</span> <span class="n">MultiIndex</span> <span class="n">Pandas</span> <span class="n">Array</span><span class="p">,</span> <span class="n">which</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">network</span><span class="p">,</span> <span class="n">body</span> <span class="n">part</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="n">label</span> <span class="n">position</span>  <span class="ow">in</span> <span class="n">pixels</span><span class="p">,</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">likelihood</span> <span class="k">for</span> <span class="n">each</span> <span class="n">frame</span> <span class="n">per</span> <span class="n">body</span> <span class="n">part</span><span class="o">.</span> <span class="n">These</span> <span class="n">arrays</span> <span class="n">are</span> <span class="n">stored</span> <span class="ow">in</span> <span class="n">an</span> <span class="n">efficient</span> <span class="n">Hierarchical</span> <span class="n">Data</span> <span class="n">Format</span> <span class="p">(</span><span class="n">HDF</span><span class="p">)</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">directory</span><span class="p">,</span> <span class="n">where</span> <span class="n">the</span> <span class="n">video</span> <span class="ow">is</span> <span class="n">stored</span><span class="o">.</span> <span class="n">If</span> <span class="n">the</span> <span class="n">flag</span> <span class="n">save_as_csv</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="kc">True</span><span class="p">,</span> <span class="n">the</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">also</span> <span class="n">exported</span> <span class="k">as</span> <span class="n">comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">value</span> <span class="n">file</span><span class="o">.</span> <span class="n">However</span><span class="p">,</span> <span class="k">if</span> <span class="n">the</span> <span class="n">flag</span> <span class="n">was</span> <span class="o">*</span><span class="ow">not</span><span class="o">*</span> <span class="nb">set</span><span class="p">,</span> <span class="n">then</span> <span class="n">this</span> <span class="n">function</span> <span class="n">allows</span> <span class="n">the</span> <span class="n">conversion</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">h5</span> <span class="n">files</span> <span class="n">to</span> <span class="n">csv</span> <span class="n">files</span> <span class="p">(</span><span class="n">without</span> <span class="n">having</span> <span class="n">to</span> <span class="n">analyze</span> <span class="n">the</span> <span class="n">videos</span> <span class="n">again</span><span class="p">)</span><span class="err">!</span>
 
-This functions converts hdf (h5) files to the comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+<span class="n">This</span> <span class="n">functions</span> <span class="n">converts</span> <span class="n">hdf</span> <span class="p">(</span><span class="n">h5</span><span class="p">)</span> <span class="n">files</span> <span class="n">to</span> <span class="n">the</span> <span class="n">comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">values</span> <span class="nb">format</span> <span class="p">(</span><span class="o">.</span><span class="n">csv</span><span class="p">),</span> <span class="n">which</span> <span class="ow">in</span> <span class="n">turn</span> <span class="n">can</span> <span class="n">be</span> <span class="n">imported</span> <span class="ow">in</span> <span class="n">many</span> <span class="n">programs</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="n">MATLAB</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Prism</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span>
 
- Parameters
-----------
+ <span class="n">Parameters</span>
+<span class="o">----------</span>
 
-    videopath : string
-        A strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
+    <span class="n">videopath</span> <span class="p">:</span> <span class="n">string</span>
+        <span class="n">A</span> <span class="n">strings</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">full</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">videos</span> <span class="k">for</span> <span class="n">analysis</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">where</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">videos</span> <span class="k">with</span> <span class="n">same</span> <span class="n">extension</span> <span class="n">are</span> <span class="n">stored</span><span class="o">.</span>
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.
-Only videos with this extension are analyzed. The default is ``.avi``
+    <span class="n">videotype</span><span class="p">:</span> <span class="n">string</span><span class="p">,</span> <span class="n">optional</span>
+        <span class="n">Checks</span> <span class="k">for</span> <span class="n">the</span> <span class="n">extension</span> <span class="n">of</span> <span class="n">the</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">case</span> <span class="n">the</span> <span class="nb">input</span> <span class="n">to</span> <span class="n">the</span> <span class="n">video</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">directory</span><span class="o">.</span>
+<span class="n">Only</span> <span class="n">videos</span> <span class="k">with</span> <span class="n">this</span> <span class="n">extension</span> <span class="n">are</span> <span class="n">analyzed</span><span class="o">.</span> <span class="n">The</span> <span class="n">default</span> <span class="ow">is</span> <span class="err">``</span><span class="o">.</span><span class="n">avi</span><span class="err">``</span>
 
- Examples
------------
+ <span class="n">Examples</span>
+<span class="o">-----------</span>
 
-    Converts all pose-output files belonging to mp4 videos in the folder &#39;/media/alex/experimentaldata/cheetahvideos&#39; to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv(&#39;/media/alex/experimentaldata/cheetahvideos&#39;,&#39;.mp4&#39;)  
+    <span class="n">Converts</span> <span class="nb">all</span> <span class="n">pose</span><span class="o">-</span><span class="n">output</span> <span class="n">files</span> <span class="n">belonging</span> <span class="n">to</span> <span class="n">mp4</span> <span class="n">videos</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">folder</span> <span class="s1">&#39;/media/alex/experimentaldata/cheetahvideos&#39;</span> <span class="n">to</span> <span class="n">csv</span> <span class="n">files</span><span class="o">.</span>
+    <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos_converth5_to_csv</span><span class="p">(</span><span class="s1">&#39;/media/alex/experimentaldata/cheetahvideos&#39;</span><span class="p">,</span><span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>  
 </pre></div>
 </div>
 <p>While some of the names are ridiculously long, we wanted them to be “self-explanatory.” Here is a list
@@ -521,7 +535,7 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 </pre></div>
 </div>
 <section id="model-export-function">
-<h2>Model Export function:<a class="headerlink" href="#model-export-function" title="Permalink to this heading">#</a></h2>
+<h2>Model Export function:<a class="headerlink" href="#model-export-function" title="Link to this heading">#</a></h2>
 <p>This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of <a class="reference external" href="https://elifesciences.org/articles/61909">Kane et al, 2020 eLife</a>. Please see the paper and related code-base on how to use this utility.</p>
 <ul class="simple">
 <li><p>Another example use case is with the <a class="reference external" href="https://github.com/bonsai-rx/deeplabcut">Bonsai-DeepLabCut</a> plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.</p></li>
@@ -531,9 +545,9 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 </div>
 </section>
 <section id="advanced-labeling-across-cameras">
-<h2>Advanced Labeling across Cameras:<a class="headerlink" href="#advanced-labeling-across-cameras" title="Permalink to this heading">#</a></h2>
+<h2>Advanced Labeling across Cameras:<a class="headerlink" href="#advanced-labeling-across-cameras" title="Link to this heading">#</a></h2>
 <section id="if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui">
-<h3>If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:<a class="headerlink" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui" title="Permalink to this heading">#</a></h3>
+<h3>If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:<a class="headerlink" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui" title="Link to this heading">#</a></h3>
 <p>If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera’s image that could match the labeled point in the first camera’s image. A correctly labeled point will fall somewhere along this projected line.</p>
 <p>In order to label with epipolar lines, you must complete two additional sets of steps <strong>prior to labeling.</strong></p>
 <ul class="simple">
@@ -658,7 +672,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

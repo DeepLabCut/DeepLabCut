@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Using ModelZoo models on your own datasets &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/UsingModelZooPupil';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -452,13 +466,13 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="using-modelzoo-models-on-your-own-datasets">
-<h1>Using ModelZoo models on your own datasets<a class="headerlink" href="#using-modelzoo-models-on-your-own-datasets" title="Permalink to this heading">#</a></h1>
+<h1>Using ModelZoo models on your own datasets<a class="headerlink" href="#using-modelzoo-models-on-your-own-datasets" title="Link to this heading">#</a></h1>
 <p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been an important tool to study animal behavior precisely.
 <p>Beside providing an open source toolbox for researchers to develop customized deep neural networks for markerless pose estimation, we at DeepLabCut also aim to build robust, generalizable models. Part of this effort is via the <a class="reference external" href="http://www.mackenziemathislab.org/dlc-modelzoo">DeeplabCut ModelZoo</a>.</p>
 <p>The Zoo hosts user-contributed and #teamDLC developed models that are trained on specific animals and scenarios. You can analyze your videos directly with these models without training. The models have strong zero-shot performance on unseen out-of-domain data which can be further improved via pseudo-labeling. Please check the first <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">ModelZoo manuscript</a> for further details.</p>
 <p>This recipe aims to show a usecase of the <strong>mouse_pupil_vclose</strong> and is contributed by 2022 DLC AI Resident <a class="reference external" href="https://github.com/neslihanedes">Neslihan Wittek</a> 💜.</p>
 <section id="mouse-pupil-vclose-model">
-<h2><code class="docutils literal notranslate"><span class="pre">mouse_pupil_vclose</span></code> model<a class="headerlink" href="#mouse-pupil-vclose-model" title="Permalink to this heading">#</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">mouse_pupil_vclose</span></code> model<a class="headerlink" href="#mouse-pupil-vclose-model" title="Link to this heading">#</a></h2>
 <p>This model was contributed by Jim McBurney-Lin at University of California Riverside, USA.
 The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at EPFL.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
@@ -508,12 +522,12 @@ The model was trained on images of C57/B6J mice eyes, and also then augmented wi
 <p>Since we would like to evaluate the models performance on out-of-domain data, we will analyze pigeon pupils. For more discussions and work on so-called out-of-domain data, see <a class="reference external" href="http://www.mackenziemathislab.org/horse10">Mathis, Biasi 2020</a>.</p>
 </section>
 <section id="pigeon-pupil">
-<h2>Pigeon Pupil<a class="headerlink" href="#pigeon-pupil" title="Permalink to this heading">#</a></h2>
+<h2>Pigeon Pupil<a class="headerlink" href="#pigeon-pupil" title="Link to this heading">#</a></h2>
 <p>The eye pupil admits and regulates the amount of light entering the retina in order to enable image perception. Beside this curicial role, the pupil also reflects the state of the brain. The systemic behavior of the pupil has not been vastly studied in birds, although researchers from <a href="https://www.sciencedirect.com/science/article/pii/S0960982221013166?via%3Dihub" target="_blank">Max Planck Institute for Ornithology in Seewiesen</a> have shed light on pupil behaviors in pigeons.</p>
 <p>The pupils of male pigeons get smaller during courtship behavior. This is in contrast to mammals, for which the pupil size dilates in response to an increase in arousal. In addition, the pupil size of pigeons dilates during non-REM sleep, while they rapidly constrict during REM sleep. Examining these differences and the reason behind them, might be helpful to understand the pupillary behavior in general.</p>
 <p>In light of these findings, we wanted to show whether the <strong>mouse_pupil_vclose</strong> model give us an accurate tracking performance for the pigeon pupil as well.</p>
 <section id="jupyter-google-colab-notebook">
-<h3>Jupyter &amp; Google Colab Notebook<a class="headerlink" href="#jupyter-google-colab-notebook" title="Permalink to this heading">#</a></h3>
+<h3>Jupyter &amp; Google Colab Notebook<a class="headerlink" href="#jupyter-google-colab-notebook" title="Link to this heading">#</a></h3>
 <p>DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need for local installation of DeepLabCut!</p>
 <p>Since we are interested in the accuracy of the <strong>mouse_pupil_vclose</strong> on pigeon pupil data, we will use a video which consists of 7 recordings of pigeon pupils.</p>
 <p>Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab.</p>
@@ -531,7 +545,7 @@ files.download(&quot;/content/file.zip&quot;)
 </div>
 </section>
 <section id="analyze-videos-at-your-local-machine">
-<h3>Analyze Videos at Your Local Machine<a class="headerlink" href="#analyze-videos-at-your-local-machine" title="Permalink to this heading">#</a></h3>
+<h3>Analyze Videos at Your Local Machine<a class="headerlink" href="#analyze-videos-at-your-local-machine" title="Link to this heading">#</a></h3>
 <p>DeepLabCut host models from the <a href='http://www.mackenziemathislab.org/dlc-modelzoo' target="_blank">DeepLabCut ModelZoo Project</a>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">create_pretrained_project</span></code> function will create a new project directory with the necessary sub-directories and a basic configuration file.
 It will also initialize your project with a pre-trained model from the DeepLabCut ModelZoo.</p>
@@ -698,7 +712,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

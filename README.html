@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Welcome! 👋 &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script async="async" src="_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'README';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -161,7 +164,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -489,26 +503,26 @@ document.write(`
 <a class="reference external" href="https://www.gnu.org/licenses/lgpl-3.0"><img alt="License: LGPL v3" src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" /></a>
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut"><img alt="GitHub stars" src="https://img.shields.io/github/stars/DeepLabCut/DeepLabCut.svg?style=social&amp;label=Star" /></a>
-<a class="reference external" href="http://isitmaintained.com/project/deeplabcut/deeplabcut"><img alt="Average time to resolve an issue" src="http://isitmaintained.com/badge/resolution/deeplabcut/deeplabcut.svg" /></a>
-<a class="reference external" href="http://isitmaintained.com/project/deeplabcut/deeplabcut"><img alt="Percentage of issues still open" src="http://isitmaintained.com/badge/open/deeplabcut/deeplabcut.svg" /></a>
+<a class="reference external" href="http://isitmaintained.com/project/deeplabcut/deeplabcut" title="Average time to resolve an issue"><img alt="Average time to resolve an issue" src="http://isitmaintained.com/badge/resolution/deeplabcut/deeplabcut.svg" /></a>
+<a class="reference external" href="http://isitmaintained.com/project/deeplabcut/deeplabcut" title="Percentage of issues still open"><img alt="Percentage of issues still open" src="http://isitmaintained.com/badge/open/deeplabcut/deeplabcut.svg" /></a>
 <a class="reference external" href="https://forum.image.sc/tag/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a>
-<a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a>
+<a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;amp;utm_medium=badge&amp;amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a>
 <a class="reference external" href="https://twitter.com/DeepLabCut"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&amp;style=social" /></a>
 <span class="xref myst"><img alt="Generic badge" src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg" /></span></p>
 </div>
 <section class="tex2jax_ignore mathjax_ignore" id="welcome">
-<h1>Welcome! 👋<a class="headerlink" href="#welcome" title="Permalink to this heading">#</a></h1>
+<h1>Welcome! 👋<a class="headerlink" href="#welcome" title="Link to this heading">#</a></h1>
 <p><strong>DeepLabCut™️</strong> is a toolbox for state-of-the-art markerless pose estimation of animals performing various behaviors. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic. <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut">Read a short development and application summary below</a>.</p>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="installation-how-to-install-deeplabcut">
-<h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html">Installation: how to install DeepLabCut</a><a class="headerlink" href="#installation-how-to-install-deeplabcut" title="Permalink to this heading">#</a></h1>
+<h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html">Installation: how to install DeepLabCut</a><a class="headerlink" href="#installation-how-to-install-deeplabcut" title="Link to this heading">#</a></h1>
 <p>Very quick start: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;deeplabcut[gui,tf]&quot;</span></code> that includes all functions plus GUIs, or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[tf]</span></code> (headless version with PyTorch and TensorFlow).</p>
 <ul class="simple">
 <li><p>We recommend using our conda file, see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md">here</a> or the new <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/docker"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> package</a>.</p></li>
 </ul>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="documentation-the-deeplabcut-process">
-<h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">Documentation: The DeepLabCut Process</a><a class="headerlink" href="#documentation-the-deeplabcut-process" title="Permalink to this heading">#</a></h1>
+<h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">Documentation: The DeepLabCut Process</a><a class="headerlink" href="#documentation-the-deeplabcut-process" title="Link to this heading">#</a></h1>
 <p>Our docs walk you through using DeepLabCut, and key API points. For an overview of the toolbox and workflow for project management, see our step-by-step at <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nature Protocols paper</a>.</p>
 <p>For a deeper understanding and more resources for you to get started with Python and DeepLabCut, please check out our free online course! <a class="reference external" href="http://DLCcourse.deeplabcut.org">http://DLCcourse.deeplabcut.org</a></p>
 <p align="center">
@@ -516,7 +530,7 @@ document.write(`
 </p>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="demo-the-code">
-<h1><span class="xref myst">DEMO the code</span><a class="headerlink" href="#demo-the-code" title="Permalink to this heading">#</a></h1>
+<h1><a class="reference internal" href="#/examples"><span class="xref myst">DEMO the code</span></a><a class="headerlink" href="#demo-the-code" title="Link to this heading">#</a></h1>
 <p>🐭 demo <a class="reference external" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>🐭🐭🐭 demo <a class="reference external" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_3miceDemo.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <ul class="simple">
@@ -524,7 +538,7 @@ document.write(`
 </ul>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="why-use-deeplabcut">
-<h1>Why use DeepLabCut?<a class="headerlink" href="#why-use-deeplabcut" title="Permalink to this heading">#</a></h1>
+<h1>Why use DeepLabCut?<a class="headerlink" href="#why-use-deeplabcut" title="Link to this heading">#</a></h1>
 <p>In 2018, we demonstrated the capabilities for <a class="reference external" href="https://vnmurthylab.org/">trail tracking</a>, <a class="reference external" href="http://www.mousemotorlab.org/">reaching in mice</a> and various Drosophila behaviors during egg-laying (see <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al.</a> for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">rats</a>, humans, various fish species, bacteria, leeches, various robots, cheetahs, <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">mouse whiskers</a> and <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">race horses</a>. DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see <a class="reference external" href="https://arxiv.org/abs/1909.11229">Pretraining boosts out-of-domain robustness for pose estimation</a> and <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al 2022</a>). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support. We currently provide state-of-the-art performance for animal pose estimation.</p>
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" height="160">
@@ -538,13 +552,13 @@ document.write(`
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588292233203-FD1DVKAQYNV2TU91CO7R/ke17ZwdGBToddI8pDm48kIX24IsDPzy6M4KUaihfICJZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIxtGUdkzp028KVNnpOijF3PweOM5su6FUQHO6Wkh72Nw/dlc_eco.gif?format=1000w" width="80%">
 </p>
 <section id="code-contributors">
-<h2>Code contributors:<a class="headerlink" href="#code-contributors" title="Permalink to this heading">#</a></h2>
+<h2>Code contributors:<a class="headerlink" href="#code-contributors" title="Link to this heading">#</a></h2>
 <p>DLC code was originally developed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a> &amp; <a class="reference external" href="https://github.com/MMathisLab">Mackenzie Mathis</a>, and was extended in 2.0 with the core dev team consisting of <a class="reference external" href="https://github.com/meet10may">Tanmay Nath</a> (2.0-2.1), and currently (2.1+) with <a class="reference external" href="https://github.com/jeylau">Jessy Lauer</a> and (2.3+) <a class="reference external" href="https://github.com/n-poulsen">Niels Poulsen</a>. DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/graphs/contributors">100+ contributors</a>. Please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS">AUTHORS</a> for more details!</p>
 <p>This is an actively developed package and we welcome community development and involvement.</p>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="get-assistance-be-part-of-the-dlc-community">
-<h1>Get Assistance &amp; be part of the DLC Community✨:<a class="headerlink" href="#get-assistance-be-part-of-the-dlc-community" title="Permalink to this heading">#</a></h1>
+<h1>Get Assistance &amp; be part of the DLC Community✨:<a class="headerlink" href="#get-assistance-be-part-of-the-dlc-community" title="Link to this heading">#</a></h1>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>🚉 Platform</p></th>
@@ -564,7 +578,7 @@ document.write(`
 <td><p>2-3 days</p></td>
 <td><p>DLC Team</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;amp;utm_medium=badge&amp;amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a></p></td>
 <td><p>To discuss with other users,  share ideas and collaborate💡</p></td>
 <td><p>2 days</p></td>
 <td><p>The DLC Community</p></td>
@@ -592,7 +606,7 @@ document.write(`
 </tbody>
 </table>
 <section id="references">
-<h2>References:<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
+<h2>References:<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
 <p>If you use this code or data we kindly ask that you please <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">cite Mathis et al, 2018</a> and, if you use the Python package (DeepLabCut2.x) please also cite <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath, Mathis et al, 2019</a>. If you utilize the MobileNetV2s or EfficientNets please cite <a class="reference external" href="https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf">Mathis, Biasi et al. 2021</a>. If you use versions 2.2beta+ or 2.2rc1+, please cite <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 <p>DOIs (#ProTip, for helping you find citations for software, check out <a class="reference external" href="http://citeas.org/">CiteAs.org</a>!):</p>
 <ul class="simple">
@@ -670,12 +684,12 @@ document.write(`
 </div>
 </section>
 <section id="license">
-<h2>License:<a class="headerlink" href="#license" title="Permalink to this heading">#</a></h2>
+<h2>License:<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
 <p>This project is primarily licensed under the GNU Lesser General Public License v3.0. Note that the software is provided “as is”, without warranty of any kind, express or implied. If you use the code or data, please cite us! Note, artwork (DeepLabCut logo) and images are copyrighted; please do not take or use these images without written permission.</p>
 <p>SuperAnimal models are provided for research use only (non-commercial use).</p>
 </section>
 <section id="major-versions">
-<h2>Major Versions:<a class="headerlink" href="#major-versions" title="Permalink to this heading">#</a></h2>
+<h2>Major Versions:<a class="headerlink" href="#major-versions" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>For all versions, please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">here</a>.</p></li>
 </ul>
@@ -687,7 +701,7 @@ This package includes graphical user interfaces to label your data, and take you
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="news-and-in-the-news">
-<h1>News (and in the news):<a class="headerlink" href="#news-and-in-the-news" title="Permalink to this heading">#</a></h1>
+<h1>News (and in the news):<a class="headerlink" href="#news-and-in-the-news" title="Link to this heading">#</a></h1>
 <p>:purple_heart: The DeepLabCut Model Zoo launches SuperAnimals, see more <a class="reference external" href="http://www.mackenziemathislab.org/dlc-modelzoo/">here</a>.</p>
 <p>:purple_heart: <strong>DeepLabCut supports multi-animal pose estimation!</strong> maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">new <code class="docutils literal notranslate"><span class="pre">2.2+</span></code> releases</a> for what’s new &amp; how to install it, please see our new <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">paper, Lauer et al 2022</a>, and the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut">new docs</a> on how to use it!</p>
 <p>:purple_heart: We support multi-animal re-identification, see <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al 2022</a>.</p>
@@ -706,7 +720,7 @@ This package includes graphical user interfaces to label your data, and take you
 <li><p>Jan 2021: <a class="reference external" href="https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html">Pretraining boosts out-of-domain robustness for pose estimation</a> published in the IEEE Winter Conference on Applications of Computer Vision. We also added EfficientNet backbones to DeepLabCut, those are best trained with cosine decay (see paper). To use them, just pass “<code class="docutils literal notranslate"><span class="pre">efficientnet-b0</span></code>” to “<code class="docutils literal notranslate"><span class="pre">efficientnet-b6</span></code>” when creating the trainingset!</p></li>
 <li><p>Dec 2020: We released a real-time package that allows for online pose estimation and real-time feedback. See <a class="reference external" href="http://DLClive.deeplabcut.org">DLClive.deeplabcut.org</a>.</p></li>
 <li><p>5/22 2020: We released 2.2beta5. This beta release has some of the features of DeepLabCut 2.2, whose major goal is to integrate multi-animal pose estimation to DeepLabCut.</p></li>
-<li><p>Mar 2020: Inspired by suggestions we heard at this weeks CZI’s Essential Open Source Software meeting in Berkeley, CA we updated our <a class="reference internal" href="docs/UseOverviewGuide.html"><span class="doc std std-doc">docs</span></a>. Let us know what you think!</p></li>
+<li><p>Mar 2020: Inspired by suggestions we heard at this weeks CZI’s Essential Open Source Software meeting in Berkeley, CA we updated our <a class="reference internal" href="docs/UseOverviewGuide.html"><span class="std std-doc">docs</span></a>. Let us know what you think!</p></li>
 <li><p>Feb 2020: Our <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0959438819301151">review on animal pose estimation is published!</a></p></li>
 <li><p>Nov 2019: DeepLabCut was recognized by the Chan Zuckerberg Initiative (CZI) with funding to support this project. Read more in the <a class="reference external" href="https://news.harvard.edu/gazette/story/newsplus/harvard-researchers-awarded-czi-open-source-award/">Harvard Gazette</a>, on <a class="reference external" href="https://chanzuckerberg.com/eoss/proposals/">CZI’s Essential Open Source Software for Science site</a> and in their <a class="reference external" href="https://medium.com/&#64;cziscience/how-open-source-software-contributors-are-accelerating-biomedicine-1a5f50f6846a">Medium post</a></p></li>
 <li><p>Oct 2019: DLC 2.1 released with lots of updates. In particular, a Project Manager GUI, MobileNetsV2, and augmentation packages (Imgaug and Tensorpack). For detailed updates see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">releases</a></p></li>
@@ -845,7 +859,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

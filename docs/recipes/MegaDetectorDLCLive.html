@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>💚 MegaDetector+DeepLabCut 💜 &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/MegaDetectorDLCLive';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -160,7 +163,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -462,27 +476,27 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="megadetector-deeplabcut">
-<h1>💚 MegaDetector+DeepLabCut 💜<a class="headerlink" href="#megadetector-deeplabcut" title="Permalink to this heading">#</a></h1>
+<h1>💚 MegaDetector+DeepLabCut 💜<a class="headerlink" href="#megadetector-deeplabcut" title="Link to this heading">#</a></h1>
 <p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live">DeepLabCut-Live</a> is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  <a class="reference external" href="http://modelzoo.deeplabcut.org/">The DeepLabCut-ModelZoo</a> is our growing collection of pretrained animal models for rapid deployment; no training is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check <a class="reference external" href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">here</a> for further information.</p>
 <p>In this #cookbook recipe, we show you how to use MegaDetector to detect animals and run DeepLabCut-Live (using ModelZoo models) to get the pose estimation. This doc is contributed by 2022 DLC AI Resident <a class="reference external" href="https://github.com/Kadzon">Nirel Kadzo</a> 💜!</p>
 <section id="what-is-megadetector">
-<h2>What is MegaDetector?<a class="headerlink" href="#what-is-megadetector" title="Permalink to this heading">#</a></h2>
+<h2>What is MegaDetector?<a class="headerlink" href="#what-is-megadetector" title="Link to this heading">#</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853650953-3L3EZYF69701J8FJZCPT/anim1.jpeg?format=500ww" width="250" title="DLC" alt="DLC" align="right" vspace = "5">
 <p>MegaDetector detects an animal and generates a bounding box around the animal. Thanks to <a class="reference external" href="https://beerys.github.io/">Sara Beery</a> for visiting the #DLCAIResidents in the summer of 2022 to tell us more about this amazing project. An example result is shown:</p>
 </section>
 <section id="deeplabcut-live">
-<h2>DeepLabCut-Live<a class="headerlink" href="#deeplabcut-live" title="Permalink to this heading">#</a></h2>
+<h2>DeepLabCut-Live<a class="headerlink" href="#deeplabcut-live" title="Link to this heading">#</a></h2>
 <p>DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight package for running DeeplabCut even if you don’t need real-time. It’s very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html">docs</a>.</p>
 <section id="megadetector-meets-deeplabcut">
-<h3>MegaDetector meets DeepLabCut<a class="headerlink" href="#megadetector-meets-deeplabcut" title="Permalink to this heading">#</a></h3>
+<h3>MegaDetector meets DeepLabCut<a class="headerlink" href="#megadetector-meets-deeplabcut" title="Link to this heading">#</a></h3>
 <p>The combination of MegaDetector and DeepLabCut now enables animal pose estimation on animal-bounded images. Here is an example of the <code class="docutils literal notranslate"><span class="pre">full_macaque</span></code> model, which is from  MacaquePose. Model contributed by Jumpei Matsumoto, at the Univ of Toyama. See their paper for many details <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2020.07.30.229989v2">here</a>. If you use this model, please <a class="reference external" href="https://doi.org/10.3389/fnbeh.2020.581154">cite their paper</a>.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853652273-KG8FYHYDVJ5IBPY0UDVS/monkmddlc.png?format=500w" width="600" title="DLC" alt="DLC" align="center" vspace = "5">
 </section>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="huggingface-app">
-<h1>🤗 HuggingFace App<a class="headerlink" href="#huggingface-app" title="Permalink to this heading">#</a></h1>
-<p>We use the <span class="xref myst">Hugging Face</span> spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to <a class="reference external" href="https://github.com/merveenoyan">Merve Noyan</a> who visited the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">App page</a>).</p>
+<h1>🤗 HuggingFace App<a class="headerlink" href="#huggingface-app" title="Link to this heading">#</a></h1>
+<p>We use the <a class="reference internal" href="#huggingface.co"><span class="xref myst">Hugging Face</span></a> spaces based on gradio to create an App of MegaDetector+DeepLabCut for you to interact with it and to try it out for yourself. Thanks to <a class="reference external" href="https://github.com/merveenoyan">Merve Noyan</a> who visited the #DLCAIResidents in the summer of 2022 to teach us about their ecosystem, and thanks to the other App co-authors from the DLC Residency Program (see the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">App page</a>).</p>
 <p>Let’s get into the details of how to use the App:</p>
 <ol class="arabic simple">
 <li><p>Click on this link to be redirected to the <a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">MegaDetector+DeepLabCut application</a> on <strong>Hugging Face</strong>.</p></li>
@@ -543,17 +557,17 @@ document.write(`
 </div>
 <p>Examples have also been added to the Hugging Face interface where you can try out a variety of animals to get a feel of things and also add your own.</p>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h2>
-<p>We encourage you to try out and experiment on your camera trap or other animal images. Indeed, we found it is not only limited to camera trap images you can test it out with photos taken from your camera. Have a look at a 🦊picture Mackenzie took in Geneva and used the MegaDetector+DeepLabCut <span class="xref myst">Hugging Face</span>.</p>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
+<p>We encourage you to try out and experiment on your camera trap or other animal images. Indeed, we found it is not only limited to camera trap images you can test it out with photos taken from your camera. Have a look at a 🦊picture Mackenzie took in Geneva and used the MegaDetector+DeepLabCut <a class="reference internal" href="#huggingface.co"><span class="xref myst">Hugging Face</span></a>.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661854010041-5RQGQTRSTKUDYU9KSTIE/foxGeneva.png?format=750ww" width="400" title="DLC" alt="DLC" align="center" vspace = "15">
-<p>Or these lil’ cuties 🐶🐶🙀🐶 outside a restaurant, from the <a class="reference external" href="https://twitter.com/standardpuppies/status/1563188163962515457?s=21&amp;t=f2kM2HoUygyLmmAH7Ho-HQ">Twitter meme</a>.</p>
+<p>Or these lil’ cuties 🐶🐶🙀🐶 outside a restaurant, from the <a class="reference external" href="https://twitter.com/standardpuppies/status/1563188163962515457?s=21&amp;amp;t=f2kM2HoUygyLmmAH7Ho-HQ">Twitter meme</a>.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853654276-WEA4UUD7I1VEGHXSMIXE/pupscat.png?format=300w" width="400" title="DLC" alt="DLC" align="center" vspace = "15">
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>DLC-Live allows you to process videos and frames in bulk, however the current release of MegaDetetctor+DeepLabCut-Live allows you to process one image at a time. But stay tuned for further releases, we are just getting started ;)</p>
 </div>
 <section id="developer-mode">
-<h3>Developer Mode:<a class="headerlink" href="#developer-mode" title="Permalink to this heading">#</a></h3>
+<h3>Developer Mode:<a class="headerlink" href="#developer-mode" title="Link to this heading">#</a></h3>
 <p>To run it locally you can <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code> the repository on your terminal and explore MegaDetector+DeepLabCut for yourself :)</p>
 <p>In your terminal run each line:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut
@@ -676,7 +690,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>

@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Governance Model of DeepLabCut &#8212; DeepLabCut</title>
   
@@ -29,39 +28,43 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=afe5de03"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/Governance';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -159,7 +162,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -454,10 +468,10 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="governance-model-of-deeplabcut">
-<span id="governance-model"></span><h1>Governance Model of DeepLabCut<a class="headerlink" href="#governance-model-of-deeplabcut" title="Permalink to this heading">#</a></h1>
+<span id="governance-model"></span><h1>Governance Model of DeepLabCut<a class="headerlink" href="#governance-model-of-deeplabcut" title="Link to this heading">#</a></h1>
 <p>(adapted from <a class="reference external" href="https://napari.org/docs/_sources/developers/GOVERNANCE.md.txt">https://napari.org/docs/_sources/developers/GOVERNANCE.md.txt</a>)</p>
 <section id="abstract">
-<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this heading">#</a></h2>
+<h2>Abstract<a class="headerlink" href="#abstract" title="Link to this heading">#</a></h2>
 <p>The purpose of this document is to formalize the governance process used by the
 <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code> project, to clarify how decisions are made and how the various
 elements of our community interact.</p>
@@ -468,14 +482,14 @@ participation takes place, how to find consensus, and how deadlocks are
 resolved.</p>
 </section>
 <section id="roles-and-responsibilities">
-<h2>Roles And Responsibilities<a class="headerlink" href="#roles-and-responsibilities" title="Permalink to this heading">#</a></h2>
+<h2>Roles And Responsibilities<a class="headerlink" href="#roles-and-responsibilities" title="Link to this heading">#</a></h2>
 <section id="the-community">
-<h3>The Community<a class="headerlink" href="#the-community" title="Permalink to this heading">#</a></h3>
+<h3>The Community<a class="headerlink" href="#the-community" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code> community consists of anyone using or working with the project
 in any way.</p>
 </section>
 <section id="contributors">
-<h3>Contributors<a class="headerlink" href="#contributors" title="Permalink to this heading">#</a></h3>
+<h3>Contributors<a class="headerlink" href="#contributors" title="Link to this heading">#</a></h3>
 <p>A community member can become a contributor by interacting directly with the
 project in concrete ways, such as:</p>
 <ul class="simple">
@@ -498,7 +512,7 @@ can directly help to shape its future.</p>
 <p>Contributors are encouraged to read the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/CONTRIBUTING.md">contributing guide</a>.</p>
 </section>
 <section id="core-developers">
-<h3>Core developers<a class="headerlink" href="#core-developers" title="Permalink to this heading">#</a></h3>
+<h3>Core developers<a class="headerlink" href="#core-developers" title="Link to this heading">#</a></h3>
 <p>Core developers are community members that have demonstrated continued
 commitment to the project through ongoing contributions. They
 have shown they can be trusted to maintain <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code> with care. Becoming a
@@ -513,7 +527,7 @@ core developer guide. New core developers can be nominated by any existing core 
 and for details on that process see our core developer guide.</p>
 </section>
 <section id="steering-council">
-<h3>Steering Council<a class="headerlink" href="#steering-council" title="Permalink to this heading">#</a></h3>
+<h3>Steering Council<a class="headerlink" href="#steering-council" title="Link to this heading">#</a></h3>
 <p>The Steering Council (SC) members are core developers who have additional
 responsibilities to ensure the smooth running of the project. SC members are
 expected to participate in strategic planning, approve changes to the
@@ -543,7 +557,7 @@ be postponed until the new member has joined and another vote can be held.</p>
 </section>
 </section>
 <section id="decision-making-process">
-<h2>Decision Making Process<a class="headerlink" href="#decision-making-process" title="Permalink to this heading">#</a></h2>
+<h2>Decision Making Process<a class="headerlink" href="#decision-making-process" title="Link to this heading">#</a></h2>
 <p>Decisions about the future of the project are made through discussion with all
 members of the community. All non-sensitive project management discussion takes
 place on the <a class="reference external" href="https://github.com/deeplabcut/deeplabcut/issues">issue tracker</a>. Occasionally,
@@ -676,7 +690,7 @@ By The DeepLabCut Team
 
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
