@@ -66,20 +66,3 @@ After you've labeled all your frames, it's important to ensure they're accurate.
 
 Take the time to go through each folder. Accurate labels are key. If there are mistakes, the model might learn incorrectly and mislabel your videos later on. It's all about setting the right foundation for accurate analysis.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
