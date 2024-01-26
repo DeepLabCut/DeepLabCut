@@ -1,4 +1,4 @@
-# Labeling
+# Labeling GUI
 
 ## Selecting Frames to Label
 
