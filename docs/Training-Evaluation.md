@@ -1,4 +1,4 @@
-# Training and Evaluation
+# Training and Evaluation in the GUI
 
 ## Preparing Your Training Dataset
 
