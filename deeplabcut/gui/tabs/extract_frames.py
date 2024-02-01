@@ -91,7 +91,11 @@ class ExtractFrames(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.main_layout.addWidget(_create_label_widget("Optional: frame extraction from a video subset", "font:bold"))
+        self.main_layout.addWidget(
+            _create_label_widget(
+                "Optional: frame extraction from a video subset", "font:bold"
+            )
+        )
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
 

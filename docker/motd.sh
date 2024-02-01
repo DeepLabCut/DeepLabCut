@@ -2,26 +2,26 @@
 # DLC docker message of the day
 
 check_root() {
-  if [[ $(id -un) == "root" ]]; then
-    echo !!! Warning: !!!
-    echo It seems like you run the container as root, which is not recommended.
-    echo If this is not intended, make sure to launch the container with the
-    echo '-u $(id -u)' flag set or use the helper scripts in the main
-    echo DLC repo, https://github.com/DeepLabCut/DeepLabCut
-  fi
+    if [[ $(id -un) == "root" ]]; then
+        echo !!! Warning: !!!
+        echo It seems like you run the container as root, which is not recommended.
+        echo If this is not intended, make sure to launch the container with the
+        echo '-u $(id -u)' flag set or use the helper scripts in the main
+        echo DLC repo, https://github.com/DeepLabCut/DeepLabCut
+    fi
 }
 
 print_version() {
-  DLC_VERSION=$(
-	python3 -c "import deeplabcut; print(deeplabcut.__version__)" \
-	2>/dev/null \
-	|| echo [unknown version] 
-  )
-  echo Welcome to DeepLabCut ${DLC_VERSION}!
-  echo You are running the container as user $(id -un) \($(id -u)\).
+    DLC_VERSION=$(
+        python3 -c "import deeplabcut; print(deeplabcut.__version__)" \
+            2>/dev/null ||
+            echo [unknown version]
+    )
+    echo Welcome to DeepLabCut ${DLC_VERSION}!
+    echo You are running the container as user $(id -un) \($(id -u)\).
 }
 
-cat << "EOF"
+cat <<"EOF"
                     .--,       .--,
                     ( (  \.---./  ) )
                      '.__/o   o\__.'

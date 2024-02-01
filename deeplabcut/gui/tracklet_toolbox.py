@@ -358,7 +358,7 @@ class TrackletVisualizer:
 
         img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum(
@@ -807,7 +807,7 @@ class TrackletVisualizer:
 
     def update_dotsize(self, val):
         self.dotsize = val
-        self.scat.set_sizes([self.dotsize**2])
+        self.scat.set_sizes([self.dotsize ** 2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):

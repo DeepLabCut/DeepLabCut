@@ -508,6 +508,8 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
                 inputs,
                 outputs,
             )
+            if not dets:
+                continue
             db[key] = dets[0]
             del dets
         elif counter >= nframes:

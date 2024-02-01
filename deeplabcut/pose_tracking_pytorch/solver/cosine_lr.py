@@ -96,14 +96,14 @@ class CosineLRScheduler(Scheduler):
                 i = math.floor(
                     math.log(1 - t / self.t_initial * (1 - self.t_mul), self.t_mul)
                 )
-                t_i = self.t_mul**i * self.t_initial
-                t_curr = t - (1 - self.t_mul**i) / (1 - self.t_mul) * self.t_initial
+                t_i = self.t_mul ** i * self.t_initial
+                t_curr = t - (1 - self.t_mul ** i) / (1 - self.t_mul) * self.t_initial
             else:
                 i = t // self.t_initial
                 t_i = self.t_initial
                 t_curr = t - (self.t_initial * i)
 
-            gamma = self.decay_rate**i
+            gamma = self.decay_rate ** i
             lr_min = self.lr_min * gamma
             lr_max_values = [v * gamma for v in self.base_values]
 
@@ -139,6 +139,6 @@ class CosineLRScheduler(Scheduler):
         else:
             return int(
                 math.floor(
-                    -self.t_initial * (self.t_mul**cycles - 1) / (1 - self.t_mul)
+                    -self.t_initial * (self.t_mul ** cycles - 1) / (1 - self.t_mul)
                 )
             )
