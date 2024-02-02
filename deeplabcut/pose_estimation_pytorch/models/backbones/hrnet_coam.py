@@ -37,13 +37,11 @@ class HRNetCoAM(HRNet):
             self,
             base_model_name: str = "hrnet_w32",
             pretrained: bool = True,
-
             coam_modules: tuple[int,...] = (2,),
             selfatt_coam_modules: tuple[int,...] | None = None,
             channel_att_only: bool = False,
             att_heads: int = 1,
             cond_enc: str = 'colored',
-            
             img_size: tuple[int,int] = (256,  256),
             num_joints: int = 17,
     ) -> None:

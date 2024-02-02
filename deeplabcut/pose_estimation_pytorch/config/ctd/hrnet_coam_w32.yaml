@@ -7,5 +7,9 @@ model:
     type: HRNetCoAM
     base_model_name: hrnet_w32
     pretrained: true
-
+    coam_modules: (2,)
+    channel_att_only: false
+    att_heads: 1
+    cond_enc: colored
+    num_joints: 17
   backbone_output_channels: 480
