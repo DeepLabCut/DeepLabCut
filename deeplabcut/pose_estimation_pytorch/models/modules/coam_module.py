@@ -17,15 +17,14 @@ import torchvision.transforms.functional as TF
 
 
 class CoAMBlock(nn.Module):
-    def __init__(self, spat_dims, channel_list, cond_stacked, cond_colored, n_heads=1, channel_only=False):
+    def __init__(self, spat_dims, channel_list, cond_enc, num_joints, n_heads=1, channel_only=False):
         super(CoAMBlock, self).__init__()
         self.att_layers = []
         self.spat_dims = spat_dims
-        self.cond_color = cond_colored
-        self.cond_stacked = cond_stacked
-        if cond_stacked[0]:
-            d_cond = cond_stacked[1]
-        elif cond_colored:
+        self.cond_enc = cond_enc
+        if cond_enc == 'stacked':
+            d_cond = num_joints
+        elif cond_enc == 'colored':
             d_cond = 3
         else:
             d_cond = 1
@@ -38,7 +37,7 @@ class CoAMBlock(nn.Module):
         self.att_layers = nn.ModuleList(self.att_layers)
 
     def forward(self, y_list, cond_hm):
-        if not self.cond_color and not self.cond_stacked[0]:
+        if not self.cond_enc == 'stacked' and not self.cond_enc == 'colored':
             cond_hm = cond_hm[:,0].unsqueeze(1) # we only want one channel of the heatmap
         y_list_att = []
         for i in range(len(y_list)):
