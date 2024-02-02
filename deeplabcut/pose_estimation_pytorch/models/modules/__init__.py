@@ -16,3 +16,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_module import (
     HighResolutionModule,
 )
+from deeplabcut.pose_estimation_pytorch.models.modules.coam_module import (
+    CoAMBlock,
+    SelfAttentionModule_CoAM
+)
