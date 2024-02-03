@@ -42,10 +42,6 @@ def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None
         return RMSE, RMSE[mask]
 
 
-def distance(v, w):
-    return np.sqrt(np.sum((v - w) ** 2))
-
-
 def calculatepafdistancebounds(
     config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False
 ):
