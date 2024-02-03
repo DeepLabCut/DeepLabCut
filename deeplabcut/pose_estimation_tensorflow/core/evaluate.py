@@ -618,7 +618,7 @@ def evaluate_network(
         a {model_name}-keypoint-results.csv in the evalution-results folder
 
     snapshots_to_evaluate: list, optional, default=None
-        List of snapshots to evaluate
+        List of snapshot names (str) to evaluate (e.g. "snapshot-50000")
 
     Returns
     -------
@@ -825,7 +825,7 @@ def evaluate_network(
                         print(f"The following requested snapshots were not found and will be skipped:\n"
                               f"{missing_snapshots}")
 
-                else:
+                else:  # use snapshot index
                     if -len(Snapshots) <= cfg["snapshotindex"] < len(Snapshots):
                         snapshot_names = [Snapshots[cfg["snapshotindex"]]]
                     elif cfg["snapshotindex"] == "all":
@@ -861,25 +861,21 @@ def evaluate_network(
                     test_pose_cfg["init_weights"] = os.path.join(
                         str(modelfolder), "train", snapshot_name
                     )  # setting weights to corresponding snapshot.
-                    trainingsiterations = (
-                        test_pose_cfg["init_weights"].split(os.sep)[-1]
-                    ).split("-")[
-                        -1
-                    ]  # read how many training siterations that corresponds to.
+                    training_iterations = int(snapshot_name.split("-")[-1])
 
                     # Name for deeplabcut net (based on its parameters)
                     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
-                        trainingsiterations,
+                        training_iterations,
                         modelprefix=modelprefix,
                     )
                     print(
                         "Running ",
                         DLCscorer,
                         " with # of training iterations:",
-                        trainingsiterations,
+                        training_iterations,
                     )
                     (
                         notanalyzed,
@@ -971,7 +967,7 @@ def evaluate_network(
                             RMSEpcutoff.iloc[trainIndices].values.flatten()
                         )
                         results = [
-                            trainingsiterations,
+                            training_iterations,
                             int(100 * trainFraction),
                             shuffle,
                             np.round(trainerror, 2),
@@ -994,7 +990,7 @@ def evaluate_network(
                         if show_errors:
                             print(
                                 "Results for",
-                                trainingsiterations,
+                                training_iterations,
                                 " training iterations:",
                                 int(100 * trainFraction),
                                 shuffle,
