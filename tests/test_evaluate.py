@@ -13,7 +13,10 @@ import pandas as pd
 import pytest
 
 import deeplabcut.pose_estimation_tensorflow as pet
-from deeplabcut.pose_estimation_tensorflow.core.evaluate import get_available_requested_snapshots
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
+    get_available_requested_snapshots,
+    get_snapshots_by_index,
+)
 
 
 def make_single_animal_rmse_df(
@@ -169,10 +172,58 @@ def test_get_available_requested_snapshots_ok():
 
 def test_get_available_requested_snapshots_error():
     """Test that a ValueError is raised when requested snapshots are not available."""
-    pytest.raises(
-        ValueError,
-        lambda: get_available_requested_snapshots(
+    with pytest.raises(ValueError):
+        get_available_requested_snapshots(
             requested_snapshots=["snapshot-2"],
             available_snapshots=["snapshot-1", "snapshot-3"],
         )
+
+
+def test_get_snapshots_by_index_int_ok():
+    """Test that the correct snapshots are returned."""
+    available = ["snapshot-1", "snapshot-2", "snapshot-3"]
+
+    # positive int
+    snapshots = get_snapshots_by_index(
+        idx=2,
+        available_snapshots=available,
     )
+    assert snapshots == ['snapshot-3']
+
+    # negative int
+    snapshots = get_snapshots_by_index(
+        idx=-2,
+        available_snapshots=available,
+    )
+    assert snapshots == ['snapshot-2']
+
+    # all snapshots
+    snapshots = get_snapshots_by_index(
+        idx="all",
+        available_snapshots=available,
+    )
+    assert snapshots == ["snapshot-1", "snapshot-2", "snapshot-3"]
+
+
+def test_get_snapshots_by_index_error():
+    """Test that a ValueError is raised when the index is out of range or invalid str."""
+    available = ["snapshot-1", "snapshot-2", "snapshot-3"]
+
+    # positive int
+    with pytest.raises(IndexError):
+        get_snapshots_by_index(
+            idx=5,
+            available_snapshots=available,
+        )
+    # negative int
+    with pytest.raises(IndexError):
+        get_snapshots_by_index(
+            idx=-4,
+            available_snapshots=available,
+        )
+    # invalid str
+    with pytest.raises(IndexError):
+        get_snapshots_by_index(
+            idx="1",
+            available_snapshots=available,
+        )
