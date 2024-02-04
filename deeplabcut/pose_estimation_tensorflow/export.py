@@ -13,6 +13,7 @@ import glob
 import os
 import shutil
 import tarfile
+from pathlib import Path
 
 import numpy as np
 import ruamel.yaml
@@ -131,26 +132,10 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
             % (shuffle, train_fraction)
         )
 
-    # Check which snapshots are available and sort them by # iterations
-    try:
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(model_folder, "train"))
-                if "index" in fn
-            ]
-        )
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before trying to export.\n Use the function 'train_network' to train the network for shuffle %s."
-            % (shuffle, shuffle)
-        )
-
-    if len(Snapshots) == 0:
-        raise FileNotFoundError(
-            "The train folder for iteration %s and shuffle %s exists, but no snapshots were found.\n Please train this model before trying to export.\n Use the function 'train_network' to train the network for iteration %s shuffle %s."
-            % (cfg["iteration"], shuffle, cfg["iteration"], shuffle)
-        )
+    # Get list of snapshots in train folder
+    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+        train_folder=Path(model_folder) / "train",
+    )
 
     if cfg["snapshotindex"] == "all":
         print(
@@ -159,9 +144,6 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
-
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
 
     ####################################
     ### Load and setup CNN part detector

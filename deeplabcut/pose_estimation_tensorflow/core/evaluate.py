@@ -345,23 +345,10 @@ def return_evaluate_network_data(
             )
         ),
     )
-    # Check which snapshots are available and sort them by # iterations
-    Snapshots = np.array(
-        [
-            fn.split(".")[0]
-            for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-            if "index" in fn
-        ]
+    # Get list of snapshots in train folder
+    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+        train_folder=Path(modelfolder) / "train",
     )
-
-    if len(Snapshots) == 0:
-        raise ValueError(
-            "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
-            % (shuffle, trainFraction)
-        )
-
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
 
     if Snapindex is None:
         Snapindex = cfg["snapshotindex"]
@@ -781,26 +768,10 @@ def evaluate_network(
                     evaluationfolder, recursive=True
                 )
 
-                # Check which snapshots are available and sort them by # iterations
-                Snapshots = np.array(
-                    [
-                        fn.split(".")[0]
-                        for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-                        if "index" in fn
-                    ]
+                # Get list of snapshots in train folder
+                Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+                    train_folder=Path(modelfolder) / "train",
                 )
-                try:  # check if any where found?
-                    Snapshots[0]
-                except IndexError:
-                    raise FileNotFoundError(
-                        "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
-                        % (shuffle, trainFraction)
-                    )
-
-                increasing_indices = np.argsort(
-                    [int(m.split("-")[1]) for m in Snapshots]
-                )
-                Snapshots = Snapshots[increasing_indices]
 
                 if snapshots_to_evaluate is not None:
                     snapshot_names = get_available_requested_snapshots(
