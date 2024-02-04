@@ -17,10 +17,13 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
+from typing import List
 
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
+    get_available_requested_snapshots,
+    get_snapshots_by_index,
 )
 from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -111,6 +114,7 @@ def evaluate_multianimal_full(
     gputouse=None,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
+    snapshots_to_evaluate: List[str] = None,
 ):
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
@@ -253,44 +257,42 @@ def evaluate_multianimal_full(
                 )
                 Snapshots = Snapshots[increasing_indices]
 
-                if cfg["snapshotindex"] == -1:
-                    snapindices = [-1]
-                elif cfg["snapshotindex"] == "all":
-                    snapindices = range(len(Snapshots))
-                elif cfg["snapshotindex"] < len(Snapshots):
-                    snapindices = [cfg["snapshotindex"]]
+                if snapshots_to_evaluate is not None:
+                    snapshot_names = get_available_requested_snapshots(
+                        requested_snapshots=snapshots_to_evaluate,
+                        available_snapshots=Snapshots,
+                    )
                 else:
-                    print(
-                        "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
+                    # Note: Should I catch any errors here to prevent loop from breaking?
+                    #  evaulate.py never did but evaluate_multianimal.py did.
+                    snapshot_names = get_snapshots_by_index(
+                        idx=cfg["snapshotindex"],
+                        available_snapshots=Snapshots,
                     )
 
                 final_result = []
                 ##################################################
                 # Compute predictions over images
                 ##################################################
-                for snapindex in snapindices:
+                for snapshot_name in snapshot_names:
                     test_pose_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", Snapshots[snapindex]
+                        str(modelfolder), "train", snapshot_name
                     )  # setting weights to corresponding snapshot.
-                    trainingsiterations = (
-                        test_pose_cfg["init_weights"].split(os.sep)[-1]
-                    ).split("-")[
-                        -1
-                    ]  # read how many training siterations that corresponds to.
+                    training_iterations = int(snapshot_name.split("-")[-1])
 
                     # name for deeplabcut net (based on its parameters)
                     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
-                        trainingsiterations,
+                        training_iterations,
                         modelprefix=modelprefix,
                     )
                     print(
                         "Running ",
                         DLCscorer,
                         " with # of trainingiterations:",
-                        trainingsiterations,
+                        training_iterations,
                     )
                     (
                         notanalyzed,
@@ -300,7 +302,7 @@ def evaluate_multianimal_full(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
-                        Snapshots[snapindex],
+                        snapshot_name,
                     )
 
                     data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
@@ -308,7 +310,7 @@ def evaluate_multianimal_full(
                     if plotting:
                         foldername = os.path.join(
                             str(evaluationfolder),
-                            "LabeledImages_" + DLCscorer + "_" + Snapshots[snapindex],
+                            "LabeledImages_" + DLCscorer + "_" + snapshot_name,
                         )
                         auxiliaryfunctions.attempt_to_make_folder(foldername)
                         if plotting == "bodypart":
@@ -473,7 +475,7 @@ def evaluate_multianimal_full(
                             inplace=True,
                         )
                         write_path = os.path.join(
-                            evaluationfolder, f"dist_{trainingsiterations}.csv"
+                            evaluationfolder, f"dist_{training_iterations}.csv"
                         )
                         df_joint.to_csv(write_path)
 
@@ -489,7 +491,7 @@ def evaluate_multianimal_full(
                         error_test = np.nanmean(error.iloc[testIndices])
                         error_test_cut = np.nanmean(error_masked.iloc[testIndices])
                         results = [
-                            trainingsiterations,
+                            training_iterations,
                             int(100 * trainFraction),
                             shuffle,
                             np.round(error_train, 2),
@@ -562,7 +564,7 @@ def evaluate_multianimal_full(
                         }
                         print(
                             "Done and results stored for snapshot: ",
-                            Snapshots[snapindex],
+                            snapshot_name,
                         )
 
                         dictionary = {
