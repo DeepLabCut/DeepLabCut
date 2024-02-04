@@ -13,7 +13,7 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Union
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -1127,14 +1127,14 @@ def get_available_requested_snapshots(requested_snapshots: List[str], available_
     return snapshot_names
 
 
-def get_snapshots_by_index(idx: int, available_snapshots: List[str]) -> List[str]:
+def get_snapshots_by_index(idx: Union[int, str], available_snapshots: List[str]) -> List[str]:
     """Assume available_snapshots is ordered in ascending order. Returns snapshot names."""
     if isinstance(idx, int) and -len(available_snapshots) <= idx < len(available_snapshots):
         return [available_snapshots[idx]]
     elif idx == "all":
         return available_snapshots
     else:
-        raise ValueError(
+        raise IndexError(
             f"Invalid index: {idx}. The index should be an int less than the number of available snapshots, "
             f"negative indexing is supported. The keyword 'all' is also a valid option."
         )
