@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 
 import deeplabcut.pose_estimation_tensorflow as pet
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import get_available_requested_snapshots
 
 
 def make_single_animal_rmse_df(
@@ -152,3 +153,26 @@ def test_evaluate_keypoint_error(inputs, expected_values):
                 mean_error = mean_errors[1]
 
             assert keypoint_error.loc[error_name, bodypart] == mean_error
+
+
+def test_get_available_requested_snapshots_ok():
+    """Test that the correct snapshots are returned."""
+    available = ["snapshot-1", "snapshot-2"]
+    requested = ["snapshot-2", "snapshot-3"]
+
+    snapshots = get_available_requested_snapshots(
+        requested_snapshots=requested,
+        available_snapshots=available,
+    )
+    assert snapshots == ['snapshot-2']
+
+
+def test_get_available_requested_snapshots_error():
+    """Test that a ValueError is raised when requested snapshots are not available."""
+    pytest.raises(
+        ValueError,
+        lambda: get_available_requested_snapshots(
+            requested_snapshots=["snapshot-2"],
+            available_snapshots=["snapshot-1", "snapshot-3"],
+        )
+    )
