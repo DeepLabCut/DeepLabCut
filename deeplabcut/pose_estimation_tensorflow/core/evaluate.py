@@ -559,7 +559,7 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
-    snapshots_to_evaluate: list = None,
+    snapshots_to_evaluate: List[str] = None,
 ):
     """Evaluates the network.
 
@@ -617,8 +617,8 @@ def evaluate_network(
         Compute the train and test RMSE for each keypoint, and save the results to
         a {model_name}-keypoint-results.csv in the evalution-results folder
 
-    snapshots_to_evaluate: list, optional, default=None
-        List of snapshot names (str) to evaluate (e.g. "snapshot-50000")
+    snapshots_to_evaluate: List[str], optional, default=None
+        List of snapshot names to evaluate (e.g. ["snapshot-50000", "snapshot-75000", ...])
 
     Returns
     -------
