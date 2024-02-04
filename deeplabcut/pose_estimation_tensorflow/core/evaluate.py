@@ -809,31 +809,15 @@ def evaluate_network(
                 Snapshots = Snapshots[increasing_indices]
 
                 if snapshots_to_evaluate is not None:
-                    snapshot_exists = [snap in Snapshots for snap in snapshots_to_evaluate]
-
-                    snapshot_names = []
-                    missing_snapshots = []
-                    for snap, exists in zip(snapshots_to_evaluate, snapshot_exists):
-                        if exists:
-                            snapshot_names.append(snap)
-                        else:
-                            missing_snapshots.append(snap)
-
-                    if not all(snapshot_exists):
-                        raise ValueError(f"None of the requested snapshots were found: \n{missing_snapshots}")
-                    elif False in snapshot_exists:
-                        print(f"The following requested snapshots were not found and will be skipped:\n"
-                              f"{missing_snapshots}")
-
-                else:  # use snapshot index
-                    if -len(Snapshots) <= cfg["snapshotindex"] < len(Snapshots):
-                        snapshot_names = [Snapshots[cfg["snapshotindex"]]]
-                    elif cfg["snapshotindex"] == "all":
-                        snapshot_names = Snapshots
-                    else:
-                        raise ValueError(
-                            "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-                        )
+                    snapshot_names = get_available_requested_snapshots(
+                        requested_snapshots=snapshots_to_evaluate,
+                        available_snapshots=Snapshots,
+                    )
+                else:
+                    snapshot_names = get_snapshots_by_index(
+                        idx=cfg["snapshotindex"],
+                        available_snapshots=Snapshots,
+                    )
 
                 final_result = []
 
@@ -1122,6 +1106,38 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
         df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
+
+
+def get_available_requested_snapshots(requested_snapshots: List[str], available_snapshots: List[str]) -> List[str]:
+    """Intersects the requested snapshot names with the available snapshots. Returns snapshot names."""
+    snapshot_names = []
+    missing_snapshots = []
+    for snap in requested_snapshots:
+        if snap in available_snapshots:
+            snapshot_names.append(snap)
+        else:
+            missing_snapshots.append(snap)
+
+    if len(snapshot_names) == 0:
+        raise ValueError(f"None of the requested snapshots were found: \n{missing_snapshots}")
+    elif len(missing_snapshots) > 0:
+        print(f"The following requested snapshots were not found and will be skipped:\n"
+              f"{missing_snapshots}")
+
+    return snapshot_names
+
+
+def get_snapshots_by_index(idx: int, available_snapshots: List[str]) -> List[str]:
+    """Assume available_snapshots is ordered in ascending order. Returns snapshot names."""
+    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(available_snapshots):
+        return [available_snapshots[idx]]
+    elif idx == "all":
+        return available_snapshots
+    else:
+        raise ValueError(
+            f"Invalid index: {idx}. The index should be an int less than the number of available snapshots, "
+            f"negative indexing is supported. The keyword 'all' is also a valid option."
+        )
 
 
 if __name__ == "__main__":
