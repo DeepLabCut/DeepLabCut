@@ -355,21 +355,21 @@ def return_evaluate_network_data(
     )
 
     if len(Snapshots) == 0:
-        print(
+        raise ValueError(
             "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
             % (shuffle, trainFraction)
         )
-        snapindices = []
-    else:
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-        if Snapindex is None:
-            Snapindex = cfg["snapshotindex"]
 
-        snapshot_names = get_snapshots_by_index(
-            idx=Snapindex,
-            available_snapshots=Snapshots,
-        )
+    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
+    Snapshots = Snapshots[increasing_indices]
+
+    if Snapindex is None:
+        Snapindex = cfg["snapshotindex"]
+
+    snapshot_names = get_snapshots_by_index(
+        idx=Snapindex,
+        available_snapshots=Snapshots,
+    )
 
     DATA = []
     results = []
