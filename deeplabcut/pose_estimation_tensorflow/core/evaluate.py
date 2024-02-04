@@ -366,23 +366,17 @@ def return_evaluate_network_data(
         if Snapindex is None:
             Snapindex = cfg["snapshotindex"]
 
-        if Snapindex == -1:
-            snapindices = [-1]
-        elif Snapindex == "all":
-            snapindices = range(len(Snapshots))
-        elif Snapindex < len(Snapshots):
-            snapindices = [Snapindex]
-        else:
-            print(
-                "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-            )
+        snapshot_names = get_snapshots_by_index(
+            idx=Snapindex,
+            available_snapshots=Snapshots,
+        )
 
     DATA = []
     results = []
     resultsfns = []
-    for snapindex in snapindices:
+    for snapshot_name in snapshot_names:
         test_pose_cfg["init_weights"] = os.path.join(
-            str(modelfolder), "train", Snapshots[snapindex]
+            str(modelfolder), "train", snapshot_name
         )  # setting weights to corresponding snapshot.
         trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
             "-"
@@ -407,7 +401,7 @@ def return_evaluate_network_data(
             resultsfilename,
             DLCscorer,
         ) = auxiliaryfunctions.check_if_not_evaluated(
-            str(evaluationfolder), DLCscorer, DLCscorerlegacy, Snapshots[snapindex]
+            str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name
         )
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
@@ -454,7 +448,7 @@ def return_evaluate_network_data(
                         np.round(testerrorpcutoff, 2),
                         "pixels",
                     )
-                    print("Snapshot", Snapshots[snapindex])
+                    print("Snapshot", snapshot_name)
 
                 r = [
                     trainingsiterations,
@@ -465,7 +459,7 @@ def return_evaluate_network_data(
                     cfg["pcutoff"],
                     np.round(trainerrorpcutoff, 2),
                     np.round(testerrorpcutoff, 2),
-                    Snapshots[snapindex],
+                    snapshot_name,
                     scale,
                     test_pose_cfg["net_type"],
                 ]
@@ -485,7 +479,7 @@ def return_evaluate_network_data(
                         comparisonbodyparts,
                         cfg,
                         evaluationfolder,
-                        Snapshots[snapindex],
+                        snapshot_name,
                     ]
                 )
 
