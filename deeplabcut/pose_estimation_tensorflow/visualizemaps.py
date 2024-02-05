@@ -158,8 +158,7 @@ def extract_maps(
         )
         auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
-        # Get list of snapshots in train folder
-        Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+        Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
             train_folder=Path(modelfolder) / "train",
         )
 

@@ -608,7 +608,7 @@ def get_scorer_name(
             / get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
             / "train"
         )
-        snapshot_names = list_sorted_existing_snapshots(train_folder)
+        snapshot_names = get_snapshots_from_folder(train_folder)
 
         snapshot_name = snapshot_names[snapshotindex]
         trainingsiterations = (snapshot_name.split(os.sep)[-1]).split("-")[-1]
