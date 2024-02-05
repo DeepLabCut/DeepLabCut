@@ -238,20 +238,15 @@ def evaluate_multianimal_full(
             )
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
-            # Check which snapshots are available and sort them by # iterations
-            Snapshots = np.array(
-                [
-                    fn.split(".")[0]
-                    for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-                    if "index" in fn
-                ]
-            )
-            if len(Snapshots) == 0:
-                print(
-                    "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
-                    % (shuffle, trainFraction)
+            try:
+                # Get list of snapshots in train
+                Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+                    train_folder=Path(modelfolder) / "train",
                 )
-            else:
+            except FileNotFoundError as e:
+                print(e)
+                continue
+            if True:  # to preserve indentation and git blame
                 increasing_indices = np.argsort(
                     [int(m.split("-")[1]) for m in Snapshots]
                 )
