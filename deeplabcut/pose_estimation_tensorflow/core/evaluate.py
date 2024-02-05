@@ -345,8 +345,8 @@ def return_evaluate_network_data(
             )
         ),
     )
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
     )
 
@@ -768,8 +768,7 @@ def evaluate_network(
                     evaluationfolder, recursive=True
                 )
 
-                # Get list of snapshots in train folder
-                Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+                Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
                     train_folder=Path(modelfolder) / "train",
                 )
 

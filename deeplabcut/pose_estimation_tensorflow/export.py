@@ -132,8 +132,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
             % (shuffle, train_fraction)
         )
 
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(model_folder) / "train",
     )
 

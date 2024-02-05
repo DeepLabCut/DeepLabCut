@@ -115,8 +115,7 @@ def create_tracking_dataset(
             % (shuffle, trainFraction)
         )
 
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
     )
 
@@ -500,8 +499,7 @@ def analyze_videos(
             % (iteration, shuffle, trainFraction)
         )
 
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
     )
 
@@ -1290,8 +1288,7 @@ def analyze_time_lapse_frames(
             % (shuffle, trainFraction)
         )
 
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
     )
 
@@ -1654,8 +1651,7 @@ def convert_detections2tracklets(
         # between trackers cannot be evaluated, resulting in empty tracklets.
         inferencecfg["boundingboxslack"] = max(inferencecfg["boundingboxslack"], 40)
 
-    # Get list of snapshots in train folder
-    Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
     )
 

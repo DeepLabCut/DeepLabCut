@@ -239,18 +239,12 @@ def evaluate_multianimal_full(
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
             try:
-                # Get list of snapshots in train
-                Snapshots = auxiliaryfunctions.list_sorted_existing_snapshots(
+                Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
                     train_folder=Path(modelfolder) / "train",
                 )
             except FileNotFoundError as e:
                 print(e)
                 continue
-
-            increasing_indices = np.argsort(
-                [int(m.split("-")[1]) for m in Snapshots]
-            )
-            Snapshots = Snapshots[increasing_indices]
 
             if snapshots_to_evaluate is not None:
                 snapshot_names = get_available_requested_snapshots(

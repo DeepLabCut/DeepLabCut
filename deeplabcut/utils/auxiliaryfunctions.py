@@ -506,8 +506,9 @@ def get_model_folder(trainFraction, shuffle, cfg, modelprefix=""):
     )
 
 
-def list_sorted_existing_snapshots(train_folder: Path) -> List[str]:
-    """Returns a List the existing snapshot_names in the train folder in order of increasing training iterations.
+def get_snapshots_from_folder(train_folder: Path) -> List[str]:
+    """
+    Returns an ordered list of existing snapshot names in the train folder, sorted by increasing training iterations.
 
     Raises:
         FileNotFoundError: if no snapshot_names are found in the train_folder.
