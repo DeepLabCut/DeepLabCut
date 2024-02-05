@@ -246,400 +246,190 @@ def evaluate_multianimal_full(
             except FileNotFoundError as e:
                 print(e)
                 continue
-            if True:  # to preserve indentation and git blame
-                increasing_indices = np.argsort(
-                    [int(m.split("-")[1]) for m in Snapshots]
+
+            increasing_indices = np.argsort(
+                [int(m.split("-")[1]) for m in Snapshots]
+            )
+            Snapshots = Snapshots[increasing_indices]
+
+            if snapshots_to_evaluate is not None:
+                snapshot_names = get_available_requested_snapshots(
+                    requested_snapshots=snapshots_to_evaluate,
+                    available_snapshots=Snapshots,
                 )
-                Snapshots = Snapshots[increasing_indices]
+            else:
+                # Note: Should I catch any errors here to prevent loop from breaking?
+                #  evaulate.py never did but evaluate_multianimal.py did.
+                snapshot_names = get_snapshots_by_index(
+                    idx=cfg["snapshotindex"],
+                    available_snapshots=Snapshots,
+                )
 
-                if snapshots_to_evaluate is not None:
-                    snapshot_names = get_available_requested_snapshots(
-                        requested_snapshots=snapshots_to_evaluate,
-                        available_snapshots=Snapshots,
-                    )
-                else:
-                    # Note: Should I catch any errors here to prevent loop from breaking?
-                    #  evaulate.py never did but evaluate_multianimal.py did.
-                    snapshot_names = get_snapshots_by_index(
-                        idx=cfg["snapshotindex"],
-                        available_snapshots=Snapshots,
-                    )
+            final_result = []
+            ##################################################
+            # Compute predictions over images
+            ##################################################
+            for snapshot_name in snapshot_names:
+                test_pose_cfg["init_weights"] = os.path.join(
+                    str(modelfolder), "train", snapshot_name
+                )  # setting weights to corresponding snapshot.
+                training_iterations = int(snapshot_name.split("-")[-1])
 
-                final_result = []
-                ##################################################
-                # Compute predictions over images
-                ##################################################
-                for snapshot_name in snapshot_names:
-                    test_pose_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", snapshot_name
-                    )  # setting weights to corresponding snapshot.
-                    training_iterations = int(snapshot_name.split("-")[-1])
+                # name for deeplabcut net (based on its parameters)
+                DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
+                    cfg,
+                    shuffle,
+                    trainFraction,
+                    training_iterations,
+                    modelprefix=modelprefix,
+                )
+                print(
+                    "Running ",
+                    DLCscorer,
+                    " with # of trainingiterations:",
+                    training_iterations,
+                )
+                (
+                    notanalyzed,
+                    resultsfilename,
+                    DLCscorer,
+                ) = auxiliaryfunctions.check_if_not_evaluated(
+                    str(evaluationfolder),
+                    DLCscorer,
+                    DLCscorerlegacy,
+                    snapshot_name,
+                )
 
-                    # name for deeplabcut net (based on its parameters)
-                    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-                        cfg,
-                        shuffle,
-                        trainFraction,
-                        training_iterations,
-                        modelprefix=modelprefix,
-                    )
-                    print(
-                        "Running ",
-                        DLCscorer,
-                        " with # of trainingiterations:",
-                        training_iterations,
-                    )
-                    (
-                        notanalyzed,
-                        resultsfilename,
-                        DLCscorer,
-                    ) = auxiliaryfunctions.check_if_not_evaluated(
+                data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+
+                if plotting:
+                    foldername = os.path.join(
                         str(evaluationfolder),
-                        DLCscorer,
-                        DLCscorerlegacy,
-                        snapshot_name,
+                        "LabeledImages_" + DLCscorer + "_" + snapshot_name,
                     )
+                    auxiliaryfunctions.attempt_to_make_folder(foldername)
+                    if plotting == "bodypart":
+                        fig, ax = visualization.create_minimal_figure()
 
-                    data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+                if os.path.isfile(data_path):
+                    print("Model already evaluated.", resultsfilename)
+                else:
+                    (
+                        sess,
+                        inputs,
+                        outputs,
+                    ) = predict.setup_pose_prediction(test_pose_cfg)
 
-                    if plotting:
-                        foldername = os.path.join(
-                            str(evaluationfolder),
-                            "LabeledImages_" + DLCscorer + "_" + snapshot_name,
+                    PredicteData = {}
+                    dist = np.full((len(Data), len(all_bpts)), np.nan)
+                    conf = np.full_like(dist, np.nan)
+                    print("Network Evaluation underway...")
+                    for imageindex, imagename in tqdm(enumerate(Data.index)):
+                        image_path = os.path.join(cfg["project_path"], *imagename)
+                        frame = auxfun_videos.imread(image_path, mode="skimage")
+
+                        GT = Data.iloc[imageindex]
+                        if not GT.any():
+                            continue
+
+                        # Pass the image and the keypoints through the resizer;
+                        # this has no effect if no augmenters were added to it.
+                        keypoints = [GT.to_numpy().reshape((-1, 2)).astype(float)]
+                        frame_, keypoints = pipeline(
+                            images=[frame], keypoints=keypoints
                         )
-                        auxiliaryfunctions.attempt_to_make_folder(foldername)
-                        if plotting == "bodypart":
-                            fig, ax = visualization.create_minimal_figure()
+                        frame = frame_[0]
+                        GT[:] = keypoints[0].flatten()
 
-                    if os.path.isfile(data_path):
-                        print("Model already evaluated.", resultsfilename)
-                    else:
-                        (
+                        df = GT.unstack("coords").reindex(joints, level="bodyparts")
+
+                        # FIXME Is having an empty array vs nan really that necessary?!
+                        groundtruthidentity = list(
+                            df.index.get_level_values("individuals")
+                            .to_numpy()
+                            .reshape((-1, 1))
+                        )
+                        groundtruthcoordinates = list(df.values[:, np.newaxis])
+                        for i, coords in enumerate(groundtruthcoordinates):
+                            if np.isnan(coords).any():
+                                groundtruthcoordinates[i] = np.empty(
+                                    (0, 2), dtype=float
+                                )
+                                groundtruthidentity[i] = np.array([], dtype=str)
+
+                        # Form 2D array of shape (n_rows, 4) where the last dimension
+                        # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
+                        temp = df.reset_index(level="bodyparts").dropna()
+                        temp["bodyparts"].replace(
+                            dict(zip(joints, range(len(joints)))),
+                            inplace=True,
+                        )
+                        temp["sample"] = 0
+                        peaks_gt = temp.loc[
+                            :, ["sample", "y", "x", "bodyparts"]
+                        ].to_numpy()
+                        peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
+
+                        pred = predictma.predict_batched_peaks_and_costs(
+                            test_pose_cfg,
+                            np.expand_dims(frame, axis=0),
                             sess,
                             inputs,
                             outputs,
-                        ) = predict.setup_pose_prediction(test_pose_cfg)
-
-                        PredicteData = {}
-                        dist = np.full((len(Data), len(all_bpts)), np.nan)
-                        conf = np.full_like(dist, np.nan)
-                        print("Network Evaluation underway...")
-                        for imageindex, imagename in tqdm(enumerate(Data.index)):
-                            image_path = os.path.join(cfg["project_path"], *imagename)
-                            frame = auxfun_videos.imread(image_path, mode="skimage")
-
-                            GT = Data.iloc[imageindex]
-                            if not GT.any():
-                                continue
-
-                            # Pass the image and the keypoints through the resizer;
-                            # this has no effect if no augmenters were added to it.
-                            keypoints = [GT.to_numpy().reshape((-1, 2)).astype(float)]
-                            frame_, keypoints = pipeline(
-                                images=[frame], keypoints=keypoints
-                            )
-                            frame = frame_[0]
-                            GT[:] = keypoints[0].flatten()
-
-                            df = GT.unstack("coords").reindex(joints, level="bodyparts")
-
-                            # FIXME Is having an empty array vs nan really that necessary?!
-                            groundtruthidentity = list(
-                                df.index.get_level_values("individuals")
-                                .to_numpy()
-                                .reshape((-1, 1))
-                            )
-                            groundtruthcoordinates = list(df.values[:, np.newaxis])
-                            for i, coords in enumerate(groundtruthcoordinates):
-                                if np.isnan(coords).any():
-                                    groundtruthcoordinates[i] = np.empty(
-                                        (0, 2), dtype=float
-                                    )
-                                    groundtruthidentity[i] = np.array([], dtype=str)
-
-                            # Form 2D array of shape (n_rows, 4) where the last dimension
-                            # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
-                            temp = df.reset_index(level="bodyparts").dropna()
-                            temp["bodyparts"].replace(
-                                dict(zip(joints, range(len(joints)))),
-                                inplace=True,
-                            )
-                            temp["sample"] = 0
-                            peaks_gt = temp.loc[
-                                :, ["sample", "y", "x", "bodyparts"]
-                            ].to_numpy()
-                            peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
-
-                            pred = predictma.predict_batched_peaks_and_costs(
-                                test_pose_cfg,
-                                np.expand_dims(frame, axis=0),
-                                sess,
-                                inputs,
-                                outputs,
-                                peaks_gt.astype(int),
-                            )
-
-                            if not pred:
-                                continue
-                            else:
-                                pred = pred[0]
-
-                            PredicteData[imagename] = {}
-                            PredicteData[imagename]["index"] = imageindex
-                            PredicteData[imagename]["prediction"] = pred
-                            PredicteData[imagename]["groundtruth"] = [
-                                groundtruthidentity,
-                                groundtruthcoordinates,
-                                GT,
-                            ]
-
-                            coords_pred = pred["coordinates"][0]
-                            probs_pred = pred["confidence"]
-                            for bpt, xy_gt in df.groupby(level="bodyparts"):
-                                inds_gt = np.flatnonzero(
-                                    np.all(~np.isnan(xy_gt), axis=1)
-                                )
-                                n_joint = joints.index(bpt)
-                                xy = coords_pred[n_joint]
-                                if inds_gt.size and xy.size:
-                                    # Pick the predictions closest to ground truth,
-                                    # rather than the ones the model has most confident in
-                                    xy_gt_values = xy_gt.iloc[inds_gt].values
-                                    neighbors = _find_closest_neighbors(
-                                        xy_gt_values, xy, k=3
-                                    )
-                                    found = neighbors != -1
-                                    min_dists = np.linalg.norm(
-                                        xy_gt_values[found] - xy[neighbors[found]],
-                                        axis=1,
-                                    )
-                                    inds = np.flatnonzero(all_bpts == bpt)
-                                    sl = imageindex, inds[inds_gt[found]]
-                                    dist[sl] = min_dists
-                                    conf[sl] = probs_pred[n_joint][
-                                        neighbors[found]
-                                    ].squeeze()
-
-                            if plotting == "bodypart":
-                                temp_xy = GT.unstack("bodyparts")[joints].values
-                                gt = temp_xy.reshape(
-                                    (-1, 2, temp_xy.shape[1])
-                                ).T.swapaxes(1, 2)
-                                h, w, _ = np.shape(frame)
-                                fig.set_size_inches(w / 100, h / 100)
-                                ax.set_xlim(0, w)
-                                ax.set_ylim(0, h)
-                                ax.invert_yaxis()
-                                ax = visualization.make_multianimal_labeled_image(
-                                    frame,
-                                    gt,
-                                    coords_pred,
-                                    probs_pred,
-                                    colors,
-                                    cfg["dotsize"],
-                                    cfg["alphavalue"],
-                                    cfg["pcutoff"],
-                                    ax=ax,
-                                )
-                                visualization.save_labeled_frame(
-                                    fig,
-                                    image_path,
-                                    foldername,
-                                    imageindex in trainIndices,
-                                )
-                                visualization.erase_artists(ax)
-
-                        sess.close()  # closes the current tf session
-
-                        # Compute all distance statistics
-                        df_dist = pd.DataFrame(dist, columns=df.index)
-                        df_conf = pd.DataFrame(conf, columns=df.index)
-                        df_joint = pd.concat(
-                            [df_dist, df_conf],
-                            keys=["rmse", "conf"],
-                            names=["metrics"],
-                            axis=1,
+                            peaks_gt.astype(int),
                         )
-                        df_joint = df_joint.reorder_levels(
-                            list(np.roll(df_joint.columns.names, -1)), axis=1
-                        )
-                        df_joint.sort_index(
-                            axis=1,
-                            level=["individuals", "bodyparts"],
-                            ascending=[True, True],
-                            inplace=True,
-                        )
-                        write_path = os.path.join(
-                            evaluationfolder, f"dist_{training_iterations}.csv"
-                        )
-                        df_joint.to_csv(write_path)
 
-                        # Calculate overall prediction error
-                        error = df_joint.xs("rmse", level="metrics", axis=1)
-                        mask = (
-                            df_joint.xs("conf", level="metrics", axis=1)
-                            >= cfg["pcutoff"]
-                        )
-                        error_masked = error[mask]
-                        error_train = np.nanmean(error.iloc[trainIndices])
-                        error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
-                        error_test = np.nanmean(error.iloc[testIndices])
-                        error_test_cut = np.nanmean(error_masked.iloc[testIndices])
-                        results = [
-                            training_iterations,
-                            int(100 * trainFraction),
-                            shuffle,
-                            np.round(error_train, 2),
-                            np.round(error_test, 2),
-                            cfg["pcutoff"],
-                            np.round(error_train_cut, 2),
-                            np.round(error_test_cut, 2),
+                        if not pred:
+                            continue
+                        else:
+                            pred = pred[0]
+
+                        PredicteData[imagename] = {}
+                        PredicteData[imagename]["index"] = imageindex
+                        PredicteData[imagename]["prediction"] = pred
+                        PredicteData[imagename]["groundtruth"] = [
+                            groundtruthidentity,
+                            groundtruthcoordinates,
+                            GT,
                         ]
-                        final_result.append(results)
 
-                        if per_keypoint_evaluation:
-                            df_keypoint_error = keypoint_error(
-                                error,
-                                error[mask],
-                                trainIndices,
-                                testIndices,
+                        coords_pred = pred["coordinates"][0]
+                        probs_pred = pred["confidence"]
+                        for bpt, xy_gt in df.groupby(level="bodyparts"):
+                            inds_gt = np.flatnonzero(
+                                np.all(~np.isnan(xy_gt), axis=1)
                             )
-                            kpt_filename = DLCscorer + "-keypoint-results.csv"
-                            df_keypoint_error.to_csv(
-                                Path(evaluationfolder) / kpt_filename
-                            )
+                            n_joint = joints.index(bpt)
+                            xy = coords_pred[n_joint]
+                            if inds_gt.size and xy.size:
+                                # Pick the predictions closest to ground truth,
+                                # rather than the ones the model has most confident in
+                                xy_gt_values = xy_gt.iloc[inds_gt].values
+                                neighbors = _find_closest_neighbors(
+                                    xy_gt_values, xy, k=3
+                                )
+                                found = neighbors != -1
+                                min_dists = np.linalg.norm(
+                                    xy_gt_values[found] - xy[neighbors[found]],
+                                    axis=1,
+                                )
+                                inds = np.flatnonzero(all_bpts == bpt)
+                                sl = imageindex, inds[inds_gt[found]]
+                                dist[sl] = min_dists
+                                conf[sl] = probs_pred[n_joint][
+                                    neighbors[found]
+                                ].squeeze()
 
-                        if show_errors:
-                            string = (
-                                "Results for {} training iterations, training fraction of {}, and shuffle {}:\n"
-                                "Train error: {} pixels. Test error: {} pixels.\n"
-                                "With pcutoff of {}:\n"
-                                "Train error: {} pixels. Test error: {} pixels."
-                            )
-                            print(string.format(*results))
-
-                            print("##########################################")
-                            print(
-                                "Average Euclidean distance to GT per individual (in pixels; test-only)"
-                            )
-                            print(
-                                error_masked.iloc[testIndices]
-                                .groupby("individuals", axis=1)
-                                .mean()
-                                .mean()
-                                .to_string()
-                            )
-                            print(
-                                "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
-                            )
-                            print(
-                                error_masked.iloc[testIndices]
-                                .groupby("bodyparts", axis=1)
-                                .mean()
-                                .mean()
-                                .to_string()
-                            )
-
-                        PredicteData["metadata"] = {
-                            "nms radius": test_pose_cfg["nmsradius"],
-                            "minimal confidence": test_pose_cfg["minconfidence"],
-                            "sigma": test_pose_cfg.get("sigma", 1),
-                            "PAFgraph": test_pose_cfg["partaffinityfield_graph"],
-                            "PAFinds": np.arange(
-                                len(test_pose_cfg["partaffinityfield_graph"])
-                            ),
-                            "all_joints": [
-                                [i] for i in range(len(test_pose_cfg["all_joints"]))
-                            ],
-                            "all_joints_names": [
-                                test_pose_cfg["all_joints_names"][i]
-                                for i in range(len(test_pose_cfg["all_joints"]))
-                            ],
-                            "stride": test_pose_cfg.get("stride", 8),
-                        }
-                        print(
-                            "Done and results stored for snapshot: ",
-                            snapshot_name,
-                        )
-
-                        dictionary = {
-                            "Scorer": DLCscorer,
-                            "DLC-model-config file": test_pose_cfg,
-                            "trainIndices": trainIndices,
-                            "testIndices": testIndices,
-                            "trainFraction": trainFraction,
-                        }
-                        metadata = {"data": dictionary}
-                        _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                            PredicteData, metadata, resultsfilename
-                        )
-
-                        tf.compat.v1.reset_default_graph()
-
-                    n_multibpts = len(cfg["multianimalbodyparts"])
-                    if n_multibpts == 1:
-                        continue
-
-                    # Skip data-driven skeleton selection unless
-                    # the model was trained on the full graph.
-                    max_n_edges = n_multibpts * (n_multibpts - 1) // 2
-                    n_edges = len(test_pose_cfg["partaffinityfield_graph"])
-                    if n_edges == max_n_edges:
-                        print("Selecting best skeleton...")
-                        n_graphs = 10
-                        paf_inds = None
-                    else:
-                        n_graphs = 1
-                        paf_inds = [list(range(n_edges))]
-                    (
-                        results,
-                        paf_scores,
-                        best_assemblies,
-                    ) = crossvalutils.cross_validate_paf_graphs(
-                        config,
-                        str(path_test_config).replace("pose_", "inference_"),
-                        data_path,
-                        data_path.replace("_full.", "_meta."),
-                        n_graphs=n_graphs,
-                        paf_inds=paf_inds,
-                        oks_sigma=test_pose_cfg.get("oks_sigma", 0.1),
-                        margin=test_pose_cfg.get("bbox_margin", 0),
-                        symmetric_kpts=test_pose_cfg.get("symmetric_kpts"),
-                    )
-                    if plotting == "individual":
-                        assemblies, assemblies_unique, image_paths = best_assemblies
-                        fig, ax = visualization.create_minimal_figure()
-                        n_animals = len(cfg["individuals"])
-                        if cfg["uniquebodyparts"]:
-                            n_animals += 1
-                        colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
-                        for k, v in tqdm(assemblies.items()):
-                            imname = image_paths[k]
-                            image_path = os.path.join(cfg["project_path"], *imname)
-                            frame = auxfun_videos.imread(image_path, mode="skimage")
-
+                        if plotting == "bodypart":
+                            temp_xy = GT.unstack("bodyparts")[joints].values
+                            gt = temp_xy.reshape(
+                                (-1, 2, temp_xy.shape[1])
+                            ).T.swapaxes(1, 2)
                             h, w, _ = np.shape(frame)
                             fig.set_size_inches(w / 100, h / 100)
                             ax.set_xlim(0, w)
                             ax.set_ylim(0, h)
                             ax.invert_yaxis()
-
-                            gt = [
-                                s.to_numpy().reshape((-1, 2))
-                                for _, s in Data.loc[imname].groupby("individuals")
-                            ]
-                            coords_pred = []
-                            coords_pred += [ass.xy for ass in v]
-                            probs_pred = []
-                            probs_pred += [ass.data[:, 2:3] for ass in v]
-                            if assemblies_unique is not None:
-                                unique = assemblies_unique.get(k, None)
-                                if unique is not None:
-                                    coords_pred.append(unique[:, :2])
-                                    probs_pred.append(unique[:, 2:3])
-                            while len(coords_pred) < len(gt):
-                                coords_pred.append(np.full((1, 2), np.nan))
-                                probs_pred.append(np.full((1, 2), np.nan))
                             ax = visualization.make_multianimal_labeled_image(
                                 frame,
                                 gt,
@@ -655,27 +445,237 @@ def evaluate_multianimal_full(
                                 fig,
                                 image_path,
                                 foldername,
-                                k in trainIndices,
+                                imageindex in trainIndices,
                             )
                             visualization.erase_artists(ax)
 
-                    df = results[1].copy()
-                    df.loc(axis=0)[("mAP_train", "mean")] = [
-                        d[0]["mAP"] for d in results[2]
-                    ]
-                    df.loc(axis=0)[("mAR_train", "mean")] = [
-                        d[0]["mAR"] for d in results[2]
-                    ]
-                    df.loc(axis=0)[("mAP_test", "mean")] = [
-                        d[1]["mAP"] for d in results[2]
-                    ]
-                    df.loc(axis=0)[("mAR_test", "mean")] = [
-                        d[1]["mAR"] for d in results[2]
-                    ]
-                    with open(data_path.replace("_full.", "_map."), "wb") as file:
-                        pickle.dump((df, paf_scores), file)
+                    sess.close()  # closes the current tf session
 
-                if len(final_result) > 0:  # Only append if results were calculated
-                    make_results_file(final_result, evaluationfolder, DLCscorer)
+                    # Compute all distance statistics
+                    df_dist = pd.DataFrame(dist, columns=df.index)
+                    df_conf = pd.DataFrame(conf, columns=df.index)
+                    df_joint = pd.concat(
+                        [df_dist, df_conf],
+                        keys=["rmse", "conf"],
+                        names=["metrics"],
+                        axis=1,
+                    )
+                    df_joint = df_joint.reorder_levels(
+                        list(np.roll(df_joint.columns.names, -1)), axis=1
+                    )
+                    df_joint.sort_index(
+                        axis=1,
+                        level=["individuals", "bodyparts"],
+                        ascending=[True, True],
+                        inplace=True,
+                    )
+                    write_path = os.path.join(
+                        evaluationfolder, f"dist_{training_iterations}.csv"
+                    )
+                    df_joint.to_csv(write_path)
+
+                    # Calculate overall prediction error
+                    error = df_joint.xs("rmse", level="metrics", axis=1)
+                    mask = (
+                        df_joint.xs("conf", level="metrics", axis=1)
+                        >= cfg["pcutoff"]
+                    )
+                    error_masked = error[mask]
+                    error_train = np.nanmean(error.iloc[trainIndices])
+                    error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
+                    error_test = np.nanmean(error.iloc[testIndices])
+                    error_test_cut = np.nanmean(error_masked.iloc[testIndices])
+                    results = [
+                        training_iterations,
+                        int(100 * trainFraction),
+                        shuffle,
+                        np.round(error_train, 2),
+                        np.round(error_test, 2),
+                        cfg["pcutoff"],
+                        np.round(error_train_cut, 2),
+                        np.round(error_test_cut, 2),
+                    ]
+                    final_result.append(results)
+
+                    if per_keypoint_evaluation:
+                        df_keypoint_error = keypoint_error(
+                            error,
+                            error[mask],
+                            trainIndices,
+                            testIndices,
+                        )
+                        kpt_filename = DLCscorer + "-keypoint-results.csv"
+                        df_keypoint_error.to_csv(
+                            Path(evaluationfolder) / kpt_filename
+                        )
+
+                    if show_errors:
+                        string = (
+                            "Results for {} training iterations, training fraction of {}, and shuffle {}:\n"
+                            "Train error: {} pixels. Test error: {} pixels.\n"
+                            "With pcutoff of {}:\n"
+                            "Train error: {} pixels. Test error: {} pixels."
+                        )
+                        print(string.format(*results))
+
+                        print("##########################################")
+                        print(
+                            "Average Euclidean distance to GT per individual (in pixels; test-only)"
+                        )
+                        print(
+                            error_masked.iloc[testIndices]
+                            .groupby("individuals", axis=1)
+                            .mean()
+                            .mean()
+                            .to_string()
+                        )
+                        print(
+                            "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
+                        )
+                        print(
+                            error_masked.iloc[testIndices]
+                            .groupby("bodyparts", axis=1)
+                            .mean()
+                            .mean()
+                            .to_string()
+                        )
+
+                    PredicteData["metadata"] = {
+                        "nms radius": test_pose_cfg["nmsradius"],
+                        "minimal confidence": test_pose_cfg["minconfidence"],
+                        "sigma": test_pose_cfg.get("sigma", 1),
+                        "PAFgraph": test_pose_cfg["partaffinityfield_graph"],
+                        "PAFinds": np.arange(
+                            len(test_pose_cfg["partaffinityfield_graph"])
+                        ),
+                        "all_joints": [
+                            [i] for i in range(len(test_pose_cfg["all_joints"]))
+                        ],
+                        "all_joints_names": [
+                            test_pose_cfg["all_joints_names"][i]
+                            for i in range(len(test_pose_cfg["all_joints"]))
+                        ],
+                        "stride": test_pose_cfg.get("stride", 8),
+                    }
+                    print(
+                        "Done and results stored for snapshot: ",
+                        snapshot_name,
+                    )
+
+                    dictionary = {
+                        "Scorer": DLCscorer,
+                        "DLC-model-config file": test_pose_cfg,
+                        "trainIndices": trainIndices,
+                        "testIndices": testIndices,
+                        "trainFraction": trainFraction,
+                    }
+                    metadata = {"data": dictionary}
+                    _ = auxfun_multianimal.SaveFullMultiAnimalData(
+                        PredicteData, metadata, resultsfilename
+                    )
+
+                    tf.compat.v1.reset_default_graph()
+
+                n_multibpts = len(cfg["multianimalbodyparts"])
+                if n_multibpts == 1:
+                    continue
+
+                # Skip data-driven skeleton selection unless
+                # the model was trained on the full graph.
+                max_n_edges = n_multibpts * (n_multibpts - 1) // 2
+                n_edges = len(test_pose_cfg["partaffinityfield_graph"])
+                if n_edges == max_n_edges:
+                    print("Selecting best skeleton...")
+                    n_graphs = 10
+                    paf_inds = None
+                else:
+                    n_graphs = 1
+                    paf_inds = [list(range(n_edges))]
+                (
+                    results,
+                    paf_scores,
+                    best_assemblies,
+                ) = crossvalutils.cross_validate_paf_graphs(
+                    config,
+                    str(path_test_config).replace("pose_", "inference_"),
+                    data_path,
+                    data_path.replace("_full.", "_meta."),
+                    n_graphs=n_graphs,
+                    paf_inds=paf_inds,
+                    oks_sigma=test_pose_cfg.get("oks_sigma", 0.1),
+                    margin=test_pose_cfg.get("bbox_margin", 0),
+                    symmetric_kpts=test_pose_cfg.get("symmetric_kpts"),
+                )
+                if plotting == "individual":
+                    assemblies, assemblies_unique, image_paths = best_assemblies
+                    fig, ax = visualization.create_minimal_figure()
+                    n_animals = len(cfg["individuals"])
+                    if cfg["uniquebodyparts"]:
+                        n_animals += 1
+                    colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
+                    for k, v in tqdm(assemblies.items()):
+                        imname = image_paths[k]
+                        image_path = os.path.join(cfg["project_path"], *imname)
+                        frame = auxfun_videos.imread(image_path, mode="skimage")
+
+                        h, w, _ = np.shape(frame)
+                        fig.set_size_inches(w / 100, h / 100)
+                        ax.set_xlim(0, w)
+                        ax.set_ylim(0, h)
+                        ax.invert_yaxis()
+
+                        gt = [
+                            s.to_numpy().reshape((-1, 2))
+                            for _, s in Data.loc[imname].groupby("individuals")
+                        ]
+                        coords_pred = []
+                        coords_pred += [ass.xy for ass in v]
+                        probs_pred = []
+                        probs_pred += [ass.data[:, 2:3] for ass in v]
+                        if assemblies_unique is not None:
+                            unique = assemblies_unique.get(k, None)
+                            if unique is not None:
+                                coords_pred.append(unique[:, :2])
+                                probs_pred.append(unique[:, 2:3])
+                        while len(coords_pred) < len(gt):
+                            coords_pred.append(np.full((1, 2), np.nan))
+                            probs_pred.append(np.full((1, 2), np.nan))
+                        ax = visualization.make_multianimal_labeled_image(
+                            frame,
+                            gt,
+                            coords_pred,
+                            probs_pred,
+                            colors,
+                            cfg["dotsize"],
+                            cfg["alphavalue"],
+                            cfg["pcutoff"],
+                            ax=ax,
+                        )
+                        visualization.save_labeled_frame(
+                            fig,
+                            image_path,
+                            foldername,
+                            k in trainIndices,
+                        )
+                        visualization.erase_artists(ax)
+
+                df = results[1].copy()
+                df.loc(axis=0)[("mAP_train", "mean")] = [
+                    d[0]["mAP"] for d in results[2]
+                ]
+                df.loc(axis=0)[("mAR_train", "mean")] = [
+                    d[0]["mAR"] for d in results[2]
+                ]
+                df.loc(axis=0)[("mAP_test", "mean")] = [
+                    d[1]["mAP"] for d in results[2]
+                ]
+                df.loc(axis=0)[("mAR_test", "mean")] = [
+                    d[1]["mAR"] for d in results[2]
+                ]
+                with open(data_path.replace("_full.", "_map."), "wb") as file:
+                    pickle.dump((df, paf_scores), file)
+
+            if len(final_result) > 0:  # Only append if results were calculated
+                make_results_file(final_result, evaluationfolder, DLCscorer)
 
     os.chdir(str(start_path))
