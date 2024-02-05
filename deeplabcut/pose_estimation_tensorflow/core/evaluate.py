@@ -654,6 +654,7 @@ def evaluate_network(
             gputouse=gputouse,
             modelprefix=modelprefix,
             per_keypoint_evaluation=per_keypoint_evaluation,
+            snapshots_to_evaluate=snapshots_to_evaluate,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
