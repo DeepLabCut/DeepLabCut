@@ -513,9 +513,8 @@ def get_snapshots_from_folder(train_folder: Path) -> List[str]:
     Raises:
         FileNotFoundError: if no snapshot_names are found in the train_folder.
     """
-    snapshot_names = np.array(
-        [file.stem for file in train_folder.iterdir() if "index" in file.name]
-    )
+    snapshot_names = [file.stem for file in train_folder.iterdir() if "index" in file.name]
+
     if len(snapshot_names) == 0:
         raise FileNotFoundError(
             f"No snapshots were found in {train_folder}! Please ensure the network has been trained and verify the "
@@ -523,8 +522,7 @@ def get_snapshots_from_folder(train_folder: Path) -> List[str]:
         )
 
     # sort in ascending order of iteration number
-    increasing_idxs = np.argsort([int(m.split("-")[1]) for m in snapshot_names])
-    return snapshot_names[increasing_idxs]
+    return sorted(snapshot_names, key=lambda name: int(name.split("-")[1]))
 
 
 def get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=""):
