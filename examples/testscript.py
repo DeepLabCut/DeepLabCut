@@ -181,7 +181,7 @@ if __name__ == "__main__":
         path_config_file,
         plotting=True,
         per_keypoint_evaluation=True,
-        snapshots_to_evaluate=["snapshot-5", "snapshot-6"],  # snapshot-5 should be missing and 6 should be evaluated.
+        snapshots_to_evaluate=["snapshot-3", "snapshot-5", "snapshot-6"],  # snapshot-5 intentionally missing :)
     )
     # deeplabcut.evaluate_network(path_config_file,plotting=True,trainingsetindex=33)
     print("CUT SHORT VIDEO AND ANALYZE (with dynamic cropping!)")
