@@ -253,7 +253,7 @@ def evaluate_multianimal_full(
                 )
             else:
                 # Note: Should I catch any errors here to prevent loop from breaking?
-                #  evaulate.py never did but evaluate_multianimal.py did.
+                #  evaluate.py never did but evaluate_multianimal.py did.
                 snapshot_names = get_snapshots_by_index(
                     idx=cfg["snapshotindex"],
                     available_snapshots=Snapshots,
