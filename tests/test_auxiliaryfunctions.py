@@ -230,3 +230,49 @@ def test_find_next_unlabeled_folder(
     monkeypatch.setattr(Path, "rglob", get_rglob_results)
     next_folder = auxiliaryfunctions.find_next_unlabeled_folder(fake_cfg)
     assert str(next_folder) == str(Path(data_folder / next_folder_name))
+
+
+@pytest.fixture
+def mock_snapshot_folder(tmp_path):
+    """Mock folder with snapshots."""
+    folder = tmp_path / "train"
+    folder.mkdir()
+
+    # mock files
+    snapshot_files = ["snapshot-4.index",
+                      "snapshot-5.index",
+                      "snapshot-6.index",
+                      "snapshot-3.data-00000-of-00001",
+                      "snapshot-3.index",
+                      "snapshot-3.meta",
+                      ]
+    for file_name in snapshot_files:
+        (folder / file_name).touch()
+
+    return folder
+
+
+@pytest.fixture
+def mock_no_snapshots_folder(tmp_path):
+    """Mock folder with no snapshots."""
+    folder = tmp_path / "train"
+    folder.mkdir()
+
+    # mock files
+    snapshot_files = ["log.txt", "pose_cfg.yaml"]
+    for file_name in snapshot_files:
+        (folder / file_name).touch()
+
+    return folder
+
+
+def test_get_snapshots_from_folder(mock_snapshot_folder):
+    """Test returns expected snapshots in order."""
+    snapshot_names = auxiliaryfunctions.get_snapshots_from_folder(mock_snapshot_folder)
+    assert snapshot_names == ["snapshot-3", "snapshot-4", "snapshot-5", "snapshot-6"]
+
+
+def test_get_snapshots_from_folder_none(mock_no_snapshots_folder):
+    """Test raises ValueError if no snapshots are found."""
+    with pytest.raises(FileNotFoundError):
+        auxiliaryfunctions.get_snapshots_from_folder(mock_no_snapshots_folder)
