@@ -43,7 +43,7 @@ setuptools.setup(
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
-        "tables==3.7.0",
+        "tables==3.8.0",
     ],
     extras_require={
         "gui": [
