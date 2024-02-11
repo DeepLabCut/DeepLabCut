@@ -18,7 +18,7 @@ with open("README.md", encoding="utf-8", errors="replace") as fh:
 setuptools.setup(
     name="deeplabcut",
     version="2.3.9",
-    author="A. & M. Mathis Labs",
+    author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
     long_description=long_description,
@@ -39,13 +39,11 @@ setuptools.setup(
         "scikit-learn>=1.0",
         "scipy>=1.9",
         "statsmodels>=0.11",
-        "tables>=3.7.0",
         "torch<=1.12",
-        "tensorpack>=0.11",
-        "tf_slim>=1.1.0",
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
+        "tables==3.7.0",
     ],
     extras_require={
         "gui": [
@@ -56,7 +54,9 @@ setuptools.setup(
         "openvino": ["openvino-dev==2022.1.0"],
         "docs": ["numpydoc"],
         "tf": [
-            "tensorflow>=2.0,<=2.10"
+            "tensorflow>=2.0,<=2.10",
+            "tensorpack>=0.11",
+            "tf_slim>=1.1.0",
         ],  # Last supported TF version on Windows Native is 2.10
         "apple_mchips": ["tensorflow-macos<2.13.0", "tensorflow-metal"],
         "modelzoo": ["huggingface_hub"],
