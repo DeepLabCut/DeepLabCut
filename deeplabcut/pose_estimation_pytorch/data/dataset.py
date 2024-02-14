@@ -17,8 +17,8 @@ import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
+from deeplabcut.pose_estimation_pytorch.data.image import load_image, _crop_and_pad_image_torch
 from deeplabcut.pose_estimation_pytorch.data.utils import (
-    _crop_and_pad_image_torch,
     _crop_image_keypoints,
     _extract_keypoints_and_bboxes,
     apply_transform,
@@ -137,15 +137,16 @@ class PoseDataset(Dataset):
             }
         """
         image_path, anns, image_id = self._get_data_based_on_task(index)
-        image, original_size = self._load_image(image_path)
+        image = load_image(image_path, color_mode=self.parameters.color_mode)
+        original_size = image.shape
         (
             keypoints,
             keypoints_unique,
             bboxes,
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
-        offsets = (0, 0)
-        scales = (1, 1)
+        scales, offsets = (1, 1), (0, 0)
+        
         if self.task == Task.TOP_DOWN:
             if self.parameters.cropped_image_size is None:
                 raise ValueError(
@@ -238,12 +239,6 @@ class PoseDataset(Dataset):
             ).astype(int),
         }
 
-    def _load_image(self, image_path):
-        image = cv2.imread(image_path)
-        if self.parameters.color_mode == "RGB":
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        return image, image.shape
-
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:
         """
         Retrieve data based on the specified task.
@@ -262,9 +257,9 @@ class PoseDataset(Dataset):
         Returns:
             tuple: Tuple containing the image path, annotations, and image ID.
         """
-        if self.task == Task.TOP_DOWN:
+        if self.task in (Task.TOP_DOWN, Task.CTD):
             return self._get_raw_item_crop(index)
-        elif self.task in [Task.BOTTOM_UP, Task.DETECT]:
+        elif self.task in (Task.BOTTOM_UP, Task.DETECT):
             return self._get_raw_item(index)
 
         raise ValueError(f"Unknown task: {self.task}")

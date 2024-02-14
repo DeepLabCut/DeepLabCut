@@ -16,11 +16,13 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 import albumentations as A
-import cv2
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.utils import _crop_and_pad_image_torch
+from deeplabcut.pose_estimation_pytorch.data.image import (
+    load_image,
+    _crop_and_pad_image_torch,
+)
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
@@ -126,18 +128,14 @@ class ComposePreprocessor(Preprocessor):
 class LoadImage(Preprocessor):
     """Loads an image from a file, if not yet loaded"""
 
-    def __init__(self, color_mode: str = "RBG") -> None:
+    def __init__(self, color_mode: str = "RGB") -> None:
         self.color_mode = color_mode
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         if isinstance(image, (str, Path)):
-            image_ = cv2.imread(str(image))
-            if self.color_mode == "RGB":
-                image_ = cv2.cvtColor(image_, cv2.COLOR_BGR2RGB)
-        else:
-            image_ = image
+            image = load_image(image, color_mode=self.color_mode)
 
-        return image_, context
+        return image, context
 
 
 class AugmentImage(Preprocessor):
