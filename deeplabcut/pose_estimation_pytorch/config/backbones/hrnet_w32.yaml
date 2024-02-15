@@ -7,5 +7,5 @@ model:
     type: HRNet
     model_name: hrnet_w32
     pretrained: true
-    only_high_res: false
-  backbone_output_channels: 480
+    only_high_res: true
+  backbone_output_channels: 32

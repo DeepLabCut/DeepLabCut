@@ -57,7 +57,7 @@ def run_inference_on_all_images(
         num_unique_bodyparts=parameters.num_unique_bpts,
         with_identity=False,  # TODO: implement
         transform=None,
-        detector_path=detector_snapshot,
+        detector_path=str(detector_snapshot),
         detector_transform=None,
     )
 

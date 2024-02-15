@@ -53,14 +53,10 @@ class PoseModel(nn.Module):
         """
         super().__init__()
         self.cfg = cfg
-
         self.backbone = backbone
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
         self.stride = stride
-
-        # TODO: Explore results, check batch size impact
-        self.backbone.activate_batch_norm(False)
 
     def forward(self, x: torch.Tensor) -> dict[str, dict[str, torch.Tensor]]:
         """

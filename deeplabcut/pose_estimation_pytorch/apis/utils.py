@@ -106,29 +106,29 @@ def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose
             hflip_proba = aug_cfg["hflip"]
         transforms.append(A.HorizontalFlip(p=hflip_proba))
 
-    # TODO code again this augmentation to match the symmetric_pair syntax in original dlc
-    # if aug_cfg.get('flipr', False) and aug_cfg.get('symmetric_pair', False):
-    #     opt = aug_cfg.get("fliplr", False)
-    #     if type(opt) == int:
-    #         p = opt
-    #     else:
-    #         p = 0.5
-    #     transforms.append(
-    #         CustomHorizontalFlip(
-
-    #             symmetric_pairs = aug_cfg['symmetric_pairs'],
-    #             p=p
-    #         )
-    #     )
-    scale_jitter_lo, scale_jitter_up = aug_cfg.get("scale_jitter", (1, 1))
-    transforms.append(A.Affine(scale=(scale_jitter_lo, scale_jitter_up), p=1))
-    if rotation := aug_cfg.get("rotation", 0) != 0:
+    scale_jitter = aug_cfg.get("scale_jitter")
+    rotation = aug_cfg.get("rotation")
+    translation = aug_cfg.get("translation")
+    if scale_jitter or rotation or translation:
+        scale = None
+        if scale_jitter:
+            scale = scale_jitter[0], scale_jitter[1]
+        rotate = None
+        if rotation:
+            rotate = (-rotation, rotation)
+        translation_px = None
+        if translation:
+            translation_px = (0, translation)
         transforms.append(
             A.Affine(
-                rotate=(-rotation, rotation),
+                scale=scale,
+                rotate=rotate,
+                translate_px=translation_px,
                 p=0.5,
+                keep_ratio=True,
             )
         )
+
     if aug_cfg.get("hist_eq", False):
         transforms.append(A.Equalize(p=0.5))
     if aug_cfg.get("motion_blur", False):

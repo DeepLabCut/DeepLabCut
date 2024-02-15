@@ -42,6 +42,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         snapshot_path: str | None = None,
         scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
         logger: BaseLogger | None = None,
+        save_optimizer_state: bool = False,
     ):
         """
         Args:
@@ -52,6 +53,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             snapshot_path: if defined, the path of a snapshot from which to load pretrained weights
             scheduler: Scheduler for adjusting the lr of the optimizer.
             logger: logger to monitor training (e.g WandB logger)
+            save_optimizer_state: whether to save the optimizer state, which allows to
+                restart training (warning - this makes the snapshots much heavier)
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         self.optimizer = optimizer
@@ -60,6 +63,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.snapshot_prefix = snapshot_prefix
         self.logger = logger
         self.starting_epoch = 0
+        self.save_optimizer_state = save_optimizer_state
 
         if self.snapshot_path is not None and len(self.snapshot_path) > 0:
             self.starting_epoch = self.load_snapshot(
@@ -127,18 +131,18 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 valid_loader, mode="eval", step=i + 1, display_iters=display_iters
             )
 
-            if (i + 1) % save_epochs == 0:
+            if (i + 1) % save_epochs == 0 or (i + 1) == epochs:
                 logging.info(f"Finished epoch {i + 1}; saving model")
-                torch.save(
-                    {
-                        "model_state_dict": self.model.state_dict(),
-                        "epoch": i + 1,
-                        "optimizer_state_dict": self.optimizer.state_dict(),
-                        "train_loss": train_loss,
-                        "validation_loss": valid_loss,
-                    },
-                    f"{model_folder}/train/{self.snapshot_prefix}-{i + 1}.pt",
-                )
+                save_path = f"{model_folder}/train/{self.snapshot_prefix}-{i + 1}.pt"
+                state = {
+                    "model_state_dict": self.model.state_dict(),
+                    "epoch": i + 1,
+                    "train_loss": train_loss,
+                    "validation_loss": valid_loss,
+                }
+                if self.save_optimizer_state:
+                    state["optimizer_state_dict"] = self.optimizer.state_dict()
+                torch.save(state, save_path)
 
             logging.info(
                 f"Epoch {i + 1}/{epochs}, "

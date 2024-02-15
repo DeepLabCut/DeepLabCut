@@ -34,17 +34,30 @@ class ResNet(BaseBackbone):
         model_name: str = "resnet50",
         output_stride: int = 32,
         pretrained: bool = True,
+        drop_path_rate: float = 0.0,
+        drop_block_rate: float = 0.0,
+        **kwargs,
     ) -> None:
         """Initialize the ResNet backbone.
 
         Args:
             model_name: Name of the ResNet model to use, e.g., 'resnet50', 'resnet101'
+            output_stride: Output stride of the network, 32, 16, or 8.
             pretrained: If True, initializes with ImageNet pretrained weights.
+            drop_path_rate: Stochastic depth drop-path rate
+            drop_block_rate: Drop block rate
+            kwargs: BaseBackbone kwargs
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.model = timm.create_model(
-            model_name, output_stride=output_stride, pretrained=pretrained
+            model_name,
+            output_stride=output_stride,
+            pretrained=pretrained,
+            num_classes=1,  # smaller classification layer
+            drop_path_rate=drop_path_rate,
+            drop_block_rate=drop_block_rate,
         )
+        self.model.fc = nn.Identity()  # remove the FC layer
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the ResNet backbone.
@@ -75,8 +88,9 @@ class DLCRNet(ResNet):
         model_name: str = "resnet50",
         output_stride: int = 32,
         pretrained: bool = True,
+        **kwargs,
     ) -> None:
-        super().__init__(model_name, output_stride, pretrained)
+        super().__init__(model_name, output_stride, pretrained, **kwargs)
         self.interm_features = {}
         self.model.layer1[2].register_forward_hook(self._get_features("bank1"))
         self.model.layer2[2].register_forward_hook(self._get_features("bank2"))

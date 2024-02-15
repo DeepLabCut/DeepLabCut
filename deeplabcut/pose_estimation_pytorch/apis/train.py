@@ -102,12 +102,15 @@ def train(
         logging.info(f"No transform passed to augment images for {task}, using default")
         transform = build_transforms(transform_config, augment_bbox=True)
     valid_transform = build_inference_transform(transform_config, augment_bbox=True)
+    logging.info("Data Transforms:")
+    logging.info(f"  Training:   {transform}")
+    logging.info(f"  Validation: {valid_transform}")
 
     train_dataset = loader.create_dataset(transform=transform, mode="train", task=task)
     valid_dataset = loader.create_dataset(
         transform=valid_transform, mode="test", task=task
     )
-    print(
+    logging.info(
         f"Using {len(train_dataset)} images to train {task} and {len(valid_dataset)}"
         f" for testing"
     )
@@ -179,8 +182,10 @@ def train_network(
 
     pytorch_config = read_config_as_dict(model_config_path)
     pytorch_config = update_config(pytorch_config, kwargs)
-    print("Training with configuration:")
-    pretty_print_config(pytorch_config)
+    logging.info("Training with configuration:")
+    pretty_print_config(pytorch_config, print_fn=logging.info)
+    # write updated configuration
+    auxiliaryfunctions.write_plainconfig(model_config_path, pytorch_config)
 
     if transform is None:
         logging.info("No transform specified... using default")

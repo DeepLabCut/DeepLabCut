@@ -19,6 +19,10 @@ You can either copy an existing model configuration file and modify it to fit yo
 updated project (or run a new experiment), or you can create a default one for a given
 model architecture using `make_config.py`.
 
+This creates a configuration file for single-animal pose estimation as a default, but 
+you can create multi-animal projects by passing the command-line argument
+`--multi_animal`.
+
 This will create a `train` and a `test` folder in the `output` folder that you've 
 specified. The configuration file will be saved in the `train` folder, and an 
 `inference_cfg.yaml` file will be created in the `test` folder, which contains

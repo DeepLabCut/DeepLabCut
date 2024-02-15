@@ -20,22 +20,16 @@ criterion:
 heatmap_config:
   channels:
   - "backbone_output_channels"
-  - 1024
   - "num_bodyparts"
   kernel_size:
   - 3
-  - 3
   strides:
-  - 2
   - 2
 locref_config:
   channels:
   - "backbone_output_channels"
-  - 1024
   - "num_bodyparts x 2"
   kernel_size:
   - 3
-  - 3
   strides:
-  - 2
   - 2

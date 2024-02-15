@@ -212,7 +212,10 @@ def create_backbone_with_heatmap_model(
         model_config["method"] = "td"
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(configs_dir / "base" / f"head_bodyparts.yaml")
+    bodypart_head_name = "head_bodyparts.yaml"
+    if "hrnet" in net_type.lower():
+        bodypart_head_name = "head_hrnet.yaml"
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / bodypart_head_name)
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,

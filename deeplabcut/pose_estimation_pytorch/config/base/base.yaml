@@ -15,13 +15,14 @@ device: cuda
 display_iters: 50
 epochs: 200
 optimizer:
+  type: AdamW
   params:
     lr: 0.0001
-  type: AdamW
 runner:
   type: PoseRunner
 save_epochs: 50
 scheduler:
+  type: LRListScheduler
   params:
     lr_list:
     - - 0.00001
@@ -29,6 +30,5 @@ scheduler:
     milestones:
     - 90
     - 120
-  type: LRListScheduler
 seed: 42
 method: bu

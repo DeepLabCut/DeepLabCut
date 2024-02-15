@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
+from typing import Callable
+
 from ruamel.yaml import YAML
 
 from deeplabcut.utils import auxiliaryfunctions
@@ -33,8 +35,10 @@ def replace_default_values(
 
     This code can also do some basic arithmetic. You can write "num_bodyparts x 2" (or
     any factor other than 2) for location refinement channels, and the number of
-    channels will be twice the number of bodyparts. You can write "num_bodyparts + 1"
-    (such as for DEKR heatmaps, where a "center" bodypart is added).
+    channels will be twice the number of bodyparts. You can write
+    "backbone_output_channels // 2" for the number of channels in a layer, and it will
+    be half the number of channels output by the backbone. You can write
+    "num_bodyparts + 1" (such as for DEKR heatmaps, where a "center" bodypart is added).
 
     The three base placeholder values that can be computed are "num_bodyparts",
     "num_individuals" and "backbone_output_channels". You can add more through the
@@ -76,6 +80,8 @@ def replace_default_values(
                 return updated_values[var_name] + factor
             elif operator == "x":
                 return updated_values[var_name] * factor
+            elif operator == "//":
+                return updated_values[var_name] // factor
             else:
                 raise ValueError(f"Unknown operator for variable: {variable}")
 
@@ -183,16 +189,24 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     return cfg
 
 
-def pretty_print_config(config: dict, indent: int = 0) -> None:
+def pretty_print_config(
+    config: dict,
+    indent: int = 0,
+    print_fn: Callable[[str], None] | None = None,
+) -> None:
     """Prints a model configuration in a pretty and readable way
 
     Args:
         config: the config to print
         indent: the base indent on all keys
+        print_fn: custom function to call (simply calls ``print`` if None)
     """
+    if print_fn is None:
+        print_fn = print
+
     for k, v in config.items():
         if isinstance(v, dict):
-            print(f"{indent * ' '}{k}:")
+            print_fn(f"{indent * ' '}{k}:")
             pretty_print_config(v, indent + 2)
         else:
-            print(f"{indent * ' '}{k}: {v}")
+            print_fn(f"{indent * ' '}{k}: {v}")

@@ -13,6 +13,7 @@ from deeplabcut.generate_training_dataset import MakeInference_yaml
 from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
 from deeplabcut.pose_estimation_pytorch.data import COCOLoader
 
+
 def get_base_config(
     project_path: str,
     pose_config_path: str,
@@ -20,10 +21,11 @@ def get_base_config(
     bodyparts: list[str],
     unique_bodyparts: list[str],
     individuals: list[str],
+    multi_animal: bool,
 ) -> dict:
     cfg = {
         "project_path": project_path,
-        "multianimalproject": True,
+        "multianimalproject": multi_animal,
         "bodyparts": bodyparts,
         "multianimalbodyparts": bodyparts,
         "uniquebodyparts": unique_bodyparts,
@@ -58,7 +60,13 @@ def make_inference_config(
     MakeInference_yaml(items2change, output_path, default_config_path)
 
 
-def main(project_root: str, train_file: str, output: str, model_arch: str):
+def main(
+    project_root: str,
+    train_file: str,
+    output: str,
+    model_arch: str,
+    multi_animal: bool,
+):
     output_path = Path(output)
     if output_path.exists():
         raise RuntimeError(
@@ -83,6 +91,7 @@ def main(project_root: str, train_file: str, output: str, model_arch: str):
         bodyparts=bodyparts,
         unique_bodyparts=[],
         individuals=[f"individual{i}" for i in range(num_individuals)],
+        multi_animal=multi_animal,
     )
     af.write_plainconfig(str(train_dir / "pytorch_config.yaml"), pytorch_cfg)
     make_inference_config(
@@ -100,5 +109,6 @@ if __name__ == "__main__":
     parser.add_argument("output")
     parser.add_argument("model_arch")
     parser.add_argument("--train_file", default="train.json")
+    parser.add_argument("--multi_animal", action="store_true")
     args = parser.parse_args()
-    main(args.project_root, args.train_file, args.output, args.model_arch)
+    main(args.project_root, args.train_file, args.output, args.model_arch, args.multi_animal)

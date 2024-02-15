@@ -3,18 +3,18 @@ data_detector:
   normalize_images: true
 detector:
   model:
-    type: "FasterRCNN"
+    type: FasterRCNN
   optimizer:
-    type: "AdamW"
+    type: AdamW
     params:
       lr: 1e-4
   scheduler:
-    type: "LRListScheduler"
+    type: LRListScheduler
     params:
       milestones: [90]
       lr_list: [[1e-5]]
   runner:
-    type: "DetectorRunner"
+    type: DetectorRunner
     max_individuals: "num_individuals"
   batch_size: 1
   epochs: 500

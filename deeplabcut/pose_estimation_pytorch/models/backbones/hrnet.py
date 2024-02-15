@@ -36,6 +36,7 @@ class HRNet(BaseBackbone):
         model_name: str = "hrnet_w32",
         pretrained: bool = True,
         only_high_res: bool = False,
+        **kwargs,
     ) -> None:
         """Constructs an ImageNet pretrained HRNet from timm.
 
@@ -43,8 +44,9 @@ class HRNet(BaseBackbone):
             model_name: Type of HRNet (e.g., 'hrnet_w32', 'hrnet_w48').
             pretrained: If True, loads the model with ImageNet pretrained weights.
             only_high_res: Whether to only return the high resolution features
+            kwargs: BaseBackbone kwargs
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.model = _load_hrnet(model_name, pretrained)
         self.only_high_res = only_high_res
 
@@ -64,7 +66,7 @@ class HRNet(BaseBackbone):
             >>> x = torch.randn(1, 3, 256, 256)
             >>> y = backbone(x)
         """
-        y_list = self.model.forward_features(x)
+        y_list = self.model(x)
         if self.only_high_res:
             return y_list[0]
 
@@ -94,6 +96,11 @@ def _load_hrnet(model_name: str, pretrained: bool) -> nn.Module:
     Returns:
         the HRNet model
     """
-    model = timm.create_model(model_name, pretrained=pretrained)
-    model.incre_modules = None
-    return model
+    # First stem conv is used for stride 2 features, so only return branches 1-4
+    return timm.create_model(
+        model_name,
+        pretrained=pretrained,
+        features_only=True,
+        feature_location="",  # TODO: benchmark with "incre"
+        out_indices=(1, 2, 3, 4),
+    )

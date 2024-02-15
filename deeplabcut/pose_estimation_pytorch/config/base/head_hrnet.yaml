@@ -3,10 +3,10 @@ predictor:
   type: HeatmapPredictor
   location_refinement: false
 target_generator:
-  type: HeatmapPlateauGenerator
-  num_heatmaps: "num_individuals"
+  type: HeatmapGaussianGenerator
+  num_heatmaps: "num_bodyparts"
   pos_dist_thresh: 17
-  heatmap_mode: INDIVIDUAL
+  heatmap_mode: KEYPOINT
   generate_locref: false
 criterion:
   heatmap:
@@ -15,11 +15,8 @@ criterion:
 heatmap_config:
   channels:
   - "backbone_output_channels"
-  - "backbone_output_channels // 2"
-  - "num_individuals"
-  kernel_size:
-  - 3
-  - 3
-  strides:
-  - 2
-  - 2
+  kernel_size: []
+  strides: []
+  final_conv:
+    out_channels: "num_bodyparts"
+    kernel_size: 1

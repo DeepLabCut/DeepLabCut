@@ -98,10 +98,13 @@ class Shuffle:
         self._pytorch_cfg = None
 
     @property
+    def pytorch_cfg_path(self) -> Path:
+        return self.model_folder / "train" / "pytorch_config.yaml"
+
+    @property
     def pytorch_cfg(self) -> dict:
         if self._pytorch_cfg is None:
-            cfg_path = self.model_folder / "train" / "pytorch_config.yaml"
-            self._pytorch_cfg = af.read_plainconfig(str(cfg_path))
+            self._pytorch_cfg = af.read_plainconfig(str(self.pytorch_cfg_path))
 
         return self._pytorch_cfg
 
@@ -206,7 +209,7 @@ def create_shuffles(
     splits_file: Path,
     trainset_index: int,
     net_type: str,
-) -> None:
+) -> list[int]:
     """Creates shuffles for a project using predefined train/test splits
 
     Creates train/test splits according to what is defined in a file (can be created
@@ -248,6 +251,9 @@ def create_shuffles(
         splits_file: the splits containing the train and test indices
         trainset_index: the index of the training fractions to create the shuffles with
         net_type: the type of neural net to create the shuffles with
+
+    Returns:
+        the shuffle indices created
     """
     shuffle_folder = project.get_shuffle_folder(model_prefix=None)
     shuffle_indices = []
@@ -275,8 +281,7 @@ def create_shuffles(
 
     print(f"Creating training datasets with indices {shuffles_to_create} and splits:")
     for s in splits:
-        print(f"  Train: {s['train']}")
-        print(f"  Test:  {s['test']}")
+        print(f"  train=[{s['train'][:10]}...], test=[{s['test'][:10]}...]")
 
     dlc.create_training_dataset(
         project.config_path(),
@@ -286,6 +291,7 @@ def create_shuffles(
         net_type=net_type,
         augmenter_type="imgaug",
     )
+    return shuffles_to_create
 
 
 def _get_model_folder(

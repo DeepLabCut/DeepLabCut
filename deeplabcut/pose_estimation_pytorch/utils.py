@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import abc
 import os
+import random
 
 import numpy as np
 import pandas as pd
@@ -184,12 +185,14 @@ def create_folder(path_to_folder):
         os.makedirs(path_to_folder)
 
 
-def fix_seeds(seed: int):
+def fix_seeds(seed: int) -> None:
     """
-    Fixes seed for all random functions
-    @param seed: int
-        Seed to be fixed
+    Fixes the random seed for python, numpy and pytorch
+
+    Args:
+        seed: the seed to set
     """
+    random.seed(seed)
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.backends.cudnn.deterministic = True

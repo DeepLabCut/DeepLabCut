@@ -11,24 +11,24 @@
 from abc import ABC, abstractmethod
 
 import torch
+import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 BACKBONES = Registry("backbones", build_func=build_from_cfg)
 
 
-class BaseBackbone(ABC, torch.nn.Module):
+class BaseBackbone(ABC, nn.Module):
     """Base Backbone class for pose estimation.
 
     Attributes:
-        batch_norm_on: Indicates whether batch normalization is activated during training.
-            Batch Norm should not be on for small batch sizes.
     """
 
-    def __init__(self):
+    def __init__(self, freeze_bn_weights: bool = True, freeze_bn_stats: bool = True):
         """Initialize the BaseBackbone."""
         super().__init__()
-        self.batch_norm_on = False
+        self.freeze_bn_weights = freeze_bn_weights
+        self.freeze_bn_stats = freeze_bn_stats
 
     @abstractmethod
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -42,39 +42,33 @@ class BaseBackbone(ABC, torch.nn.Module):
         """
         pass
 
-    def _init_weights(self, pretrained: str = None) -> None:
-        """Initialize the backbone with pretrained weights.
+    def freeze_batch_norm_layers(self, weights: bool, stats: bool) -> None:
+        """Freezes batch norm layers
+
+        Running mean + var are always given to F.batch_norm, except when the layer is
+        in `train` mode and track_running_stats is False, see
+            https://pytorch.org/docs/stable/_modules/torch/nn/modules/batchnorm.html
+        So to 'freeze' the running stats, the only way is to set the layer to "eval"
+        mode.
 
         Args:
-            pretrained: Path to the pretrained weights.
+            weights: whether to freeze the batch norm weights
+            stats: whether to freeze the batch norm stats
         """
-        if not pretrained:
-            pass
-        elif pretrained.startswith("http") or pretrained.startswith("ftp"):
-            state_dict = torch.hub.load_state_dict_from_url(pretrained)
-            self.model.load_state_dict(state_dict, strict=False)
-        else:
-            self.model.load_state_dict(torch.load(pretrained), strict=False)
-
-    def activate_batch_norm(self, activation: bool = False) -> None:
-        """Activate or deactivate batch normalization layers during training.
-
-        Args:
-            activation: Activate or deactivate batch normalization.
-        """
-        self.batch_norm_on = activation
-
-    def train(self, mode: bool = True) -> None:
-        """Set the training mode with optional batch normalization activation.
-
-        Args:
-            mode: Training mode. Defaults to True.
-        """
-        super().train(mode)
-
-        if not self.batch_norm_on:
-            for module in self.modules():
-                if isinstance(module, torch.nn.BatchNorm2d):
-                    module.eval()
+        for module in self.modules():
+            if isinstance(module, nn.BatchNorm2d):
+                if weights:
                     module.weight.requires_grad = False
                     module.bias.requires_grad = False
+                if stats:
+                    module.eval()
+
+    def train(self, mode: bool = True) -> None:
+        """Sets the module in training or evaluation mode.
+
+        Args:
+            mode: whether to set training mode (True) or evaluation mode (False)
+        """
+        super().train(mode)
+        if self.freeze_bn_weights or self.freeze_bn_stats:
+            self.freeze_batch_norm_layers(self.freeze_bn_weights, self.freeze_bn_stats)

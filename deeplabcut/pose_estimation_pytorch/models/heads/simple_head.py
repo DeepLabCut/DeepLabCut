@@ -57,56 +57,76 @@ class DeconvModule(nn.Module):
     """
 
     def __init__(
-        self, channels: list[int], kernel_size: list[int], strides: list[int]
+        self,
+        channels: list[int],
+        kernel_size: list[int],
+        strides: list[int],
+        final_conv: dict | None = None,
     ) -> None:
         """
         Args:
-            channels: list containing the number of input and output channels for each deconvolutional layer.
-            kernel_size: list containing the kernel size for each deconvolutional layer.
-            strides: list containing the stride for each deconvolutional layer.
+            channels: List containing the number of input and output channels for each
+                deconvolutional layer.
+            kernel_size: List containing the kernel size for each deconvolutional layer.
+            strides: List containing the stride for each deconvolutional layer.
+            final_conv: Configuration for a conv layer after the deconvolutional layers,
+                if one should be added. Must have keys "out_channels" and "kernel_size".
         """
         super().__init__()
-        self.kernel_size = kernel_size
-        self.strides = strides
-
-        if len(kernel_size) == 1:
-            self.model = self._make_layer(
-                channels[0], channels[1], kernel_size[0], strides[0]
+        if not (len(channels) == len(kernel_size) + 1 == len(strides) + 1):
+            raise ValueError(
+                "Incorrect DeconvModule configuration: there should be one more number"
+                f" of channels than kernel_sizes and strides, found {len(channels)} "
+                f"channels, {len(kernel_size)} kernels and {len(strides)} strides."
             )
-        else:
-            layers = []
-            for i in range(len(channels) - 1):
-                up_layer = self._make_layer(
-                    channels[i], channels[i + 1], kernel_size[i], strides[i]
-                )
-                layers.append(up_layer)
-                if i < len(channels) - 2:
-                    layers.append(nn.ReLU())
-            self.model = nn.Sequential(*layers)
 
-    def _make_layer(
-        self, in_channels: int, out_channels: int, kernel_size: int, stride: int
-    ) -> torch.nn.ConvTranspose2d:
+        in_channels = channels[0]
+        self.deconv_layers = nn.Identity()
+        if len(kernel_size) > 0:
+            self.deconv_layers = nn.Sequential(
+                *self._make_layers(in_channels, channels[1:], kernel_size, strides)
+            )
+
+        self.final_conv = nn.Identity()
+        if final_conv:
+            self.final_conv = nn.Conv2d(
+                in_channels=channels[-1],
+                out_channels=final_conv["out_channels"],
+                kernel_size=final_conv["kernel_size"],
+                stride=1,
+            )
+
+    @staticmethod
+    def _make_layers(
+        in_channels: int,
+        out_channels: list[int],
+        kernel_sizes: list[int],
+        strides: list[int],
+    ) -> list[nn.Module]:
         """
-        Helper function to create a deconvolutional layer.
+        Helper function to create the deconvolutional layers.
 
         Args:
-            in_channels: number of input channels
-            out_channels: number of output channels
-            kernel_size: size of the deconvolutional kernel
-            stride: stride for the convolution operation
+            in_channels: number of input channels to the module
+            out_channels: number of output channels of each layer
+            kernel_sizes: size of the deconvolutional kernel
+            strides: stride for the convolution operation
 
         Returns:
-            upsample_layer: the deconvolutional layer.
+            the deconvolutional layers
         """
-        upsample_layer = nn.ConvTranspose2d(
-            in_channels, out_channels, kernel_size, stride=stride
-        )
-        return upsample_layer
+        layers = []
+        for out_channels, k, s in zip(out_channels, kernel_sizes, strides):
+            layers.append(
+                nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s)
+            )
+            layers.append(nn.ReLU())
+            in_channels = out_channels
+        return layers[:-1]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass of the SimpleHead object.
+        Forward pass of the HeatmapHead
 
         Args:
             x: input tensor
@@ -114,4 +134,6 @@ class DeconvModule(nn.Module):
         Returns:
             out: output tensor
         """
-        return self.model(x)
+        x = self.deconv_layers(x)
+        x = self.final_conv(x)
+        return x

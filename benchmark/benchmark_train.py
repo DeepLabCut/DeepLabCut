@@ -43,6 +43,7 @@ class TrainParameters:
     epochs: int | None = 100
     save_epochs: int | None = 25
     snapshot_path: Path | None = None
+    detector_batch_size: int | None = None
     detector_max_epochs: int | None = None
     detector_save_epochs: int | None = None
 
@@ -57,10 +58,17 @@ class TrainParameters:
             kwargs["save_epochs"] = self.save_epochs
         if self.snapshot_path is not None:
             kwargs["snapshot_path"] = str(self.snapshot_path)
+
+        detector_kwargs = {}
+        if self.detector_batch_size is not None:
+            detector_kwargs["batch_size"] = self.detector_batch_size
         if self.detector_max_epochs is not None:
-            kwargs["detector_max_epochs"] = self.detector_max_epochs
+            detector_kwargs["epochs"] = self.detector_max_epochs
         if self.detector_save_epochs is not None:
-            kwargs["detector_save_epochs"] = self.detector_save_epochs
+            detector_kwargs["save_epochs"] = self.detector_save_epochs
+        if len(detector_kwargs) > 0:
+            kwargs["detector"] = detector_kwargs
+
         return kwargs
 
 
