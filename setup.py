@@ -39,7 +39,7 @@ setuptools.setup(
         "scikit-learn>=1.0",
         "scipy>=1.9",
         "statsmodels>=0.11",
-        "torch<=1.12",
+        "torch",
         "tqdm",
         "pyyaml",
         "Pillow>=7.1",
