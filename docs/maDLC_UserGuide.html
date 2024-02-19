@@ -200,7 +200,14 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="napari_GUI.html">napari labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
@@ -213,23 +220,15 @@
 <li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
 
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials &amp; Cookbook</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
 
@@ -239,6 +238,10 @@
 
 
 <li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
 <ul class="nav bd-sidenav">
@@ -452,6 +455,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-training-dataset">Create Training Dataset:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-network">Train The Network:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-trained-network">Evaluate the Trained Network:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-your-network-on-videos">Evaluating your network on videos</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-and-tracking-across-frames">Animal Assembly and Tracking across frames</a><ul class="nav section-nav flex-column">
@@ -824,6 +828,9 @@ but does not guarantee best performance.</p>
 </pre></div>
 </div>
 <p>you can drop “Indices” to run this on all training/testing images (this is very slow!)</p>
+</section>
+<section id="evaluating-your-network-on-videos">
+<h3>Evaluating your network on videos<a class="headerlink" href="#evaluating-your-network-on-videos" title="Link to this heading">#</a></h3>
 <p><strong>——————– DECISION POINT ——————-</strong></p>
 <p><strong>ATTENTION!</strong>
 <strong>Pose estimation and tracking should be thought of as separate steps.</strong> If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc –&gt; don’t move forward with this model. If you think you have a good model, please test the “raw” pose estimation performance on a video to validate performance:</p>
@@ -1092,6 +1099,7 @@ can be directly specified as follows:</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-training-dataset">Create Training Dataset:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-network">Train The Network:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-trained-network">Evaluate the Trained Network:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-your-network-on-videos">Evaluating your network on videos</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animal-assembly-and-tracking-across-frames">Animal Assembly and Tracking across frames</a><ul class="nav section-nav flex-column">
