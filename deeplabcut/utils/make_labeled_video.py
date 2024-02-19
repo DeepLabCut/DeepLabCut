@@ -1009,6 +1009,7 @@ def create_video_with_all_detections(
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
+    cropping: bool = False,
     destfolder=None,
     modelprefix="",
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
@@ -1039,6 +1040,9 @@ def create_video_with_all_detections(
         This selects the body parts that are plotted in the video. Either ``all``, then all body parts
         from config.yaml are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+
+    cropping: bool, optional (default=False)
+        If True, looks up video crop coordinates in the config.yaml to shift detections appropriately.
 
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
@@ -1081,7 +1085,8 @@ def create_video_with_all_detections(
             )
 
         if not (os.path.isfile(outputname)):
-            print("Creating labeled video for ", str(Path(video).stem))
+            video_name = str(Path(video).stem)
+            print("Creating labeled video for ", video_name)
             h5file = full_pickle.replace("_full.pickle", ".h5")
             data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
             data = dict(
@@ -1111,6 +1116,15 @@ def create_video_with_all_detections(
             clip = vp(fname=video, sname=outputname, codec="mp4v")
             ny, nx = clip.height(), clip.width()
 
+            x1 = 0
+            y1 = 0
+            if cropping:
+                # Find the corresponding crop coordinates used during video analysis
+                for video_path, dict_ in cfg["video_sets"].items():
+                    if Path(video_path).stem == video_name:
+                        x1, _, y1, _ = map(int, dict_["crop"].split(", "))
+                        break
+
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
                 if frame is None:
@@ -1122,6 +1136,8 @@ def create_video_with_all_detections(
                         if det.label not in bpts or det.confidence < pcutoff:
                             continue
                         x, y = det.pos
+                        x += x1
+                        y += y1
                         rr, cc = disk((y, x), dotsize, shape=(ny, nx))
                         alpha = 1
                         if confidence_to_alpha is not None:
