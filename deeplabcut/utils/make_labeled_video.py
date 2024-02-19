@@ -31,7 +31,7 @@ import os.path
 from pathlib import Path
 from functools import partial
 from multiprocessing import Pool, get_start_method
-from typing import Iterable, Callable, Optional, Union
+from typing import Iterable, Callable, List, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -1009,7 +1009,7 @@ def create_video_with_all_detections(
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
-    cropping: bool = False,
+    cropping: Optional[List[int]] = None,
     destfolder=None,
     modelprefix="",
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
@@ -1041,8 +1041,8 @@ def create_video_with_all_detections(
         from config.yaml are used orr a list of strings that are a subset of the full list.
         E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
 
-    cropping: bool, optional (default=False)
-        If True, looks up video crop coordinates in the config.yaml to shift detections appropriately.
+    cropping: list[int], optional (default=None)
+        If passed in, the [x1, x2, y1, y2] crop coordinates are used to shift detections appropriately.
 
     destfolder: string, optional
         Specifies the destination folder that was used for storing analysis data (default is the path of the video).
@@ -1118,12 +1118,8 @@ def create_video_with_all_detections(
 
             x1 = 0
             y1 = 0
-            if cropping:
-                # Find the corresponding crop coordinates used during video analysis
-                for video_path, dict_ in cfg["video_sets"].items():
-                    if Path(video_path).stem == video_name:
-                        x1, _, y1, _ = map(int, dict_["crop"].split(", "))
-                        break
+            if cropping is not None:
+                x1, _, y1, _ = cropping
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
