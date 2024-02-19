@@ -19,7 +19,12 @@ parts:
   chapters:
   - file: docs/PROJECT_GUI
   - file: docs/napari_GUI
-  - file: docs/recipes/ClusteringNapari
+- caption: Tutorials
+  chapters:
+  - file: docs/tutorial
+- caption: Hardware Tips
+  chapters:
+  - file: docs/recipes/TechHardware
 - caption: DeepLabCut-Live!
   chapters:
   - file: docs/deeplabcutlive
@@ -28,25 +33,22 @@ parts:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
-- caption: DeepLabCut Benchmark
+- caption: Cookbook
   chapters:
-  - file: docs/benchmark
-- caption: Hardware
-  chapters:
-  - file: docs/recipes/TechHardware
-- caption: Tutorials & Cookbook
-  chapters:
-  - file: docs/tutorial
   - file: docs/convert_maDLC
   - file: docs/recipes/io
   - file: docs/recipes/nn
   - file: docs/recipes/post
   - file: docs/recipes/BatchProcessing
   - file: docs/recipes/DLCMethods
+  - file: docs/recipes/ClusteringNapari
   - file: docs/recipes/OpenVINO
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
+- caption: DeepLabCut Benchmark
+  chapters:
+  - file: docs/benchmark
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
