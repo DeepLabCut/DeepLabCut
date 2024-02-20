@@ -14,6 +14,9 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
+import deeplabcut
+from deeplabcut import compat
+from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -21,8 +24,6 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
 )
-
-import deeplabcut
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -63,12 +64,32 @@ class CreateTrainingDataset(DefaultTab):
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
-        nets = DLCParams.NNETS.copy()
-        if not self.root.is_multianimal:
-            nets.remove("dlcrnet_ms5")
+
+        if self.root.project_engine == compat.Engine.TF:
+            nets = DLCParams.NNETS.copy()
+            if not self.root.is_multianimal:
+                nets.remove("dlcrnet_ms5")
+        else:
+            # FIXME: Circular imports make it impossible to import this at the top
+            from deeplabcut.pose_estimation_pytorch import available_models
+            nets = available_models()
+
         self.net_choice.addItems(nets)
-        self.net_choice.setCurrentText("resnet_50")
+        default_net_type = self.root.cfg.get("default_net_type", "resnet_50")
+        if default_net_type in nets:
+            self.net_choice.setCurrentIndex(nets.index(default_net_type))
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
+
+        self.overwrite = QtWidgets.QCheckBox("Overwrite")
+        self.overwrite.setChecked(False)
+        self.overwrite.setToolTip(
+            "When checked, creating a new shuffle with an index that already exists "
+            "will overwrite the existing index. Be careful with this option as you "
+            "might lose data."
+        )
+        self.overwrite.stateChanged.connect(
+            lambda s: self.root.logger.info(f"Overwrite: {s}")
+        )
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
@@ -76,6 +97,7 @@ class CreateTrainingDataset(DefaultTab):
         layout.addWidget(self.net_choice, 0, 3)
         layout.addWidget(augmentation_label, 0, 4)
         layout.addWidget(self.aug_choice, 0, 5)
+        layout.addWidget(self.overwrite, 1, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -85,6 +107,30 @@ class CreateTrainingDataset(DefaultTab):
 
     def create_training_dataset(self):
         shuffle = self.shuffle.value()
+        cfg = self.root.cfg
+        existing_indices = get_existing_shuffle_indices(
+            cfg=cfg,
+            train_fraction=cfg["TrainingFraction"][self.root.trainingset_index]
+        )
+
+        overwrite = self.overwrite.isChecked()
+        if shuffle in existing_indices:
+            if overwrite:
+                if not self._confirm_overwrite(shuffle, existing_indices):
+                    return
+            else:
+                msg = _create_message_box(
+                    f"The training dataset could not be created.",
+                    (
+                        f"Shuffle {shuffle} already exists - you can create a new "
+                        "training dataset with an unused shuffle index (existing "
+                        f"shuffles are {existing_indices}) or you can overwrite the "
+                        f"shuffle by ticking the 'Overwrite' checkbox"
+                    ),
+                )
+                msg.exec_()
+                self.root.writer.write("Training dataset creation failed.")
+                return
 
         if self.model_comparison:
             raise NotImplementedError
@@ -102,6 +148,7 @@ class CreateTrainingDataset(DefaultTab):
                     shuffle,
                     Shuffles=[self.shuffle.value()],
                     net_type=self.net_choice.currentText(),
+                    userfeedback=not overwrite,
                 )
             else:
                 deeplabcut.create_training_dataset(
@@ -110,6 +157,7 @@ class CreateTrainingDataset(DefaultTab):
                     Shuffles=[self.shuffle.value()],
                     net_type=self.net_choice.currentText(),
                     augmenter_type=self.aug_choice.currentText(),
+                    userfeedback=not overwrite,
                 )
             # Check that training data files were indeed created.
             trainingsetfolder = get_training_set_folder(self.root.cfg)
@@ -141,6 +189,47 @@ class CreateTrainingDataset(DefaultTab):
                 msg.exec_()
                 self.root.writer.write("Training dataset creation failed.")
 
+    def _confirm_overwrite(self, shuffle: int, existing_indices: list[int]) -> bool:
+        """
+        Asks the user to confirm that they want to overwrite a shuffle.
+
+        Args:
+            shuffle: the shuffle the user wants to overwrite
+            existing_indices: the indices of existing shuffles
+
+        Returns:
+            whether the user confirmed overwriting the shuffle
+        """
+        try:
+            engine = compat.get_shuffle_engine(
+                self.root.cfg, self.root.trainingset_index, shuffle
+            )
+            engine_str = f" (with engine '{engine.aliases[0]}')"
+        except ValueError:
+            engine_str = ""
+
+        conf = _create_confirmation_box(
+            title=f"Are you sure you want to overwrite shuffle {shuffle}?",
+            description=(
+                f"As shuffle {shuffle} already exists{engine_str}, "
+                f"the training-dataset files would be overwritten."
+            )
+        )
+        result = conf.exec()
+        if result != QtWidgets.QMessageBox.Yes:
+            msg = _create_message_box(
+                text="The training dataset was not be created.",
+                info_text=(
+                    "You can create a shuffle with another index. Existing indices "
+                    f"are {existing_indices}"
+                ),
+            )
+            msg.exec_()
+            self.root.writer.write("Training dataset creation interrupted.")
+            return False
+
+        return True
+
 
 def _create_message_box(text, info_text):
     msg = QtWidgets.QMessageBox()
@@ -154,4 +243,19 @@ def _create_message_box(text, info_text):
     logo = logo_dir + "/assets/logo.png"
     msg.setWindowIcon(QIcon(logo))
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    return msg
+
+
+def _create_confirmation_box(title, description):
+    msg = QtWidgets.QMessageBox()
+    msg.setIcon(QtWidgets.QMessageBox.Information)
+    msg.setText(title)
+    msg.setInformativeText(description)
+
+    msg.setWindowTitle("Confirmation")
+    msg.setMinimumWidth(900)
+    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+    logo = logo_dir + "/assets/logo.png"
+    msg.setWindowIcon(QIcon(logo))
+    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg

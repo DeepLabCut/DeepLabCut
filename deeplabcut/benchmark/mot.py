@@ -11,12 +11,14 @@
 
 from __future__ import annotations
 
+import warnings
+
 import motmetrics as mm
 import numpy as np
 import pandas as pd
-import warnings
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
 from numpy.typing import NDArray
+
+from deeplabcut.core import trackingutils
 
 
 def _convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:

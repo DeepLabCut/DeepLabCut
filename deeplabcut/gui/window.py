@@ -18,7 +18,7 @@ from typing import List
 import qdarkstyle
 
 import deeplabcut
-from deeplabcut import auxiliaryfunctions, VERSION
+from deeplabcut import auxiliaryfunctions, VERSION, compat
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
@@ -152,6 +152,10 @@ class MainWindow(QMainWindow):
         return cfg
 
     @property
+    def project_engine(self) -> compat.Engine:
+        return compat.get_project_engine(self.cfg)
+
+    @property
     def project_folder(self) -> str:
         return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
 
@@ -176,15 +180,14 @@ class MainWindow(QMainWindow):
     @property
     def pose_cfg_path(self) -> str:
         try:
-            return os.path.join(
-                self.cfg["project_path"],
-                auxiliaryfunctions.get_model_folder(
-                    self.cfg["TrainingFraction"][int(self.trainingset_index)],
-                    int(self.shuffle_value),
-                    self.cfg,
-                ),
-                "train",
-                "pose_cfg.yaml",
+            return str(
+                compat.return_train_network_path(
+                    self.config,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                    engine=self.project_engine,
+                )[0]
             )
         except FileNotFoundError:
             return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
@@ -490,7 +493,10 @@ class MainWindow(QMainWindow):
             h1_description="DeepLabCut - Step 4. Create training dataset",
         )
         self.train_network = TrainNetwork(
-            root=self, parent=None, h1_description="DeepLabCut - Train network"
+            root=self,
+            parent=None,
+            h1_description="DeepLabCut - Train network",
+            engine=self.project_engine,
         )
         self.evaluate_network = EvaluateNetwork(
             root=self,

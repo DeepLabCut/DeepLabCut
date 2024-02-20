@@ -21,6 +21,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
+from deeplabcut.compat import Engine
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     build_bottom_up_postprocessor,
@@ -44,7 +45,37 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     InferenceRunner,
     Task,
 )
-from deeplabcut.utils import auxfun_videos
+from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+
+
+def return_train_network_path(
+    config: str,
+    shuffle: int = 1,
+    trainingsetindex: int = 0,
+    modelprefix: str = ""
+) -> tuple[Path, Path, Path]:
+    """
+    Args:
+        config: Full path of the config.yaml file as a string.
+        shuffle: The shuffle index to select for training
+        trainingsetindex: Which TrainingsetFraction to use (note that TrainingFraction
+            is a list in config.yaml)
+    Returns:
+        the path to the training pytorch pose configuration file
+        the path to the test pytorch pose configuration file
+        the path to the folder containing the snapshots
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    project_path = Path(cfg["project_path"])
+    train_frac = cfg["TrainingFraction"][trainingsetindex]
+    model_folder = auxiliaryfunctions.get_model_folder(
+        train_frac, shuffle, cfg, engine=Engine.PYTORCH, modelprefix=modelprefix
+    )
+    return (
+        project_path / model_folder / "train" / "pytorch_config.yaml",
+        project_path / model_folder / "test" / "pose_cfg.yaml",
+        project_path / model_folder / "train",
+    )
 
 
 def build_optimizer(optimizer_cfg: dict, model: nn.Module) -> torch.optim.Optimizer:
@@ -273,20 +304,27 @@ def list_videos_in_folder(
     """
     TODO
     """
-    video_path = Path(data_path)
-    if video_path.is_dir():
-        if video_type is None:
-            video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
+    if not isinstance(data_path, list):
+        data_path = [data_path]
+    video_paths = [Path(p) for p in data_path]
+
+    videos = []
+    for video_path in video_paths:
+        if video_path.is_dir():
+            if video_type is None:
+                video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
+            else:
+                video_suffixes = [video_type]
+
+            video_suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
+            videos += [file for file in video_path.iterdir() if file.suffix in video_suffixes]
         else:
-            video_suffixes = [video_type]
+            assert (
+                video_path.exists()
+            ), f"Could not find the video: {video_path}. Check access rights."
+            videos.append(video_path)
 
-        video_suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
-        return [file for file in video_path.iterdir() if file.suffix in video_suffixes]
-
-    assert (
-        video_path.exists()
-    ), f"Could not find the video: {video_path}. Check access rights."
-    return [video_path]
+    return videos
 
 
 def build_auto_padding(

@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 import os
 import os.path
@@ -19,6 +20,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+from deeplabcut.compat import Engine, get_project_engine
 from deeplabcut.generate_training_dataset import (
     merge_annotateddatasets,
     read_image_shape_fast,
@@ -27,6 +29,7 @@ from deeplabcut.generate_training_dataset import (
     MakeTest_pose_yaml,
     MakeInference_yaml,
     pad_train_test_indices,
+    validate_shuffles,
 )
 from deeplabcut.utils import (
     auxiliaryfunctions,
@@ -109,6 +112,8 @@ def create_multianimaltraining_dataset(
     testIndices=None,
     n_edges_threshold=105,
     paf_graph_degree=6,
+    userfeedback: bool = True,
+    engine: Engine | None = None,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
@@ -168,6 +173,16 @@ def create_multianimaltraining_dataset(
     paf_graph_degree: int, optional (default=6)
         Degree of paf_graph when automatically pruning it (before training).
 
+    userfeedback: bool, optional, default=True
+        If ``False``, all requested train/test splits are created (no matter if they
+        already exist). If you want to assure that previous splits etc. are not
+        overwritten, set this to ``True`` and you will be asked for each split.
+
+    engine: Engine, optional
+        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
+        the value specified in the project configuration file. If no engine is specified
+        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
+
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
@@ -210,20 +225,23 @@ def create_multianimaltraining_dataset(
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
 
-    if any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
-        pass
-    elif cfg.get("engine", "pytorch").lower() == "pytorch":
-        pass  # TODO: Change default to tensorflow
-    else:
-        raise ValueError(f"Unsupported network {net_type}.")
+    # load the engine to use to create the shuffle
+    if engine is None:
+        engine = get_project_engine(cfg)
+
+    if not (
+        any(net in net_type for net in ("resnet", "eff", "dlc", "mob"))
+        or engine == Engine.PYTORCH
+    ):
+        raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
 
     multi_stage = False
     ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
     ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
     if (
         all(net in net_type for net in ("dlcr", "_ms5"))
-        and cfg.get("engine", "pytorch").lower() != "pytorch"
-    ):  # TODO: Change default to tensorflow
+        and engine != Engine.PYTORCH
+    ):
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
@@ -281,18 +299,14 @@ def create_multianimaltraining_dataset(
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
 
-    # TODO: Clean this
-    if cfg.get("engine", "pytorch") == "pytorch":
+    if engine == Engine.PYTORCH:
         model_path = dlcparent_path
     else:
         model_path = auxfun_models.check_for_weights(
             net_type, Path(dlcparent_path)
         )
 
-    if Shuffles is None:
-        Shuffles = range(1, num_shuffles + 1, 1)
-    else:
-        Shuffles = [i for i in Shuffles if isinstance(i, int)]
+    Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
     # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
     if trainIndices is None and testIndices is None:
@@ -374,7 +388,7 @@ def create_multianimaltraining_dataset(
             #################################################################################
 
             modelfoldername = auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg
+                trainFraction, shuffle, cfg, engine=engine,
             )
             auxiliaryfunctions.attempt_to_make_folder(
                 Path(config).parents[0] / modelfoldername, recursive=True
@@ -415,7 +429,7 @@ def create_multianimaltraining_dataset(
             jointnames.extend([str(bpt) for bpt in uniquebodyparts])
             items2change = {
                 "dataset": datafilename,
-                "engine": cfg.get("engine", "pytorch"),  # TODO: Default to tensorflow
+                "engine": engine.aliases[0],
                 "metadataset": metadatafilename,
                 "num_joints": len(multianimalbodyparts)
                 + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
@@ -493,8 +507,7 @@ def create_multianimaltraining_dataset(
             )
 
             # Populate the pytorch config yaml file
-            # TODO: Add switch for PyTorch projects
-            if cfg.get("engine", "pytorch").lower() == "pytorch":
+            if engine == Engine.PYTORCH:
                 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
 
                 top_down = False

@@ -23,7 +23,7 @@ import pandas as pd
 import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from deeplabcut.utils import (
     auxiliaryfunctions,
     auxfun_multianimal,

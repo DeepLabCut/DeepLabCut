@@ -338,3 +338,9 @@ class CoarseDropout(A.CoarseDropout):
                 kp = tuple(kp)
             new_keypoints.append(kp)
         return new_keypoints
+
+    def _keypoint_in_hole(self, keypoint, hole: tuple[int, int, int, int]) -> bool:
+        """Reimplemented from Albumentations as was removed in v1.4.0"""
+        x1, y1, x2, y2 = hole
+        x, y = keypoint[:2]
+        return x1 <= x < x2 and y1 <= y < y2

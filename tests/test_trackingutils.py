@@ -10,7 +10,7 @@
 #
 import numpy as np
 import pytest
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.core import trackingutils
 
 
 @pytest.fixture()

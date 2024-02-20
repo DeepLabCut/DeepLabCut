@@ -11,6 +11,7 @@ import deeplabcut as dlc
 import deeplabcut.pose_estimation_pytorch.apis.utils as api_utils
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.compat import Engine
 
 
 @dataclass
@@ -91,7 +92,11 @@ class Shuffle:
     def __post_init__(self):
         self.model_prefix_ = self.model_prefix if self.model_prefix is not None else ""
         self.model_folder = self.project.path / af.get_model_folder(
-            self.train_fraction, self.index, self.project.cfg, modelprefix=self.model_prefix_
+            self.train_fraction,
+            self.index,
+            self.project.cfg,
+            engine=Engine.PYTORCH,
+            modelprefix=self.model_prefix_,
         )
         self.trainset_folder = af.get_training_set_folder(self.project.cfg)
         self._metadata = None

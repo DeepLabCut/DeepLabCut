@@ -18,13 +18,13 @@ import pandas as pd
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 
+from deeplabcut.core import crossvalutils
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
 )
 from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
 
 
@@ -682,3 +682,7 @@ def evaluate_multianimal_full(
                     make_results_file(final_result, evaluationfolder, DLCscorer)
 
     os.chdir(str(start_path))
+
+
+# backwards compatibility
+_find_closest_neighbors = find_closest_neighbors

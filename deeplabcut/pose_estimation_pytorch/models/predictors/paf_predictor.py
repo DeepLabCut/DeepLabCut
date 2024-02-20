@@ -19,8 +19,7 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
     BasePredictor,
     PREDICTORS,
 )
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
-
+from deeplabcut.core import inferenceutils
 
 Graph = list[tuple[int, int]]
 

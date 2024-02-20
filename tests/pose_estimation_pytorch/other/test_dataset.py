@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.utils.auxiliaryfunctions as dlc_auxfun
+from deeplabcut.compat import Engine
 from deeplabcut.generate_training_dataset import create_training_dataset
 
 
@@ -23,7 +24,12 @@ def mock_aux() -> Mock:
 def _get_dataset(path, transform, mode="train"):
     project_root = Path(path)
     if not (project_root / "training-datasets").exists():
-        create_training_dataset(config=str(project_root / "config.yaml"))
+        print(str(project_root / "config.yaml"))
+        create_training_dataset(
+            config=str(project_root / "config.yaml"),
+            net_type="resnet_50",
+            engine=Engine.PYTORCH,
+        )
 
     loader = dlc.DLCLoader(path, model_config_path="", shuffle=1)
     dataset = loader.create_dataset(transform=transform, mode=mode)

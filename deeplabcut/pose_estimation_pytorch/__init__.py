@@ -14,6 +14,7 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     evaluate_network,
     train_network,
 )
+from deeplabcut.pose_estimation_pytorch.config import available_models
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.cocoloader import COCOLoader
 from deeplabcut.pose_estimation_pytorch.data.dataset import (

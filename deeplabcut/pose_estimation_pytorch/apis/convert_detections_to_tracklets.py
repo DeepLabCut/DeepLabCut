@@ -22,13 +22,13 @@ from tqdm import tqdm
 
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
+from deeplabcut.compat import Engine
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     list_videos_in_folder,
 )
-from deeplabcut.pose_estimation_tensorflow import load_config
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembly
+from deeplabcut.core import trackingutils
+from deeplabcut.core.inferenceutils import Assembly
 
 
 def convert_detections2tracklets(
@@ -70,11 +70,11 @@ def convert_detections2tracklets(
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
     rel_model_dir = auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix
+        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
     )
     model_dir = Path(cfg["project_path"]) / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
-    dlc_cfg = load_config(str(path_test_config))
+    dlc_cfg = auxiliaryfunctions.read_plainconfig(str(path_test_config))
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")
@@ -118,6 +118,7 @@ def convert_detections2tracklets(
         shuffle,
         train_fraction,
         trainingsiterations=num_epochs,
+        engine=Engine.PYTORCH,
         modelprefix=modelprefix,
     )
 

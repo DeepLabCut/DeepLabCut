@@ -23,7 +23,7 @@ import pandas as pd
 from scipy.spatial import cKDTree
 from sklearn.metrics.cluster import contingency_matrix
 
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+from deeplabcut.core.inferenceutils import (
     Assembler,
     evaluate_assembly,
     _parse_ground_truth_data,
@@ -56,7 +56,18 @@ def _unsorted_unique(array):
     return np.asarray(array)[np.sort(inds)]
 
 
-def _find_closest_neighbors(query, ref, k=3):
+def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np.ndarray:
+    """Greedy matching of predicted keypoints to ground truth keypoints
+
+    Args:
+        query: the query keypoints
+        ref: the reference keypoints
+        k: The list of k-th nearest neighbors to return.
+
+    Returns:
+        an array of shape (len(query), ) containing the index of the closest
+        reference keypoint for each query keypoint
+    """
     n_preds = ref.shape[0]
     tree = cKDTree(ref)
     dist, inds = tree.query(query, k=k)
@@ -456,3 +467,7 @@ def cross_validate_paf_graphs(
         with open(output_name, "wb") as file:
             pickle.dump([results], file)
     return results[:3], paf_scores, results[3][size_opt]
+
+
+# Backwards compatibility
+_find_closest_neighbors = find_closest_neighbors

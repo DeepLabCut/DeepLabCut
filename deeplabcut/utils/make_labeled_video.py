@@ -43,7 +43,6 @@ from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
-from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
@@ -588,8 +587,7 @@ def create_labeled_video(
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
         dataset_name = "_".join(superanimal_name.split("_")[:-1])
-
-        test_cfg = load_config(
+        test_cfg = auxiliaryfunctions.read_plainconfig(
             os.path.join(
                 dlc_root_path,
                 "modelzoo",
@@ -1052,7 +1050,7 @@ def create_video_with_all_detections(
     """
     import re
 
-    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
+    from deeplabcut.core.inferenceutils import Assembler
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]

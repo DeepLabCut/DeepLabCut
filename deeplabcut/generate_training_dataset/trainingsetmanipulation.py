@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 import math
 import logging
@@ -18,12 +19,17 @@ import warnings
 from functools import lru_cache
 from pathlib import Path
 from PIL import Image
+from typing import List
 
 import numpy as np
 import pandas as pd
 import yaml
 
-from deeplabcut.pose_estimation_tensorflow import training
+from deeplabcut.compat import (
+    Engine,
+    get_project_engine,
+    return_train_network_path,
+)
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -724,13 +730,14 @@ def create_training_dataset(
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
-    userfeedback=False,
+    userfeedback=True,
     trainIndices=None,
     testIndices=None,
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
+    engine: Engine | None = None,
 ):
     """Creates a training dataset.
 
@@ -749,7 +756,7 @@ def create_training_dataset(
     Shuffles: list[int], optional
         Alternatively the user can also give a list of shuffles.
 
-    userfeedback: bool, optional, default=False
+    userfeedback: bool, optional, default=True
         If ``False``, all requested train/test splits are created (no matter if they
         already exist). If you want to assure that previous splits etc. are not
         overwritten, set this to ``True`` and you will be asked for each split.
@@ -797,6 +804,10 @@ def create_training_dataset(
     superanimal_name: string, optional, default=""
         Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
 
+    engine: Engine, optional
+        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
+        the value specified in the project configuration file. If no engine is specified
+        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
 
     Returns
     -------
@@ -876,10 +887,14 @@ def create_training_dataset(
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
+            engine=engine,
         )
     else:
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
+        if engine is None:
+            engine = get_project_engine(cfg)
+
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
@@ -899,7 +914,7 @@ def create_training_dataset(
         # loading & linking pretrained models
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
-        elif cfg.get("engine", "pytorch").lower() == "pytorch":  # TODO: Change default to tensorflow
+        elif engine == Engine.PYTORCH:
             pass
         else:
             if (
@@ -944,18 +959,14 @@ def create_training_dataset(
         elif posecfg_template:
             defaultconfigfile = posecfg_template
 
-        # TODO: Clean this
-        if cfg.get("engine", "pytorch") == "pytorch":
+        if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
             model_path = auxfun_models.check_for_weights(
                 net_type, Path(dlcparent_path)
             )
 
-        if Shuffles is None:
-            Shuffles = range(1, num_shuffles + 1)
-        else:
-            Shuffles = [i for i in Shuffles if isinstance(i, int)]
+        Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
         # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
         if trainIndices is None and testIndices is None:
@@ -998,10 +1009,11 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = training.return_train_network_path(
+                    trainposeconfigfile, _, _ = return_train_network_path(
                         config,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+                        engine=engine,
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
@@ -1054,7 +1066,7 @@ def create_training_dataset(
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
                 modelfoldername = auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg
+                    trainFraction, shuffle, cfg, engine=engine,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
@@ -1085,7 +1097,7 @@ def create_training_dataset(
                 # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
                 items2change = {
                     "dataset": datafilename,
-                    "engine": cfg.get("engine", "pytorch"),  # TODO: Default to tensorflow
+                    "engine": engine.aliases[0],
                     "metadataset": metadatafilename,
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
@@ -1126,8 +1138,7 @@ def create_training_dataset(
                 )
 
                 # Populate the pytorch config yaml file
-                # TODO: Add switch for PyTorch projects
-                if cfg.get("engine", "pytorch").lower() == "pytorch":
+                if engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
 
                     top_down = False
@@ -1164,6 +1175,107 @@ def get_largestshuffle_index(config):
         max_shuffle_index = 0
 
     return max_shuffle_index
+
+
+def get_existing_shuffle_indices(
+    cfg: dict | str | Path,
+    train_fraction: float | None = None,
+    engine: Engine | None = None,
+) -> List[int]:
+    """
+    Args:
+        cfg: The content of a project configuration file, or the path to the project
+            configuration file.
+        train_fraction: If defined, only get the indices of shuffles with this train
+            fraction.
+        engine: If specified, returns only the shuffle indices that were created with
+            the given engine. Can only be used when train_fraction is also defined.
+
+    Returns:
+        the indices of existing shuffles for this iteration of the project, sorted by
+        ascending index
+    """
+    def is_valid_data_stem(stem: str) -> bool:
+        if len(stem) == 0:
+            return False
+        suffix = stem.split("_")[-1]
+        if len(suffix) == 0:
+            return False
+        info = suffix.split("shuffle")
+        if len(info) != 2:
+            return False
+        train_frac, idx = info
+        return (
+            train_frac.isdigit() and idx.isdigit()
+            and (train_fraction is None or int(train_frac) == int(100 * train_fraction))
+        )
+
+    if isinstance(cfg, (str, Path)):
+        cfg = auxiliaryfunctions.read_config(cfg)
+
+    project = Path(cfg["project_path"])
+    trainset_folder = project / auxiliaryfunctions.get_training_set_folder(cfg)
+    if not trainset_folder.exists():
+        return []
+
+    shuffle_indices = [
+        int(p.stem.split("shuffle")[-1])
+        for p in trainset_folder.iterdir()
+        if (
+            p.stem.startswith("Documentation_data")
+            and p.suffix == ".pickle"
+            and is_valid_data_stem(p.stem)
+        )
+    ]
+    if engine is not None:
+        if train_fraction is None:
+            raise ValueError(
+                f"Must select {train_fraction} to filter shuffles by engine"
+            )
+
+        shuffle_indices = [
+            idx for idx in shuffle_indices
+            if (
+                project / auxiliaryfunctions.get_model_folder(
+                    trainFraction=train_fraction,
+                    shuffle=idx,
+                    cfg=cfg,
+                    engine=engine,
+                )
+            ).exists()
+        ]
+
+    return sorted(shuffle_indices)
+
+
+def validate_shuffles(
+    cfg: dict,
+    shuffles: list[int] | None,
+    num_shuffles: int | None,
+    userfeedback: bool,
+) -> list[int]:
+    existing_shuffles = get_existing_shuffle_indices(cfg)
+    if shuffles is None:
+        first_index = 1
+        if len(existing_shuffles) > 0:
+            first_index = existing_shuffles[-1] + 1
+
+        shuffles = range(first_index, num_shuffles + first_index)
+    else:
+        shuffles = [i for i in shuffles if isinstance(i, int)]
+        for shuffle_idx in shuffles:
+            if userfeedback and shuffle_idx in existing_shuffles:
+                raise ValueError(
+                    f"Cannot create shuffle {shuffle_idx} as it already exists - "
+                    f"you must either create the dataset with `userfeedback=False` "
+                    f"or delete the shuffle with index {shuffle_idx} manually (in "
+                    f"`dlc-models`/`dlc-models-pytorch` and in the "
+                    f"`training-datasets` folder) if you want to create a new "
+                    f"shuffle with that index. You can otherwise create a shuffle "
+                    f"with a new index. Existing indices are {existing_shuffles}."
+                )
+
+    return shuffles
 
 
 def create_training_model_comparison(

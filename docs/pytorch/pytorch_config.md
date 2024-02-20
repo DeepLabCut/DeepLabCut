@@ -1,3 +1,4 @@
+(dlc3-pytorch-config)=
 # The PyTorch Configuration file
 
 The `pytorch_config.yaml` file specifies everything about how you'll train a model for a
@@ -10,7 +11,7 @@ You can create "base" configurations using `deeplabcut.create_training_set` or
 
 ### Bottom-Up
 
-There are a few keys define your model and training run:
+There are a few keys which define your model architecture and how it will be trained:
 
 - `batch_size`: the batch size to train with (inference always runs with batch size 1)
 - `data`: the data augmentations you'll apply to images when training (during inference,
@@ -36,7 +37,7 @@ configure how you want your detector to be trained:
 - `data_detector`: the data augmentations to use to train the detector (in the same 
 format as the ones for the pose model)
 
-In this case, the `data` augmentations are applied to the pose model. 
+In this case, the augmentations described in `data` are applied to the pose model. 
 
 ## Data Augmentations
 
@@ -60,6 +61,6 @@ Logs results to Weights & Biases.
 ```yaml
 logger:
  type: 'WandbLogger'
- project_name: 'dlc3-project'
+ project_name: 'my-dlc3-project'
  run_name: 'dekr-w32-shuffle0'
 ```

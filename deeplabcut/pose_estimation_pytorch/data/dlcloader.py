@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import logging
 import os
 import pickle
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 import deeplabcut
+from deeplabcut.compat import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.helper import CombinedPropertyMeta
@@ -44,7 +46,9 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
             lambda self: os.path.join(self.project_root, "config.yaml"),
         ),
         "model_folder": (
-            lambda x: os.path.join(x[0], get_model_folder(x[1], x[2], x[3])),
+            lambda x: os.path.join(
+                x[0], get_model_folder(x[1], x[2], x[3], engine=Engine.PYTORCH)
+            ),
             lambda self: (
                 self.project_root,
                 self.cfg["TrainingFraction"][0],
@@ -54,7 +58,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         ),
         "_datasets_folder": (
             lambda x: os.path.join(
-                x[0], deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(x[1])
+                x[0], deeplabcut.auxiliaryfunctions.get_training_set_folder(x[1])
             ),
             lambda self: (self.project_root, self.cfg),
         ),

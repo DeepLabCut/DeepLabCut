@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from deeplabcut.compat import Engine
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
 )
@@ -208,7 +209,7 @@ def analyze_videos(
     project_path = Path(cfg["project_path"])
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix
+        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
     )
     model_path = _get_model_path(model_folder, snapshotindex, cfg)
     model_epochs = int(model_path.stem.split("-")[-1])
@@ -217,6 +218,7 @@ def analyze_videos(
         shuffle,
         train_fraction,
         trainingsiterations=model_epochs,
+        engine=Engine.PYTORCH,
         modelprefix=modelprefix,
     )
     # Get general project parameters
@@ -295,8 +297,16 @@ def analyze_videos(
                 output_data, metadata, str(output_h5)
             )
 
+            pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+            pred_unique_bodyparts = None
+            if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
+                pred_unique_bodyparts = np.stack(
+                    [p["unique_bodyparts"] for p in predictions]
+                )
+
             df = create_df_from_prediction(
-                predictions=predictions,
+                pred_bodyparts=pred_bodyparts,
+                pred_unique_bodyparts=pred_unique_bodyparts,
                 cfg=cfg,
                 dlc_scorer=dlc_scorer,
                 output_path=output_path,
@@ -305,19 +315,21 @@ def analyze_videos(
             results.append((str(video), df))
 
             if cfg["multianimalproject"] and len(individuals) > 1:
-                bodypart_identities = None
+                pred_bodypart_ids = None
                 if with_identity:
                     # reshape from (num_assemblies, num_bpts, num_individuals)
                     # to (num_assemblies, num_bpts) by taking the maximum
                     # likelihood individual for each bodypart
-                    bodypart_identities = [np.argmax(p["identity_scores"], axis=2) for p in predictions]
+                    pred_bodypart_ids = np.stack(
+                        [np.argmax(p["identity_scores"], axis=2) for p in predictions]
+                    )
 
                 _save_assemblies(
                     output_path,
                     output_prefix,
-                    bodyparts,
-                    bodypart_identities,
-                    unique_bodyparts,
+                    pred_bodyparts,
+                    pred_bodypart_ids,
+                    pred_unique_bodyparts,
                     with_identity,
                 )
                 if auto_track:
@@ -344,7 +356,8 @@ def analyze_videos(
 
 
 def create_df_from_prediction(
-    predictions: list[dict[str, np.ndarray]],
+    pred_bodyparts: np.ndarray,
+    pred_unique_bodyparts: np.ndarray,
     dlc_scorer: str,
     cfg: dict,
     output_path: str | Path,
@@ -354,12 +367,6 @@ def create_df_from_prediction(
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
     print(f"Saving results in {output_h5} and {output_pkl}")
-    bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-    unique_bodyparts = None
-
-    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
-
     cols = [
         [dlc_scorer],
         list(auxiliaryfunctions.get_bodyparts(cfg)),
@@ -373,13 +380,13 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
-    bodyparts = bodyparts[:, :n_individuals]
+    pred_bodyparts = pred_bodyparts[:, :n_individuals]
     df = pd.DataFrame(
-        bodyparts.reshape((len(bodyparts), -1)),
+        pred_bodyparts.reshape((len(pred_bodyparts), -1)),
         columns=results_df_index,
-        index=range(len(bodyparts)),
+        index=range(len(pred_bodyparts)),
     )
-    if unique_bodyparts is not None:
+    if pred_unique_bodyparts is not None:
         coordinate_labels_unique = ["x", "y", "likelihood"]
         results_unique_df_index = pd.MultiIndex.from_product(
             [
@@ -390,9 +397,9 @@ def create_df_from_prediction(
             names=["scorer", "bodyparts", "coords"],
         )
         df_u = pd.DataFrame(
-            unique_bodyparts.reshape((len(unique_bodyparts), -1)),
+            pred_unique_bodyparts.reshape((len(pred_unique_bodyparts), -1)),
             columns=results_unique_df_index,
-            index=range(len(unique_bodyparts)),
+            index=range(len(pred_unique_bodyparts)),
         )
         df = df.join(df_u, how="outer")
 
@@ -403,16 +410,16 @@ def create_df_from_prediction(
 def _save_assemblies(
     output_path: Path,
     output_prefix: str,
-    bodyparts: list,
-    bodypart_identities: list,
-    unique_bodyparts: list,
+    pred_bodyparts: np.ndarray,
+    pred_bodypart_ids: np.ndarray,
+    pred_unique_bodyparts: np.ndarray,
     with_identity: bool,
 ) -> None:
     output_ass = output_path / f"{output_prefix}_assemblies.pickle"
     assemblies = {}
-    for i, bpt in enumerate(bodyparts):
+    for i, bpt in enumerate(pred_bodyparts):
         if with_identity:
-            extra_column = np.expand_dims(bodypart_identities[i], axis=-1)
+            extra_column = np.expand_dims(pred_bodypart_ids[i], axis=-1)
         else:
             extra_column = np.full(
                 (bpt.shape[0], bpt.shape[1], 1),
@@ -422,9 +429,9 @@ def _save_assemblies(
         ass = np.concatenate((bpt, extra_column), axis=-1)
         assemblies[i] = ass
 
-    if unique_bodyparts is not None:
+    if pred_unique_bodyparts is not None:
         assemblies["single"] = {}
-        for i, unique_bpt in enumerate(unique_bodyparts):
+        for i, unique_bpt in enumerate(pred_unique_bodyparts):
             extra_column = np.full((unique_bpt.shape[1], 1), -1.0, dtype=np.float32)
             ass = np.concatenate((unique_bpt[0], extra_column), axis=-1)
             assemblies["single"][i] = ass

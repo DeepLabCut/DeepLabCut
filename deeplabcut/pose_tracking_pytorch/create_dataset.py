@@ -13,7 +13,7 @@ import numpy as np
 import os
 import pickle
 import shelve
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.core import trackingutils
 from deeplabcut.refine_training_dataset.stitch import TrackletStitcher
 from pathlib import Path
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space

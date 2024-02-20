@@ -23,7 +23,7 @@ from collections import defaultdict
 import deeplabcut
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
-from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import (
+from deeplabcut.core.trackingutils import (
     calc_iou,
     TRACK_METHODS,
 )

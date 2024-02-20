@@ -12,7 +12,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+from deeplabcut.core.inferenceutils import (
     calc_object_keypoint_similarity,
 )
 

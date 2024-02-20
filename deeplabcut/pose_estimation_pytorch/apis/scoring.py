@@ -14,15 +14,13 @@ import numpy as np
 import pickle
 from sklearn.metrics import accuracy_score
 
-from deeplabcut.pose_estimation_pytorch.post_processing import (
-    rmse_match_prediction_to_gt,
-)
-from deeplabcut.pose_estimation_tensorflow.core.evaluate_multianimal import (
-    _find_closest_neighbors,
-)
-from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import (
+from deeplabcut.core.crossvalutils import find_closest_neighbors
+from deeplabcut.core.inferenceutils import (
     Assembly,
     evaluate_assembly,
+)
+from deeplabcut.pose_estimation_pytorch.post_processing import (
+    rmse_match_prediction_to_gt,
 )
 from deeplabcut.utils.auxiliaryfunctions import read_config
 
@@ -262,7 +260,7 @@ def compute_identity_scores(
             # assign ground truth keypoints to the closest prediction, so the ID score
             # is the closest possible to the ID score computed with "ground truth"
             indices_gt = np.flatnonzero(np.all(~np.isnan(bpt_gt), axis=1))
-            neighbors = _find_closest_neighbors(bpt_gt[indices_gt], bpt_pred, k=3)
+            neighbors = find_closest_neighbors(bpt_gt[indices_gt], bpt_pred, k=3)
             found = neighbors != -1
             indices = np.flatnonzero(all_bpts == bpt)
             # Get the predicted identity of each bodypart by taking the argmax
@@ -308,7 +306,7 @@ def _match_identity_preds_to_gt(
                 # Pick the predictions closest to ground truth,
                 # rather than the ones the model has most confident in
                 xy_gt_values = xy_gt.iloc[inds_gt].values
-                neighbors = _find_closest_neighbors(xy_gt_values, xy, k=3)
+                neighbors = find_closest_neighbors(xy_gt_values, xy, k=3)
                 found = neighbors != -1
                 inds = np.flatnonzero(all_bpts == bpt)
                 id_ = dict_["prediction"]["identity"][n_joint]

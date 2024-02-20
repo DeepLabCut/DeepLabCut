@@ -451,7 +451,10 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        if config.endswith("config.yaml"):
+        if (
+            config.endswith("config.yaml")
+            and not config.endswith("pytorch_config.yaml")
+        ):
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:

@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
+from deeplabcut.compat import Engine
 from deeplabcut.pose_estimation_pytorch.runners.base import Task
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -39,14 +40,14 @@ def verify_paths(
 
     Example:
     Inputs:
-        paths = ['proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-5.pt',
-                'proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-10.pt',
-                'proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-1.pt']
+        paths = ['proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-5.pt',
+                'proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-10.pt',
+                'proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-1.pt']
         pattern = r"^(.*)?snapshot-(\d+)\.pt$"
     Output:
-        valid_paths = ['proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-1.pt',
-                        'proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-5.pt',
-                        'proj/dlc-models/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-10.pt']
+        valid_paths = ['proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-1.pt',
+                        'proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-5.pt',
+                        'proj/dlc-models-torch/iteration-0/behaviordate-trainset95shuffle1/train/snapshot-10.pt']
     """
     valid_paths = [x for x in paths if re.match(pattern, x)]
     invalid_paths = [x for x in paths if x not in valid_paths]
@@ -185,7 +186,12 @@ def get_dlc_scorer(
     snapshot_epochs = int(snapshot.split("-")[-1])
 
     (dlc_scorer, dlc_scorer_legacy) = auxiliaryfunctions.get_scorer_name(
-        test_cfg, shuffle, train_fraction, snapshot_epochs, modelprefix=model_prefix
+        test_cfg,
+        shuffle,
+        train_fraction,
+        trainingsiterations=snapshot_epochs,
+        engine=Engine.PYTORCH,
+        modelprefix=model_prefix,
     )
 
     return dlc_scorer, dlc_scorer_legacy
@@ -309,7 +315,7 @@ def get_results_filename(
             dlc_scorerlegacy = ""
             model_path = "proj_name/dlc-models/iteration-0/behaviordate-trainset95shuffle1/"
         Output:
-            'proj_name/evaluation-results/iteration-0/behaviordate-trainset95shuffle1/DLC_dekr_w32_behaviordateshuffle1_1-snapshot-10.h5'
+            'proj_name/evaluation-results-torch/iteration-0/behaviordate-trainset95shuffle1/DLC_dekr_w32_behaviordateshuffle1_1-snapshot-10.h5'
     """
     (_, results_filename, _) = auxiliaryfunctions.check_if_not_evaluated(
         evaluation_folder, dlc_scorer, dlc_scorerlegacy, os.path.basename(model_path)
@@ -348,7 +354,11 @@ def get_model_folder(
         project_path,
         str(
             auxiliaryfunctions.get_model_folder(
-                train_fraction, shuffle, cfg, modelprefix=model_prefix
+                train_fraction,
+                shuffle,
+                cfg,
+                engine=Engine.PYTORCH,
+                modelprefix=model_prefix,
             )
         ),
     )
@@ -404,13 +414,17 @@ def get_evaluation_folder(
             model_prefix = ""
             test_cfg = dict from auxiliaryfunctions.read_cfg(configpath)
         Output:
-            'proj_name/evaluation-results/iteration-0/behaviordate-trainset95shuffle1'
+            'proj_name/evaluation-results-torch/iteration-0/behaviordate-trainset95shuffle1'
     """
     evaluation_folder = os.path.join(
         test_cfg["project_path"],
         str(
             auxiliaryfunctions.get_evaluation_folder(
-                train_fraction, shuffle, test_cfg, modelprefix=model_prefix
+                train_fraction,
+                shuffle,
+                test_cfg,
+                engine=Engine.PYTORCH,
+                modelprefix=model_prefix,
             )
         ),
     )

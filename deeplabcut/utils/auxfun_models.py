@@ -19,7 +19,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import tensorflow as tf
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -158,6 +157,8 @@ def download_model(modelname, target_dir):
 
 
 def set_visible_devices(gputouse: int):
+    import tensorflow as tf
+
     physical_devices = tf.config.list_physical_devices("GPU")
     n_devices = len(physical_devices)
     if gputouse >= n_devices:

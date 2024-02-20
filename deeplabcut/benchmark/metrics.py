@@ -29,7 +29,7 @@ import pandas as pd
 
 import deeplabcut.benchmark.utils
 from deeplabcut.pose_estimation_tensorflow.core import evaluate_multianimal
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 

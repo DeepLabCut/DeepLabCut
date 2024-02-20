@@ -30,12 +30,19 @@ def test_make_single_animal_config(bodyparts: list[str], net_type: str):
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
     # check that the bodypart head has locref and heatmaps and the correct output shapes
     bodypart_head = pytorch_pose_config["model"]["heads"]["bodypart"]
-    for name, output_channels in [
-        ("heatmap_config", len(bodyparts)),
-        ("locref_config", 2 * len(bodyparts)),
-    ]:
+
+    outputs = [("heatmap_config", len(bodyparts))]
+    if bodypart_head["predictor"]["location_refinement"]:
+        outputs += [("locref_config", 2 * len(bodyparts))]
+
+    for name, output_channels in outputs:
+        head = bodypart_head[name]
+        if "final_conv" in head:
+            actual_output_channels = head["final_conv"]["out_channels"]
+        else:
+            actual_output_channels = head["channels"][-1]
         assert name in bodypart_head
-        assert bodypart_head[name]["channels"][-1] == output_channels
+        assert actual_output_channels == output_channels
 
 
 @pytest.mark.parametrize("multianimal", [True])

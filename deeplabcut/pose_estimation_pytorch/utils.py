@@ -21,9 +21,7 @@ import torch
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     read_image_shape_fast,
 )
-from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import (
-    calc_bboxes_from_keypoints,
-)
+from deeplabcut.core.trackingutils import calc_bboxes_from_keypoints
 from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
 # Shaokai's function

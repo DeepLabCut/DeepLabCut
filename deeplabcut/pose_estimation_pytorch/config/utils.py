@@ -148,17 +148,17 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
     return config
 
 
-def load_config_dir_and_base_config() -> tuple[Path, dict]:
-    """
-    Returns:
-        the Path to the folder containing the "configs" for PyTorch DeepLabCut
-        the base configuration for all PyTorch DeepLabCut models
-    """
+def get_config_folder_path() -> Path:
+    """Returns: the Path to the folder containing the "configs" for PyTorch DeepLabCut"""
     dlc_parent_path = Path(auxiliaryfunctions.get_deeplabcut_path())
-    configs_dir = dlc_parent_path / "pose_estimation_pytorch" / "config"
-    base_dir = configs_dir / "base"
+    return dlc_parent_path / "pose_estimation_pytorch" / "config"
+
+
+def load_base_config(config_folder_path: Path) -> dict:
+    """Returns: the base configuration for all PyTorch DeepLabCut models"""
+    base_dir = config_folder_path / "base"
     base_config = read_config_as_dict(base_dir / "base.yaml")
-    return configs_dir, base_config
+    return base_config
 
 
 def load_backbones(configs_dir: Path) -> list[str]:
@@ -210,3 +210,25 @@ def pretty_print_config(
             pretty_print_config(v, indent + 2)
         else:
             print_fn(f"{indent * ' '}{k}: {v}")
+
+
+def available_models() -> list[str]:
+    """Returns: the possible variants of models that can be used"""
+    configs_folder_path = get_config_folder_path()
+    backbones = load_backbones(configs_folder_path)
+    models = set()
+    for backbone in backbones:
+        models.add(backbone)
+        models.add("top_down_" + backbone)
+
+    other_architectures = [
+        p
+        for p in configs_folder_path.iterdir()
+        if p.is_dir() and not p.name in ("backbones", "base")
+    ]
+    for folder in other_architectures:
+        variants = [p.stem for p in folder.iterdir() if p.suffix == ".yaml"]
+        for variant in variants:
+            models.add(variant)
+
+    return list(sorted(models))

@@ -10,8 +10,7 @@
 #
 import numpy as np
 import pickle
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
-
+from deeplabcut.core import crossvalutils
 
 BEST_GRAPH = [14, 15, 16, 11, 22, 31, 61, 7, 59, 62, 64]
 BEST_GRAPH_MONTBLANC = [1, 0, 2, 5, 4, 3]

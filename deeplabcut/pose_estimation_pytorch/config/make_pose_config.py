@@ -15,8 +15,9 @@ import copy
 from pathlib import Path
 
 from deeplabcut.pose_estimation_pytorch.config.utils import (
+    get_config_folder_path,
     load_backbones,
-    load_config_dir_and_base_config,
+    load_base_config,
     read_config_as_dict,
     replace_default_values,
     update_config,
@@ -69,8 +70,10 @@ def make_pytorch_pose_config(
     if net_type is None:
         net_type = project_config.get("default_net_type", "resnet_50")
 
-    configs_dir, pose_config = load_config_dir_and_base_config()
+    configs_dir = get_config_folder_path()
+    pose_config = load_base_config(configs_dir)
     pose_config = add_metadata(project_config, pose_config, pose_config_path)
+    pose_config["net_type"] = net_type
 
     backbones = load_backbones(configs_dir)
     if net_type in backbones:

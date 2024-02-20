@@ -32,7 +32,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
+from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
