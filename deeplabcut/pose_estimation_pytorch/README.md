@@ -1,26 +1,26 @@
 # PyTorch DeepLabCut API
 
-##### Structure of the repo:
+This is written primarily for maintainers and expert users. It details the logic for the DLC3.0 pytorch code. It is a WIP and will be expanded before the full release in 2024. -#teamDLC Dec 2023
 
-Like any ML model this repo contains: models (architectures), solvers (losses and optimizers), and data (data loaders).
+**Structure of the pytorch DLC code:**
+
+This repo contains: models (architectures), solvers (losses and optimizers), and data (data loaders).
 
 [Models](#models)   
 [Solvers](#solvers)   
 [Data](#data)  
-[APIs](#apis)   
+[API](#API)   
 
 ## Models
 
 - [models](models):
 The `deeplabcut.pose_estimations_pytorch.models` package contains all components related to building a model with `backbone`, `neck` (optional) and `head`.
 
-We provide sota models such as HRNet, BUCTD, TransPose, ...
+We provide state-of-the-art models such as DLCRNet, HRNet, BUCTD, TransPose, ... more are coming!
 
-If you want to add a novel model, you have to divide it into backbone, neck and head. Often neck will be just the identity function.
+If you want to add a novel model, you need to divide it into a model backbone, neck and head. Often the 'neck' will be just the identity function.
 
 For instance, a [standard pose estimation HRNet](https://github.com/HRNet/HRNet-Human-Pose-Estimation) consists of HRNet backbone, an identity neck and a deconvolution head (Simple Head).
-
-
 
 
 ## Solvers
@@ -31,7 +31,7 @@ For instance, a [standard pose estimation HRNet](https://github.com/HRNet/HRNet-
 
 - [data](data/project.py#L7):
 The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch dataset creation and test/train splitting.
-    - `Project` class provides train and test splitting and converts dataset to required format. For instance, to [COCO]() format.
+    - `Project` class provides train and test splitting and converts dataset to required format. For instance, to [COCO](https://medium.com/@manuktiwary/coco-format-what-and-how-5c7d22cf5301) format.
 
     Example:
 
@@ -73,8 +73,10 @@ The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pyt
     > By now supports only [albumentations](https://albumentations.ai), will be extended in the future.
 
 
-## Apis
+## API
 
-- [apis](apis): The `deeplabcut.pose_estimations_pytorch.apis` contains functionalities for training and testing as well as the corresponding configuration file [config.yaml](apis/config.yaml).
+- [API](API): The `deeplabcut.pose_estimations_pytorch.apis` contains functionalities for training and testing as well as the corresponding configuration file [config.yaml](apis/config.yaml).
 
 ## Registry
+
+- WIP

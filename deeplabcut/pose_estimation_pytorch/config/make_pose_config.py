@@ -110,7 +110,7 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        model_cfg = add_detector(configs_dir, model_cfg, num_individuals=len(individuals))
+        model_cfg = add_detector(configs_dir, model_cfg, len(individuals))
 
     # add the model to the config
     pose_config = update_config(pose_config, model_cfg)
@@ -211,13 +211,12 @@ def create_backbone_with_heatmap_model(
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     model_config["method"] = "bu"
+    bodypart_head_name = "head_bodyparts.yaml"
     if top_down:
         model_config["method"] = "td"
+        bodypart_head_name = "head_topdown.yaml"
 
     # add a bodypart head
-    bodypart_head_name = "head_bodyparts.yaml"
-    if "hrnet" in net_type.lower():
-        bodypart_head_name = "head_hrnet.yaml"
     bodypart_head_config = read_config_as_dict(configs_dir / "base" / bodypart_head_name)
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(

@@ -17,6 +17,6 @@ detector:
     type: DetectorRunner
     max_individuals: "num_individuals"
   batch_size: 1
-  epochs: 500
-  save_epochs: 100
+  epochs: 250
+  save_epochs: 50
   display_iters: 500

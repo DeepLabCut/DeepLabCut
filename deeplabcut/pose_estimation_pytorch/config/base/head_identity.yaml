@@ -15,11 +15,8 @@ criterion:
 heatmap_config:
   channels:
   - "backbone_output_channels"
-  - "backbone_output_channels // 2"
   - "num_individuals"
   kernel_size:
   - 3
-  - 3
   strides:
-  - 2
   - 2

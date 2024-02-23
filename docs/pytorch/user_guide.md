@@ -67,7 +67,8 @@ You can configure models using the `pytorch_config.yaml` file, as described
 DeepLabCut 3.0 as you did for Tensorflow models (`deeplabcut.create_training_dataset`
 and `deeplabcut.create_training_model_comparison`).
 
-You can see a list of supported
+More information about the different PyTorch model architectures available in DeepLabCut
+is available [here](dlc3-pytorch-config). You can see a list of supported 
 architectures/variants by using:
 
 ```python
