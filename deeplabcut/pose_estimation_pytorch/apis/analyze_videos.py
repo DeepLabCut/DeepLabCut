@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
 )

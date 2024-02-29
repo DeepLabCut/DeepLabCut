@@ -25,11 +25,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from deeplabcut.compat import (
-    Engine,
-    get_project_engine,
-    return_train_network_path,
-)
+import deeplabcut.compat as compat
+import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -893,7 +891,7 @@ def create_training_dataset(
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
         if engine is None:
-            engine = get_project_engine(cfg)
+            engine = compat.get_project_engine(cfg)
 
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
@@ -902,6 +900,11 @@ def create_training_dataset(
         auxiliaryfunctions.attempt_to_make_folder(
             Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
         )
+
+        # Create the trainset metadata file, if it doesn't yet exist
+        if not metadata.TrainingDatasetMetadata.path(cfg).exists():
+            trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)
+            trainset_metadata.save()
 
         Data = merge_annotateddatasets(
             cfg,
@@ -1009,7 +1012,7 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = return_train_network_path(
+                    trainposeconfigfile, _, _ = compat.return_train_network_path(
                         config,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -1059,6 +1062,15 @@ def create_training_dataset(
                     trainIndices,
                     testIndices,
                     trainFraction,
+                )
+                metadata.update_metadata(
+                    cfg=cfg,
+                    train_fraction=trainFraction,
+                    shuffle=shuffle,
+                    engine=engine,
+                    train_indices=trainIndices,
+                    test_indices=testIndices,
+                    overwrite=not userfeedback,
                 )
 
                 ################################################################################

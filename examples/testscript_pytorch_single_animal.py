@@ -1,12 +1,14 @@
 """ Testscript for single animal PyTorch projects """
+import shutil
 import time
 from pathlib import Path
 from typing import Any
 
 import deeplabcut
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def run(
@@ -23,13 +25,15 @@ def run(
     times = [time.time()]
     log_step(f"Testing with net type {net_type}")
     log_step("Creating the training dataset")
-    deeplabcut.create_training_dataset(str(config_path), net_type=net_type, engine=engine)
+    deeplabcut.create_training_dataset(
+        str(config_path), net_type=net_type, engine=engine
+    )
     existing_shuffles = get_existing_shuffle_indices(
         config_path, train_fraction=train_fraction, engine=engine
     )
     shuffle_index = existing_shuffles[-1]
 
-    log_step(f"Starting training for train_frac {train_fraction}, shuffle {shuffle_index}")
+    log_step(f"Starting training for frac={train_fraction}, shuffle={shuffle_index}")
     deeplabcut.train_network(
         config=str(config_path),
         shuffle=shuffle_index,
@@ -72,6 +76,26 @@ def run(
         )
 
 
+def copy_project_for_test() -> Path:
+    data_path = Path.cwd() / "openfield-Pranav-2018-10-30"
+    test_path = Path.cwd() / "pytorch-testscript1234-openfield-Pranav-2018-10-30"
+    if not test_path.exists():
+        shutil.copytree(data_path, test_path)
+
+    project_config = auxiliaryfunctions.read_config(str(test_path / "config.yaml"))
+    videos = list(project_config["video_sets"].keys())
+    video = videos[0]
+    crop = project_config["video_sets"][video]
+    project_config["video_sets"] = {str(test_path / "videos" / "m3v1mp4.mp4"): crop}
+    auxiliaryfunctions.write_config(str(test_path / "config.yaml"), project_config)
+    return test_path
+
+
+def cleanup(test_path: Path) -> None:
+    if test_path.exists():
+        shutil.rmtree(test_path)
+
+
 def main(
     net_types: list[str],
     epochs: int = 1,
@@ -81,34 +105,37 @@ def main(
     create_labeled_videos: bool = False,
 ) -> None:
     engine = Engine.PYTORCH
-    project_path = Path.cwd() / "openfield-Pranav-2018-10-30"
-    config_path = project_path / "config.yaml"
-    cfg = af.read_config(config_path)
-    trainset_index = 0
-    train_frac = cfg["TrainingFraction"][trainset_index]
-    for net_type in net_types:
-        try:
-            run(
-                config_path=config_path,
-                train_fraction=train_frac,
-                trainset_index=trainset_index,
-                net_type=net_type,
-                videos=[str(project_path / "videos" / "m3v1mp4.mp4")],
-                device=device,
-                train_kwargs=dict(
-                    display_iters=1,
-                    epochs=epochs,
-                    save_epochs=save_epochs,
-                    batch_size=batch_size,
-                ),
-                engine=engine,
-                create_labeled_videos=create_labeled_videos,
-            )
-        except Exception as err:
-            log_step(f"FAILED TO RUN {net_type}")
-            log_step(str(err))
-            log_step("Continuing to next model")
-            raise err
+    project_path = copy_project_for_test()
+    try:
+        config_path = project_path / "config.yaml"
+        cfg = af.read_config(config_path)
+        trainset_index = 0
+        train_frac = cfg["TrainingFraction"][trainset_index]
+        for net_type in net_types:
+            try:
+                run(
+                    config_path=config_path,
+                    train_fraction=train_frac,
+                    trainset_index=trainset_index,
+                    net_type=net_type,
+                    videos=[str(project_path / "videos" / "m3v1mp4.mp4")],
+                    device=device,
+                    train_kwargs=dict(
+                        display_iters=1,
+                        epochs=epochs,
+                        save_epochs=save_epochs,
+                        batch_size=batch_size,
+                    ),
+                    engine=engine,
+                    create_labeled_videos=create_labeled_videos,
+                )
+            except Exception as err:
+                log_step(f"FAILED TO RUN {net_type}")
+                log_step(str(err))
+                log_step("Continuing to next model")
+                raise err
+    finally:
+        cleanup(project_path)
 
 
 def log_step(message: Any) -> None:

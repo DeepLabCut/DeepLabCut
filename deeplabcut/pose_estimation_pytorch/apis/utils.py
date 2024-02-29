@@ -21,7 +21,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     build_bottom_up_postprocessor,

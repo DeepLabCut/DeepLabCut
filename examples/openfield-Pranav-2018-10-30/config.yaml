@@ -1,15 +1,20 @@
-    # Project definitions (do not edit)
+# Project definitions (do not edit)
 Task: openfield
 scorer: Pranav
 date: Oct30
 multianimalproject:
 identity:
 
-    # Project path (change when moving around)
-project_path: 
-  /Users/niels/Documents/upamathis/repos/DLCdev/examples/openfield-Pranav-2018-10-30
 
-    # Annotation data set configuration (and individual video cropping parameters)
+# Project path (change when moving around)
+project_path:
+
+
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+
+
+# Annotation data set configuration (and individual video cropping parameters)
 video_sets:
   WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
     crop: 0, 640, 0, 480
@@ -20,12 +25,13 @@ bodyparts:
 - tailbase
 
 
-    # Fraction of video to start/stop when extracting frames for labeling/refinement
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 start: 0
 stop: 1
 numframes2pick: 20
 
-    # Plotting configuration
+
+# Plotting configuration
 skeleton: []
 skeleton_color: black
 pcutoff: 0.4
@@ -33,7 +39,8 @@ dotsize: 8
 alphavalue: 0.7
 colormap: jet
 
-    # Training,Evaluation and Analysis configuration
+
+# Training,Evaluation and Analysis configuration
 TrainingFraction:
 - 0.95
 iteration: 0
@@ -42,15 +49,17 @@ default_augmenter: imgaug
 snapshotindex: -1
 batch_size: 4
 
-    # Cropping Parameters (for analysis and outlier frame detection)
+
+# Cropping Parameters (for analysis and outlier frame detection)
 cropping: false
-    #if cropping is true for analysis, then set the values here:
+#if cropping is true for analysis, then set the values here:
 x1: 0
 x2: 640
 y1: 277
 y2: 624
 
-    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 - 50
 - 50

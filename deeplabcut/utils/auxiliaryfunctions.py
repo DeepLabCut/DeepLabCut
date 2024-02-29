@@ -30,8 +30,9 @@ import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
 
-import deeplabcut.compat as compat
+from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
@@ -499,7 +500,7 @@ def get_video_list(filename, videopath, videtype):
 
 
 ## Various functions to get filenames, foldernames etc. based on configuration parameters.
-def get_training_set_folder(cfg):
+def get_training_set_folder(cfg: dict) -> Path:
     """Training Set folder for config file based on parameters"""
     Task = cfg["Task"]
     date = cfg["date"]
@@ -538,7 +539,7 @@ def get_model_folder(
     trainFraction: float,
     shuffle: int,
     cfg: dict,
-    engine: compat.Engine = compat.Engine.TF,
+    engine: Engine = Engine.TF,
     modelprefix: str = "",
 ) -> Path:
     """
@@ -568,7 +569,7 @@ def get_evaluation_folder(
     trainFraction,
     shuffle,
     cfg,
-    engine: compat.Engine = compat.Engine.TF,
+    engine: Engine = Engine.TF,
     modelprefix="",
 ):
     """
@@ -646,7 +647,7 @@ def get_scorer_name(
     cfg: dict,
     shuffle: int,
     trainFraction: float,
-    engine: compat.Engine | None = None,
+    engine: Engine | None = None,
     trainingsiterations: str | int = "unknown",
     modelprefix: str = "",
 ):
@@ -655,7 +656,7 @@ def get_scorer_name(
     Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
     if engine is None:
-        engine = compat.get_shuffle_engine(
+        engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
             shuffle=shuffle,
@@ -699,7 +700,7 @@ def get_scorer_name(
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-    if engine == compat.Engine.PYTORCH:
+    if engine == Engine.PYTORCH:
         netname = "".join([p.capitalize() for p in dlc_cfg["net_type"].split("_")])
     elif "resnet" in dlc_cfg["net_type"]:
         if dlc_cfg.get("multi_stage", False):

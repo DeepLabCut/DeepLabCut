@@ -11,7 +11,7 @@ import deeplabcut as dlc
 import deeplabcut.pose_estimation_pytorch.apis.utils as api_utils
 import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 
 
 @dataclass

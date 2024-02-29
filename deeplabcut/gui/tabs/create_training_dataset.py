@@ -15,8 +15,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
 import deeplabcut
-from deeplabcut import compat
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
+from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -65,7 +66,7 @@ class CreateTrainingDataset(DefaultTab):
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
 
-        if self.root.project_engine == compat.Engine.TF:
+        if self.root.project_engine == Engine.TF:
             nets = DLCParams.NNETS.copy()
             if not self.root.is_multianimal:
                 nets.remove("dlcrnet_ms5")
@@ -201,7 +202,7 @@ class CreateTrainingDataset(DefaultTab):
             whether the user confirmed overwriting the shuffle
         """
         try:
-            engine = compat.get_shuffle_engine(
+            engine = get_shuffle_engine(
                 self.root.cfg, self.root.trainingset_index, shuffle
             )
             engine_str = f" (with engine '{engine.aliases[0]}')"

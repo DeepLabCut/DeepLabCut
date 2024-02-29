@@ -18,7 +18,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 import deeplabcut
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.helper import CombinedPropertyMeta

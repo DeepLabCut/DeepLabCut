@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch as dlc
 import deeplabcut.utils.auxiliaryfunctions as dlc_auxfun
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import create_training_dataset
 
 

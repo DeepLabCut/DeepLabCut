@@ -19,6 +19,7 @@ import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION, compat
+from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
@@ -152,7 +153,7 @@ class MainWindow(QMainWindow):
         return cfg
 
     @property
-    def project_engine(self) -> compat.Engine:
+    def project_engine(self) -> Engine:
         return compat.get_project_engine(self.cfg)
 
     @property

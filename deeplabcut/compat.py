@@ -1,46 +1,24 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """Compatibility file for methods available with either PyTorch or Tensorflow"""
 from __future__ import annotations
 
-import logging
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Iterable
 
 import numpy as np
 from ruamel.yaml import YAML
 
-
-@dataclass(frozen=True)
-class EngineDataMixin:
-    aliases: tuple[str]
-    model_folder_name: str
-    pose_cfg_name: str
-    results_folder_name: str
-
-
-class Engine(EngineDataMixin, Enum):
-    PYTORCH = (
-        ("pytorch", "torch"),
-        "dlc-models-pytorch",
-        "pytorch_config.yaml",
-        "evaluation-results-pytorch",
-    )
-    TF = (
-        ("tensorflow", "tf"),
-        "dlc-models",
-        "pose_cfg.yaml",
-        "evaluation-results",
-    )
-
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, str):
-            for member in cls:
-                if value.lower() in member.aliases:
-                    return member
-        return None
-
+from deeplabcut.core.engine import Engine
+from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
 DEFAULT_ENGINE = Engine.PYTORCH
 
@@ -59,58 +37,6 @@ def get_project_engine(cfg: dict) -> Engine:
     return DEFAULT_ENGINE
 
 
-def get_shuffle_engine(
-    cfg: dict,
-    trainingsetindex: int,
-    shuffle: int,
-    modelprefix: str = "",
-) -> Engine:
-    """
-    Args:
-        cfg: the project configuration file
-        trainingsetindex: the training set index used
-        shuffle: the shuffle for which to get the engine
-        modelprefix: the added prefix
-
-    Returns:
-        the engine that the shuffle was created with
-
-    Raises:
-        ValueError if the engine for the shuffle cannot be determined or the shuffle
-        doesn't exist
-    """
-    project_path = Path(cfg["project_path"])
-    train_frac = int(100 * cfg["TrainingFraction"][trainingsetindex])
-    shuffle_name = f"{cfg['Task']}{cfg['date']}-trainset{train_frac}shuffle{shuffle}"
-
-    found_engines = set()
-    for engine in Engine:
-        models_root = project_path / modelprefix / engine.model_folder_name
-        train_folder = models_root / f"iteration-{cfg['iteration']}" / shuffle_name
-        if train_folder.exists():
-            found_engines.add(engine)
-
-    if len(found_engines) == 1:
-        return found_engines.pop()
-    elif len(found_engines) > 1:
-        logging.warning(
-            "There are multiple engines with model configurations defined for "
-            f"train_frac={train_frac} and shuffle={shuffle}: {found_engines}"
-        )
-        if DEFAULT_ENGINE in found_engines:
-            logging.warning(f" -> using the default engine: {DEFAULT_ENGINE}")
-            return DEFAULT_ENGINE
-        else:
-            selected_engine = found_engines.pop()
-            logging.warning(f" -> using a random engine: {selected_engine}")
-            return selected_engine
-
-    raise ValueError(
-        f"Could not get the engine for the shuffle {shuffle_name}. Could not find a "
-        f"folder for any engine."
-    )
-
-
 def train_network(
     config: str,
     shuffle: int = 1,
@@ -124,14 +50,15 @@ def train_network(
     autotune: bool = False,
     keepdeconvweights: bool = True,
     modelprefix: str = "",
+    engine: Engine | None = None,
     **torch_kwargs,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import train_network
@@ -209,29 +136,31 @@ def evaluate_network(
     rescale: bool = False,
     modelprefix: str = "",
     per_keypoint_evaluation: bool = False,
+    engine: Engine | None = None,
     **torch_kwargs,
 ):
-    cfg = _load_config(config)
-    engines = set()
-    for shuffle in Shuffles:
-        engines.add(
-            get_shuffle_engine(
-                cfg,
-                trainingsetindex=trainingsetindex,
-                shuffle=shuffle,
-                modelprefix=modelprefix,
+    if engine is None:
+        cfg = _load_config(config)
+        engines = set()
+        for shuffle in Shuffles:
+            engines.add(
+                get_shuffle_engine(
+                    cfg,
+                    trainingsetindex=trainingsetindex,
+                    shuffle=shuffle,
+                    modelprefix=modelprefix,
+                )
             )
-        )
-    if len(engines) == 0:
-        raise ValueError(
-            f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})"
-        )
-    elif len(engines) > 1:
-        raise ValueError(
-            f"All shuffles must have the same engine (found {list(engines)})"
-        )
+        if len(engines) == 0:
+            raise ValueError(
+                f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})"
+            )
+        elif len(engines) > 1:
+            raise ValueError(
+                f"All shuffles must have the same engine (found {list(engines)})"
+            )
+        engine = engines.pop()
 
-    engine = engines.pop()
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import evaluate_network
         return evaluate_network(
@@ -273,13 +202,15 @@ def return_evaluate_network_data(
     show_errors: bool = True,
     modelprefix: str = "",
     returnjustfns: bool = True,
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
@@ -322,14 +253,16 @@ def analyze_videos(
     calibrate: bool = False,
     identity_only: bool = False,
     use_openvino: str | None = None,
+    engine: Engine | None = None,
     **torch_kwargs,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_videos
@@ -404,13 +337,15 @@ def create_tracking_dataset(
     modelprefix: str = "",
     robust_nframes: bool = False,
     n_triplets: int = 1000,
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
@@ -445,13 +380,15 @@ def analyze_time_lapse_frames(
     gputouse: int | None = None,
     save_as_csv: bool = False,
     modelprefix: str = "",
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_time_lapse_frames
@@ -485,13 +422,15 @@ def convert_detections2tracklets(
     window_size: int = 0,
     identity_only: int = False,
     track_method: str = "",
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import convert_detections2tracklets
@@ -548,13 +487,15 @@ def extract_maps(
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import extract_maps
@@ -624,13 +565,15 @@ def extract_save_all_maps(
     Indices: list[int] | None = None,
     modelprefix: str = "",
     dest_folder: str = None,
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(config),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import extract_save_all_maps
@@ -662,13 +605,15 @@ def export_model(
     make_tar: bool = True,
     wipepaths: bool = False,
     modelprefix: str = "",
+    engine: Engine | None = None,
 ):
-    engine = get_shuffle_engine(
-        _load_config(cfg_path),
-        trainingsetindex=trainingsetindex,
-        shuffle=shuffle,
-        modelprefix=modelprefix,
-    )
+    if engine is None:
+        engine = get_shuffle_engine(
+            _load_config(cfg_path),
+            trainingsetindex=trainingsetindex,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import export_model

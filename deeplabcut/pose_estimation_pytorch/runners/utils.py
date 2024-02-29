@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 import deeplabcut.pose_estimation_pytorch.utils as pytorch_utils
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.runners.base import Task
 from deeplabcut.utils import auxiliaryfunctions
 

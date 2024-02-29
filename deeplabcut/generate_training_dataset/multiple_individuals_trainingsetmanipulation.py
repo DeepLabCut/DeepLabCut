@@ -20,7 +20,9 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
-from deeplabcut.compat import Engine, get_project_engine
+import deeplabcut.compat as compat
+import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import (
     merge_annotateddatasets,
     read_image_shape_fast,
@@ -217,6 +219,11 @@ def create_multianimaltraining_dataset(
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempt_to_make_folder(full_training_path, recursive=True)
 
+    # Create the trainset metadata file, if it doesn't yet exist
+    if not metadata.TrainingDatasetMetadata.path(cfg).exists():
+        trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)
+        trainset_metadata.save()
+
     Data = merge_annotateddatasets(cfg, full_training_path)
     if Data is None:
         return
@@ -227,7 +234,7 @@ def create_multianimaltraining_dataset(
 
     # load the engine to use to create the shuffle
     if engine is None:
-        engine = get_project_engine(cfg)
+        engine = compat.get_project_engine(cfg)
 
     if not (
         any(net in net_type for net in ("resnet", "eff", "dlc", "mob"))
@@ -373,6 +380,15 @@ def create_multianimaltraining_dataset(
                 trainIndices,
                 testIndices,
                 trainFraction,
+            )
+            metadata.update_metadata(
+                cfg=cfg,
+                train_fraction=trainFraction,
+                shuffle=shuffle,
+                engine=engine,
+                train_indices=trainIndices,
+                test_indices=testIndices,
+                overwrite=not userfeedback,
             )
 
             datafilename = datafilename.split(".mat")[0] + ".pickle"

@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     list_videos_in_folder,

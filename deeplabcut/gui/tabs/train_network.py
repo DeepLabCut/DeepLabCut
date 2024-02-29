@@ -16,6 +16,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
 import deeplabcut.compat as compat
+from deeplabcut.core.engine import Engine
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -35,7 +36,7 @@ class IntTrainAttribute:
 
 
 class TrainNetwork(DefaultTab):
-    def __init__(self, root, parent, h1_description, engine: compat.Engine = compat.Engine.TF):
+    def __init__(self, root, parent, h1_description, engine: Engine = Engine.TF):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
         self.train_attributes = get_train_attributes(engine=engine)
         self._set_page()
@@ -112,8 +113,8 @@ class TrainNetwork(DefaultTab):
         msg.exec_()
 
 
-def get_train_attributes(engine: compat.Engine) -> list[IntTrainAttribute]:
-    if engine == compat.Engine.TF:
+def get_train_attributes(engine: Engine) -> list[IntTrainAttribute]:
+    if engine == Engine.TF:
         return [
             IntTrainAttribute(
                 label="Display iterations",
@@ -144,7 +145,7 @@ def get_train_attributes(engine: compat.Engine) -> list[IntTrainAttribute]:
                 max=100,
             ),
         ]
-    elif engine == compat.Engine.PYTORCH:
+    elif engine == Engine.PYTORCH:
         return[
             IntTrainAttribute(
                 label="Display iterations",
