@@ -11,13 +11,62 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from functools import reduce
+from functools import reduce, lru_cache
+from pathlib import Path
 
 import albumentations as A
 import numpy as np
 import torch
+from PIL import Image
 from torchvision.ops import box_convert
 from torchvision.transforms import functional as F
+
+
+@lru_cache(maxsize=None)
+def read_image_shape_fast(path: str | Path) -> tuple[int, int, int]:
+    """Blazing fast and does not load the image into memory"""
+    with Image.open(path) as img:
+        width, height = img.size
+        return len(img.getbands()), height, width
+
+
+def bbox_from_keypoints(
+    keypoints: np.ndarray,
+    image_h: int,
+    image_w: int,
+    margin: int,
+) -> np.ndarray:
+    """
+    Computes bounding boxes from keypoints.
+
+    Args:
+        keypoints: (..., num_keypoints, xy) the keypoints from which to get bboxes
+        image_h: the height of the image
+        image_w: the width of the image
+        margin: the bounding box margin
+
+    Returns:
+        the bounding boxes for the keypoints, of shape (..., 4) in the xywh format
+    """
+    squeeze = False
+    if len(keypoints.shape) == 2:
+        squeeze = True
+        keypoints = np.expand_dims(keypoints, axis=0)
+
+    bboxes = np.full((keypoints.shape[0], 4), np.nan)
+    bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
+    bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+    bboxes = np.clip(
+        bboxes,
+        a_min=[0, 0, 0, 0],
+        a_max=[image_w - 1, image_h - 1, image_w - 1, image_h - 1],
+    )
+    bboxes[..., 2] = bboxes[..., 2] - bboxes[..., 0]  # to width
+    bboxes[..., 3] = bboxes[..., 3] - bboxes[..., 1]  # to height
+    if squeeze:
+        return bboxes[0]
+
+    return bboxes
 
 
 def merge_list_of_dicts(
@@ -297,14 +346,14 @@ def _compute_crop_bounds(
 
 
 def _extract_keypoints_and_bboxes(
-    annotations: list[dict],
+    anns: list[dict],
     image_shape: tuple[int, int, int],
     num_joints: int,
     num_unique_bodyparts: int,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     """
     Args:
-        annotations: COCO-style annotations
+        anns: COCO-style annotations
         image_shape: the (h, w, c) shape of the image for which to get annotations
         num_joints: the number of joints in the annotations
 
@@ -313,15 +362,15 @@ def _extract_keypoints_and_bboxes(
     """
     keypoints = []
     original_bboxes = []
-    annotations_to_merge = []
+    anns_to_merge = []
     unique_keypoints = None
-    for i, annotation in enumerate(annotations):
+    for i, annotation in enumerate(anns):
         keypoints_individual = _annotation_to_keypoints(annotation)
         if annotation["individual"] != "single":
             bbox_individual = annotation["bbox"]
             original_bboxes.append(bbox_individual)
             keypoints.append(keypoints_individual)
-            annotations_to_merge.append(annotation)
+            anns_to_merge.append(annotation)
         else:
             unique_keypoints = keypoints_individual
 
@@ -332,17 +381,16 @@ def _extract_keypoints_and_bboxes(
     original_bboxes = safe_stack(original_bboxes, (0, 4))
     bboxes = _compute_crop_bounds(original_bboxes, image_shape)
 
-    annotations_merged = merge_list_of_dicts(
-        annotations_to_merge, keys_to_include=["area", "category_id", "iscrowd"]
-    )
-    if len(annotations_merged["area"]) == len(keypoints):
-        area = np.array(annotations_merged["area"])
-        area[area < 1] = 1  # TODO: see comments in calc_area_from_keypoints
-    else:
-        area = calc_area_from_keypoints(keypoints)
+    keys_to_merge = ["area", "category_id", "iscrowd", "individual_id"]
+    anns_merged = {k: [] for k in keys_to_merge}
+    if len(anns_to_merge) > 0:
+        anns_merged = merge_list_of_dicts(anns_to_merge, keys_to_include=keys_to_merge)
 
-    annotations_merged["area"] = area
-    return keypoints, unique_keypoints, bboxes, annotations_merged
+    if len(anns_merged["area"]) != len(keypoints):
+        raise ValueError(f"Missing area values! {anns_merged}, {keypoints.shape}")
+
+    anns_merged = {k: np.array(v) for k, v in anns_merged.items()}
+    return keypoints, unique_keypoints, bboxes, anns_merged
 
 
 def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:

@@ -105,7 +105,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
                         partaffinityfield_map[b, mask, l * 2 + 0] = vec_x_norm * temp
                         partaffinityfield_map[b, mask, l * 2 + 1] = vec_y_norm * temp
 
-        partaffinityfield_map = partaffinityfield_map.transpose(0, 3, 1, 2)
+        partaffinityfield_map = partaffinityfield_map.transpose((0, 3, 1, 2))
         return {
             "paf": {
                 "target": torch.tensor(

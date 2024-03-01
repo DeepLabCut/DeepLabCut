@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import albumentations as A
 import numpy as np
@@ -21,6 +22,7 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
 )
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _compute_crop_bounds,
+    bbox_from_keypoints,
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.runners import Task
@@ -37,16 +39,15 @@ class Loader(ABC):
         create_dataset(images: dict = None, annotations: dict = None, transform: object = None,
             mode: str = "train", task: Task = Task.BOTTOM_UP) -> PoseDataset:
             Creates and returns a PoseDataset given a set of images, annotations, and other parameters.
-        _get_all_bboxes(images, annotations, method: str = 'gt') -> dict:
+        _compute_bboxes(images, annotations, method: str = 'gt') -> dict:
             Retrieves all bounding boxes based on the specified method.
         get_dataset_parameters(*args, **kwargs) -> dict:
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
-    def __init__(self, project_root: str, model_config_path: str) -> None:
-        self.project_root = project_root
-        self.model_config_path = model_config_path
-        self.model_cfg = auxiliaryfunctions.read_plainconfig(model_config_path)
+    def __init__(self, model_config_path: str | Path) -> None:
+        self.model_config_path = Path(model_config_path)
+        self.model_cfg = auxiliaryfunctions.read_plainconfig(str(model_config_path))
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
     @abstractmethod
@@ -231,7 +232,11 @@ class Loader(ABC):
         return filtered_annotations
 
     @staticmethod
-    def _get_all_bboxes(images, annotations, method: str = "gt"):
+    def _compute_bboxes(
+        images: list[dict],
+        annotations: list[dict],
+        method: str = "gt",
+    ):
         """TODO: Nastya method of bbox computation (detection bbox, seg. mask, ...)
         Retrieves all bounding boxes based on the given method.
 
@@ -260,18 +265,32 @@ class Loader(ABC):
                 if "bbox" not in annotation:
                     # or do something else?
                     raise ValueError(
-                        "Bounding box not found in annotation, please chose another method"
+                        f"Bounding box not found in annotation {annotation}, please "
+                        "chose another bbox computation method"
                     )
             return annotations
 
         elif method == "detection bbox":
-            return annotations
+            raise NotImplementedError
 
         elif method == "keypoints":
+            bbox_margin = 20  # TODO: should not be hardcoded
+            min_area = 1  # TODO: should not be hardcoded
+            img_id_to_annotations = map_id_to_annotations(annotations)
+            for img in images:
+                anns = [annotations[idx] for idx in img_id_to_annotations[img["id"]]]
+                for a in anns:
+                    a["bbox"] = bbox_from_keypoints(
+                        keypoints=a["keypoints"],
+                        image_h=img["height"],
+                        image_w=img["width"],
+                        margin=bbox_margin,
+                    )
+                    a["area"] = max(min_area, (a["bbox"][2] * a["bbox"][3]).item())
             return annotations
 
         elif method == "segmentation mask":
-            return annotations
+            raise NotImplementedError
 
         else:
             raise ValueError(f"Unknown method: {method}")

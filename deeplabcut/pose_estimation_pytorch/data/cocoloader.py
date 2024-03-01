@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -26,7 +25,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
 )
 
 
-@dataclass
 class COCOLoader(Loader):
     """
     Attributes:
@@ -44,13 +42,19 @@ class COCOLoader(Loader):
         )
     """
 
-    project_root: str
-    model_config_path: str
-    train_json_filename: str = "train.json"
-    test_json_filename: str | None = "test.json"
+    def __init__(
+        self,
+        project_root: str | Path,
+        model_config_path: str | Path,
+        train_json_filename: str = "train.json",
+        test_json_filename: str = "test.json",
+    ):
+        super().__init__(Path(model_config_path))
+        self.project_root = Path(project_root)
+        self.train_json_filename = train_json_filename
+        self.test_json_filename = test_json_filename
+        self._dataset_parameters = None
 
-    def __post_init__(self) -> None:
-        super().__init__(self.project_root, self.model_config_path)
         self.train_json = self.load_json(self.project_root, self.train_json_filename)
         self.test_json = None
         if self.test_json_filename:
@@ -63,18 +67,20 @@ class COCOLoader(Loader):
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
-        num_individuals, bodyparts = self.get_project_parameters(self.train_json)
-        return PoseDatasetParameters(
-            bodyparts=bodyparts,
-            unique_bpts=[],
-            individuals=[f"individual{i}" for i in range(num_individuals)],
-            with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
-            color_mode=self.model_cfg.get("color_mode", "RGB"),
-            cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
-        )
+        if self._dataset_parameters is None:
+            num_individuals, bodyparts = self.get_project_parameters(self.train_json)
+            self._dataset_parameters = PoseDatasetParameters(
+                bodyparts=bodyparts,
+                unique_bpts=[],
+                individuals=[f"individual{i}" for i in range(num_individuals)],
+                with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
+                color_mode=self.model_cfg.get("color_mode", "RGB"),
+                cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
+            )
+        return self._dataset_parameters
 
     @staticmethod
-    def load_json(project_root: str, filename: str) -> dict:
+    def load_json(project_root: str | Path, filename: str) -> dict:
         """Load a JSON file from the annotations directory.
 
         Args:
@@ -149,7 +155,7 @@ class COCOLoader(Loader):
         return coco_json
 
     @staticmethod
-    def validate_images(project_root: str, coco_json: dict) -> dict:
+    def validate_images(project_root: str | Path, coco_json: dict) -> dict:
         """Goes over images and annotations to look for potential errors
 
         This code tries to ensure that training a model on this project does not crash
@@ -242,9 +248,10 @@ class COCOLoader(Loader):
             annotation["bbox"] = np.array(annotation["bbox"], dtype=float)
             annotation["individual"] = "unknown"
 
-        annotations_with_bbox = self._get_all_bboxes(
+        annotations_with_bbox = self._compute_bboxes(
             data["images"],
             data["annotations"],
+            method="gt",
         )
         data["annotations"] = annotations_with_bbox
         return data

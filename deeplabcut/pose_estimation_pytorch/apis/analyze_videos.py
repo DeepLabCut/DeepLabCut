@@ -32,7 +32,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_runners,
     list_videos_in_folder,
 )
-from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
@@ -221,12 +220,6 @@ def analyze_videos(
         engine=Engine.PYTORCH,
         modelprefix=modelprefix,
     )
-    # Get general project parameters
-    bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
-    unique_bodyparts = auxiliaryfunctions.get_unique_bodyparts(cfg)
-    individuals = cfg.get("individuals", ["animal"])
-    max_num_animals = len(individuals)
-    num_keypoints = len(bodyparts)
 
     # Read the inference configuration, load the model
     pytorch_config = auxiliaryfunctions.read_plainconfig(
@@ -236,6 +229,13 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
     pose_task = Task(pytorch_config.get("method", "BU"))
 
+    # Get general project parameters
+    bodyparts = pytorch_config["metadata"]["bodyparts"]
+    unique_bodyparts = pytorch_config["metadata"]["unique_bodyparts"]
+    individuals = pytorch_config["metadata"]["individuals"]
+    with_identity = pytorch_config["metadata"]["with_identity"]
+    max_num_animals = len(individuals)
+
     if device is not None:
         pytorch_config["device"] = device
 
@@ -243,8 +243,6 @@ def analyze_videos(
     if pose_task == Task.TOP_DOWN:
         # TODO: Choose which detector to use
         detector_path = _get_detector_path(model_folder, -1, cfg)
-
-    with_identity = DLCLoader.has_identity_head(pytorch_config)
 
     print(f"Analyzing videos with {model_path}")
     pose_runner, detector_runner = get_runners(
@@ -403,7 +401,7 @@ def create_df_from_prediction(
         )
         df = df.join(df_u, how="outer")
 
-    df.to_hdf(output_h5, "df_with_missing", format="table", mode="w")
+    df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
     return df
 
 

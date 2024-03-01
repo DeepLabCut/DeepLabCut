@@ -96,18 +96,14 @@ class DEKRGenerator(BaseGenerator):
         sgm, ct_sgm = (self.pos_dist_thresh / 2) * scale, self.pos_dist_thresh * scale
         radius = self.pos_dist_thresh * scale
 
-        heatmaps = np.zeros(
-            (batch_size, self.num_heatmaps, output_h, output_w), dtype=np.float32
-        )
-        heatmap_weights = 2 * np.ones(
-            (batch_size, self.num_heatmaps, output_h, output_w), dtype=np.float32
-        )
-        offset_map = np.zeros(
-            (batch_size, self.num_joints * 2, output_h, output_w), dtype=np.float32
-        )
-        weight_map = np.zeros(
-            (batch_size, self.num_joints * 2, output_h, output_w), dtype=np.float32
-        )
+        heatmap_shape = batch_size, self.num_heatmaps, output_h, output_w
+        heatmaps = np.zeros(heatmap_shape, dtype=np.float32)
+        heatmap_weights = 2 * np.ones(heatmap_shape, dtype=np.float32)
+
+        offset_shape = batch_size, self.num_joints * 2, output_h, output_w
+        offset_map = np.zeros(offset_shape, dtype=np.float32)
+        weight_map = np.zeros(offset_shape, dtype=np.float32)
+
         area_map = np.zeros((batch_size, output_h, output_w), dtype=np.float32)
         for b in range(batch_size):
             for person_id, p in enumerate(coords[b]):

@@ -17,7 +17,6 @@ from zipfile import Path
 import numpy as np
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDataset
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.data.utils import merge_list_of_dicts
 from deeplabcut.generate_training_dataset import create_training_dataset
@@ -34,7 +33,7 @@ def mock_aux() -> Mock:
 def _get_loader(project_root):
     if not (Path(project_root) / "training-datasets").exists():
         create_training_dataset(config=str(Path(project_root) / "config.yaml"))
-    return DLCLoader(project_root, model_config_path="", shuffle=1)
+    return DLCLoader(Path(project_root) / "config.yaml", shuffle=1)
 
 
 @pytest.mark.skip

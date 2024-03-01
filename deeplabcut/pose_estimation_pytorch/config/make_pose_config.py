@@ -165,8 +165,14 @@ def add_metadata(project_config: dict, config: dict, pose_config_path: str) -> d
         the configuration with a `meta` key added
     """
     config = copy.deepcopy(config)
-    config["pose_config_path"] = pose_config_path
-    config["project_path"] = project_config["project_path"]
+    config["metadata"] = {
+        "project_path": project_config["project_path"],
+        "pose_config_path": pose_config_path,
+        "bodyparts": auxiliaryfunctions.get_bodyparts(project_config),
+        "unique_bodyparts": auxiliaryfunctions.get_unique_bodyparts(project_config),
+        "individuals": project_config.get("individuals", ["animal"]),
+        "with_identity": project_config.get("identity", False),
+    }
     return config
 
 
@@ -309,14 +315,13 @@ def add_unique_bodypart_head(
         the configuration with an added unique bodypart head
     """
     config = copy.deepcopy(config)
-    unique_bodypart_head_config = read_config_as_dict(
-        configs_dir / "base" / "head_bodyparts.yaml"
-    )
-    config["model"]["heads"]["unique_bodypart"] = replace_default_values(
-        unique_bodypart_head_config,
+    unique_head_config = replace_default_values(
+        read_config_as_dict(configs_dir / "base" / "head_bodyparts.yaml"),
         num_bodyparts=num_unique_bodyparts,
         backbone_output_channels=backbone_output_channels,
     )
+    unique_head_config["target_generator"]["label_keypoint_key"] = "keypoints_unique"
+    config["model"]["heads"]["unique_bodypart"] = unique_head_config
     return config
 
 

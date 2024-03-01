@@ -132,14 +132,22 @@ class HeatmapGenerator(BaseGenerator):
         if self.heatmap_mode == HeatmapGenerator.Mode.KEYPOINT:
             # transpose the individuals and keypoints to iterate over bodyparts
             coords = coords.transpose((0, 2, 1, 3))
+        if self.heatmap_mode == HeatmapGenerator.Mode.INDIVIDUAL:
+            # re-order the individuals to always have the same order
+            # TODO: Optimize
+            sorted_coords = -np.ones_like(coords)
+            for i, batch_individuals in enumerate(labels["individual_ids"]):
+                for j, individual_id in enumerate(batch_individuals):
+                    if individual_id >= 0:
+                        sorted_coords[i, individual_id] = coords[i, j]
+            coords = sorted_coords
 
-        heatmap = np.zeros((batch_size, height, width, self.num_heatmaps), dtype=np.float32)
+        map_size = batch_size, height, width
+        heatmap = np.zeros((*map_size, self.num_heatmaps), dtype=np.float32)
 
         locref_map, locref_mask = None, None
         if self.generate_locref:
-            locref_map = np.zeros(
-                (batch_size, height, width, self.num_heatmaps * 2), dtype=np.float32
-            )
+            locref_map = np.zeros((*map_size, self.num_heatmaps * 2), dtype=np.float32)
             locref_mask = np.zeros_like(locref_map, dtype=int)
 
         grid = np.mgrid[:height, :width].transpose((1, 2, 0))

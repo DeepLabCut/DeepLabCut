@@ -8,113 +8,80 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+"""Class implementing the Loader for DeepLabCut projects"""
 from __future__ import annotations
 
-import logging
-import os
 import pickle
-from dataclasses import dataclass
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-import deeplabcut
+import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.data.helper import CombinedPropertyMeta
-from deeplabcut.pose_estimation_pytorch.utils import df_to_generic
-from deeplabcut.utils.auxiliaryfunctions import (
-    get_bodyparts,
-    get_model_folder,
-    get_unique_bodyparts,
-)
+from deeplabcut.pose_estimation_pytorch.data.utils import read_image_shape_fast
 
 
-@dataclass
-class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
+class DLCLoader(Loader):
     """A Loader for DeepLabCut projects"""
 
-    project_root: str
-    model_config_path: str
-    shuffle: int = 0
-    image_id_offset: int = 0
-    # TODO: read train fraction index
+    def __init__(
+        self,
+        config: str | Path,
+        trainset_index: int = 0,
+        shuffle: int = 0,
+        modelprefix: str = "",
+    ):
+        """
+        Args:
+            config: path to the DeepLabCut project config
+            trainset_index: the index of the TrainingsetFraction for which to load data
+            shuffle: the index of the shuffle for which to load data
+            modelprefix: the modelprefix for the shuffle
+        """
+        self._project_root = Path(config).parent
+        self._project_config = af.read_config(str(config))
+        self._model_folder = af.get_model_folder(
+            self._project_config["TrainingFraction"][trainset_index],
+            shuffle,
+            self._project_config,
+            engine=Engine.PYTORCH,
+            modelprefix=modelprefix,
+        )
+        super().__init__(
+            self._project_root
+            / self._model_folder
+            / "train"
+            / Engine.PYTORCH.pose_cfg_name
+        )
+        self._split = self.load_split(self._project_config, trainset_index, shuffle)
+        self._df = self.load_ground_truth(self._project_config)
+        self._dfs = {
+            split: self.drop_duplicates(df)
+            for split, df in self.split_data(self._df, self._split).items()
+        }
 
-    properties = {
-        "cfg": (
-            deeplabcut.auxiliaryfunctions.read_config,
-            lambda self: os.path.join(self.project_root, "config.yaml"),
-        ),
-        "model_folder": (
-            lambda x: os.path.join(
-                x[0], get_model_folder(x[1], x[2], x[3], engine=Engine.PYTORCH)
-            ),
-            lambda self: (
-                self.project_root,
-                self.cfg["TrainingFraction"][0],
-                self.shuffle,
-                self.cfg,
-            ),
-        ),
-        "_datasets_folder": (
-            lambda x: os.path.join(
-                x[0], deeplabcut.auxiliaryfunctions.get_training_set_folder(x[1])
-            ),
-            lambda self: (self.project_root, self.cfg),
-        ),
-        "_path_dlc_data": (
-            lambda x: os.path.join(x[0], f"CollectedData_{x[1]}.h5"),
-            lambda self: (self._datasets_folder, self.cfg["scorer"]),
-        ),
-        "_path_dlc_doc": (
-            lambda x: os.path.join(
-                x[0], f"Documentation_data-{x[1]}_{x[2]}shuffle{x[3]}.pickle"
-            ),
-            lambda self: (
-                self._datasets_folder,
-                self.cfg["Task"],
-                int(100 * self.cfg["TrainingFraction"][0]),
-                self.shuffle,
-            ),
-        ),
-    }
-
-    def __post_init__(self):
-        super().__init__(self.project_root, self.model_config_path)
-        self.split, self.df_dlc, self.df_train, self.df_test = self._load_dlc_data()
-        self.with_identity = self.has_identity_head(self.model_cfg)
+    @property
+    def df(self):
+        """Returns: The ground truth dataframe. Should not be modified."""
+        return self._df
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
-        """
-        Retrieves dataset parameters based on the instance's configuration.
+        """Retrieves dataset parameters based on the instance's configuration.
 
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
         return PoseDatasetParameters(
-            bodyparts=get_bodyparts(self.cfg),
-            unique_bpts=get_unique_bodyparts(self.cfg),
-            individuals=self.cfg.get("individuals", ["animal"]),
+            bodyparts=self.model_cfg["metadata"]["bodyparts"],
+            unique_bpts=self.model_cfg["metadata"]["unique_bodyparts"],
+            individuals=self.model_cfg["metadata"]["individuals"],
             with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
             color_mode=self.model_cfg.get("color_mode", "RGB"),
             cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
         )
-
-    def _load_dlc_data(self):
-        split = self._load_split(self._path_dlc_doc)
-        df_dlc = pd.read_hdf(self._path_dlc_data)
-        df_train, df_test = self.split_data(df_dlc, split)
-        df_dlc, df_train, df_test = self.drop_duplicates(df_dlc, df_train, df_test)
-
-        return split, df_dlc, df_train, df_test
-
-    @staticmethod
-    def drop_duplicates(dlc_df, df_train, df_test):
-        dlc_df = dlc_df[~dlc_df.index.duplicated(keep="first")]
-        df_train = df_train[~df_train.index.duplicated(keep="first")]
-        if df_test is not None:
-            df_test = df_test[~df_test.index.duplicated(keep="first")]
-        return dlc_df, df_train, df_test
 
     def load_data(self, mode: str = "train") -> dict:
         """Loads DeepLabCut data into COCO-style annotations
@@ -123,7 +90,7 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         COCO-like format
 
         Args:
-            mode: mode indicating whether to use 'train' or 'test' data. Defaults to "train".
+            mode: mode indicating whether to use 'train' or 'test' data.
 
         Raises:
             AttributeError: if the specified mode (train or test) does not exist.
@@ -131,35 +98,43 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         Returns:
             the coco-style annotations
         """
-        if mode == "train":
-            data_dlc_format = self.df_train
-        elif mode == "test":
-            data_dlc_format = self.df_test
-        # to do: add validation
-        else:
+        if mode not in ["train", "test"]:
             raise AttributeError(f"Unknown mode: {mode}")
+        if mode not in self._dfs:
+            raise ValueError(f"No split for: {mode} (found {self._dfs.keys()})")
+        if self._dfs[mode] is None:
+            raise ValueError(f"No data in {mode} split for this shuffle!")
 
-        data = df_to_generic(self.project_root, data_dlc_format, self.image_id_offset)
-        annotations_with_bbox = self._get_all_bboxes(
-            data["images"], data["annotations"]
+        params = self.get_dataset_parameters()
+        data = self.to_coco(str(self._project_root), self._dfs[mode], params)
+        with_bbox = self._compute_bboxes(
+            data["images"], data["annotations"], method="keypoints"
         )
-        data["annotations"] = annotations_with_bbox
-
+        data["annotations"] = with_bbox
         return data
 
     @staticmethod
-    def _load_split(path_dlc_doc: str) -> dict[str, list[int]]:
-        """Summary:
-        Split the annotation dataframe into train and test dataframes based on project's split
-            that is downloaded from the project's directory
+    def load_split(
+        config: dict,
+        trainset_index: int = 0,
+        shuffle: int = 0,
+    ) -> dict[str, list[int]]:
+        """Loads the train/test split for a DeepLabCut shuffle
 
         Args:
-            path_dlc_doc: the path to the DLC documentation file
+            config: the DeepLabCut project config
+            trainset_index: the TrainingsetFraction for which to load data
+            shuffle: the index of the shuffle for which to load data
 
         Return:
             the {"train": [train_ids], "test": [test_ids]} data split
         """
-        with open(path_dlc_doc, "rb") as f:
+        trainset_dir = Path(config["project_path"]) / af.get_training_set_folder(config)
+        train_frac = int(100 * config["TrainingFraction"][trainset_index])
+        shuffle_id = f"{config['Task']}_{train_frac}shuffle{shuffle}.pickle"
+        doc_path = trainset_dir / f"Documentation_data-{shuffle_id}"
+
+        with open(doc_path, "rb") as f:
             meta = pickle.load(f)
 
         train_ids = [int(i) for i in meta[1]]
@@ -168,9 +143,34 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
         return {"train": train_ids, "test": test_ids}
 
     @staticmethod
+    def load_ground_truth(config: dict) -> pd.DataFrame:
+        """Loads the ground truth dataset for a DeepLabCut project.
+
+        Args:
+            config: the DeepLabCut project configuration file
+
+        Returns:
+            the annotated DeepLabCut data for the current iteration
+
+        Raises:
+            ValueError: if the data contained in the ground truth HDF does not contain
+                a dataframe.
+        """
+        trainset_dir = Path(config["project_path"]) / af.get_training_set_folder(config)
+        dataset_path = f"CollectedData_{config['scorer']}.h5"
+        df = pd.read_hdf(trainset_dir / dataset_path)
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError(
+                f"The ground truth data in {trainset_dir} must contain a DataFrame! "
+                f"Found {df}"
+            )
+        return df
+
+    @staticmethod
     def split_data(
-        dlc_df: pd.DataFrame, split: dict[str, list[int]]
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        dlc_df: pd.DataFrame,
+        split: dict[str, list[int]],
+    ) -> dict[str, pd.DataFrame | None]:
         """
         Splits a DeepLabCut DataFrame into train/test dataframes
 
@@ -179,18 +179,115 @@ class DLCLoader(Loader, metaclass=CombinedPropertyMeta):
             split: the train/test indices
 
         Returns:
-            df_train, df_test
+            a dictionary containing the same keys as the split dictionary, where the
+            values are the rows of dlc_df with index in the split, or None if there are
+            no indices in that split
         """
-        train_images = dlc_df.index[split["train"]]
-        df_train = dlc_df.loc[train_images]
-
-        df_test = None
-        if len(split["test"]) != 0:
-            test_images = dlc_df.index[split["test"]]
-            df_test = dlc_df.loc[test_images]
-
-        return df_train, df_test
+        split_dfs = {}
+        for k, indices in split.items():
+            if len(indices) == 0:
+                split_dfs[k] = None
+            else:
+                split_dfs[k] = dlc_df.iloc[indices]
+        return split_dfs
 
     @staticmethod
-    def has_identity_head(pytorch_config: dict) -> bool:
-        return "identity" in pytorch_config.get("model", {}).get("heads", {})
+    def drop_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+        """Returns: the DataFrame with no duplicate rows"""
+        return df[~df.index.duplicated(keep="first")]
+
+    @staticmethod
+    def to_coco(
+        project_root: str | Path,
+        df: pd.DataFrame,
+        parameters: PoseDatasetParameters,
+    ) -> dict:
+        """Formerly Shaokai's function
+
+        Args:
+            project_root: the path to the project root
+            df: the DLC-format annotation dataframe to convert to a COCO-format dict
+            parameters: the parameters for pose estimation
+
+        Returns:
+            the coco format data
+        """
+        with_individuals = "individuals" in df.columns.names
+        if (
+            not with_individuals and
+            (len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0)
+        ):
+            raise ValueError(
+                "The DataFrame contains single-animal annotations (for a single, "
+                "individual), but the parameters suggest this is a multi-animal project"
+                f": {parameters} (with multiple individuals or unique bodyparts)"
+            )
+
+        categories = [
+            {
+                "id": 1,
+                "name": "animals",
+                "supercategory": "animal",
+                "keypoints": parameters.bodyparts,
+            },
+        ]
+        individuals = [idv for idv in parameters.individuals]
+        if len(parameters.unique_bpts) > 0:
+            individuals += ["single"]
+            categories.append(
+                {
+                    "id": 2,
+                    "name": "unique_bodypart",
+                    "supercategory": "animal",
+                    "keypoints": parameters.unique_bpts,
+                }
+            )
+
+        anns, images = [], []
+        base_path = Path(project_root)
+        for idx, row in df.iterrows():
+            image_id = len(images) + 1
+            rel_path = Path(*idx) if isinstance(idx, tuple) else Path(idx)
+            path = str(base_path / rel_path)
+            _, height, width = read_image_shape_fast(path)
+            images.append(
+                {
+                    "id": image_id,
+                    "file_name": path,
+                    "width": width,
+                    "height": height,
+                }
+            )
+
+            for idv_idx, idv in enumerate(individuals):
+                category_id = 1
+                individual_id = idv_idx
+                if with_individuals:
+                    if idv == "single":
+                        category_id = 2
+                        individual_id = -1
+                    data = row.xs(idv, level="individuals")
+                else:
+                    data = row
+
+                raw_keypoints = data.to_numpy().reshape((-1, 2))
+                keypoints = np.zeros((len(raw_keypoints), 3))
+                keypoints[:, :2] = raw_keypoints
+                is_visible = ~pd.isnull(raw_keypoints).all(axis=1)
+                keypoints[:, 2] = np.where(is_visible, 2, 0)
+                num_keypoints = is_visible.sum()
+                if num_keypoints > 0:
+                    anns.append(
+                        {
+                            "id": len(anns) + 1,
+                            "image_id": image_id,
+                            "category_id": category_id,
+                            "individual": idv,
+                            "individual_id": individual_id,
+                            "num_keypoints": num_keypoints,
+                            "keypoints": keypoints,
+                            "iscrowd": 0,
+                        }
+                    )
+
+        return {"annotations": anns, "categories": categories, "images": images}

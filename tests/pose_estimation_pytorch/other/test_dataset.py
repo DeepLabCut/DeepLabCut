@@ -26,7 +26,16 @@ from deeplabcut.generate_training_dataset import create_training_dataset
 def mock_aux() -> Mock:
     aux_functions = Mock()
     aux_functions.read_plainconfig = Mock()
-    aux_functions.read_plainconfig.return_value = {}
+    aux_functions.read_plainconfig.return_value = {
+        "metadata": {
+            "project_path": "",
+            "pose_config_path": "",
+            "bodyparts": ["snout", "leftear", "rightear", "tailbase"],
+            "unique_bodyparts": [],
+            "individuals": ["animal"],
+            "with_identity": False,
+        }
+    }
     return aux_functions
 
 
@@ -41,7 +50,7 @@ def _get_dataset(path, transform, mode="train"):
             engine=Engine.PYTORCH,
         )
 
-    loader = dlc.DLCLoader(path, model_config_path="", shuffle=1)
+    loader = dlc.DLCLoader(Path(project_root) / "config.yaml", shuffle=1)
     dataset = loader.create_dataset(transform=transform, mode=mode)
     return dataset
 
@@ -70,6 +79,7 @@ anno_key_set = {
     "boxes",
     "is_crowd",
     "labels",
+    "individual_ids",
 }
 
 

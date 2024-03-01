@@ -198,6 +198,11 @@ def read_config(configname):
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
                 curr_dir = str(Path(configname).parent.resolve())
+
+                if cfg.get("engine") is None:
+                    cfg["engine"] = Engine.TF.aliases[0]
+                    write_config(configname, cfg)
+
                 if cfg["project_path"] != curr_dir:
                     cfg["project_path"] = curr_dir
                     write_config(configname, cfg)

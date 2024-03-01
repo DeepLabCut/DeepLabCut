@@ -38,7 +38,7 @@ def _get_config_model_paths(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
 
-    model_config = auxiliaryfunctions.read_config(
+    model_config = auxiliaryfunctions.read_plainconfig(
         os.path.join(modelzoo_path, "model_configs", f"{pose_model_type}.yaml")
     )
     project_config = auxiliaryfunctions.read_config(
@@ -97,6 +97,7 @@ def raise_warning_if_called_directly():
 
 
 def _update_config(config, max_individuals, device):
+    print(config)
     num_bodyparts = len(config["bodyparts"])
     config["detector"]["runner"]["max_individuals"] = max_individuals
     config["multianimalproject"] = max_individuals > 1

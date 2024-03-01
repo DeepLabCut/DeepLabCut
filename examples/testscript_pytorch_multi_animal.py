@@ -1,14 +1,23 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """ Testscript for single animal PyTorch projects """
 from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
 
-from utils import cleanup, copy_project_for_test, create_fake_project, log_step, run
+from utils import cleanup, create_fake_project, log_step, run
 
 
 def main(
-    synthetic_data: bool,
     net_types: list[str],
     epochs: int = 1,
     save_epochs: int = 1,
@@ -17,23 +26,21 @@ def main(
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,
 ) -> None:
-    engine = Engine.PYTORCH
-    if synthetic_data:
-        project_path = Path("../synthetic-data-niels-single-animal").resolve()
-        videos = []
-        create_fake_project(
-            path=project_path,
-            multianimal=False,
-            num_bodyparts=6,
-            num_frames=20,
-            frame_shape=(128, 256),
-        )
-
-    else:
-        project_path = copy_project_for_test()
-        videos = [str(project_path / "videos" / "m3v1mp4.mp4")]
-
+    project_path = Path("../synthetic-data-niels-multi-animal").resolve()
     config_path = project_path / "config.yaml"
+
+    create_fake_project(
+        path=project_path,
+        multianimal=True,
+        num_bodyparts=3,
+        num_frames=20,
+        num_individuals=2,
+        num_unique=4,
+        identity=False,
+        frame_shape=(128, 256),
+    )
+
+    engine = Engine.PYTORCH
     cfg = af.read_config(config_path)
     trainset_index = 0
     train_frac = cfg["TrainingFraction"][trainset_index]
@@ -44,7 +51,7 @@ def main(
                 train_fraction=train_frac,
                 trainset_index=trainset_index,
                 net_type=net_type,
-                videos=videos,
+                videos=[],
                 device=device,
                 train_kwargs=dict(
                     display_iters=1,
@@ -67,8 +74,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        synthetic_data=True,
-        net_types=["resnet_50", "hrnet_w18", "hrnet_w32"],
+        net_types=["resnet_50", "dekr_w18"],  # , "hrnet_w18", "hrnet_w32"],
         batch_size=8,
         epochs=1,
         save_epochs=1,

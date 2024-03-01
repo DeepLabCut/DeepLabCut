@@ -140,7 +140,7 @@ def evaluate(
     )
 
     # TODO: Evaluate identity predictions
-    if DLCLoader.has_identity_head(loader.model_cfg):
+    if loader.model_cfg["metadata"]["with_identity"]:
         pred_id_scores = {
             filename: pred["identity_scores"]
             for filename, pred in predictions.items()
@@ -165,7 +165,7 @@ def evaluate(
 def evaluate_snapshot(
     cfg: dict,
     shuffle: int = 0,
-    trainingsetindex: int = -1,
+    trainingsetindex: int = 0,
     snapshotindex: int = -1,
     device: str | None = None,
     transform: A.Compose | None = None,
@@ -212,9 +212,10 @@ def evaluate_snapshot(
 
     pose_task = Task(pytorch_config.get("method", "bu"))
     loader = DLCLoader(
-        project_root=pytorch_config["project_path"],
-        model_config_path=model_config_path,
+        config=Path(cfg["project_path"]) / "config.yaml",
         shuffle=shuffle,
+        trainset_index=trainingsetindex,
+        modelprefix=modelprefix,
     )
     parameters = loader.get_dataset_parameters()
     names = runner_utils.get_paths(
@@ -234,7 +235,7 @@ def evaluate_snapshot(
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
-        with_identity=loader.with_identity,
+        with_identity=pytorch_config["metadata"]["with_identity"],
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,
@@ -273,10 +274,10 @@ def evaluate_snapshot(
         names["model_path"][:-3],
     )
     df_predictions = pd.concat(predictions.values(), axis=0)
-    df_predictions = df_predictions.reindex(loader.df_dlc.index)
+    df_predictions = df_predictions.reindex(loader.df.index)
     output_filename = Path(results_filename)
     output_filename.parent.mkdir(parents=True, exist_ok=True)
-    df_predictions.to_hdf(str(output_filename), "df_with_missing")
+    df_predictions.to_hdf(str(output_filename), key="df_with_missing")
 
     df_scores = pd.DataFrame([scores]).set_index(
         ["Training epochs", "%Training dataset", "Shuffle number", "pcutoff"]

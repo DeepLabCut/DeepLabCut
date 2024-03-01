@@ -11,7 +11,6 @@ from deeplabcut.pose_estimation_pytorch.apis.scoring import pair_predicted_indiv
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
 from deeplabcut.pose_estimation_pytorch.data.utils import map_id_to_annotations
 from deeplabcut.pose_estimation_pytorch.runners import Task
-from deeplabcut.pose_estimation_pytorch.utils import df_to_generic
 
 from benchmark_lightning_pose import LP_DLC_BENCHMARKS
 from utils import Project, Shuffle
@@ -60,8 +59,8 @@ def evaluate_ood(
         snapshots = [snapshots[i] for i in snapshot_indices]
 
     loader = DLCLoader(
-        project_root=str(shuffle.project.path),
-        model_config_path=str(shuffle.pytorch_cfg_path),
+        shuffle.project.config_path(),
+        trainset_index=0,
         shuffle=shuffle.index,
     )
     parameters = loader.get_dataset_parameters()
@@ -87,8 +86,9 @@ def evaluate_ood(
             for image_path, image_predictions in zip(image_paths, predictions)
         }
 
-        gt_data = df_to_generic(str(shuffle.project.path), df_ood, image_id_offset=1)
-        annotations_with_bbox = DLCLoader._get_all_bboxes(gt_data["images"], gt_data["annotations"])
+        params = loader.get_dataset_parameters()
+        gt_data = loader.to_coco(str(shuffle.project.path), df_ood, params)
+        annotations_with_bbox = DLCLoader._compute_bboxes(gt_data["images"], gt_data["annotations"])
         gt_data["annotations"] = annotations_with_bbox
         gt_keypoints = load_ground_truth(gt_data, loader.get_dataset_parameters())
 

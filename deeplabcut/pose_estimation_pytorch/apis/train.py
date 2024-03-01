@@ -193,9 +193,9 @@ def train_network(
 
     utils.fix_seeds(pytorch_config["seed"])
     loader = DLCLoader(
-        project_root=pytorch_config["project_path"],
-        model_config_path=model_config_path,
+        config=config,
         shuffle=shuffle,
+        trainset_index=trainingsetindex,
     )
 
     pose_task = Task(pytorch_config.get("method", "bu"))

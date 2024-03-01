@@ -65,7 +65,7 @@ class PoseDatasetParameters:
 class PoseDataset(Dataset):
     """A pose dataset"""
 
-    images: list[dict[str, str]]
+    images: list[dict]
     annotations: list[dict]
     parameters: PoseDatasetParameters
     transform: A.BaseCompose | None = None
@@ -75,6 +75,9 @@ class PoseDataset(Dataset):
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
         self.annotation_idx_map = map_id_to_annotations(self.annotations)
+        self.img_id_to_index = {
+            img["id"]: index for index, img in enumerate(self.images)
+        }
 
     def __len__(self):
         # TODO: TD should only return the number of annotations that aren't unique_bodyparts
@@ -98,25 +101,14 @@ class PoseDataset(Dataset):
             If `self.crop` is True, it returns the image path and a list with a single annotation.
             Otherwise, it returns the image path and a list of annotations for all instances in the image.
         """
-        image_path = self.images[index]["file_name"]
-        image_id = self.image_path_id_map[image_path]
-        annotations = [
-            self.annotations[annotations_id]
-            for annotations_id in self.annotation_idx_map[image_id]
-        ]
-        return image_path, annotations, image_id
+        img = self.images[index]
+        anns = [self.annotations[idx] for idx in self.annotation_idx_map[img["id"]]]
+        return img["file_name"], anns, img["id"]
 
     def _get_raw_item_crop(self, index: int) -> tuple[str, list[dict], int]:
-        annotations = self.annotations[index]
-        image_id = annotations["image_id"]
-        annotations = [annotations]
-
-        image_id2path = {
-            image_id: image_path
-            for (image_path, image_id) in self.image_path_id_map.items()
-        }
-
-        return image_id2path[image_id], annotations, image_id
+        ann = self.annotations[index]
+        img = self.images[self.img_id_to_index[ann["image_id"]]]
+        return img["file_name"], [ann], img["id"]
 
     def __getitem__(self, index: int) -> dict:
         """
@@ -144,14 +136,14 @@ class PoseDataset(Dataset):
                 },
             }
         """
-        image_path, annotations, image_id = self._get_data_based_on_task(index)
+        image_path, anns, image_id = self._get_data_based_on_task(index)
         image, original_size = self._load_image(image_path)
         (
             keypoints,
             keypoints_unique,
             bboxes,
             annotations_merged,
-        ) = self.extract_keypoints_and_bboxes(annotations, image.shape)
+        ) = self.extract_keypoints_and_bboxes(anns, image.shape)
         offsets = np.zeros((self.parameters.max_num_animals, 2))
         scales = (1, 1)
         if self.task == Task.TOP_DOWN:
@@ -172,20 +164,7 @@ class PoseDataset(Dataset):
             )
             keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
             keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-
-            # coords = [
-            #     (bboxes[0][0], bboxes[0][0] + bboxes[0][2]),  # bboxes=xywh
-            #     (bboxes[0][1], bboxes[0][1] + bboxes[0][3]),
-            # ]
-            # image, keypoints, offsets, scales = self.crop(
-            #     image,
-            #     keypoints,
-            #     coords,
-            #     self.parameters.cropped_image_size,
-            # )
-            bboxes = np.zeros(
-                (0, 4)
-            )  # No more bounding boxes as we cropped around them
+            bboxes = np.zeros((0, 4))  # No more bboxes as we cropped around them
 
         transformed = self.apply_transform_all_keypoints(
             image, keypoints, keypoints_unique, bboxes
@@ -240,18 +219,19 @@ class PoseDataset(Dataset):
         keypoints: np.ndarray,
         keypoints_unique: np.ndarray,
         bboxes: np.array,
-        annotations_merged: dict,
+        anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
-        is_crowd = np.array(annotations_merged["iscrowd"])
-        cat_ids = np.array(annotations_merged["category_id"])
         return {
             "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1),
             "keypoints_unique": keypoints_unique[..., :2],
-            "area": pad_to_length(annotations_merged["area"], num_animals, 0),
+            "area": pad_to_length(anns["area"], num_animals, 0),
             "boxes": pad_to_length(bboxes, num_animals, 0),
-            "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
-            "labels": pad_to_length(cat_ids, num_animals, -1).astype(int),
+            "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
+            "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
+            "individual_ids": pad_to_length(
+                anns["individual_id"], num_animals, -1
+            ).astype(int),
         }
 
     def _load_image(self, image_path):
@@ -372,11 +352,11 @@ class PoseDataset(Dataset):
         return _crop_image_keypoints(image, keypoints, coords, output_size)
 
     def extract_keypoints_and_bboxes(
-        self, annotations: list[dict], image_shape: tuple[int, int, int]
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, list]]:
+        self, anns: list[dict], image_shape: tuple[int, int, int]
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, np.ndarray]]:
         """
         Args:
-            annotations: COCO-style annotations
+            anns: COCO-style annotations
             image_shape: the (h, w, c) shape of the image for which to get annotations
 
         Returns:
@@ -386,7 +366,7 @@ class PoseDataset(Dataset):
             annotations_merged, where each key contains n_annotation values
         """
         return _extract_keypoints_and_bboxes(
-            annotations,
+            anns,
             image_shape,
             self.parameters.num_joints,
             self.parameters.num_unique_bpts,

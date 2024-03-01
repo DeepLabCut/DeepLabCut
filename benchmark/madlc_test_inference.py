@@ -11,7 +11,7 @@ import pandas as pd
 from ruamel.yaml import YAML
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_pytorch import DLCLoader
+from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
 from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
 
@@ -29,11 +29,14 @@ def run_inference_on_all_images(
     with open(pytorch_config_path, "r") as file:
         pytorch_config = YAML(typ='safe', pure=True).load(pytorch_config_path)
 
-    loader = DLCLoader(
-        project_root=str(project.path),
-        model_config_path=str(pytorch_config_path),
+    parameters = PoseDatasetParameters(
+        bodyparts=pytorch_config["metadata"]["bodyparts"],
+        unique_bpts=pytorch_config["metadata"]["unique_bodyparts"],
+        individuals=pytorch_config["metadata"]["individuals"],
+        with_center_keypoints=pytorch_config.get("with_center_keypoints", False),
+        color_mode=pytorch_config.get("color_mode", "RGB"),
+        cropped_image_size=pytorch_config.get("output_size", (256, 256)),
     )
-    parameters = loader.get_dataset_parameters()
     shuffle_name = snapshot.parent.parent.name
     test_data_dir = project.root / "test-images" / project.name / "labeled-data"
     video_folders = [
@@ -120,7 +123,7 @@ def run_inference_on_all_images(
         poses = np.concatenate([poses, unique_poses], axis=1)
 
     df = pd.DataFrame(poses, index=index, columns=columns)
-    df.to_hdf(output_path, "df_with_missing")
+    df.to_hdf(output_path, key="df_with_missing")
 
     if plot:
         test_config_path = str(
