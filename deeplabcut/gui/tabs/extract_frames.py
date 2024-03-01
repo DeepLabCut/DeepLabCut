@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+from pathlib import Path
+from typing import Union
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -194,7 +196,9 @@ class ExtractFrames(DefaultTab):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
-            _ = launch_napari(list(self.video_selection_widget.files)[0])
+            videos = list(self.video_selection_widget.files)
+            video_path_in_folder = self._check_symlink(videos[0])
+            _ = launch_napari(str(video_path_in_folder))
             return
 
         algo = self.extraction_algorithm_widget.currentText()
@@ -237,3 +241,37 @@ class ExtractFrames(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
         self.root.writer.write("Frames successfully extracted.")
+
+    def _check_symlink(self, video_path: Union[str, Path]) -> Path:
+        """Checks that a video is in the DeepLabCut 'videos' folder
+
+        This is required before launching manual frame extraction. When users select
+        a symlink of a video using the VideoSelectionWidget, the path is resolved to the
+        true path of the video (which leads napari-deeplabcut to save the frames in the
+        incorrect folder).
+
+        Args:
+            video_path: the path to a video in a DeepLabCut project or a video that was
+                added to the project
+
+        Returns:
+            the path to the video (or symlink) in the project's 'videos' folder
+
+        Raises:
+            FileNotFoundError if there is no symlink or video in the 'videos' folder for
+                the given video
+        """
+        video_path = Path(video_path).resolve()
+        project_videos = (Path(self.root.config).parent / "videos").resolve()
+        if video_path.parent == project_videos:
+            return video_path
+
+        symlink_path = project_videos / video_path.name
+        if not symlink_path.exists():
+            raise FileNotFoundError(
+                f"Could not find the video {video_path.name} in your project videos. "
+                f"Did you add the video (you can do so in the 'Manage Project' tab)? "
+                f"There should be a file in {symlink_path}."
+            )
+
+        return symlink_path
