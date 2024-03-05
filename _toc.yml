@@ -19,9 +19,10 @@ parts:
   chapters:
   - file: docs/PROJECT_GUI
   - file: docs/napari_GUI
-- caption: Tutorials
+- caption: Quick Start Tutorials
   chapters:
-  - file: docs/tutorial
+  - file: docs/single_animal_quick_guide
+  - file: docs/tutorial_maDLC
 - caption: Hardware Tips
   chapters:
   - file: docs/recipes/TechHardware
