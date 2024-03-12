@@ -445,7 +445,8 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-use-the-latest-updates-directly-from-github">How to use the latest updates directly from GitHub</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-pull-and-install-from-the-github-repository">Quick pull and install from the github repository</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method-1">Method 1:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method-2">Method 2:</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-on-ubuntu-18-04-lts">Installation on Ubuntu 18.04 LTS</a><ul class="nav section-nav flex-column">
@@ -478,8 +479,21 @@ document.write(`
 <span id="id1"></span><h1>Installation Tips<a class="headerlink" href="#installation-tips" title="Link to this heading">#</a></h1>
 <section id="how-to-use-the-latest-updates-directly-from-github">
 <h2>How to use the latest updates directly from GitHub<a class="headerlink" href="#how-to-use-the-latest-updates-directly-from-github" title="Link to this heading">#</a></h2>
-<p>We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code> code from!</p>
-<p>But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.</p>
+<p>We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code> code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.</p>
+<section id="method-1">
+<h3>Method 1:<a class="headerlink" href="#method-1" title="Link to this heading">#</a></h3>
+<p>If you want to <em>use</em> the latest, you can use pip and add the specific tags, such as <code class="docutils literal notranslate"><span class="pre">tf</span></code> or <code class="docutils literal notranslate"><span class="pre">gui</span></code>, etc. by modifying and running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s1">&#39;git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf]&#39;</span>
+</pre></div>
+</div>
+<p>which will download and update deeplabcut, and any dependencies that don’t match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then use the additional <code class="docutils literal notranslate"><span class="pre">--upgrade-strategy</span> <span class="pre">eager</span></code>, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">upgrade</span><span class="o">-</span><span class="n">strategy</span> <span class="n">eager</span> <span class="s1">&#39;git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf,gui]&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="method-2">
+<h3>Method 2:<a class="headerlink" href="#method-2" title="Link to this heading">#</a></h3>
+<p>If you want to be able to <em>edi</em> the source code of DeepLabCut, i.e., maybe add a feature or fix a 🐛, then you need to “clone” the source code:</p>
 <p><strong>Step 1:</strong></p>
 <ul class="simple">
 <li><p>git clone the repo into a folder on your computer:</p></li>
@@ -495,7 +509,7 @@ document.write(`
 </ul>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985288123-V8XUAY0C0ZDNJ5WBHB7Y/ke17ZwdGBToddI8pDm48kIsGBOdR9tS_SxF6KQXIcDtZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz3c8X74DzCy4P3pv-ZANOdh-3ZL9iVkcryTbbTskaGvEc42UcRKU-PHxLXKM6ZekE/terminal.png?format=750w" /></p>
 <ul class="simple">
-<li><p>Now, when you start <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or <code class="docutils literal notranslate"><span class="pre">pythonw</span></code> (mac users), and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> you are importing the folder “deeplabcut” - so any changes you make, or any changes we made before adding it to the pip package, are here.</p></li>
+<li><p>Now, when you start <code class="docutils literal notranslate"><span class="pre">ipython</span></code> and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> you are importing the folder “deeplabcut” - so any changes you make, or any changes we made before adding it to the pip package, are here.</p></li>
 <li><p>You can also check which deeplabcut you are importing by running: <code class="docutils literal notranslate"><span class="pre">deeplabcut.__file__</span></code></p></li>
 </ul>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985466026-94OCSZJ5TL8U52JLB5VU/ke17ZwdGBToddI8pDm48kNdOD5iqmBzHwUaWGKS6qHBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyQPoegsR7K4odW9xcCi1MIHmvHh95_BFXYdKinJaRhV61R4G3qaUq94yWmtQgdj1A/importlocal.png?format=750w" /></p>
@@ -505,16 +519,6 @@ document.write(`
 <p>If you make changes, you can also then utilize our test scripts. Run the desired test script found here (you will need to git clone first): <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/">DeepLabCut/DeepLabCut</a>.</p>
 <p>i.e., for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">testscript_multianimal</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-<section id="quick-pull-and-install-from-the-github-repository">
-<h3>Quick pull and install from the github repository<a class="headerlink" href="#quick-pull-and-install-from-the-github-repository" title="Link to this heading">#</a></h3>
-<p>If you just want to install the latest pre-release without editing, you can activate your anaconda env, and run</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-<p>which will download and update deeplabcut, and any dependencies that don’t match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then run</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">upgrade</span><span class="o">-</span><span class="n">strategy</span> <span class="n">eager</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">/</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 </section>
@@ -846,7 +850,8 @@ conda<span class="w"> </span>install<span class="w"> </span><span class="nv">ffm
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-use-the-latest-updates-directly-from-github">How to use the latest updates directly from GitHub</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-pull-and-install-from-the-github-repository">Quick pull and install from the github repository</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method-1">Method 1:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method-2">Method 2:</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-on-ubuntu-18-04-lts">Installation on Ubuntu 18.04 LTS</a><ul class="nav section-nav flex-column">
