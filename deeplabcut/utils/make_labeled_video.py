@@ -1088,10 +1088,16 @@ def create_video_with_all_detections(
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
             h5file = full_pickle.replace("_full.pickle", ".h5")
-            data, _ = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
             data = dict(
                 data
             )  # Cast to dict (making a copy) so items can safely be popped
+
+            x1, y1 = 0, 0
+            if cropping is not None:
+                x1, _, y1, _ = cropping
+            elif metadata.get("data", {}).get("cropping"):
+                x1, _, y1, _ = metadata["data"]["cropping_parameters"]
 
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
@@ -1115,11 +1121,6 @@ def create_video_with_all_detections(
             dotsize = cfg["dotsize"]
             clip = vp(fname=video, sname=outputname, codec="mp4v")
             ny, nx = clip.height(), clip.width()
-
-            x1 = 0
-            y1 = 0
-            if cropping is not None:
-                x1, _, y1, _ = cropping
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()

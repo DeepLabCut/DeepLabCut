@@ -390,10 +390,20 @@ def extract_outlier_frames(
             df, dataname, _, _ = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, track_method=track_method
             )
+            metadata = auxiliaryfunctions.load_video_metadata(
+                videofolder, vname, DLCscorer
+            )
             nframes = len(df)
             startindex = max([int(np.floor(nframes * cfg["start"])), 0])
             stopindex = min([int(np.ceil(nframes * cfg["stop"])), nframes])
             Index = np.arange(stopindex - startindex) + startindex
+
+            # offset if the data was cropped
+            cropping = metadata["data"]["cropping"]
+            x1, x2, y1, y2 = metadata["data"]["cropping_parameters"]
+            if cropping:
+                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1
 
             df = df.iloc[Index]
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
