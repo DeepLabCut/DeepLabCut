@@ -399,9 +399,8 @@ def extract_outlier_frames(
             Index = np.arange(stopindex - startindex) + startindex
 
             # offset if the data was cropped
-            cropping = metadata["data"]["cropping"]
-            x1, x2, y1, y2 = metadata["data"]["cropping_parameters"]
-            if cropping:
+            if metadata.get("data", {}).get("cropping"):
+                x1, _, y1, _ = metadata["data"]["cropping_parameters"]
                 df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1
                 df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1
 
