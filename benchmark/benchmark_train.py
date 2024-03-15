@@ -21,15 +21,15 @@ For single animal projects, benchmark splits were created using the
 specifying train/test indices, which can then be passed in the ShuffleCreationParameters
 to create new shuffles with the splits.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
 
-import wandb
-
 import deeplabcut
 import deeplabcut.pose_estimation_pytorch.apis as api
+import wandb
 
 from projects import MA_DLC_BENCHMARKS, SA_DLC_BENCHMARKS
 from utils import Shuffle
@@ -38,36 +38,31 @@ from utils import Shuffle
 @dataclass
 class TrainParameters:
     """Parameters to train models"""
-    batch_size: int = 16
+
+    seed: int = 42
+    batch_size: int = 1
     display_iters: int = 500
-    epochs: int | None = 100
-    save_epochs: int | None = 25
-    snapshot_path: Path | None = None
-    detector_batch_size: int | None = None
-    detector_max_epochs: int | None = None
-    detector_save_epochs: int | None = None
+    epochs: int | None = None
+    save_epochs: int = 25
+    max_snapshots: int = 5
 
     def train_kwargs(self) -> dict:
-        kwargs = {
-            "batch_size": self.batch_size,
-            "display_iters": self.display_iters,
-        }
+        kwargs = dict(
+            train_settings=dict(
+                batch_size=self.batch_size,
+                display_iters=self.display_iters,
+                seed=self.seed,
+            ),
+        )
         if self.epochs is not None:
-            kwargs["epochs"] = self.epochs
+            kwargs["train_settings"]["epochs"] = self.epochs
         if self.save_epochs is not None:
-            kwargs["save_epochs"] = self.save_epochs
-        if self.snapshot_path is not None:
-            kwargs["snapshot_path"] = str(self.snapshot_path)
-
-        detector_kwargs = {}
-        if self.detector_batch_size is not None:
-            detector_kwargs["batch_size"] = self.detector_batch_size
-        if self.detector_max_epochs is not None:
-            detector_kwargs["epochs"] = self.detector_max_epochs
-        if self.detector_save_epochs is not None:
-            detector_kwargs["save_epochs"] = self.detector_save_epochs
-        if len(detector_kwargs) > 0:
-            kwargs["detector"] = detector_kwargs
+            runner_kwargs = kwargs.get("runner", {})
+            runner_kwargs["snapshots"] = dict(
+                save_epochs=self.save_epochs,
+                max_snapshots=self.max_snapshots,
+            )
+            kwargs["runner"] = runner_kwargs
 
         return kwargs
 
@@ -75,12 +70,16 @@ class TrainParameters:
 @dataclass
 class EvalParameters:
     """Parameters for evaluation"""
+
     snapshotindex: int | list[int] | str | None = (None,)
+    detector_snapshotindex: int | None  = None
     plotting: str | bool = False
     show_errors: bool = True
 
     def eval_kwargs(self) -> dict:
         return {
+            "snapshotindex": self.snapshotindex,
+            "detector_snapshot_index": self.detector_snapshotindex,
             "plotting": self.plotting,
             "show_errors": self.show_errors,
         }
@@ -89,6 +88,7 @@ class EvalParameters:
 @dataclass
 class VideoAnalysisParameters:
     """Parameters to run video analysis"""
+
     videos: list[str]
     videotype: str
     output_folder: str = ""
@@ -97,6 +97,7 @@ class VideoAnalysisParameters:
 @dataclass
 class RunParameters:
     """Parameters on what to run for each shuffle"""
+
     shuffle: Shuffle
     train: bool = False
     evaluate: bool = False
@@ -105,14 +106,16 @@ class RunParameters:
     create_labeled_video: bool = False
     device: str = "cuda:0"
     train_params: TrainParameters | None = None
+    detector_train_params: TrainParameters | None = None
+    snapshot_path: Path | None = None
+    detector_path: Path | None = None
     eval_params: EvalParameters | None = None
     video_analysis_params: VideoAnalysisParameters | None = None
 
     def __post_init__(self):
         if (
-            (self.analyze_videos is None or self.track or self.create_labeled_video)
-            and self.video_analysis_params is None
-        ):
+            self.analyze_videos is None or self.track or self.create_labeled_video
+        ) and self.video_analysis_params is None:
             raise ValueError(f"Must specify video_analysis_params")
 
 
@@ -123,6 +126,14 @@ def run_dlc(parameters: RunParameters) -> None:
         parameters: the parameters specifying what to run, and which parameters to use
     """
     if parameters.train:
+        train_params = parameters.train_params.train_kwargs()
+        if parameters.detector_train_params is not None:
+            train_params["detector"] = parameters.detector_train_params.train_kwargs()
+        if parameters.snapshot_path is not None:
+            train_params["snapshot_path"] = parameters.snapshot_path
+        if parameters.detector_path is not None:
+            train_params["detector_path"] = parameters.detector_path
+
         api.train_network(
             str(parameters.shuffle.project.config_path()),
             shuffle=parameters.shuffle.index,
@@ -130,35 +141,32 @@ def run_dlc(parameters: RunParameters) -> None:
             transform=None,
             modelprefix=parameters.shuffle.model_prefix,
             device=parameters.device,
-            **parameters.train_params.train_kwargs(),
+            **train_params,
         )
 
     if parameters.evaluate:
-        snapshot_indices = parameters.eval_params.snapshotindex
-        if isinstance(snapshot_indices, int) or isinstance(snapshot_indices, str):
-            snapshot_indices = [snapshot_indices]
-
-        for idx in snapshot_indices:
-            api.evaluate_network(
-                config=str(parameters.shuffle.project.config_path()),
-                shuffles=[parameters.shuffle.index],
-                trainingsetindex=parameters.shuffle.trainset_index,
-                snapshotindex=idx,
-                device=parameters.device,
-                transform=None,
-                modelprefix=parameters.shuffle.model_prefix,
-                **parameters.eval_params.eval_kwargs(),
-            )
+        api.evaluate_network(
+            config=str(parameters.shuffle.project.config_path()),
+            shuffles=[parameters.shuffle.index],
+            trainingsetindex=parameters.shuffle.trainset_index,
+            device=parameters.device,
+            transform=None,
+            modelprefix=parameters.shuffle.model_prefix,
+            **parameters.eval_params.eval_kwargs(),
+        )
 
     if parameters.analyze_videos:
-        destfolder = parameters.shuffle.project.path / parameters.video_analysis_params.output_folder
+        destfolder = (
+            parameters.shuffle.project.path
+            / parameters.video_analysis_params.output_folder
+        )
         api.analyze_videos(
             config=str(parameters.shuffle.project.config_path()),
             videos=parameters.video_analysis_params.videos,
             videotype=parameters.video_analysis_params.videotype,
             trainingsetindex=parameters.shuffle.trainset_index,
             destfolder=str(destfolder),
-            snapshotindex=5,
+            snapshot_index=5,
             device=parameters.device,
             modelprefix=parameters.shuffle.model_prefix,
             batchsize=parameters.train_params.batch_size,
@@ -168,7 +176,10 @@ def run_dlc(parameters: RunParameters) -> None:
         )
 
     if parameters.track:
-        destfolder = parameters.shuffle.project.path / parameters.video_analysis_params.output_folder
+        destfolder = (
+            parameters.shuffle.project.path
+            / parameters.video_analysis_params.output_folder
+        )
         api.convert_detections2tracklets(
             config=str(parameters.shuffle.project.config_path()),
             videos=parameters.video_analysis_params.videos,
@@ -189,7 +200,10 @@ def run_dlc(parameters: RunParameters) -> None:
         )
 
     if parameters.create_labeled_video:
-        destfolder = parameters.shuffle.project.path / parameters.video_analysis_params.output_folder
+        destfolder = (
+            parameters.shuffle.project.path
+            / parameters.video_analysis_params.output_folder
+        )
         deeplabcut.create_labeled_video(
             config=str(parameters.shuffle.project.config_path()),
             videos=parameters.video_analysis_params.videos,
@@ -240,11 +254,18 @@ if __name__ == "__main__":
                 create_labeled_video=False,
                 device="cuda:0",
                 train_params=TrainParameters(
-                    batch_size=8, epochs=125, save_epochs=25,
+                    batch_size=8,
+                    epochs=200,
+                    save_epochs=25,
+                    max_snapshots=5,
                 ),
-                eval_params=EvalParameters(
-                    snapshotindex="all", plotting=False
-                )
+                detector_train_params=TrainParameters(
+                    batch_size=8,
+                    epochs=200,
+                    save_epochs=25,
+                    max_snapshots=5,
+                ),
+                eval_params=EvalParameters(snapshotindex="all", plotting=False),
             ),
         ]
     )

@@ -3,23 +3,22 @@
 Transmitted on January 3rd, 2024
 Forwarded on January 5th, 2024
 """
+
 import argparse
 import os
 from pathlib import Path
 
-import pandas as pd
+import deeplabcut.utils.auxiliaryfunctions as af
 import numpy as np
+import pandas as pd
 import tensorflow as tf
-import yaml
 from tqdm import tqdm
-
-import deeplabcut
 from deeplabcut.pose_estimation_tensorflow import pairwisedistances
-from deeplabcut.utils.auxfun_videos import imread, imresize
-from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
-from deeplabcut.utils import auxiliaryfunctions, conversioncode
+from deeplabcut.utils import conversioncode
+from deeplabcut.utils.auxfun_videos import imread, imresize
 
 
 DATA_DIR = "/home/niels/datasets/lightning-pose"
@@ -60,7 +59,7 @@ def evaluate_network(
     #    tf.logging.set_verbosity(tf.logging.WARN)
 
     # Read file path for pose_config file. >> pass it on
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = af.read_config(config)
     if gputouse is not None:  # gpu selectinon
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
@@ -83,11 +82,7 @@ def evaluate_network(
     ##################################################
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(af.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
 
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
@@ -128,12 +123,14 @@ def evaluate_network(
     # Compute predictions over images
     ##################################################
     # setting weights to corresponding snapshot.
-    dlc_cfg["init_weights"] = os.path.join(str(modelfolder), "train", Snapshots[snapindex])
+    dlc_cfg["init_weights"] = os.path.join(
+        str(modelfolder), "train", Snapshots[snapindex]
+    )
     # read how many training siterations that corresponds to.
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
     # Name for deeplabcut net (based on its parameters)
-    DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
+    DLCscorer, DLCscorerlegacy = af.get_scorer_name(
         cfg,
         shuffle,
         trainFraction,
@@ -189,9 +186,7 @@ def evaluate_network(
 
     # compute metrics
     conversioncode.guarantee_multiindex_rows(DataMachine)
-    DataCombined = pd.concat(
-        [data.T, DataMachine.T], axis=0, sort=False
-    ).T
+    DataCombined = pd.concat([data.T, DataMachine.T], axis=0, sort=False).T
 
     rmse, rmse_pcutoff = pairwisedistances(
         DataCombined,
@@ -209,7 +204,7 @@ def evaluate_network(
     num_images = len(pred_data)
     lp_pixel_error = pixel_error(
         data.to_numpy().reshape((num_images, -1, 2)),
-        pred_data.to_numpy().reshape((num_images, -1, 2))
+        pred_data.to_numpy().reshape((num_images, -1, 2)),
     )
     print(f"Test error LP      {np.nanmean(lp_pixel_error)}")
     return np.nanmean(lp_pixel_error)
@@ -218,10 +213,10 @@ def evaluate_network(
 def run_main(args):
     batch_size = 8
 
-    if args.dataset == 'mirror-mouse':
-        scorer = 'rick'
-        date = '2022-12-02'
-        date_str = 'Dec2'
+    if args.dataset == "mirror-mouse":
+        scorer = "rick"
+        date = "2022-12-02"
+        date_str = "Dec2"
         global_scale = 0.64
         if args.train_frames == 75:
             shuffle_list = [750, 751, 752, 753, 754]
@@ -231,10 +226,10 @@ def run_main(args):
             shuffle_list = [10, 11, 12, 13, 14]
             trainingsetindex = 1
             trainingset = 89
-    elif args.dataset == 'mirror-fish':
-        scorer = 'rick'
-        date = '2023-10-26'
-        date_str = 'Oct26'
+    elif args.dataset == "mirror-fish":
+        scorer = "rick"
+        date = "2023-10-26"
+        date_str = "Oct26"
         global_scale = 0.7
         if args.train_frames == 75:
             shuffle_list = [750, 751, 752, 753, 754]
@@ -244,10 +239,10 @@ def run_main(args):
             shuffle_list = [10, 11, 12, 13, 14]
             trainingsetindex = 1
             trainingset = 95
-    elif args.dataset == 'ibl-pupil':
-        scorer = 'mic'
-        date = '2022-12-06'
-        date_str = 'Dec6'
+    elif args.dataset == "ibl-pupil":
+        scorer = "mic"
+        date = "2022-12-06"
+        date_str = "Dec6"
         global_scale = 1.28
         if args.train_frames == 75:
             shuffle_list = [750, 751, 752, 753, 754]
@@ -257,10 +252,10 @@ def run_main(args):
             shuffle_list = [10, 11, 12, 13, 14]
             trainingsetindex = 1
             trainingset = 89
-    elif args.dataset == 'ibl-paw':
-        scorer = 'mic'
-        date = '2023-01-09'
-        date_str = 'Jan9'
+    elif args.dataset == "ibl-paw":
+        scorer = "mic"
+        date = "2023-01-09"
+        date_str = "Jan9"
         global_scale = 1.28
         if args.train_frames == 75:
             shuffle_list = [750, 751, 752, 753, 754]
@@ -273,15 +268,22 @@ def run_main(args):
     else:
         raise NotImplementedError
 
-    project_dir = os.path.join(DATA_DIR, '%s-%s-%s' % (args.dataset, scorer, date))
-    config_path = os.path.join(project_dir, 'config.yaml')
+    project_dir = os.path.join(DATA_DIR, "%s-%s-%s" % (args.dataset, scorer, date))
+    config_path = os.path.join(project_dir, "config.yaml")
 
     shuffle_results = []
     for shuffle in shuffle_list:
         model_folder = os.path.join(
-            project_dir, 'dlc-models', 'iteration-0', '%s%s-trainset%ishuffle%i' % (
-                args.dataset, date_str, trainingset, shuffle,
-            )
+            project_dir,
+            "dlc-models",
+            "iteration-0",
+            "%s%s-trainset%ishuffle%i"
+            % (
+                args.dataset,
+                date_str,
+                trainingset,
+                shuffle,
+            ),
         )
 
         # evaluate model on OOD data
@@ -289,8 +291,8 @@ def run_main(args):
         shuffle_results.append(
             evaluate_network(
                 config_path,
-                csv_file=os.path.join(project_dir, 'CollectedData_new.csv'),
-                resultsfilename=os.path.join(model_folder, 'predictions_new.csv'),
+                csv_file=os.path.join(project_dir, "CollectedData_new.csv"),
+                resultsfilename=os.path.join(model_folder, "predictions_new.csv"),
                 shuffle=shuffle,
                 trainingsetindex=trainingsetindex,
                 gputouse=args.gpu_id,
@@ -303,16 +305,16 @@ def run_main(args):
     print(f"  STD:  {np.std(shuffle_results):.2f}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """(dlc) python eval_lp_ood.py --dataset=mirror-fish --gpu_id=0 --train_frames=75"""
     """(dlc) python eval_lp_ood.py --dataset=mirror-mouse --gpu_id=0 --train_frames=75"""
 
     parser = argparse.ArgumentParser()
 
     # base params
-    parser.add_argument('--dataset', type=str)
-    parser.add_argument('--gpu_id', default=0, type=int)
-    parser.add_argument('--train_frames', type=int)
+    parser.add_argument("--dataset", type=str)
+    parser.add_argument("--gpu_id", default=0, type=int)
+    parser.add_argument("--train_frames", type=int)
 
     namespace, _ = parser.parse_known_args()
     run_main(namespace)

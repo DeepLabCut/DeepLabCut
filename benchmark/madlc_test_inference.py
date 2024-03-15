@@ -2,18 +2,18 @@
 
 This script can be used to run inference on the test images of a DeepLabCut project.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
 from ruamel.yaml import YAML
 from tqdm import tqdm
-
-from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
-from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
 
 from projects import MA_DLC_BENCHMARKS
 from utils import Project, Shuffle
@@ -27,7 +27,7 @@ def run_inference_on_all_images(
 ) -> None:
     pytorch_config_path = snapshot.parent / "pytorch_config.yaml"
     with open(pytorch_config_path, "r") as file:
-        pytorch_config = YAML(typ='safe', pure=True).load(pytorch_config_path)
+        pytorch_config = YAML(typ="safe", pure=True).load(pytorch_config_path)
 
     parameters = PoseDatasetParameters(
         bodyparts=pytorch_config["metadata"]["bodyparts"],
@@ -39,11 +39,7 @@ def run_inference_on_all_images(
     )
     shuffle_name = snapshot.parent.parent.name
     test_data_dir = project.root / "test-images" / project.name / "labeled-data"
-    video_folders = [
-        p
-        for p in test_data_dir.iterdir()
-        if p.is_dir()
-    ]
+    video_folders = [p for p in test_data_dir.iterdir() if p.is_dir()]
     images = []
     for video_folder in video_folders:
         images += [
@@ -52,8 +48,8 @@ def run_inference_on_all_images(
             if p.suffix == ".png"
         ]
 
-    runner, detector_runner = get_runners(
-        pytorch_config=pytorch_config,
+    runner, detector_runner = get_inference_runners(
+        model_config=pytorch_config,
         snapshot_path=str(snapshot),
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
@@ -127,13 +123,10 @@ def run_inference_on_all_images(
 
     if plot:
         test_config_path = str(
-            project.root
-            / "test-images"
-            / project.name
-            / "config.yaml"
+            project.root / "test-images" / project.name / "config.yaml"
         )
         with open(test_config_path, "r") as file:
-            test_config = YAML(typ='safe', pure=True).load(file)
+            test_config = YAML(typ="safe", pure=True).load(file)
 
         image_output_folder = output_path.parent / "images"
         image_output_folder.mkdir(exist_ok=True)

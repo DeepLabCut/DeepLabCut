@@ -12,7 +12,7 @@
 import pytest
 
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print_config, update_config
+from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print, update_config
 
 
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
@@ -34,7 +34,7 @@ def test_make_single_animal_config(bodyparts: list[str], net_type: str):
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    pretty_print_config(pytorch_pose_config)
+    pretty_print(pytorch_pose_config)
 
     # check heads are there
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
@@ -85,7 +85,7 @@ def test_backbone_plus_paf_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    pretty_print_config(pytorch_pose_config)
+    pretty_print(pytorch_pose_config)
 
     graph = [
         [i, j]
@@ -158,7 +158,7 @@ def test_make_dekr_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    pretty_print_config(pytorch_pose_config)
+    pretty_print(pytorch_pose_config)
 
     # check heads are there
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
@@ -218,7 +218,7 @@ def test_make_dlcrnet_config(
         "pytorch_config.yaml",
         net_type=net_type,
     )
-    pretty_print_config(pytorch_pose_config)
+    pretty_print(pytorch_pose_config)
     paf_graph = [
         [i, j]
         for i in range(len(bodyparts))
@@ -293,10 +293,10 @@ def test_make_tokenpose_config(
             "pytorch_config.yaml",
             net_type=net_type,
         )
-        pretty_print_config(pytorch_pose_config)
+        pretty_print(pytorch_pose_config)
         # check detector is there
         assert "detector" in pytorch_pose_config
-        assert "data_detector" in pytorch_pose_config
+        assert "data" in pytorch_pose_config["detector"]
 
 
 @pytest.mark.parametrize("data", [
@@ -324,7 +324,7 @@ def test_make_tokenpose_config(
 def test_update_config(data: dict):
     result = update_config(config=data["config"], updates=data["updates"])
     print("\nResult")
-    pretty_print_config(result)
+    pretty_print(result)
     assert result == data["expected_result"]
 
 

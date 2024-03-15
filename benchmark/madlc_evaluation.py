@@ -30,7 +30,7 @@ def check_bodyparts(gt_bodyparts: set[str], predicted_bodyparts: set[str]) -> No
         )
     if len(missing_bodyparts) > 0:
         print(
-           f"WARNING: Some GT bodyparts have no predictions: {list(missing_bodyparts)}"
+            f"WARNING: Some GT bodyparts have no predictions: {list(missing_bodyparts)}"
         )
 
 

@@ -149,7 +149,7 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
 
 
 def get_config_folder_path() -> Path:
-    """Returns: the Path to the folder containing the "configs" for PyTorch DeepLabCut"""
+    """Returns: the Path to the folder containing the "configs" for DeepLabCut 3.0"""
     dlc_parent_path = Path(auxiliaryfunctions.get_deeplabcut_path())
     return dlc_parent_path / "pose_estimation_pytorch" / "config"
 
@@ -189,7 +189,27 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     return cfg
 
 
-def pretty_print_config(
+def write_config(config_path: str | Path, config: dict, overwrite: bool = True) -> None:
+    """Writes a pose configuration file to disk
+
+    Args:
+        config_path: the path where the config should be saved
+        config: the config to save
+        overwrite: whether to overwrite the file if it already exists
+
+    Raises:
+        FileExistsError if overwrite=True and the file already exists
+    """
+    if not overwrite and Path(config_path).exists():
+        raise FileExistsError(
+            f"Cannot write to {config_path} - set overwrite=True to force"
+        )
+
+    with open(config_path, "w") as file:
+        YAML().dump(config, file)
+
+
+def pretty_print(
     config: dict,
     indent: int = 0,
     print_fn: Callable[[str], None] | None = None,
@@ -207,7 +227,7 @@ def pretty_print_config(
     for k, v in config.items():
         if isinstance(v, dict):
             print_fn(f"{indent * ' '}{k}:")
-            pretty_print_config(v, indent + 2)
+            pretty_print(v, indent + 2)
         else:
             print_fn(f"{indent * ' '}{k}: {v}")
 

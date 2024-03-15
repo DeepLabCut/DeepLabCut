@@ -54,12 +54,12 @@ def bbox_from_keypoints(
         keypoints = np.expand_dims(keypoints, axis=0)
 
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
-    bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
-    bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+    bboxes[:, :2] = np.floor(np.nanmin(keypoints[..., :2], axis=1)) - margin  # X1, Y1
+    bboxes[:, 2:4] = np.ceil(np.nanmax(keypoints[..., :2], axis=1)) + margin  # X2, Y2
     bboxes = np.clip(
         bboxes,
         a_min=[0, 0, 0, 0],
-        a_max=[image_w - 1, image_h - 1, image_w - 1, image_h - 1],
+        a_max=[image_w, image_h, image_w, image_h],
     )
     bboxes[..., 2] = bboxes[..., 2] - bboxes[..., 0]  # to width
     bboxes[..., 3] = bboxes[..., 3] - bboxes[..., 1]  # to height
@@ -338,9 +338,9 @@ def _compute_crop_bounds(
     """
     h, w = image_shape[:2]
     bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
-    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-    bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h) - np.spacing(0.0)
-    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
+    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0] + 1), 0, None)
+    bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
+    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1] + 1), 0, None)
     squashed_bbox_mask = np.logical_or(bboxes[:, 2] <= 0, bboxes[:, 3] <= 0)
     return bboxes[~squashed_bbox_mask]
 

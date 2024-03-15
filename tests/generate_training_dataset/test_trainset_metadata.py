@@ -20,10 +20,10 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 SHUFFLE_DATA = [
-    {"train_fraction": 0.5, "split": 1, "engine": "torch"},
-    {"train_fraction": 0.5, "split": 1, "engine": "tf"},
-    {"train_fraction": 0.6, "split": 2, "engine": "torch"},
-    {"train_fraction": 0.6, "split": 3, "engine": "torch"},
+    {"name": "pJun17-t50s1", "index": 1, "train_fraction": 0.5, "split": 1, "engine": "torch"},
+    {"name": "pJun17-t50s2", "index": 2, "train_fraction": 0.5, "split": 1, "engine": "tf"},
+    {"name": "pJun17-t60s1", "index": 1, "train_fraction": 0.6, "split": 2, "engine": "torch"},
+    {"name": "pJun17-t60s2", "index": 2, "train_fraction": 0.6, "split": 3, "engine": "torch"},
 ]
 SPLITS_DATA = {
     1: {"train": [0, 1], "test": [2, 3]},
@@ -42,10 +42,10 @@ DEL_SPLIT = metadata.DataSplit(train_indices=(1,), test_indices=(3, 4))
 DEL_SPLIT2 = metadata.DataSplit(train_indices=(1, 2), test_indices=(3,))
 
 SHUFFLES = {
-    1: metadata.ShuffleMetadata(0.5, 1, Engine.PYTORCH, BASE_SPLIT),
-    2: metadata.ShuffleMetadata(0.5, 2, Engine.PYTORCH, ADD_SPLIT),
-    3: metadata.ShuffleMetadata(0.5, 3, Engine.TF, BASE_SPLIT),
-    4: metadata.ShuffleMetadata(0.5, 4, Engine.PYTORCH, DEL_SPLIT),
+    1: metadata.ShuffleMetadata("pJun17-t50s1", 0.5, 1, Engine.PYTORCH, BASE_SPLIT),
+    2: metadata.ShuffleMetadata("pJun17-t50s2", 0.5, 2, Engine.PYTORCH, ADD_SPLIT),
+    3: metadata.ShuffleMetadata("pJun17-t50s3", 0.5, 3, Engine.TF, BASE_SPLIT),
+    4: metadata.ShuffleMetadata("pJun17-t50s4", 0.5, 4, Engine.PYTORCH, DEL_SPLIT),
 }
 
 
@@ -53,11 +53,11 @@ SHUFFLES = {
     "data",
     [
         {
-            "shuffles": {idx + 1: SHUFFLE_DATA[idx] for idx in [0, 1, 2]},
+            "shuffles": {SHUFFLE_DATA[idx]["name"]: SHUFFLE_DATA[idx] for idx in [0, 1, 2]},
             "splits": {idx: SPLITS_DATA[idx] for idx in [1, 2]},
         },
         {
-            "shuffles": {idx + 1: SHUFFLE_DATA[idx] for idx in [0]},
+            "shuffles": {SHUFFLE_DATA[idx]["name"]: SHUFFLE_DATA[idx] for idx in [0]},
             "splits": {idx: SPLITS_DATA[idx] for idx in [1, 2]},
         },
     ],
@@ -76,10 +76,12 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     print(data["splits"])
     print()
 
-    for idx, s in data["shuffles"].items():
+    for name, s in data["shuffles"].items():
         split = data["splits"][s["split"]]
         train, test = split["train"], split["test"]
-        _create_doc_data(cfg, trainset_dir, s["train_fraction"], idx, train, test)
+        _create_doc_data(
+            cfg, trainset_dir, s["train_fraction"], s["index"], train, test
+        )
 
     trainset_meta = metadata.TrainingDatasetMetadata.load(
         str(cfg_path), load_splits=load_splits
@@ -90,7 +92,7 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     assert len(data["shuffles"]) == len(trainset_meta.shuffles)
 
     for s in trainset_meta.shuffles:
-        shuffle_in = data["shuffles"][s.index]
+        shuffle_in = data["shuffles"][s.name]
         split_idx = data["splits"][shuffle_in["split"]]
         assert s.train_fraction == shuffle_in["train_fraction"]
         assert s.engine == Engine(shuffle_in["engine"])
@@ -107,26 +109,47 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
 
 @pytest.mark.parametrize("data", [
     {
+        "task": "ch",
+        "date": "Aug1",
         "shuffles": (SHUFFLES[1], ),
         "expected": {
-            "shuffles": {1: {"train_fraction": 0.5, "split": 1, "engine": "pytorch"}},
-        }
-    },
-    {
-        "shuffles": (SHUFFLES[1], SHUFFLES[3]),
-        "expected": {
             "shuffles": {
-                1: {"train_fraction": 0.5, "split": 1, "engine": "pytorch"},
-                3: {"train_fraction": 0.5, "split": 1, "engine": "tensorflow"},
+                SHUFFLES[1].name: {
+                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
+                }
             },
         }
     },
     {
+        "task": "t",
+        "date": "Jan1",
+        "shuffles": (SHUFFLES[1], SHUFFLES[3]),
+        "expected": {
+            "shuffles": {
+                SHUFFLES[1].name: {
+                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
+                },
+                SHUFFLES[3].name: {
+                    "index": 3,
+                    "train_fraction": 0.5,
+                    "split": 1,
+                    "engine": "tensorflow",
+                },
+            },
+        }
+    },
+    {
+        "task": "t",
+        "date": "Jan1",
         "shuffles": (SHUFFLES[1], SHUFFLES[2]),
         "expected": {
             "shuffles": {
-                1: {"train_fraction": 0.5, "split": 1, "engine": "pytorch"},
-                2: {"train_fraction": 0.5, "split": 2, "engine": "pytorch"},
+                SHUFFLES[1].name: {
+                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
+                },
+                SHUFFLES[2].name: {
+                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
+                },
             },
         },
     },
@@ -134,9 +157,18 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
         "shuffles": (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3]),
         "expected": {
             "shuffles": {
-                1: {"train_fraction": 0.5, "split": 1, "engine": "pytorch"},
-                2: {"train_fraction": 0.5, "split": 2, "engine": "pytorch"},
-                3: {"train_fraction": 0.5, "split": 1, "engine": "tensorflow"},
+                SHUFFLES[1].name: {
+                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
+                },
+                SHUFFLES[2].name: {
+                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
+                },
+                SHUFFLES[3].name: {
+                    "index": 3,
+                    "train_fraction": 0.5,
+                    "split": 1,
+                    "engine": "tensorflow",
+                },
             },
         },
     },
@@ -269,7 +301,9 @@ def test_data_split_equality(split1, split2, equal):
 @pytest.mark.parametrize("split_idx", [1, 4, 20, 1000])
 @pytest.mark.parametrize("indices", [(2, 1), (10, 1), (1, 21, 20), (1, 2, 4, 3)])
 @pytest.mark.parametrize("sorted_indices", [(1, 2), (10, 12), (3, 4), (1, 1000, 1200)])
-def test_data_split_requires_sorted(split_idx, indices, sorted_indices):
+def test_data_split_requires_sorted(
+    split_idx: int, indices: tuple[int], sorted_indices: tuple[int]
+):
     """Tests that equality functions as expected for DataSplits"""
     with pytest.raises(RuntimeError):
         metadata.DataSplit(
@@ -297,8 +331,8 @@ def test_data_split_requires_sorted(split_idx, indices, sorted_indices):
     ),
     (
         {"idx": 1, "train": [1], "test": [2], "train_fraction": 0.5},
-        {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
         {"idx": 5, "train": [1, 2, 3], "test": [4, 5], "train_fraction": 0.6},
+        {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
     ),
 ])
 def test_create_metadata_from_shuffles(tmpdir, shuffles):

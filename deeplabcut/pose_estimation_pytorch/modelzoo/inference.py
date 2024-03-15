@@ -20,14 +20,14 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
     create_df_from_prediction,
     video_inference,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     _get_config_model_paths,
     _update_config,
     raise_warning_if_called_directly,
     select_device,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path, read_config
 from deeplabcut.utils.make_labeled_video import _create_labeled_video
 
@@ -97,13 +97,13 @@ def _video_inference_superanimal(
     config = {**project_config, **model_config}
     config = _update_config(config, max_individuals, device)
 
-    pose_runner, detector_runner = get_runners(
+    pose_runner, detector_runner = get_inference_runners(
         config,
         snapshot_path=pose_model_path,
-        detector_path=detector_model_path,
-        num_bodyparts=len(config["bodyparts"]),
         max_individuals=max_individuals,
+        num_bodyparts=len(config["bodyparts"]),
         num_unique_bodyparts=0,
+        detector_path=detector_model_path
     )
     pose_task = Task(config.get("method", "BU"))
     results = {}

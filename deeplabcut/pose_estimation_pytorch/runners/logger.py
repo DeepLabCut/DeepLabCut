@@ -8,12 +8,18 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Optional
 
-import wandb as wb
+try:
+    import wandb
+    has_wandb = True
+except ImportError:
+    has_wandb = False
 
 import deeplabcut.pose_estimation_pytorch.registry as deeplabcut_pose_estimation_pytorch_registry
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
@@ -49,9 +55,6 @@ def destroy_file_logging() -> None:
     handlers = [h for h in root.handlers]
     for handler in handlers:
         root.removeHandler(handler)
-    console_logger = logging.StreamHandler()
-    console_logger.setLevel(logging.INFO)
-    root.addHandler(console_logger)
 
 
 class BaseLogger(ABC):
@@ -88,7 +91,6 @@ class WandbLogger(BaseLogger):
 
     Attributes:
         run (wandb.Run): The wandb run object associated with the current experiment.
-
     """
 
     def __init__(
@@ -96,6 +98,7 @@ class WandbLogger(BaseLogger):
         project_name: str = "deeplabcut",
         run_name: str = "tmp",
         model: PoseModel = None,
+        **wandb_kwargs,
     ) -> None:
         """Initialize the WandbLogger class.
 
@@ -103,15 +106,27 @@ class WandbLogger(BaseLogger):
             project_name: The name of the wandb project. Defaults to "deeplabcut".
             run_name: The name of the wandb run. Defaults to "tmp".
             model: The model to log. Defaults to None.
+            wandb_kwargs: extra arguments to pass to ``wb.init``
 
         Example:
-            logger = WandbLogger(project_name="my_project", run_name="exp1", model=my_model)
+            logger = WandbLogger(project_name="mice", run_name="exp1", model=my_model)
 
         """
-        if wb.run is not None:
-            wb.finish()
+        if not has_wandb:
+            raise ValueError(
+                "Cannot use ``WandbLogger`` as wandb is not installed. Please run"
+                "``pip install wandb`` if you want to log to wandb"
+            )
 
-        self.run = wb.init(project=project_name, name=run_name)
+        super().__init__()
+        if wandb.run is not None:
+            wandb.finish()
+
+        self.run = wandb.init(
+            project=project_name,
+            name=run_name,
+            **wandb_kwargs,
+        )
         if model is None:
             raise ValueError("Specify the model to track!")
         self.run.watch(model)

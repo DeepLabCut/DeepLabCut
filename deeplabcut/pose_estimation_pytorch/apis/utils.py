@@ -10,16 +10,13 @@
 #
 from __future__ import annotations
 
-import warnings
+import logging
 from pathlib import Path
 from typing import Callable
 
 import albumentations as A
-import cv2
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -32,19 +29,18 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
 )
-from deeplabcut.pose_estimation_pytorch.data.transforms import (
-    CoarseDropout,
-    ElasticTransform,
-    Grayscale,
-    KeepAspectRatioResize,
-    KeypointAwareCrop,
-)
+from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     InferenceRunner,
-    Task,
 )
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
+    Snapshot,
+    TorchSnapshotManager,
+)
+from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
 
@@ -60,6 +56,8 @@ def return_train_network_path(
         shuffle: The shuffle index to select for training
         trainingsetindex: Which TrainingsetFraction to use (note that TrainingFraction
             is a list in config.yaml)
+        modelprefix: the modelprefix for the model
+
     Returns:
         the path to the training pytorch pose configuration file
         the path to the test pytorch pose configuration file
@@ -78,224 +76,58 @@ def return_train_network_path(
     )
 
 
-def build_optimizer(optimizer_cfg: dict, model: nn.Module) -> torch.optim.Optimizer:
-    """Builds an optimizer from configuration file
-
+def get_model_snapshots(
+    index: int | str, model_folder: Path, task: Task,
+) -> list[Snapshot]:
+    """
     Args:
-        optimizer_cfg: the optimizer configuration
-        model: the model to optimize
+        index: Passing an index returns the snapshot with that index (where snapshots
+            based on their number of training epochs, and the last snapshot is the
+            "best" model based on validation metrics if one exists). Passing "best"
+            returns the best snapshot from the training run. Passing "all" returns all
+            snapshots.
+        model_folder: The path to the folder containing the snapshots
+        task: The task for which to return the snapshot
 
     Returns:
-        the optimizer
+        If index=="all", returns all snapshots. Otherwise, returns a list containing a
+        single snapshot, with the desired index.
+
+    Raises:
+        ValueError: If the index given is not valid
+        ValueError: If index=="best" but there is no saved best model
     """
-    get_optimizer = getattr(torch.optim, optimizer_cfg["type"])
-    return get_optimizer(params=model.parameters(), **optimizer_cfg["params"])
+    snapshot_manager = TorchSnapshotManager(model_folder=model_folder, task=task)
+    if isinstance(index, str) and index.lower() == "best":
+        best_snapshot = snapshot_manager.best()
+        if best_snapshot is None:
+            raise ValueError(f"No best snapshot found in {model_folder}")
+        snapshots = [best_snapshot]
+    elif isinstance(index, str) and index.lower() == "all":
+        snapshots = snapshot_manager.snapshots(include_best=True)
+    elif isinstance(index, int):
+        snapshots = [snapshot_manager.snapshots(include_best=True)[index]]
+    else:
+        raise ValueError(f"Invalid snapshotindex: {index}")
+
+    return snapshots
 
 
-def build_transforms(aug_cfg: dict, augment_bbox: bool = False) -> A.BaseCompose:
+def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> str:
     """
-    Returns the transformation pipeline based on config
-
     Args:
-        aug_cfg : dict containing all transforms information
-        augment_bbox : whether the returned augmentation pipelines should keep track of bboxes or not
-    Returns:
-        transform: callable element that can augment images, keypoints and bboxes
-    """
-    transforms = []
-
-    crop_sampling = aug_cfg.get("crop_sampling", False)
-    if crop_sampling:
-        # Add smart, keypoint-aware image cropping
-        transforms.append(
-            A.PadIfNeeded(
-                min_height=crop_sampling["height"],
-                min_width=crop_sampling["width"],
-                border_mode=cv2.BORDER_CONSTANT,
-                always_apply=True,
-            )
-        )
-        transforms.append(
-            KeypointAwareCrop(
-                crop_sampling["width"],
-                crop_sampling["height"],
-                crop_sampling["max_shift"],
-                crop_sampling["method"],
-            )
-        )
-
-    if resize_aug := aug_cfg.get("resize", False):
-        transforms += build_resize_transforms(resize_aug)
-
-    if aug_cfg.get("hflip"):
-        warnings.warn(
-            "Be careful! Do not train pose models with horizontal flips if you have"
-            " symmetric keypoints!"
-        )
-        hflip_proba = 0.5
-        if isinstance(aug_cfg["hflip"], float):
-            hflip_proba = aug_cfg["hflip"]
-        transforms.append(A.HorizontalFlip(p=hflip_proba))
-
-    scale_jitter = aug_cfg.get("scale_jitter")
-    rotation = aug_cfg.get("rotation")
-    translation = aug_cfg.get("translation")
-    if scale_jitter or rotation or translation:
-        scale = None
-        if scale_jitter:
-            scale = scale_jitter[0], scale_jitter[1]
-        rotate = None
-        if rotation:
-            rotate = (-rotation, rotation)
-        translation_px = None
-        if translation:
-            translation_px = (0, translation)
-        transforms.append(
-            A.Affine(
-                scale=scale,
-                rotate=rotate,
-                translate_px=translation_px,
-                p=0.5,
-                keep_ratio=True,
-            )
-        )
-
-    if aug_cfg.get("hist_eq", False):
-        transforms.append(A.Equalize(p=0.5))
-    if aug_cfg.get("motion_blur", False):
-        transforms.append(A.MotionBlur(p=0.5))
-    if aug_cfg.get("covering", False):
-        transforms.append(
-            CoarseDropout(
-                max_holes=10,
-                max_height=0.05,
-                min_height=0.01,
-                max_width=0.05,
-                min_width=0.01,
-                p=0.5,
-            )
-        )
-    if aug_cfg.get("elastic_transform", False):
-        transforms.append(ElasticTransform(sigma=5, p=0.5))
-    if aug_cfg.get("grayscale", False):
-        transforms.append(Grayscale(alpha=(0.5, 1.0)))
-    if aug_cfg.get("gaussian_noise", False):
-        opt = aug_cfg.get("gaussian_noise", False)  # std
-        # TODO inherit custom gaussian transform to support per_channel = 0.5
-        if type(opt) == int or type(opt) == float:
-            transforms.append(
-                A.GaussNoise(
-                    var_limit=(0, opt**2),
-                    mean=0,
-                    per_channel=True,  # Albumentations doesn't support per_channel = 0.5
-                    p=0.5,
-                )
-            )
-        else:
-            transforms.append(
-                A.GaussNoise(
-                    var_limit=(0, (0.05 * 255) ** 2), mean=0, per_channel=True, p=0.5
-                )
-            )
-
-    if aug_cfg.get("auto_padding"):
-        transforms.append(build_auto_padding(**aug_cfg["auto_padding"]))
-
-    if aug_cfg.get("normalize_images"):
-        transforms.append(
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        )
-
-    bbox_params = None
-    if augment_bbox:
-        bbox_params = A.BboxParams(format="coco", label_fields=["bbox_labels"])
-
-    return A.Compose(
-        transforms,
-        keypoint_params=A.KeypointParams(
-            "xy", remove_invisible=False, label_fields=["class_labels"]
-        ),
-        bbox_params=bbox_params,
-    )
-
-
-def build_inference_transform(
-    transform_cfg: dict, augment_bbox: bool = True
-) -> A.BasicTransform | A.BaseCompose:
-    """Build transform pipeline for inference
-
-    Mainly about normalising the images a giving them a specific shape
-
-    Args:
-        transform_cfg (dict): dict containing information about the transforms to apply
-            should be the same as the one used for build_transforms to ensure matching
-            distributions between train and test
-        augment_bbox (bool): should always be True for inference
+        snapshot: the snapshot for which to get the scorer UID
+        detector_snapshot: if a top-down model is used with a detector, the detector
+            snapshot for which to get the scorer UID
 
     Returns:
-        Union[A.BasicTransform, A.BaseCompose]: the transformation pipeline
+        the uid to use for the scorer
     """
-    list_transforms = []
-    if resize_aug := transform_cfg.get("resize"):
-        list_transforms += build_resize_transforms(resize_aug)
-
-    if transform_cfg.get("auto_padding"):
-        list_transforms.append(build_auto_padding(**transform_cfg["auto_padding"]))
-
-    if transform_cfg.get("normalize_images"):
-        list_transforms.append(
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        )
-
-    bbox_params = None
-    if augment_bbox:
-        bbox_params = A.BboxParams(format="coco", label_fields=["bbox_labels"])
-
-    return A.Compose(
-        list_transforms,
-        keypoint_params=A.KeypointParams("xy", remove_invisible=False),
-        bbox_params=bbox_params,
-    )
-
-
-def get_model_snapshots(model_folder: Path) -> list[Path]:
-    """
-    Assumes that all snapshots are named using the pattern "snapshot-{idx}.pt"
-
-    Args:
-        model_folder: the path to the folder containing the snapshots
-
-    Returns:
-        the paths of snapshots in the folder, sorted by index in ascending order
-    """
-    return sorted(
-        [
-            file
-            for file in model_folder.iterdir()
-            if ((file.suffix == ".pt") and ("detector" not in str(file)))
-        ],
-        key=lambda p: int(p.stem.split("-")[-1]),
-    )
-
-
-def get_detector_snapshots(model_folder: Path) -> list[Path]:
-    """
-    Assumes that all snapshots are named using the pattern "detector-snapshot-{idx}.pt"
-
-    Args:
-        model_folder: the path to the folder containing the snapshots
-
-    Returns:
-        the paths of detector snapshots in the folder, sorted by index in ascending order
-    """
-    return sorted(
-        [
-            file
-            for file in model_folder.iterdir()
-            if ((file.suffix == ".pt") and ("detector" in str(file)))
-        ],
-        key=lambda p: int(p.stem.split("-")[-1]),
-    )
+    snapshot_id = snapshot.uid()
+    if detector_snapshot is not None:
+        detect_id = detector_snapshot.uid()
+        snapshot_id = f"detector_{detect_id}_snapshot_{snapshot_id}"
+    return snapshot_id
 
 
 def list_videos_in_folder(
@@ -325,79 +157,6 @@ def list_videos_in_folder(
             videos.append(video_path)
 
     return videos
-
-
-def build_auto_padding(
-    min_height: int | None = None,
-    min_width: int | None = None,
-    pad_height_divisor: int | None = 1,
-    pad_width_divisor: int | None = 1,
-    position: str = "random",  # TODO: Which default to set?
-    border_mode: str = "reflect_101",  # TODO: Which default to set?
-    border_value: float | None = None,
-    border_mask_value: float | None = None,
-) -> A.PadIfNeeded:
-    """
-    Create an albumentations PadIfNeeded transform from a config
-
-    Args:
-        min_height: the minimum height of the image
-        min_width: the minimum width of the image
-        pad_height_divisor: if not None, ensures height is dividable by value of this argument
-        pad_width_divisor: if not None, ensures width is dividable by value of this argument
-        position: position of the image, one of the possible PadIfNeeded
-        border_mode: 'constant' or 'reflect_101' (see cv2.BORDER modes)
-        border_value: padding value if border_mode is 'constant'
-        border_mask_value: padding value for mask if border_mode is 'constant'
-
-    Raises:
-        ValueError:
-            Only one of 'min_height' and 'pad_height_divisor' parameters must be set
-            Only one of 'min_width' and 'pad_width_divisor' parameters must be set
-
-    Returns:
-        the auto-padding transform
-    """
-    border_modes = {
-        "constant": cv2.BORDER_CONSTANT,
-        "reflect_101": cv2.BORDER_REFLECT_101,
-    }
-    if border_mode not in border_modes:
-        raise ValueError(
-            f"Unknown border mode for auto_padding: {border_mode} "
-            f"(valid values are: {border_modes.keys()})"
-        )
-
-    return A.PadIfNeeded(
-        min_height=min_height,
-        min_width=min_width,
-        pad_height_divisor=pad_height_divisor,
-        pad_width_divisor=pad_width_divisor,
-        position=position,
-        border_mode=border_modes[border_mode],
-        value=border_value,
-        mask_value=border_mask_value,
-    )
-
-
-def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
-    height, width = resize_cfg["height"], resize_cfg["width"]
-
-    transforms = []
-    if resize_cfg.get("keep_ratio", True):
-        transforms.append(KeepAspectRatioResize(width=width, height=height, mode="pad"))
-        transforms.append(
-            A.PadIfNeeded(
-                min_height=height,
-                min_width=width,
-                border_mode=cv2.BORDER_CONSTANT,
-                position=A.PadIfNeeded.PositionType.TOP_LEFT,
-            )
-        )
-    else:
-        transforms.append(A.Resize(height, width))
-
-    return transforms
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
@@ -474,26 +233,28 @@ def build_predictions_dataframe(
     )
 
 
-def get_runners(
-    pytorch_config: dict,
-    snapshot_path: str,
+def get_inference_runners(
+    model_config: dict,
+    snapshot_path: str | Path,
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
+    device: str | None = None,
     with_identity: bool = False,
     transform: A.BaseCompose | None = None,
-    detector_path: str | None = None,
-    detector_transform: A.BaseCompose | None = None,
+    detector_path: str | Path | None = None,
+    detector_transform: A.BaseCompose | None = None
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
     Args:
-        pytorch_config: the pytorch configuration file
+        model_config: the pytorch configuration file
         snapshot_path: the path of the snapshot from which to load the weights
         max_individuals: the maximum number of individuals per image
         num_bodyparts: the number of bodyparts predicted by the model
         num_unique_bodyparts: the number of unique_bodyparts predicted by the model
         with_identity: whether the pose model has an identity head
+        device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         detector_path: the path to the detector snapshot from which to load weights,
@@ -505,15 +266,17 @@ def get_runners(
         a runner for pose estimation
         a runner for detection, if detector_path is not None
     """
-    pose_task = Task(pytorch_config.get("method", "bu"))
-    device = pytorch_config["device"]
+    pose_task = Task(model_config["method"])
+    if device is None:
+        device = resolve_device(model_config)
+
     if transform is None:
-        transform = build_inference_transform(pytorch_config["data"])
+        transform = build_transforms(model_config["data"]["inference"])
 
     detector_runner = None
     if pose_task == Task.BOTTOM_UP:
         pose_preprocessor = build_bottom_up_preprocessor(
-            color_mode="RGB", transform=transform  # TODO: read from Loader
+            color_mode=model_config["data"]["colormode"], transform=transform,
         )
         pose_postprocessor = build_bottom_up_postprocessor(
             max_individuals=max_individuals,
@@ -523,7 +286,7 @@ def get_runners(
         )
     else:
         pose_preprocessor = build_top_down_preprocessor(
-            color_mode="RGB",  # TODO: read from Loader
+            color_mode=model_config["data"]["colormode"],
             transform=transform,
             cropped_image_size=(256, 256),
         )
@@ -535,17 +298,19 @@ def get_runners(
 
         if detector_path is not None:
             if detector_transform is None:
-                detector_transform = build_inference_transform(
-                    pytorch_config["data_detector"]
-                )
+                detector_transform = build_transforms(model_config["detector"]["data"])
+
+            detector_config = model_config["detector"]["model"]
+            if "pretrained" in detector_config:
+                detector_config["pretrained"] = False
 
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
-                model=DETECTORS.build(pytorch_config["detector"]["model"]),
+                model=DETECTORS.build(detector_config),
                 device=device,
                 snapshot_path=detector_path,
                 preprocessor=build_bottom_up_preprocessor(
-                    color_mode="RGB",  # TODO: read from Loader
+                    color_mode=model_config["detector"]["data"],
                     transform=detector_transform,
                 ),
                 postprocessor=build_detector_postprocessor(
@@ -555,7 +320,7 @@ def get_runners(
 
     pose_runner = build_inference_runner(
         task=pose_task,
-        model=PoseModel.build(pytorch_config["model"]),
+        model=PoseModel.build(model_config["model"], no_pretrained_backbone=True),
         device=device,
         snapshot_path=snapshot_path,
         preprocessor=pose_preprocessor,

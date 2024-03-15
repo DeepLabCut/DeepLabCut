@@ -1,4 +1,5 @@
 """File to train a model on a COCO dataset"""
+
 from __future__ import annotations
 
 import argparse
@@ -6,18 +7,17 @@ import copy
 from pathlib import Path
 
 import torch
-
-from deeplabcut.pose_estimation_pytorch import COCOLoader
+from deeplabcut.pose_estimation_pytorch import COCOLoader, utils
 from deeplabcut.pose_estimation_pytorch.apis.train import train
-from deeplabcut.pose_estimation_pytorch.runners import Task
 from deeplabcut.pose_estimation_pytorch.runners.logger import setup_file_logging
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def main(
     project_root: str,
     train_file: str,
     test_file: str,
-    pytorch_config: str,
+    model_config_path: str,
     device: str | None,
     epochs: int | None,
     save_epochs: int | None,
@@ -26,60 +26,53 @@ def main(
     snapshot_path: str | None,
     detector_path: str | None,
 ):
-    model_folder = Path(pytorch_config).parent.parent
-    log_path = Path(pytorch_config).parent / "log.txt"
+    model_folder = Path(model_config_path).parent.parent
+    log_path = Path(model_config_path).parent / "log.txt"
     setup_file_logging(log_path)
 
     loader = COCOLoader(
         project_root=project_root,
-        model_config_path=pytorch_config,
+        model_config_path=model_config_path,
         train_json_filename=train_file,
         test_json_filename=test_file,
     )
-    pytorch_config = loader.model_cfg
-    if device is not None:
-        pytorch_config["device"] = device
+    utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
+    updates = {}
     if epochs is not None:
-        pytorch_config["epochs"] = epochs
+        updates["train_settings"]["epochs"] = epochs
     if save_epochs is not None:
-        pytorch_config["save_epochs"] = save_epochs
+        updates["train_settings"]["save_epochs"] = save_epochs
+    if detector_epochs is not None:
+        updates["detector"]["train_settings"]["epochs"] = detector_epochs
+    if detector_save_epochs is not None:
+        updates["detector"]["train_settings"]["save_epochs"] = detector_save_epochs
+    loader.update_model_cfg(updates)
 
-    pose_task = Task(pytorch_config.get("method", "bu"))
-    if pytorch_config.get("method", "bu").lower() == "td":
+    pose_task = Task(loader.model_cfg["method"])
+    if pose_task == Task.TOP_DOWN:
         logger_config = None
-        if pytorch_config.get("logger"):
-            logger_config = copy.deepcopy(pytorch_config["logger"])
+        if loader.model_cfg.get("logger"):
+            logger_config = copy.deepcopy(loader.model_cfg["logger"])
             logger_config["run_name"] += "-detector"
-
-        if detector_epochs is not None:
-            pytorch_config["detector"]["epochs"] = detector_epochs
-        if detector_save_epochs is not None:
-            pytorch_config["detector"]["save_epochs"] = detector_save_epochs
 
         if detector_epochs > 0:
             train(
                 loader=loader,
-                model_folder=str(model_folder),
-                run_config=pytorch_config["detector"],
+                run_config=loader.model_cfg["detector"],
                 task=Task.DETECT,
-                device=pytorch_config["device"],
-                transform_config=pytorch_config["data_detector"],
+                device=device,
                 logger_config=logger_config,
                 snapshot_path=detector_path,
-                transform=None,  # Load transform from config
             )
 
     train(
         loader=loader,
-        model_folder=str(model_folder),
-        run_config=pytorch_config,
+        run_config=loader.model_cfg,
         task=pose_task,
-        device=pytorch_config["device"],
-        transform_config=pytorch_config["data"],
-        logger_config=pytorch_config.get("logger"),
+        device=device,
+        logger_config=loader.model_cfg.get("logger"),
         snapshot_path=snapshot_path,
-        transform=None,  # Load transform from config
     )
 
 

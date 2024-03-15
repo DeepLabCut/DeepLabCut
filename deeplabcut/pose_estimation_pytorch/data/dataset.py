@@ -26,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_image_path_to_id,
     pad_to_length,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 @dataclass(frozen=True)
@@ -144,7 +144,7 @@ class PoseDataset(Dataset):
             bboxes,
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
-        offsets = np.zeros((self.parameters.max_num_animals, 2))
+        offsets = (0, 0)
         scales = (1, 1)
         if self.task == Task.TOP_DOWN:
             if self.parameters.cropped_image_size is None:
@@ -206,9 +206,9 @@ class PoseDataset(Dataset):
             "image": image.transpose((2, 0, 1)),
             "image_id": image_id,
             "path": image_path,
-            "original_size": original_size,
-            "offsets": offsets,
-            "scales": scales,
+            "original_size": np.array(original_size),
+            "offsets": np.array(offsets),
+            "scales": np.array(scales),
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
@@ -222,11 +222,15 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
+        if self.task == Task.TOP_DOWN:
+            num_animals = 1
+
         return {
-            "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1),
-            "keypoints_unique": keypoints_unique[..., :2],
-            "area": pad_to_length(anns["area"], num_animals, 0),
-            "boxes": pad_to_length(bboxes, num_animals, 0),
+            "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
+            "keypoints_unique": keypoints_unique[..., :2].astype(np.single),
+            "with_center_keypoints": self.parameters.with_center_keypoints,
+            "area": pad_to_length(anns["area"], num_animals, 0).astype(np.single),
+            "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
             "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
             "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
             "individual_ids": pad_to_length(

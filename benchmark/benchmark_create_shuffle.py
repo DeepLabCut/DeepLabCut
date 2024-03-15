@@ -21,6 +21,7 @@ For single animal projects, benchmark splits were created using the
 specifying train/test indices, which can then be passed in the ShuffleCreationParameters
 to create new shuffles with the splits.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -28,8 +29,13 @@ from pathlib import Path
 
 import deeplabcut
 
-from projects import MA_DLC_BENCHMARKS, MA_DLC_DATA_ROOT, SA_DLC_BENCHMARKS, SA_DLC_DATA_ROOT
-from utils import Project, create_shuffles
+from projects import (
+    MA_DLC_BENCHMARKS,
+    MA_DLC_DATA_ROOT,
+    SA_DLC_BENCHMARKS,
+    SA_DLC_DATA_ROOT,
+)
+from utils import create_shuffles, Project
 
 
 @dataclass
@@ -45,6 +51,7 @@ class ShuffleCreationParameters:
              they can be used by passing the path to the file containing the splits.
              See the create_train_test_splits.py file for more information about this.
     """
+
     project: Project
     train_fraction: float
     net_types: tuple[str, ...] | list[str]
@@ -52,7 +59,9 @@ class ShuffleCreationParameters:
     splits_file: Path | None = None
 
     def __post_init__(self):
-        self.trainset_index = self.project.cfg["TrainingFraction"].index(self.train_fraction)
+        self.trainset_index = self.project.cfg["TrainingFraction"].index(
+            self.train_fraction
+        )
 
 
 def main(shuffles_to_create: list[ShuffleCreationParameters]) -> None:

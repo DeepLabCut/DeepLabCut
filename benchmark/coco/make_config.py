@@ -1,13 +1,13 @@
 """Creates a base model configuration file to train a model on a COCO dataset
 
 """
+
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
 import torch
-
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.generate_training_dataset import MakeInference_yaml
 from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
@@ -35,7 +35,7 @@ def get_base_config(
     top_down = False
     if model_architecture.startswith("top_down_"):
         top_down = True
-        model_architecture = model_architecture[len("top_down_"):]
+        model_architecture = model_architecture[len("top_down_") :]
 
     return make_pytorch_pose_config(
         project_config=cfg,
@@ -111,4 +111,10 @@ if __name__ == "__main__":
     parser.add_argument("--train_file", default="train.json")
     parser.add_argument("--multi_animal", action="store_true")
     args = parser.parse_args()
-    main(args.project_root, args.train_file, args.output, args.model_arch, args.multi_animal)
+    main(
+        args.project_root,
+        args.train_file,
+        args.output,
+        args.model_arch,
+        args.multi_animal,
+    )

@@ -1,4 +1,5 @@
 """Evaluating COCO models"""
+
 from __future__ import annotations
 
 import argparse
@@ -7,11 +8,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
-
 from deeplabcut.pose_estimation_pytorch import COCOLoader
 from deeplabcut.pose_estimation_pytorch.apis.evaluate import evaluate
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def pycocotools_evaluation(
@@ -74,14 +74,14 @@ def main(
     if device is not None:
         pytorch_config["device"] = device
 
-    pose_runner, detector_runner = get_runners(
-        pytorch_config=pytorch_config,
+    pose_runner, detector_runner = get_inference_runners(
+        model_config=pytorch_config,
         snapshot_path=snapshot_path,
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
         with_identity=False,
-        transform=None,  # Load transform from config
+        transform=None,
         detector_path=detector_path,
         detector_transform=None,
     )

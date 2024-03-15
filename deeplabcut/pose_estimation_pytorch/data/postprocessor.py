@@ -327,7 +327,7 @@ class RescaleAndOffset(Postprocessor):
             return predictions, context
 
         updated_predictions = {}
-        scales, offsets = np.array(context["scales"]), np.array(context["offsets"])
+        scales, offsets = context["scales"], context["offsets"]
         for name, outputs in predictions.items():
             if name in self.keys_to_rescale:
                 if self.mode == self.Mode.BBOX_XYWH:
@@ -338,8 +338,7 @@ class RescaleAndOffset(Postprocessor):
                     rescaled[:, 3] = outputs[:, 3] * scales[1]
                 elif self.mode == self.Mode.KEYPOINT:
                     rescaled = outputs.copy()
-                    rescaled[:, :, 0] = outputs[:, :, 0] * scales[0] + offsets[0]
-                    rescaled[:, :, 1] = outputs[:, :, 1] * scales[1] + offsets[1]
+                    rescaled[..., :2] = outputs[..., :2] * scales + offsets
                 else:  # Mode.KEYPOINT_TD
                     if not len(outputs) == len(scales) == len(offsets):
                         raise ValueError(
@@ -353,8 +352,7 @@ class RescaleAndOffset(Postprocessor):
                         rescaled_individuals = []
                         for output, scale, offset in zip(outputs, scales, offsets):
                             output_rescaled = output.copy()
-                            output_rescaled[:, 0] = output[:, 0] * scale[0] + offset[0]
-                            output_rescaled[:, 1] = output[:, 1] * scale[1] + offset[1]
+                            output_rescaled[:, :2] = output[:, :2] * scale + offset
                             rescaled_individuals.append(output_rescaled)
                         rescaled = np.stack(rescaled_individuals)
 

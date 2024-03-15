@@ -1,10 +1,10 @@
-with_center_keypoints: true
 model:
   backbone:
     type: HRNet
     model_name: hrnet_w32
     pretrained: true
-    only_high_res: false
+    interpolate_branches: true
+    increased_channel_count: false
   backbone_output_channels: 480
   heads:
     bodypart:
@@ -43,3 +43,4 @@ model:
         num_blocks: 2
         dilation_rate: 1
         final_conv_kernel: 1
+with_center_keypoints: true

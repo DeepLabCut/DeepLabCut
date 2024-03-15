@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 import copy
-import os
+import logging
 import pickle
 import time
 from pathlib import Path
@@ -27,13 +27,14 @@ from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets imp
     convert_detections2tracklets,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_detector_snapshots,
     get_model_snapshots,
-    get_runners,
+    get_inference_runners,
+    get_scorer_uid,
     list_videos_in_folder,
 )
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
-from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
 
@@ -138,7 +139,8 @@ def analyze_videos(
     videotype: str | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    snapshotindex: int | None = None,
+    snapshot_index: int | str | None = None,
+    detector_snapshot_index: int | str | None = None,
     device: str | None = None,
     destfolder: str | None = None,
     batchsize: int | None = None,
@@ -154,7 +156,6 @@ def analyze_videos(
         - allow batch size greater than 1
         - other options such as save_as_csv
         - pass detector path or detector runner
-        - add TQDM to runner
 
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshot_index').
@@ -174,13 +175,16 @@ def analyze_videos(
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
             folder also needs to be passed
-        snapshotindex: index (starting at 0) of the snapshot to use to analyze the
+        snapshot_index: index (starting at 0) of the snapshot to use to analyze the
             videos. To evaluate the last one, use -1. For example if we have
                 - snapshot-0.pt
                 - snapshot-50.pt
                 - snapshot-100.pt
+                - snapshot-best.pt
             and we want to evaluate snapshot-50.pt, snapshotindex should be 1. If None,
-            the snapshotindex is loaded from the project configuration.
+            the snapshot index is loaded from the project configuration.
+        detector_snapshot_index: (only for top-down models) index of the detector
+            snapshot to use, used in the same way as ``snapshot_index``
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batchsize: the batch size to use for inference. Takes the value from the
@@ -210,44 +214,62 @@ def analyze_videos(
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
         train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
     )
-    model_path = _get_model_path(model_folder, snapshotindex, cfg)
-    model_epochs = int(model_path.stem.split("-")[-1])
-    dlc_scorer, dlc_scorer_legacy = auxiliaryfunctions.get_scorer_name(
-        cfg,
-        shuffle,
-        train_fraction,
-        trainingsiterations=model_epochs,
-        engine=Engine.PYTORCH,
-        modelprefix=modelprefix,
-    )
+    train_folder = model_folder / "train"
 
     # Read the inference configuration, load the model
-    pytorch_config = auxiliaryfunctions.read_plainconfig(
-        model_folder / "train" / "pytorch_config.yaml"
-    )
+    model_cfg_path = train_folder / Engine.PYTORCH.pose_cfg_name
+    model_cfg = auxiliaryfunctions.read_plainconfig(model_cfg_path)
+    pose_task = Task(model_cfg["method"])
+
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
-    pose_task = Task(pytorch_config.get("method", "BU"))
+
+    if snapshot_index is None:
+        snapshot_index = config["snapshotindex"]
+    if snapshot_index == "all":
+        logging.warning(
+            "snapshotindex is set to 'all' (in the config.yaml file or as given to "
+            "`analyze_videos`). Running video analysis with all snapshots is very "
+            "costly! Use the function 'evaluate_network' to choose the best the "
+            "snapshot. For now, changing snapshot index to -1. To evaluate another "
+            "snapshot, you can change the value in the config file or call "
+            "`analyze_videos` with your desired snapshot index."
+        )
+        snapshot_index = -1
+    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
 
     # Get general project parameters
-    bodyparts = pytorch_config["metadata"]["bodyparts"]
-    unique_bodyparts = pytorch_config["metadata"]["unique_bodyparts"]
-    individuals = pytorch_config["metadata"]["individuals"]
-    with_identity = pytorch_config["metadata"]["with_identity"]
+    bodyparts = model_cfg["metadata"]["bodyparts"]
+    unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
+    individuals = model_cfg["metadata"]["individuals"]
+    with_identity = model_cfg["metadata"]["with_identity"]
     max_num_animals = len(individuals)
 
     if device is not None:
-        pytorch_config["device"] = device
+        model_cfg["device"] = device
 
-    detector_path = None
+    print(f"Analyzing videos with {snapshot.path}")
+    detector_path, detector_snapshot = None,  None
     if pose_task == Task.TOP_DOWN:
-        # TODO: Choose which detector to use
-        detector_path = _get_detector_path(model_folder, -1, cfg)
+        if detector_snapshot_index is None:
+            detector_snapshot_index = -1
+        detector_snapshot = get_model_snapshots(
+            detector_snapshot_index, train_folder, Task.DETECT
+        )[0]
+        detector_path = detector_snapshot.path
+        print(f"  -> Using detector {detector_path}")
 
-    print(f"Analyzing videos with {model_path}")
-    pose_runner, detector_runner = get_runners(
-        pytorch_config=pytorch_config,
-        snapshot_path=str(model_path),
+    dlc_scorer, _ = auxiliaryfunctions.get_scorer_name(
+        cfg,
+        shuffle,
+        train_fraction,
+        trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
+        engine=Engine.PYTORCH,
+        modelprefix=modelprefix,
+    )
+    pose_runner, detector_runner = get_inference_runners(
+        model_config=model_cfg,
+        snapshot_path=snapshot.path,
         max_individuals=max_num_animals,
         num_bodyparts=len(bodyparts),
         num_unique_bodyparts=len(unique_bodyparts),
@@ -283,7 +305,7 @@ def analyze_videos(
             runtime.append(time.time())
             metadata = _generate_metadata(
                 cfg=cfg,
-                pytorch_config=pytorch_config,
+                pytorch_config=model_cfg,
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
                 batch_size=batchsize,
@@ -483,54 +505,6 @@ def _generate_metadata(
         "cropping_parameters": cropping_parameters,
     }
     return {"data": metadata}
-
-
-def _get_model_path(model_folder: Path, snapshot_index: int, config: dict) -> Path:
-    trained_models = get_model_snapshots(model_folder / "train")
-
-    if snapshot_index is None:
-        snapshot_index = config["snapshotindex"]
-
-    if snapshot_index == "all":
-        print(
-            "snapshotindex is set to 'all' in the config.yaml file. Running video "
-            "analysis with all snapshots is very costly! Use the function "
-            "'evaluate_network' to choose the best the snapshot. For now, changing "
-            "snapshot index to -1. To evaluate another snapshot, you can change the "
-            "value in the config file or call `analyze_videos` with your desired "
-            "snapshot index."
-        )
-        snapshot_index = -1
-
-    assert isinstance(
-        snapshot_index, int
-    ), f"snapshotindex must be an integer but was '{snapshot_index}'"
-    return trained_models[snapshot_index]
-
-
-def _get_detector_path(
-    model_folder: Path, snapshot_index: int | str, config: dict | None
-) -> Path:
-    trained_models = get_detector_snapshots(model_folder / "train")
-
-    if snapshot_index is None:
-        snapshot_index = config["snapshotindex"]
-
-    if snapshot_index == "all":
-        print(
-            "snapshotindex is set to 'all' in the config.yaml file. Running video "
-            "analysis with all snapshots is very costly! Use the function "
-            "'evaluate_network' to choose the best the snapshot. For now, changing "
-            "snapshot index to -1. To evaluate another snapshot, you can change the "
-            "value in the config file or call `analyze_videos` with your desired "
-            "snapshot index."
-        )
-        snapshot_index = -1
-
-    assert isinstance(
-        snapshot_index, int
-    ), f"snapshotindex must be an integer but was '{snapshot_index}'"
-    return trained_models[snapshot_index]
 
 
 def _generate_output_data(

@@ -1,4 +1,5 @@
 """Util methods and classes for DeepLabCut Benchmarking"""
+
 from __future__ import annotations
 
 import json
@@ -9,9 +10,9 @@ import pandas as pd
 
 import deeplabcut as dlc
 import deeplabcut.pose_estimation_pytorch.apis.utils as api_utils
-import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 @dataclass
@@ -22,6 +23,7 @@ class Project:
         name: the name of the project
         iteration: the iteration of the project
     """
+
     root: Path
     name: str
     iteration: int
@@ -32,9 +34,7 @@ class Project:
     @property
     def cfg(self) -> dict:
         if self._cfg is None:
-            self._cfg = dlc.utils.auxiliaryfunctions.read_config(
-                self.config_path()
-            )
+            self._cfg = dlc.utils.auxiliaryfunctions.read_config(self.config_path())
         return self._cfg
 
     @property
@@ -63,22 +63,19 @@ class Project:
         )
 
     def get_shuffle_folder(self, model_prefix: str | None = None):
-        base_dir = self.root / self.name
+        base = self.root / self.name
         if model_prefix is not None:
-            base_dir = base_dir / model_prefix
-
-        model_dir = base_dir / "dlc-models" / f"iteration-{self.iteration}"
-        return model_dir
+            base = base / model_prefix
+        return base / Engine.PYTORCH.model_folder_name / f"iteration-{self.iteration}"
 
     def get_shuffle_path(
-        self,
-        shuffle_index: int,
-        trainset_index: int,
-        model_prefix: str | None = None
+        self, shuffle_index: int, trainset_index: int, model_prefix: str | None = None
     ) -> Path:
         base_dir = self.get_shuffle_folder(model_prefix=model_prefix)
-        train_fraction = (100 * self.cfg["TrainingFraction"][trainset_index])
-        shuffle_name = f"{self.shuffle_prefix}-trainset{train_fraction}shuffle{shuffle_index}"
+        train_fraction = 100 * self.cfg["TrainingFraction"][trainset_index]
+        shuffle_name = (
+            f"{self.shuffle_prefix}-trainset{train_fraction}shuffle{shuffle_index}"
+        )
         return base_dir / shuffle_name
 
 
@@ -128,60 +125,84 @@ class Shuffle:
         return self.project.cfg["TrainingFraction"].index(self.train_fraction)
 
     def snapshots(self, detector: bool = False) -> list[Path]:
-        start_str = "snapshot"
+        task = Task(self.pytorch_cfg["method"])
         if detector:
-            start_str = "detector-snapshot"
-
-        all_snapshots = [
-            p for p in (self.model_folder / "train").iterdir()
-            if p.name.startswith(start_str) and p.suffix == ".pt"
+            task = Task.DETECT
+        return [
+            s.path
+            for s in api_utils.get_model_snapshots(
+                index="all",
+                model_folder=self.model_folder / "train",
+                task=task,
+            )
         ]
-        return sorted(all_snapshots, key=lambda s: int(s.stem.split("-")[-1]))
 
     def scorer(self, index: int | None = None, epochs: int | None = None) -> str:
-        if (index is None and epochs is None) or (index is not None and epochs is not None):
-            raise ValueError(f"Exactly one of (index, epochs) must be given: had {index}, {epochs}")
+        if (index is None and epochs is None) or (
+            index is not None and epochs is not None
+        ):
+            raise ValueError(
+                f"Exactly one of (index, epochs) must be given: had {index}, {epochs}"
+            )
 
         if index is None:
             index = self.epochs_to_snapshot_index(epochs)
-
-        dlc_scorer, _ = runner_utils.get_dlc_scorer(
-            str(self.project.path),
+        snapshot = api_utils.get_model_snapshots(
+            index=index,
+            model_folder=self.model_folder / "train",
+            task=Task(self.pytorch_cfg["method"]),
+        )[0]
+        dlc_scorer, _ = af.get_scorer_name(
             self.project.cfg,
-            self.train_fraction,
             self.index,
-            self.model_prefix_,
-            index,
+            self.train_fraction,
+            trainingsiterations=api_utils.get_scorer_uid(snapshot, None),
+            engine=Engine.PYTORCH,
+            modelprefix=self.model_prefix_,
         )
         return dlc_scorer
 
     def ground_truth(self) -> pd.DataFrame:
-        path_gt = self.project.path / self.trainset_folder / f"CollectedData_{self.project.cfg['scorer']}.h5"
+        path_gt = (
+            self.project.path
+            / self.trainset_folder
+            / f"CollectedData_{self.project.cfg['scorer']}.h5"
+        )
         df_ground_truth = pd.read_hdf(path_gt)
         if not isinstance(df_ground_truth, pd.DataFrame):
-            raise ValueError(f"Ground truth data did not contain a dataframe: {df_ground_truth}")
+            raise ValueError(
+                f"Ground truth data did not contain a dataframe: {df_ground_truth}"
+            )
 
         return api_utils.ensure_multianimal_df_format(df_ground_truth)
 
-    def predictions(self, index: int | None = None, epochs: int | None = None) -> pd.DataFrame:
-        if (index is None and epochs is None) or (index is not None and epochs is not None):
-            raise ValueError(f"Exactly one of (index, epochs) must be given: had {index}, {epochs}")
+    def predictions(
+        self, index: int | None = None, epochs: int | None = None
+    ) -> pd.DataFrame:
+        if (index is None and epochs is None) or (
+            index is not None and epochs is not None
+        ):
+            raise ValueError(
+                f"Exactly one of (index, epochs) must be given: had {index}, {epochs}"
+            )
 
         if index is None:
             index = self.epochs_to_snapshot_index(epochs)
 
         path_eval = (
-            self.project.path /
-            "evaluation-results" /
-            f"iteration-{self.project.iteration}" /
-            self.model_folder.name
+            self.project.path
+            / Engine.PYTORCH.results_folder_name
+            / f"iteration-{self.project.iteration}"
+            / self.model_folder.name
         )
         scorer = self.scorer(index=index, epochs=epochs)
         epochs = scorer.split("_")[-1]
         path_predictions = path_eval / f"{scorer}-snapshot-{epochs}.h5"
         df_predictions = pd.read_hdf(path_predictions)
         if not isinstance(df_predictions, pd.DataFrame):
-            raise ValueError(f"Predictions data did not contain a dataframe: {df_predictions}")
+            raise ValueError(
+                f"Predictions data did not contain a dataframe: {df_predictions}"
+            )
 
         return df_predictions
 
@@ -203,7 +224,7 @@ class Shuffle:
             self._metadata = _get_model_folder(
                 project_path=self.project.path,
                 project_config=self.project.cfg,
-                trainset_folder=self.trainset_folder,
+                trainset_folder=str(self.trainset_folder),
                 train_fraction=self.train_fraction,
                 shuffle_index=self.index,
             )
@@ -272,6 +293,8 @@ def create_shuffles(
 
     if len(shuffle_indices) == 0:
         next_index = 1
+    elif len(shuffle_indices) == 1:
+        next_index = shuffle_indices[0] + 1
     else:
         next_index = max(*shuffle_indices) + 1
 
@@ -295,6 +318,7 @@ def create_shuffles(
         testIndices=test_indices,
         net_type=net_type,
         augmenter_type="imgaug",
+        engine=Engine.PYTORCH,
     )
     return shuffles_to_create
 
@@ -307,7 +331,10 @@ def _get_model_folder(
     shuffle_index: int,
 ) -> tuple[dict, list[int], list[int]]:
     _, metadata_filename = af.get_data_and_metadata_filenames(
-        trainset_folder, train_fraction, shuffle_index, project_config,
+        trainset_folder,
+        train_fraction,
+        shuffle_index,
+        project_config,
     )
     metadata = af.load_metadata(str(project_path / metadata_filename))
     return metadata[0], [int(i) for i in metadata[1]], [int(i) for i in metadata[2]]

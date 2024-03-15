@@ -1,22 +1,39 @@
-data_detector:
-  hflip: true
-  normalize_images: true
 detector:
+  data:
+    colormode: RGB
+    inference:
+      normalize_images: true
+    train:
+      hflip: true
+      normalize_images: true
+      affine:
+        p: 0.9
+        rotation: 30
+        scaling: [ 0.5, 1.25 ]
+        translation: 40
   model:
     type: FasterRCNN
-  optimizer:
-    type: AdamW
-    params:
-      lr: 1e-4
-  scheduler:
-    type: LRListScheduler
-    params:
-      milestones: [90]
-      lr_list: [[1e-5]]
+    variant: fasterrcnn_mobilenet_v3_large_fpn
+    pretrained: true
   runner:
-    type: DetectorRunner
-    max_individuals: "num_individuals"
-  batch_size: 1
-  epochs: 250
-  save_epochs: 50
-  display_iters: 500
+    type: DetectorTrainingRunner
+    eval_interval: 1
+    optimizer:
+      type: AdamW
+      params:
+        lr: 1e-4
+    scheduler:
+      type: LRListScheduler
+      params:
+        milestones: [ 160 ]
+        lr_list: [ [ 1e-5 ] ]
+    snapshots:
+      max_snapshots: 5
+      save_epochs: 25
+      save_optimizer_state: false
+  train_settings:
+    batch_size: 1
+    dataloader_workers: 0
+    dataloader_pin_memory: true
+    display_iters: 500
+    epochs: 250

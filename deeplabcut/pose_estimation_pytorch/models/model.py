@@ -15,13 +15,13 @@ import copy
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES
+from deeplabcut.pose_estimation_pytorch.models.backbones import BaseBackbone, BACKBONES
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,
     LOSS_AGGREGATORS,
 )
 from deeplabcut.pose_estimation_pytorch.models.heads import BaseHead, HEADS
-from deeplabcut.pose_estimation_pytorch.models.necks import NECKS
+from deeplabcut.pose_estimation_pytorch.models.necks import BaseNeck, NECKS
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import (
     TARGET_GENERATORS,
@@ -38,10 +38,9 @@ class PoseModel(nn.Module):
     def __init__(
         self,
         cfg: dict,
-        backbone: torch.nn.Module,
+        backbone: BaseBackbone,
         heads: dict[str, BaseHead],
-        neck: torch.nn.Module = None,
-        stride: int = 8,
+        neck: BaseNeck | None = None,
     ) -> None:
         """
         Args:
@@ -56,7 +55,6 @@ class PoseModel(nn.Module):
         self.backbone = backbone
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
-        self.stride = stride
 
     def forward(self, x: torch.Tensor) -> dict[str, dict[str, torch.Tensor]]:
         """
@@ -136,7 +134,19 @@ class PoseModel(nn.Module):
         }
 
     @staticmethod
-    def build(cfg: dict) -> "PoseModel":
+    def build(cfg: dict, no_pretrained_backbone: bool = False) -> "PoseModel":
+        """
+        Args:
+            cfg: the configuration of the model to build
+            no_pretrained_backbone: does not load pretrained weights for the backbone,
+                even if the config asks for it (e.g., useful when loading a model for
+                inference, when fully trained weights will be loaded)
+
+        Returns:
+            the built pose model
+        """
+        if no_pretrained_backbone and "pretrained" in cfg["backbone"]:
+            cfg["backbone"]["pretrained"] = False
         backbone = BACKBONES.build(dict(cfg["backbone"]))
 
         neck = None
@@ -168,10 +178,4 @@ class PoseModel(nn.Module):
             head_cfg["predictor"] = PREDICTORS.build(head_cfg["predictor"])
             heads[name] = HEADS.build(head_cfg)
 
-        return PoseModel(
-            cfg=cfg,
-            backbone=backbone,
-            neck=neck,
-            heads=heads,
-            **cfg.get("pose_model", {})
-        )
+        return PoseModel(cfg=cfg, backbone=backbone, neck=neck, heads=heads)

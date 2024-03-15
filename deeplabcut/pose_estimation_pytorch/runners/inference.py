@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
 from typing import Any, Generic, Iterable
 
 import numpy as np
@@ -21,7 +22,8 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner, Task
+from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
@@ -34,7 +36,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self,
         model: ModelType,
         device: str = "cpu",
-        snapshot_path: str | None = None,
+        snapshot_path: str | Path | None = None,
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
     ):
@@ -50,7 +52,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
-        if self.snapshot_path is not None and len(self.snapshot_path) > 0:
+        if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(self.snapshot_path, self.device, self.model)
 
     @abstractmethod
@@ -209,7 +211,7 @@ def build_inference_runner(
     task: Task,
     model: nn.Module,
     device: str,
-    snapshot_path: str,
+    snapshot_path: str | Path,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
 ) -> InferenceRunner:

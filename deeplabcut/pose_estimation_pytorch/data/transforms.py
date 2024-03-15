@@ -10,18 +10,207 @@
 #
 from __future__ import annotations
 
+import warnings
 from typing import Any, Iterable, Sequence
 
 import albumentations as A
 import cv2
 import numpy as np
-import warnings
 from albumentations.augmentations.geometric import functional as F
 from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
 
 
+def build_transforms(augmentations: dict) -> A.BaseCompose:
+    transforms = []
+
+    if crop_sampling := augmentations.get("crop_sampling"):
+        transforms.append(
+            A.PadIfNeeded(
+                min_height=crop_sampling["height"],
+                min_width=crop_sampling["width"],
+                border_mode=cv2.BORDER_CONSTANT,
+                always_apply=True,
+            )
+        )
+        transforms.append(
+            KeypointAwareCrop(
+                crop_sampling["width"],
+                crop_sampling["height"],
+                crop_sampling["max_shift"],
+                crop_sampling["method"],
+            )
+        )
+
+    if resize_aug := augmentations.get("resize", False):
+        transforms += build_resize_transforms(resize_aug)
+
+    if augmentations.get("hflip"):
+        warnings.warn(
+            "Be careful! Do not train pose models with horizontal flips if you have"
+            " symmetric keypoints!"
+        )
+        hflip_proba = 0.5
+        if isinstance(augmentations["hflip"], float):
+            hflip_proba = augmentations["hflip"]
+        transforms.append(A.HorizontalFlip(p=hflip_proba))
+
+    if (affine := augmentations.get("affine")) is not None:
+        scaling = affine.get("scaling")
+        rotation = affine.get("rotation")
+        translation = affine.get("translation")
+        if rotation is not None:
+            rotation = (-rotation, rotation)
+        if translation is not None:
+            translation = (0, translation)
+
+        transforms.append(
+            A.Affine(
+                scale=scaling,
+                rotate=rotation,
+                translate_px=translation,
+                p=affine.get("p", 0.9),
+                keep_ratio=True,
+            )
+        )
+
+    if augmentations.get("hist_eq", False):
+        transforms.append(A.Equalize(p=0.5))
+    if augmentations.get("motion_blur", False):
+        transforms.append(A.MotionBlur(p=0.5))
+    if augmentations.get("covering", False):
+        transforms.append(
+            CoarseDropout(
+                max_holes=10,
+                max_height=0.05,
+                min_height=0.01,
+                max_width=0.05,
+                min_width=0.01,
+                p=0.5,
+            )
+        )
+    if augmentations.get("elastic_transform", False):
+        transforms.append(ElasticTransform(sigma=5, p=0.5))
+    if augmentations.get("grayscale", False):
+        transforms.append(Grayscale(alpha=(0.5, 1.0)))
+    if noise := augmentations.get("gaussian_noise", False):
+        # TODO inherit custom gaussian transform to support per_channel = 0.5
+        if not isinstance(noise, (int, float)):
+            noise = 0.05 * 255
+        transforms.append(
+            A.GaussNoise(
+                var_limit=(0, noise ** 2),
+                mean=0,
+                per_channel=True,
+                # Albumentations doesn't support per_channel = 0.5
+                p=0.5,
+            )
+        )
+
+    if augmentations.get("auto_padding"):
+        transforms.append(build_auto_padding(**augmentations["auto_padding"]))
+
+    if augmentations.get("normalize_images"):
+        transforms.append(
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        )
+
+    return A.Compose(
+        transforms,
+        keypoint_params=A.KeypointParams(
+            "xy", remove_invisible=False, label_fields=["class_labels"]
+        ),
+        bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
+    )
+
+
+def build_auto_padding(
+    min_height: int | None = None,
+    min_width: int | None = None,
+    pad_height_divisor: int | None = 1,
+    pad_width_divisor: int | None = 1,
+    position: str = "random",  # TODO: Which default to set?
+    border_mode: str = "reflect_101",  # TODO: Which default to set?
+    border_value: float | None = None,
+    border_mask_value: float | None = None,
+) -> A.PadIfNeeded:
+    """
+    Create an albumentations PadIfNeeded transform from a config
+
+    Args:
+        min_height: the minimum height of the image
+        min_width: the minimum width of the image
+        pad_height_divisor: if not None, ensures height is dividable by value of this argument
+        pad_width_divisor: if not None, ensures width is dividable by value of this argument
+        position: position of the image, one of the possible PadIfNeeded
+        border_mode: 'constant' or 'reflect_101' (see cv2.BORDER modes)
+        border_value: padding value if border_mode is 'constant'
+        border_mask_value: padding value for mask if border_mode is 'constant'
+
+    Raises:
+        ValueError:
+            Only one of 'min_height' and 'pad_height_divisor' parameters must be set
+            Only one of 'min_width' and 'pad_width_divisor' parameters must be set
+
+    Returns:
+        the auto-padding transform
+    """
+    border_modes = {
+        "constant": cv2.BORDER_CONSTANT,
+        "reflect_101": cv2.BORDER_REFLECT_101,
+    }
+    if border_mode not in border_modes:
+        raise ValueError(
+            f"Unknown border mode for auto_padding: {border_mode} "
+            f"(valid values are: {border_modes.keys()})"
+        )
+
+    return A.PadIfNeeded(
+        min_height=min_height,
+        min_width=min_width,
+        pad_height_divisor=pad_height_divisor,
+        pad_width_divisor=pad_width_divisor,
+        position=position,
+        border_mode=border_modes[border_mode],
+        value=border_value,
+        mask_value=border_mask_value,
+    )
+
+
+def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
+    height, width = resize_cfg["height"], resize_cfg["width"]
+
+    transforms = []
+    if resize_cfg.get("keep_ratio", True):
+        transforms.append(KeepAspectRatioResize(width=width, height=height, mode="pad"))
+        transforms.append(
+            A.PadIfNeeded(
+                min_height=height,
+                min_width=width,
+                border_mode=cv2.BORDER_CONSTANT,
+                position=A.PadIfNeeded.PositionType.TOP_LEFT,
+            )
+        )
+    else:
+        transforms.append(A.Resize(height, width))
+    return transforms
+
+
 class KeypointAwareCrop(A.RandomCrop):
+    """Random crop for an image around keypoints
+
+    Args:
+        width: Crop images down to this maximum width.
+        height: Crop images down to this maximum height.
+        max_shift: Maximum allowed shift of the cropping center position
+            as a fraction of the crop size.
+        crop_sampling: Crop centers sampling method. Must be either:
+            "uniform" (randomly over the image),
+            "keypoints" (randomly over the annotated keypoints),
+            "density" (weighing preferentially dense regions of keypoints),
+            "hybrid" (alternating randomly between "uniform" and "density").
+    """
+
     def __init__(
         self,
         width: int,
@@ -29,18 +218,6 @@ class KeypointAwareCrop(A.RandomCrop):
         max_shift: float = 0.4,
         crop_sampling: str = "hybrid",
     ):
-        """
-        Args:
-            width: Crop images down to this maximum width.
-            height: Crop images down to this maximum height.
-            max_shift: Maximum allowed shift of the cropping center position
-                as a fraction of the crop size.
-            crop_sampling: Crop centers sampling method. Must be either:
-                "uniform" (randomly over the image),
-                "keypoints" (randomly over the annotated keypoints),
-                "density" (weighing preferentially dense regions of keypoints),
-                "hybrid" (alternating randomly between "uniform" and "density").
-        """
         super().__init__(height, width, always_apply=True)
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
@@ -74,7 +251,7 @@ class KeypointAwareCrop(A.RandomCrop):
             center = np.random.random(2)
         else:
             h, w = img.shape[:2]
-            kpts = np.asarray(kpts)[:, :2]
+            kpts = np.array([[k[0], k[1]] for k in kpts])
             kpts = kpts[~np.isnan(kpts).all(axis=1)]
             n_kpts = kpts.shape[0]
             inds = np.arange(n_kpts)
@@ -173,7 +350,7 @@ class KeepAspectRatioResize(A.DualTransform):
 class Grayscale(A.ToGray):
     def __init__(
         self,
-        alpha: float | int | tuple[float] = 1.0,
+        alpha: float | int | tuple[float, float] = 1.0,
         always_apply: bool = False,
         p: float = 0.5,
     ):
@@ -223,7 +400,7 @@ class ElasticTransform(A.ElasticTransform):
         self,
         alpha: float = 20.0,
         sigma: float = 5.0,  # As in DLC TF
-        alpha_affine: float = 0.0,  # Deactivate affine transformation prior to elastic deformation
+        alpha_affine: float = 0.0,  # Deactivate affine prior to elastic deformation
         interpolation: int = cv2.INTER_CUBIC,  # As in imgaug
         border_mode: int = cv2.BORDER_CONSTANT,  # As in imgaug
         value: float | None = None,
@@ -293,11 +470,11 @@ class CoarseDropout(A.CoarseDropout):
     def __init__(
         self,
         max_holes: int = 8,
-        max_height: int = 8,
-        max_width: int = 8,
+        max_height: int | float = 8,
+        max_width: int | float = 8,
         min_holes: int | None = None,
-        min_height: int | None = None,
-        min_width: int | None = None,
+        min_height: int | float | None = None,
+        min_width: int | float | None = None,
         fill_value: int = 0,
         mask_fill_value: int | None = None,
         always_apply: bool = False,

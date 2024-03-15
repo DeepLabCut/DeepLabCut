@@ -13,7 +13,7 @@ import random
 import numpy as np
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.apis.utils as dlc_api_utils
+import deeplabcut.pose_estimation_pytorch.data.transforms as transforms
 
 transform_dicts = [
     {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
@@ -55,13 +55,7 @@ def _get_random_params(transform_idx):
     [_get_random_params(i) for i in range(4)],
 )
 def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals):
-    transform_bbox_aug = dlc_api_utils.build_transforms(
-        transform_dict, augment_bbox=True
-    )
-    transform_inference = dlc_api_utils.build_inference_transform(
-        transform_dict, augment_bbox=True
-    )
-
+    transform_bbox_aug = transforms.build_transforms(transform_dict)
     w, h = size_image
     for i in range(10):
         test_image = np.random.randint(0, 255, (h, w, 3), dtype=np.uint8)
@@ -71,9 +65,9 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
         keypoints = np.random.randint(0, min(w, h), (num_keypoints, 2))
 
         with pytest.raises(Exception):
-            transformed = transform_inference(image=test_image)
-            transformed = transform_inference(image=test_image, bboxes=bboxes.copy())
-            transformed = transform_inference(
+            transformed = transform_bbox_aug(image=test_image)
+            transformed = transform_bbox_aug(image=test_image, bboxes=bboxes.copy())
+            transformed = transform_bbox_aug(
                 image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy()
             )
 
@@ -84,19 +78,8 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
             bbox_labels=np.arange(num_animals),
             class_labels=[0 for _ in range(len(keypoints))]
         )
-        transformed_inference = transform_inference(
-            image=test_image,
-            keypoints=[],
-            bboxes=bboxes.copy(),
-            bbox_labels=np.arange(num_animals),
-            class_labels=[0 for _ in range(len(keypoints))]
-        )
 
         if "resize" in transform_dict.keys():
-            assert transformed_inference["image"].shape[:2] == (
-                transform_dict["resize"]["height"],
-                transform_dict["resize"]["width"],
-            )
             assert transformed_with_bbox["image"].shape[:2] == (
                 transform_dict["resize"]["height"],
                 transform_dict["resize"]["width"],
@@ -107,9 +90,7 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
                 transform_dict["auto_padding"]["pad_height_divisor"],
                 transform_dict["auto_padding"]["pad_width_divisor"],
             )
-            assert transformed_inference["image"].shape[0] % modh == 0
             assert transformed_with_bbox["image"].shape[0] % modh == 0
-            assert transformed_inference["image"].shape[1] % modw == 0
             assert transformed_with_bbox["image"].shape[1] % modw == 0
 
         assert len(transformed_with_bbox["keypoints"]) == len(keypoints)

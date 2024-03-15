@@ -12,7 +12,7 @@
 import numpy as np
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.apis.scoring as scoring
+import deeplabcut.pose_estimation_pytorch.metrics.scoring as scoring
 
 
 @pytest.mark.parametrize(

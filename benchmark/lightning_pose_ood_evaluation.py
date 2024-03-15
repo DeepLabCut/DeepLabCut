@@ -1,23 +1,29 @@
 """Evaluate LightningPose OOD data"""
+
 from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-
 from deeplabcut.pose_estimation_pytorch import DLCLoader, PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.apis.scoring import pair_predicted_individuals_with_gt, get_scores
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.data.utils import map_id_to_annotations
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
+    get_scores,
+    pair_predicted_individuals_with_gt,
+)
+from deeplabcut.pose_estimation_pytorch.task import Task
+from tqdm import tqdm
 
 from benchmark_lightning_pose import LP_DLC_BENCHMARKS
 from utils import Project, Shuffle
 
 
 def load_ground_truth(gt_data, parameters: PoseDatasetParameters):
-    annotations = DLCLoader.filter_annotations(gt_data["annotations"], task=Task.BOTTOM_UP)
+    annotations = DLCLoader.filter_annotations(
+        gt_data["annotations"], task=Task.BOTTOM_UP
+    )
     img_to_ann_map = map_id_to_annotations(annotations)
 
     ground_truth_dict = {}
@@ -67,8 +73,8 @@ def evaluate_ood(
 
     best_results = {"rmse": 1_000_000}
     for snapshot in snapshots:
-        runner, detector_runner = get_runners(
-            pytorch_config=shuffle.pytorch_cfg,
+        runner, detector_runner = get_inference_runners(
+            model_config=shuffle.pytorch_cfg,
             snapshot_path=str(snapshot),
             max_individuals=parameters.max_num_animals,
             num_bodyparts=parameters.num_joints,
@@ -88,7 +94,9 @@ def evaluate_ood(
 
         params = loader.get_dataset_parameters()
         gt_data = loader.to_coco(str(shuffle.project.path), df_ood, params)
-        annotations_with_bbox = DLCLoader._compute_bboxes(gt_data["images"], gt_data["annotations"])
+        annotations_with_bbox = DLCLoader._compute_bboxes(
+            gt_data["images"], gt_data["annotations"]
+        )
         gt_data["annotations"] = annotations_with_bbox
         gt_keypoints = load_ground_truth(gt_data, loader.get_dataset_parameters())
 

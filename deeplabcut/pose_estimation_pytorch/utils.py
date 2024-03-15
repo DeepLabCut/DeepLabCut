@@ -13,6 +13,7 @@ from __future__ import annotations
 import abc
 import os
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -44,30 +45,27 @@ def fix_seeds(seed: int) -> None:
     torch.backends.cudnn.benchmark = False
 
 
-def is_seq_of(seq, expected_type, seq_type=None):
-    """Check whether it is a sequence of some type.
+def resolve_device(model_config: dict) -> str:
+    """Determines which device should be used from the model config
+
+    When the device is set to 'auto':
+        If an Nvidia GPU is available, selects the device as cuda:0.
+        Selects 'mps' if available (on macOS) and the net type is compatible.
+        Otherwise, returns 'cpu'.
+    Otherwise, simply returns the selected device
+
     Args:
-        seq: The sequence to be checked.
-        expected_type: Expected type of sequence items.
-        seq_type: Expected sequence type.
+        model_config: the configuration for the pose model
+
     Returns:
-        Whether the sequence is valid.
+        the device on which training should be run
     """
-    if seq_type is None:
-        exp_seq_type = abc.Sequence
-    else:
-        assert isinstance(seq_type, type)
-        exp_seq_type = seq_type
-    if not isinstance(seq, exp_seq_type):
-        return False
-    for item in seq:
-        if not isinstance(item, expected_type):
-            return False
-    return True
-
-
-def get_pytorch_config(modelfolder):
-    pytorch_config_path = os.path.join(modelfolder, "train", "pytorch_config.yaml")
-    pytorch_cfg = read_plainconfig(pytorch_config_path)
-
-    return pytorch_cfg
+    device = model_config["device"]
+    supports_mps = "resnet" in model_config.get("net_type", "resnet")
+    if device == "auto":
+        if torch.cuda.is_available():
+            return "cuda:0"
+        elif supports_mps and torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
+    return device

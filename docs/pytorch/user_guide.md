@@ -44,7 +44,7 @@ You can find all DLC 3.0 API methods and the parameters they can be called with 
 
 | API Method                     | Implemented | Parameters not yet implemented                                                                                                | Parameters invalid for pytorch                      |
 |--------------------------------|:-----------:|-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| `train_network`                |     🟢      | `max_snapshots_to_keep`, `keepdeconvweights`                                                                                  | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
+| `train_network`                |     🟢      | `keepdeconvweights`                                                                                                           | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
 | `return_train_network_path`    |     🟢      |                                                                                                                               |                                                     |
 | `evaluate_network`             |     🟢      | `comparisonbodyparts`, `rescale`, `per_keypoint_evaluation`                                                                   |                                                     |
 | `return_evaluate_network_data` |     🔴      |                                                                                                                               | `TFGPUinference`, `allow_growth`                    |

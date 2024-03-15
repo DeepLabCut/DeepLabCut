@@ -43,10 +43,19 @@ class DLCLoader(Loader):
         """
         self._project_root = Path(config).parent
         self._project_config = af.read_config(str(config))
+        self._shuffle = shuffle
+        self._train_frac = self._project_config["TrainingFraction"][trainset_index]
         self._model_folder = af.get_model_folder(
-            self._project_config["TrainingFraction"][trainset_index],
+            self._train_frac,
             shuffle,
             self._project_config,
+            engine=Engine.PYTORCH,
+            modelprefix=modelprefix,
+        )
+        self._evaluation_folder = af.get_evaluation_folder(
+            trainFraction=self._train_frac,
+            shuffle=shuffle,
+            cfg=self._project_config,
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
@@ -64,9 +73,29 @@ class DLCLoader(Loader):
         }
 
     @property
-    def df(self):
+    def df(self) -> pd.DataFrame:
         """Returns: The ground truth dataframe. Should not be modified."""
         return self._df
+
+    @property
+    def evaluation_folder(self) -> Path:
+        """Returns: The path to the evaluation folder"""
+        return self._project_root / self._evaluation_folder
+
+    @property
+    def project_path(self) -> Path:
+        """Returns: The path to the DeepLabCut project"""
+        return self._project_root
+
+    @property
+    def shuffle(self) -> int:
+        """Returns: the shuffle being loaded"""
+        return self._shuffle
+
+    @property
+    def train_fraction(self) -> float:
+        """Returns: the fraction of the dataset used for training"""
+        return self._train_frac
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.

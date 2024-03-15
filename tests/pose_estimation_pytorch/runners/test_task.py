@@ -11,7 +11,7 @@
 """ Tests the Task enum """
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.runners.base import Task
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 @pytest.mark.parametrize(

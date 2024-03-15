@@ -1,7 +1,9 @@
 """DeepLabCut projects to benchmark"""
+
 from __future__ import annotations
 
 from pathlib import Path
+
 from utils import Project
 
 MA_DLC_DATA_ROOT = Path("/home/niels/datasets/ma_dlc")

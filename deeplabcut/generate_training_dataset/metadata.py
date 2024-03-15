@@ -47,6 +47,7 @@ class DataSplit:
 @dataclass(frozen=True)
 class ShuffleMetadata:
     """Class representing the metadata for a shuffle"""
+    name: str
     train_fraction: float
     index: int
     engine: Engine
@@ -75,6 +76,7 @@ class ShuffleMetadata:
         with open(doc_path, "rb") as f:
             _, train_idx, test_idx, _ = pickle.load(f)
         return ShuffleMetadata(
+            name=self.name,
             train_fraction=self.train_fraction,
             index=self.index,
             engine=self.engine,
@@ -106,9 +108,10 @@ class TrainingDatasetMetadata:
         trainset_metadata.save()
 
         # Adding a new shuffle to the metadata file
-        config = "/data/my-dlc-project/config.yaml"
+        config = "/data/my-dlc-project-2008-06-17/config.yaml"
         trainset_metadata = TrainingDatasetMetadata.load(config)
         new_shuffle = ShuffleMetadata(
+            name="my-dlc-projectJun17-trainset60shuffle5",
             train_fraction=0.6,
             index=5,
             engine=compat.Engine.PYTORCH,
@@ -130,11 +133,13 @@ class TrainingDatasetMetadata:
         Raises:
             ValueError if the indices are not sorted in increasing order
         """
-        shuffle_indices = np.array([s.index for s in self.shuffles])
-        if not np.all(shuffle_indices[:-1] < shuffle_indices[1:]):
-            raise RuntimeError(
-                f"The shuffles given must be sorted in order of ascending index"
-            )
+        indices = [[s.train_fraction, s.index] for s in self.shuffles]
+        for (frac1, idx1), (frac2, idx2) in zip(indices[:-1], indices[1:]):
+            if not (frac1 < frac2 or (frac1 == frac2 and idx1 < idx2)):
+                raise RuntimeError(
+                    "The shuffles given must be sorted in order of ascending training "
+                    f"fraction and index. Found {self.shuffles}"
+                )
 
     def add(
         self,
@@ -209,8 +214,9 @@ class TrainingDatasetMetadata:
                 split_index = len(data_splits) + 1
                 data_splits[s.split] = split_index
 
-            metadata["shuffles"][s.index] = {
+            metadata["shuffles"][s.name] = {
                 "train_fraction": s.train_fraction,
+                "index": s.index,
                 "split": split_index,
                 "engine": s.engine.aliases[0],
             }
@@ -240,10 +246,11 @@ class TrainingDatasetMetadata:
             metadata = YAML(typ="safe", pure=True).load(file)
 
         shuffles = []
-        for shuffle_index, shuffle_metadata in metadata["shuffles"].items():
+        for shuffle_name, shuffle_metadata in metadata["shuffles"].items():
             shuffle = ShuffleMetadata(
+                name=shuffle_name,
                 train_fraction=shuffle_metadata["train_fraction"],
-                index=shuffle_index,
+                index=shuffle_metadata["index"],
                 engine=Engine(shuffle_metadata["engine"]),
                 split=None,
             )
@@ -252,7 +259,7 @@ class TrainingDatasetMetadata:
 
             shuffles.append(shuffle)
 
-        shuffles.sort(key=lambda s: s.index)
+        shuffles.sort(key=lambda s: (s.train_fraction, s.index))
         return TrainingDatasetMetadata(project_config=cfg, shuffles=tuple(shuffles))
 
     @staticmethod
@@ -281,12 +288,13 @@ class TrainingDatasetMetadata:
             if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
         ]
 
+        prefix = cfg["Task"] + cfg["date"]
         shuffles = []
         existing_splits: dict[tuple[tuple[int, ...], tuple[int, ...]], int] = {}
         for doc_path in shuffle_docs:
-            shuffle_index = int(doc_path.stem.split("shuffle")[-1])
+            index = int(doc_path.stem.split("shuffle")[-1])
             with open(doc_path, "rb") as f:
-                _, train_idx, test_idx, train_fraction = pickle.load(f)
+                _, train_idx, test_idx, train_frac = pickle.load(f)
 
             engine = Engine.TF
             train_idx = tuple(sorted([int(idx) for idx in train_idx]))
@@ -298,14 +306,15 @@ class TrainingDatasetMetadata:
 
             shuffles.append(
                 ShuffleMetadata(
-                    train_fraction=train_fraction,
-                    index=shuffle_index,
+                    name=f"{prefix}-trainset{int(100 * train_frac)}shuffle{index}",
+                    train_fraction=train_frac,
+                    index=index,
                     engine=engine,
                     split=DataSplit(train_indices=train_idx, test_indices=test_idx),
                 )
             )
 
-        shuffles = tuple(sorted(shuffles, key=lambda s: s.index))
+        shuffles = tuple(sorted(shuffles, key=lambda s: (s.train_fraction, s.index)))
         return TrainingDatasetMetadata(
             project_config=cfg,
             shuffles=shuffles,
@@ -349,8 +358,10 @@ def update_metadata(
         ValueError: if overwrite=False and there is already a shuffle with the given
             index in the metadata file.
     """
+    prefix = cfg["Task"] + cfg["date"]
     metadata = TrainingDatasetMetadata.load(cfg)
     new_shuffle = ShuffleMetadata(
+        name=f"{prefix}-trainset{int(100 * train_fraction)}shuffle{shuffle}",
         train_fraction=train_fraction,
         index=shuffle,
         engine=engine,

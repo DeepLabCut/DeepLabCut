@@ -75,6 +75,7 @@ key_set = {
 anno_key_set = {
     "keypoints",
     "keypoints_unique",
+    "with_center_keypoints",
     "area",
     "boxes",
     "is_crowd",

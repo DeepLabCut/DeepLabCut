@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 from abc import ABC
-from enum import Enum
 from pathlib import Path
 from typing import Generic, TypeVar
 
@@ -20,23 +19,6 @@ import torch.nn as nn
 
 
 ModelType = TypeVar("ModelType", bound=nn.Module)
-
-
-class Task(Enum):
-    """A task to solve"""
-
-    BOTTOM_UP = "BU"
-    DETECT = "DT"
-    TOP_DOWN = "TD"
-
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, str):
-            value = value.upper()
-            for member in cls:
-                if member.value == value:
-                    return member
-        return None
 
 
 class Runner(ABC, Generic[ModelType]):
@@ -63,7 +45,7 @@ class Runner(ABC, Generic[ModelType]):
 
     @staticmethod
     def load_snapshot(
-        snapshot_path: str,
+        snapshot_path: str | Path,
         device: str,
         model: ModelType,
         optimizer: torch.optim.Optimizer | None = None,
@@ -71,7 +53,7 @@ class Runner(ABC, Generic[ModelType]):
         """
         Args:
             snapshot_path: the path containing the model weights to load
-            device: the device on which to load the model
+            device: the device on which the model should be loaded
             model: the model for which the weights are loaded
             optimizer: if defined, the optimizer weights to load
 
@@ -79,8 +61,8 @@ class Runner(ABC, Generic[ModelType]):
             the number of epochs the model was trained for
         """
         snapshot = torch.load(snapshot_path, map_location=device)
-        model.load_state_dict(snapshot["model_state_dict"])
+        model.load_state_dict(snapshot["model"])
         if optimizer is not None:
-            optimizer.load_state_dict(snapshot["optimizer_state_dict"])
+            optimizer.load_state_dict(snapshot["optimizer"])
 
-        return snapshot["epoch"]
+        return snapshot["metadata"]["epoch"]

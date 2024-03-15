@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_pytorch import Loader
-from deeplabcut.pose_estimation_pytorch.apis.scoring import (
+from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     get_scores,
     align_predicted_individuals_to_gt,
 )

@@ -13,7 +13,7 @@ import albumentations as A
 import numpy as np
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.apis.utils import build_resize_transforms
+from deeplabcut.pose_estimation_pytorch.data.transforms import build_resize_transforms
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import AugmentImage
 
 

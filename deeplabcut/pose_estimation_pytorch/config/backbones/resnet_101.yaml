@@ -4,16 +4,13 @@ model:
     model_name: resnet101
     pretrained: true
   backbone_output_channels: 2048
-optimizer:
-  type: AdamW
-  params:
-    lr: 0.001
-scheduler:
-  type: LRListScheduler
-  params:
-    lr_list:
-    - - 0.0001
-    - - 0.00001
-    milestones:
-    - 90
-    - 120
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.001
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
+      milestones: [ 160, 190 ]

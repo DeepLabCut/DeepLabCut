@@ -1,34 +1,42 @@
-batch_size: 1
-cfg_path:
-colormode: RGB
 data:
-  covering: true
-  gaussian_noise: 12.75
-  hist_eq: true
-  motion_blur: true
-  normalize_images: true
-  rotation: 30
-  scale_jitter:
-  - 0.5
-  - 1.25
-device: cuda
-display_iters: 50
-epochs: 200
-optimizer:
-  type: AdamW
-  params:
-    lr: 0.0001
-runner:
-  type: PoseRunner
-save_epochs: 50
-scheduler:
-  type: LRListScheduler
-  params:
-    lr_list:
-    - - 0.00001
-    - - 0.000001
-    milestones:
-    - 90
-    - 120
-seed: 42
+  colormode: RGB
+  inference:
+    normalize_images: true
+  train:
+    affine:
+      p: 0.9
+      rotation: 30
+      scaling: [ 0.5, 1.25 ]
+      translation: 40
+    covering: true
+    gaussian_noise: 12.75
+    hist_eq: true
+    motion_blur: true
+    normalize_images: true
+device: auto
 method: bu
+runner:
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 1
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-5 ], [ 1e-6 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: true
+  display_iters: 500
+  epochs: 200
+  seed: 42

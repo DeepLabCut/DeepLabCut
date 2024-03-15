@@ -8,9 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import shutil
 import string
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +35,26 @@ def log_step(message: Any) -> None:
 def cleanup(test_path: Path) -> None:
     if test_path.exists():
         shutil.rmtree(test_path)
+
+
+@dataclass(frozen=True)
+class SyntheticProjectParameters:
+    multianimal: bool
+    num_bodyparts: int
+    num_frames: int = 10
+    num_individuals: int = 1
+    num_unique: int = 0
+    identity: bool = False
+    frame_shape: tuple[int, int] = (480, 640)
+
+    def bodyparts(self) -> list[str]:
+        return [i for i in string.ascii_lowercase[:self.num_bodyparts]]
+
+    def unique(self) -> list[str]:
+        return [f"unique_{i}" for i in string.ascii_lowercase[:self.num_unique]]
+
+    def individuals(self) -> list[str]:
+        return [f"animal_{i}" for i in range(self.num_individuals)]
 
 
 def sample_pose_random(
@@ -104,36 +127,31 @@ def sample_pose_from_center(
 def gen_fake_data(
     scorer: str,
     video_name: str,
-    individuals: list[str],
-    bodyparts: list[str],
-    unique: list[str],
-    num_frames: int,
-    img_h: int,
-    img_w: int,
+    params: SyntheticProjectParameters,
 ) -> pd.DataFrame:
     kpt_entries = ["x", "y"]
     col_names = ["scorer", "individuals", "bodyparts", "coords"]
     col_values = []
-    for i in individuals:
-        for b in bodyparts:
+    for i in params.individuals():
+        for b in params.bodyparts():
             col_values += [(scorer, i, b, entry) for entry in kpt_entries]
 
-    for unique_bpt in unique:
+    for unique_bpt in params.unique():
         col_values += [(scorer, "single", unique_bpt, entry) for entry in kpt_entries]
 
     index_data = []
     pose_data = []
     gen = np.random.default_rng(seed=0)
-    for frame_index in range(num_frames):
+    for frame_index in range(params.num_frames):
         index_data.append(("labeled-data", video_name, f"img{frame_index:04}.png"))
         pose_data.append(
             sample_pose_from_center(
                 gen,
-                num_individuals=len(individuals),
-                num_bodyparts=len(bodyparts),
-                num_unique=len(unique),
-                img_h=img_h,
-                img_w=img_w,
+                num_individuals=params.num_individuals,
+                num_bodyparts=params.num_bodyparts,
+                num_unique=params.num_unique,
+                img_h=params.frame_shape[0],
+                img_w=params.frame_shape[1],
                 radius=25,
             )
         )
@@ -141,17 +159,18 @@ def gen_fake_data(
     pose = np.stack(pose_data)
 
     pose[0, :] = np.nan  # add missing row in a frame
-    for idv in range(len(individuals)):
-        idv_start, idv_end = 2 * len(bodyparts) * idv, 2 * len(bodyparts) * (idv + 1)
-        if num_frames > idv + 1:
+    for idv in range(params.num_individuals):
+        idv_start = 2 * params.num_bodyparts * idv
+        idv_end = 2 * params.num_bodyparts * (idv + 1)
+        if params.num_frames > idv + 1:
             pose[idv + 1, idv_start:idv_end] = np.nan
 
-    for bpt in range(len(bodyparts)):
-        frame_idx = 1 + len(individuals) + bpt
-        idv_idx = bpt % len(individuals)
-        offset = 2 * len(bodyparts) * idv_idx
+    for bpt in range(params.num_bodyparts):
+        frame_idx = 1 + params.num_individuals + bpt
+        idv_idx = bpt % params.num_individuals
+        offset = 2 * params.num_bodyparts * idv_idx
         bpt_start, bpt_end = 2 * bpt + offset, 2 * (bpt + 1) + offset
-        if num_frames + 1 > frame_idx:
+        if params.num_frames + 1 > frame_idx:
             pose[frame_idx, bpt_start:bpt_end] = np.nan
 
     return pd.DataFrame(
@@ -164,16 +183,13 @@ def gen_fake_data(
 def gen_fake_image(
     project_root: Path,
     row: pd.Series,
-    individuals: list[str],
-    bodyparts: list[str],
-    unique: list[str],
-    img_h: int,
-    img_w: int,
+    params: SyntheticProjectParameters,
     radius: int = 5,
 ):
-    image_array = np.zeros((img_h, img_w, 3), dtype=np.uint8)
-    for i, idv in enumerate(individuals):
-        r = int(255 * (i + 1) / len(individuals))
+    img_h, img_w = params.frame_shape
+    image_array = np.zeros((*params.frame_shape, 3), dtype=np.uint8)
+    for i, idv in enumerate(params.individuals()):
+        r = int(255 * (i + 1) / params.num_individuals)
         if "individuals" in row.index.names:
             idv_data = row.droplevel("scorer").loc[idv]
         else:
@@ -187,8 +203,8 @@ def gen_fake_image(
             ymin, ymax = max(0, y - radius), min(img_h - 1, y + radius)
             image_array[ymin:ymax, xmin:xmax, 0] = r
 
-            for j, bpt in enumerate(bodyparts):
-                g = int(255 * (j + 1) / len(bodyparts))
+            for j, bpt in enumerate(params.bodyparts()):
+                g = int(255 * (j + 1) / params.num_bodyparts)
 
                 bpt_data = idv_data.loc[bpt]
                 if np.all(~pd.isnull(bpt_data)):
@@ -198,46 +214,35 @@ def gen_fake_image(
                     image_array[ymin:ymax, xmin:xmax, 0] = r
                     image_array[ymin:ymax, xmin:xmax, 1] = g
 
-    if len(unique) > 0:
+    if params.num_unique > 0:
         unique_data = row.droplevel("scorer").loc["single"]
-        for i, unique_bpt in enumerate(unique):
+        for i, unique_bpt in enumerate(params.unique()):
             bpt_data = unique_data.loc[unique_bpt]
             if np.all(~pd.isnull(bpt_data)):
                 x, y = int(bpt_data.x), int(bpt_data.y)
                 xmin, xmax = max(0, x - radius), min(img_w - 1, x + radius)
                 ymin, ymax = max(0, y - radius), min(img_h - 1, y + radius)
-                image_array[ymin:ymax, xmin:xmax, 2] = int(255 * (i + 1) / len(unique))
+                image_array[ymin:ymax, xmin:xmax, 2] = int(
+                    255 * (i + 1) / params.num_unique
+                )
 
     img = Image.fromarray(image_array)
     img.save(project_root / Path(*row.name))
 
 
-def create_fake_project(
-    path: Path,
-    multianimal: bool,
-    num_bodyparts: int,
-    num_frames: int = 10,
-    num_individuals: int = 1,
-    num_unique: int = 0,
-    identity: bool = False,
-    frame_shape: tuple[int, int] = (480, 640),
-) -> None:
+def create_fake_project(path: Path, params: SyntheticProjectParameters) -> None:
     if path.exists():
         raise ValueError(f"Cannot create a fake project at an existing path")
 
     scorer = "synthetic"
     video_name = "cat"
-    bodyparts = [i for i in string.ascii_lowercase[:num_bodyparts]]
-    unique = [f"unique_{i}" for i in string.ascii_lowercase[:num_unique]]
-    individuals = [f"animal_{i}" for i in range(num_individuals)]
-
     path.mkdir(parents=True, exist_ok=False)
     config = {
         "Task": "synthetic",
         "scorer": scorer,
         "date": "Nov11",
-        "multianimalproject": multianimal,
-        "identity": identity,
+        "multianimalproject": params.multianimal,
+        "identity": params.identity,
         "project_path": str(path / "config.yaml"),
         "TrainingFraction": [0.8],
         "iteration": 0,
@@ -249,22 +254,22 @@ def create_fake_project(
         "pcutoff": 0.6,
         "video_sets": {
             str(path / "videos" / video_name): {
-                "crop": (0, frame_shape[1], 0, frame_shape[0]),
+                "crop": (0, params.frame_shape[1], 0, params.frame_shape[0]),
             },
         },
         "start": 0,
         "stop": 1,
         "numframes2pick": 10,
     }
-    if not multianimal:
-        config["bodyparts"] = bodyparts
-        assert num_individuals == 1
-        assert num_unique == 0
+    if not params.multianimal:
+        config["bodyparts"] = params.bodyparts()
+        assert params.num_individuals == 1
+        assert params.num_unique == 0
     else:
         config["bodyparts"] = "MULTI!"
-        config["multianimalbodyparts"] = bodyparts
-        config["uniquebodyparts"] = unique
-        config["individuals"] = individuals
+        config["multianimalbodyparts"] = params.bodyparts()
+        config["uniquebodyparts"] = params.unique()
+        config["individuals"] = params.individuals()
 
     af.write_config(str(path / "config.yaml"), config)
     image_dir = path / "labeled-data" / video_name
@@ -273,32 +278,19 @@ def create_fake_project(
     df = gen_fake_data(
         scorer=scorer,
         video_name=video_name,
-        individuals=individuals,
-        bodyparts=bodyparts,
-        unique=unique,
-        num_frames=num_frames,
-        img_h=frame_shape[0],
-        img_w=frame_shape[1],
+        params=params,
     )
     print("SYNTHETIC DATA:")
     print(df)
     print("\n")
-    if not multianimal:
+    if not params.multianimal:
         df.columns = df.columns.droplevel("individuals")
 
     df.to_hdf(image_dir / f"CollectedData_{scorer}.h5", key="df_with_missing")
     df.to_csv(image_dir / f"CollectedData_{scorer}.csv")
 
-    for idx in range(num_frames):
-        gen_fake_image(
-            path,
-            df.iloc[idx],
-            individuals=individuals,
-            bodyparts=bodyparts,
-            unique=unique,
-            img_h=frame_shape[0],
-            img_w=frame_shape[1],
-        )
+    for idx in range(params.num_frames):
+        gen_fake_image(path, df.iloc[idx], params=params, radius=5)
 
 
 def copy_project_for_test() -> Path:
@@ -353,6 +345,7 @@ def run(
         Shuffles=[shuffle_index],
         trainingsetindex=trainset_index,
         device=device,
+        plotting=True,
     )
     times.append(time.time())
     log_step(f"Evaluation time: {times[-1] - times[-2]} seconds")
@@ -383,10 +376,12 @@ def run(
 if __name__ == "__main__":
     create_fake_project(
         path=Path("../synthetic-data-niels"),
-        multianimal=True,
-        num_individuals=2,
-        num_bodyparts=3,
-        num_unique=2,
-        identity=False,
-        num_frames=20,
+        params=SyntheticProjectParameters(
+            multianimal=True,
+            num_bodyparts=4,
+            num_individuals=3,
+            num_unique=1,
+            num_frames=50,
+            frame_shape=(128, 256),
+        ),
     )

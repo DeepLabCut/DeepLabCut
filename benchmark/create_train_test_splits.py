@@ -1,13 +1,14 @@
 """Creates train/test splits for DeepLabCut Single Animal benchmarks"""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-import torch
 import deeplabcut
-import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
+import deeplabcut.utils.auxiliaryfunctions as af
 import numpy as np
+import torch
 
 from projects import SA_DLC_BENCHMARKS
 from utils import Project
@@ -29,10 +30,12 @@ def create_splits(
             samples = gen.choice(num_samples, size=num_train_indices, replace=False)
             train_indices = np.sort(samples).tolist()
             test_indices = [i for i in range(num_samples) if i not in train_indices]
-            splits[train_frac].append({
-                "train": train_indices,
-                "test": test_indices,
-            })
+            splits[train_frac].append(
+                {
+                    "train": train_indices,
+                    "test": test_indices,
+                }
+            )
             print(f"  Split {i}:")
             print(f"    train: {train_indices}")
             print(f"    test:  {test_indices}")
@@ -46,13 +49,24 @@ def main(
     train_fractions: list[float],
     output_file: Path,
 ) -> None:
+    """Creates train/test splits for DeepLabCut projects
+
+    Args:
+        projects: projects for which to create train/test splits
+        seeds: random seed to use for each project (must be the same len as projects)
+        num_splits: the number of train/test splits to create for each project
+        train_fractions: the train fractions for which to create train/test splits
+        output_file: the file where the splits should be output
+    """
+    assert len(projects) == len(seeds), "you must pass one seed for each project!"
+
     output_file = output_file.resolve()
     splits_data = {}
     for project, seed in zip(projects, seeds):
         save_dir = output_file.parent / f"data-splits-{project.name}"
         save_dir.mkdir(exist_ok=True)
 
-        cfg = auxiliaryfunctions.read_config(str(project.config_path()))
+        cfg = af.read_config(str(project.config_path()))
 
         # saves .h5 and .csv files containing the full dataframe used
         df = deeplabcut.generate_training_dataset.merge_annotateddatasets(cfg, save_dir)

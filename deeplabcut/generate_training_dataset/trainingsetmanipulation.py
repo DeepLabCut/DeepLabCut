@@ -1172,21 +1172,7 @@ def create_training_dataset(
 
 def get_largestshuffle_index(config):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
-    cfg = auxiliaryfunctions.read_config(config)
-    project_path = cfg["project_path"]
-    iterate = "iteration-" + str(cfg["iteration"])
-    dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
-    if os.path.isdir(dlc_model_path):
-        models = os.listdir(dlc_model_path)
-        # sort the model directories
-        models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-
-        # get the shuffle index and offset by 1.
-        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
-    else:
-        max_shuffle_index = 0
-
-    return max_shuffle_index
+    return get_existing_shuffle_indices(config)[-1]
 
 
 def get_existing_shuffle_indices(
@@ -1406,7 +1392,7 @@ def create_training_model_comparison(
     else:
         pass
 
-    largestshuffleindex = get_largestshuffle_index(config)
+    largestshuffleindex = get_existing_shuffle_indices(cfg)[-1] + 1
 
     shuffle_list = []
     for shuffle in range(num_shuffles):

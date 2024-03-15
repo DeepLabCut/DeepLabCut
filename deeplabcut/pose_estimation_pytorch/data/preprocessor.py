@@ -326,8 +326,8 @@ class TorchCropDetections(Preprocessor):
             offsets.append(offset)
             scales.append(scale)
 
-        context["offsets"] = offsets
-        context["scales"] = scales
+        context["offsets"] = np.array(offsets)
+        context["scales"] = np.array(scales)
 
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:

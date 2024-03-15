@@ -11,9 +11,7 @@
 from __future__ import annotations
 
 import torch
-import torchvision
-from torchvision.models.detection import FasterRCNN_ResNet50_FPN_V2_Weights
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+import torchvision.models.detection as detection
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     DETECTORS,
@@ -23,44 +21,64 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
 
 @DETECTORS.register_module
 class FasterRCNN(BaseDetector):
-    """
-    Definition of the class object FasterRCNN.
-    Faster Region-based Convolutional Neural Network (R-CNN) is a popular object detection model
-    that builds upn the R-CNN framework.
+    """A FasterRCNN detector
 
-    Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards
-    real-time object detection with region proposal networks." Advances in neural
-    information processing systems 28 (2015).
+    Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks
+        Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards
+        real-time object detection with region proposal networks." Advances in neural
+        information processing systems 28 (2015).
 
-    See source:
-        https://github.com/pytorch/vision/blob/main/torchvision/models/detection/generalized_rcnn.py
-        https://github.com/pytorch/vision/blob/main/torchvision/models/detection/faster_rcnn.py
-    See tutorial: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html#defining-your-model
+    This class is a wrapper of the torchvision implementation of a FasterRCNN (source:
+    https://github.com/pytorch/vision/blob/main/torchvision/models/detection/faster_rcnn.py).
+    Any variant implemented in torchvision can be used through this wrapper (see
+    available models at https://pytorch.org/vision/stable/models.html#object-detection).
 
-    See validation loss issue:
+    Some of the variants (from fastest to most powerful) available:
+      - fasterrcnn_mobilenet_v3_large_fpn
+      - fasterrcnn_resnet50_fpn
+      - fasterrcnn_resnet50_fpn_v2
+
+    The torchvision implementation does not allow to get both predictions and losses
+    with a single forward pass. Therefore, during evaluation only bounding box metrics
+    (mAP, mAR) are available for the test set. See validation loss issue:
     - https://discuss.pytorch.org/t/compute-validation-loss-for-faster-rcnn/62333/12
     - https://stackoverflow.com/a/65347721
+
+    Args:
+        variant: The FasterRCNN variant to use (see all options at
+            https://pytorch.org/vision/stable/models.html#object-detection).
+        pretrained: Whether to load model weights pretrained on COCO
+        box_score_thresh: during inference, only return proposals with a classification
+            score greater than box_score_thresh
     """
 
     def __init__(
         self,
+        variant: str = "fasterrcnn_mobilenet_v3_large_fpn",
+        pretrained: bool = True,
         box_score_thresh: float = 0.01,
-    ):
-        """
-        Args:
-            box_score_thresh: during inference, only return proposals with a
-                classification score greater than box_score_thresh
-        """
+    ) -> None:
+        if not variant.lower().startswith("fasterrcnn"):
+            raise ValueError(
+                "The version must start with `fasterrcnn`. See available models at "
+                "https://pytorch.org/vision/stable/models.html#object-detection"
+            )
+
         super().__init__()
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(
-            weights=FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1,
-            box_score_thresh=box_score_thresh,
-        )
+        model_fn = getattr(detection, variant)
+        weights = None
+        if pretrained:
+            weights = "COCO_V1"
+
+        # Load the model
+        self.model = model_fn(weights=weights, box_score_thresh=box_score_thresh)
 
         # Modify the base predictor to output the correct number of classes
         num_classes = 2
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
+            in_features, num_classes
+        )
 
         # See source:  https://stackoverflow.com/a/65347721
         self.model.eager_outputs = lambda losses, detections: (losses, detections)
@@ -87,11 +105,11 @@ class FasterRCNN(BaseDetector):
 
         Args:
             labels: dict of annotations, must contain the keys:
-                         area: tensor containing area information for each annotation.
-                         labels: tensor containing class labels for each annotation.
-                         is_crowd: tensor indicating if each annotation is a crowd (1) or not (0).
-                         image_id: tensor containing image ids for each annotation
-                         boxes: tensor containing bounding box information for each annotation
+                area: tensor containing area information for each annotation
+                labels: tensor containing class labels for each annotation
+                is_crowd: tensor indicating if each annotation is a crowd (1) or not (0)
+                image_id: tensor containing image ids for each annotation
+                boxes: tensor containing bounding box information for each annotation
 
         Returns:
             res: list of dictionaries, each representing target information for a single annotation.

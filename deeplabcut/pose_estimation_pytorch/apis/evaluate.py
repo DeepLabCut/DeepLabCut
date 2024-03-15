@@ -19,19 +19,27 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import deeplabcut.pose_estimation_pytorch.runners.utils as runner_utils
+from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch import utils
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_predictions_dataframe,
+    ensure_multianimal_df_format,
+    get_model_snapshots,
+    get_inference_runners,
+    get_scorer_uid,
+)
 from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
-from deeplabcut.pose_estimation_pytorch.apis.scoring import (
+from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     compute_identity_scores,
     get_scores,
     pair_predicted_individuals_with_gt,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    build_predictions_dataframe,
-    ensure_multianimal_df_format,
-    get_runners,
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
+    Snapshot,
+    TorchSnapshotManager,
 )
-from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, Task
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
 
@@ -164,88 +172,57 @@ def evaluate(
 
 def evaluate_snapshot(
     cfg: dict,
-    shuffle: int = 0,
-    trainingsetindex: int = 0,
-    snapshotindex: int = -1,
-    device: str | None = None,
+    loader: DLCLoader,
+    snapshot: Snapshot,
+    scorer: str,
     transform: A.Compose | None = None,
     plotting: bool | str = False,
     show_errors: bool = True,
-    modelprefix: str = "",
-    detector_path: str | None = None,
+    detector_snapshot: Snapshot | None = None,
 ) -> pd.DataFrame:
     """Evaluates a snapshot.
-    The evaluation results are stored in the .h5 and TODO .csv file under the subdirectory
+    The evaluation results are stored in the .h5 and .csv file under the subdirectory
     'evaluation_results'.
 
     Args:
         cfg: the content of the project's config file
-        shuffle: shuffle index
-        trainingsetindex: the training set fraction to use
-        modelprefix: model prefix
-        snapshotindex: index (starting at 0) of the snapshot we want to load. To
-            evaluate the last one, use -1. To evaluate all snapshots, use "all". For
-            example if we have 3 models saved
-                - snapshot-0.pt
-                - snapshot-50.pt
-                - snapshot-100.pt
-            and we want to evaluate snapshot-50.pt, snapshotindex should be 1. If None,
-            the snapshotindex is loaded from the project configuration.
-        device: the device to run evaluation on
+        loader: the loader for the shuffle to evaluate
+        snapshot: the snapshot to evaluate
+        scorer: the scorer name to use for the snapshot
         transform: transformation pipeline for evaluation
             ** Should normalise the data the same way it was normalised during training **
         plotting: Plots the predictions on the train and test images. If provided it must
             be either ``True``, ``False``, ``"bodypart"``, or ``"individual"``. Setting
             to ``True`` defaults as ``"bodypart"`` for multi-animal projects.
         show_errors: whether to compare predictions and ground truth
-        detector_path: Only for TD models. If defined, evaluation metrics are computed
-            using the detections made by this detector
+        detector_snapshot: Only for TD models. If defined, evaluation metrics are
+            computed using the detections made by this snapshot
     """
-    train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    model_folder = runner_utils.get_model_folder(
-        cfg["project_path"], cfg, train_fraction, shuffle, modelprefix
-    )
-    model_config_path = str(Path(model_folder) / "train" / "pytorch_config.yaml")
-    pytorch_config = auxiliaryfunctions.read_plainconfig(model_config_path)
-    if device is not None:
-        pytorch_config["device"] = device
-
-    pose_task = Task(pytorch_config.get("method", "bu"))
-    loader = DLCLoader(
-        config=Path(cfg["project_path"]) / "config.yaml",
-        shuffle=shuffle,
-        trainset_index=trainingsetindex,
-        modelprefix=modelprefix,
-    )
+    pose_task = Task(loader.model_cfg.get("method", "bu"))
     parameters = loader.get_dataset_parameters()
-    names = runner_utils.get_paths(
-        project_path=cfg["project_path"],
-        train_fraction=train_fraction,
-        model_prefix=modelprefix,
-        shuffle=shuffle,
-        cfg=cfg,
-        train_iterations=snapshotindex,
-        task=pose_task,
-    )
     pcutoff = cfg.get("pcutoff")
 
-    pose_runner, detector_runner = get_runners(
-        pytorch_config=pytorch_config,
-        snapshot_path=names["model_path"],
+    detector_path = None
+    if detector_snapshot is not None:
+        detector_path = detector_snapshot.path
+
+    pose_runner, detector_runner = get_inference_runners(
+        model_config=loader.model_cfg,
+        snapshot_path=snapshot.path,
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
         num_unique_bodyparts=parameters.num_unique_bpts,
-        with_identity=pytorch_config["metadata"]["with_identity"],
+        with_identity=loader.model_cfg["metadata"]["with_identity"],
         transform=transform,
         detector_path=detector_path,
-        detector_transform=None,
+        detector_transform=None
     )
 
     predictions = {}
     scores = {
-        "Training epochs": int(names["dlc_scorer"].split("_")[-1]),
-        "%Training dataset": train_fraction,
-        "Shuffle number": shuffle,
+        "Training epochs": snapshot.uid(),
+        "%Training dataset": loader.train_fraction,
+        "Shuffle number": loader.shuffle,
         "pcutoff": pcutoff,
     }
     for split in ["train", "test"]:
@@ -258,7 +235,7 @@ def evaluate_snapshot(
             detector_runner=detector_runner,
         )
         df_split_predictions = build_predictions_dataframe(
-            scorer=names["dlc_scorer"],
+            scorer=scorer,
             predictions=predictions_for_split,
             parameters=parameters,
             image_name_to_index=image_to_dlc_df_index,
@@ -267,51 +244,43 @@ def evaluate_snapshot(
         for k, v in results.items():
             scores[f"{split} {k}"] = round(v, 2)
 
-    results_filename = runner_utils.get_results_filename(
-        names["evaluation_folder"],
-        names["dlc_scorer"],
-        names["dlc_scorer_legacy"],
-        names["model_path"][:-3],
-    )
+    results_filename = f"{scorer}.h5"
     df_predictions = pd.concat(predictions.values(), axis=0)
     df_predictions = df_predictions.reindex(loader.df.index)
-    output_filename = Path(results_filename)
+    output_filename = loader.evaluation_folder / results_filename
     output_filename.parent.mkdir(parents=True, exist_ok=True)
-    df_predictions.to_hdf(str(output_filename), key="df_with_missing")
+    df_predictions.to_hdf(output_filename, key="df_with_missing")
 
     df_scores = pd.DataFrame([scores]).set_index(
         ["Training epochs", "%Training dataset", "Shuffle number", "pcutoff"]
     )
-    scores_filepath = Path(results_filename).with_suffix(".csv")
+    scores_filepath = output_filename.with_suffix(".csv")
     scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
     save_evaluation_results(df_scores, scores_filepath, show_errors, pcutoff)
 
     if plotting:
-        snapshot_name = Path(names["model_path"]).stem
-        folder_name = (
-            f"{names['evaluation_folder']}/"
-            f"LabeledImages_{names['dlc_scorer']}_{snapshot_name}"
-        )
-        Path(folder_name).mkdir(parents=True, exist_ok=True)
+        folder_name = f"LabeledImages_{scorer}"
+        folder_path = loader.evaluation_folder / folder_name
+        folder_path.mkdir(parents=True, exist_ok=True)
         if isinstance(plotting, str):
             plot_mode = plotting
         else:
             plot_mode = "bodypart"
 
-        df_ground_truth = ensure_multianimal_df_format(loader.df_dlc)
+        df_ground_truth = ensure_multianimal_df_format(loader.df)
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
-            plot_unique_bodyparts = False  # TODO: get from parameters
+            unique_bodyparts = loader.get_dataset_parameters().unique_bpts
             plot_evaluation_results(
                 df_combined=df_combined,
                 project_root=cfg["project_path"],
                 scorer=cfg["scorer"],
-                model_name=names["dlc_scorer"],
-                output_folder=folder_name,
+                model_name=scorer,
+                output_folder=str(folder_path),
                 in_train_set=mode == "train",
-                plot_unique_bodyparts=plot_unique_bodyparts,
+                plot_unique_bodyparts=len(unique_bodyparts) > 0,
                 mode=plot_mode,
                 colormap=cfg["colormap"],
                 dot_size=cfg["dotsize"],
@@ -332,7 +301,7 @@ def evaluate_network(
     show_errors: bool = True,
     transform: A.Compose = None,
     modelprefix: str = "",
-    detector_path: str | None = None,
+    detector_snapshot_index: int | None = -1,
 ) -> None:
     """Evaluates a snapshot.
 
@@ -361,31 +330,32 @@ def evaluate_network(
             ** Should normalise the data the same way it was normalised during training **
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
-        detector_path: Only for TD models. If defined, evaluation metrics are computed
-            using the detections made by this detector
+        detector_snapshot_index: Only for TD models. If defined, uses the detector with
+            the given index for pose estimation.
 
     Examples:
         If you want to evaluate on shuffle 1 without plotting predictions.
 
+        >>> import deeplabcut
         >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml', shuffles=[1],
-            )
+        >>>     '/analysis/project/reaching-task/config.yaml', shuffles=[1],
+        >>> )
 
         If you want to evaluate shuffles 0 and 1 and plot the predictions.
 
         >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml',
-                shuffles=[0, 1],
-                plotting=True,
-            )
+        >>>     '/analysis/project/reaching-task/config.yaml',
+        >>>     shuffles=[0, 1],
+        >>>     plotting=True,
+        >>> )
 
         If you want to plot assemblies for a maDLC project
 
         >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml',
-                shuffles=[1],
-                plotting="individual",
-            )
+        >>>     '/analysis/project/reaching-task/config.yaml',
+        >>>     shuffles=[1],
+        >>>     plotting="individual",
+        >>> )
     """
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -401,33 +371,52 @@ def evaluate_network(
 
     for train_set_index in train_set_indices:
         for shuffle in shuffles:
-            if isinstance(snapshotindex, str) and snapshotindex.lower() == "all":
-                model_folder = runner_utils.get_model_folder(
-                    project_path=str(Path(config).parent),
-                    cfg=cfg,
-                    train_fraction=cfg["TrainingFraction"][train_set_index],
-                    shuffle=shuffle,
-                    model_prefix=modelprefix,
-                )
-                all_snapshots = runner_utils.get_snapshots(Path(model_folder))
-                snapshot_indices = list(range(len(all_snapshots)))
-            elif isinstance(snapshotindex, int):
-                snapshot_indices = [snapshotindex]
-            else:
-                raise ValueError(f"Invalid snapshotindex: {snapshotindex}")
+            loader = DLCLoader(
+                config=Path(cfg["project_path"]) / "config.yaml",
+                shuffle=shuffle,
+                trainset_index=train_set_index,
+                modelprefix=modelprefix,
+            )
+            loader.evaluation_folder.mkdir(exist_ok=True, parents=True)
 
-            for snapshot in snapshot_indices:
-                _ = evaluate_snapshot(
+            if device is not None:
+                loader.model_cfg["device"] = device
+            loader.model_cfg["device"] = utils.resolve_device(loader.model_cfg)
+
+            task = Task(loader.model_cfg["method"])
+            snapshots = get_model_snapshots(
+                snapshotindex,
+                model_folder=loader.model_folder,
+                task=task,
+            )
+
+            detector_snapshot = None
+            if task == Task.TOP_DOWN:
+                if detector_snapshot_index is not None:
+                    detector_snapshot = get_model_snapshots(
+                        detector_snapshot_index, loader.model_folder, Task.DETECT,
+                    )[0]
+                else:
+                    print("Using GT bounding boxes to compute evaluation metrics")
+
+            for snapshot in snapshots:
+                scorer, _ = auxiliaryfunctions.get_scorer_name(
                     cfg=cfg,
                     shuffle=shuffle,
-                    trainingsetindex=train_set_index,
-                    snapshotindex=snapshot,
-                    device=device,
+                    trainFraction=loader.train_fraction,
+                    engine=Engine.PYTORCH,
+                    trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
+                    modelprefix=modelprefix,
+                )
+                evaluate_snapshot(
+                    loader=loader,
+                    cfg=cfg,
+                    scorer=scorer,
+                    snapshot=snapshot,
                     transform=transform,
                     plotting=plotting,
                     show_errors=show_errors,
-                    modelprefix=modelprefix,
-                    detector_path=detector_path,
+                    detector_snapshot=detector_snapshot,
                 )
 
 

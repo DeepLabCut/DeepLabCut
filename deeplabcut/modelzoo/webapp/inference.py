@@ -12,7 +12,7 @@ from typing import Dict
 
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_runners
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     _get_config_model_paths,
     _update_config,
@@ -49,13 +49,13 @@ class SingletonTopDownRunners:
         max_individuals: int,
     ):
 
-        pose_runner, detector_runner = get_runners(
+        pose_runner, detector_runner = get_inference_runners(
             config,
             snapshot_path=pose_model_path,
-            detector_path=detector_model_path,
-            num_bodyparts=num_bodyparts,
             max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
             num_unique_bodyparts=0,
+            detector_path=detector_model_path,
         )
         self.pose_runner = pose_runner
         self.detector_runner = detector_runner

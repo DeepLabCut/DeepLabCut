@@ -41,7 +41,7 @@ def train_network(
     config: str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    max_snapshots_to_keep: int = 5,
+    max_snapshots_to_keep: int | None = None,
     displayiters: int | None = None,
     saveiters: int | None = None,
     maxiters: int | None = None,
@@ -62,6 +62,9 @@ def train_network(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import train_network
+        if max_snapshots_to_keep is None:
+            max_snapshots_to_keep = 5
+
         return train_network(
             config,
             shuffle=shuffle,
@@ -84,6 +87,7 @@ def train_network(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             modelprefix=modelprefix,
+            max_snapshots_to_keep=max_snapshots_to_keep,
             **torch_kwargs,
         )
 

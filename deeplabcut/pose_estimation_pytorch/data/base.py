@@ -16,6 +16,7 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
+import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
@@ -25,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     bbox_from_keypoints,
     map_id_to_annotations,
 )
-from deeplabcut.pose_estimation_pytorch.runners import Task
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -47,8 +48,22 @@ class Loader(ABC):
 
     def __init__(self, model_config_path: str | Path) -> None:
         self.model_config_path = Path(model_config_path)
-        self.model_cfg = auxiliaryfunctions.read_plainconfig(str(model_config_path))
+        self.model_cfg = config.read_config_as_dict(str(model_config_path))
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
+
+    @property
+    def model_folder(self) -> Path:
+        """Returns: The path of the folder containing the model data"""
+        return self.model_config_path.parent
+
+    def update_model_cfg(self, updates: dict) -> None:
+        """Updates the model configuration
+
+        Args:
+            updates: the items to update in the model configuration
+        """
+        self.model_cfg = config.update_config(self.model_cfg, updates)
+        config.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
@@ -220,7 +235,7 @@ class Loader(ABC):
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
             if (
-                task == Task.DETECT and
+                task in (Task.DETECT, Task.TOP_DOWN) and
                 (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0)
             ):
                 continue

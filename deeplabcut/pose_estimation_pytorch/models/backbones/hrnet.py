@@ -27,6 +27,21 @@ class HRNet(BaseBackbone):
     This is obtained using bilinear interpolation and concatenation of all the outputs
     of the HRNet stages.
 
+    The model outputs 4 branches, with strides 4, 8, 16 and 32.
+
+    Args:
+        model_name: Any HRNet variant available through timm (e.g., 'hrnet_w32',
+            'hrnet_w48'). See timm for more options.
+        pretrained: If True, loads the backbone with ImageNet pretrained weights from
+            timm.
+        interpolate_branches: Needed for DEKR. Instead of returning features from the
+            high-resolution branch, interpolates all other branches to the same shape
+            and concatenates them.
+        increased_channel_count: As described by timm, it "allows grabbing increased
+            channel count features using part of the classification head" (otherwise,
+            the default features are returned).
+        kwargs: BaseBackbone kwargs
+
     Attributes:
         model: the HRNet model
     """
@@ -35,20 +50,13 @@ class HRNet(BaseBackbone):
         self,
         model_name: str = "hrnet_w32",
         pretrained: bool = True,
-        only_high_res: bool = False,
+        interpolate_branches: bool = False,
+        increased_channel_count: bool = False,
         **kwargs,
     ) -> None:
-        """Constructs an ImageNet pretrained HRNet from timm.
-
-        Args:
-            model_name: Type of HRNet (e.g., 'hrnet_w32', 'hrnet_w48').
-            pretrained: If True, loads the model with ImageNet pretrained weights.
-            only_high_res: Whether to only return the high resolution features
-            kwargs: BaseBackbone kwargs
-        """
         super().__init__(**kwargs)
-        self.model = _load_hrnet(model_name, pretrained)
-        self.only_high_res = only_high_res
+        self.model = _load_hrnet(model_name, pretrained, increased_channel_count)
+        self.interpolate_branches = interpolate_branches
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the HRNet backbone.
@@ -67,7 +75,7 @@ class HRNet(BaseBackbone):
             >>> y = backbone(x)
         """
         y_list = self.model(x)
-        if self.only_high_res:
+        if not self.interpolate_branches:
             return y_list[0]
 
         x0_h, x0_w = y_list[0].size(2), y_list[0].size(3)
@@ -83,15 +91,21 @@ class HRNet(BaseBackbone):
         return x
 
 
-def _load_hrnet(model_name: str, pretrained: bool) -> nn.Module:
-    """
-    Loads a TIMM HRNet model, while setting incre_modules to None. This is necessary to
-    get high-resolution features; otherwise model.forward_features() returns
-    low-resolution maps.
+def _load_hrnet(
+    model_name: str,
+    pretrained: bool,
+    increased_channel_count: bool,
+) -> nn.Module:
+    """Loads a TIMM HRNet model.
 
     Args:
-        model_name: the name of the HRNet model to load
-        pretrained: whether the ImageNet pretrained weights should be loaded
+        model_name: Any HRNet variant available through timm (e.g., 'hrnet_w32',
+            'hrnet_w48'). See timm for more options.
+        pretrained: If True, loads the backbone with ImageNet pretrained weights from
+            timm.
+        increased_channel_count: As described by timm, it "allows grabbing increased
+            channel count features using part of the classification head" (otherwise,
+            the default features are returned).
 
     Returns:
         the HRNet model
@@ -101,6 +115,6 @@ def _load_hrnet(model_name: str, pretrained: bool) -> nn.Module:
         model_name,
         pretrained=pretrained,
         features_only=True,
-        feature_location="",  # TODO: benchmark with "incre"
+        feature_location="incre" if increased_channel_count else "",
         out_indices=(1, 2, 3, 4),
     )
