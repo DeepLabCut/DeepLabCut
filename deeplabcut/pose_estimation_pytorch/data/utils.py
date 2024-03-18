@@ -338,9 +338,9 @@ def _compute_crop_bounds(
     """
     h, w = image_shape[:2]
     bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
-    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0] + 1), 0, None)
+    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
     bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
-    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1] + 1), 0, None)
+    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
     squashed_bbox_mask = np.logical_or(bboxes[:, 2] <= 0, bboxes[:, 3] <= 0)
     return bboxes[~squashed_bbox_mask]
 
