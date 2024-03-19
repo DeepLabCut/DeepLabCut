@@ -161,18 +161,26 @@ class TrainingDatasetMetadata:
             ValueError: if overwrite=False and there is already a shuffle with the given
                 index in the metadata file.
         """
-        existing_indices = [s.index for s in self.shuffles]
+        existing_indices = [
+            s.index for s in self.shuffles if s.train_fraction == shuffle.train_fraction
+        ]
         if shuffle.index in existing_indices:
             if not overwrite:
                 raise RuntimeError(
                     f"Cannot add {shuffle} to the meta: a shuffle with index "
-                    f"{shuffle.index} already exists: {self.shuffles}."
+                    f"{shuffle.index} and train_fraction {shuffle.train_fraction} "
+                    f"already exists: {self.shuffles}."
                 )
 
-        shuffles = [s for s in self.shuffles if s.index != shuffle.index] + [shuffle]
+        existing_shuffles = [
+            s
+            for s in self.shuffles
+            if (s.index != shuffle.index or s.train_fraction != shuffle.train_fraction)
+        ]
+        shuffles = existing_shuffles + [shuffle]
         return TrainingDatasetMetadata(
             project_config=self.project_config,
-            shuffles=tuple(sorted(shuffles, key=lambda s: s.index)),
+            shuffles=tuple(sorted(shuffles, key=lambda s: (s.train_fraction, s.index))),
         )
 
     def get(self, trainset_index: int = 0, index: int = 0) -> ShuffleMetadata:
@@ -359,7 +367,7 @@ def update_metadata(
             index in the metadata file.
     """
     prefix = cfg["Task"] + cfg["date"]
-    metadata = TrainingDatasetMetadata.load(cfg)
+    metadata = TrainingDatasetMetadata.load(cfg, load_splits=True)
     new_shuffle = ShuffleMetadata(
         name=f"{prefix}-trainset{int(100 * train_fraction)}shuffle{shuffle}",
         train_fraction=train_fraction,

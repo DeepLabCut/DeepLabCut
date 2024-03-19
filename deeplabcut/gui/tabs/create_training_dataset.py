@@ -15,6 +15,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
 import deeplabcut
+import deeplabcut.compat as compat
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -57,9 +58,10 @@ class CreateTrainingDataset(DefaultTab):
 
         # Augmentation method
         augmentation_label = QtWidgets.QLabel("Augmentation method")
+        methods = compat.get_available_aug_methods(self.root.project_engine)
         self.aug_choice = QtWidgets.QComboBox()
-        self.aug_choice.addItems(DLCParams.IMAGE_AUGMENTERS)
-        self.aug_choice.setCurrentText("imgaug")
+        self.aug_choice.addItems(methods)
+        self.aug_choice.setCurrentText(methods[0])
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         # Neural Network

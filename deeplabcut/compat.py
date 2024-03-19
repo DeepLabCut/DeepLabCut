@@ -37,6 +37,26 @@ def get_project_engine(cfg: dict) -> Engine:
     return DEFAULT_ENGINE
 
 
+def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
+    """
+    Args:
+        engine: the engine for which augmentation methods should be returned
+
+    Returns:
+        the augmentations available for the given engine, where the first one is the
+        default method to use
+
+    Raises:
+        RuntimeError: if no augmentations methods are defined for the given engine
+    """
+    if engine == Engine.TF:
+        return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"
+    elif engine == Engine.PYTORCH:
+        return ("albumentations", )
+
+    raise RuntimeError(f"Unknown augmentation for engine: {engine}")
+
+
 def train_network(
     config: str,
     shuffle: int = 1,

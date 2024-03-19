@@ -30,8 +30,6 @@ class DLCParams:
         "efficientnet-b6",
     ]
 
-    IMAGE_AUGMENTERS = ["default", "tensorpack", "imgaug"]
-
     FRAME_EXTRACTION_ALGORITHMS = ["kmeans", "uniform"]
 
     OUTLIER_EXTRACTION_ALGORITHMS = ["jump", "fitting", "uncertain", "manual"]

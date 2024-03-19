@@ -930,20 +930,30 @@ def create_training_dataset(
             else:
                 raise ValueError("Invalid network type:", net_type)
 
+        augmenters = compat.get_available_aug_methods(engine)
+        default_augmenter = augmenters[0]
         if augmenter_type is None:
-            augmenter_type = cfg.get("default_augmenter", "imgaug")
+            augmenter_type = cfg.get("default_augmenter", default_augmenter)
+
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
-                augmenter_type = "imgaug"
-        elif augmenter_type not in [
-            "default",
-            "scalecrop",
-            "imgaug",
-            "tensorpack",
-            "deterministic",
-        ]:
-            raise ValueError("Invalid augmenter type:", augmenter_type)
+                augmenter_type = default_augmenter
+                auxiliaryfunctions.edit_config(
+                    config, {"default_augmenter": augmenter_type}
+                )
+            elif augmenter_type not in augmenters:
+                # as the default augmenter might not be available for the given engine
+                augmenter_type = default_augmenter
+                logging.info(
+                    f"Default augmenter {augmenter_type} not available for engine "
+                    f"{engine}: using {default_augmenter} instead"
+                )
+
+        if augmenter_type not in augmenters:
+            raise ValueError(
+                f"Invalid augmenter type: {augmenter_type} (available: for "
+                f"engine={engine}: {augmenters})"
+            )
 
         if posecfg_template:
             if net_type != prior_cfg["net_type"]:
