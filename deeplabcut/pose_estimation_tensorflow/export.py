@@ -175,16 +175,26 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
     dlc_cfg["batch_size"] = None
 
-    # load network
-    if TFGPUinference:
-        sess, _, _ = predict.setup_GPUpose_prediction(dlc_cfg)
-        output = ["concat_1"]
-    else:
+    if 'multi-animal' in dlc_cfg['dataset_type']:
         sess, _, _ = predict.setup_pose_prediction(dlc_cfg)
-        if dlc_cfg["location_refinement"]:
-            output = ["Sigmoid", "pose/locref_pred/block4/BiasAdd"]
+        output = [
+            'Sigmoid',
+            'pose/locref_pred/block4/BiasAdd',
+            'pose/pairwise_pred/block4/BiasAdd',
+            'Cast_2'
+        ]
+        
+    else:
+        # load network
+        if TFGPUinference:
+            sess, _, _ = predict.setup_GPUpose_prediction(dlc_cfg)
+            output = ["concat_1"]
         else:
-            output = ["Sigmoid", "pose/part_pred/block4/BiasAdd"]
+            sess, _, _ = predict.setup_pose_prediction(dlc_cfg)
+            if dlc_cfg["location_refinement"]:
+                output = ["Sigmoid", "pose/locref_pred/block4/BiasAdd"]
+            else:
+                output = ["Sigmoid", "pose/part_pred/block4/BiasAdd"]
 
     input = tf.compat.v1.get_default_graph().get_operations()[0].name
 
