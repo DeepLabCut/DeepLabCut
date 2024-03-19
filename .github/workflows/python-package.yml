@@ -3,6 +3,8 @@ name: Python package
 on:
   push:
     branches: [ main ]
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ main ]
 
@@ -64,3 +66,29 @@ jobs:
           pip install git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
           python examples/testscript.py
           python examples/testscript_multianimal.py
+
+  deploy:
+    # this will run when you have tagged a commit, starting with "v*"
+    # and requires that you have put your twine API key in your
+    # github secrets (see readme for details)
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'tags')
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U setuptools setuptools_scm wheel twine build
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+        run: |
+          git tag
+          python -m build .
+          twine upload dist/*
