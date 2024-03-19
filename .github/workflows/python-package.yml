@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, evaluate_by_snapshot ]
   pull_request:
     branches: [ main ]
 
