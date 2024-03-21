@@ -44,6 +44,7 @@ class HRNetCoAM(HRNet):
             cond_enc: str = 'colored',
             img_size: tuple[int,int] = (256,  256),
             num_joints: int = 17,
+            **kwargs,
     ) -> None:
         """Constructs an ImageNet pretrained HRNet from timm and creates CoAM blocks.
 
@@ -62,7 +63,8 @@ class HRNetCoAM(HRNet):
         super().__init__(
             model_name = base_model_name,
             pretrained = pretrained,
-            only_high_res = True)
+            only_high_res = True,
+            **kwargs)
 
         self.coam_modules = coam_modules
         self.selfatt_coam_modules = selfatt_coam_modules
@@ -166,6 +168,7 @@ class HRNetCoAM(HRNet):
             raise Exception("condition is empty, please check your dataloader")
         x_ = x[:,:3]
         cond_hm = x[:,3:]
+        # TODO: cond_hm = self.cond_encoder(cond_hm)
 
         # Stem
         x = self.model.conv1(x_)
@@ -178,7 +181,7 @@ class HRNetCoAM(HRNet):
         # Stages
         y = self.stages(x, cond_hm)
 
-        # TODO: @niels, check if the final layer should be ran
-        #y = self.model.final_layer(y[0])
+        if self.model.incre_modules is not None:
+            x = [incre(f) for f, incre in zip(x, self.model.incre_modules)]
 
-        return y
+        return self.prepare_output(y)
