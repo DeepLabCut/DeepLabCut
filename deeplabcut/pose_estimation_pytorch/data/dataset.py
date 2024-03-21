@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import albumentations as A
-import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -22,9 +21,11 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     _crop_image_keypoints,
     _extract_keypoints_and_bboxes,
     apply_transform,
+    bbox_from_keypoints,
     map_id_to_annotations,
     map_image_path_to_id,
     pad_to_length,
+    safe_stack,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.data.generative_sampling import GenerativeSampler
@@ -113,6 +114,15 @@ class PoseDataset(Dataset):
         ann = self.annotations[index]
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         return img["file_name"], [ann], img["id"]
+    
+    def _get_raw_item_crop_context(self, index: int) -> tuple[str, list[dict], int]:
+        """
+        Includes keypoints from other individuals in the image ("context").
+        """
+        ann = self.annotations[index]
+        img = self.images[self.img_id_to_index[ann["image_id"]]]
+        near_anns = [self.annotations[idx] for idx in self.annotation_idx_map[img["id"]] if idx != index]
+        return img["file_name"], [ann] + near_anns, img["id"]
 
     def __getitem__(self, index: int) -> dict:
         """
@@ -164,11 +174,14 @@ class PoseDataset(Dataset):
             bboxes = bboxes.astype(int)
 
             if self.task == Task.CTD:
+                keypoints = keypoints[0]
+                near_keypoints = keypoints[1:]
                 synthesized_keypoints = self.generative_sampler(
-                     keypoints=keypoints.reshape(-1, 3), near_keypoints=keypoints.reshape(-1, 3),
-                     area=0, num_overlap=0 #TODO: add these arguments correctly
+                     keypoints=keypoints.reshape(-1, 3),
+                     near_keypoints=near_keypoints.reshape(-1, 3),
+                     area=bboxes[0,2]*bboxes[0,3],
                 )
-                # recompute bbox
+                bboxes[0] = bbox_from_keypoints(synthesized_keypoints[:, :2], original_size[0], original_size[1], 10)
 
             # TODO: The following code should be replaced by a numpy version
             image, offsets, scales = _crop_and_pad_image_torch(
@@ -176,6 +189,10 @@ class PoseDataset(Dataset):
             )
             keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
             keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+            if self.task == Task.CTD:
+                synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
+                synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
+                keypoints = safe_stack([keypoints, synthesized_keypoints[None,...]], (0, self.parameters.num_joints(), 3))
             bboxes = np.zeros((0, 4))  # No more bboxes as we cropped around them
 
         transformed = self.apply_transform_all_keypoints(
@@ -224,6 +241,9 @@ class PoseDataset(Dataset):
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
+            "context": {
+                "cond_keypoints": keypoints[1,:,:2].astype(np.single) if self.task == Task.CTD else None,
+            }
         }
 
     def _prepare_final_annotation_dict(
@@ -234,8 +254,10 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
-        if self.task == Task.TOP_DOWN:
+        if self.task in (Task.TOP_DOWN, Task.CTD):
             num_animals = 1
+            if self.task == Task.CTD:
+                keypoints = keypoints[0]
 
         return {
             "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
@@ -268,8 +290,10 @@ class PoseDataset(Dataset):
         Returns:
             tuple: Tuple containing the image path, annotations, and image ID.
         """
-        if self.task in (Task.TOP_DOWN, Task.CTD):
+        if self.task == Task.TOP_DOWN:
             return self._get_raw_item_crop(index)
+        elif self.task == Task.CTD:
+            return self._get_raw_item_crop_context(index)
         elif self.task in (Task.BOTTOM_UP, Task.DETECT):
             return self._get_raw_item(index)
 

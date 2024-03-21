@@ -222,7 +222,7 @@ class GenerativeSampler:
         keypoints: np.ndarray,
         near_keypoints: np.ndarray,
         area: float,  # ??
-        num_overlap: int,  # ??
+        #num_overlap: int,  # ??
     ) -> np.ndarray:
         """Samples keypoints
 
@@ -303,10 +303,13 @@ class GenerativeSampler:
 
             # jitter error
             synth_jitter = np.zeros(3)
-            if num_valid_joint <= 4:
-                jitter_prob = 0.20
-            else:
-                jitter_prob = 0.15
+            
+            # if num_valid_joint <= 4:
+            #     jitter_prob = 0.20
+            # else:
+            #     jitter_prob = 0.15
+            jitter_prob = 0.16
+
             angle = np.random.uniform(0, 2 * math.pi, [N])
             r = np.random.uniform(ks_85_dist[j], ks_50_dist[j], [N])
             jitter_idx = 0  # gt
@@ -329,12 +332,14 @@ class GenerativeSampler:
 
             # miss error
             synth_miss = np.zeros(3)
-            if num_valid_joint <= 2:
-                miss_prob = 0.20
-            elif num_valid_joint <= 4:
-                miss_prob = 0.13
-            else:
-                miss_prob = 0.05
+            
+            # if num_valid_joint <= 2:
+            #     miss_prob = 0.20
+            # elif num_valid_joint <= 4:
+            #     miss_prob = 0.13
+            # else:
+            #     miss_prob = 0.05
+            miss_prob = 0.10
 
             miss_pt_list = []
             for miss_idx in range(len(tot_coord_list)):
@@ -399,10 +404,13 @@ class GenerativeSampler:
             # swap prob
             synth_swap = np.zeros(3)
             swap_exist = (len(coord_list[1]) > 0) or (len(coord_list[3]) > 0)
-            if (num_valid_joint <= 4 and num_overlap > 0) or (num_valid_joint <= 5 and num_overlap >= 1):
-                swap_prob = 0.10
-            else:
-                swap_prob = 0.04
+            
+            # if (num_valid_joint <= 4 and num_overlap > 0) or (num_valid_joint <= 5 and num_overlap >= 1):
+            #     swap_prob = 0.10
+            # else:
+            #     swap_prob = 0.04
+            swap_prob = 0.08
+            
             if swap_exist:
                 swap_pt_list = []
                 for swap_idx in range(len(tot_coord_list)):
