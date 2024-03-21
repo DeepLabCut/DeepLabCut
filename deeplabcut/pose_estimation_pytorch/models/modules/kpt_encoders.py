@@ -14,11 +14,12 @@ from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
-KEYPOINT_ENCODERS = Registry("detectors", build_func=build_from_cfg)
+KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
 
 
 class BaseKeypointEncoder(ABC):
@@ -27,12 +28,17 @@ class BaseKeypointEncoder(ABC):
     Modified from BUCTD/data/JointsDataset
     """
 
-    def __init__(self, kernel_size: tuple[int, int] = (15, 15)) -> None:
+    def __init__(self, num_joints, kernel_size: tuple[int, int] = (15, 15)) -> None:
         """
         Args:
             kernel_size: the Gaussian kernel size to use when blurring a heatmap
         """
         self.kernel_size = kernel_size
+        self.num_joints = num_joints
+
+    @property
+    def num_channels(self):
+        pass
 
     @abstractmethod
     def __call__(self, keypoints: np.ndarray, size: tuple[int, int]) -> np.ndarray:
@@ -75,6 +81,10 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+    @property
+    def num_channels(self):
+        return self.num_joints
 
     def __call__(self, keypoints: np.ndarray, size: tuple[int, int]) -> np.ndarray:
         """
@@ -120,13 +130,17 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
     Modified from BUCTD/data/JointsDataset, get_condition_image_colored
     """
 
-    def __init__(self, colors: list[float], **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """
         Args:
             colors: the color to use for each keypoint
         """
         super().__init__(**kwargs)
-        self.colors = colors
+        self.colors = self.get_colors_from_cmap('rainbow', self.num_joints)
+
+    @property
+    def num_channels(self):
+        return 3
 
     def __call__(self, keypoints: np.ndarray, size: tuple[int, int]) -> np.ndarray:
         """
@@ -156,3 +170,9 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
         condition = _get_condition_matrix(zero_matrix, kpts)
         condition_heatmap = self.blur_heatmap(condition)
         return condition_heatmap
+
+    def get_colors_from_cmap(self, cmap_name, num_colors):
+        cmap = plt.get_cmap(cmap_name)
+        colors_float = [cmap(i) for i in range(0, 256, 256 // num_colors)]
+        colors = [(int(r*255), int(g*255), int(b*255)) for r, g, b, _ in colors_float]
+        return colors

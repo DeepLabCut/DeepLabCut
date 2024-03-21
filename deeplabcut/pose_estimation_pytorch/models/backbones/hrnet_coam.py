@@ -19,6 +19,10 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import (
 from deeplabcut.pose_estimation_pytorch.models.modules import (
     CoAMBlock,
     SelfAttentionModule_CoAM,
+    BaseKeypointEncoder,
+    #ColoredKeypointEncoder,
+    #StackedKeypointEncoder,
+    KEYPOINT_ENCODERS
 )
 
 
@@ -35,13 +39,13 @@ class HRNetCoAM(HRNet):
 
     def __init__(
             self,
+            kpt_encoder: dict | BaseKeypointEncoder,
             base_model_name: str = "hrnet_w32",
             pretrained: bool = True,
             coam_modules: tuple[int,...] = (2,),
             selfatt_coam_modules: tuple[int,...] | None = None,
             channel_att_only: bool = False,
             att_heads: int = 1,
-            cond_enc: str = 'colored',
             img_size: tuple[int,int] = (256,  256),
             num_joints: int = 17,
             **kwargs,
@@ -69,7 +73,9 @@ class HRNetCoAM(HRNet):
         self.coam_modules = coam_modules
         self.selfatt_coam_modules = selfatt_coam_modules
         self.channel_att_only = channel_att_only
-        self.cond_enc = cond_enc
+        if not isinstance(kpt_encoder, BaseKeypointEncoder):
+            kpt_encoder = KEYPOINT_ENCODERS.build(kpt_encoder)
+        self.cond_enc = kpt_encoder
 
         self.coam_stages = [None, None, None, None]
         self.selfatt_coam_stages = [None, None, None, None]
@@ -95,8 +101,8 @@ class HRNetCoAM(HRNet):
                 channels = all_output_channels[coam_pos-1]
             
             self.coam_stages[coam_pos-1] = CoAMBlock(spat_dims=spat_dims_, channel_list=channels,
-                                                     cond_stacked=self.cond_enc, num_joints = num_joints,
-                                                     n_heads=att_heads, channel_only=self.channel_att_only)
+                                                     cond_enc=self.cond_enc, n_heads=att_heads,
+                                                     channel_only=self.channel_att_only)
         
         if self.selfatt_coam_modules:
             for selfatt_coam_pos in self.selfatt_coam_modules:
@@ -147,7 +153,7 @@ class HRNetCoAM(HRNet):
         return yl
     
 
-    def forward(self, x):
+    def forward(self, x, cond_hm):
         """Forward pass through the HRNetCoAM backbone.
 
         Args:
@@ -163,15 +169,12 @@ class HRNetCoAM(HRNet):
             >>> x = torch.randn(1, 6, 256, 256)
             >>> y = backbone(x)
         """
-        
-        if x[:,3:].shape[1] == 0:
-            raise Exception("condition is empty, please check your dataloader")
-        x_ = x[:,:3]
-        cond_hm = x[:,3:]
-        # TODO: cond_hm = self.cond_encoder(cond_hm)
 
+        cond_hm = self.cond_enc(cond_hm, x.size()[2:]).to(x.device)
+        cond_hm = cond_hm.permute(2, 0, 1)
+        
         # Stem
-        x = self.model.conv1(x_)
+        x = self.model.conv1(x)
         x = self.model.bn1(x)
         x = self.model.act1(x)
         x = self.model.conv2(x)

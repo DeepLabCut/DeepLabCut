@@ -242,7 +242,7 @@ class PoseDataset(Dataset):
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
             "context": {
-                "cond_keypoints": keypoints[1,:,:2].astype(np.single) if self.task == Task.CTD else None,
+                "cond_keypoints": keypoints[1,:,:2].astype(np.single) if self.task == Task.CTD else False,
             }
         }
 

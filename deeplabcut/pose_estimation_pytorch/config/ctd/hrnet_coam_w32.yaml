@@ -10,6 +10,9 @@ model:
     coam_modules: (2,)
     channel_att_only: false
     att_heads: 1
-    cond_enc: colored
+    cond_enc:
+      type: ColoredKeypointEncoder
+      num_joints: 17
+      kernel_size: [15, 15]
     num_joints: 17
   backbone_output_channels: 480

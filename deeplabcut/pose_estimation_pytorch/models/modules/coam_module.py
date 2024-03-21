@@ -17,17 +17,12 @@ import torchvision.transforms.functional as TF
 
 
 class CoAMBlock(nn.Module):
-    def __init__(self, spat_dims, channel_list, cond_enc, num_joints, n_heads=1, channel_only=False):
+    def __init__(self, spat_dims, channel_list, cond_enc, n_heads=1, channel_only=False):
         super(CoAMBlock, self).__init__()
         self.att_layers = []
         self.spat_dims = spat_dims
         self.cond_enc = cond_enc
-        if cond_enc == 'stacked':
-            d_cond = num_joints
-        elif cond_enc == 'colored':
-            d_cond = 3
-        else:
-            d_cond = 1
+        d_cond = cond_enc.num_channels()
         for i in range(len(spat_dims)):
             att_layer = DAModule(d_model = channel_list[i],
                                  d_cond = d_cond, kernel_size = 3,

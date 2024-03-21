@@ -275,7 +275,12 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         inputs = batch["image"]
         inputs = inputs.to(self.device)
-        outputs = self.model(inputs)
+        if batch['context']['cond_keypoints'][0]:
+            cond_kpts = batch['context']['cond_keypoints']
+            #cond_kpts = cond_kpts.to(self.device)
+            outputs = self.model(inputs, cond_kpts)
+        else:
+            outputs = self.model(inputs)
 
         target = self.model.get_target(inputs, outputs, batch["annotations"])
         losses_dict = self.model.get_loss(outputs, target)
