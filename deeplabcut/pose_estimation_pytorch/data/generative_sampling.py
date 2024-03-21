@@ -274,7 +274,7 @@ class GenerativeSampler:
             # on top of inv gt, swap inv gt
             # FIXME: In the original codebase, they only swap symmetric keypoints. As
             #  we don't always have symmetries for keypoints in DeepLabCut, we swap any
-            #  keypoints with any other keypoint by randomly selecting keypoints to swap
+            #  keypoint with any other keypoint by randomly selecting keypoints to swap
             kps_symmetry = self.keypoints_symmetry
             pair_exist = False
             for (q, w) in kps_symmetry:
@@ -370,7 +370,7 @@ class GenerativeSampler:
                 synth_miss[1] = miss_pt_list[rand_idx][1]
                 synth_miss[2] = 1
 
-                # inversion prob
+            # inversion prob
             synth_inv = np.zeros(3)
             inv_prob = 0.03
             if pair_exist and keypoints[pair_idx, 2] > 0:

@@ -27,6 +27,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     pad_to_length,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import GenerativeSampler
 
 
 @dataclass(frozen=True)
@@ -79,8 +80,11 @@ class PoseDataset(Dataset):
             img["id"]: index for index, img in enumerate(self.images)
         }
 
+        if self.task == Task.CTD:
+            self.generative_sampler = GenerativeSampler(self.parameters.num_joints())
+
     def __len__(self):
-        # TODO: TD should only return the number of annotations that aren't unique_bodyparts
+        # TODO: TD/CTD should only return the number of annotations that aren't unique_bodyparts
         if self.task in (Task.BOTTOM_UP, Task.DETECT):
             return len(self.images)
 
@@ -146,8 +150,8 @@ class PoseDataset(Dataset):
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
         scales, offsets = (1, 1), (0, 0)
-        
-        if self.task == Task.TOP_DOWN:
+
+        if self.task in (Task.TOP_DOWN, Task.CTD):
             if self.parameters.cropped_image_size is None:
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
@@ -158,6 +162,13 @@ class PoseDataset(Dataset):
                     f"{bboxes} for {index} (image {image_path})"
                 )
             bboxes = bboxes.astype(int)
+
+            if self.task == Task.CTD:
+                synthesized_keypoints = self.generative_sampler(
+                     keypoints=keypoints.reshape(-1, 3), near_keypoints=keypoints.reshape(-1, 3),
+                     area=0, num_overlap=0 #TODO: add these arguments correctly
+                )
+                # recompute bbox
 
             # TODO: The following code should be replaced by a numpy version
             image, offsets, scales = _crop_and_pad_image_torch(
