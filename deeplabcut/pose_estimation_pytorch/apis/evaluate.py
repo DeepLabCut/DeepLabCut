@@ -78,6 +78,14 @@ def predict(
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
             context = [{"bboxes": ground_truth_bboxes[image]} for image in image_paths]
 
+    elif pose_task == Task.CTD:
+        # Get conditional keypoints for context
+        if pose_runner is not None:
+            pose_predictions = pose_runner.inference(images=tqdm(image_paths))
+            context = [{"cond_kpts": pose_pred} for pose_pred in pose_predictions]
+        else:
+            raise NotImplementedError("Conditional top-down models require a pose runner")
+
     images_with_context = image_paths
     if context is not None:
         if len(context) != len(image_paths):

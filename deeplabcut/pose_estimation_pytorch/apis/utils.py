@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
+    build_conditional_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -285,11 +286,18 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            cropped_image_size=(256, 256),
-        )
+        if pose_task == Task.CTD:
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                cropped_image_size=(256, 256),
+            )
+        else:
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                cropped_image_size=(256, 256),
+            )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,

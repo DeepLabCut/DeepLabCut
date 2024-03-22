@@ -23,6 +23,9 @@ from deeplabcut.pose_estimation_pytorch.data.image import (
     load_image,
     _crop_and_pad_image_torch,
 )
+from deeplabcut.pose_estimation_pytorch.data.utils import (
+    bbox_from_keypoints,
+)
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
@@ -103,6 +106,35 @@ def build_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
+            TorchCropDetections(cropped_image_size=cropped_image_size[0]),
+            AugmentImage(transform),
+            ToTensor(),
+        ]
+    )
+
+def build_conditional_top_down_preprocessor(
+    color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
+) -> Preprocessor:
+    """Creates a preprocessor for conditional top-down pose estimation
+
+    Creates a preprocessor that loads an image, computes bounding boxes from conditional
+    keypoints (given as a context (through a "cond_kpts" key), crops all bounding boxes,
+    runs some transforms on each cropped image (such as normalization), creates a tensor
+    from the numpy array (going from (num_ind, h, w, 3) to (num_ind, 3, h, w)).
+
+    Args:
+        color_mode: whether to load the image as an RGB or BGR
+        transform: the transform to apply to the image
+        cropped_image_size: the size of images for each individual to give to the pose
+            estimator
+
+    Returns:
+        A default top-down Preprocessor
+    """
+    return ComposePreprocessor(
+        components=[
+            LoadImage(color_mode),
+            ComputeBoundingBoxesFromCondKeypoints(),
             TorchCropDetections(cropped_image_size=cropped_image_size[0]),
             AugmentImage(transform),
             ToTensor(),
@@ -318,7 +350,7 @@ class TorchCropDetections(Preprocessor):
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
             cropped_image, offset, scale = _crop_and_pad_image_torch(
-                image, bbox, "xywh", self.cropped_image_size
+                image, bbox, self.bbox_format, self.cropped_image_size
             )
             images.append(cropped_image)
             offsets.append(offset)
@@ -327,6 +359,10 @@ class TorchCropDetections(Preprocessor):
         context["offsets"] = np.array(offsets)
         context["scales"] = np.array(scales)
 
+        if "cond_kpts" in context:
+            context["cond_kpts"][:, :, 0] = (context["cond_kpts"][:, :, 0] - offsets[0]) / scales[0]
+            context["cond_kpts"][:, :, 1] = (context["cond_kpts"][:, :, 1] - offsets[1]) / scales[1]
+
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:
             images = np.zeros((0, *image.shape))
@@ -334,3 +370,23 @@ class TorchCropDetections(Preprocessor):
             images = np.stack(images, axis=0)
 
         return images, context
+
+
+class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
+    """TODO"""
+
+    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh") -> None:
+        self.cropped_image_size = cropped_image_size
+        self.bbox_format = bbox_format
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        """TODO: numpy implementation"""
+        if "cond_kpts" not in context:
+            raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
+
+        context["bboxes"] = [bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
+                             for cond_kpts in context["cond_kpts"]]
+
+        return image, context
