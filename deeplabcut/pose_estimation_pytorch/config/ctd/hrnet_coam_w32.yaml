@@ -16,3 +16,27 @@ model:
       kernel_size: [15, 15]
     num_joints: 17
   backbone_output_channels: 480
+  heads:
+    bodypart:
+      type: HeatmapHead
+      predictor:
+        type: HeatmapPredictor
+        location_refinement: false
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+      criterion:
+        heatmap:
+          type: WeightedBCECriterion
+          weight: 1.0
+      heatmap_config:
+        channels:
+        - "backbone_output_channels"
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts"
+          kernel_size: 1

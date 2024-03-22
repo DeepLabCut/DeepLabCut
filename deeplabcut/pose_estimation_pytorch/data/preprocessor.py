@@ -375,9 +375,8 @@ class TorchCropDetections(Preprocessor):
 class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
     """TODO"""
 
-    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh") -> None:
-        self.cropped_image_size = cropped_image_size
-        self.bbox_format = bbox_format
+    def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
+        self.cond_kpt_key = cond_kpt_key
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -387,6 +386,6 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
             raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
 
         context["bboxes"] = [bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
-                             for cond_kpts in context["cond_kpts"]]
+                             for cond_kpts in context[self.cond_kpt_key]]
 
         return image, context
