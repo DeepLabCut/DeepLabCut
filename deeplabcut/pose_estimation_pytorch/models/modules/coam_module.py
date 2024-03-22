@@ -17,6 +17,9 @@ import torchvision.transforms.functional as TF
 
 
 class CoAMBlock(nn.Module):
+    """
+    Conditional Attention Module (CoAM) block.
+    """
     def __init__(self, spat_dims, channel_list, cond_enc, n_heads=1, channel_only=False):
         super(CoAMBlock, self).__init__()
         self.att_layers = []

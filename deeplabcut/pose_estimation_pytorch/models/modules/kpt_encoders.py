@@ -28,7 +28,7 @@ class BaseKeypointEncoder(ABC):
     Modified from BUCTD/data/JointsDataset
     """
 
-    def __init__(self, num_joints, kernel_size: tuple[int, int] = (15, 15)) -> None:
+    def __init__(self, num_joints: int, kernel_size: tuple[int, int] = (15, 15)) -> None:
         """
         Args:
             kernel_size: the Gaussian kernel size to use when blurring a heatmap
