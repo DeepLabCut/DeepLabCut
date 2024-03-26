@@ -82,7 +82,7 @@ class PoseDataset(Dataset):
         }
 
         if self.task == Task.CTD:
-            self.generative_sampler = GenerativeSampler(self.parameters.num_joints())
+            self.generative_sampler = GenerativeSampler(self.parameters.num_joints)
 
     def __len__(self):
         # TODO: TD/CTD should only return the number of annotations that aren't unique_bodyparts
@@ -166,7 +166,7 @@ class PoseDataset(Dataset):
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
                 )
-            if len(bboxes) > 1:
+            if len(bboxes) > 1 and self.task == Task.TOP_DOWN:
                 raise ValueError(
                     "There can only be one bbox per item in TD datasets, found "
                     f"{bboxes} for {index} (image {image_path})"
@@ -174,12 +174,13 @@ class PoseDataset(Dataset):
             bboxes = bboxes.astype(int)
 
             if self.task == Task.CTD:
-                keypoints = keypoints[0]
                 near_keypoints = keypoints[1:]
+                keypoints = keypoints[:1]
                 synthesized_keypoints = self.generative_sampler(
                      keypoints=keypoints.reshape(-1, 3),
-                     near_keypoints=near_keypoints.reshape(-1, 3),
+                     near_keypoints=near_keypoints.reshape(len(near_keypoints),-1, 3),
                      area=bboxes[0,2]*bboxes[0,3],
+                     image_size=original_size,
                 )
                 bboxes[0] = bbox_from_keypoints(synthesized_keypoints[:, :2], original_size[0], original_size[1], 10)
 
@@ -192,7 +193,7 @@ class PoseDataset(Dataset):
             if self.task == Task.CTD:
                 synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
                 synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
-                keypoints = safe_stack([keypoints, synthesized_keypoints[None,...]], (0, self.parameters.num_joints(), 3))
+                keypoints = safe_stack([keypoints, synthesized_keypoints[None,...]], (0, self.parameters.num_joints, 3))
             bboxes = np.zeros((0, 4))  # No more bboxes as we cropped around them
 
         transformed = self.apply_transform_all_keypoints(
@@ -231,6 +232,9 @@ class PoseDataset(Dataset):
         offsets: tuple[int, int],
         scales: tuple[float, float],
     ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
+        context = dict()
+        if self.task == Task.CTD:
+            context["cond_keypoints"] = keypoints[1,:,:,:2].astype(np.single)
         return {
             "image": image.transpose((2, 0, 1)),
             "image_id": image_id,
@@ -241,9 +245,7 @@ class PoseDataset(Dataset):
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
-            "context": {
-                "cond_keypoints": keypoints[1,:,:2].astype(np.single) if self.task == Task.CTD else False,
-            }
+            "context": context
         }
 
     def _prepare_final_annotation_dict(
@@ -254,22 +256,22 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
+        individual_ids = anns["individual_id"]
         if self.task in (Task.TOP_DOWN, Task.CTD):
             num_animals = 1
             if self.task == Task.CTD:
                 keypoints = keypoints[0]
+                individual_ids = anns["individual_id"][:1]
 
         return {
             "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
             "keypoints_unique": keypoints_unique[..., :2].astype(np.single),
             "with_center_keypoints": self.parameters.with_center_keypoints,
-            "area": pad_to_length(anns["area"], num_animals, 0).astype(np.single),
+            "area": pad_to_length(bboxes[...,2]*bboxes[...,3], num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
-            "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
-            "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
-            "individual_ids": pad_to_length(
-                anns["individual_id"], num_animals, -1
-            ).astype(int),
+            #"is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
+            #"labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
+            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(int),
         }
 
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:

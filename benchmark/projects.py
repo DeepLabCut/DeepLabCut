@@ -6,8 +6,9 @@ from pathlib import Path
 
 from utils import Project
 
-MA_DLC_DATA_ROOT = Path("/home/niels/datasets/ma_dlc")
-SA_DLC_DATA_ROOT = Path("/home/niels/datasets/single_animal_dlc")
+#MA_DLC_DATA_ROOT = Path("/home/niels/datasets/ma_dlc")
+MA_DLC_DATA_ROOT = Path("/home/lucas/datasets")
+SA_DLC_DATA_ROOT = Path("/home/lucas/datasets/single_animal_dlc")
 
 MA_DLC_BENCHMARKS = {
     "trimouse": Project(
@@ -18,7 +19,7 @@ MA_DLC_BENCHMARKS = {
     "fish": Project(
         root=MA_DLC_DATA_ROOT,
         name="fish-dlc-2021-05-07",
-        iteration=1,
+        iteration=29,
     ),
     "parenting": Project(
         root=MA_DLC_DATA_ROOT,

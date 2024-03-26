@@ -54,7 +54,7 @@ class GenerativeSampler:
         self,
         num_keypoints: int,
         keypoint_sigmas: float | list[float] = 0.1,
-        keypoints_symmetry: list[tuple[int, int]] | None = None
+        keypoints_symmetry: list[tuple[int, int]] = []
     ):
         """
         Args:
@@ -78,6 +78,7 @@ class GenerativeSampler:
         near_keypoints: np.ndarray,
         area: float,  # ??
         #num_overlap: int,  # ??
+        image_size: tuple[int, int],
     ) -> np.ndarray:
         """Samples keypoints
 
@@ -112,7 +113,7 @@ class GenerativeSampler:
         #     if joints[j, 2] == 0:
         #         synth_joints[j] = estimated_joints[j]
 
-        num_valid_joint = np.sum(keypoints[:, 2] > 0)
+        #num_valid_joint = np.sum(keypoints[:, 2] > 0)
 
         N = 500  # TODO: do not know how this is set
         for j in range(self.num_keypoints):
@@ -132,6 +133,9 @@ class GenerativeSampler:
             #  keypoint with any other keypoint by randomly selecting keypoints to swap
             kps_symmetry = self.keypoints_symmetry
             pair_exist = False
+            # for now, we randomly sample keypoint pairs to swap
+            kps_symmetry = np.random.choice(list(range(self.num_keypoints)),
+                                            size=(self.num_keypoints//2, 2), replace=False)
             for (q, w) in kps_symmetry:
                 if j == q or j == w:
                     if j == q:
@@ -345,7 +349,10 @@ class GenerativeSampler:
             synth_list = [synth_jitter, synth_miss, synth_inv, synth_swap, synth_good]
             sampled_idx = np.random.choice(5, 1, p=prob_list)[0]
             synth_joints[j] = synth_list[sampled_idx]
-            synth_joints[j, 2] = 0
+            synth_joints[j, 2] = 2
+
+        np.clip(synth_joints[:, 0], 0, image_size[1], out=synth_joints[:, 0])
+        np.clip(synth_joints[:, 1], 0, image_size[0], out=synth_joints[:, 1])
 
         return synth_joints
 

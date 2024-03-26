@@ -15,6 +15,10 @@ import torch.nn as nn
 from torch.nn import init
 import torchvision.transforms.functional as TF
 
+# from deeplabcut.pose_estimation_pytorch.models.modules import (
+#     ColoredKeypointEncoder,
+#     StackedKeypointEncoder,
+# )
 
 class CoAMBlock(nn.Module):
     """
@@ -25,7 +29,7 @@ class CoAMBlock(nn.Module):
         self.att_layers = []
         self.spat_dims = spat_dims
         self.cond_enc = cond_enc
-        d_cond = cond_enc.num_channels()
+        d_cond = cond_enc.num_channels
         for i in range(len(spat_dims)):
             att_layer = DAModule(d_model = channel_list[i],
                                  d_cond = d_cond, kernel_size = 3,
@@ -35,8 +39,8 @@ class CoAMBlock(nn.Module):
         self.att_layers = nn.ModuleList(self.att_layers)
 
     def forward(self, y_list, cond_hm):
-        if not self.cond_enc == 'stacked' and not self.cond_enc == 'colored':
-            cond_hm = cond_hm[:,0].unsqueeze(1) # we only want one channel of the heatmap
+        # if not isinstance(self.cond_enc, (StackedKeypointEncoder, ColoredKeypointEncoder)):
+        #     cond_hm = cond_hm[:,0].unsqueeze(1) # we only want one channel of the heatmap
         y_list_att = []
         for i in range(len(y_list)):
             y_att = self.att_layers[i](y_list[i], TF.resize(cond_hm, (self.spat_dims[i][1],self.spat_dims[i][0])))

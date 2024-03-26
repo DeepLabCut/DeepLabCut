@@ -47,7 +47,6 @@ class HRNetCoAM(HRNet):
             channel_att_only: bool = False,
             att_heads: int = 1,
             img_size: tuple[int,int] = (256,  256),
-            num_joints: int = 17,
             **kwargs,
     ) -> None:
         """Constructs an ImageNet pretrained HRNet from timm and creates CoAM blocks.
@@ -67,7 +66,6 @@ class HRNetCoAM(HRNet):
         super().__init__(
             model_name = base_model_name,
             pretrained = pretrained,
-            only_high_res = True,
             **kwargs)
 
         self.coam_modules = coam_modules
@@ -77,8 +75,8 @@ class HRNetCoAM(HRNet):
             kpt_encoder = KEYPOINT_ENCODERS.build(kpt_encoder)
         self.cond_enc = kpt_encoder
 
-        self.coam_stages = [None, None, None, None]
-        self.selfatt_coam_stages = [None, None, None, None]
+        self.coam_stages = nn.ModuleList([None, None, None, None])
+        self.selfatt_coam_stages = nn.ModuleList([None, None, None, None])
 
         spat_dims = [(int(img_size[0]/4),int(img_size[1]/4)),
                      (int(img_size[0]/8),int(img_size[1]/8)),
@@ -122,7 +120,7 @@ class HRNetCoAM(HRNet):
 
         if self.coam_stages[0]:
             xl = self.coam_stages[0](xl, cond_hm)
-        elif self.selfatt_coam_modules[0]:
+        elif self.selfatt_coam_stages[0]:
             xl = self.selfatt_coam_stages[0](xl)
 
         yl = self.model.stage2(xl)
@@ -131,7 +129,7 @@ class HRNetCoAM(HRNet):
         
         if self.coam_stages[1]:
             xl = self.coam_stages[1](xl, cond_hm)
-        elif self.selfatt_coam_modules[1]:
+        elif self.selfatt_coam_stages[1]:
             xl = self.selfatt_coam_stages[1](xl)
         
         yl = self.model.stage3(xl)
@@ -140,38 +138,34 @@ class HRNetCoAM(HRNet):
 
         if self.coam_stages[2]:
             xl = self.coam_stages[2](xl, cond_hm)
-        elif self.selfatt_coam_modules[2]:
+        elif self.selfatt_coam_stages[2]:
             xl = self.selfatt_coam_stages[2](xl)
 
         yl = self.model.stage4(xl)
 
         if self.coam_stages[3]:
             yl = self.coam_stages[3](yl, cond_hm)
-        elif self.selfatt_coam_modules[3]:
+        elif self.selfatt_coam_stages[3]:
             yl = self.selfatt_coam_stages[3](yl)
 
         return yl
     
 
-    def forward(self, x, cond_hm):
+    def forward(self, x, cond_kpts):
         """Forward pass through the HRNetCoAM backbone.
 
         Args:
-            x: Input tensor of shape (batch_size, channels, height, width, condition_channels).
+            x: Input tensor of shape (batch_size, channels, height, width).
+            cond_kpts: Conditional keypoints of shape (batch_size, num_joints, 2).
 
         Returns:
             the feature map
-
-        Example:
-            >>> import torch
-            >>> from deeplabcut.pose_estimation_pytorch.models.backbones import HRNetCoAM
-            >>> backbone = HRNetCoAM(model_name='hrnet_w32', pretrained=False)
-            >>> x = torch.randn(1, 6, 256, 256)
-            >>> y = backbone(x)
         """
 
-        cond_hm = self.cond_enc(cond_hm, x.size()[2:]).to(x.device)
-        cond_hm = cond_hm.permute(2, 0, 1)
+        # create conditional heatmap
+        cond_hm = self.cond_enc(cond_kpts.squeeze(1), x.size()[2:])
+        cond_hm = torch.from_numpy(cond_hm).float().to(x.device)
+        cond_hm = cond_hm.permute(0, 3, 1, 2)  # (B, C, H, W)
         
         # Stem
         x = self.model.conv1(x)

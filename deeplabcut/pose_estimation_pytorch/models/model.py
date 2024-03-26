@@ -56,7 +56,7 @@ class PoseModel(nn.Module):
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
 
-    def forward(self, x: torch.Tensor) -> dict[str, dict[str, torch.Tensor]]:
+    def forward(self, x: torch.Tensor, **backbone_kwargs) -> dict[str, dict[str, torch.Tensor]]:
         """
         Forward pass of the PoseModel.
 
@@ -68,7 +68,7 @@ class PoseModel(nn.Module):
         """
         if x.dim() == 3:
             x = x[None, :]
-        features = self.backbone(x)
+        features = self.backbone(x, **backbone_kwargs)
         if self.neck:
             features = self.neck(features)
 

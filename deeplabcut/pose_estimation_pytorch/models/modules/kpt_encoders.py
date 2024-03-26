@@ -96,6 +96,9 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
         Returns:
             the encoded keypoints
         """
+
+        raise NotImplementedError("StackedKeypointEncoder not implemented yet with batch processing")
+
         kpts = np.array(keypoints).astype(int)  # .reshape(-1, 2).astype(int)
         zero_matrix = np.zeros(size)
 
@@ -145,34 +148,41 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
     def __call__(self, keypoints: np.ndarray, size: tuple[int, int]) -> np.ndarray:
         """
         Args:
-            keypoints: the keypoints to encode
-            size: the (height, width) of the heatmap in which the keypoints should
-                be encoded
+            keypoints: batch of keypoints to encode with shape (batch_size, num_joints, 2)
+            size: the (height, width) of the heatmap in which the keypoints should be encoded
 
         Returns:
-            the encoded keypoints
+            encoded keypoints with shape (batch_size, num_joints, height, width, 3)
         """
-        if not len(keypoints) == len(self.colors):
+
+        batch_size, num_kpts, _ = keypoints.shape
+
+        if not num_kpts == len(self.colors):
             raise ValueError(
                 f"Cannot encode the keypoints. Initialized with {len(self.colors)} "
-                f"colors, but there are {len(keypoints)} to encode"
+                f"colors, but there are {num_kpts} to encode"
             )
 
-        kpts = np.array(keypoints).astype(int)  # .reshape(-1, 2).astype(int)
-        zero_matrix = np.zeros(size)
+        kpts = np.array(keypoints).astype(int)
+        zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
 
         def _get_condition_matrix(zero_matrix, kpts):
-            for color, kpt in zip(self.colors, kpts):
-                if 0 < kpt[0] < size[1] and 0 < kpt[1] < size[0]:
-                    zero_matrix[kpt[1] - 1][kpt[0] - 1] = color
+            for i, pose in enumerate(kpts):
+                for color, kpt in zip(self.colors, pose):
+                    x, y = kpt
+                    if 0 < x < size[1] and 0 < y < size[0]:
+                        zero_matrix[i, y-1, x-1] = color
             return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
-        condition_heatmap = self.blur_heatmap(condition)
-        return condition_heatmap
+        for i in range(batch_size):
+            condition_heatmap = self.blur_heatmap(condition[i])
+            condition[i] = condition_heatmap
+        return condition
 
     def get_colors_from_cmap(self, cmap_name, num_colors):
         cmap = plt.get_cmap(cmap_name)
-        colors_float = [cmap(i) for i in range(0, 256, 256 // num_colors)]
+        #colors_float = [cmap(i) for i in range(0, 256, 256 // num_colors)]
+        colors_float = [cmap(i) for i in np.linspace(0, 256, num_colors, dtype=int)]
         colors = [(int(r*255), int(g*255), int(b*255)) for r, g, b, _ in colors_float]
         return colors

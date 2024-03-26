@@ -275,10 +275,10 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         inputs = batch["image"]
         inputs = inputs.to(self.device)
-        if batch['context']['cond_keypoints'][0]:
+        if 'cond_keypoints' in batch['context']:
             cond_kpts = batch['context']['cond_keypoints']
             #cond_kpts = cond_kpts.to(self.device) # cond kpts are put on device after heatmap creation
-            outputs = self.model(inputs, cond_kpts)
+            outputs = self.model(inputs, cond_kpts=cond_kpts)
         else:
             outputs = self.model(inputs)
 
