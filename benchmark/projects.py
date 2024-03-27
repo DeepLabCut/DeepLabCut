@@ -19,7 +19,7 @@ MA_DLC_BENCHMARKS = {
     "fish": Project(
         root=MA_DLC_DATA_ROOT,
         name="fish-dlc-2021-05-07",
-        iteration=29,
+        iteration=30,
     ),
     "parenting": Project(
         root=MA_DLC_DATA_ROOT,

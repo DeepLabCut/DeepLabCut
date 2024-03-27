@@ -139,7 +139,7 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             colors: the color to use for each keypoint
         """
         super().__init__(**kwargs)
-        self.colors = self.get_colors_from_cmap('rainbow', self.num_joints)
+        self.colors = np.array(self.get_colors_from_cmap('rainbow', self.num_joints))
 
     @property
     def num_channels(self):
@@ -165,14 +165,15 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
 
         kpts = np.array(keypoints).astype(int)
         zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
-
+        
         def _get_condition_matrix(zero_matrix, kpts):
             for i, pose in enumerate(kpts):
-                for color, kpt in zip(self.colors, pose):
-                    x, y = kpt
-                    if 0 < x < size[1] and 0 < y < size[0]:
-                        zero_matrix[i, y-1, x-1] = color
+                x, y = pose.T
+                mask = (0 < x) & (x < size[1]) & (0 < y) & (y < size[0])
+                x_masked, y_masked, colors_masked = x[mask], y[mask], self.colors[mask]
+                zero_matrix[i, y_masked-1, x_masked-1] = colors_masked
             return zero_matrix
+        
 
         condition = _get_condition_matrix(zero_matrix, kpts)
         for i in range(batch_size):
