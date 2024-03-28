@@ -182,6 +182,9 @@ class PoseDataset(Dataset):
                      area=bboxes[0,2]*bboxes[0,3],
                      image_size=original_size,
                 )
+                # for testing the speed of the generative sampling
+                #synthesized_keypoints = keypoints.reshape(-1,3) + np.random.normal(0, 1, keypoints.reshape(-1,3).shape)
+                
                 bboxes[0] = bbox_from_keypoints(synthesized_keypoints[:, :2], original_size[0], original_size[1], 10)
 
             # TODO: The following code should be replaced by a numpy version

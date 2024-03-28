@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+import torch
+import torchvision.transforms.functional as TF
 import matplotlib.pyplot as plt
 
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
@@ -70,6 +72,14 @@ class BaseKeypointEncoder(ABC):
             return heatmap
         heatmap /= (am / 255)
         return heatmap
+    
+    # def blur_heatmap_batch(self, heatmaps: torch.tensor) -> np.ndarray:
+    #     heatmaps = TF.gaussian_blur(heatmaps.permute(0,3,1,2), self.kernel_size).permute(0,2,3,1).numpy()
+    #     am = np.amax(heatmaps)
+    #     if am == 0:
+    #         return heatmaps
+    #     heatmaps /= (am / 255)
+    #     return heatmaps
 
 
 @KEYPOINT_ENCODERS.register_module
@@ -174,11 +184,24 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
                 zero_matrix[i, y_masked-1, x_masked-1] = colors_masked
             return zero_matrix
         
+        def _get_condition_matrix_optim(zero_matrix, kpts):
+            x, y = np.array(kpts).T
+            mask = (0 < x) & (x < zero_matrix.shape[2]) & (0 < y) & (y < zero_matrix.shape[1])
+            colors_masked = np.repeat(self.colors[:, None, :], len(zero_matrix), 1) * np.repeat(mask[:, :, None], 3, 2)
+            kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
+            batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
+            kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
+            zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
+            return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
+        #condition = _get_condition_matrix_optim(zero_matrix, kpts)
+        
         for i in range(batch_size):
             condition_heatmap = self.blur_heatmap(condition[i])
             condition[i] = condition_heatmap
+        #condition = self.blur_heatmap_batch(torch.from_numpy(condition))
+
         return condition
 
     def get_colors_from_cmap(self, cmap_name, num_colors):
