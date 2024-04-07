@@ -3,6 +3,9 @@ data:
     auto_padding:  # Required for HRNet backbones
       pad_width_divisor: 32
       pad_height_divisor: 32
+    bu_snapshot: /home/lucas/datasets/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-17/trimiceJun22-trainset95shuffle1/train/snapshot-best.pth
+    bu_predictions: /home/lucas/datasets/trimice-dlc-2021-06-22/evaluation-results-pytorch/iteration-17/trimiceJun22-trainset95shuffle1/DLC_DekrW32_trimiceJun22shuffle1_best.h5
+    #bu_predictions: /home/lucas/datasets/fish-dlc-2021-05-07/evaluation-results-pytorch/iteration-17/fishMay7-trainset94shuffle5/DLC_HrnetW32_fishMay7shuffle5_detector_250_snapshot_140.h5
   train:
     auto_padding:  # Required for HRNet backbones
       pad_width_divisor: 32

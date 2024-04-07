@@ -80,11 +80,11 @@ def predict(
 
     elif pose_task == Task.CTD:
         # Get conditional keypoints for context
-        if pose_runner is not None:
-            pose_predictions = pose_runner.inference(images=tqdm(image_paths))
-            context = [{"cond_kpts": pose_pred} for pose_pred in pose_predictions]
-        else:
-            raise NotImplementedError("Conditional top-down models require a pose runner")
+        bu_snapshot = loader.model_cfg["data"]["inference"]["bu_snapshot"]
+        bu_preds = loader.model_cfg["data"]["inference"]["bu_predictions"]
+        pose_predictions = loader.load_predictions(Path(bu_snapshot), Path(bu_preds),
+                                                   loader.get_dataset_parameters())
+        context = [{"cond_kpts": pose_predictions[image]} for image in image_paths]
 
     images_with_context = image_paths
     if context is not None:

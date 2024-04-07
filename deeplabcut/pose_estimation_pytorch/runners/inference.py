@@ -103,7 +103,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 # TODO: input batch should also be able to be a dict[str, torch.Tensor]
                 input_image, context = self.preprocessor(input_image, context)
 
-            image_predictions = self.predict(input_image)
+            image_predictions = self.predict(input_image, **context.get("model_kwargs", {}))
             if self.postprocessor is not None:
                 # TODO: Should we return context?
                 # TODO: typing update - the post-processor can remove a dict level
@@ -120,7 +120,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
     def __init__(self, model: PoseModel, **kwargs):
         super().__init__(model, **kwargs)
 
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -137,10 +137,18 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         # TODO: iterates over batch one element at a time
         batch_size = 1
         batch_predictions = []
+
         for i in range(0, len(inputs), batch_size):
             batch_inputs = inputs[i : i + batch_size]
             batch_inputs = batch_inputs.to(self.device)
-            batch_outputs = self.model(batch_inputs)
+
+            if kwargs:
+                # Get the i-th element of "cond kpts"
+                kwargs_ = {}
+                kwargs_["cond_kpts"] = kwargs["cond_kpts"][i : i + batch_size]
+                batch_outputs = self.model(batch_inputs, **kwargs_)
+            else:
+                batch_outputs = self.model(batch_inputs, **kwargs)
             raw_predictions = self.model.get_predictions(batch_inputs, batch_outputs)
 
             for b in range(batch_size):

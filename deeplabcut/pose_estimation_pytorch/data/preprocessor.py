@@ -137,6 +137,7 @@ def build_conditional_top_down_preprocessor(
             ComputeBoundingBoxesFromCondKeypoints(),
             TorchCropDetections(cropped_image_size=cropped_image_size[0]),
             AugmentImage(transform),
+            ConditionalKeypointsToModelInputs(),
             ToTensor(),
         ]
     )
@@ -359,9 +360,9 @@ class TorchCropDetections(Preprocessor):
         context["offsets"] = np.array(offsets)
         context["scales"] = np.array(scales)
 
-        if "cond_kpts" in context:
-            context["cond_kpts"][:, :, 0] = (context["cond_kpts"][:, :, 0] - offsets[0]) / scales[0]
-            context["cond_kpts"][:, :, 1] = (context["cond_kpts"][:, :, 1] - offsets[1]) / scales[1]
+        # if "cond_kpts" in context:
+        #     context["cond_kpts"][:, :, 0] = (context["cond_kpts"][:, :, 0] - offsets[0]) / scales[0]
+        #     context["cond_kpts"][:, :, 1] = (context["cond_kpts"][:, :, 1] - offsets[1]) / scales[1]
 
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:
@@ -387,5 +388,24 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
 
         context["bboxes"] = [bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
                              for cond_kpts in context[self.cond_kpt_key]]
+
+        return image, context
+
+
+class ConditionalKeypointsToModelInputs(Preprocessor):
+
+    def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
+        self.cond_kpt_key = cond_kpt_key
+
+    def __call__(
+            self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+
+        context["model_kwargs"] = {"cond_kpts": context[self.cond_kpt_key]}
+
+        cond_keypoints = context[self.cond_kpt_key]
+        rescaled = cond_keypoints.copy()
+        rescaled[..., :2] = (rescaled[..., :2] - np.array(context["offsets"])[:,None]) / np.array(context["scales"])[:,None]
+        context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
 
         return image, context

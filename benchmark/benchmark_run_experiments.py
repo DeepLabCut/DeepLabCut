@@ -352,7 +352,7 @@ def main(
                         model_prefix="",
                     ),
                     train=True,
-                    evaluate=False,
+                    evaluate=True,
                     device="cuda",
                     train_params=model_config,
                     detector_train_params=detector_config,

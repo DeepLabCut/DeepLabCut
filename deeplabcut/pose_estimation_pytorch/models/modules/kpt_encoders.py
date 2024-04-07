@@ -194,9 +194,9 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
             return zero_matrix
 
-        condition = _get_condition_matrix(zero_matrix, kpts)
-        #condition = _get_condition_matrix_optim(zero_matrix, kpts)
-        
+        #condition = _get_condition_matrix(zero_matrix, kpts)
+        condition = _get_condition_matrix_optim(zero_matrix, kpts)
+
         for i in range(batch_size):
             condition_heatmap = self.blur_heatmap(condition[i])
             condition[i] = condition_heatmap

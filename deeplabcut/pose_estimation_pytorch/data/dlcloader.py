@@ -16,6 +16,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import re
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
@@ -194,6 +195,42 @@ class DLCLoader(Loader):
                 f"Found {df}"
             )
         return df
+    
+    @staticmethod
+    def load_predictions(bu_snapshot: Path, bu_predictions: Path, parameters: PoseDatasetParameters) -> pd.DataFrame:
+
+        if bu_predictions is None:
+
+            pred_path = Path(str(bu_snapshot).replace('dlc-models', 'evaluation-results')).parent.parent
+            cfg = af.read_config(pred_path.parent.parent.parent / "config.yaml")
+            scorer = af.get_scorer_name(
+                    cfg=cfg,
+                    shuffle=int(re.search(r'shuffle(\d+)', str(bu_snapshot)).group(1)),
+                    trainFraction=int(re.search(r'trainset(\d+)', str(bu_snapshot)).group(1)) / 100,
+                    engine=Engine.PYTORCH,
+                    trainingsiterations=re.search(r'snapshot-(.+)\.pth', str(bu_snapshot)).group(1),
+                    modelprefix="",
+                )
+            pred_file = pred_path / f"{scorer[0]}.h5"
+
+            dlc_preds = pd.read_hdf(pred_file, key="df_with_missing")
+
+            #FIXME: Implement the case where snapshot is loaded
+            raise NotImplementedError("Need to implement the case with loaded snapshot")
+
+        else:
+            pred_path = bu_predictions.parent.parent
+            dlc_preds = pd.read_hdf(bu_predictions, key="df_with_missing")
+        
+        predictions = {}
+        for idx in dlc_preds.index.unique():
+            img_path = pred_path.parent.parent / Path(*idx)
+            keypoints = dlc_preds.loc[idx].values.reshape(-1,len(parameters.bodyparts),3)[:,:,:2]
+            keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
+            predictions[str(img_path)] = keypoints
+
+        return predictions
+        
 
     @staticmethod
     def split_data(

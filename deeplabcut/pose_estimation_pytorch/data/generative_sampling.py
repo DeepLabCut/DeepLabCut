@@ -110,8 +110,15 @@ class GenerativeSampler:
         #  predictions? which model?) so we ignore it for now
         # for j in range(self.num_keypoints):
         #     # in case of not annotated joints, use other models`s result and add noise
-        #     if joints[j, 2] == 0:
+        #     if keypoints[j, 2] == 0:
         #         synth_joints[j] = estimated_joints[j]
+
+        # instead we fill empty annotations with the mean of the other annotations
+        # in order to prevent corrupted bboxes
+        # for j in range(self.num_keypoints):
+        #     #if keypoints[j, 2] == 0:
+        #     if sum(keypoints[j,:2]) == 0:
+        #         synth_joints[j] = np.mean(keypoints[keypoints[:, 2] > 0], axis=0)
 
         #num_valid_joint = np.sum(keypoints[:, 2] > 0)
 
@@ -334,6 +341,8 @@ class GenerativeSampler:
             if synth_good[2] == 0:
                 good_prob = 0
 
+            #swap_prob = 0
+
             normalizer = jitter_prob + miss_prob + inv_prob + swap_prob + good_prob
             if normalizer == 0:
                 synth_joints[j] = 0
@@ -353,6 +362,9 @@ class GenerativeSampler:
 
         np.clip(synth_joints[:, 0], 0, image_size[1], out=synth_joints[:, 0])
         np.clip(synth_joints[:, 1], 0, image_size[0], out=synth_joints[:, 1])
+
+        # bring format of empty annotations back to DLC format (0 -> nan)
+        synth_joints[(synth_joints[...,0]==0) & (synth_joints[...,1]==0)] = np.nan
 
         return synth_joints
 
