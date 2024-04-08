@@ -191,7 +191,8 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
             batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
             kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
-            zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
+            #zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
+            zero_matrix[kpt_input[...,0], kpt_input[...,2]-1, kpt_input[...,1]-1] = colors_masked.transpose(1,0,2)            
             return zero_matrix
 
         #condition = _get_condition_matrix(zero_matrix, kpts)

@@ -286,6 +286,9 @@ def main(
     models_to_train: list[ModelConfig | tuple[DetectorConfig, ModelConfig]],
     splits_to_train: tuple[int, ...] = (0, 1, 2),
     eval_params: EvalParameters | None = None,
+    train: bool = True,
+    evaluate: bool = True,
+    manual_shuffle_index: int | None = None,
 ):
     if eval_params is None:
         eval_params = EvalParameters(snapshotindex="all", plotting=False)
@@ -321,6 +324,8 @@ def main(
         shuffle_indices = create_shuffles(
             project, splits_file, trainset_index, model_config.net_type
         )
+        if manual_shuffle_index:
+            shuffle_indices = [manual_shuffle_index]
         shuffles_to_train = [shuffle_indices[i] for i in splits_to_train]
         print(f"training shuffles {shuffles_to_train}")
         for split_idx, shuffle_idx in zip(splits_to_train, shuffles_to_train):
@@ -351,8 +356,8 @@ def main(
                         index=shuffle_idx,
                         model_prefix="",
                     ),
-                    train=True,
-                    evaluate=True,
+                    train=train,
+                    evaluate=evaluate,
                     device="cuda",
                     train_params=model_config,
                     detector_train_params=detector_config,

@@ -22,6 +22,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     _extract_keypoints_and_bboxes,
     apply_transform,
     bbox_from_keypoints,
+    calc_bbox_overlap,
     map_id_to_annotations,
     map_image_path_to_id,
     pad_to_length,
@@ -121,7 +122,13 @@ class PoseDataset(Dataset):
         """
         ann = self.annotations[index]
         img = self.images[self.img_id_to_index[ann["image_id"]]]
-        near_anns = [self.annotations[idx] for idx in self.annotation_idx_map[img["id"]] if idx != index]
+        near_anns = []
+        for idx in self.annotation_idx_map[img["id"]]:
+            # we consider near annotations to be those whose bounding boxes overlap wih the current item
+            #if idx != index and calc_bbox_overlap(ann['bbox'], self.annotations[idx]['bbox']) > 0:
+            #HACK: add same annotation as near keypoints so that we don't have empty list
+            if calc_bbox_overlap(ann['bbox'], self.annotations[idx]['bbox']) > 0:
+                near_anns.append(self.annotations[idx])
         return img["file_name"], [ann] + near_anns, img["id"]
 
     def __getitem__(self, index: int) -> dict:

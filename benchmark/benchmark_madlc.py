@@ -21,7 +21,7 @@ from projects import MA_DLC_BENCHMARKS, MA_DLC_DATA_ROOT
 
 
 if __name__ == "__main__":
-    PROJECT_NAME = "fish"  # "trimouse", "fish", "marmosets", "parenting"
+    PROJECT_NAME = "trimouse"  # "trimouse", "fish", "marmosets", "parenting"
     PROJECT_BENCHMARKED = MA_DLC_BENCHMARKS[PROJECT_NAME]
     SPLIT_FILE = MA_DLC_DATA_ROOT / "maDLC_benchmarking_splits.json"
     NUM_BPT = len(get_bodyparts(PROJECT_BENCHMARKED.cfg))
@@ -120,7 +120,11 @@ if __name__ == "__main__":
         project=PROJECT_BENCHMARKED,
         splits_file=SPLIT_FILE,
         trainset_index=0,
-        train_fraction=0.94,
+        #train_fraction=0.94, # for fish
+        train_fraction=0.95,
         models_to_train=[model_configs[0]],
         splits_to_train=(0, ),
+        train=True,
+        evaluate=True,
+        manual_shuffle_index=None
     )

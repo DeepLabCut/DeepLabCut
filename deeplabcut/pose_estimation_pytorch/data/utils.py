@@ -345,6 +345,34 @@ def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:
     return area
 
 
+def calc_bbox_overlap(bbox1: np.ndarray, bbox2: np.ndarray) -> np.ndarray:
+    """
+    Calculate the overlap between two bounding boxes
+
+    Args:
+        bbox1: the first bounding box in the format (x, y, w, h)
+        bbox2: the second bounding box in the format (x, y, w, h)
+
+    Returns:
+        The overlap between
+    """
+    x1, y1, w1, h1 = bbox1
+    x2, y2, w2, h2 = bbox2
+
+    x1_max = x1 + w1
+    y1_max = y1 + h1
+    x2_max = x2 + w2
+    y2_max = y2 + h2
+
+    x_overlap = max(0, min(x1_max, x2_max) - max(x1, x2))
+    y_overlap = max(0, min(y1_max, y2_max) - max(y1, y2))
+
+    intersection = x_overlap * y_overlap
+    union = w1 * h1 + w2 * h2 - intersection
+
+    return intersection / union
+
+
 def _annotation_to_keypoints(annotation: dict) -> np.array:
     """
     Convert the coco annotations into array of keypoints returns the array of the
