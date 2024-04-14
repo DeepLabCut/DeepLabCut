@@ -113,6 +113,7 @@ def test_format_multianimal_training_data(monkeypatch):
         (["/a/v1.mov", "/a/v2.mp4", "/b/v1.mov"], ["v1", "v2"]),
         (["v1.mov", "v2.mov", "v1.mov"], ["v1", "v2"]),
         (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov"], ["v1", "v2"]),
+        (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov", "/b/v3.mp4"], ["v1", "v2", "v3"]),
     ],
 )
 def test_parse_video_filenames(videos: list[str], expected_filenames: list[str]):
