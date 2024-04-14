@@ -18,6 +18,7 @@ import warnings
 from functools import lru_cache
 from pathlib import Path
 from PIL import Image
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -464,7 +465,7 @@ def _robust_path_split(path):
     return parent, filename, ext
 
 
-def parse_video_filenames(videos: list[str]) -> list[str]:
+def parse_video_filenames(videos: List[str]) -> List[str]:
     """Parses the names of all videos listed in a project's ``config.yaml`` file
 
     Goes through the paths all videos listed for a project, and removes entries with a

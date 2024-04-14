@@ -12,6 +12,7 @@ import numpy as np
 import os
 import pandas as pd
 import pytest
+from typing import List
 
 from conftest import TEST_DATA_DIR
 from deeplabcut.generate_training_dataset import (
@@ -116,6 +117,6 @@ def test_format_multianimal_training_data(monkeypatch):
         (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov", "/b/v3.mp4"], ["v1", "v2", "v3"]),
     ],
 )
-def test_parse_video_filenames(videos: list[str], expected_filenames: list[str]):
+def test_parse_video_filenames(videos: List[str], expected_filenames: List[str]):
     filenames = parse_video_filenames(videos)
     assert filenames == expected_filenames
