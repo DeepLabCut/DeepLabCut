@@ -11,6 +11,8 @@
 import numpy as np
 import os
 import pandas as pd
+import pytest
+
 from conftest import TEST_DATA_DIR
 from deeplabcut.generate_training_dataset import (
     read_image_shape_fast,
@@ -19,6 +21,7 @@ from deeplabcut.generate_training_dataset import (
     format_multianimal_training_data,
     trainingsetmanipulation,
     multiple_individuals_trainingsetmanipulation,
+    parse_video_filenames,
 )
 
 from deeplabcut.utils.auxfun_videos import imread
@@ -98,3 +101,20 @@ def test_format_multianimal_training_data(monkeypatch):
         for d in data
         for xy in d["joints"].values()
     )
+
+
+@pytest.mark.parametrize(
+    "videos, expected_filenames",
+    [
+        ([], []),
+        (["/data/my-video.mov"], ["my-video"]),
+        (["/data/my-video.mp4", "/data2/my-video.mov"], ["my-video"]),
+        (["/data/my-video.mov", "/data/video2.mov"], ["my-video", "video2"]),
+        (["/a/v1.mov", "/a/v2.mp4", "/b/v1.mov"], ["v1", "v2"]),
+        (["v1.mov", "v2.mov", "v1.mov"], ["v1", "v2"]),
+        (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov"], ["v1", "v2"]),
+    ],
+)
+def test_parse_video_filenames(videos: list[str], expected_filenames: list[str]):
+    filenames = parse_video_filenames(videos)
+    assert filenames == expected_filenames
