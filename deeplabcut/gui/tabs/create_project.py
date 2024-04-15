@@ -98,7 +98,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.copy_box = QtWidgets.QCheckBox("Copy videos to project folder")
         self.copy_box.setChecked(False)
 
-        browse_button = QtWidgets.QPushButton("Browse videos")
+        browse_button = QtWidgets.QPushButton("Browse folders")
         browse_button.clicked.connect(self.browse_videos)
         clear_button = QtWidgets.QPushButton("Clear")
         clear_button.clicked.connect(video_frame.fancy_list.clear)
@@ -116,10 +116,13 @@ class ProjectCreator(QtWidgets.QDialog):
         return video_frame
 
     def browse_videos(self):
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
         folder = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             "Please select a folder",
             self.loc_default,
+            options,
         )
         if not folder:
             return
