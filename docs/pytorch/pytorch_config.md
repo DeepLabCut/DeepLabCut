@@ -330,11 +330,16 @@ train_settings:
 
 ### Logger
 
-To log results to [Weights and Biases](https://wandb.ai/site), you can add a
+Training runs are logged to the model folder (where the snapshots are stored) by 
+default.
+
+Additionally, you can log results to [Weights and Biases](https://wandb.ai/site), by adding a
 `WandbLogger`. Just make sure you're logged in to your `wandb` account before starting 
 your training run (with `wandb login` from your shell). For more information, see their
 [tutorials](https://docs.wandb.ai/tutorials) and their documentation for 
-[`wandb.init`](https://docs.wandb.ai/ref/python/init).
+[`wandb.init`](https://docs.wandb.ai/ref/python/init). You can also log images as they are seen by the model to `wandb` 
+with the `image_log_interval`. This logs a random train and test image, as well as the 
+targets and heatmaps for that image.
 
 Logging to `wandb` is a good way to keep track of what you've run, including performance
 and metrics.
@@ -342,6 +347,7 @@ and metrics.
 ```yaml
 logger:
  type: WandbLogger
+ image_log_interval: 5  # how often images are logged to wandb (in epochs)
  project_name: my-dlc3-project  # the name of the project where the run should be logged
  run_name: dekr-w32-shuffle0  # the name of the run to log
  ...  # any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`

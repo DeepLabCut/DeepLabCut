@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """ Testscript for single animal PyTorch projects """
+from __future__ import annotations
+
 from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
@@ -28,6 +30,7 @@ def main(
     detector_batch_size: int = 1,
     max_snapshots_to_keep: int = 5,
     device: str = "cpu",
+    logger: dict | None = None,
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,
 ) -> None:
@@ -75,6 +78,7 @@ def main(
                                 )
                             )
                         ),
+                        logger=logger,
                     ),
                     engine=engine,
                     create_labeled_videos=create_labeled_videos,
@@ -95,7 +99,7 @@ if __name__ == "__main__":
         net_types=["top_down_resnet_50", "resnet_50", "dekr_w18"],
         params=SyntheticProjectParameters(
             multianimal=True,
-            num_bodyparts=2,
+            num_bodyparts=5,
             num_individuals=3,
             num_unique=0,
             num_frames=10,
@@ -107,6 +111,11 @@ if __name__ == "__main__":
         save_epochs=1,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
+        logger={
+            "type": "WandbLogger",
+            "project_name": "testscript-dev",
+            "run_name": "test-logging",
+        },
         create_labeled_videos=False,
         delete_after_test_run=True,
     )

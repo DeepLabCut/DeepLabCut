@@ -1,4 +1,6 @@
 """ Testscript for single animal PyTorch projects """
+from __future__ import annotations
+
 from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
@@ -22,6 +24,7 @@ def main(
     max_snapshots_to_keep: int = 5,
     batch_size: int = 1,
     device: str = "cpu",
+    logger: dict | None = None,
     synthetic_data_params: SyntheticProjectParameters = SyntheticProjectParameters(
         multianimal=False, num_bodyparts=6,
     ),
@@ -64,7 +67,8 @@ def main(
                                 save_epochs=save_epochs,
                                 max_snapshots=max_snapshots_to_keep,
                             )
-                        )
+                        ),
+                        logger=logger,
                     ),
                     engine=engine,
                     create_labeled_videos=create_labeled_videos,
@@ -89,6 +93,11 @@ if __name__ == "__main__":
         save_epochs=1,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
+        logger={
+            "type": "WandbLogger",
+            "project_name": "testscript-dev",
+            "run_name": "test-logging",
+        },
         synthetic_data_params=SyntheticProjectParameters(
             multianimal=False,
             num_bodyparts=4,

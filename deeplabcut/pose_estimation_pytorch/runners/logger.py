@@ -15,6 +15,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Optional
 
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
+from torch.utils.data import DataLoader
+from torchvision.utils import draw_bounding_boxes, draw_keypoints
+
 try:
     import wandb
     has_wandb = True
@@ -70,12 +77,11 @@ class BaseLogger(ABC):
         """
 
     @abstractmethod
-    def log(self, key: str, value: Any, step: Optional[int] = None) -> None:
+    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
         """Logs data from a training run
 
         Args:
-            key: The name of the logged value.
-            value: Data to log.
+            metrics: the metrics to log
             step: The global step in processing. Defaults to None.
         """
 
@@ -84,8 +90,155 @@ class BaseLogger(ABC):
         """Saves the current training logs"""
 
 
+class ImageLoggerMixin(ABC):
+    """Mixin for loggers that can log images
+
+    Before starting training, you should call `select_images_to_log`, which will
+    select a train and a test image for which inputs/outputs will always be logged.
+    Then logger.log_images should be called at every step - the logger will check if
+    anything needs to be uploaded, and take care of it.
+
+    Example:
+        project_name = "example"
+        run_name = "run-1"
+        logger = WandbLogger(project_name, run_name)
+        logger.select_images_to_log(train_loader, test_loader)
+
+        for i in range(epochs):
+            for batch_inputs in train_loader:
+                batch_outputs = model(batch_inputs)
+                batch_targets = model.get_targets(batch_inputs, batch_outputs)
+                loss = criterion(batch_targets, batch_outputs)
+                loss.backwards()
+                optim.step()
+
+                logger.log_images(batch_inputs, batch_outputs, batch_targets)
+
+            for batch_inputs in train_loader:
+                ...
+                logger.log_images(batch_inputs, batch_outputs, batch_targets)
+    """
+
+    def __init__(self, image_log_interval: int | None = None, *args, **kwargs):
+        """"""
+        super().__init__(*args, **kwargs)
+        self.image_log_interval = image_log_interval
+        self._logged = {}
+        self._denormalize = transforms.Compose(
+            [
+                transforms.Normalize(mean=[0, 0, 0], std=[1/0.229, 1/0.224, 1/0.225]),
+                transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[1, 1, 1]),
+            ]
+        )
+        self._softmax = torch.nn.Softmax2d()
+
+    @abstractmethod
+    def log_images(
+        self,
+        inputs: dict[str, Any],
+        outputs: dict[str, torch.Tensor],
+        targets: dict[str, dict[str, torch.Tensor]],
+        step: int,
+    ) -> None:
+        """Log images for a batch
+
+        Args:
+            inputs: the inputs for the model, containing at least an "image" key
+            outputs: the outputs of each model head
+            targets: the targets for each model head
+            step: the current step
+        """
+        pass
+
+    def select_images_to_log(self, train: DataLoader, valid: DataLoader) -> None:
+        """Selects the train and test images to log
+
+        Args:
+            train: the training dataloader
+            valid: the inference dataloader
+        """
+        def _caption(image_path: str) -> str:
+            p = Path(image_path)
+            return f"{p.parent.name}.{p.stem}"
+
+        train_image = train.dataset[0]["path"]
+        test_image = valid.dataset[0]["path"]
+        self._logged = {
+            train_image: {"name": "train-0", "caption": _caption(train_image)},
+            test_image: {"name": "test-0", "caption": _caption(test_image)},
+        }
+
+    def _prepare_image(
+        self,
+        image: torch.Tensor,
+        denormalize: bool = False,
+        keypoints: torch.Tensor | None = None,
+        bboxes: torch.Tensor | None = None,
+    ) -> np.ndarray:
+        """
+        Args:
+            image: the image to log, of shape (C, H, W), of any data type
+            denormalize: whether to remove ImageNet channel normalization
+            keypoints: size (num_instances, K, 2) the K keypoints location
+            bboxes: size (N, 4) containing bboxes in (xmin, ymin, xmax, ymax)
+
+        Returns:
+            an uint8 array with keypoints and bounding boxes drawn
+        """
+        if denormalize:
+            image = self._denormalize(image.unsqueeze(0)).squeeze()
+
+        image = F.convert_image_dtype(image.detach().cpu(), dtype=torch.uint8)
+        if keypoints is not None and len(keypoints) > 0:
+            assert len(keypoints.shape) == 3
+            keypoints[keypoints < 0] = np.nan
+            image = draw_keypoints(
+                image, keypoints=keypoints[..., :2], colors="red", radius=5
+            )
+
+        if bboxes is not None and len(bboxes) > 0:
+            assert len(bboxes.shape) == 2
+            image = draw_bounding_boxes(image, boxes=bboxes[:, :4], width=1)
+
+        return image.permute(1, 2, 0).numpy()
+
+    def _heatmap_softmax(self, heatmaps: torch.Tensor) -> torch.Tensor:
+        """Applies a softmax to the heatmap channels"""
+        return self._softmax(heatmaps.detach().cpu())
+
+    def _prepare_images(
+        self,
+        inputs: dict[str, Any],
+        outputs: dict[str, dict[str, torch.Tensor]],
+        targets: dict[str, dict[str, dict[str, torch.Tensor]]],
+    ) -> dict[str, np.ndarray]:
+        """Prepares images for logging"""
+        image_logs = {}
+        paths = inputs["path"]
+        images_to_log = [(i, p) for i, p in enumerate(paths) if p in self._logged]
+        for idx, path in images_to_log:
+            base = self._logged[path]["name"]
+            keypoints = inputs.get("annotations", {}).get("keypoints")
+            if keypoints is not None:
+                keypoints = keypoints[idx]
+            image_logs[f"{base}.input"] = self._prepare_image(
+                inputs["image"][idx], keypoints=keypoints, denormalize=True,
+            )
+
+            for head, head_outputs in outputs.items():
+                if "heatmap" in head_outputs:
+                    head_heatmaps = self._heatmap_softmax(head_outputs["heatmap"][idx])
+                    head_targets = targets[head]["heatmap"]["target"][idx]
+                    for j, (h, t) in enumerate(zip(head_heatmaps, head_targets)):
+                        h = self._prepare_image(h.unsqueeze(0))
+                        t = self._prepare_image(t.unsqueeze(0))
+                        image_logs[f"{base}.heatmap.{j}"] = np.concatenate([h, t])
+
+        return image_logs
+
+
 @LOGGER.register_module
-class WandbLogger(BaseLogger):
+class WandbLogger(ImageLoggerMixin, BaseLogger):
     """Wandb logger to track experiments and log data.
 
     Refer to: https://docs.wandb.ai/guides for more information on wandb.
@@ -98,6 +251,7 @@ class WandbLogger(BaseLogger):
         self,
         project_name: str = "deeplabcut",
         run_name: str = "tmp",
+        image_log_interval: int | None = None,
         model: PoseModel = None,
         **wandb_kwargs,
     ) -> None:
@@ -106,6 +260,8 @@ class WandbLogger(BaseLogger):
         Args:
             project_name: The name of the wandb project. Defaults to "deeplabcut".
             run_name: The name of the wandb run. Defaults to "tmp".
+            image_log_interval: How often train/test images are logged in epochs (if
+                None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
             wandb_kwargs: extra arguments to pass to ``wb.init``
 
@@ -113,13 +269,14 @@ class WandbLogger(BaseLogger):
             logger = WandbLogger(project_name="mice", run_name="exp1", model=my_model)
 
         """
+        super().__init__(image_log_interval=image_log_interval)
+
         if not has_wandb:
             raise ValueError(
                 "Cannot use ``WandbLogger`` as wandb is not installed. Please run"
                 "``pip install wandb`` if you want to log to wandb"
             )
 
-        super().__init__()
         if wandb.run is not None:
             wandb.finish()
 
@@ -132,24 +289,43 @@ class WandbLogger(BaseLogger):
             raise ValueError("Specify the model to track!")
         self.run.watch(model)
 
-    def log(self, key: str, value: Any, step: Optional[int] = None) -> None:
-        """Logs data from runs, such as scalars, images, video, histograms, plots, and tables.
+    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
+        """Logs metrics from runs
 
         Args:
-            key: The name of the logged value.
-            value: Data to log.
+            metrics: the metrics to log
             step: The global step in processing. Defaults to None.
 
         Example:
             logger = WandbLogger()
-            logger.log(key="loss", value=0.123, step=100)
-
+            logger.log({"loss": 0.123}, step=100)
         """
-        if value is None:
-            raise ValueError(
-                f"Nothing to log. Value ({value}) expected to be scalar, table or image."
+        self.run.log(metrics, step=step)
+
+    def log_images(
+        self,
+        inputs: dict[str, Any],
+        outputs: dict[str, dict[str, torch.Tensor]],
+        targets: dict[str, dict[str, dict[str, torch.Tensor]]],
+        step: int,
+    ) -> None:
+        """Log images for a batch
+
+        Args:
+            inputs: the inputs for the model, containing at least an "image" key
+            outputs: the outputs of each model head
+            targets: the targets for each model head
+            step: the current step
+        """
+        if self.image_log_interval is None or step % self.image_log_interval != 0:
+            return
+
+        images = self._prepare_images(inputs, outputs, targets)
+        if len(images) > 0:
+            self.run.log(
+                {name: wandb.Image(image) for name, image in images.items()},
+                step=step,
             )
-        self.run.log({key: value}, step=step)
 
     def save(self):
         """Syncs all files to wandb with the policy specified.

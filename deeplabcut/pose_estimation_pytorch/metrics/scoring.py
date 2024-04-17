@@ -166,7 +166,9 @@ def compute_rmse(
     square_distances = (pred[:, :2] - ground_truth) ** 2
     mean_square_errors = np.sum(square_distances, axis=1)
     rmse = np.nanmean(np.sqrt(mean_square_errors)).item()
-    rmse_p = np.nanmean(np.sqrt(mean_square_errors[mask])).item()
+    rmse_p = np.nan
+    if len(mean_square_errors[mask]) > 0:
+        rmse_p = np.nanmean(np.sqrt(mean_square_errors[mask])).item()
     return rmse, rmse_p
 
 
@@ -211,6 +213,7 @@ def compute_oks(
         oks_sigma,
         margin=margin,
         symmetric_kpts=symmetric_kpts,
+        with_tqdm=False,
     )
 
 

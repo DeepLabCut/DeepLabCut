@@ -53,7 +53,6 @@ class ResNet(BaseBackbone):
             model_name,
             output_stride=output_stride,
             pretrained=pretrained,
-            num_classes=1,  # smaller classification layer
             drop_path_rate=drop_path_rate,
             drop_block_rate=drop_block_rate,
         )
