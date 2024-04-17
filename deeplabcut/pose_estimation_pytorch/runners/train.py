@@ -150,11 +150,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             lr = self.optimizer.param_groups[0]['lr']
             msg = f"Epoch {e}/{epochs} (lr={lr}), train loss {float(train_loss):.5f}"
             if e % self.eval_interval == 0:
-                logging.info(f"Training for epoch {e} done, starting evaluation")
-                valid_loss = self._epoch(
-                    valid_loader, mode="eval", step=e, display_iters=display_iters
-                )
-                msg += f", valid loss {float(valid_loss):.5f}"
+                with torch.no_grad():
+                    logging.info(f"Training for epoch {e} done, starting evaluation")
+                    valid_loss = self._epoch(
+                        valid_loader, mode="eval", step=e, display_iters=display_iters
+                    )
+                    msg += f", valid loss {float(valid_loss):.5f}"
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
@@ -283,11 +284,12 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             losses_dict["total_loss"].backward()
             self.optimizer.step()
 
-        predictions = {
-            head_name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
-            for head_name, pred in self.model.get_predictions(inputs, outputs).items()
-        }
         if mode == "eval":
+            predictions = {
+                name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
+                for name, pred in self.model.get_predictions(inputs, outputs).items()
+            }
+
             ground_truth = batch["annotations"]["keypoints"]
             if batch["annotations"]["with_center_keypoints"][0]:
                 ground_truth = ground_truth[..., :-1, :]

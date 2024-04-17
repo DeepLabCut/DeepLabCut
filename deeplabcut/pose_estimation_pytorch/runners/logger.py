@@ -42,10 +42,11 @@ def setup_file_logging(filepath: Path) -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO,
         format="%(asctime)-15s %(message)s",
+        force=True,
     )
     console_logger = logging.StreamHandler()
     console_logger.setLevel(logging.INFO)
-    root = logging.getLogger("")
+    root = logging.getLogger()
     root.addHandler(console_logger)
 
 
