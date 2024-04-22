@@ -86,11 +86,11 @@ def main(
 
 if __name__ == "__main__":
     main(
-        synthetic_data=True,
+        synthetic_data=False,
         net_types=["resnet_50", "hrnet_w18", "hrnet_w32", "hrnet_w48"],
         batch_size=8,
-        epochs=3,
-        save_epochs=1,
+        epochs=20,
+        save_epochs=10,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger={

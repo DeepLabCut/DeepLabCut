@@ -62,13 +62,56 @@ data:
     affine:
       p: 0.9
       rotation: 30
-      scaling: [ 0.5, 1.25 ]
       translation: 40
+    collate:  # rescales the images when putting them in a batch
+      type: ResizeFromDataSizeCollate
+      min_scale: 0.4
+      max_scale: 1.0
+      min_short_side: 128
+      max_short_side: 1152
+      multiple_of: 32
+      to_square: false
     covering: true
     gaussian_noise: 12.75
     hist_eq: true
     motion_blur: true
     normalize_images: true  # this should always be set to true
+```
+
+One of the most important elements is the `collate` configuration. If all images in your
+dataset have the same size, then it doesn't necessarily need to be added (but might 
+still be beneficial). But if you have images of different sizes, then you'll need to 
+define a way of "combining" these images into a single tensor of shape `(B, 3, H, W)`.
+The default way to do this is to use the `ResizeFromDataSizeCollate` collate function 
+(other collate functions are defined in 
+`deeplabcut/pose_estimation_pytorch/data/collate.py`). For each batch to collate, this
+implementation:
+1. Selects the target width & height all images will be resized to by getting the size 
+of the first image in the batch, and multiplying it by a scale sampled uniformly at 
+random from `(min_scale, max_scale)`.
+2. Resizes all images in the batch (while preserving their aspect ratio) such that they 
+are the smallest size such that the target size fits entirely in the image.
+3. Crops each resulting image into the target size with a random crop.
+
+**Collate**: Defines how images are collated into batches.
+
+```yaml
+collate:  # rescales the images when putting them in a batch
+  type: ResizeFromDataSizeCollate  # You can also use `ResizeFromListCollate`
+  max_shift: 10  # the maximum shift, in pixels, to add to the random crop (this means
+    # there can be a slight border around the image)
+  max_size: 1024  #  the maximum size of the long edge of the image when resized. If the
+    # longest side will be greater than this value, resizes such that the longest side 
+    # is this size, and the shortest side is smaller than the desired size. This is 
+    # useful to keep some information from images with extreme aspect ratios.
+  min_scale: 0.4  # the minimum scale to resize the image with
+  max_scale: 1.0  # the maximum scale to resize the image with
+  min_short_side: 128  # the minimum size of the target short side
+  max_short_side: 1152  # the maximum size of the target short side
+  multiple_of: 32  # pads the target height, width such that they are multiples of 32
+  to_square: false  # instead of using the aspect ratio of the first image, only the 
+    # short side of the first image will be used to sample a "side", and the images will
+    # be cropped in squares
 ```
 
 The following transformations are available for the `train` and `inference` keys.

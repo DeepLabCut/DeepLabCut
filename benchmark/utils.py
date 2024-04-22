@@ -338,3 +338,24 @@ def _get_model_folder(
     )
     metadata = af.load_metadata(str(project_path / metadata_filename))
     return metadata[0], [int(i) for i in metadata[1]], [int(i) for i in metadata[2]]
+
+
+@dataclass
+class WandBConfig:
+    project: str
+    run_name: str
+    image_log_interval: int | None = None
+    save_code: bool = True
+    tags: tuple[str, ...] | None = None
+    group: str | None = None
+
+    def data(self) -> dict:
+        return dict(
+            type="WandbLogger",
+            project_name=self.project,
+            run_name=self.run_name,
+            image_log_interval=self.image_log_interval,
+            save_code=self.save_code,
+            tags=self.tags,
+            group=self.group,
+        )

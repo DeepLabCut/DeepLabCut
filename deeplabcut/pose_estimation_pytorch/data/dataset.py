@@ -164,7 +164,12 @@ class PoseDataset(Dataset):
             )
             keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
             keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-            bboxes = np.zeros((0, 4))  # No more bboxes as we cropped around them
+            bboxes = bboxes[:1]
+            bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
+            bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
+            bboxes[..., 2] = bboxes[..., 2] / scales[0]
+            bboxes[..., 3] = bboxes[..., 3] / scales[1]
+            bboxes = np.clip(bboxes, 0, self.parameters.cropped_image_size[0] - 1)
 
         transformed = self.apply_transform_all_keypoints(
             image, keypoints, keypoints_unique, bboxes
@@ -225,11 +230,17 @@ class PoseDataset(Dataset):
         if self.task == Task.TOP_DOWN:
             num_animals = 1
 
+        bbox_widths = np.maximum(1, bboxes[..., 2])
+        bbox_heights = np.maximum(1, bboxes[..., 3])
+        area = bbox_widths * bbox_heights
+        if 'individual_id' not in anns:
+            anns['individual_id'] = -np.ones(len(anns['category_id']), dtype=int)
+
         return {
             "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
             "keypoints_unique": keypoints_unique[..., :2].astype(np.single),
             "with_center_keypoints": self.parameters.with_center_keypoints,
-            "area": pad_to_length(anns["area"], num_animals, 0).astype(np.single),
+            "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
             "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
             "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),

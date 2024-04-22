@@ -331,13 +331,29 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         Returns:
             A dictionary containing the different losses for the step
         """
+        num_animals = max(
+            [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
+        )
         poses = pair_predicted_individuals_with_gt(
             self._epoch_predictions["bodyparts"],
             self._epoch_ground_truth["bodyparts"]
         )
+
+        # pad predictions if there are any missing (needed for top-down models)
+        gt, pred = {}, {}
+        for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
+            for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
+                if len(kpts) < num_animals:
+                    padded_kpts = np.zeros((num_animals, *kpts.shape[1:]))
+                    padded_kpts.fill(np.nan)
+                    padded_kpts[:len(kpts)] = kpts
+                    kpt_dict[path] = padded_kpts
+                else:
+                    kpt_dict[path] = kpts
+
         scores = get_scores(
-            poses=poses,
-            ground_truth=self._epoch_ground_truth["bodyparts"],
+            poses=pred,
+            ground_truth=gt,
             unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
             pcutoff=0.6,
@@ -496,6 +512,10 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             scale_x, scale_y = scale
             scale_factors = np.array([scale_x, scale_y, scale_x, scale_y])
             offset = np.array(offset)
+
+            # remove bboxes that are not visible
+            img_bbox_mask = (img_bboxes[:, 2] > 0.0) & (img_bboxes[:, 3] > 0.0)
+            img_bboxes = img_bboxes[img_bbox_mask]
 
             # rescale ground truth bounding boxes
             gt_rescaled = img_bboxes.cpu().numpy() * scale_factors

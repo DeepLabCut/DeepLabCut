@@ -15,11 +15,13 @@ import copy
 import logging
 
 import albumentations as A
+import numpy as np
 from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch.config as torch_config
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.pose_estimation_pytorch.data import build_transforms, DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import build_training_runner
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -101,6 +103,11 @@ def train(
         f" for testing"
     )
 
+    collate_fn = None
+    if collate_fn_cfg := run_config["data"]["train"].get("collate"):
+        collate_fn = COLLATE_FUNCTIONS.build(collate_fn_cfg)
+        logging.info(f"Using custom collate function: {collate_fn_cfg}")
+
     batch_size = run_config["train_settings"]["batch_size"]
     num_workers = run_config["train_settings"]["dataloader_workers"]
     pin_memory = run_config["train_settings"]["dataloader_pin_memory"]
@@ -108,6 +115,7 @@ def train(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
+        collate_fn=collate_fn,
         num_workers=num_workers,
         pin_memory=pin_memory,
     )

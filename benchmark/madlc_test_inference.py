@@ -22,6 +22,7 @@ from utils import Project, Shuffle
 def run_inference_on_all_images(
     project: Project,
     snapshot: Path,
+    save_as_csv: bool,
     plot: bool,
     detector_snapshot: Path | None = None,
 ) -> None:
@@ -105,7 +106,7 @@ def run_inference_on_all_images(
     if parameters.num_unique_bpts > 0:
         unique_columns = pd.MultiIndex.from_product(
             [
-                [shuffle_name],
+                [scorer],
                 ["single"],
                 parameters.unique_bpts,
                 ["x", "y", "likelihood"],
@@ -120,6 +121,8 @@ def run_inference_on_all_images(
 
     df = pd.DataFrame(poses, index=index, columns=columns)
     df.to_hdf(output_path, key="df_with_missing")
+    if save_as_csv:
+        df.to_csv(output_path.with_suffix(".csv"))
 
     if plot:
         test_config_path = str(
@@ -157,6 +160,7 @@ def main(
     shuffle: Shuffle,
     snapshot_indices: int | list[int] | None = None,
     detector_snapshot_indices: int | list[int] | None = None,
+    save_as_csv: bool = False,
     plot: bool = False,
 ) -> None:
     """
@@ -165,6 +169,7 @@ def main(
         shuffle:
         snapshot_indices:
         detector_snapshot_indices:
+        save_as_csv:
         plot:
 
     Returns:
@@ -189,7 +194,9 @@ def main(
 
     for detector in detectors:
         for snapshot in snapshots:
-            run_inference_on_all_images(shuffle.project, snapshot, plot, detector)
+            run_inference_on_all_images(
+                shuffle.project, snapshot, save_as_csv, plot, detector
+            )
 
 
 if __name__ == "__main__":
@@ -201,5 +208,6 @@ if __name__ == "__main__":
         ),
         snapshot_indices=None,
         detector_snapshot_indices=-1,
+        save_as_csv=False,
         plot=False,
     )
