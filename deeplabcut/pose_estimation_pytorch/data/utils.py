@@ -251,7 +251,9 @@ def _crop_image_keypoints(
 
 
 def _compute_crop_bounds(
-    bboxes: np.ndarray, image_shape: tuple[int, int, int]
+    bboxes: np.ndarray,
+    image_shape: tuple[int, int, int],
+    remove_empty: bool = True,
 ) -> np.ndarray:
     """
     Compute the boundaries for cropping an image based on a COCO-format bounding box
@@ -265,12 +267,19 @@ def _compute_crop_bounds(
         The bounding boxes, clipped to be entirely inside the image
     """
     h, w = image_shape[:2]
-    bboxes[:, 0] = np.clip(bboxes[:, 0], 0, w)
-    bboxes[:, 2] = np.clip(np.minimum(bboxes[:, 2], w - bboxes[:, 0]), 0, None)
-    bboxes[:, 1] = np.clip(bboxes[:, 1], 0, h)
-    bboxes[:, 3] = np.clip(np.minimum(bboxes[:, 3], h - bboxes[:, 1]), 0, None)
-    squashed_bbox_mask = np.logical_or(bboxes[:, 2] <= 0, bboxes[:, 3] <= 0)
-    return bboxes[~squashed_bbox_mask]
+    # to xyxy
+    bboxes[:, 2] = bboxes[:, 0] + bboxes[:, 2]
+    bboxes[:, 3] = bboxes[:, 1] + bboxes[:, 3]
+    # clip
+    bboxes = np.clip(bboxes, 0, np.array([w, h, w, h]))
+    # to xywh
+    bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 0]
+    bboxes[:, 3] = bboxes[:, 3] - bboxes[:, 1]
+    # filter
+    if remove_empty:
+        squashed_bbox_mask = np.logical_or(bboxes[:, 2] <= 0, bboxes[:, 3] <= 0)
+        bboxes = bboxes[~squashed_bbox_mask]
+    return bboxes
 
 
 def _extract_keypoints_and_bboxes(
@@ -292,8 +301,9 @@ def _extract_keypoints_and_bboxes(
     original_bboxes = []
     anns_to_merge = []
     unique_keypoints = None
+    h, w = image_shape[:2]
     for i, annotation in enumerate(anns):
-        keypoints_individual = _annotation_to_keypoints(annotation)
+        keypoints_individual = _annotation_to_keypoints(annotation, h, w)
         if annotation["individual"] != "single":
             bbox_individual = annotation["bbox"]
             original_bboxes.append(bbox_individual)
@@ -307,17 +317,22 @@ def _extract_keypoints_and_bboxes(
 
     keypoints = safe_stack(keypoints, (0, num_joints, 3))
     original_bboxes = safe_stack(original_bboxes, (0, 4))
-    bboxes = _compute_crop_bounds(original_bboxes, image_shape)
+    bboxes = _compute_crop_bounds(original_bboxes, image_shape, remove_empty=False)
+
+    # at least 1 visible joint to keep individuals
+    vis_mask = (keypoints[..., 2] > 0).any(axis=1)
+    keypoints = keypoints[vis_mask]
+    bboxes = bboxes[vis_mask]
 
     keys_to_merge = ["area", "category_id", "iscrowd", "individual_id"]
     anns_merged = {k: [] for k in keys_to_merge}
     if len(anns_to_merge) > 0:
         anns_merged = merge_list_of_dicts(anns_to_merge, keys_to_include=keys_to_merge)
+    anns_merged = {k: np.array(v)[vis_mask] for k, v in anns_merged.items()}
 
     if len(anns_merged["area"]) != len(keypoints):
         raise ValueError(f"Missing area values! {anns_merged}, {keypoints.shape}")
 
-    anns_merged = {k: np.array(v) for k, v in anns_merged.items()}
     return keypoints, unique_keypoints, bboxes, anns_merged
 
 
@@ -338,11 +353,9 @@ def calc_area_from_keypoints(keypoints: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: array containing the computed areas based on the keypoints
     """
-    w = keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1)
-    h = keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1)
-    area = w * h
-    area[area < 1] = 1
-    return area
+    w = np.maximum(keypoints[:, :, 0].max(axis=1) - keypoints[:, :, 0].min(axis=1), 1)
+    h = np.maximum(keypoints[:, :, 1].max(axis=1) - keypoints[:, :, 1].min(axis=1), 1)
+    return w * h
 
 
 def calc_bbox_overlap(bbox1: np.ndarray, bbox2: np.ndarray) -> np.ndarray:
@@ -373,23 +386,35 @@ def calc_bbox_overlap(bbox1: np.ndarray, bbox2: np.ndarray) -> np.ndarray:
     return intersection / union
 
 
-def _annotation_to_keypoints(annotation: dict) -> np.array:
+def _annotation_to_keypoints(annotation: dict, h: int, w: int) -> np.array:
     """
     Convert the coco annotations into array of keypoints returns the array of the
     keypoints' visibility. If keypoint is not visible, the value for (x,y) coordinates
-    is set to 0
+    is set to 0. If the keypoints are outside of the image, they are also set to 0.
 
     Args:
         annotation: dictionary containing coco-like annotations with essential
             `keypoints` field
+        h: the image height
+        w: the image width
+
     Returns:
         keypoints: np.array where the first two columns are x and y coordinates of the
             keypoints and the third column is the visibility of the keypoints
     """
     keypoints = annotation["keypoints"].reshape(-1, 3)
-    visibility_mask = keypoints > -1
+    visibility_mask = np.logical_and(
+        np.logical_and(
+            0 < keypoints[..., 0],
+            keypoints[..., 0] < w,
+        ),
+        np.logical_and(
+            0 < keypoints[..., 1],
+            keypoints[..., 1] < h,
+        ),
+    )
     keypoints[~visibility_mask] = 0
-    keypoints[:, -1] = visibility_mask.all(axis=1)
+    keypoints[:, 2] = 2 * visibility_mask
     return keypoints
 
 
@@ -477,6 +502,12 @@ def _apply_transform(
     transformed = _set_invalid_keypoints_to_neg_one(
         transformed, keypoints, class_labels
     )
+
+    bboxes_out = np.zeros(bboxes.shape)
+    for bbox, bbox_id in zip(transformed["bboxes"], transformed["bbox_labels"]):
+        bboxes_out[bbox_id] = bbox
+
+    transformed["bboxes"] = bboxes_out
     return transformed
 
 

@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 def make_pytorch_pose_config(
@@ -83,7 +83,7 @@ def make_pytorch_pose_config(
                 net_type=net_type,
                 num_individuals=len(individuals),
                 bodyparts=bodyparts,
-                paf_parameters=_get_paf_parameters(project_config, bodyparts)
+                paf_parameters=_get_paf_parameters(project_config, bodyparts),
             )
         else:
             model_cfg = create_backbone_with_heatmap_model(
@@ -223,7 +223,9 @@ def create_backbone_with_heatmap_model(
         bodypart_head_name = "head_topdown.yaml"
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(configs_dir / "base" / bodypart_head_name)
+    bodypart_head_config = read_config_as_dict(
+        configs_dir / "base" / bodypart_head_name
+    )
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,
@@ -343,9 +345,7 @@ def add_identity_head(
         the configuration with an added identity head
     """
     config = copy.deepcopy(config)
-    id_head_config = read_config_as_dict(
-        configs_dir / "base" / "head_identity.yaml"
-    )
+    id_head_config = read_config_as_dict(configs_dir / "base" / "head_identity.yaml")
     config["model"]["heads"]["identity"] = replace_default_values(
         id_head_config,
         num_individuals=num_individuals,
@@ -354,18 +354,28 @@ def add_identity_head(
     return config
 
 
-def _get_paf_parameters(project_config: dict, bodyparts: list[str]) -> dict:
+def _get_paf_parameters(
+    project_config: dict,
+    bodyparts: list[str],
+    num_limbs_threshold: int = 105,
+    paf_graph_degree: int = 6,
+) -> dict:
     """Gets values for PAF parameters from the project configuration"""
     paf_graph = [
-        [i, j]
-        for i in range(len(bodyparts))
-        for j in range(i + 1, len(bodyparts))
+        [i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))
     ]
     num_limbs = len(paf_graph)
+    # If the graph is unnecessarily large (with 15+ keypoints by default),
+    # we randomly prune it to a size guaranteeing an average node degree of 6;
+    # see Suppl. Fig S9c in Lauer et al., 2022.
+    if num_limbs >= num_limbs_threshold:
+        paf_graph = auxfun_multianimal.prune_paf_graph(
+            paf_graph,
+            average_degree=paf_graph_degree,
+        )
+        num_limbs = len(paf_graph)
     return {
         "paf_graph": paf_graph,
         "num_limbs": num_limbs,
-        "paf_edges_to_keep": project_config.get(
-            "paf_best", list(range(num_limbs))
-        ),
+        "paf_edges_to_keep": project_config.get("paf_best", list(range(num_limbs))),
     }

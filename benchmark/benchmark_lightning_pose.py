@@ -6,26 +6,20 @@ from pathlib import Path
 from deeplabcut.utils import get_bodyparts
 
 from benchmark_run_experiments import (
-    AffineAugmentation,
-    AUG_INFERENCE,
     AUG_TRAIN,
-    BackboneConfig,
-    CropSampling,
     DEFAULT_OPTIMIZER,
     DEFAULT_SCHEDULER,
-    HeadConfig,
     HRNET_BACKBONE,
     HRNET_BACKBONE_INCRE,
     HRNET_BACKBONE_INTER,
-    ImageAugmentations,
     main,
-    ModelConfig,
     RESNET_BACKBONE,
     RESNET_OPTIMIZER,
     RESNET_SCHEDULER,
-    WandBConfig,
 )
-from utils import Project
+from utils import Project, WandBConfig
+from utils_models import HeadConfig, ModelConfig
+
 
 LP_DLC_DATA_ROOT = Path("/home/niels/datasets/lightning-pose")
 LP_DLC_BENCHMARKS = {
@@ -73,7 +67,7 @@ if __name__ == "__main__":
             epochs=EPOCHS,
             save_epochs=SAVE_EPOCHS,
             train_aug=AUG_TRAIN,
-            inference_aug=AUG_INFERENCE,
+            inference_aug=None,
             backbone_config=RESNET_BACKBONE,
             head_config=HeadConfig.build_plateau_head(
                 c_in=2048,
@@ -96,7 +90,7 @@ if __name__ == "__main__":
             epochs=EPOCHS,
             save_epochs=SAVE_EPOCHS,
             train_aug=AUG_TRAIN,
-            inference_aug=AUG_INFERENCE,
+            inference_aug=None,
             backbone_config=HRNET_BACKBONE_INTER,
             head_config=HeadConfig.build_plateau_head(
                 c_in=480,
@@ -119,7 +113,7 @@ if __name__ == "__main__":
             epochs=EPOCHS,
             save_epochs=SAVE_EPOCHS,
             train_aug=AUG_TRAIN,
-            inference_aug=AUG_INFERENCE,
+            inference_aug=None,
             backbone_config=HRNET_BACKBONE,
             head_config=HeadConfig.build_plateau_head(
                 c_in=32,

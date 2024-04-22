@@ -29,7 +29,10 @@ from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
-from deeplabcut.pose_estimation_pytorch.runners.logger import BaseLogger
+from deeplabcut.pose_estimation_pytorch.runners.logger import (
+    BaseLogger,
+    ImageLoggerMixin,
+)
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -58,7 +61,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             optimizer: the optimizer to use when fitting the model
             snapshot_manager: the module to use to manage snapshots
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            eval_interval: how often evaluation is run on the test set (in epochs)
+            eval_interval: how often evaluation is run on the test set in epochs
             snapshot_path: if defined, the path of a snapshot from which to load
                 pretrained weights
             scheduler: scheduler for adjusting the lr of the optimizer
@@ -72,6 +75,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
         self.logger = logger
         self.starting_epoch = 0
+        self.current_epoch = 0
 
         if self.snapshot_path is not None and len(self.snapshot_path) > 0:
             self.starting_epoch = self.load_snapshot(
@@ -139,10 +143,14 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
         self.model.to(self.device)
+        if isinstance(self.logger, ImageLoggerMixin):
+            self.logger.select_images_to_log(train_loader, valid_loader)
+
         for e in range(self.starting_epoch + 1, epochs + 1):
+            self.current_epoch = e
             self._metadata["epoch"] = e
             train_loss = self._epoch(
-                train_loader, mode="train", step=e, display_iters=display_iters
+                train_loader, mode="train", display_iters=display_iters
             )
             if self.scheduler:
                 self.scheduler.step()
@@ -150,11 +158,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             lr = self.optimizer.param_groups[0]['lr']
             msg = f"Epoch {e}/{epochs} (lr={lr}), train loss {float(train_loss):.5f}"
             if e % self.eval_interval == 0:
-                logging.info(f"Training for epoch {e} done, starting evaluation")
-                valid_loss = self._epoch(
-                    valid_loader, mode="eval", step=e, display_iters=display_iters
-                )
-                msg += f", valid loss {float(valid_loss):.5f}"
+                with torch.no_grad():
+                    logging.info(f"Training for epoch {e} done, starting evaluation")
+                    valid_loss = self._epoch(
+                        valid_loader, mode="eval", display_iters=display_iters
+                    )
+                    msg += f", valid loss {float(valid_loss):.5f}"
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
@@ -163,7 +172,6 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self,
         loader: torch.utils.data.DataLoader,
         mode: str = "train",
-        step: int | None = None,
         display_iters: int = 500,
     ) -> float:
         """Facilitates training over an epoch. Returns the loss over the batches.
@@ -173,7 +181,6 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 Each batch contains image tensor and heat maps tensor input samples.
             mode: str identifier to instruct the Runner whether to train or evaluate.
                 Possible values are: "train" or "eval".
-            step: the global step in processing, used to log metrics. Defaults to None.
             display_iters: the number of iterations between each loss print
 
         Raises:
@@ -211,8 +218,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._metadata["metrics"] = perf_metrics
             self._epoch_predictions = {}
             self._epoch_ground_truth = {}
-            if len(perf_metrics):
-                logging.info(f"Epoch {step} performance:")
+            if len(perf_metrics) > 0:
+                logging.info(f"Epoch {self.current_epoch} performance:")
                 for name, score in perf_metrics.items():
                     logging.info(f"{name + ':': <20}{score:.3f}")
 
@@ -220,16 +227,19 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.history[f"{mode}_loss"].append(epoch_loss)
 
         if self.logger:
+            metrics_to_log = {}
             if perf_metrics:
                 for name, score in perf_metrics.items():
                     if not isinstance(score, (int, float)):
                         score = 0.0
-                    self.logger.log(name, score, step=step)
+                    metrics_to_log[name] = score
 
             for key in loss_metrics:
                 name, val = f"{mode}.{key}", np.nanmean(loss_metrics[key]).item()
                 self._metadata["losses"][name] = val
-                self.logger.log(name, val, step=step)
+                metrics_to_log[f"losses/{name}"] = val
+
+            self.logger.log(metrics_to_log, step=self.current_epoch)
 
         return epoch_loss
 
@@ -288,11 +298,15 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             losses_dict["total_loss"].backward()
             self.optimizer.step()
 
-        predictions = {
-            head_name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
-            for head_name, pred in self.model.get_predictions(inputs, outputs).items()
-        }
+        if isinstance(self.logger, ImageLoggerMixin):
+            self.logger.log_images(batch, outputs, target, step=self.current_epoch)
+
         if mode == "eval":
+            predictions = {
+                name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
+                for name, pred in self.model.get_predictions(inputs, outputs).items()
+            }
+
             ground_truth = batch["annotations"]["keypoints"]
             if batch["annotations"]["with_center_keypoints"][0]:
                 ground_truth = ground_truth[..., :-1, :]
@@ -322,18 +336,34 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         Returns:
             A dictionary containing the different losses for the step
         """
+        num_animals = max(
+            [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
+        )
         poses = pair_predicted_individuals_with_gt(
             self._epoch_predictions["bodyparts"],
             self._epoch_ground_truth["bodyparts"]
         )
+
+        # pad predictions if there are any missing (needed for top-down models)
+        gt, pred = {}, {}
+        for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
+            for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
+                if len(kpts) < num_animals:
+                    padded_kpts = np.zeros((num_animals, *kpts.shape[1:]))
+                    padded_kpts.fill(np.nan)
+                    padded_kpts[:len(kpts)] = kpts
+                    kpt_dict[path] = padded_kpts
+                else:
+                    kpt_dict[path] = kpts
+
         scores = get_scores(
-            poses=poses,
-            ground_truth=self._epoch_ground_truth["bodyparts"],
+            poses=pred,
+            ground_truth=gt,
             unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
             pcutoff=0.6,
         )
-        return {f"test.{metric}": value for metric, value in scores.items()}
+        return {f"metrics/test.{metric}": value for metric, value in scores.items()}
 
     def _update_epoch_predictions(
         self,
@@ -461,7 +491,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         """Returns: bounding box metrics, if """
         try:
             return {
-                f"test.{k}": v
+                f"metrics/test.{k}": v
                 for k, v in compute_bbox_metrics(
                     self._epoch_ground_truth, self._epoch_predictions
                 ).items()
@@ -487,6 +517,10 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             scale_x, scale_y = scale
             scale_factors = np.array([scale_x, scale_y, scale_x, scale_y])
             offset = np.array(offset)
+
+            # remove bboxes that are not visible
+            img_bbox_mask = (img_bboxes[:, 2] > 0.0) & (img_bboxes[:, 3] > 0.0)
+            img_bboxes = img_bboxes[img_bbox_mask]
 
             # rescale ground truth bounding boxes
             gt_rescaled = img_bboxes.cpu().numpy() * scale_factors

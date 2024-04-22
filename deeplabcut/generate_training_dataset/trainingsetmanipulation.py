@@ -950,10 +950,14 @@ def create_training_dataset(
                 )
 
         if augmenter_type not in augmenters:
-            raise ValueError(
-                f"Invalid augmenter type: {augmenter_type} (available: for "
-                f"engine={engine}: {augmenters})"
-            )
+            if engine != Engine.PYTORCH:
+                raise ValueError(
+                    f"Invalid augmenter type: {augmenter_type} (available: for "
+                    f"engine={engine}: {augmenters})"
+                )
+
+            logging.info(f"Switching augmentation to {default_augmenter} for PyTorch")
+            augmenter_type = default_augmenter
 
         if posecfg_template:
             if net_type != prior_cfg["net_type"]:

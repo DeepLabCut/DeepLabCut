@@ -45,6 +45,8 @@ class TrainParameters:
     epochs: int | None = None
     save_epochs: int = 25
     max_snapshots: int = 5
+    dataloader_workers: int | None = None
+    dataloader_pin_memory: bool | None = None
 
     def train_kwargs(self) -> dict:
         kwargs = dict(
@@ -56,6 +58,11 @@ class TrainParameters:
         )
         if self.epochs is not None:
             kwargs["train_settings"]["epochs"] = self.epochs
+        if self.dataloader_workers is not None:
+            kwargs["train_settings"]["dataloader_workers"] = self.dataloader_workers
+        if self.dataloader_pin_memory is not None:
+            kwargs["train_settings"][
+                "dataloader_pin_memory"] = self.dataloader_pin_memory
         if self.save_epochs is not None:
             runner_kwargs = kwargs.get("runner", {})
             runner_kwargs["snapshots"] = dict(

@@ -147,7 +147,7 @@ class PartAffinityFieldPredictor(BasePredictor):
             heatmaps, self.nms_radius, threshold=0.01
         )
         if ~torch.any(peaks):
-            return {"poses": []}
+            return {"poses": torch.zeros((batch_size, 0, self.num_multibodyparts, 5))}
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
         locrefs = locrefs * self.locref_stdev

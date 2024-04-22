@@ -22,19 +22,13 @@ class LRListScheduler(_LRScheduler):
     and milestones modifies the learning rate accordingly during training
     """
 
-    def __init__(
-        self, optimizer, milestones, lr_list, last_epoch=-1, verbose=False
-    ):
-        """Summary:
-        Constructor of the LRListScheduler.
-        Loads the data.
-
+    def __init__(self, optimizer, milestones, lr_list, last_epoch=-1) -> None:
+        """
         Args:
             optimizer: optimizer used for learning.
             milestones: number of epochs.
             lr_list: learning rate list.
             last_epoch: where to start the scheduler. (-1: start from beginning)
-            verbose: prints model summary. Defaults to False.
 
         Examples:
             input:
@@ -45,7 +39,7 @@ class LRListScheduler(_LRScheduler):
         """
         self.milestones = milestones
         self.lr_list = lr_list
-        super().__init__(optimizer, last_epoch, verbose)
+        super().__init__(optimizer, last_epoch)
 
     def get_lr(self):
         """Summary:

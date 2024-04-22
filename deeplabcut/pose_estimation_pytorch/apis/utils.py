@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Callable
 
@@ -20,6 +19,9 @@ import pandas as pd
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
+    build_dlc_dataframe_columns,
+)
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     build_bottom_up_postprocessor,
     build_detector_postprocessor,
@@ -199,16 +201,6 @@ def build_predictions_dataframe(
     Returns:
 
     """
-    kpt_entries = ["x", "y", "likelihood"]
-    col_names = ["scorer", "individuals", "bodyparts", "coords"]
-
-    col_values = []
-    for i in parameters.individuals:
-        for b in parameters.bodyparts:
-            col_values += [(scorer, i, b, entry) for entry in kpt_entries]
-    for unique_bpt in parameters.unique_bpts:
-        col_values += [(scorer, "single", unique_bpt, entry) for entry in kpt_entries]
-
     prediction_data = []
     index_data = []
     for image, image_predictions in predictions.items():
@@ -230,7 +222,11 @@ def build_predictions_dataframe(
     return pd.DataFrame(
         prediction_data,
         index=index,
-        columns=pd.MultiIndex.from_tuples(col_values, names=col_names),
+        columns=build_dlc_dataframe_columns(
+            scorer=scorer,
+            parameters=parameters,
+            with_likelihood=True,
+        ),
     )
 
 
@@ -306,7 +302,9 @@ def get_inference_runners(
 
         if detector_path is not None:
             if detector_transform is None:
-                detector_transform = build_transforms(model_config["detector"]["data"])
+                detector_transform = build_transforms(
+                    model_config["detector"]["data"]["inference"]
+                )
 
             detector_config = model_config["detector"]["model"]
             if "pretrained" in detector_config:
@@ -318,7 +316,7 @@ def get_inference_runners(
                 device=device,
                 snapshot_path=detector_path,
                 preprocessor=build_bottom_up_preprocessor(
-                    color_mode=model_config["detector"]["data"],
+                    color_mode=model_config["detector"]["data"]["colormode"],
                     transform=detector_transform,
                 ),
                 postprocessor=build_detector_postprocessor(
