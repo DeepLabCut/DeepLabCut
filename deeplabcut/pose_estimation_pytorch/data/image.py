@@ -188,6 +188,17 @@ def resize_and_random_crop(
                 h = max_long_side
 
         return h, w
+    
+    def scale_kpts(
+        keypoints: np.ndarray, kpt_scale: np.ndarray, kpt_offset: np.ndarray,
+        tgt_h: int, tgt_w: int
+    ) -> np.ndarray:
+        scaled_kpts = keypoints.copy()
+        scaled_kpts[..., :2] = (scaled_kpts[..., :2] / kpt_scale) - kpt_offset
+        scaled_kpts[(scaled_kpts[..., 0] >= tgt_w)] = -1
+        scaled_kpts[(scaled_kpts[..., 1] >= tgt_h)] = -1
+        scaled_kpts[(scaled_kpts[..., :2] < 0).any(axis=-1)] = -1
+        return scaled_kpts
 
     oh, ow = image.shape[1:]
     if isinstance(size, int):
@@ -227,21 +238,20 @@ def resize_and_random_crop(
     targets["offsets"] = ox + (offset_x * sx), oy + (offset_y * sy)
     targets["scales"] = sx * scale_x, sy * scale_y
 
-    # update annotations
+    # update annotations and context
     anns = targets.get("annotations", {})
+    context = targets.get("context", {})
 
     kpt_scale = np.array([scale_x, scale_y])
     kpt_offset = np.array([offset_x, offset_y])
     for kpt_key in ["keypoints", "keypoints_unique"]:
         keypoints = anns.get(kpt_key)
         if keypoints is not None and len(keypoints) > 0:
-            scaled_kpts = keypoints.copy()
-            scaled_kpts[..., :2] = (scaled_kpts[..., :2] / kpt_scale) - kpt_offset
-            scaled_kpts[(scaled_kpts[..., 0] >= tgt_w)] = -1
-            scaled_kpts[(scaled_kpts[..., 1] >= tgt_h)] = -1
-            scaled_kpts[(scaled_kpts[..., :2] < 0).any(axis=-1)] = -1
-            anns[kpt_key] = scaled_kpts
-
+            anns[kpt_key] = scale_kpts(keypoints, kpt_scale, kpt_offset, tgt_h, tgt_w)
+    cond_keypoints = context.get("cond_keypoints")
+    if cond_keypoints is not None and len(cond_keypoints) > 0:
+        context["cond_keypoints"] = scale_kpts(cond_keypoints, kpt_scale, kpt_offset, tgt_h, tgt_w)
+        
     bbox_scale = np.array([scale_x, scale_y, scale_x, scale_y])
     bbox_offset = np.array([offset_x, offset_y, 0, 0])
     for bbox_key in ["boxes"]:
