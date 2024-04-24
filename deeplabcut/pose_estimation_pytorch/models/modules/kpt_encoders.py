@@ -189,14 +189,15 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             mask = (0 < x) & (x < zero_matrix.shape[2]) & (0 < y) & (y < zero_matrix.shape[1])
             colors_masked = np.repeat(self.colors[:, None, :], len(zero_matrix), 1) * np.repeat(mask[:, :, None], 3, 2)
             kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
+            #kpt_indices = np.stack([x[mask[:,0]].T, y[mask[:,0]].T]).transpose(1, 2, 0)
             batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
             kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
             #zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
             zero_matrix[kpt_input[...,0], kpt_input[...,2]-1, kpt_input[...,1]-1] = colors_masked.transpose(1,0,2)            
             return zero_matrix
 
-        #condition = _get_condition_matrix(zero_matrix, kpts)
-        condition = _get_condition_matrix_optim(zero_matrix, kpts)
+        condition = _get_condition_matrix(zero_matrix, kpts)
+        #condition = _get_condition_matrix_optim(zero_matrix, kpts)
 
         for i in range(batch_size):
             condition_heatmap = self.blur_heatmap(condition[i])

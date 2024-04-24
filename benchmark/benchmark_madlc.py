@@ -25,7 +25,27 @@ if __name__ == "__main__":
         SPLIT_FILE = MA_DLC_DATA_ROOT / "maDLC_benchmarking_splits.json"
         NUM_BPT = len(get_bodyparts(PROJECT_BENCHMARKED.cfg))
 
-        AUG_TRAIN = ImageAugmentations(
+        # AUG_TRAIN = ImageAugmentations(
+        #     normalize=True,
+        #     covering=True,
+        #     gaussian_noise=12.75,
+        #     hist_eq=True,
+        #     motion_blur=True,
+        #     affine=AffineAugmentation(
+        #         p=0.5,
+        #         rotation=30,
+        #         scale=(1, 1),
+        #         translation=40,
+        #     ),
+        #     collate=BatchCollate(
+        #         min_scale=0.4,
+        #         max_scale=1.0,
+        #         min_short_side=256,
+        #         max_short_side=1152,
+        #         multiple_of=32,
+        #     ),
+        # )
+        AUG_TRAIN_TD = ImageAugmentations(
             normalize=True,
             covering=True,
             gaussian_noise=12.75,
@@ -34,16 +54,10 @@ if __name__ == "__main__":
             affine=AffineAugmentation(
                 p=0.5,
                 rotation=30,
-                scale=(1, 1),
-                translation=40,
+                scale=(0.5, 1.25),
+                translation=1,
             ),
-            collate=BatchCollate(
-                min_scale=0.4,
-                max_scale=1.0,
-                min_short_side=256,
-                max_short_side=1152,
-                multiple_of=32,
-            ),
+            collate=None,
         )
 
         DEFAULT_OPTIMIZER = {"type": "AdamW", "params": {"lr": 5e-4}}
@@ -118,7 +132,8 @@ if __name__ == "__main__":
                 save_epochs=SAVE_EPOCHS,
                 dataloader_workers=2,
                 dataloader_pin_memory=True,
-                train_aug=AUG_TRAIN,
+                #train_aug=AUG_TRAIN,
+                train_aug=AUG_TRAIN_TD,
                 inference_aug=None,
                 backbone_config=None,
                 head_config=None,
@@ -142,5 +157,5 @@ if __name__ == "__main__":
             splits_to_train=(0, ),
             train=True,
             evaluate=True,
-            manual_shuffle_index=None
+            manual_shuffle_index=None,
         )
