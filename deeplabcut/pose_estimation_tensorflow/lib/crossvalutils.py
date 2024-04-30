@@ -252,13 +252,13 @@ def _benchmark_paf_graphs(
             oks = []
 
             # get the indices of the images in the training set
-            img_indices = [img_data[1]["index"] for img_data in data.items()]
+            dataset_idx = [data[image_name]["index"] for image_name in image_paths]
             for inds in split_inds:
                 ass_gt = {
-                    k: v for k, v in ass_true_dict.items() if img_indices[k] in inds
+                    k: v for k, v in ass_true_dict.items() if dataset_idx[k] in inds
                 }
                 ass_pred = {
-                    k: v for k, v in ass.assemblies.items() if img_indices[k] in inds
+                    k: v for k, v in ass.assemblies.items() if dataset_idx[k] in inds
                 }
 
                 oks.append(
