@@ -250,11 +250,20 @@ def _benchmark_paf_graphs(
         all_assemblies.append((ass.assemblies, ass.unique, ass.metadata["imnames"]))
         if split_inds is not None:
             oks = []
+
+            # get the indices of the images in the training set
+            img_indices = [img_data[1]["index"] for img_data in data.items()]
             for inds in split_inds:
-                ass_gt = {k: v for k, v in ass_true_dict.items() if k in inds}
+                ass_gt = {
+                    k: v for k, v in ass_true_dict.items() if img_indices[k] in inds
+                }
+                ass_pred = {
+                    k: v for k, v in ass.assemblies.items() if img_indices[k] in inds
+                }
+
                 oks.append(
                     evaluate_assembly(
-                        ass.assemblies,
+                        ass_pred,
                         ass_gt,
                         oks_sigma,
                         margin=margin,
