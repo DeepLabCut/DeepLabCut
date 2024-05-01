@@ -69,7 +69,7 @@ A. Mathis, T. Biasi, S. Schneider, M. Yüksekgönül, B. Rogers, M. Bethge, M. M
 ############################################################################################################
 
 DeepLabCut 2.1 - 2.2 additions:
-A Mathis, alexander.mathis@epfl.ch | https://github.com/DeepLabCut/DeepLabCut
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
 J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
 M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
 M Zhou, https://github.com/zhoumu53
@@ -83,5 +83,33 @@ T Nath, https://github.com/meet10may
 Preprint:
 Multi-animal pose estimation and tracking with DeepLabCut
 J Lauer,  M Zhou,  S Ye,  W Menegas,  S Schneider, T Nath,  MM Rahman, V Di Santo, 
-D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis
+D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis (2021).
 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+
+Publication: 
+Multi-animal pose estimation, identification and tracking with DeepLabCut
+Lauer, J., Zhou, M., Ye, S., Menegas, W., Schneider, S., Nath, T., Rahman, M.M., 
+Di Santo, V., Soberanes, D., Feng, G., Murthy, V.N., Lauder, G.V., Dulac, C., 
+Mathis, M.W., & Mathis, A. (2022). 
+Nature Methods, 19, 496 - 504.
+
+Conceptualization was done by A.M. and M.W.M. Formal analysis and code were done by J.L., A.M. and M.W.M. 
+New deep architectures were designed by M.Z., S.Y. and A.M. GUIs were done by J.L., M.W.M. and T.N. 
+Benchmark was set by S.S., M.W.M., A.M. and J.L. Marmoset data were gathered by W.M. and G.F. 
+Marmoset behavioral analysis was carried out by W.M. Parenting data were gathered by M.M.R., A.M. and C.D.
+Tri-mouse data were gathered by D.S., A.M. and V.N.M. Fish data were gathered by V.D.S. and G.L. 
+The article was written by A.M., M.W.M. and J.L. with input from all authors. 
+M.W.M. and A.M. co-supervised the project.
+
+############################################################################################################
+
+DeepLabCut 2.2 - 3.0 additions:
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+N Poulsen, neils.poulsen@epfl.ch | https://github.com/n-poulsen
+S Ye, https://github.com/yeshaokai
+
+Preprint: 
+Ye, S., Filippova, A., Lauer, J., Vidal, M., Schneider, S., Qiu, T., Mathis, A., & Mathis, M.W. (2022). 
+SuperAnimal pretrained pose estimation models for behavioral analysis. https://arxiv.org/abs/2203.07436
