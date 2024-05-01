@@ -19,6 +19,7 @@ from scipy.spatial import cKDTree
 from tqdm import tqdm
 
 from deeplabcut.core import crossvalutils
+from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
