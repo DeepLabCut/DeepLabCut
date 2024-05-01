@@ -19,6 +19,10 @@ from pathlib import Path
 import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
+from dlclibrary.dlcmodelzoo.modelzoo_download import (
+    download_huggingface_model,
+    MODELOPTIONS,
+)
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
@@ -296,16 +300,13 @@ def video_inference(
         test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
-
     weight_folder = str(
         Path(dlc_root_path)
         / "modelzoo"
         / "checkpoints"
         / f"{project_name}_{model_name}"
     )
-
     snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
-
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 

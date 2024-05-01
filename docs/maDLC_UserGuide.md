@@ -418,6 +418,8 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
+### Evaluating your network on videos
+
 **-------------------- DECISION POINT -------------------**
 
 **ATTENTION!**
