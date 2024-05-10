@@ -9,11 +9,10 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
-import pickle
-import time
 from pathlib import Path
 from typing import Optional, Union
 
+import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
@@ -28,7 +27,6 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     select_device,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path, read_config
 from deeplabcut.utils.make_labeled_video import _create_labeled_video
 
 
@@ -50,7 +48,6 @@ def _video_inference_superanimal(
     dest_folder: Optional[str] = None,
 ) -> dict:
     """
-
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
     During inference, the video is analyzed using the specified model and the results are saved in the specified
     destination folder. The predictions are saved in the form of a .h5 file. The video with the predictions is saved
@@ -97,6 +94,9 @@ def _video_inference_superanimal(
     config = {**project_config, **model_config}
     config = _update_config(config, max_individuals, device)
 
+    pose_model_path = _parse_model_snapshot(Path(pose_model_path), device)
+    detector_model_path = _parse_model_snapshot(Path(detector_model_path), device)
+
     pose_runner, detector_runner = get_inference_runners(
         config,
         snapshot_path=pose_model_path,
@@ -120,13 +120,16 @@ def _video_inference_superanimal(
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
-        prediction, video_metadata = video_inference(
+        predictions, video_metadata = video_inference(
             video_path,
             task=pose_task,
             pose_runner=pose_runner,
             detector_runner=detector_runner,
             return_video_metadata=True,
         )
+        pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+        pred_unique_bodyparts = None
+
         bbox = (0, video_metadata["resolution"][0], 0, video_metadata["resolution"][1])
         print(f"Saving results to {dest_folder}")
         config["uniquebodyparts"] = []
@@ -136,11 +139,12 @@ def _video_inference_superanimal(
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"
         output_path = Path(dest_folder)
         df = create_df_from_prediction(
-            prediction,
-            dlc_scorer,
-            config,
-            output_path,
-            output_prefix,
+            pred_bodyparts=pred_bodyparts,
+            pred_unique_bodyparts=pred_unique_bodyparts,
+            dlc_scorer=dlc_scorer,
+            cfg=config,
+            output_path=output_path,
+            output_prefix=output_prefix,
         )
 
         results[video_path] = df
@@ -159,3 +163,39 @@ def _video_inference_superanimal(
         print(f"Video with predictions was saved as {output_path}")
 
     return results
+
+
+def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> Path:
+    """FIXME: A new snapshot should be uploaded and used"""
+    def _map_model_keys(state_dict: dict) -> dict:
+        updated_dict = {}
+        for k, v in state_dict.items():
+            if not (
+                k.startswith("backbone.model.downsamp_modules.")
+                or k.startswith("backbone.model.final_layer")
+                or k.startswith("backbone.model.classifier")
+            ):
+                parts = k.split(".")
+                if parts[:4] == ["heads", "bodypart", "heatmap_head", "model"]:
+                    parts[3] = "deconv_layers.0"
+                updated_dict[".".join(parts)] = v
+        return updated_dict
+
+    parsed = base.with_stem(base.stem + "_parsed")
+    if not parsed.exists():
+        snapshot = torch.load(base, map_location=device)
+        if print_keys:
+            print(5 * "-----\n")
+            print(base.stem + " keys")
+            for name, _ in snapshot["model_state_dict"].items():
+                print(f"  * {name}")
+            print()
+
+        parsed_model_snapshot = {
+            "model": _map_model_keys(snapshot["model_state_dict"]),
+            "metadata": {
+                "epoch": snapshot["epoch"],
+            },
+        }
+        torch.save(parsed_model_snapshot, parsed)
+    return parsed

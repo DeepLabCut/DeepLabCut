@@ -9,13 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import inspect
-import json
 import os
 import subprocess
 import warnings
 
 import torch
 
+import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -38,12 +39,15 @@ def _get_config_model_paths(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
 
-    model_config = auxiliaryfunctions.read_plainconfig(
-        os.path.join(modelzoo_path, "model_configs", f"{pose_model_type}.yaml")
+    model_cfg_path = os.path.join(
+        modelzoo_path, "model_configs", f"{pose_model_type}.yaml"
     )
+    model_config = auxiliaryfunctions.read_plainconfig(model_cfg_path)
     project_config = auxiliaryfunctions.read_config(
         os.path.join(modelzoo_path, "project_configs", f"{project_name}.yaml")
     )
+
+    model_config = add_metadata(project_config, model_config, model_cfg_path)
     if weight_folder is None:
         weight_folder = os.path.join(modelzoo_path, "checkpoints")
 
@@ -97,20 +101,12 @@ def raise_warning_if_called_directly():
 
 
 def _update_config(config, max_individuals, device):
-    print(config)
-    num_bodyparts = len(config["bodyparts"])
-    config["detector"]["runner"]["max_individuals"] = max_individuals
-    config["multianimalproject"] = max_individuals > 1
-    config["individuals"] = ["animal"]
-    config["multianimalbodyparts"] = config["bodyparts"]
-    config["uniquebodyparts"] = []
+    config = config_utils.replace_default_values(
+        config,
+        num_bodyparts=len(config["bodyparts"]),
+        num_individuals=max_individuals,
+        backbone_output_channels=config["model"]["backbone_output_channels"]
+    )
     config["device"] = device
-    config["model"]["heads"]["bodypart"]["target_generator"][
-        "num_heatmaps"
-    ] = num_bodyparts
-    config["model"]["heads"]["bodypart"]["heatmap_config"]["channels"][
-        -1
-    ] = num_bodyparts
-    config["individuals"] = ["single"] * max_individuals
-
+    config_utils.pretty_print(config)
     return config

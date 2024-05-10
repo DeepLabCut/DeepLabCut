@@ -77,7 +77,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.starting_epoch = 0
         self.current_epoch = 0
 
-        if self.snapshot_path is not None and len(self.snapshot_path) > 0:
+        if self.snapshot_path is not None and self.snapshot_path != "":
             self.starting_epoch = self.load_snapshot(
                 self.snapshot_path,
                 self.device,

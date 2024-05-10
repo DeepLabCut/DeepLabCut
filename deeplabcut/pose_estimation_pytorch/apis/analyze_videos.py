@@ -377,7 +377,7 @@ def analyze_videos(
 
 def create_df_from_prediction(
     pred_bodyparts: np.ndarray,
-    pred_unique_bodyparts: np.ndarray,
+    pred_unique_bodyparts: np.ndarray | None,
     dlc_scorer: str,
     cfg: dict,
     output_path: str | Path,

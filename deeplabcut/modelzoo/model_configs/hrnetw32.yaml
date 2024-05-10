@@ -1,55 +1,70 @@
 corner2move2:
 move2corner:
 cfg_path:
-colormode: RGB
 data:
-  covering: true
-  gaussian_noise: 12.75
-  hist_eq: true
-  motion_blur: true
-  normalize_images: true
-  rotation: 30
-  scale_jitter:
-  - 0.5
-  - 1.25
-  auto_padding:
-    pad_width_divisor: 32
-    pad_height_divisor: 32
-data_detector:
-  hflip: true
-  normalize_images: true
+  colormode: RGB
+  inference:
+    auto_padding:
+      pad_width_divisor: 32
+      pad_height_divisor: 32
+    normalize_images: true
+  train:
+    covering: true
+    gaussian_noise: 12.75
+    hist_eq: true
+    motion_blur: true
+    normalize_images: true
+    rotation: 30
+    scale_jitter:
+    - 0.5
+    - 1.25
+    auto_padding:
+      pad_width_divisor: 32
+      pad_height_divisor: 32
 detector:
+  data:
+    colormode: RGB
+    inference:
+      normalize_images: true
+    train:
+      hflip: true
+      normalize_images: true
   model:
     type: FasterRCNN
+    variant: fasterrcnn_resnet50_fpn_v2
     box_score_thresh: 0.6
-  optimizer:
-    type: AdamW
-    params:
-      lr: 0.0001
-  scheduler:
-    type: LRListScheduler
-    params:
-      milestones:
-      - 90
-      lr_list:
-      - - 1e-05
+    pretrained: false
   runner:
-    type: DetectorRunner
-    max_individuals:
-  batch_size: 1
-  epochs: 500
-  save_epochs: 100
-  display_iters: 500
-device: cuda
-display_iters: 50
-epochs: 200
+    type: DetectorTrainingRunner
+    eval_interval: 1
+    optimizer:
+      type: AdamW
+      params:
+        lr: 1e-4
+    scheduler:
+      type: LRListScheduler
+      params:
+        milestones: [ 160 ]
+        lr_list: [ [ 1e-5 ] ]
+    snapshots:
+      max_snapshots: 5
+      save_epochs: 50
+      save_optimizer_state: false
+  train_settings:
+    batch_size: 1
+    dataloader_workers: 0
+    dataloader_pin_memory: true
+    display_iters: 500
+    epochs: 250
+device: auto
 method: td
 model:
   backbone:
     type: HRNet
     model_name: hrnet_w32
-    pretrained: true
-    only_high_res: true
+    pretrained: false
+    interpolate_branches: false
+    increased_channel_count: false
   backbone_output_channels: 32
   heads:
     bodypart:
@@ -60,7 +75,7 @@ model:
         locref_std: 7.2801
       target_generator:
         type: HeatmapPlateauGenerator
-        num_heatmaps: # number of bodyparts
+        num_heatmaps: "num_bodyparts"
         pos_dist_thresh: 17
         heatmap_mode: KEYPOINT
         generate_locref: false
@@ -73,28 +88,32 @@ model:
           type: WeightedHuberCriterion
           weight: 0
       heatmap_config:
-        channels:
-        - 32
-        - 0 # number of bodyparts
-        kernel_size:
-        - 1
-        strides:
-        - 1
-optimizer:
-  params:
-    lr: 0.0001
-  type: AdamW
-pose_config_path:
+        channels: [32, "num_bodyparts"]
+        kernel_size: [1]
+        strides: [1]
 runner:
-  type: PoseRunner
-save_epochs: 50
-scheduler:
-  params:
-    lr_list:
-    - - 1e-05
-    - - 1e-06
-    milestones:
-    - 90
-    - 120
-  type: LRListScheduler
-seed: 42
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 1
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-5 ], [ 1e-6 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: true
+  display_iters: 500
+  epochs: 200
+  pretrained_weights: null
+  seed: 42
