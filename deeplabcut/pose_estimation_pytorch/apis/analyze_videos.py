@@ -29,6 +29,7 @@ from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets imp
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_inference_runners,
+    get_scorer_name,
     get_scorer_uid,
     list_videos_in_folder,
 )
@@ -259,12 +260,11 @@ def analyze_videos(
         detector_path = detector_snapshot.path
         print(f"  -> Using detector {detector_path}")
 
-    dlc_scorer, _ = auxiliaryfunctions.get_scorer_name(
+    dlc_scorer = get_scorer_name(
         cfg,
         shuffle,
         train_fraction,
-        trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
-        engine=Engine.PYTORCH,
+        snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
         modelprefix=modelprefix,
     )
     pose_runner, detector_runner = get_inference_runners(
@@ -361,7 +361,7 @@ def analyze_videos(
                         trainingsetindex=trainingsetindex,
                         overwrite=False,
                         identity_only=identity_only,
-                        destfolder=destfolder,
+                        destfolder=str(destfolder),
                     )
                     stitch_tracklets(
                         config,
@@ -369,7 +369,7 @@ def analyze_videos(
                         videotype,
                         shuffle,
                         trainingsetindex,
-                        destfolder=destfolder,
+                        destfolder=str(destfolder),
                     )
 
     return results

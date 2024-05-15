@@ -19,13 +19,13 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     ensure_multianimal_df_format,
     get_model_snapshots,
     get_inference_runners,
+    get_scorer_name,
     get_scorer_uid,
 )
 from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
@@ -35,10 +35,7 @@ from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     pair_predicted_individuals_with_gt,
 )
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
-from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
-    Snapshot,
-    TorchSnapshotManager,
-)
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
@@ -400,12 +397,11 @@ def evaluate_network(
                     print("Using GT bounding boxes to compute evaluation metrics")
 
             for snapshot in snapshots:
-                scorer, _ = auxiliaryfunctions.get_scorer_name(
+                scorer = get_scorer_name(
                     cfg=cfg,
                     shuffle=shuffle,
-                    trainFraction=loader.train_fraction,
-                    engine=Engine.PYTORCH,
-                    trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
+                    train_fraction=loader.train_fraction,
+                    snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
                     modelprefix=modelprefix,
                 )
                 evaluate_snapshot(

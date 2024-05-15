@@ -1135,7 +1135,7 @@ def stitch_tracklets(
     if n_tracks is None:
         n_tracks = len(animal_names)
 
-    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
+    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],

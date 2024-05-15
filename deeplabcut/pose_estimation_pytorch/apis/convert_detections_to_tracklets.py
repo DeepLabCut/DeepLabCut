@@ -22,13 +22,13 @@ from tqdm import tqdm
 
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
+from deeplabcut.core import trackingutils
 from deeplabcut.core.engine import Engine
+from deeplabcut.core.inferenceutils import Assembly
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_model_snapshots,
+    get_scorer_name,
     list_videos_in_folder,
 )
-from deeplabcut.core import trackingutils
-from deeplabcut.core.inferenceutils import Assembly
 
 
 def convert_detections2tracklets(
@@ -92,33 +92,12 @@ def convert_detections2tracklets(
         # between trackers cannot be evaluated, resulting in empty tracklets.
         inference_cfg["boundingboxslack"] = max(inference_cfg["boundingboxslack"], 40)
 
-    # Check which snapshots are available and sort them by # iterations
-    snapshots = get_model_snapshots(model_dir / "train")
-    assert (
-        len(snapshots) > 0
-    ), f"No snapshots were found in the model directory {model_dir / 'train'}"
-    snapshot_index = cfg["snapshotindex"]
-    if snapshot_index == "all":
-        print(
-            "snapshotindex is set to 'all' in the config.yaml file. Running video "
-            "analysis with all snapshots is very costly! Use the function "
-            "'evaluate_network' to choose the best the snapshot. For now, changing "
-            "snapshot index to -1. To evaluate another snapshot, you can change the "
-            "value in the config file or call `analyze_videos` with your desired "
-            "snapshot index."
-        )
-        snapshot_index = -1
-
-    snapshot = snapshots[snapshot_index]
-    print(f"Using snapshot {snapshot} for model {model_dir}")
-    dlc_cfg["init_weights"] = str(snapshot)
-    num_epochs = int(snapshot.stem.split("-")[-1])
-    dlc_scorer, dlc_scorer_legacy = auxiliaryfunctions.get_scorer_name(
+    dlc_scorer = get_scorer_name(
         cfg,
         shuffle,
         train_fraction,
-        trainingsiterations=num_epochs,
-        engine=Engine.PYTORCH,
+        snapshot_index=None,
+        detector_index=None,
         modelprefix=modelprefix,
     )
 

@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -108,7 +109,15 @@ def get_model_snapshots(
     elif isinstance(index, str) and index.lower() == "all":
         snapshots = snapshot_manager.snapshots(include_best=True)
     elif isinstance(index, int):
-        snapshots = [snapshot_manager.snapshots(include_best=True)[index]]
+        all_snapshots = snapshot_manager.snapshots(include_best=True)
+        if len(all_snapshots) <= index:
+            names = [s.path.name for s in all_snapshots]
+            raise ValueError(
+                f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
+                f"{names}). Could not return snapshot with index {index}. "
+            )
+
+        snapshots = [all_snapshots[index]]
     else:
         raise ValueError(f"Invalid snapshotindex: {index}")
 
@@ -130,6 +139,69 @@ def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> st
         detect_id = detector_snapshot.uid()
         snapshot_id = f"detector_{detect_id}_snapshot_{snapshot_id}"
     return snapshot_id
+
+
+def get_scorer_name(
+    cfg: dict,
+    shuffle: int,
+    train_fraction: float,
+    snapshot_index: int | None = None,
+    detector_index: int | None = None,
+    snapshot_uid: str | None = None,
+    modelprefix: str = "",
+) -> str:
+    """Get the scorer name for a particular PyTorch DeepLabCut shuffle
+
+    Args:
+        cfg: The project configuration.
+        shuffle: The index of the shuffle for which to get the scorer
+        train_fraction: The training fraction for the shuffle.
+        snapshot_index: The index of the snapshot used. If None, the value is loaded
+            from the project's config.yaml file.
+        detector_index: For top-down models, the index of the detector used. If None,
+            the value is loaded from the project's config.yaml file.
+        snapshot_uid: If the snapshot_uid is not None, this value will be used instead
+            of loading the snapshot and detector with given indices and calling
+            utils.get_scorer_uid.
+        modelprefix: The model prefix, if one was used.
+
+    Returns:
+        the scorer name
+    """
+    model_dir = auxiliaryfunctions.get_model_folder(
+        train_fraction,
+        shuffle,
+        cfg,
+        engine=Engine.PYTORCH,
+        modelprefix=modelprefix,
+    )
+    train_dir = model_dir / "train"
+    model_cfg = read_config_as_dict(str(train_dir / Engine.PYTORCH.pose_cfg_name))
+    net_type = model_cfg["net_type"]
+    pose_task = Task(model_cfg["method"])
+
+    if snapshot_uid is None:
+        if snapshot_index is None:
+            snapshot_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
+                "snapshotindex", cfg["snapshotindex"]
+            )
+        if detector_index is None:
+            detector_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
+                "detector_snapshotindex", cfg["detector_snapshotindex"]
+            )
+
+        snapshot = get_model_snapshots(snapshot_index, train_dir, pose_task)[0]
+        detector_snapshot = None
+        if pose_task == Task.TOP_DOWN:
+            detector_snapshot = get_model_snapshots(
+                detector_index, train_dir, Task.DETECT
+            )[0]
+
+        snapshot_uid = get_scorer_uid(snapshot, detector_snapshot)
+
+    task, date = cfg["Task"], cfg["date"]
+    name = "".join([p.capitalize() for p in net_type.split("_")])
+    return f"DLC_{name}_{task}{date}shuffle{shuffle}_{snapshot_uid}"
 
 
 def list_videos_in_folder(

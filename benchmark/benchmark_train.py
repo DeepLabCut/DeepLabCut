@@ -98,6 +98,8 @@ class VideoAnalysisParameters:
 
     videos: list[str]
     videotype: str
+    snapshot_index: int = -1
+    detector_snapshot_index: int = -1
     output_folder: str = ""
 
 
@@ -172,8 +174,10 @@ def run_dlc(parameters: RunParameters) -> None:
             videos=parameters.video_analysis_params.videos,
             videotype=parameters.video_analysis_params.videotype,
             trainingsetindex=parameters.shuffle.trainset_index,
+            shuffle=parameters.shuffle.index,
             destfolder=str(destfolder),
-            snapshot_index=5,
+            snapshot_index=parameters.video_analysis_params.snapshot_index,
+            detector_snapshot_index=parameters.video_analysis_params.detector_snapshot_index,
             device=parameters.device,
             modelprefix=parameters.shuffle.model_prefix,
             batchsize=parameters.train_params.batch_size,
@@ -189,17 +193,19 @@ def run_dlc(parameters: RunParameters) -> None:
         )
         api.convert_detections2tracklets(
             config=str(parameters.shuffle.project.config_path()),
-            videos=parameters.video_analysis_params.videos,
+            videos=[str(v) for v in parameters.video_analysis_params.videos],
             videotype=".mp4",
+            trainingsetindex=parameters.shuffle.trainset_index,
+            shuffle=parameters.shuffle.index,
             modelprefix=parameters.shuffle.model_prefix,
             destfolder=str(destfolder),
             track_method="box",
         )
         deeplabcut.stitch_tracklets(
             str(parameters.shuffle.project.config_path()),
-            videos=parameters.video_analysis_params.videos,
-            shuffle=1,
+            videos=[str(v) for v in parameters.video_analysis_params.videos],
             trainingsetindex=parameters.shuffle.trainset_index,
+            shuffle=parameters.shuffle.index,
             destfolder=str(destfolder),
             modelprefix=parameters.shuffle.model_prefix,
             save_as_csv=True,
@@ -213,7 +219,7 @@ def run_dlc(parameters: RunParameters) -> None:
         )
         deeplabcut.create_labeled_video(
             config=str(parameters.shuffle.project.config_path()),
-            videos=parameters.video_analysis_params.videos,
+            videos=[str(v) for v in parameters.video_analysis_params.videos],
             videotype="mp4",
             trainingsetindex=parameters.shuffle.trainset_index,
             color_by="individual",  # bodypart, individual
@@ -221,7 +227,6 @@ def run_dlc(parameters: RunParameters) -> None:
             destfolder=str(destfolder),
             track_method="box",
         )
-    return
 
 
 def main(runs: list[RunParameters]) -> None:
