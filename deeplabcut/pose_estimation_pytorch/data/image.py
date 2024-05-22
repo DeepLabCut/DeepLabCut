@@ -21,6 +21,7 @@ import torchvision.transforms.functional as F
 from torchvision.ops import box_convert
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
@@ -43,7 +44,7 @@ def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
 
 
 def _crop_and_pad_image_torch(
-    image: np.array, bbox: np.array, bbox_format: str, output_size: int
+    image: np.array, bbox: np.array, bbox_format: str, output_size: int, task: Task
 ) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
     """TODO: Reimplement this function with numpy and for non-square resize :)
     Only works for square cropped bounding boxes. Crops images around bounding boxes
@@ -70,10 +71,20 @@ def _crop_and_pad_image_torch(
     c, h, w = image.shape
     crop_size = torch.max(bbox[2:])
 
-    xmin = int(torch.clip(bbox[0] - (crop_size / 2), min=0, max=w - 1).cpu().item())
-    xmax = int(torch.clip(bbox[0] + (crop_size / 2), min=1, max=w).cpu().item())
-    ymin = int(torch.clip(bbox[1] - (crop_size / 2), min=0, max=h - 1).cpu().item())
-    ymax = int(torch.clip(bbox[1] + (crop_size / 2), min=1, max=h).cpu().item())
+    if task == Task.CTD:
+        # pad with empty pixels instead of context
+        cx, cy, boxw, boxh = bbox
+        xmin, xmax = int(cx - boxw/2), int(cx + boxw/2)
+        ymin, ymax = int(cy - boxh/2), int(cy + boxh/2)
+        # add 25 pixels of margin to the bbox
+        xmin, ymin = max(0, xmin - 25), max(0, ymin - 25)
+        xmax, ymax = min(w, xmax + 25), min(h, ymax + 25)
+    else:
+        xmin = int(torch.clip(bbox[0] - (crop_size / 2), min=0, max=w - 1).cpu().item())
+        xmax = int(torch.clip(bbox[0] + (crop_size / 2), min=1, max=w).cpu().item())
+        ymin = int(torch.clip(bbox[1] - (crop_size / 2), min=0, max=h - 1).cpu().item())
+        ymax = int(torch.clip(bbox[1] + (crop_size / 2), min=1, max=h).cpu().item())
+
     cropped_image = image[:, ymin:ymax, xmin:xmax]
 
     crop_h, crop_w = cropped_image.shape[1:3]

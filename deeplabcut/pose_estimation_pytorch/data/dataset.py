@@ -196,7 +196,7 @@ class PoseDataset(Dataset):
 
             # TODO: The following code should be replaced by a numpy version
             image, offsets, scales = _crop_and_pad_image_torch(
-                image, bboxes[0], "xywh", self.parameters.cropped_image_size[0]
+                image, bboxes[0], "xywh", self.parameters.cropped_image_size[0], self.task
             )
             keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
             keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
