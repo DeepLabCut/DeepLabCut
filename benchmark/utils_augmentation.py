@@ -101,6 +101,7 @@ class ImageAugmentations:
     gaussian_noise: float | bool = False
     hist_eq: bool = False
     motion_blur: bool = False
+    hflip: bool | float = False
     resize: dict | None = None
     crop_sampling: CropSampling | None = None
     collate: BatchCollate | None = None
@@ -112,6 +113,7 @@ class ImageAugmentations:
             "gaussian_noise": self.gaussian_noise,
             "hist_eq": self.hist_eq,
             "motion_blur": self.motion_blur,
+            "hflip": self.hflip,
             "auto_padding": False,
             "affine": False,
             "resize": False,
