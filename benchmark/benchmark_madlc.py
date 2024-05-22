@@ -18,8 +18,8 @@ if __name__ == "__main__":
     for PROJECT_NAME, TRAIN_FRACTION in [
         #("parenting", 0.95),
         #("trimouse", 0.95),
-        #("fish", 0.94),
-        ("marmoset", 0.95),
+        ("fish", 0.94),
+        #("marmoset", 0.95),
     ]:
         PROJECT_BENCHMARKED = MA_DLC_BENCHMARKS[PROJECT_NAME]
         SPLIT_FILE = MA_DLC_DATA_ROOT / "maDLC_benchmarking_splits.json"
@@ -51,11 +51,16 @@ if __name__ == "__main__":
             gaussian_noise=12.75,
             hist_eq=True,
             motion_blur=True,
+            hflip=False,
+            #hflip=True,
             affine=AffineAugmentation(
-                p=0.5,
+                #p=0.5,
+                p=0.9,
                 rotation=30,
-                scale=(0.5, 1.25),
-                translation=1,
+                #scale=(0.5, 1.25),
+                scale=(0.75, 1.25),
+                #translation=1,
+                translation=40,
             ),
             collate=None,
         )
@@ -155,7 +160,10 @@ if __name__ == "__main__":
             train_fraction=TRAIN_FRACTION,
             models_to_train=[model_configs[0]],
             splits_to_train=(0, ),
-            train=True,
+            train=False,
             evaluate=True,
+            #manual_shuffle_index=41 # fish
+            #manual_shuffle_index=52 # buctd-fish
+            #manual_shuffle_index=114 # marmoset
             manual_shuffle_index=None,
         )

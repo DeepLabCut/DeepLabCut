@@ -39,6 +39,7 @@ def main(
 ):
     if eval_params is None:
         eval_params = EvalParameters(snapshotindex="all", plotting=False)
+        #eval_params = EvalParameters(snapshotindex=-1, plotting=True)
 
     project.update_iteration_in_config()
     for config in models_to_train:
