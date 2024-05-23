@@ -201,10 +201,13 @@ class ExtractFrames(DefaultTab):
                 QtWidgets.QMessageBox.critical(
                     self,
                     "Error",
-                    "Please select at least one video to extract frames from.",
+                    "Please select exactly one video to extract frames from.",
                 )
                 return
-            video_path_in_folder = self._check_symlink(videos[0])
+            first_video = videos[0]
+            if len(videos) > 1:
+                self.root.writer.write(f"Only the first video ({first_video}) will be opened.")
+            video_path_in_folder = self._check_symlink(first_video)
             _ = launch_napari(str(video_path_in_folder))
             return
 
