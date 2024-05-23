@@ -20,31 +20,52 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import LOSS_AGGREGATOR
 from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 
 backbones_dicts = [
-    {"type": "HRNet", "model_name": "hrnet_w32", "output_channels": 480, "stride": 4},
-    {"type": "HRNet", "model_name": "hrnet_w18", "output_channels": 270, "stride": 4},
-    {"type": "HRNet", "model_name": "hrnet_w48", "output_channels": 720, "stride": 4},
+    {
+        "type": "HRNet",
+        "model_name": "hrnet_w32",
+        "output_channels": 480,
+        "stride": 4,
+        "interpolate_branches": True,
+    },
+    {
+        "type": "HRNet",
+        "model_name": "hrnet_w18",
+        "output_channels": 270,
+        "stride": 4,
+        "interpolate_branches": True,
+    },
+    {
+        "type": "HRNet",
+        "model_name": "hrnet_w48",
+        "output_channels": 720,
+        "stride": 4,
+        "interpolate_branches": True,
+    },
     {
         "type": "HRNet",
         "model_name": "hrnet_w32",
         "output_channels": 32,
-        "only_high_res": True,
+        "interpolate_branches": False,
+        "increased_channel_count": False,
         "stride": 4,
     },
     {
         "type": "HRNet",
         "model_name": "hrnet_w18",
         "output_channels": 18,
-        "only_high_res": True,
+        "interpolate_branches": False,
+        "increased_channel_count": False,
         "stride": 4,
     },
     {
         "type": "HRNet",
         "model_name": "hrnet_w48",
         "output_channels": 48,
-        "only_high_res": True,
+        "interpolate_branches": False,
+        "increased_channel_count": False,
         "stride": 4,
     },
-    {"type": "ResNet", "model_name": "resnet50", "output_channels": 2048, "stride": 32},
+    {"type": "ResNet", "model_name": "resnet50_gn", "output_channels": 2048, "stride": 32},
 ]
 
 heads_dicts = [

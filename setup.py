@@ -40,7 +40,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
-        "albumentations",
+        "albumentations<=1.4.3",
         "dlclibrary>=0.0.5",
         "einops",
         "dlclibrary>=0.0.6",

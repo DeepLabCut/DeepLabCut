@@ -2,6 +2,9 @@ model:
   backbone:
     type: ResNet
     model_name: resnet101
+    output_stride: 16
+    freeze_bn_stats: True
+    freeze_bn_weights: False
     pretrained: true
   backbone_output_channels: 2048
 runner:

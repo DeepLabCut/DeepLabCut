@@ -131,6 +131,50 @@ def test_backbone_plus_paf_config(
         assert id_head["target_generator"]["heatmap_mode"] == "INDIVIDUAL"
 
 
+@pytest.mark.parametrize("individuals", [["single"], ["bugs", "daffy"]])
+@pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
+@pytest.mark.parametrize(
+    "net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"]
+)
+def test_top_down_config(
+    individuals: list[str],
+    bodyparts: list[str],
+    net_type: str,
+):
+    # Single animal projects can't have unique bodyparts
+    project_config = _make_project_config(
+        project_path="my/little/project",
+        multianimal=True,
+        identity=False,
+        individuals=individuals,
+        bodyparts=bodyparts,
+        unique_bodyparts=[],
+    )
+    pytorch_pose_config = make_pytorch_pose_config(
+        project_config,
+        "pytorch_config.yaml",
+        net_type=net_type,
+        top_down=True,
+    )
+    pretty_print(pytorch_pose_config)
+
+    # check no collate function
+    collate = pytorch_pose_config["data"]["train"].get("collate")
+    print(f"Collate: {collate}")
+    assert not collate
+
+    # check heads are there
+    assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
+    bodypart_head = pytorch_pose_config["model"]["heads"]["bodypart"]
+
+    for name, output_channels in [
+        ("heatmap_config", len(bodyparts)),
+    ]:
+        print(name, bodypart_head[name]["channels"])
+        assert name in bodypart_head
+        assert bodypart_head[name]["final_conv"]["out_channels"] == output_channels
+
+
 @pytest.mark.parametrize("multianimal", [True])
 @pytest.mark.parametrize("individuals", [["single"], ["bugs", "daffy"]])
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
@@ -282,7 +326,7 @@ def test_make_tokenpose_config(
     if identity or len(unique_bodyparts) > 0:
         with pytest.raises(ValueError) as err_info:
             # Not yet implemented!
-            pytorch_pose_config = make_pytorch_pose_config(
+            _ = make_pytorch_pose_config(
                 project_config,
                 "pytorch_config.yaml",
                 net_type=net_type,
@@ -294,6 +338,12 @@ def test_make_tokenpose_config(
             net_type=net_type,
         )
         pretty_print(pytorch_pose_config)
+
+        # check no collate function
+        collate = pytorch_pose_config["data"]["train"].get("collate")
+        print(f"Collate: {collate}")
+        assert not collate
+
         # check detector is there
         assert "detector" in pytorch_pose_config
         assert "data" in pytorch_pose_config["detector"]

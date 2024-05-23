@@ -1,0 +1,15 @@
+colormode: RGB
+inference:
+  normalize_images: true
+train:
+  affine:
+    p: 0.5
+    scaling: [1.0, 1.0]
+    rotation: 30
+    translation: 0
+  collate: null
+  covering: true
+  gaussian_noise: 12.75
+  hist_eq: true
+  motion_blur: true
+  normalize_images: true
