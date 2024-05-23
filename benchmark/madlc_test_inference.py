@@ -102,9 +102,10 @@ def run_inference_on_all_images(
         / f"iteration-{project.iteration}"
         / shuffle_name
         / "benchmark"
-        / "" if bu_predictions is None else f"_{bu_predictions.stem}"
-        / f"{scorer}.h5"
     )
+    if bu_predictions is not None:
+        output_path /= bu_predictions.stem
+    output_path /= f"{scorer}.h5"
     output_path.parent.mkdir(exist_ok=True, parents=True)
 
     index = pd.MultiIndex.from_tuples(

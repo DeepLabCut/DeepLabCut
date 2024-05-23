@@ -310,14 +310,18 @@ def evaluate(results_path: Path, paths: dict[str, dict], bbox_margin: int = 0, p
 def main():
     dlc_root_dir = Path("/home/lucas/datasets/")
     root_gt = dlc_root_dir / "ground_truth_test"
-    root_preds = Path("/home/lucas/datasets/test-images/fish-dlc-2021-05-07/evaluation-results/iteration-30/fishMay7-trainset94shuffle41/benchmark_BU_EfficientNet/")
 
-    predictions = {"BU_model": dlc_root_dir / "benchmark_chkpts/fish/DLC_EfficientNet_B7_s4_30k.h5",
-                   "CTD_90": root_preds / "fishMay7-trainset94shuffle41-snapshot-090.h5",
-                   "CTD_120": root_preds / "fishMay7-trainset94shuffle41-snapshot-120.h5",
-                   "CTD_150": root_preds / "fishMay7-trainset94shuffle41-snapshot-150.h5",
-                   "CTD_180": root_preds / "fishMay7-trainset94shuffle41-snapshot-180.h5",
-                   "CTD_210": root_preds / "fishMay7-trainset94shuffle41-snapshot-210.h5"}
+    bu_model = Path('DLC_EfficientNet_B7_s4_30k.h5')
+    shuffle_ix = 41
+    root_preds = Path(f"/home/lucas/datasets/test-images/fish-dlc-2021-05-07/evaluation-results/iteration-30/fishMay7-trainset94shuffle{shuffle_ix}/benchmark/{bu_model.stem}")
+
+    predictions = {"BU_model": dlc_root_dir / "benchmark_chkpts/fish" / bu_model,
+                   "CTD_90": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-090.h5",
+                   "CTD_120": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-120.h5",
+                   "CTD_150": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-150.h5",
+                   "CTD_180": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-180.h5",
+                   "CTD_210": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-210.h5",}
+                   #"CTD_best": root_preds / f"fishMay7-trainset94shuffle{shuffle_ix}-snapshot-best.h5"}
 
     paths = {
         # "fish": {
