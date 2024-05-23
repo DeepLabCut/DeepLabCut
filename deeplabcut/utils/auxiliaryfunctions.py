@@ -222,7 +222,7 @@ def read_config(configname):
 
     else:
         raise FileNotFoundError(
-            "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
+            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
         )
     return cfg
 
@@ -436,7 +436,7 @@ def get_list_of_videos(
         videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
-        v   
+        v
         for v in videos
         if os.path.isfile(v)
         and any(v.endswith(ext) for ext in videotype)

@@ -64,7 +64,7 @@ def train(
         model = PoseModel.build(run_config["model"])
 
     if max_snapshots_to_keep is not None:
-        run_config["snapshots"]["max_snapshots"] = max_snapshots_to_keep
+        run_config["runner"]["snapshots"]["max_snapshots"] = max_snapshots_to_keep
 
     logger = None
     if logger_config is not None:
@@ -168,7 +168,13 @@ def train_network(
         trainset_index=trainingsetindex,
         modelprefix=modelprefix,
     )
+    batch_size = kwargs.pop("batch_size", None)
+    epochs = kwargs.pop("epochs", None)
     loader.update_model_cfg(kwargs)
+    if batch_size is not None:
+        loader.model_cfg["train_settings"]["batch_size"] = batch_size
+    if epochs is not None:
+        loader.model_cfg["train_settings"]["epochs"] = epochs
     setup_file_logging(loader.model_folder / "train.txt")
 
     logging.info("Training with configuration:")

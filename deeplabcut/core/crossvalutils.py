@@ -153,7 +153,7 @@ def _calc_within_between_pafs(
             inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
-                neighbors = _find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
+                neighbors = find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
                 found = neighbors != -1
                 lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
 
@@ -313,7 +313,7 @@ def _benchmark_paf_graphs(
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
                 scores[i, 0] = max(0, (n_dets - hyp.shape[0]) / n_dets)
-                neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
+                neighbors = find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
                 id_hyp = hyp[neighbors[valid], -1]

@@ -226,7 +226,7 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     if snapshot_index is None:
-        snapshot_index = config["snapshotindex"]
+        snapshot_index = cfg["snapshotindex"]
     if snapshot_index == "all":
         logging.warning(
             "snapshotindex is set to 'all' (in the config.yaml file or as given to "

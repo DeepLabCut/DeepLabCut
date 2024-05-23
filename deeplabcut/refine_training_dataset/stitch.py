@@ -123,7 +123,7 @@ class Tracklet:
         return self._centroid
 
     def _update_centroid(self):
-        like = self.data[..., 2:3]
+        like = self.data[..., 2:3] + 1e-10 # Avoid division by zero in very uncertain tracklets
         self._centroid = np.nansum(self.xy * like, axis=1) / np.nansum(like, axis=1)
 
     @property

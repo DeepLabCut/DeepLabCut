@@ -17,35 +17,17 @@ import networkx as nx
 import numpy as np
 import torch
 from numpy.typing import ArrayLike, NDArray
-from scipy.spatial import cKDTree
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.pose_estimation_pytorch import Loader
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     get_scores,
-    align_predicted_individuals_to_gt,
+    pair_predicted_individuals_with_gt,
 )
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import Graph
-
-
-def _find_closest_neighbors(query: NDArray, ref: NDArray, k: int = 3) -> NDArray:
-    n_preds = ref.shape[0]
-    tree = cKDTree(ref)
-    dist, inds = tree.query(query, k=k)
-    idx = np.argsort(dist[:, 0])
-    neighbors = np.full(len(query), -1, dtype=int)
-    picked = set()
-    for i, ind in enumerate(inds[idx]):
-        for j in ind:
-            if j not in picked:
-                picked.add(j)
-                neighbors[idx[i]] = j
-                break
-        if len(picked) == n_preds:
-            break
-    return neighbors
 
 
 def _calc_separability(
@@ -147,7 +129,7 @@ def compute_within_between_paf_costs(
                     inds = np.flatnonzero(np.all(~np.isnan(coord_pred), axis=1))
                     inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
                     if inds.size and inds_gt.size:
-                        neighbors = _find_closest_neighbors(
+                        neighbors = find_closest_neighbors(
                             coord_gt[inds_gt], coord_pred[inds], k=3
                         )
                         found = neighbors != -1
@@ -202,7 +184,7 @@ def benchmark_paf_graphs(
                 poses_.extend(preds["poses"])
         poses_ = torch.stack(poses_).detach().cpu().numpy()
         poses_ = dict(zip(paths, poses_))
-        poses_ = align_predicted_individuals_to_gt(poses_, poses_gt)
+        poses_ = pair_predicted_individuals_with_gt(poses_, poses_gt)
         poses.append(poses_)
         results.append(get_scores(poses_, poses_gt))
     return results, poses, best_paf_edges

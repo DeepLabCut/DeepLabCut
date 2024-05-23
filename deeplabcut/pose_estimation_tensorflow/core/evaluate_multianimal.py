@@ -15,7 +15,6 @@ import pickle
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from scipy.spatial import cKDTree
 from tqdm import tqdm
 
 from deeplabcut.core import crossvalutils
@@ -51,24 +50,6 @@ def _compute_stats(df):
     ).stack(level=1)
 
 
-def _find_closest_neighbors(xy_true, xy_pred, k=5):
-    n_preds = xy_pred.shape[0]
-    tree = cKDTree(xy_pred)
-    dist, inds = tree.query(xy_true, k=k)
-    idx = np.argsort(dist[:, 0])
-    neighbors = np.full(len(xy_true), -1, dtype=int)
-    picked = set()
-    for i, ind in enumerate(inds[idx]):
-        for j in ind:
-            if j not in picked:
-                picked.add(j)
-                neighbors[idx[i]] = j
-                break
-        if len(picked) == n_preds:
-            break
-    return neighbors
-
-
 def _calc_prediction_error(data):
     _ = data.pop("metadata", None)
     dists = []
@@ -76,7 +57,7 @@ def _calc_prediction_error(data):
         gt = np.concatenate(dict_["groundtruth"][1])
         xy = np.concatenate(dict_["prediction"]["coordinates"][0])
         p = np.concatenate(dict_["prediction"]["confidence"])
-        neighbors = _find_closest_neighbors(gt, xy)
+        neighbors = find_closest_neighbors(gt, xy)
         found = neighbors != -1
         gt2 = gt[found]
         xy2 = xy[neighbors[found]]
@@ -409,7 +390,7 @@ def evaluate_multianimal_full(
                                     # Pick the predictions closest to ground truth,
                                     # rather than the ones the model has most confident in
                                     xy_gt_values = xy_gt.iloc[inds_gt].values
-                                    neighbors = _find_closest_neighbors(
+                                    neighbors = find_closest_neighbors(
                                         xy_gt_values, xy, k=3
                                     )
                                     found = neighbors != -1
