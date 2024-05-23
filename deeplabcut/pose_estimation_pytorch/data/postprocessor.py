@@ -257,6 +257,8 @@ class PadOutputs(Postprocessor):
     ) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
+            if type(output) is list:
+                output = np.array(output)
             if len(output) < self.max_individuals[name]:
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]

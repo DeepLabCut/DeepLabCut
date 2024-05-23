@@ -21,7 +21,6 @@ import torchvision.transforms.functional as F
 from torchvision.ops import box_convert
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
-from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
@@ -44,7 +43,7 @@ def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
 
 
 def _crop_and_pad_image_torch(
-    image: np.array, bbox: np.array, bbox_format: str, output_size: int, task: Task
+    image: np.array, bbox: np.array, bbox_format: str, output_size: int, cond_td: bool = False
 ) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
     """TODO: Reimplement this function with numpy and for non-square resize :)
     Only works for square cropped bounding boxes. Crops images around bounding boxes
@@ -71,7 +70,7 @@ def _crop_and_pad_image_torch(
     c, h, w = image.shape
     crop_size = torch.max(bbox[2:])
 
-    if task == Task.CTD:
+    if cond_td:
         # pad with empty pixels instead of context
         cx, cy, boxw, boxh = bbox
         xmin, xmax = int(cx - boxw/2), int(cx + boxw/2)

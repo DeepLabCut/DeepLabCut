@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from deeplabcut.pose_estimation_pytorch import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.utils.visualization import make_labeled_images_from_dataframe
 from ruamel.yaml import YAML
 from tqdm import tqdm
@@ -25,6 +26,9 @@ def run_inference_on_all_images(
     save_as_csv: bool,
     plot: bool,
     detector_snapshot: Path | None = None,
+    bu_snapshot: Path | None = None,
+    bu_predictions: Path | None = None,
+
 ) -> None:
     pytorch_config_path = snapshot.parent / "pytorch_config.yaml"
     with open(pytorch_config_path, "r") as file:
@@ -57,7 +61,8 @@ def run_inference_on_all_images(
         num_unique_bodyparts=parameters.num_unique_bpts,
         with_identity=False,  # TODO: implement
         transform=None,
-        detector_path=str(detector_snapshot),
+        #detector_path=str(detector_snapshot),
+        detector_path=detector_snapshot,
         detector_transform=None,
     )
 
@@ -66,6 +71,18 @@ def run_inference_on_all_images(
         print("Running detection")
         bbox_predictions = detector_runner.inference(images=tqdm(pose_inputs))
         pose_inputs = list(zip(pose_inputs, bbox_predictions))
+
+    if bu_predictions is not None:
+        # #add cond kpts to context if you run inference with CTD
+        bu_pose_preds = DLCLoader.load_predictions(bu_snapshot, bu_predictions, parameters)
+        for k in list(bu_pose_preds.keys()):
+            # TODO: for dlcrnet & resnet: adapt image pathes in prediction file
+            #path = str(Path(*idx)) if isinstance(idx, tuple) else idx
+            bu_pose_preds[k.split('labeled-data')[1]] = bu_pose_preds.pop(k)
+        context = [{"cond_kpts": bu_pose_preds[image.split('labeled-data')[1]]} for image in pose_inputs]
+        if len(context) != len(pose_inputs):
+            raise ValueError(f"Missing context for some images: {len(context)} != {len(pose_inputs)}")
+        pose_inputs = list(zip(pose_inputs, context))
 
     print("Running pose prediction")
     predictions = runner.inference(tqdm(pose_inputs))
@@ -160,6 +177,7 @@ def main(
     shuffle: Shuffle,
     snapshot_indices: int | list[int] | None = None,
     detector_snapshot_indices: int | list[int] | None = None,
+    bu_predictions: Path | None = None,
     save_as_csv: bool = False,
     plot: bool = False,
 ) -> None:
@@ -195,19 +213,29 @@ def main(
     for detector in detectors:
         for snapshot in snapshots:
             run_inference_on_all_images(
-                shuffle.project, snapshot, save_as_csv, plot, detector
+                shuffle.project, snapshot, save_as_csv, plot, detector,
+                bu_snapshot=None, bu_predictions=bu_predictions
             )
 
 
 if __name__ == "__main__":
+
+    #bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_DLCRNet_ms4_30k.h5'
+    bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_EfficientNet_B7_s4_30k.h5'
+    #bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_ResNet50_s4_30k.h5'
+
     main(
         shuffle=Shuffle(
-            project=MA_DLC_BENCHMARKS["trimouse"],
-            index=0,
-            train_fraction=0.95,
+            #project=MA_DLC_BENCHMARKS["trimouse"],
+            project=MA_DLC_BENCHMARKS["fish"],
+            #index=0,
+            index=41,
+            #train_fraction=0.95,
+            train_fraction=0.94,
         ),
         snapshot_indices=None,
         detector_snapshot_indices=-1,
+        bu_predictions=Path(bu_preds),
         save_as_csv=False,
         plot=False,
     )

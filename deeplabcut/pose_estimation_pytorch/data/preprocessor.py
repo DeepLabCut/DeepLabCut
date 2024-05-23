@@ -106,7 +106,7 @@ def build_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
-            TorchCropDetections(cropped_image_size=cropped_image_size[0]),
+            TorchCropDetections(cropped_image_size=cropped_image_size[0], ctd=False),
             AugmentImage(transform),
             ToTensor(),
         ]
@@ -135,7 +135,7 @@ def build_conditional_top_down_preprocessor(
         components=[
             LoadImage(color_mode),
             ComputeBoundingBoxesFromCondKeypoints(),
-            TorchCropDetections(cropped_image_size=cropped_image_size[0]),
+            TorchCropDetections(cropped_image_size=cropped_image_size[0], ctd=True),
             AugmentImage(transform),
             ConditionalKeypointsToModelInputs(),
             ToTensor(),
@@ -337,9 +337,10 @@ class ToBatch(Preprocessor):
 class TorchCropDetections(Preprocessor):
     """TODO"""
 
-    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh") -> None:
+    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh", ctd: bool = False) -> None:
         self.cropped_image_size = cropped_image_size
         self.bbox_format = bbox_format
+        self.ctd = ctd
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -351,7 +352,7 @@ class TorchCropDetections(Preprocessor):
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
             cropped_image, offset, scale = _crop_and_pad_image_torch(
-                image, bbox, self.bbox_format, self.cropped_image_size
+                image, bbox, self.bbox_format, self.cropped_image_size, self.ctd
             )
             images.append(cropped_image)
             offsets.append(offset)

@@ -301,6 +301,7 @@ def get_inference_runners(
         )
 
         if detector_path is not None:
+            detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
