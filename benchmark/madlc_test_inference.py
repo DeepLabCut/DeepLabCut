@@ -73,10 +73,10 @@ def run_inference_on_all_images(
         pose_inputs = list(zip(pose_inputs, bbox_predictions))
 
     if bu_predictions is not None:
-        # #add cond kpts to context if you run inference with CTD
+        # add cond kpts to context if you run inference with CTD
         bu_pose_preds = DLCLoader.load_predictions(bu_snapshot, bu_predictions, parameters)
         for k in list(bu_pose_preds.keys()):
-            # TODO: for dlcrnet & resnet: adapt image pathes in prediction file
+            # TODO: for dlcrnet & resnet: adapt image paths in prediction file
             #path = str(Path(*idx)) if isinstance(idx, tuple) else idx
             bu_pose_preds[k.split('labeled-data')[1]] = bu_pose_preds.pop(k)
         context = [{"cond_kpts": bu_pose_preds[image.split('labeled-data')[1]]} for image in pose_inputs]
@@ -102,6 +102,7 @@ def run_inference_on_all_images(
         / f"iteration-{project.iteration}"
         / shuffle_name
         / "benchmark"
+        / "" if bu_predictions is None else f"_{bu_predictions.stem}"
         / f"{scorer}.h5"
     )
     output_path.parent.mkdir(exist_ok=True, parents=True)
