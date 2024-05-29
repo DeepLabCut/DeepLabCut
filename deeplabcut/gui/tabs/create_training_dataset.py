@@ -11,12 +11,13 @@
 import os
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 
 import deeplabcut
 import deeplabcut.compat as compat
 from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui.dlc_params import DLCParams
@@ -77,34 +78,33 @@ class CreateTrainingDataset(DefaultTab):
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
+        # Dataset choices
+        self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
+        self.weight_init_choice = QtWidgets.QComboBox()
+        self.update_weight_init_methods(self.root.engine)
+        self.root.engine_change.connect(self.update_weight_init_methods)
+
         # Augmentation method
         augmentation_label = QtWidgets.QLabel("Augmentation method")
-        methods = compat.get_available_aug_methods(self.root.project_engine)
         self.aug_choice = QtWidgets.QComboBox()
-        self.aug_choice.addItems(methods)
-        self.aug_choice.setCurrentText(methods[0])
+        self.update_aug_methods(self.root.engine)
+        self.root.engine_change.connect(self.update_aug_methods)
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
-
-        if self.root.project_engine == Engine.TF:
-            nets = DLCParams.NNETS.copy()
-            if not self.root.is_multianimal:
-                nets.remove("dlcrnet_ms5")
-        else:
-            # FIXME: Circular imports make it impossible to import this at the top
-            from deeplabcut.pose_estimation_pytorch import available_models
-            nets = available_models()
-
-        self.net_choice.addItems(nets)
-        default_net_type = self.root.cfg.get("default_net_type", "resnet_50")
-        if default_net_type in nets:
-            self.net_choice.setCurrentIndex(nets.index(default_net_type))
+        self.update_nets(self.root.engine)
+        self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
-        self.overwrite = QtWidgets.QCheckBox("Overwrite")
+        # Update Net types when selected weight init changes
+        self.weight_init_choice.currentTextChanged.connect(
+            lambda _: self.update_nets(None)
+        )
+
+        # Overwrite selection
+        self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
         self.overwrite.setChecked(False)
         self.overwrite.setToolTip(
             "When checked, creating a new shuffle with an index that already exists "
@@ -117,11 +117,15 @@ class CreateTrainingDataset(DefaultTab):
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(nnet_label, 0, 2)
-        layout.addWidget(self.net_choice, 0, 3)
-        layout.addWidget(augmentation_label, 0, 4)
-        layout.addWidget(self.aug_choice, 0, 5)
-        layout.addWidget(self.overwrite, 1, 0)
+        layout.addWidget(self.weight_init_label, 0, 2)
+        layout.addWidget(self.weight_init_choice, 0, 3)
+
+        layout.addWidget(nnet_label, 1, 0)
+        layout.addWidget(self.net_choice, 1, 1)
+        layout.addWidget(augmentation_label, 1, 2)
+        layout.addWidget(self.aug_choice, 1, 3)
+
+        layout.addWidget(self.overwrite, 2, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -156,15 +160,22 @@ class CreateTrainingDataset(DefaultTab):
                 self.root.writer.write("Training dataset creation failed.")
                 return
 
+        try:
+            weight_init = self.get_weight_init()
+        except ValueError as err:
+            print(f"The training dataset could not be created: {err}.")
+            return
+
         if self.model_comparison:
             raise NotImplementedError
             # TODO: finish model_comparison
-            deeplabcut.create_training_model_comparison(
-                config_file,
-                num_shuffles=shuffle,
-                net_types=self.net_type,
-                augmenter_types=self.aug_type,
-            )
+            # deeplabcut.create_training_model_comparison(
+            #     config_file,
+            #     num_shuffles=shuffle,
+            #     net_types=self.net_type,
+            #     augmenter_types=self.aug_type,
+            # )
+
         else:
             if self.root.is_multianimal:
                 deeplabcut.create_multianimaltraining_dataset(
@@ -173,6 +184,8 @@ class CreateTrainingDataset(DefaultTab):
                     Shuffles=[self.shuffle.value()],
                     net_type=self.net_choice.currentText(),
                     userfeedback=not overwrite,
+                    weight_init=weight_init,
+                    engine=self.root.engine,
                 )
             else:
                 deeplabcut.create_training_dataset(
@@ -182,6 +195,8 @@ class CreateTrainingDataset(DefaultTab):
                     net_type=self.net_choice.currentText(),
                     augmenter_type=self.aug_choice.currentText(),
                     userfeedback=not overwrite,
+                    weight_init=weight_init,
+                    engine=self.root.engine,
                 )
             # Check that training data files were indeed created.
             trainingsetfolder = get_training_set_folder(self.root.cfg)
@@ -254,6 +269,107 @@ class CreateTrainingDataset(DefaultTab):
 
         return True
 
+    @Slot(Engine)
+    def update_nets(self, engine: Engine | None) -> None:
+        if engine is None:
+            engine = self.root.engine
+
+        if engine == Engine.TF:
+            nets = DLCParams.NNETS.copy()
+            if not self.root.is_multianimal:
+                nets.remove("dlcrnet_ms5")
+        else:
+            # FIXME: Circular imports make it impossible to import this at the top
+            from deeplabcut.pose_estimation_pytorch import available_models
+            nets = available_models()
+            net_filter = self.get_net_filter()
+            td_prefix = "top_down_"
+            if net_filter is not None:
+                nets = [
+                    n
+                    for n in nets
+                    if (
+                        n in net_filter or
+                        (n.startswith(td_prefix) and n[len(td_prefix):] in net_filter)
+                    )
+                ]
+
+        while self.net_choice.count() > 0:
+            self.net_choice.removeItem(0)
+
+        self.net_choice.addItems(nets)
+        default_net_type = self.root.cfg.get("default_net_type", "resnet_50")
+        if default_net_type in nets:
+            self.net_choice.setCurrentIndex(nets.index(default_net_type))
+
+    @Slot(Engine)
+    def update_aug_methods(self, engine: Engine) -> None:
+        methods = compat.get_available_aug_methods(engine)
+        while self.aug_choice.count() > 0:
+            self.aug_choice.removeItem(0)
+
+        self.aug_choice.addItems(methods)
+        self.aug_choice.setCurrentText(methods[0])
+
+    @Slot(Engine)
+    def update_weight_init_methods(self, engine: Engine) -> None:
+        if engine != Engine.PYTORCH:
+            self.weight_init_label.hide()
+            self.weight_init_choice.hide()
+            return
+
+        while self.weight_init_choice.count() > 0:
+            self.weight_init_choice.removeItem(0)
+
+        self.weight_init_label.show()
+        self.weight_init_choice.show()
+        self.weight_init_choice.addItems(list(_WEIGHT_INIT_OPTIONS.keys()))
+
+    def get_net_filter(self) -> list[str] | None:
+        """Returns: the net type that can be used based on weight initialization"""
+        if self.root.engine != Engine.PYTORCH:
+            return None
+
+        weight_init_choice = self.weight_init_choice.currentText()
+        return _WEIGHT_INIT_OPTIONS[weight_init_choice]["model_filter"]
+
+    def get_weight_init(self) -> WeightInitialization | None:
+        """
+        Raises:
+            ValueError if WeightInitialization should be defined but could not be
+                created (e.g. if there's no conversion table).
+        """
+        if self.root.engine != Engine.PYTORCH:
+            return None
+
+        weight_init_choice = self.weight_init_choice.currentText()
+        if "imagenet" in weight_init_choice.lower():
+            return
+
+        weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
+        super_animal = weight_init_data["super_animal"]
+        with_decoder = "fine-tuning" in weight_init_choice.lower()
+        try:
+            weight_init = WeightInitialization.build(
+                self.root.cfg,
+                super_animal=super_animal,
+                with_decoder=with_decoder,
+            )
+        except ValueError as err:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Error",
+                (
+                    f"No Conversion table specified for {super_animal} in the project "
+                    "configuration file. Please create a conversion table using the GUI"
+                    ", with ``deeplabcut.modelzoo.utils.create_conversion_table``, or "
+                    "by adding it to your project's configuration file manually."
+                ),
+            )
+            raise err
+
+        return weight_init
+
 
 def _create_message_box(text, info_text):
     msg = QtWidgets.QMessageBox()
@@ -283,3 +399,34 @@ def _create_confirmation_box(title, description):
     msg.setWindowIcon(QIcon(logo))
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg
+
+
+_WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
+    "Transfer Learning - ImageNet": {
+        "model_filter": None,
+    },
+    "Transfer Learning - SuperAnimal Quadruped": {
+        "model_filter": [
+            "dekr_w32",
+            "hrnet_w32",
+            "resnet_50",
+        ],
+        "super_animal": "superanimal_quadruped",
+    },
+    "Transfer Learning - SuperAnimal TopViewMouse": {
+        "model_filter": [
+            "dekr_w32",
+            "hrnet_w32",
+            "resnet_50",
+        ],
+        "super_animal": "superanimal_topviewmouse",
+    },
+    "Fine-tuning - SuperAnimal Quadruped": {
+        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
+        "super_animal": "superanimal_quadruped",
+    },
+    "Fine-tuning - SuperAnimal TopViewMouse": {
+        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
+        "super_animal": "superanimal_topviewmouse",
+    },
+}

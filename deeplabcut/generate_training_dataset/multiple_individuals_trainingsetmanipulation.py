@@ -23,6 +23,7 @@ from tqdm import tqdm
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import (
     merge_annotateddatasets,
     read_image_shape_fast,
@@ -115,6 +116,7 @@ def create_multianimaltraining_dataset(
     n_edges_threshold=105,
     paf_graph_degree=6,
     userfeedback: bool = True,
+    weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
 ):
     """
@@ -179,6 +181,10 @@ def create_multianimaltraining_dataset(
         If ``False``, all requested train/test splits are created (no matter if they
         already exist). If you want to assure that previous splits etc. are not
         overwritten, set this to ``True`` and you will be asked for each split.
+
+    weight_init: WeightInitialisation, optional, default=None
+        PyTorch engine only. Specify how model weights should be initialized. The
+        default mode uses transfer learning from ImageNet weights.
 
     engine: Engine, optional
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
@@ -344,6 +350,11 @@ def create_multianimaltraining_dataset(
             test_inds = np.asarray(test_inds)
             test_inds = test_inds[test_inds != -1]
             splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
+
+    top_down = False
+    if engine == Engine.PYTORCH and net_type.startswith("top_down_"):
+        top_down = True
+        net_type = net_type[len("top_down_"):]
 
     for trainFraction, shuffle, (trainIndices, testIndices) in splits:
         ####################################################
@@ -525,19 +536,25 @@ def create_multianimaltraining_dataset(
             # Populate the pytorch config yaml file
             if engine == Engine.PYTORCH:
                 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-
-                top_down = False
-                if net_type.startswith("top_down_"):
-                    top_down = True
-                    net_type = net_type[len("top_down_"):]
+                from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
 
                 pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
-                pytorch_cfg = make_pytorch_pose_config(
-                    project_config=cfg,
-                    pose_config_path=path_train_config,
-                    net_type=net_type,
-                    top_down=top_down,
-                )
+                if weight_init is not None and weight_init.with_decoder:
+                    pytorch_cfg = make_super_animal_finetune_config(
+                        project_config=cfg,
+                        pose_config_path=path_train_config,
+                        net_type=net_type,
+                        weight_init=weight_init,
+                    )
+                else:
+                    pytorch_cfg = make_pytorch_pose_config(
+                        project_config=cfg,
+                        pose_config_path=path_train_config,
+                        net_type=net_type,
+                        top_down=top_down,
+                        weight_init=weight_init,
+                    )
+
                 auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
             print(

@@ -144,6 +144,15 @@ class PoseDataset(Dataset):
             bboxes,
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
+
+        transformed = self.apply_transform_all_keypoints(
+            image, keypoints, keypoints_unique, bboxes
+        )
+        image = transformed["image"]
+        keypoints = transformed["keypoints"]
+        keypoints_unique = transformed["keypoints_unique"]
+        bboxes = transformed["bboxes"]
+
         offsets = (0, 0)
         scales = (1, 1)
         if self.task == Task.TOP_DOWN:
@@ -171,19 +180,13 @@ class PoseDataset(Dataset):
             bboxes[..., 3] = bboxes[..., 3] / scales[1]
             bboxes = np.clip(bboxes, 0, self.parameters.cropped_image_size[0] - 1)
 
-        transformed = self.apply_transform_all_keypoints(
-            image, keypoints, keypoints_unique, bboxes
-        )
-        keypoints = transformed["keypoints"]
-        bboxes = transformed["bboxes"]
-
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
 
-        item = self._prepare_final_data_dict(
-            transformed["image"],
+        return self._prepare_final_data_dict(
+            image,
             keypoints,
-            transformed["keypoints_unique"],
+            keypoints_unique,
             original_size,
             image_path,
             bboxes,
@@ -192,7 +195,6 @@ class PoseDataset(Dataset):
             offsets,
             scales,
         )
-        return item
 
     def _prepare_final_data_dict(
         self,

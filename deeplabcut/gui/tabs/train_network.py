@@ -12,7 +12,7 @@ import os
 from dataclasses import dataclass
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 
 import deeplabcut.compat as compat
@@ -36,17 +36,25 @@ class IntTrainAttribute:
 
 
 class TrainNetwork(DefaultTab):
-    def __init__(self, root, parent, h1_description, engine: Engine = Engine.TF):
+    def __init__(self, root, parent, h1_description):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
-        self.train_attributes = get_train_attributes(engine=engine)
+        self.root.engine_change.connect(self._on_engine_change)
+        self._attribute_layouts: dict[Engine, QtWidgets.QWidget] = {}
+        self._shuffles: dict[Engine, ShuffleSpinBox] = {}
+        self._attribute_kwargs: dict[Engine, dict] = {}
         self._set_page()
+
+    @Slot(Engine)
+    def _on_engine_change(self, engine: Engine) -> None:
+        for e, layout in self._attribute_layouts.items():
+            if e == engine:
+                layout.show()
+            else:
+                layout.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
-        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
-        self._generate_layout_attributes(self.layout_attributes)
-        self.main_layout.addLayout(self.layout_attributes)
-
+        self._generate_layout_attributes()
         self.main_layout.addWidget(_create_label_widget(""))  # dummy label
 
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
@@ -77,27 +85,39 @@ class TrainNetwork(DefaultTab):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def _generate_layout_attributes(self, layout):
-        # Shuffle
-        shuffle_label = QtWidgets.QLabel("Shuffle")
-        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
-        layout.addWidget(shuffle_label, 0, 0)
-        layout.addWidget(self.shuffle, 0, 1)
+    def _generate_layout_attributes(self) -> None:
+        for engine in Engine:
+            train_attributes = get_train_attributes(engine)
+            layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
-        # Other parameters
-        self.attribute_spin_boxes = {}
-        for i, attribute in enumerate(self.train_attributes):
-            label = QtWidgets.QLabel(attribute.label)
-            spin_box = QtWidgets.QSpinBox()
-            spin_box.setMinimum(attribute.min)
-            spin_box.setMaximum(attribute.max)
-            spin_box.setValue(attribute.default)
-            spin_box.valueChanged.connect(
-                lambda new_val: self.log_attribute_change(attribute, new_val)
-            )
-            self.attribute_spin_boxes[attribute.fn_key] = spin_box
-            layout.addWidget(label, 0, 2 * (i + 1))
-            layout.addWidget(spin_box, 0, 2 * (i + 1) + 1)
+            # Shuffle
+            shuffle_label = QtWidgets.QLabel("Shuffle")
+            self._shuffles[engine] = ShuffleSpinBox(root=self.root, parent=self)
+            layout.addWidget(shuffle_label, 0, 0)
+            layout.addWidget(self._shuffles[engine], 0, 1)
+
+            # Other parameters
+            self._attribute_kwargs[engine] = {}
+            for i, attribute in enumerate(train_attributes):
+                label = QtWidgets.QLabel(attribute.label)
+                spin_box = QtWidgets.QSpinBox()
+                spin_box.setMinimum(attribute.min)
+                spin_box.setMaximum(attribute.max)
+                spin_box.setValue(attribute.default)
+                spin_box.valueChanged.connect(
+                    lambda new_val: self.log_attribute_change(attribute, new_val)
+                )
+                self._attribute_kwargs[engine][attribute.fn_key] = spin_box
+                layout.addWidget(label, 0, 2 * (i + 1))
+                layout.addWidget(spin_box, 0, 2 * (i + 1) + 1)
+
+            layout_widget = QtWidgets.QWidget()
+            layout_widget.setLayout(layout)
+            self._attribute_layouts[engine] = layout_widget
+            if engine != self.root.engine:
+                layout_widget.hide()
+
+            self.main_layout.addWidget(layout_widget)
 
     def log_attribute_change(self, attribute: IntTrainAttribute, value: int) -> None:
         self.root.logger.info(f"{attribute.label} set to {value}")
@@ -108,9 +128,9 @@ class TrainNetwork(DefaultTab):
 
     def train_network(self):
         config = self.root.config
-        shuffle = int(self.shuffle.value())
+        shuffle = int(self._shuffles[self.root.engine].value())
         kwargs = dict(gputouse=None, autotune=False)
-        for k, spin_box in self.attribute_spin_boxes.items():
+        for k, spin_box in self._attribute_kwargs[self.root.engine].items():
             kwargs[k] = int(spin_box.value())
 
         compat.train_network(config, shuffle, **kwargs)
@@ -185,13 +205,13 @@ def get_train_attributes(engine: Engine) -> list[IntTrainAttribute]:
                 min=1,
                 max=1000,
             ),
-            # IntTrainAttribute(  # FIXME: Implement
-            #     label="Number of snapshots to keep",
-            #     fn_key="max_snapshots_to_keep",
-            #     default=5,
-            #     min=1,
-            #     max=100,
-            # ),
+            IntTrainAttribute(  # FIXME: Implement
+                label="Number of snapshots to keep",
+                fn_key="max_snapshots_to_keep",
+                default=5,
+                min=1,
+                max=100,
+            ),
         ]
 
     raise NotImplementedError(f"Unknown engine: {engine}")

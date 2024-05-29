@@ -15,6 +15,7 @@ import copy
 import torch
 import torch.nn as nn
 
+import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
 from deeplabcut.pose_estimation_pytorch.models.backbones import BaseBackbone, BACKBONES
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,
@@ -26,6 +27,7 @@ from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import (
     TARGET_GENERATORS,
 )
+from deeplabcut.core.weight_init import WeightInitialization
 
 
 class PoseModel(nn.Module):
@@ -48,7 +50,6 @@ class PoseModel(nn.Module):
             backbone: backbone network architecture.
             heads: the heads for the model
             neck: neck network architecture (default is None). Defaults to None.
-            stride: stride used in the model. Defaults to 8.
         """
         super().__init__()
         self.cfg = cfg
@@ -134,19 +135,22 @@ class PoseModel(nn.Module):
         }
 
     @staticmethod
-    def build(cfg: dict, no_pretrained_backbone: bool = False) -> "PoseModel":
+    def build(
+        cfg: dict,
+        weight_init: None | WeightInitialization = None,
+    ) -> "PoseModel":
         """
         Args:
-            cfg: the configuration of the model to build
-            no_pretrained_backbone: does not load pretrained weights for the backbone,
-                even if the config asks for it (e.g., useful when loading a model for
-                inference, when fully trained weights will be loaded)
+            cfg: The configuration of the model to build.
+            weight_init: How model weights should be initialized. If None, ImageNet
+                pre-trained backbone weights are loaded from Timm.
 
         Returns:
             the built pose model
         """
-        if no_pretrained_backbone and "pretrained" in cfg["backbone"]:
-            cfg["backbone"]["pretrained"] = False
+        if weight_init is None:  # Transfer learning from ImageNet
+            cfg["backbone"]["pretrained"] = True
+
         backbone = BACKBONES.build(dict(cfg["backbone"]))
 
         neck = None
@@ -178,4 +182,69 @@ class PoseModel(nn.Module):
             head_cfg["predictor"] = PREDICTORS.build(head_cfg["predictor"])
             heads[name] = HEADS.build(head_cfg)
 
-        return PoseModel(cfg=cfg, backbone=backbone, neck=neck, heads=heads)
+        model = PoseModel(cfg=cfg, backbone=backbone, neck=neck, heads=heads)
+
+        if weight_init is not None:
+            print(f"Loading pretrained model weights: {weight_init}")
+
+            # TODO: Should we specify the pose_model_type in WeightInitialization?
+            backbone_name = cfg["backbone"]["model_name"]
+            pose_model_type = modelzoo_utils.get_pose_model_type(backbone_name)
+
+            # load pretrained weights
+            _, _, snapshot_path, _ = modelzoo_utils.get_config_model_paths(
+                project_name=weight_init.dataset,
+                pose_model_type=pose_model_type,
+            )
+            snapshot = torch.load(snapshot_path, map_location="cpu")
+            state_dict = snapshot["model"]
+
+            # load backbone state dict
+            model.backbone.load_state_dict(filter_state_dict(state_dict, "backbone"))
+
+            # if there's a neck, load state dict
+            if model.neck is not None:
+                model.neck.load_state_dict(filter_state_dict(state_dict, "neck"))
+
+            # load head state dicts
+            if weight_init.with_decoder:
+                heads_state_dict = filter_state_dict(state_dict, "heads")
+                conversion_tensor = torch.from_numpy(weight_init.conversion_array)
+                for name, head in model.heads.items():
+                    # requires WeightConversionMixin
+                    head.load_state_dict(
+                        head.convert_weights(
+                            state_dict=filter_state_dict(heads_state_dict, name),
+                            module_prefix="",
+                            conversion=conversion_tensor,
+                        )
+                    )
+
+        return model
+
+
+def filter_state_dict(state_dict: dict, module: str) -> dict[str, torch.Tensor]:
+    """
+    Filters keys in the state dict for a module to only keep a given prefix. Removes
+    the module from the keys (e.g. for module="backbone", "backbone.stage1.weight" will
+    be converted to "stage1.weight" so the state dict can be loaded into the backbone
+    directly).
+
+    Args:
+        state_dict: the state dict
+        module: the module to keep, e.g. "backbone"
+
+    Returns:
+        the filtered state dict, with the module removed from the keys
+
+    Examples:
+        state_dict = {"backbone.conv.weight": t1, "head.conv.weight": t2}
+        filtered = filter_state_dict(state_dict, "backbone")
+        # filtered = {"conv.weight": t1}
+        model.backbone.load_state_dict(filtered)
+    """
+    return {
+        ".".join(k.split(".")[1:]): v  # remove 'backbone.' from the keys
+        for k, v in state_dict.items()
+        if k.startswith(module)
+    }

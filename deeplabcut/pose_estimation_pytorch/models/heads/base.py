@@ -107,3 +107,48 @@ class BaseHead(ABC, nn.Module):
         }
         losses["total_loss"] = self.aggregator(losses)
         return losses
+
+
+class WeightConversionMixin(ABC):
+    """A mixin for heads that can re-order and/or filter the output channels.
+
+    This mixin is useful to convert SuperAnimal model weights such that they can be used
+    in downstream projects (either existing or new), where only a subset of keypoints
+    are available (and where they might be re-ordered).
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    @abstractmethod
+    def convert_weights(
+        state_dict: dict[str, torch.Tensor],
+        module_prefix: str,
+        conversion: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        """Converts pre-trained weights to be fine-tuned on another dataset
+
+        Args:
+            state_dict: the state dict for the pre-trained model
+            module_prefix: the prefix for weights in this head (e.g., 'heads.bodypart.')
+            conversion: the mapping of old indices to new indices
+
+        Examples:
+            A SuperAnimal model was trained on the keypoints ["ear_left", "ear_right",
+            "eye_left", "eye_right", "nose"]. A down-stream project has the bodyparts
+            labeled ["nose", "eye_left", "eye_right"]. The SuperAnimal weights can be
+            converted (to be used with the downstream project) with the following code:
+
+                ``
+                state_dict = torch.load(
+                    snapshot_path, map_location=torch.device('cpu')
+                )["model"]
+                state_dict = HeadClass.convert_weights(
+                    state_dict,
+                    "heads.bodypart",
+                    [4, 2, 3]
+                )
+                ``
+        """
+        pass

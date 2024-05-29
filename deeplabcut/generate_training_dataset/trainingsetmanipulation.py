@@ -28,6 +28,7 @@ import yaml
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -779,6 +780,7 @@ def create_training_dataset(
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
+    weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
 ):
     """Creates a training dataset.
@@ -845,6 +847,10 @@ def create_training_dataset(
 
     superanimal_name: string, optional, default=""
         Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+
+    weight_init: WeightInitialisation, optional, default=None
+        PyTorch engine only. Specify how model weights should be initialized. The
+        default mode uses transfer learning from ImageNet weights.
 
     engine: Engine, optional
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
@@ -973,6 +979,12 @@ def create_training_dataset(
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
+
+        top_down = False
+        if engine == Engine.PYTORCH:
+            if net_type.startswith("top_down_"):
+                top_down = True
+                net_type = net_type[len("top_down_"):]
 
         augmenters = compat.get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
@@ -1210,19 +1222,25 @@ def create_training_dataset(
                 # Populate the pytorch config yaml file
                 if engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-
-                    top_down = False
-                    if net_type.startswith("top_down_"):
-                        top_down = True
-                        net_type = net_type[len("top_down_"):]
+                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
 
                     pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
-                    pytorch_cfg = make_pytorch_pose_config(
-                        project_config=cfg,
-                        pose_config_path=path_train_config,
-                        net_type=net_type,
-                        top_down=top_down,
-                    )
+                    if weight_init is not None and weight_init.with_decoder:
+                        pytorch_cfg = make_super_animal_finetune_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            weight_init=weight_init,
+                        )
+                    else:
+                        pytorch_cfg = make_pytorch_pose_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            top_down=top_down,
+                            weight_init=weight_init,
+                        )
+
                     auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
         return splits

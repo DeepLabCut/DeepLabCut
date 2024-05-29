@@ -64,10 +64,10 @@ class FasterRCNN(BaseDetector):
                 "https://pytorch.org/vision/stable/models.html#object-detection"
             )
 
-        super().__init__()
+        super().__init__(pretrained=pretrained)
         model_fn = getattr(detection, variant)
         weights = None
-        if pretrained:
+        if self._pretrained:
             weights = "COCO_V1"
 
         # Load the model

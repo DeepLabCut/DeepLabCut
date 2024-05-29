@@ -496,6 +496,8 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
                 "Cannot compute bounding box metrics; pycocotools is not installed"
             )
 
+        return {}
+
     def _update_epoch_predictions(
         self,
         paths: torch.Tensor,

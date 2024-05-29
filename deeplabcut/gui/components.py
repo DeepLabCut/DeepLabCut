@@ -54,7 +54,7 @@ def _create_grid_layout(
     alignment=None,
     spacing: int = 20,
     margins: tuple = None,
-) -> QtWidgets.QGridLayout():
+) -> QtWidgets.QGridLayout:
     layout = QtWidgets.QGridLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
@@ -190,7 +190,7 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
         self.root = root
         self.parent = parent
 
-        self.setMaximum(100)
+        self.setMaximum(10_000)
         self.setValue(self.root.shuffle_value)
         self.valueChanged.connect(self.root.update_shuffle)
 

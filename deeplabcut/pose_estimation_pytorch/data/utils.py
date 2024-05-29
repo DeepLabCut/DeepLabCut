@@ -254,7 +254,11 @@ def _crop_image_keypoints(
 
 
 def _crop_and_pad_image_torch(
-    image: np.array, bbox: np.array, bbox_format: str, output_size: int
+    image: np.array,
+    bbox: np.array,
+    bbox_format: str,
+    output_size: int,
+    center: bool = True,
 ) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
     """TODO: Reimplement this function with numpy and for non-square resize :)
     Only works for square cropped bounding boxes. Crops images around bounding boxes
@@ -269,6 +273,7 @@ def _crop_and_pad_image_torch(
         bbox: (4,) the bounding box to crop around
         bbox_format: {"xyxy", "xywh", "cxcywh"} the format of the bounding box
         output_size: the size to resize the image to
+        center: Whether to center the crop if it needs to be padded
 
     Returns:
         cropped_image, (offset_x, offset_y), (scale_x, scale_y)
@@ -294,22 +299,26 @@ def _crop_and_pad_image_torch(
     # Pad image if not square
     if not crop_h == crop_w:
         padded_cropped_image = torch.zeros((c, pad_size, pad_size), dtype=image.dtype)
-        # Try to center bbox in padding
-        w_start = 0
-        if bbox[0] - (crop_size / 2) < 0:
-            # padding on the left
-            w_start = pad_size - crop_w
-        elif bbox[0] + (crop_size / 2) >= w:
-            # padding on the right
+        if center:
+            # center the bbox in padding
+            w_start = (pad_size - crop_w) // 2
+            h_start = (pad_size - crop_h) // 2
+        else:
             w_start = 0
+            if bbox[0] - (crop_size / 2) < 0:
+                # padding on the left
+                w_start = pad_size - crop_w
+            elif bbox[0] + (crop_size / 2) >= w:
+                # padding on the right
+                w_start = 0
 
-        h_start = 0
-        if bbox[1] - (crop_size / 2) < 0:
-            # padding at the top
-            h_start = pad_size - crop_h
-        elif bbox[1] + (crop_size / 2) >= h:
-            # padding at the bottom
             h_start = 0
+            if bbox[1] - (crop_size / 2) < 0:
+                # padding at the top
+                h_start = pad_size - crop_h
+            elif bbox[1] + (crop_size / 2) >= h:
+                # padding at the bottom
+                h_start = 0
 
         h_end = h_start + crop_h
         w_end = w_start + crop_w

@@ -9,7 +9,6 @@ model:
     model_name: hrnet_w18
     freeze_bn_stats: True
     freeze_bn_weights: False
-    pretrained: true
     interpolate_branches: false
     increased_channel_count: false  # changes backbone_output_channels to 128 when true
   backbone_output_channels: 18

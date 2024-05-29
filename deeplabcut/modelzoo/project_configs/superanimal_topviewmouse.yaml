@@ -67,6 +67,7 @@ iteration:
 default_net_type:
 default_augmenter:
 snapshotindex:
+detector_snapshotindex:
 batch_size: 1
 
 

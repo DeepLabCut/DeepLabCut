@@ -49,7 +49,7 @@ class HRNet(BaseBackbone):
     def __init__(
         self,
         model_name: str = "hrnet_w32",
-        pretrained: bool = True,
+        pretrained: bool = False,
         interpolate_branches: bool = False,
         increased_channel_count: bool = False,
         **kwargs,

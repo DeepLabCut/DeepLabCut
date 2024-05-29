@@ -15,11 +15,11 @@ import copy
 import logging
 
 import albumentations as A
-import numpy as np
 from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch.config as torch_config
 import deeplabcut.pose_estimation_pytorch.utils as utils
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.data import build_transforms, DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -58,10 +58,14 @@ def train(
             the model config
         max_snapshots_to_keep: the maximum number of snapshots to store for each model
     """
+    weight_init = None
+    if weight_init_cfg := run_config["train_settings"].get("weight_init"):
+        weight_init = WeightInitialization.from_dict(weight_init_cfg)
+
     if task == Task.DETECT:
-        model = DETECTORS.build(run_config["model"])
+        model = DETECTORS.build(run_config["model"], weight_init=weight_init)
     else:
-        model = PoseModel.build(run_config["model"])
+        model = PoseModel.build(run_config["model"], weight_init=weight_init)
 
     if max_snapshots_to_keep is not None:
         run_config["runner"]["snapshots"]["max_snapshots"] = max_snapshots_to_keep
@@ -193,9 +197,13 @@ def train_network(
         if loader.model_cfg.get("logger"):
             logger_config = copy.deepcopy(loader.model_cfg["logger"])
             logger_config["run_name"] += "-detector"
+
+        detector_run_config = loader.model_cfg["detector"]
+        detector_run_config["device"] = loader.model_cfg["device"]
+        detector_run_config["train_settings"]["weight_init"] = loader.model_cfg["train_settings"].get("weight_init")
         train(
             loader=loader,
-            run_config=loader.model_cfg["detector"],
+            run_config=detector_run_config,
             task=Task.DETECT,
             device=device,
             logger_config=logger_config,

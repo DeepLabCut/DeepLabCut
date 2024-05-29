@@ -21,8 +21,8 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    _get_config_model_paths,
-    _update_config,
+    get_config_model_paths,
+    update_config,
     raise_warning_if_called_directly,
     select_device,
 )
@@ -87,23 +87,19 @@ def _video_inference_superanimal(
         project_config,
         pose_model_path,
         detector_model_path,
-    ) = _get_config_model_paths(project_name, model_name)
+    ) = get_config_model_paths(project_name, model_name)
     if device is None:
         device = select_device()
 
     config = {**project_config, **model_config}
-    config = _update_config(config, max_individuals, device)
-
-    pose_model_path = _parse_model_snapshot(Path(pose_model_path), device)
-    detector_model_path = _parse_model_snapshot(Path(detector_model_path), device)
-
+    config = update_config(config, max_individuals, device)
     pose_runner, detector_runner = get_inference_runners(
         config,
         snapshot_path=pose_model_path,
         max_individuals=max_individuals,
         num_bodyparts=len(config["bodyparts"]),
         num_unique_bodyparts=0,
-        detector_path=detector_model_path
+        detector_path=detector_model_path,
     )
     pose_task = Task(config.get("method", "BU"))
     results = {}
@@ -163,39 +159,3 @@ def _video_inference_superanimal(
         print(f"Video with predictions was saved as {output_path}")
 
     return results
-
-
-def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> Path:
-    """FIXME: A new snapshot should be uploaded and used"""
-    def _map_model_keys(state_dict: dict) -> dict:
-        updated_dict = {}
-        for k, v in state_dict.items():
-            if not (
-                k.startswith("backbone.model.downsamp_modules.")
-                or k.startswith("backbone.model.final_layer")
-                or k.startswith("backbone.model.classifier")
-            ):
-                parts = k.split(".")
-                if parts[:4] == ["heads", "bodypart", "heatmap_head", "model"]:
-                    parts[3] = "deconv_layers.0"
-                updated_dict[".".join(parts)] = v
-        return updated_dict
-
-    parsed = base.with_stem(base.stem + "_parsed")
-    if not parsed.exists():
-        snapshot = torch.load(base, map_location=device)
-        if print_keys:
-            print(5 * "-----\n")
-            print(base.stem + " keys")
-            for name, _ in snapshot["model_state_dict"].items():
-                print(f"  * {name}")
-            print()
-
-        parsed_model_snapshot = {
-            "model": _map_model_keys(snapshot["model_state_dict"]),
-            "metadata": {
-                "epoch": snapshot["epoch"],
-            },
-        }
-        torch.save(parsed_model_snapshot, parsed)
-    return parsed

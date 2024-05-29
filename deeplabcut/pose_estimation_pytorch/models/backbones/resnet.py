@@ -33,7 +33,7 @@ class ResNet(BaseBackbone):
         self,
         model_name: str = "resnet50",
         output_stride: int = 32,
-        pretrained: bool = True,
+        pretrained: bool = False,
         drop_path_rate: float = 0.0,
         drop_block_rate: float = 0.0,
         **kwargs,

@@ -9,15 +9,16 @@ data:
       pad_height_divisor: 32
     normalize_images: true
   train:
+    affine:
+      p: 0.5
+      scaling: [1.0, 1.0]
+      rotation: 30
+      translation: 0
     covering: true
     gaussian_noise: 12.75
     hist_eq: true
     motion_blur: true
     normalize_images: true
-    rotation: 30
-    scale_jitter:
-    - 0.5
-    - 1.25
     auto_padding:
       pad_width_divisor: 32
       pad_height_divisor: 32
@@ -63,6 +64,8 @@ model:
     type: HRNet
     model_name: hrnet_w32
     pretrained: false
+    freeze_bn_stats: True
+    freeze_bn_weights: False
     interpolate_branches: false
     increased_channel_count: false
   backbone_output_channels: 32
@@ -71,10 +74,12 @@ model:
       type: HeatmapHead
       predictor:
         type: HeatmapPredictor
+        apply_sigmoid: false
+        clip_scores: true
         location_refinement: false
         locref_std: 7.2801
       target_generator:
-        type: HeatmapPlateauGenerator
+        type: HeatmapGaussianGenerator
         num_heatmaps: "num_bodyparts"
         pos_dist_thresh: 17
         heatmap_mode: KEYPOINT
@@ -82,11 +87,8 @@ model:
         locref_std: 7.2801
       criterion:
         heatmap:
-          type: WeightedBCECriterion
+          type: WeightedMSECriterion
           weight: 1.0
-        locref:
-          type: WeightedHuberCriterion
-          weight: 0
       heatmap_config:
         channels: [32, "num_bodyparts"]
         kernel_size: [1]
@@ -99,7 +101,7 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 0.0001
+      lr: 1e-5
   scheduler:
     type: LRListScheduler
     params:

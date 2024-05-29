@@ -24,7 +24,15 @@ from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 from napari_deeplabcut import misc
-from PySide6.QtWidgets import QMessageBox, QMenu, QWidget, QMainWindow
+from PySide6.QtWidgets import (
+    QMessageBox,
+    QMenu,
+    QWidget,
+    QMainWindow,
+    QComboBox,
+    QLabel,
+    QSizePolicy,
+)
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction
 from PySide6 import QtWidgets, QtGui
@@ -68,6 +76,7 @@ class MainWindow(QMainWindow):
     config_loaded = QtCore.Signal()
     video_type_ = QtCore.Signal(str)
     video_files_ = QtCore.Signal(set)
+    engine_change = QtCore.Signal(Engine)
 
     def __init__(self, app):
         super(MainWindow, self).__init__()
@@ -98,6 +107,8 @@ class MainWindow(QMainWindow):
         self.load_settings()
         self._toolbar = None
         self.create_toolbar()
+
+        self._engine = Engine.PYTORCH
 
         # Thread-safe Stdout redirector
         self.writer = StreamWriter()
@@ -153,8 +164,16 @@ class MainWindow(QMainWindow):
         return cfg
 
     @property
-    def project_engine(self) -> Engine:
-        return compat.get_project_engine(self.cfg)
+    def engine(self) -> Engine:
+        return self._engine
+
+    @engine.setter
+    def engine(self, e: Engine) -> None:
+        if self._engine == e:
+            return
+
+        self._engine = e
+        self.engine_change.emit(e)
 
     @property
     def project_folder(self) -> str:
@@ -187,7 +206,6 @@ class MainWindow(QMainWindow):
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
-                    engine=self.project_engine,
                 )[0]
             )
         except FileNotFoundError:
@@ -396,6 +414,32 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.openAction)
         self.toolbar.addAction(self.helpAction)
 
+        size_policy = QSizePolicy()  # QtWidgets.QSizePolicy.Policy.Expanding
+        size_policy.setHorizontalPolicy(QSizePolicy.Policy.Expanding)
+        spacer = QLabel()
+        spacer.setSizePolicy(size_policy)
+        spacer.setStyleSheet("background: transparent;")
+
+        engine_label = QLabel()
+        engine_label.autoFillBackground()
+        engine_label.setText("Engine")
+        engine_label.setStyleSheet("background: transparent;")
+
+        engines = [engine for engine in Engine]
+
+        def _update_engine(index: int) -> None:
+            self.logger.info(f"Changed engine to {engines[index]}")
+            self.engine = engines[index]
+
+        change_engine_widget = QComboBox()
+        change_engine_widget.addItems([e.aliases[0] for e in engines])
+        change_engine_widget.setFixedWidth(180)
+        change_engine_widget.currentIndexChanged.connect(_update_engine)
+
+        self.toolbar.addWidget(spacer)
+        self.toolbar.addWidget(engine_label)
+        self.toolbar.addWidget(change_engine_widget)
+
     def remove_action(self):
         self.toolbar.removeAction(self.newAction)
         self.toolbar.removeAction(self.openAction)
@@ -497,7 +541,6 @@ class MainWindow(QMainWindow):
             root=self,
             parent=None,
             h1_description="DeepLabCut - Train network",
-            engine=self.project_engine,
         )
         self.evaluate_network = EvaluateNetwork(
             root=self,

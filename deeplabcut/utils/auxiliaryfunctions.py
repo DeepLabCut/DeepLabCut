@@ -32,7 +32,6 @@ from ruamel.yaml import YAML
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
@@ -96,6 +95,9 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
     else:
         yaml_str = """\
@@ -149,6 +151,9 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
 
     ruamelFile = YAML()
@@ -663,6 +668,7 @@ def get_scorer_name(
     Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
     if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),

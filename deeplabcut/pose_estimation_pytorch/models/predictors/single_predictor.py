@@ -36,17 +36,21 @@ class HeatmapPredictor(BasePredictor):
     def __init__(
         self,
         apply_sigmoid: bool = True,
+        clip_scores: bool = False,
         location_refinement: bool = True,
         locref_std: float = 7.2801,
     ):
         """
         Args:
             apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
+            clip_scores: If a sigmoid is not applied, this can be used to clip scores
+                for predicted keypoints to values in [0, 1].
             location_refinement : Enable location refinement.
             locref_std: Standard deviation for location refinement.
         """
         super().__init__()
         self.apply_sigmoid = apply_sigmoid
+        self.clip_scores = clip_scores
         self.sigmoid = torch.nn.Sigmoid()
         self.location_refinement = location_refinement
         self.locref_std = locref_std
@@ -88,9 +92,11 @@ class HeatmapPredictor(BasePredictor):
             )
             locrefs = locrefs * self.locref_std
 
-        poses = self.get_pose_prediction(
-            heatmaps, locrefs, scale_factors
-        )
+        poses = self.get_pose_prediction(heatmaps, locrefs, scale_factors)
+
+        if self.clip_scores:
+            poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
+
         return {"poses": poses}
 
     def get_top_values(

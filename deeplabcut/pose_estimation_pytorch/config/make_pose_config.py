@@ -22,6 +22,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -30,6 +31,7 @@ def make_pytorch_pose_config(
     pose_config_path: str,
     net_type: str | None = None,
     top_down: bool = False,
+    weight_init: WeightInitialization | None = None,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -57,6 +59,8 @@ def make_pytorch_pose_config(
             by associating a detector to the pose model. Required for multi-animal
             projects when net_type is a backbone (as a backbone + heatmap head can only
             predict pose for single individuals).
+        weight_init: Specify how model weights should be initialized. If None, ImageNet
+            pretrained weights from Timm will be loaded when training.
 
     Returns:
         the PyTorch pose configuration file
@@ -117,6 +121,10 @@ def make_pytorch_pose_config(
 
     # add the model to the config
     pose_config = update_config(pose_config, model_cfg)
+
+    # set the dataset from which to load weights
+    if weight_init is not None:
+        pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:

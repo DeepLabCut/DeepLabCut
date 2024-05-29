@@ -46,5 +46,4 @@ train_settings:
   dataloader_pin_memory: true
   display_iters: 500
   epochs: 200
-  pretrained_weights: null
   seed: 42

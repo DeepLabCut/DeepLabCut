@@ -110,11 +110,16 @@ def get_model_snapshots(
         snapshots = snapshot_manager.snapshots(include_best=True)
     elif isinstance(index, int):
         all_snapshots = snapshot_manager.snapshots(include_best=True)
-        if len(all_snapshots) <= index:
+        if (
+            len(all_snapshots) == 0
+            or len(all_snapshots) <= index
+            or (index < 0 and len(all_snapshots) < -index)
+        ):
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
-                f"{names}). Could not return snapshot with index {index}. "
+                f"{names}) with prefix {snapshot_manager.task.snapshot_prefix}. Could "
+                f"not return snapshot with index {index}."
             )
 
         snapshots = [all_snapshots[index]]
@@ -168,7 +173,7 @@ def get_scorer_name(
     Returns:
         the scorer name
     """
-    model_dir = auxiliaryfunctions.get_model_folder(
+    model_dir = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
         train_fraction,
         shuffle,
         cfg,
@@ -390,7 +395,7 @@ def get_inference_runners(
 
     pose_runner = build_inference_runner(
         task=pose_task,
-        model=PoseModel.build(model_config["model"], no_pretrained_backbone=True),
+        model=PoseModel.build(model_config["model"]),
         device=device,
         snapshot_path=snapshot_path,
         preprocessor=pose_preprocessor,
