@@ -260,7 +260,10 @@ class DLCLoader(Loader):
         
         predictions = {}
         for idx in dlc_preds.index.unique():
-            img_path = pred_path.parent.parent / Path(*idx)
+            if type(idx) == tuple:
+                img_path = pred_path.parent.parent / Path(*idx)
+            else:
+                img_path = pred_path.parent.parent / Path(idx)
             keypoints = dlc_preds.loc[idx].values.reshape(-1,len(parameters.bodyparts),3)[:,:,:2]
             keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
             predictions[str(img_path)] = keypoints

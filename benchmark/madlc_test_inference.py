@@ -222,8 +222,8 @@ def main(
 
 if __name__ == "__main__":
 
-    #bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_DLCRNet_ms4_30k.h5'
-    bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_EfficientNet_B7_s4_30k.h5'
+    bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_DLCRNet_ms4_30k.h5'
+    #bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_EfficientNet_B7_s4_30k.h5'
     #bu_preds = '/home/lucas/datasets/benchmark_chkpts/fish/DLC_ResNet50_s4_30k.h5'
 
     main(
@@ -231,7 +231,7 @@ if __name__ == "__main__":
             #project=MA_DLC_BENCHMARKS["trimouse"],
             project=MA_DLC_BENCHMARKS["fish"],
             #index=0,
-            index=41,
+            index=72,
             #train_fraction=0.95,
             train_fraction=0.94,
         ),

@@ -178,4 +178,13 @@ class PoseModel(nn.Module):
             head_cfg["predictor"] = PREDICTORS.build(head_cfg["predictor"])
             heads[name] = HEADS.build(head_cfg)
 
-        return PoseModel(cfg=cfg, backbone=backbone, neck=neck, heads=heads)
+        model = PoseModel(cfg=cfg, backbone=backbone, neck=neck, heads=heads)
+
+        # let's try init the head with normal init as done in hrnet
+        for name, module in model.heads.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(module, 0)
+            else:
+                nn.init.normal_(module, std=0.001)
+
+        return model

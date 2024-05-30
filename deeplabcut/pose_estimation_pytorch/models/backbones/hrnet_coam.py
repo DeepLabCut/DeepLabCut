@@ -179,6 +179,7 @@ class HRNetCoAM(HRNet):
         y = self.stages(x, cond_hm)
 
         if self.model.incre_modules is not None:
+            raise NotImplementedError("Incremental HRNet modules not supported for HRNetCoAM")
             x = [incre(f) for f, incre in zip(x, self.model.incre_modules)]
 
         return self.prepare_output(y)

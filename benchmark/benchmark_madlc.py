@@ -47,31 +47,38 @@ if __name__ == "__main__":
         # )
         AUG_TRAIN_TD = ImageAugmentations(
             normalize=True,
-            covering=True,
+            #covering=True,
+            covering=False,
             gaussian_noise=12.75,
-            hist_eq=True,
-            motion_blur=True,
+            #hist_eq=True,
+            hist_eq=False,
+            #motion_blur=True,
+            motion_blur=False,
             hflip=False,
             #hflip=True,
             affine=AffineAugmentation(
-                #p=0.5,
-                p=0.9,
+                p=0.5,
+                #p=0.9,
                 rotation=30,
                 #scale=(0.5, 1.25),
-                scale=(0.75, 1.25),
+                scale=(1.0, 1.0),
                 #translation=1,
-                translation=40,
+                translation=0,
             ),
             collate=None,
         )
 
+        HRNET_VERSION = "w32"
+        #HRNET_VERSION = "w48"
+
         DEFAULT_OPTIMIZER = {"type": "AdamW", "params": {"lr": 5e-4}}
+        #DEFAULT_OPTIMIZER = {"type": "Adam", "params": {"lr": 1e-3}}
         DEFAULT_SCHEDULER["params"] = {"lr_list": [[1e-4], [1e-5]], "milestones": [170, 200]}
 
         EPOCHS = 210
         SAVE_EPOCHS = 30
-        DEKR_BATCH_SIZE = 8
-        TD_HRNET_BATCH_SIZE = 8
+        #DEKR_BATCH_SIZE = 8
+        #TD_HRNET_BATCH_SIZE = 8
         CTD_HRNET_BATCH_SIZE = 32
 
         # logging params
@@ -131,7 +138,7 @@ if __name__ == "__main__":
             #     ),
             # ),
             ModelConfig(
-                net_type="ctd_coam_w32",
+                net_type=f"ctd_coam_{HRNET_VERSION}",
                 batch_size=CTD_HRNET_BATCH_SIZE,
                 epochs=EPOCHS,
                 save_epochs=SAVE_EPOCHS,
@@ -146,9 +153,9 @@ if __name__ == "__main__":
                 scheduler_config=DEFAULT_SCHEDULER,
                 wandb_config=WandBConfig(
                     project=WANDB_PROJECT,
-                    run_name=f"{PROJECT_NAME}-{GROUP_UID}-ctd-hrnet32",
-                    group=f"{PROJECT_NAME}-{GROUP_UID}-ctd-hrnet32",
-                    tags=(*BASE_TAGS, "arch=ctd-hrnet32"),
+                    run_name=f"{PROJECT_NAME}-{GROUP_UID}-ctd-hrnet{HRNET_VERSION}",
+                    group=f"{PROJECT_NAME}-{GROUP_UID}-ctd-hrnet{HRNET_VERSION}",
+                    tags=(*BASE_TAGS, f"arch=ctd-hrnet{HRNET_VERSION}"),
                 ),
             ),
         ]
@@ -160,10 +167,7 @@ if __name__ == "__main__":
             train_fraction=TRAIN_FRACTION,
             models_to_train=[model_configs[0]],
             splits_to_train=(0, ),
-            train=False,
+            train=True,
             evaluate=True,
-            #manual_shuffle_index=41 # fish
-            #manual_shuffle_index=52 # buctd-fish
-            #manual_shuffle_index=114 # marmoset
             manual_shuffle_index=None,
         )

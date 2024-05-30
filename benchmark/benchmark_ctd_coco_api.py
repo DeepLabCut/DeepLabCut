@@ -311,8 +311,10 @@ def main():
     dlc_root_dir = Path("/home/lucas/datasets/")
     root_gt = dlc_root_dir / "ground_truth_test"
 
-    bu_model = Path('DLC_EfficientNet_B7_s4_30k.h5')
-    shuffle_ix = 41
+    bu_model = Path('DLC_DLCRNet_ms4_30k.h5')
+    #bu_model = Path('DLC_EfficientNet_B7_s4_30k.h5')
+    #bu_model = Path('DLC_ResNet50_s4_30k.h5')
+    shuffle_ix = 72
     root_preds = Path(f"/home/lucas/datasets/test-images/fish-dlc-2021-05-07/evaluation-results/iteration-30/fishMay7-trainset94shuffle{shuffle_ix}/benchmark/{bu_model.stem}")
 
     predictions = {"BU_model": dlc_root_dir / "benchmark_chkpts/fish" / bu_model,

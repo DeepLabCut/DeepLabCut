@@ -17,6 +17,8 @@ model:
     type: HRNetCoAM
     base_model_name: hrnet_w32
     pretrained: true
+    freeze_bn_stats: false
+    freeze_bn_weights: false
     coam_modules: [2,]
     channel_att_only: false
     att_heads: 1
@@ -30,6 +32,8 @@ model:
       type: HeatmapHead
       predictor:
         type: HeatmapPredictor
+        apply_sigmoid: false
+        #clip_scores: true
         location_refinement: false
       target_generator:
         type: HeatmapGaussianGenerator
@@ -39,7 +43,7 @@ model:
         generate_locref: false
       criterion:
         heatmap:
-          type: WeightedBCECriterion
+          type: WeightedMSECriterion
           weight: 1.0
       heatmap_config:
         channels:
