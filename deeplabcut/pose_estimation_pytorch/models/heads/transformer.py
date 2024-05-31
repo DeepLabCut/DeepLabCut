@@ -38,6 +38,7 @@ class TransformerHead(BaseHead):
         apply_multi: bool,
         heatmap_size: tuple[int, int],
         apply_init: bool,
+        head_stride: int,
     ):
         """
         Args:
@@ -50,8 +51,15 @@ class TransformerHead(BaseHead):
             heatmap_size: Tuple (height, width) representing the size of the output
                 heatmaps.
             apply_init: If True, apply weight initialization to the module's layers.
+            head_stride: The stride for the head (or neck + head pair), where positive
+                values indicate an increase in resolution while negative values a
+                decrease. Assuming that H and W are divisible by head_stride, this is
+                the value such that if a backbone outputs an encoding of shape
+                (C, H, W), the head will output heatmaps of shape:
+                    (C, H * head_stride, W * head_stride)    if head_stride > 0
+                    (C, -H/head_stride, -W/head_stride)      if head_stride < 0
         """
-        super().__init__(predictor, target_generator, criterion)
+        super().__init__(head_stride, predictor, target_generator, criterion)
         self.mlp_head = (
             nn.Sequential(
                 nn.LayerNorm(dim * 3),

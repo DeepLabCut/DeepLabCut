@@ -106,8 +106,10 @@ class ImageLoggerMixin(ABC):
 
         for i in range(epochs):
             for batch_inputs in train_loader:
+                batch_labels = batch_data["annotations"]
+                batch_inputs = batch_data["image"]
                 batch_outputs = model(batch_inputs)
-                batch_targets = model.get_targets(batch_inputs, batch_outputs)
+                batch_targets = model.get_target(batch_outputs, batch_labels)
                 loss = criterion(batch_targets, batch_outputs)
                 loss.backwards()
                 optim.step()

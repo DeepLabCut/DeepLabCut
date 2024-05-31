@@ -52,11 +52,10 @@ class PartAffinityFieldGenerator(BaseGenerator):
         self.num_limbs = len(graph)
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
-        batch_size, _, input_h, input_w = inputs.shape
-        height, width = outputs["heatmap"].shape[2:]
-        stride_y, stride_x = input_h / height, input_w / width
+        stride_y, stride_x = stride, stride
+        batch_size, _, height, width = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
 
         partaffinityfield_map = np.zeros(

@@ -57,6 +57,11 @@ class PoseModel(nn.Module):
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
 
+        self._strides = {
+            name: _model_stride(self.backbone.stride, head.stride)
+            for name, head in heads.items()
+        }
+
     def forward(self, x: torch.Tensor) -> dict[str, dict[str, torch.Tensor]]:
         """
         Forward pass of the PoseModel.
@@ -97,7 +102,6 @@ class PoseModel(nn.Module):
 
     def get_target(
         self,
-        inputs: torch.Tensor,
         outputs: dict[str, dict[str, torch.Tensor]],
         labels: dict,
     ) -> dict[str, dict]:
@@ -105,7 +109,6 @@ class PoseModel(nn.Module):
         Get targets for model training.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
             outputs: output of each head group
             labels: dictionary of labels
 
@@ -113,25 +116,22 @@ class PoseModel(nn.Module):
             targets: dict of the targets for each model head group
         """
         return {
-            name: head.target_generator(inputs, outputs[name], labels)
+            name: head.target_generator(self._strides[name], outputs[name], labels)
             for name, head in self.heads.items()
         }
 
-    def get_predictions(
-        self, inputs: torch.Tensor, outputs: dict[str, dict[str, torch.Tensor]]
-    ) -> dict:
+    def get_predictions(self, outputs: dict[str, dict[str, torch.Tensor]]) -> dict:
         """Abstract method for the forward pass of the Predictor.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
             outputs: outputs of the model heads
 
         Returns:
             A dictionary containing the predictions of each head group
         """
         return {
-            head_name: head.predictor(inputs, outputs[head_name])
-            for head_name, head in self.heads.items()
+            name: head.predictor(self._strides[name], outputs[name])
+            for name, head in self.heads.items()
         }
 
     @staticmethod
@@ -248,3 +248,11 @@ def filter_state_dict(state_dict: dict, module: str) -> dict[str, torch.Tensor]:
         for k, v in state_dict.items()
         if k.startswith(module)
     }
+
+
+def _model_stride(backbone_stride: int | float, head_stride: int | float) -> float:
+    """Computes the model stride from a backbone and a head"""
+    if head_stride > 0:
+        return backbone_stride / head_stride
+
+    return backbone_stride * -head_stride

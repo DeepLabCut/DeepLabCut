@@ -141,7 +141,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             batch_inputs = inputs[i : i + batch_size]
             batch_inputs = batch_inputs.to(self.device)
             batch_outputs = self.model(batch_inputs)
-            raw_predictions = self.model.get_predictions(batch_inputs, batch_outputs)
+            raw_predictions = self.model.get_predictions(batch_outputs)
 
             for b in range(batch_size):
                 image_predictions = {}

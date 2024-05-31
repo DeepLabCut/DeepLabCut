@@ -56,12 +56,12 @@ class HeatmapPredictor(BasePredictor):
         self.locref_std = locref_std
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
+        self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: output of the model heads (heatmap, locref)
 
         Returns:
@@ -74,9 +74,7 @@ class HeatmapPredictor(BasePredictor):
             >>> poses = predictor.forward(inputs, output)
         """
         heatmaps = outputs["heatmap"]
-        h_in, w_in = inputs.shape[2:]
-        h_out, w_out = heatmaps.shape[2:]
-        scale_factors = h_in / h_out, w_in / w_out
+        scale_factors = stride, stride
 
         if self.apply_sigmoid:
             heatmaps = self.sigmoid(heatmaps)

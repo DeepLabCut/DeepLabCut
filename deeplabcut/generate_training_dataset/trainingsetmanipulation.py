@@ -935,6 +935,7 @@ def create_training_dataset(
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
+            userfeedback=userfeedback,
             engine=engine,
         )
     else:

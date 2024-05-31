@@ -111,7 +111,7 @@ def compute_within_between_paf_costs(
     with torch.no_grad():
         for batch in tqdm(dataloader):
             inputs = batch["image"].to(device)
-            preds = model.get_predictions(inputs, model(inputs))["bodypart"]
+            preds = model.get_predictions(model(inputs))["bodypart"]
 
             for coords_gt, preds_ in zip(
                 batch["annotations"]["keypoints"], preds["preds"]
@@ -180,7 +180,7 @@ def benchmark_paf_graphs(
                 paths.extend(batch["path"])
                 inputs = batch["image"].to(device)
                 # FIXME We can do better than the repetition below
-                preds = model.get_predictions(inputs, model(inputs))["bodypart"]
+                preds = model.get_predictions(model(inputs))["bodypart"]
                 poses_.extend(preds["poses"])
         poses_ = torch.stack(poses_).detach().cpu().numpy()
         poses_ = dict(zip(paths, poses_))

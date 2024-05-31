@@ -45,8 +45,9 @@ class DEKRHead(BaseHead):
         aggregator: BaseLossAggregator,
         heatmap_config: dict,
         offset_config: dict,
+        stride: int | float = 1,  # the stride for the head - should always be 1 for DEKR
     ) -> None:
-        super().__init__(predictor, target_generator, criterion, aggregator)
+        super().__init__(stride, predictor, target_generator, criterion, aggregator)
         self.heatmap_head = DEKRHeatmap(**heatmap_config)
         self.offset_head = DEKROffset(**offset_config)
 

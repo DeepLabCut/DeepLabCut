@@ -48,7 +48,7 @@ class ResNet(BaseBackbone):
             drop_block_rate: Drop block rate
             kwargs: BaseBackbone kwargs
         """
-        super().__init__(**kwargs)
+        super().__init__(stride=output_stride, **kwargs)
         self.model = timm.create_model(
             model_name,
             output_stride=output_stride,

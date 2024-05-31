@@ -90,14 +90,14 @@ class HeatmapGenerator(BaseGenerator):
         self.locref_scale = 1.0 / locref_std
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: output of each model head
             labels: the labels for the inputs (each tensor should have shape (b, ...))
 
@@ -122,9 +122,8 @@ class HeatmapGenerator(BaseGenerator):
             output:
                 targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
         """
-        batch_size, _, input_h, input_w = inputs.shape
-        height, width = outputs["heatmap"].shape[2:]
-        stride_y, stride_x = input_h / height, input_w / width
+        stride_y, stride_x = stride, stride
+        batch_size, _, height, width = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
         if len(coords.shape) == 3:  # for single animal: add individual dimension
             coords = coords.reshape((batch_size, 1, *coords.shape[1:]))

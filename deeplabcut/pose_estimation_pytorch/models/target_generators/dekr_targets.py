@@ -46,13 +46,13 @@ class DEKRGenerator(BaseGenerator):
         self.bg_weight = bg_weight
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: output of each model head
             labels: the labels for the inputs (each tensor should have shape (b, ...))
 
@@ -80,10 +80,8 @@ class DEKRGenerator(BaseGenerator):
                     "offset": {"target": offset_map, "weights": offset_masks}
                 }
         """
-        batch_size, _, input_h, input_w = inputs.shape
-        output_h, output_w = outputs["heatmap"].shape[2:]
-        stride_y, stride_x = input_h / output_h, input_w / output_w
-
+        stride_y, stride_x = stride, stride
+        batch_size, _, output_h, output_w = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
         area = labels["area"].cpu().numpy()
 

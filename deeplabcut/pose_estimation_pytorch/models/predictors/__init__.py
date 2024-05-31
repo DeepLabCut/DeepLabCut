@@ -15,15 +15,9 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 from deeplabcut.pose_estimation_pytorch.models.predictors.dekr_predictor import (
     DEKRPredictor,
 )
-from deeplabcut.pose_estimation_pytorch.models.predictors.identity_predictor import (
-    IdentityPredictor,
-)
 from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import (
     PartAffinityFieldPredictor,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors.single_predictor import (
     HeatmapPredictor,
-)
-from deeplabcut.pose_estimation_pytorch.models.predictors.top_down_prediction import (
-    TopDownPredictor,
 )

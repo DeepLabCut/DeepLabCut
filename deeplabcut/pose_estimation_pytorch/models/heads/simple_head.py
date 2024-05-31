@@ -42,11 +42,25 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
         heatmap_config: dict,
         locref_config: dict | None = None,
     ) -> None:
-        super().__init__(predictor, target_generator, criterion, aggregator)
-        self.heatmap_head = DeconvModule(**heatmap_config)
-        self.locref_head = None
+        heatmap_head = DeconvModule(**heatmap_config)
+        locref_head = None
         if locref_config is not None:
-            self.locref_head = DeconvModule(**locref_config)
+            locref_head = DeconvModule(**locref_config)
+
+            # check that the heatmap and locref modules have the same stride
+            if heatmap_head.stride != locref_head.stride:
+                raise ValueError(
+                    f"Invalid model config: Your heatmap and locref need to have the "
+                    f"same stride (found {heatmap_head.stride}, "
+                    f"{locref_head.stride}). Please check your config (found "
+                    f"heatmap_config={heatmap_config}, locref_config={locref_config}"
+                )
+
+        super().__init__(
+            heatmap_head.stride, predictor, target_generator, criterion, aggregator
+        )
+        self.heatmap_head = heatmap_head
+        self.locref_head = locref_head
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         outputs = {"heatmap": self.heatmap_head(x)}
@@ -111,12 +125,16 @@ class DeconvModule(nn.Module):
             )
 
         in_channels = channels[0]
+        head_stride = 1
         self.deconv_layers = nn.Identity()
         if len(kernel_size) > 0:
             self.deconv_layers = nn.Sequential(
                 *self._make_layers(in_channels, channels[1:], kernel_size, strides)
             )
+            for s in strides:
+                head_stride *= s
 
+        self.stride = head_stride
         self.final_conv = nn.Identity()
         if final_conv:
             self.final_conv = nn.Conv2d(

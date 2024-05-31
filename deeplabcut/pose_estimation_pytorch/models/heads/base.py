@@ -30,6 +30,13 @@ class BaseHead(ABC, nn.Module):
     """A head for pose estimation models
 
     Attributes:
+        stride: The stride for the head (or neck + head pair), where positive values
+            indicate an increase in resolution while negative values a decrease.
+            Assuming that H and W are divisible by `stride`, this is the value such
+            that if a backbone outputs an encoding of shape (C, H, W), the head will
+            output heatmaps of shape:
+                (C, H * stride, W * stride)       if stride > 0
+                (C, -H/stride, -W/stride)         if stride < 0
         predictor: an object to generate predictions from the head outputs
         target_generator: a target generator which must output a target for each
             output key of this module (i.e. if forward returns a "heatmap" tensor and
@@ -43,12 +50,17 @@ class BaseHead(ABC, nn.Module):
 
     def __init__(
         self,
+        stride: int | float,
         predictor: BasePredictor,
         target_generator: BaseGenerator,
         criterion: dict[str, BaseCriterion] | BaseCriterion,
         aggregator: BaseLossAggregator | None = None,
     ) -> None:
         super().__init__()
+        if stride == 0:
+            raise ValueError(f"Stride must not be 0. Found {stride}.")
+
+        self.stride = stride
         self.predictor = predictor
         self.target_generator = target_generator
         self.criterion = criterion

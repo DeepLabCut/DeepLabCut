@@ -30,6 +30,7 @@ class HRNet(BaseBackbone):
     The model outputs 4 branches, with strides 4, 8, 16 and 32.
 
     Args:
+        stride: The stride of the HRNet. Should always be 4, except for custom models.
         model_name: Any HRNet variant available through timm (e.g., 'hrnet_w32',
             'hrnet_w48'). See timm for more options.
         pretrained: If True, loads the backbone with ImageNet pretrained weights from
@@ -48,13 +49,14 @@ class HRNet(BaseBackbone):
 
     def __init__(
         self,
+        stride: int = 4,
         model_name: str = "hrnet_w32",
         pretrained: bool = False,
         interpolate_branches: bool = False,
         increased_channel_count: bool = False,
         **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(stride=stride, **kwargs)
         self.model = _load_hrnet(model_name, pretrained, increased_channel_count)
         self.interpolate_branches = interpolate_branches
 

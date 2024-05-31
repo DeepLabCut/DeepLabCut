@@ -28,7 +28,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGene
 
 @HEADS.register_module
 class DLCRNetHead(HeatmapHead):
-    """ """
+    """A head for DLCRNet models using Part-Affinity Fields to predict individuals"""
 
     def __init__(
         self,

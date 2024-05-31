@@ -287,7 +287,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         inputs = inputs.to(self.device)
         outputs = self.model(inputs)
 
-        target = self.model.get_target(inputs, outputs, batch["annotations"])
+        target = self.model.get_target(outputs, batch["annotations"])
         losses_dict = self.model.get_loss(outputs, target)
         if mode == "train":
             losses_dict["total_loss"].backward()
@@ -299,7 +299,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         if mode == "eval":
             predictions = {
                 name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
-                for name, pred in self.model.get_predictions(inputs, outputs).items()
+                for name, pred in self.model.get_predictions(outputs).items()
             }
 
             ground_truth = batch["annotations"]["keypoints"]
@@ -452,9 +452,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        target = self.model.get_target(
-            batch["annotations"]
-        )  # (batch_size, channels, h, w)
+        target = self.model.get_target(batch["annotations"])
         for item in target:  # target is a list here
             for key in item:
                 if item[key] is not None:
