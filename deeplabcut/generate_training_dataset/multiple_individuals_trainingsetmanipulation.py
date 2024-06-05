@@ -200,7 +200,7 @@ def create_multianimaltraining_dataset(
     # Create path for training sets & store data there
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     full_training_path = Path(project_path, trainingsetfolder)
-    auxiliaryfunctions.attempttomakefolder(full_training_path, recursive=True)
+    auxiliaryfunctions.attempt_to_make_folder(full_training_path, recursive=True)
 
     Data = merge_annotateddatasets(cfg, full_training_path)
     if Data is None:
@@ -272,8 +272,8 @@ def create_multianimaltraining_dataset(
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
-    model_path, num_shuffles = auxfun_models.check_for_weights(
-        net_type, Path(dlcparent_path), num_shuffles
+    model_path = auxfun_models.check_for_weights(
+        net_type, Path(dlcparent_path)
     )
 
     if Shuffles is None:
@@ -363,13 +363,13 @@ def create_multianimaltraining_dataset(
             modelfoldername = auxiliaryfunctions.get_model_folder(
                 trainFraction, shuffle, cfg
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 Path(config).parents[0] / modelfoldername, recursive=True
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 str(Path(config).parents[0] / modelfoldername / "train")
             )
-            auxiliaryfunctions.attempttomakefolder(
+            auxiliaryfunctions.attempt_to_make_folder(
                 str(Path(config).parents[0] / modelfoldername / "test")
             )
 

@@ -57,7 +57,6 @@ class EvaluateNetwork(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_horizontal_layout()
         self._generate_layout_attributes(self.layout_attributes)
@@ -87,6 +86,23 @@ class EvaluateNetwork(DefaultTab):
 
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
+
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(deeplabcut.evaluate_network.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def _generate_layout_attributes(self, layout):
         opt_text = QtWidgets.QLabel("Shuffle")
@@ -123,7 +139,6 @@ class EvaluateNetwork(DefaultTab):
         canvas.show()
 
     def _generate_additional_attributes(self, layout):
-
         tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
         self.plot_predictions = QtWidgets.QCheckBox(
@@ -168,7 +183,6 @@ class EvaluateNetwork(DefaultTab):
             )
 
     def evaluate_network(self):
-
         config = self.root.config
 
         Shuffles = [self.root.shuffle_value]

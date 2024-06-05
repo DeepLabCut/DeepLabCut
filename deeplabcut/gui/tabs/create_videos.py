@@ -36,7 +36,6 @@ class CreateVideos(DefaultTab):
         return self.video_selection_widget.files
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.video_selection_widget)
@@ -71,6 +70,23 @@ class CreateVideos(DefaultTab):
         self.run_button.clicked.connect(self.create_videos)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(deeplabcut.create_labeled_video.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
     def _generate_layout_multianimal(self, layout):
         tmp_text = QtWidgets.QLabel("Color keypoints by:")
         self.color_by_widget = QtWidgets.QComboBox()
@@ -97,7 +113,6 @@ class CreateVideos(DefaultTab):
         layout.addWidget(self.overwrite_videos)
 
     def _generate_layout_video_parameters(self, layout):
-
         tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
         # Trail Points
@@ -233,8 +248,9 @@ class CreateVideos(DefaultTab):
         bodyparts = "all"
         if (
             len(self.bodyparts_to_use) != 0
-            and self.plot_all_bodyparts.checkState() == Qt.Checked
+            and self.plot_all_bodyparts.checkState() != Qt.Checked
         ):
+            self.update_selected_bodyparts()
             bodyparts = self.bodyparts_to_use
 
         videos_created = deeplabcut.create_labeled_video(

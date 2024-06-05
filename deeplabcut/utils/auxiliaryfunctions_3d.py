@@ -215,7 +215,7 @@ def Get_list_of_triangulated_and_videoFiles(
             videofolder = str(Path(filepath[0]).parents[0])
         video_list = get_camerawise_videos(videofolder, cam_names, videotype)
 
-    # Get the filename of the triangulated file excluing the scorer name and remove any '-' or _ from it
+    # Get the filename of the triangulated file excluding the scorer name and remove any '-' or _ from it
     filename = [i.split(string_to_search)[0] for i in triangulated_file_list]
     for i in range(len(filename)):
         if filename[i][-1] == "_" or filename[i][-1] == "-":
@@ -304,7 +304,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
     Parameters:
     -----------
     tracklets1/2: Tracklet() object (defined in stitch.py)
-    F: nd.array
+    F: numpy.ndarray
         Fundamental matrix between cam1 and cam2
     """
     from scipy.optimize import linear_sum_assignment

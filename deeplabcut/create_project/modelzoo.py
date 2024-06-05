@@ -21,7 +21,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     MODELOPTIONS,
 )
 
-Modeloptions = MODELOPTIONS  # backwards compatability for COLAB NOTEBOOK
+Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
@@ -273,7 +273,7 @@ def create_pretrained_project(
         auxiliaryfunctions.edit_config(cfg, dict_)
 
         # downloading base encoder / not required unless on re-trains (but when a training set is created this happens anyway)
-        # model_path, num_shuffles=auxfun_models.Check4weights(pose_cfg['net_type'], parent_path, num_shuffles= 1)
+        # model_path = auxfun_models.check_for_weights(pose_cfg['net_type'], parent_path)
 
         # Updating training and test pose_cfg:
         snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(

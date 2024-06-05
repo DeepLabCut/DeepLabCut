@@ -35,7 +35,6 @@ def calc_correct(anchor, pos, neg):
 
 
 def calc_cos_correct(vec1, gt1, vec2, gt2, threshold=0.5):
-
     cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 
     confidence = cos(vec1, vec2)
@@ -68,7 +67,6 @@ def do_dlc_train(
     total_epochs=300,
     ckpt_folder="",
 ):
-
     log_period = cfg["log_period"]
     checkpoint_period = cfg["checkpoint_period"]
     eval_period = 10
@@ -102,7 +100,6 @@ def do_dlc_train(
         total_n = 0.0
         total_correct = 0.0
         for n_iter, (anchor, pos, neg) in enumerate(train_loader):
-
             optimizer.zero_grad()
 
             anchor = anchor.to(device)
@@ -155,7 +152,6 @@ def do_dlc_train(
         model_name = f"dlc_transreid"
 
         if epoch % checkpoint_period == 0:
-
             torch.save(
                 {
                     "state_dict": model.state_dict(),
@@ -206,7 +202,6 @@ def do_dlc_train(
 
 
 def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
-
     device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
@@ -230,7 +225,6 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
     total_correct = 0.0
     for n_iter, (anchor, pos, neg) in enumerate(val_loader):
         with torch.no_grad():
-
             anchor = anchor.to(device)
             pos = pos.to(device)
             neg = neg.to(device)
@@ -267,7 +261,6 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
 
 
 def do_dlc_pair_inference(cfg, model, val_loader, num_query):
-
     device = default_device(cfg["device"])
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
@@ -289,7 +282,6 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
     total_correct = 0.0
     for n_iter, ((vec1, gt1), (vec2, gt2)) in enumerate(val_loader):
         with torch.no_grad():
-
             gt1 = gt1.to(device)
             gt2 = gt2.to(device)
             vec1 = vec1.to(device)

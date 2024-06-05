@@ -128,8 +128,8 @@ class DragDropListView(QtWidgets.QListView):
 class ItemSelectionFrame(QtWidgets.QFrame):
     def __init__(self, items, parent=None):
         super(ItemSelectionFrame, self).__init__(parent)
-        self.setFrameShape(self.StyledPanel)
-        self.setLineWidth(0.5)
+        self.setFrameShape(self.Shape.StyledPanel)
+        self.setLineWidth(0)
 
         self.select_box = QtWidgets.QCheckBox("Files")
         self.select_box.setChecked(True)
@@ -156,17 +156,21 @@ class ItemSelectionFrame(QtWidgets.QFrame):
     def check_select_box(self):
         state, n_checked = self.fancy_list.state
         if self.select_box.checkState() != state:
+            self.select_box.blockSignals(True)
             self.select_box.setCheckState(state)
+            self.select_box.blockSignals(False)
         string = "file"
         if n_checked > 1:
             string += "s"
         self.select_box.setText(f"{n_checked} {string} selected")
 
     def toggle_select(self, state):
-        if state != QtCore.Qt.PartiallyChecked:
-            for item in self.fancy_list.items:
-                if item.checkState() != state:
-                    item.setCheckState(QtCore.Qt.CheckState(state))
+        state = QtCore.Qt.CheckState(state)
+        if state == QtCore.Qt.PartiallyChecked:
+            return
+        for item in self.fancy_list.items:
+            if item.checkState() != state:
+                item.setCheckState(state)
 
 
 class NavigationToolbar(NavigationToolbar2QT):
@@ -212,8 +216,9 @@ class ClickableLabel(QtWidgets.QLabel):
 
     def __init__(self, text="", color="turquoise", parent=None):
         super(ClickableLabel, self).__init__(text, parent)
-        self.color = color
         self._default_style = self.styleSheet()
+        self.color = color
+        self.setStyleSheet(f"color: {self.color}")
 
     def mouseReleaseEvent(self, event):
         self.signal.emit()
@@ -427,7 +432,7 @@ class DictViewer(QtWidgets.QWidget):
             for key, val in data.items():
                 self.add_row(key, val, tree_widget)
         elif isinstance(data, list):
-            for i, val in enumerate(data, start=1):
+            for i, val in enumerate(data):
                 self.add_row(str(i), val, tree_widget)
         else:
             print("This should never be reached!")
@@ -514,12 +519,10 @@ class FrameCropper(QtWidgets.QDialog):
         self.rs = RectangleSelector(
             self.ax,
             self.line_select_callback,
-            drawtype="box",
             minspanx=5,
             minspany=5,
             interactive=True,
             spancoords="pixels",
-            rectprops=dict(facecolor="red", edgecolor="black", alpha=0.3, fill=True),
         )
         self.show()
         self.fig.canvas.start_event_loop(timeout=-1)

@@ -135,7 +135,12 @@ class Tracklet:
     def identity(self):
         """Return the average predicted identity of all Tracklet detections."""
         try:
-            return mode(self.data[..., 3], axis=None, nan_policy="omit")[0][0]
+            return mode(
+                self.data[..., 3],
+                axis=None,
+                nan_policy="omit",
+                keepdims=False,
+            )[0]
         except IndexError:
             return -1
 
@@ -217,13 +222,13 @@ class Tracklet:
         else:
             raise ValueError(f"Unknown where={where}")
         if norm:
-            return np.sqrt(np.sum(vel**2, axis=1)).mean()
+            return np.sqrt(np.sum(vel ** 2, axis=1)).mean()
         return vel.mean(axis=0)
 
     @property
     def maximal_velocity(self):
         vel = np.diff(self.centroid, axis=0) / np.diff(self.inds)[:, np.newaxis]
-        return np.sqrt(np.max(np.sum(vel**2, axis=1)))
+        return np.sqrt(np.max(np.sum(vel ** 2, axis=1)))
 
     def calc_rate_of_turn(self, where="head"):
         """
@@ -262,7 +267,7 @@ class Tracklet:
                 self.centroid[np.isin(self.inds, other_tracklet.inds)]
                 - other_tracklet.centroid[np.isin(other_tracklet.inds, self.inds)]
             )
-            return np.sqrt(np.sum(dist**2, axis=1)).mean()
+            return np.sqrt(np.sum(dist ** 2, axis=1)).mean()
         elif self < other_tracklet:
             return np.sqrt(
                 np.sum((self.centroid[-1] - other_tracklet.centroid[0]) ** 2)
@@ -295,7 +300,7 @@ class Tracklet:
                 d2 = self.centroid[0] - time_gap * self.calc_velocity("tail", False)
                 delta1 = self.centroid[0] - d1
                 delta2 = other_tracklet.centroid[-1] - d2
-            return (np.sqrt(np.sum(delta1**2)) + np.sqrt(np.sum(delta2**2))) / 2
+            return (np.sqrt(np.sum(delta1 ** 2)) + np.sqrt(np.sum(delta2 ** 2))) / 2
         return 0
 
     def time_gap_to(self, other_tracklet):
@@ -412,7 +417,7 @@ class Tracklet:
         # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
         _, s, _ = sli.svd(mat, min(10, min(mat.shape)))
         # return np.argmin(s > omega * np.median(s))
-        eigen = s**2
+        eigen = s ** 2
         diff = np.abs(np.diff(eigen / eigen[0]))
         return np.argmin(diff > tol)
 
@@ -601,6 +606,9 @@ class TrackletStitcher:
         return max_gap
 
     def mine(self, n_samples):
+        if not self._lu_overlap:
+            raise ValueError("No overlapping tracklets found.")
+
         p = np.asarray([t.likelihood for t in self])
         p /= p.sum()
         triplets = []
@@ -723,40 +731,41 @@ class TrackletStitcher:
                 for node in self.G
                 if node not in ("source", "sink")
             )
-            if (
-                incomplete_tracks == 1
-            ):  # All remaining nodes must belong to the same track
-                # Verify whether there are overlapping tracklets
-                for t1, t2 in combinations(remaining_nodes, 2):
-                    if t1 in t2:
-                        # Pick the segment that minimizes "smoothness", computed here
-                        # with the coefficient of variation of the differences.
-                        if t1 in remaining_nodes:
-                            remaining_nodes.remove(t1)
-                        if t2 in remaining_nodes:
-                            remaining_nodes.remove(t2)
-                        track = sum(remaining_nodes)
-                        hyp1 = track + t1
-                        hyp2 = track + t2
-                        dx1 = np.diff(hyp1.centroid, axis=0)
-                        cv1 = dx1.std() / np.abs(dx1).mean()
-                        dx2 = np.diff(hyp2.centroid, axis=0)
-                        cv2 = dx2.std() / np.abs(dx2).mean()
-                        if cv1 < cv2:
-                            remaining_nodes.add(t1)
-                            self.residuals.append(t2)
-                        else:
-                            remaining_nodes.add(t2)
-                            self.residuals.append(t1)
-                paths.append(list(remaining_nodes))
-            elif incomplete_tracks > 1:
-                # Rebuild a full graph from the remaining nodes without
-                # temporal constraint on what tracklets can be stitched together.
-                self.build_graph(list(remaining_nodes), max_gap=np.inf)
-                self.G.nodes["source"]["demand"] = -incomplete_tracks
-                self.G.nodes["sink"]["demand"] = incomplete_tracks
-                _, self.flow = nx.capacity_scaling(self.G)
-                paths += self.reconstruct_paths()
+            if len(remaining_nodes) > 0:
+                if (
+                    incomplete_tracks == 1
+                ):  # All remaining nodes must belong to the same track
+                    # Verify whether there are overlapping tracklets
+                    for t1, t2 in combinations(remaining_nodes, 2):
+                        if t1 in t2:
+                            # Pick the segment that minimizes "smoothness", computed here
+                            # with the coefficient of variation of the differences.
+                            if t1 in remaining_nodes:
+                                remaining_nodes.remove(t1)
+                            if t2 in remaining_nodes:
+                                remaining_nodes.remove(t2)
+                            track = sum(remaining_nodes)
+                            hyp1 = track + t1
+                            hyp2 = track + t2
+                            dx1 = np.diff(hyp1.centroid, axis=0)
+                            cv1 = dx1.std() / np.abs(dx1).mean()
+                            dx2 = np.diff(hyp2.centroid, axis=0)
+                            cv2 = dx2.std() / np.abs(dx2).mean()
+                            if cv1 < cv2:
+                                remaining_nodes.add(t1)
+                                self.residuals.append(t2)
+                            else:
+                                remaining_nodes.add(t2)
+                                self.residuals.append(t1)
+                    paths.append(list(remaining_nodes))
+                elif incomplete_tracks > 1:
+                    # Rebuild a full graph from the remaining nodes without
+                    # temporal constraint on what tracklets can be stitched together.
+                    self.build_graph(list(remaining_nodes), max_gap=np.inf)
+                    self.G.nodes["source"]["demand"] = -incomplete_tracks
+                    self.G.nodes["sink"]["demand"] = incomplete_tracks
+                    _, self.flow = nx.capacity_scaling(self.G)
+                    paths += self.reconstruct_paths()
             self.paths = paths
             if len(self.paths) != self.n_tracks:
                 warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.")
@@ -867,6 +876,13 @@ class TrackletStitcher:
             temp = np.full((self.n_frames, flat_data.shape[1]), np.nan)
             temp[track.inds - self._first_frame] = flat_data
             data.append(temp)
+
+        # If there isn't a track for each animal, fill in the dataframe with NaNs
+        missing_tracks = self.n_tracks - len(self.tracks)
+        if missing_tracks > 0:
+            track_shape = self.tracks[0].flat_data.shape[1]
+            data += missing_tracks * [np.full((self.n_frames, track_shape), np.nan)]
+
         return np.hstack(data)
 
     def format_df(self, animal_names=None):
@@ -1156,7 +1172,7 @@ def stitch_tracklets(
         nframe = len(VideoWriter(video))
         videofolder = str(Path(video).parents[0])
         dest = destfolder or videofolder
-        deeplabcut.utils.auxiliaryfunctions.attempttomakefolder(dest)
+        deeplabcut.utils.auxiliaryfunctions.attempt_to_make_folder(dest)
         vname = Path(video).stem
 
         feature_dict_path = os.path.join(

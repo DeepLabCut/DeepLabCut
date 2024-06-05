@@ -40,16 +40,5 @@ if __name__ == "__main__":
         video_adapt=True,
         scale_list=scale_list,
         pcutoff=0.1,
-    )
-
-    print("adaptation training for superanimal_quadruped")
-
-    superanimal_name = "superanimal_quadruped"
-    deeplabcut.video_inference_superanimal(
-        [video],
-        superanimal_name,
-        videotype=".mp4",
-        video_adapt=True,
-        scale_list=scale_list,
-        pcutoff=0.3,
+        adapt_iterations=50,
     )

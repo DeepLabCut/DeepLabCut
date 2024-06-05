@@ -17,7 +17,7 @@ from threading import Event
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.auxiliaryfunctions import attempttomakefolder
+from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
 from PySide6.QtWidgets import QMessageBox
@@ -358,7 +358,7 @@ class TrackletVisualizer:
 
         img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum(
@@ -807,7 +807,7 @@ class TrackletVisualizer:
 
     def update_dotsize(self, val):
         self.dotsize = val
-        self.scat.set_sizes([self.dotsize**2])
+        self.scat.set_sizes([self.dotsize ** 2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
@@ -838,13 +838,17 @@ class TrackletVisualizer:
                 " already extracted (more will be added)!",
             )
         else:
-            attempttomakefolder(tmpfolder)
+            attempt_to_make_folder(tmpfolder)
         index = []
         for ind in inds:
             imagename = os.path.join(
                 tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
             )
-            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
+            index.append(
+                tuple(
+                    (os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")
+                )
+            )
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -869,7 +873,9 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(
+            filter_low_prob, prob=pcutoff
+        )
         df.index = pd.MultiIndex.from_tuples(index)
 
         machinefile = os.path.join(
@@ -886,9 +892,7 @@ class TrackletVisualizer:
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         # Merge with the already existing annotated data
-        df.columns = df.columns.set_levels(
-            [self.manager.cfg["scorer"]], level="scorer"
-        )
+        df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
         output_path = os.path.join(
             tmpfolder, f'CollectedData_{self.manager.cfg["scorer"]}.h5'

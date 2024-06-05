@@ -3,9 +3,24 @@
 
 ## How to use the latest updates directly from GitHub
 
-We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from!
+We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
 
-But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
+### Method 1:
+
+If you want to *use* the latest, you can use pip and add the specific tags, such as `tf` or `gui`, etc. by modifying and running: 
+```
+pip install --upgrade 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf]'
+```
+
+which will download and update deeplabcut, and any dependencies that don't match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then use the additional `--upgrade-strategy eager`, i.e.:
+
+```
+pip install --upgrade --upgrade-strategy eager 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf,gui]'
+```
+
+### Method 2: 
+
+If you want to be able to *edi* the source code of DeepLabCut, i.e., maybe add a feature or fix a 🐛, then you need to "clone" the source code:
 
 **Step 1:**
 
@@ -23,7 +38,7 @@ But, sometimes we add things to the repo that are not yet integrated, or you mig
 
 ![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985288123-V8XUAY0C0ZDNJ5WBHB7Y/ke17ZwdGBToddI8pDm48kIsGBOdR9tS_SxF6KQXIcDtZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz3c8X74DzCy4P3pv-ZANOdh-3ZL9iVkcryTbbTskaGvEc42UcRKU-PHxLXKM6ZekE/terminal.png?format=750w)
 
-- Now, when you start `ipython` or `pythonw` (mac users), and `import deeplabcut` you are importing the folder "deeplabcut" - so any changes you make, or any changes we made before adding it to the pip package, are here.
+- Now, when you start `ipython` and `import deeplabcut` you are importing the folder "deeplabcut" - so any changes you make, or any changes we made before adding it to the pip package, are here.
 
 - You can also check which deeplabcut you are importing by running: `deeplabcut.__file__`
 
@@ -40,20 +55,6 @@ If you make changes, you can also then utilize our test scripts. Run the desired
 i.e., for example:
 ```
 python testscript_multianimal.py
-```
-
-### Quick pull and install from the github repository
-
-If you just want to install the latest pre-release without editing, you can activate your anaconda env, and run 
-
-```
-pip install --upgrade git+https://github.com/deeplabcut/deeplabcut.git
-```
-
-which will download and update deeplabcut, and any dependencies that don't match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then run
-
-```
-pip install --upgrade --upgrade-strategy eager git+https://github.com/deeplabcut/deeplabcut.git
 ```
 
 
@@ -312,7 +313,6 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
-
 ## DeepLabCut MacOS M1 and M2 chip installation environment instructions:
 
 This only assumes you have anaconda installed.
@@ -321,48 +321,26 @@ Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 or M2 c
 
 (1) git clone the deeplabcut cut repo:
 
-```
+```bash
 git clone https://github.com/DeepLabCut/DeepLabCut.git
 ```
 
 (2) in the program terminal run: `cd DeepLabCut/conda-environments`
 
-(3) Click [here](https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing) to download the Rosetta wheel for TensorFlow. We assume this goes into your Downloads folder. This downloads TF 2.4.1; https://drive.google.com/file/d/17pSwfoNuyf3YR8vCaVggHeI-pMQ3xL7l/view?usp=sharing
-(for different versions see here: https://github.com/tensorflow/tensorflow/issues/46044).
+(3) Then, run:
 
-(4) Then, run:
-
-```
+```bash
 conda env create -f DEEPLABCUT_M1.yaml
 ```
 
-(5) Please activate the environment and set osx-64; i.e., then, run:
+(4) Finally, activate your environment and to launch DLC with the GUI
 
-```
+```bash
 conda activate DEEPLABCUT_M1
-conda env config vars set CONDA_SUBDIR=osx-64
-```
-Now, as the print satement says, please deactivate and re-activate to set the change:
-
-```
-conda deactivate
-conda activate DEEPLABCUT_M1
-conda env update -f DEEPLABCUT_M1.yaml
+python -m deeplabcut
 ```
 
-(5) Next, run:
-
- ```
- pip install ~/Downloads/tensorflow-2.4.1-py3-none-any.whl --no-dependencies --force-reinstall
- ```
- (again, assumes this file in your downloads folder)
-
-
-(6) Next, launch DLC with `pythonw -m deeplabcut` (or if DLC version 2.3+, please use `python -m deeplabcut`)
-
-GUI will open!
-
-Note: Based on issues  #1380 and #2011, thanks!
+The GUI will open. Of course, you can also run DeepLabCut in headless mode. 
 
 ## How to confirm that your GPU is being used by DeepLabCut
 

@@ -22,7 +22,8 @@ from deeplabcut import auxiliaryfunctions, VERSION
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from PySide6.QtWidgets import QMenu, QWidget, QMainWindow
+from napari_deeplabcut import misc
+from PySide6.QtWidgets import QMessageBox, QMenu, QWidget, QMainWindow
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction
 from PySide6 import QtWidgets, QtGui
@@ -31,9 +32,25 @@ from PySide6.QtCore import Qt
 
 def _check_for_updates():
     is_latest, latest_version = utils.is_latest_deeplabcut_version()
-    if not is_latest:
+    is_latest_plugin, latest_plugin_version = misc.is_latest_version()
+    if is_latest and is_latest_plugin:
         msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut {latest_version} available",
+            text=f"DeepLabCut is up-to-date",
+        )
+        msg.exec_()
+    else:
+        if not is_latest and is_latest_plugin:
+            text = f"DeepLabCut {latest_version} available"
+            command = "pip", "install", "-U", "deeplabcut"
+        elif not is_latest_plugin and is_latest:
+            text = f"DeepLabCut labeling plugin {latest_plugin_version} available"
+            command = "pip", "install", "-U", "napari-deeplabcut"
+        else:
+            text = f"DeepLabCut {latest_version}\nand labeling plugin {latest_plugin_version} available"
+            command = "pip", "install", "-U", "deeplabcut", "napari-deeplabcut"
+
+        msg = QtWidgets.QMessageBox(
+            text=text,
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
         update_btn = msg.addButton("Update", msg.AcceptRole)
@@ -42,17 +59,11 @@ def _check_for_updates():
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "-U", "deeplabcut"]
+                [sys.executable, "-m", *command]
             )
-    else:
-        msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut is up-to-date",
-        )
-        msg.exec_()
 
 
 class MainWindow(QMainWindow):
-
     config_loaded = QtCore.Signal()
     video_type_ = QtCore.Signal(str)
     video_files_ = QtCore.Signal(set)
@@ -256,7 +267,7 @@ class MainWindow(QMainWindow):
         )
         self.layout.addWidget(image_widget)
 
-        description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project or load an existing one."
+        description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project, load an existing one, or try one of our pretrained models from the Model Zoo."
         label = components._create_label_widget(
             description,
             "font-size:12px; text-align: center;",
@@ -306,6 +317,7 @@ class MainWindow(QMainWindow):
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0]))
         )
         self.newAction.setShortcut("Ctrl+N")
+        self.newAction.setStatusTip("Create a new project...")
 
         self.newAction.triggered.connect(self._create_project)
 
@@ -315,6 +327,7 @@ class MainWindow(QMainWindow):
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1]))
         )
         self.openAction.setShortcut("Ctrl+O")
+        self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
 
         self.saveAction = QAction("&Save", self)
@@ -329,8 +342,12 @@ class MainWindow(QMainWindow):
         self.helpAction.setIcon(
             QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2]))
         )
+        self.helpAction.setStatusTip("Ask for help...")
+        self.helpAction.triggered.connect(self._ask_for_help)
 
         self.aboutAction = QAction("&Learn DLC", self)
+        self.aboutAction.triggered.connect(self._learn_dlc)
+
         self.check_updates = QAction("&Check for Updates...", self)
         self.check_updates.triggered.connect(_check_for_updates)
 
@@ -386,6 +403,22 @@ class MainWindow(QMainWindow):
         if loaded:
             self.add_recent_filename(self.config)
             self.add_tabs()
+
+    def _ask_for_help(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Ask for help")
+        dlg.setText(
+            """Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!"""
+        )
+        _ = dlg.exec()
+
+    def _learn_dlc(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Learn DLC")
+        dlg.setText(
+            """Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!"""
+        )
+        _ = dlg.exec()
 
     def _create_project(self):
         dlg = ProjectCreator(self)

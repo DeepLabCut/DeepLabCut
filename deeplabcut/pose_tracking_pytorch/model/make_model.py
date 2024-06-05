@@ -59,7 +59,6 @@ __factory_T_type = {
 
 
 def make_dlc_model(cfg, feature_dim, kpt_num):
-
     model = build_dlc_transformer(cfg, feature_dim, kpt_num, __factory_T_type)
 
     return model

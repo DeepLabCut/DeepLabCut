@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+from pathlib import Path
+from typing import Union
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -16,6 +18,7 @@ from PySide6.QtCore import Qt
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
+    VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
@@ -85,18 +88,42 @@ class ExtractFrames(DefaultTab):
         self._set_page()
 
     def _set_page(self):
-
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self.layout_attributes = _create_grid_layout(margins=(0, 0, 0, 0))
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
+        self.main_layout.addWidget(
+            _create_label_widget(
+                "Frame extraction from a video subset (optional for automatic extraction)", "font:bold"
+            )
+        )
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
+
         self.ok_button = QtWidgets.QPushButton("Extract Frames")
         self.ok_button.clicked.connect(self.extract_frames)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
-    def _generate_layout_attributes(self, layout):
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(extract_frames.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def _generate_layout_attributes(self, layout):
+        layout.setColumnMinimumWidth(1, 300)
         # Extraction method
         ext_method_label = QtWidgets.QLabel("Extraction method")
         self.extraction_method_widget = QtWidgets.QComboBox()
@@ -169,7 +196,19 @@ class ExtractFrames(DefaultTab):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
-            _ = launch_napari()
+            videos = list(self.video_selection_widget.files)
+            if not videos:
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Error",
+                    "Please select exactly one video to extract frames from.",
+                )
+                return
+            first_video = videos[0]
+            if len(videos) > 1:
+                self.root.writer.write(f"Only the first video ({first_video}) will be opened.")
+            video_path_in_folder = self._check_symlink(first_video)
+            _ = launch_napari(str(video_path_in_folder))
             return
 
         algo = self.extraction_algorithm_widget.currentText()
@@ -194,6 +233,7 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
             userfeedback=False,
+            videos_list=self.video_selection_widget.files or None,
         )
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(lambda: self.ok_button.setEnabled(True))
@@ -211,3 +251,37 @@ class ExtractFrames(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
         self.root.writer.write("Frames successfully extracted.")
+
+    def _check_symlink(self, video_path: Union[str, Path]) -> Path:
+        """Checks that a video is in the DeepLabCut 'videos' folder
+
+        This is required before launching manual frame extraction. When users select
+        a symlink of a video using the VideoSelectionWidget, the path is resolved to the
+        true path of the video (which leads napari-deeplabcut to save the frames in the
+        incorrect folder).
+
+        Args:
+            video_path: the path to a video in a DeepLabCut project or a video that was
+                added to the project
+
+        Returns:
+            the path to the video (or symlink) in the project's 'videos' folder
+
+        Raises:
+            FileNotFoundError if there is no symlink or video in the 'videos' folder for
+                the given video
+        """
+        video_path = Path(video_path).resolve()
+        project_videos = (Path(self.root.config).parent / "videos").resolve()
+        if video_path.parent == project_videos:
+            return video_path
+
+        symlink_path = project_videos / video_path.name
+        if not symlink_path.exists():
+            raise FileNotFoundError(
+                f"Could not find the video {video_path.name} in your project videos. "
+                f"Did you add the video (you can do so in the 'Manage Project' tab)? "
+                f"There should be a file in {symlink_path}."
+            )
+
+        return symlink_path

@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report to help us improve
 assignees:
-  - jeylau
+  - n-poulsen
 body:
   - type: markdown
     attributes:

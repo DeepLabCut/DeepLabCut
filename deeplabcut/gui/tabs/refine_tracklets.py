@@ -87,6 +87,23 @@ class RefineTracklets(DefaultTab):
         self.main_layout.addWidget(self.filter_tracks_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.merge_button, alignment=Qt.AlignRight)
 
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(deeplabcut.stitch_tracklets.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
     def _generate_layout_attributes(self, layout):
         # Shuffle
         shuffle_text = QtWidgets.QLabel("Shuffle")
@@ -105,7 +122,6 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.num_animals_in_videos)
 
     def _generate_layout_refinement(self, layout):
-
         section_title = _create_label_widget(
             "Refinement Settings", "font:bold", (0, 50, 0, 0)
         )
@@ -140,7 +156,6 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.trail_length_widget, 3, 1)
 
     def _generate_layout_filtering(self, layout):
-
         section_title = _create_label_widget("Filtering", "font:bold", (0, 50, 0, 0))
 
         # Filter type
@@ -222,7 +237,7 @@ class RefineTracklets(DefaultTab):
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
             deeplabcut.merge_datasets(self.root.config, forceiterate=None)
-            self.root.viz.export_to_training_data()
+            self.viz.export_to_training_data()
 
     def refine_tracks(self):
         cfg = self.root.cfg

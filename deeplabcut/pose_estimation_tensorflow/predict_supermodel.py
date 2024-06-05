@@ -20,6 +20,8 @@ def video_inference_superanimal(
     video_adapt=False,
     plot_trajectories=True,
     pcutoff=0.1,
+    adapt_iterations=1000,
+    pseudo_threshold=0.1,
 ):
     """
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
@@ -36,7 +38,7 @@ def video_inference_superanimal(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     superanimal_name: str
-        The name of the superanimal model. We currently only support supertopview and superquadruped
+        The name of the superanimal model. We currently only support "superanimal_quadruped" and "superanimal_topviewmouse"
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
@@ -52,6 +54,12 @@ def video_inference_superanimal(
     pcutoff: float, optional
         Keypoints confidence that are under pcutoff will not be shown in the resulted video
 
+    adapt_iterations: int, optional:
+        Number of iterations for adaptation training
+
+    pseudo_threshold: float, default 0.1
+        Video adaptation only uses predictions that are above pseudo_threshold
+
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
     scale_list = range(600,800,100)
@@ -66,8 +74,6 @@ def video_inference_superanimal(
          scale_list = scale_list,
     )
     >>>
-
-
     """
     from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
@@ -88,12 +94,16 @@ def video_inference_superanimal(
             videotype=videotype,
             scale_list=scale_list,
         )
-
         if not video_adapt:
-            adapter.before_adapt_inference(make_video=True, pcutoff=pcutoff)
+            adapter.before_adapt_inference(
+                make_video=True, pcutoff=pcutoff, plot_trajectories=plot_trajectories
+            )
         else:
             adapter.before_adapt_inference(make_video=False)
-            adapter.adaptation_training()
+            adapter.adaptation_training(
+                adapt_iterations=adapt_iterations,
+                pseudo_threshold=pseudo_threshold,
+            )
             adapter.after_adapt_inference(
                 pcutoff=pcutoff,
                 plot_trajectories=plot_trajectories,
