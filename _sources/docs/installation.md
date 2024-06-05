@@ -66,6 +66,7 @@ If you cloned the repo onto your Desktop, the command may look like:
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
 You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 ```
+Be sure you are in the folder that has the `.yaml` file, then run:
 
 - Now, in the terminal run (Windows/Linux/MacBook Intel chip):
 
