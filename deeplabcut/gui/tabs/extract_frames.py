@@ -95,7 +95,7 @@ class ExtractFrames(DefaultTab):
 
         self.main_layout.addWidget(
             _create_label_widget(
-                "Optional: frame extraction from a video subset", "font:bold"
+                "Frame extraction from a video subset (optional for automatic extraction)", "font:bold"
             )
         )
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
@@ -197,7 +197,17 @@ class ExtractFrames(DefaultTab):
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
             videos = list(self.video_selection_widget.files)
-            video_path_in_folder = self._check_symlink(videos[0])
+            if not videos:
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Error",
+                    "Please select exactly one video to extract frames from.",
+                )
+                return
+            first_video = videos[0]
+            if len(videos) > 1:
+                self.root.writer.write(f"Only the first video ({first_video}) will be opened.")
+            video_path_in_folder = self._check_symlink(first_video)
             _ = launch_napari(str(video_path_in_folder))
             return
 
