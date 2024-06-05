@@ -376,7 +376,7 @@ def _plot_trajectories(
         vname = os.path.basename(h5file).split("DLC")[0]
         vid_folder = os.path.dirname(h5file)
         dest_folder = os.path.join(vid_folder, "plot-poses", vname)
-    auxiliaryfunctions.attempttomakefolder(dest_folder, recursive=True)
+    auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
     # Keep only the individuals and bodyparts that were labeled
     labeled_bpts = [
         bp

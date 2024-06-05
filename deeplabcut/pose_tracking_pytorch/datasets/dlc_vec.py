@@ -15,7 +15,6 @@ import numpy as np
 
 class TripletDataset(Dataset):
     def __init__(self, datasource, transform=None):
-
         self.x = datasource
 
         # normalize vectors here

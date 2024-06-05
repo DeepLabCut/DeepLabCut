@@ -26,7 +26,7 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 matplotlib_axes_logger.setLevel("ERROR")
 
 
-def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
+def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
 
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images.
@@ -56,6 +56,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
         Floating point number between 0 and 1 specifying the free scaling parameter. When alpha = 0, the rectified images with only valid pixels are stored
         i.e. the rectified images are zoomed in. When alpha = 1, all the pixels from the original images are retained.
         For more details: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+
+    search_window_size: tuple of int
+        Half of the side length of the search window when refining detected checkerboard corners for subpixel accuracy.
 
     Example
     --------
@@ -139,7 +142,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4):
                     img_shape[cam] = gray.shape[::-1]
                     objpoints[cam].append(objp)
                     corners = cv2.cornerSubPix(
-                        gray, corners, (11, 11), (-1, -1), criteria
+                        gray, corners, search_window_size, (-1, -1), criteria
                     )
                     imgpoints[cam].append(corners)
                     # Draw the corners and store the images

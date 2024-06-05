@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_tensorflow.datasets import (
 )
 from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
+from deeplabcut.utils import auxfun_models
 
 
 class LearningRate(object):
@@ -226,6 +227,8 @@ def train(
     if not info["is_cuda_build"]:  # Apple Silicon is not built with CUDA
         warnings.warn("Switching to Adam, as SGD crashes on Apple Silicon.")
         cfg["optimizer"] = "adam"
+        cfg["lr_init"] = 5e-4
+        cfg["multi_step"] = [[1e-4, 7500], [5e-5, 12000], [1e-5, 200000]]
 
     if cfg.get("freezeencoder", False):
         if "efficientnet" in net_type:
@@ -241,7 +244,8 @@ def train(
     sess.run(tf.compat.v1.local_variables_initializer())
 
     # Restore variables from disk.
-    restorer.restore(sess, cfg["init_weights"])
+    auxfun_models.smart_restore(restorer, sess, cfg["init_weights"], net_type)
+
     if maxiters is None:
         max_iter = int(cfg["multi_step"][-1][1])
     else:

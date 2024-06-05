@@ -313,7 +313,6 @@ class TensorpackPoseDataset(BasePoseDataset):
         return [joint_id, aug_img, aug_coords, data, size, scale]
 
     def get_dataflow(self, cfg):
-
         df = Pose(cfg)
         df = MapData(df, self.augment)
         df = MapData(df, self.compute_target_part_scoremap)
@@ -351,7 +350,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         locref_map = np.zeros(locref_size)
 
         locref_scale = 1.0 / self.cfg["locref_stdev"]
-        dist_thresh_sq = dist_thresh**2
+        dist_thresh_sq = dist_thresh ** 2
 
         width = size[1]
         height = size[0]
@@ -376,7 +375,7 @@ class TensorpackPoseDataset(BasePoseDataset):
                         pt_x = i * stride + half_stride
                         dx = j_x - pt_x
                         dy = j_y - pt_y
-                        dist = dx**2 + dy**2
+                        dist = dx ** 2 + dy ** 2
                         # print(la.norm(diff))
                         if dist <= dist_thresh_sq:
                             scmap[j, i, j_id] = 1

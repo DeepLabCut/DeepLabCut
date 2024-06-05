@@ -262,16 +262,22 @@ def extract_frames(
     from deeplabcut.utils import frameselectiontools
     from deeplabcut.utils import auxiliaryfunctions
 
+    config_file = Path(config).resolve()
+    cfg = auxiliaryfunctions.read_config(config_file)
+    print("Config file read successfully.")
+
+    if videos_list is None:
+        videos = cfg.get("video_sets_original") or cfg["video_sets"]
+    else:  # filter video_list by the ones in the config file
+        videos = [v for v in cfg["video_sets"] if v in videos_list]
+
     if mode == "manual":
         from deeplabcut.gui.widgets import launch_napari
-        _ = launch_napari()
+
+        _ = launch_napari(videos[0])
         return
 
     elif mode == "automatic":
-        config_file = Path(config).resolve()
-        cfg = auxiliaryfunctions.read_config(config_file)
-        print("Config file read successfully.")
-
         numframes2pick = cfg["numframes2pick"]
         start = cfg["start"]
         stop = cfg["stop"]
@@ -285,10 +291,6 @@ def extract_frames(
             raise Exception(
                 "Perhaps consider extracting more, or a natural number of frames."
             )
-        if videos_list is None:
-            videos = cfg.get("video_sets_original") or cfg["video_sets"]
-        else:  # filter video_list by the ones in the config file
-            videos = [v for v in cfg["video_sets"] if v in videos_list]
 
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoWriter
@@ -315,7 +317,6 @@ def extract_frames(
                 or askuser == "oui"
                 or askuser == "ouais"
             ):  # multilanguage support :)
-
                 if opencv:
                     cap = VideoWriter(video)
                     nframes = len(cap)
@@ -411,6 +412,7 @@ def extract_frames(
                 output_path = (
                     Path(config).parents[0] / "labeled-data" / Path(video).stem
                 )
+                output_path.mkdir(parents=True, exist_ok=True)
                 is_valid = []
                 if opencv:
                     for index in frames2pick:

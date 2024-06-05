@@ -47,7 +47,7 @@ if __name__ == "__main__":
     ]
 
     folder = os.path.join(basepath, "3Dtestviews_videos")
-    deeplabcut.auxiliaryfunctions.attempttomakefolder(folder)
+    deeplabcut.auxiliaryfunctions.attempt_to_make_folder(folder)
 
     # copying demo video from reaching data set and create two "views":
     dst_videoname1 = "vid1_camera-1"

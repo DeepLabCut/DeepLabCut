@@ -46,7 +46,30 @@ class CreateTrainingDataset(DefaultTab):
 
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        if self.root.is_multianimal:
+            func = deeplabcut.create_multianimaltraining_dataset
+        else:
+            func = deeplabcut.create_training_dataset
+        label = QtWidgets.QLabel(func.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
     def _generate_layout_attributes(self, layout):
+        layout.setColumnMinimumWidth(3, 300)
+
         # Shuffle
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)

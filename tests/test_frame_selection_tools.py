@@ -1,3 +1,13 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
 """ Tests for frame selection tools """
 import math
 from unittest.mock import Mock
@@ -11,7 +21,7 @@ import deeplabcut.utils.frameselectiontools as fst
         (32, 10, 10, 0, 1, None),
         (16, 100, 50, 0, 1, list(range(100, 500, 5))),
         (16, 100, 5, 0.25, 0.3, list(range(100, 500, 5))),
-    ]
+    ],
 )
 def test_uniform_frames(fps, duration, n_to_pick, start, end, index):
     start_idx = int(math.floor(start * duration * fps))
@@ -39,15 +49,13 @@ def test_uniform_frames(fps, duration, n_to_pick, start, end, index):
     assert len(set(frames)) == len(frames), "Duplicate indices found"
 
 
-
 @pytest.mark.parametrize(
     "fps, nframes, n_to_pick, start, end, index",
     [
         (32, 320, 10, 0, 1, None),
         (16, 1600, 50, 0, 1, list(range(100, 500, 5))),
         (16, 1600, 5, 0.25, 0.3, list(range(100, 500, 5))),
-
-    ]
+    ],
 )
 def test_uniform_frames_cv2(fps, nframes, n_to_pick, start, end, index):
     start_idx = int(math.floor(start * nframes))
