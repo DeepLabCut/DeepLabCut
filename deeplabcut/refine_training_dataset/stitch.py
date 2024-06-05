@@ -606,6 +606,9 @@ class TrackletStitcher:
         return max_gap
 
     def mine(self, n_samples):
+        if not self._lu_overlap:
+            raise ValueError("No overlapping tracklets found.")
+
         p = np.asarray([t.likelihood for t in self])
         p /= p.sum()
         triplets = []
