@@ -1,0 +1,47 @@
+# DEEPLABCUT_M2.yaml
+# user supplied cond file, see issue: https://github.com/DeepLabCut/DeepLabCut/issues/2590
+
+#DeepLabCut2.0 Toolbox (deeplabcut.org)
+#© A. & M.W. Mathis Labs
+#https://github.com/DeepLabCut/DeepLabCut
+#Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#Licensed under GNU Lesser General Public License v3.0
+#
+# DeepLabCut M1/M2 (Apple Silicon) environment instructions
+#
+# We'll get the miniconda M1 bash installer, as explained in
+# https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
+#
+# In the Terminal, run the following commands:
+# wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
+# bash ~/miniconda.sh -b -p $HOME/miniconda
+# source ~/miniconda/bin/activate
+# conda init zsh
+#
+# Then, `git clone DeepLabCut`, and run:
+#
+# conda env create -f conda-environments/DEEPLABCUT_M2.yaml
+#
+# Next, activate the environment, and launch DLC with python -m deeplabcut
+
+name: DEEPLABCUT_M2
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - ipython
+  - jupyter
+  - python.app
+  - ffmpeg
+  - pytables
+  - pandas
+  - pip:
+    - tensorflow
+    - tensorflow-macos==2.9.0
+    - tensorflow-metal==0.5.0
+    - "deeplabcut[gui,apple_mchips]"
+    - deeplabcut>=2.3.9
