@@ -270,6 +270,9 @@ def video_inference(
     init_weights="",
     customized_test_config="",
 ):
+    if superanimal_name not in MODELOPTIONS:
+        raise ValueError(f"{superanimal_name} not available. Available ones are: {MODELOPTIONS}. If you are confident `superanimal_name` is right, try updating `dlclibrary` with `pip install -U dlclibrary`.")
+
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
@@ -286,7 +289,6 @@ def video_inference(
         test_cfg = load_config(customized_test_config)
 
     # add a temp folder for checkpoint
-
     weight_folder = str(
         Path(dlc_root_path)
         / "pose_estimation_tensorflow"
@@ -294,16 +296,13 @@ def video_inference(
         / "pretrained"
         / (superanimal_name + "_weights")
     )
-
-    if superanimal_name in MODELOPTIONS:
-        if not os.path.exists(weight_folder):
-            download_huggingface_model(superanimal_name, weight_folder)
-        else:
-            print(f"{weight_folder} exists, using the downloaded weights")
+    pat = os.path.join(weight_folder, "snapshot-*.index")
+    snapshots = glob.glob(pat)
+    if not len(snapshots):
+        download_huggingface_model(superanimal_name, weight_folder)
+        snapshots = glob.glob(pat)
     else:
-        print(f"{superanimal_name} not available. Available ones are: ", MODELOPTIONS)
-
-    snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
+        print(f"{weight_folder} exists, using the downloaded weights")
 
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False

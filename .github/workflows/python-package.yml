@@ -48,7 +48,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install ffmpeg
           elif [ "$RUNNER_OS" == "macOS" ]; then
-            brew install ffmpeg
+            brew install ffmpeg || true
           else
             choco install ffmpeg
           fi

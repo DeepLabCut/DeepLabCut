@@ -78,6 +78,23 @@ class AnalyzeVideos(DefaultTab):
         self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
 
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(deeplabcut.analyze_videos.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
     def _generate_layout_single_animal(self, layout):
         # Dynamic bodypart cropping
         self.crop_bodyparts = QtWidgets.QCheckBox("Dynamically crop bodyparts")

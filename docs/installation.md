@@ -4,6 +4,7 @@
 - DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 - Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 - We recommend for most users to use our supplied CONDA environment.
+- Please note, you will get the best performance with using a GPU! Please see the section on [GPU support](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support) to install your GPU driver and CUDA.
 
 
 ## CONDA: The installation process is as easy as this figure! -->
@@ -45,6 +46,7 @@ Windows users: Be sure you have `git` installed along with anaconda: https://git
     <img width="274" alt="Screen Shot 2023-09-13 at 10 33 32 PM" src="https://github.com/DeepLabCut/DeepLabCut/assets/28102185/ec4295a5-e85c-4ce7-8c16-e6517a2cfa22">
 
   - click ➡️ for [Apple w/M1/M2](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/DEEPLABCUT_M1.yaml#:~:text=Raw%20file%20content-,Download,-%E2%8C%98), and then click the "..." and Download
+    
     <img width="274" alt="Screen Shot 2023-09-13 at 10 33 32 PM" src="https://github.com/DeepLabCut/DeepLabCut/assets/28102185/ec4295a5-e85c-4ce7-8c16-e6517a2cfa22">
 
 **Alternatively,** you can git clone this repo and install (if the download did not work or you just want to have the source code handy)!
@@ -64,6 +66,7 @@ If you cloned the repo onto your Desktop, the command may look like:
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
 You can (on Windows) hold SHIFT and right-click > Copy as path, or (on Mac) right-click and while in the menu press the OPTION key to reveal Copy as Pathname.
 ```
+Be sure you are in the folder that has the `.yaml` file, then run:
 
 - Now, in the terminal run (Windows/Linux/MacBook Intel chip):
 
