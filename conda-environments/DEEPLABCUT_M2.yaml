@@ -40,8 +40,6 @@ dependencies:
   - pytables
   - pandas
   - pip:
-    - tensorflow
+    - "deeplabcut[gui]"
     - tensorflow-macos==2.9.0
     - tensorflow-metal==0.5.0
-    - "deeplabcut[gui,apple_mchips]"
-    - deeplabcut>=2.3.9
