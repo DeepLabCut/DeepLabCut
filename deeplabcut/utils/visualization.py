@@ -341,7 +341,7 @@ def make_labeled_images_from_dataframe(
                 img = color.gray2rgb(ic[i])
             im.set_data(img)
             for pt, coord in zip(pts, coords):
-                pt.set_data(*coord)
+                pt.set_data(*np.expand_dims(coord, axis=1))
             if ind_bones:
                 coll.set_segments(segs[ind])
             imagename = os.path.basename(filename)
