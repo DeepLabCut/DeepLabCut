@@ -16,9 +16,7 @@ After training and evaluating your model, the next step is to apply it to your v
 - **Analysis Files:** Look also for a `.metapickle`, an `.h5`, and possibly a `.csv` file for detailed analysis data.
 - **Review the Plot Poses Subfolder:** This contains visual outputs of the video analysis.
 
-<p align="center">
-  <img src="https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/plot-poses.png?raw=true" alt="Plot Poses in DeepLabCut">
-</p>
+![Plot poses](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779600836-YOWM5T2MBY0JN1LB537B/plot-poses.png?format=500w)
 
 ## Creating a Labeled Video
 
@@ -30,10 +28,3 @@ After training and evaluating your model, the next step is to apply it to your v
 
 - Your labeled video will be in your video folder, named after the original video plus model details and 'labeled'.
 - Watch the video to assess the model's labeling accuracy.
-
-<p align="center">
-  <img src="https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/labeled-video.gif?raw=true" alt="Labeled Video in DeepLabCut">
-</p>
-
-
-
