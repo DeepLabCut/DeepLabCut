@@ -73,8 +73,10 @@ class PoseDataset(Dataset):
     task: Task = Task.BOTTOM_UP
 
     def __post_init__(self):
+
         self.image_path_id_map = map_image_path_to_id(self.images)
         self.annotation_idx_map = map_id_to_annotations(self.annotations)
+
         self.img_id_to_index = {
             img["id"]: index for index, img in enumerate(self.images)
         }
@@ -102,11 +104,14 @@ class PoseDataset(Dataset):
             Otherwise, it returns the image path and a list of annotations for all instances in the image.
         """
         img = self.images[index]
+
         anns = [self.annotations[idx] for idx in self.annotation_idx_map[img["id"]]]
+
         return img["file_name"], anns, img["id"]
 
     def _get_raw_item_crop(self, index: int) -> tuple[str, list[dict], int]:
         ann = self.annotations[index]
+
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         return img["file_name"], [ann], img["id"]
 
@@ -137,6 +142,7 @@ class PoseDataset(Dataset):
             }
         """
         image_path, anns, image_id = self._get_data_based_on_task(index)
+
         image, original_size = self._load_image(image_path)
         (
             keypoints,
@@ -145,6 +151,8 @@ class PoseDataset(Dataset):
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
 
+        # this is applying data augmentations before the cropping
+        # though normalization should be applied after the cropping
         transformed = self.apply_transform_all_keypoints(
             image, keypoints, keypoints_unique, bboxes
         )
@@ -152,10 +160,11 @@ class PoseDataset(Dataset):
         keypoints = transformed["keypoints"]
         keypoints_unique = transformed["keypoints_unique"]
         bboxes = transformed["bboxes"]
-
         offsets = (0, 0)
         scales = (1, 1)
+
         if self.task == Task.TOP_DOWN:
+
             if self.parameters.cropped_image_size is None:
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
@@ -168,6 +177,7 @@ class PoseDataset(Dataset):
             bboxes = bboxes.astype(int)
 
             # TODO: The following code should be replaced by a numpy version
+
             image, offsets, scales = _crop_and_pad_image_torch(
                 image, bboxes[0], "xywh", self.parameters.cropped_image_size[0]
             )
@@ -235,12 +245,15 @@ class PoseDataset(Dataset):
         bbox_widths = np.maximum(1, bboxes[..., 2])
         bbox_heights = np.maximum(1, bboxes[..., 3])
         area = bbox_widths * bbox_heights
-        if 'individual_id' not in anns:
-            anns['individual_id'] = -np.ones(len(anns['category_id']), dtype=int)
+        if "individual_id" not in anns:
+            anns["individual_id"] = -np.ones(len(anns["category_id"]), dtype=int)
 
+        # we use ..., :3 to pass the visibility flag along
         return {
-            "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
-            "keypoints_unique": keypoints_unique[..., :2].astype(np.single),
+            "keypoints": pad_to_length(keypoints[..., :3], num_animals, -1).astype(
+                np.single
+            ),
+            "keypoints_unique": keypoints_unique[..., :3].astype(np.single),
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),

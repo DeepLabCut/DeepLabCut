@@ -144,6 +144,9 @@ class HeatmapGenerator(BaseGenerator):
         map_size = batch_size, height, width
         heatmap = np.zeros((*map_size, self.num_heatmaps), dtype=np.float32)
 
+        # coords shape: (batch_size, n_keypoints, 1, 2)
+        weights = np.ones((batch_size, coords.shape[1], height, width))
+
         locref_map, locref_mask = None, None
         if self.generate_locref:
             locref_map = np.zeros((*map_size, self.num_heatmaps * 2), dtype=np.float32)
@@ -153,28 +156,38 @@ class HeatmapGenerator(BaseGenerator):
         grid[:, :, 0] = grid[:, :, 0] * stride_y + stride_y / 2
         grid[:, :, 1] = grid[:, :, 1] * stride_x + stride_x / 2
 
+        # heatmap (batch_size, height, width, num_kpts)
+        # coords (batch_size, num_kpts, num_individuals, 3)
         for b in range(batch_size):
             for heatmap_idx, group_keypoints in enumerate(coords[b]):
                 for keypoint in group_keypoints:
-                    keypoint = keypoint.copy()[::-1]
-                    if np.any(keypoint <= 0.0):
-                        continue
+                    # FIXME: Gradient masking weights should be parameters
+                    if keypoint[-1] == 0:
+                        # full gradient masking
+                        weights[b, heatmap_idx] = 0.0
+                    elif keypoint[-1] == -1:
+                        # full gradient masking
+                        weights[b, heatmap_idx] = 0.0
+                    elif keypoint[-1] > 0:
+                        # keypoint visible
+                        self.update(
+                            heatmap=heatmap[b, :, :, heatmap_idx],
+                            grid=grid,
+                            keypoint=keypoint[..., :2],
+                            locref_map=self.get_locref(locref_map, b, heatmap_idx),
+                            locref_mask=self.get_locref(locref_mask, b, heatmap_idx),
+                        )
 
-                    self.update(
-                        heatmap=heatmap[b, :, :, heatmap_idx],
-                        grid=grid,
-                        keypoint=keypoint,
-                        locref_map=self.get_locref(locref_map, b, heatmap_idx),
-                        locref_mask=self.get_locref(locref_mask, b, heatmap_idx),
-                    )
-
+        hm_device = outputs["heatmap"].device
         heatmap = heatmap.transpose((0, 3, 1, 2))
         target = {
             "heatmap": {
-                "target": torch.tensor(heatmap, device=outputs["heatmap"].device)
+                "target": torch.tensor(heatmap, device=hm_device),
+                "weights": torch.tensor(weights.astype(float), device=hm_device)
             }
         }
 
+        # we don't handle masking for locref
         if self.generate_locref:
             locref_map = locref_map.transpose((0, 3, 1, 2))
             locref_mask = locref_mask.transpose((0, 3, 1, 2))
@@ -244,6 +257,9 @@ class HeatmapGaussianGenerator(HeatmapGenerator):
         locref_mask: np.ndarray | None,
     ) -> None:
         """Updates the heatmap (and locref if defined) with gaussian values"""
+        # revert keypoints to follow image convention: from x,y to y,x
+        keypoint = keypoint.copy()[::-1]
+        
         dist = np.linalg.norm(grid - keypoint, axis=2) ** 2
         heatmap_j = np.exp(-dist / (2 * self.std ** 2))
         heatmap[:, :] = np.maximum(heatmap, heatmap_j)
@@ -271,6 +287,8 @@ class HeatmapPlateauGenerator(HeatmapGenerator):
         locref_mask: np.ndarray | None,
     ) -> None:
         """Updates the heatmap (and locref if defined) with plateau values"""
+        # revert keypoints to follow image convention: from x,y to y,x
+        keypoint = keypoint.copy()[::-1]
         dist = np.sum((grid - keypoint) ** 2, axis=2)
         mask = dist <= self.dist_thresh_sq
         heatmap[mask] = 1

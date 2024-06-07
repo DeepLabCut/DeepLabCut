@@ -95,3 +95,6 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:

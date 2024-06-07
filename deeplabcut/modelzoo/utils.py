@@ -22,6 +22,7 @@ from deeplabcut.utils.auxiliaryfunctions import (
     read_config,
     write_config,
 )
+import pandas as pd
 
 
 def dlc_modelzoo_path() -> Path:
@@ -131,6 +132,13 @@ def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> Conversio
     )
     return conversion_table
 
+def read_conversion_table_from_csv(csv_path):
+    df = pd.read_csv(csv_path, skiprows=1, header=None)
+    df = df.dropna()
+    df[0] = df[0].str.replace(r'\s+', '', regex=True)
+    df[1] = df[1].str.replace(r'\s+', '', regex=True)
+    _map = dict(zip(df[0], df[1]))
+    return _map
 
 def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     """Parses model zoo model names for SuperAnimal models

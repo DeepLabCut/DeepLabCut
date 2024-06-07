@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import torch
 import torchvision.models.detection as detection
+from torch import nn
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     DETECTORS,
@@ -54,6 +55,8 @@ class FasterRCNN(BaseDetector):
 
     def __init__(
         self,
+        freeze_bn_stats: bool = False,
+        freeze_bn_weights: bool = False,
         variant: str = "fasterrcnn_mobilenet_v3_large_fpn",
         pretrained: bool = True,
         box_score_thresh: float = 0.01,
@@ -64,7 +67,11 @@ class FasterRCNN(BaseDetector):
                 "https://pytorch.org/vision/stable/models.html#object-detection"
             )
 
-        super().__init__(pretrained=pretrained)
+        super().__init__(
+            freeze_bn_stats=freeze_bn_stats,
+            freeze_bn_weights=freeze_bn_weights,
+            pretrained=pretrained,
+        )
         model_fn = getattr(detection, variant)
         weights = None
         if self._pretrained:

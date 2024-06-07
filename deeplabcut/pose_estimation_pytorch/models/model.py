@@ -208,17 +208,20 @@ class PoseModel(nn.Module):
 
             # load head state dicts
             if weight_init.with_decoder:
-                heads_state_dict = filter_state_dict(state_dict, "heads")
+                all_head_state_dicts = filter_state_dict(state_dict, "heads")
                 conversion_tensor = torch.from_numpy(weight_init.conversion_array)
                 for name, head in model.heads.items():
+                    head_state_dict = filter_state_dict(all_head_state_dicts, name)
+
                     # requires WeightConversionMixin
-                    head.load_state_dict(
-                        head.convert_weights(
-                            state_dict=filter_state_dict(heads_state_dict, name),
+                    if not weight_init.memory_replay:
+                        head_state_dict = head.convert_weights(
+                            state_dict=head_state_dict,
                             module_prefix="",
                             conversion=conversion_tensor,
                         )
-                    )
+
+                    head.load_state_dict(head_state_dict)
 
         return model
 

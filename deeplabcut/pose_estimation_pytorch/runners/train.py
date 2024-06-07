@@ -146,6 +146,10 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         if isinstance(self.logger, ImageLoggerMixin):
             self.logger.select_images_to_log(train_loader, valid_loader)
 
+        # continuing to train a model: either total epochs or extra epochs
+        if self.starting_epoch > epochs:
+            epochs = self.starting_epoch + epochs
+
         for e in range(self.starting_epoch + 1, epochs + 1):
             self.current_epoch = e
             self._metadata["epoch"] = e
@@ -218,7 +222,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._metadata["metrics"] = perf_metrics
             self._epoch_predictions = {}
             self._epoch_ground_truth = {}
-            if len(perf_metrics) > 0:
+            if perf_metrics is not None and len(perf_metrics) > 0:
                 logging.info(f"Epoch {self.current_epoch} performance:")
                 for name, score in perf_metrics.items():
                     logging.info(f"{name + ':': <20}{score:.3f}")
@@ -284,9 +288,8 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             self.optimizer.zero_grad()
 
         inputs = batch["image"]
-        inputs = inputs.to(self.device)
+        inputs = inputs.to(self.device).float()
         outputs = self.model(inputs)
-
         target = self.model.get_target(outputs, batch["annotations"])
         losses_dict = self.model.get_loss(outputs, target)
         if mode == "train":
@@ -344,8 +347,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
             for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
                 if len(kpts) < num_animals:
-                    padded_kpts = np.zeros((num_animals, *kpts.shape[1:]))
-                    padded_kpts.fill(np.nan)
+                    padded_kpts = -np.ones((num_animals, *kpts.shape[1:]))
                     padded_kpts[:len(kpts)] = kpts
                     kpt_dict[path] = padded_kpts
                 else:
@@ -380,11 +382,19 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         for path, gt, pred, scale, offset in zip(
             paths, gt_keypoints, pred_keypoints, scales, offsets,
         ):
+
+            # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
-            vis = 2 * np.all(ground_truth >= 0, axis=-1)
-            gt_with_vis = np.zeros((*ground_truth.shape[:-1], 3))
-            gt_with_vis[..., :2] = ground_truth
-            gt_with_vis[..., 2] = vis
+            gt_with_vis = ground_truth
+
+            # FIXME: convert (-1, -2) to 0. Else error is incorrectly calculated
+            for batch_id in range(len(ground_truth)):
+                # keypoints (num_kpts, 3)
+                keypoints = ground_truth[batch_id]
+                for kpts in keypoints:
+                    vis = kpts[-1]
+                    if vis < 0:
+                        kpts[-1] = 0
 
             # rescale to the full image for TD or CTD
             gt_with_vis[..., :2] = (gt_with_vis[..., :2] * scale) + offset

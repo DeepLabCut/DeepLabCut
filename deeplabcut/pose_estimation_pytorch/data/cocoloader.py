@@ -243,11 +243,28 @@ class COCOLoader(Loader):
         data = COCOLoader.validate_categories(data)
         data = COCOLoader.validate_images(self.project_root, data)
 
+        annotations_per_image = {}
         for annotation in data["annotations"]:
             annotation["keypoints"] = np.array(annotation["keypoints"], dtype=float)
             annotation["bbox"] = np.array(annotation["bbox"], dtype=float)
-            annotation["individual"] = "unknown"
 
+            # set individual index
+            image_id = annotation["image_id"]
+            individual_idx = annotations_per_image.get(image_id, 0)
+            annotation["individual"] = f"individual{individual_idx}"
+            annotations_per_image[image_id] = individual_idx + 1
+
+        filter_annotations = []
+        for annotation in data['annotations']:
+            keypoints = annotation['keypoints']
+            bbox = annotation['bbox']
+            if np.all(keypoints <= 0) or len(bbox) == 0:
+                continue
+            filter_annotations.append(annotation)
+
+        data["annotations"] = filter_annotations        
+        
+        # FIXME: why estimating bbox when there are already bbox?
         annotations_with_bbox = self._compute_bboxes(
             data["images"],
             data["annotations"],
@@ -271,8 +288,17 @@ class COCOLoader(Loader):
         """
         # TODO: Check that there's a single category
         bodyparts = train_json["categories"][0]["keypoints"]
+
         img_to_annotations = map_id_to_annotations(train_json["annotations"])
-        num_individuals = max(*[len(a_ids) for a_ids in img_to_annotations.values()])
+        if len(img_to_annotations) == 0:
+            raise ValueError(f"No images found in the dataset: {train_json}!")
+        elif len(img_to_annotations) == 1:
+            num_individuals = len(list(img_to_annotations.values())[0])
+        else:
+            num_individuals = max(
+                *[len(a_ids) for a_ids in img_to_annotations.values()]
+            )
+
         return num_individuals, bodyparts
 
     def predictions_to_coco(

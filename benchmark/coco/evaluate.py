@@ -16,8 +16,8 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 def pycocotools_evaluation(
     kpt_oks_sigmas: list[int],
-    gt_path: str,
-    predictions_path: str,
+    ground_truth: dict,
+    predictions: list[dict],
     annotation_type: str,
 ) -> None:
     """Evaluation of models using Pycocotools
@@ -27,8 +27,8 @@ def pycocotools_evaluation(
 
     Args:
         kpt_oks_sigmas: the OKS sigma for each keypoint
-        gt_path: the path to the ground truth annotations
-        predictions_path: the path to the predictions
+        ground_truth: the ground truth data, in COCO format
+        predictions: the predictions, in COCO format
         annotation_type: {"bbox", "keypoints"} the annotation type to evaluate
     """
     print(80 * "-")
@@ -37,10 +37,15 @@ def pycocotools_evaluation(
         from pycocotools.coco import COCO
         from pycocotools.cocoeval import COCOeval
 
-        coco_gt = COCO(gt_path)
-        coco_det = coco_gt.loadRes(predictions_path)
-        coco_eval = COCOeval(coco_gt, coco_det, annotation_type)
-        coco_eval.params.kpt_oks_sigmas = kpt_oks_sigmas
+        coco = COCO()
+        coco.dataset["annotations"] = ground_truth["annotations"]
+        coco.dataset["categories"] = ground_truth["categories"]
+        coco.dataset["images"] = ground_truth["images"]
+        coco.createIndex()
+
+        coco_det = coco.loadRes(predictions)
+        coco_eval = COCOeval(coco, coco_det, iouType=annotation_type)
+        coco_eval.params.kpt_oks_sigmas = np.array(kpt_oks_sigmas)
 
         coco_eval.evaluate()
         coco_eval.accumulate()
@@ -70,12 +75,11 @@ def main(
         test_json_filename=test_file,
     )
     parameters = loader.get_dataset_parameters()
-    pytorch_config = loader.model_cfg
     if device is not None:
-        pytorch_config["device"] = device
+        loader.model_cfg["device"] = device
 
     pose_runner, detector_runner = get_inference_runners(
-        model_config=pytorch_config,
+        model_config=loader.model_cfg,
         snapshot_path=snapshot_path,
         max_individuals=parameters.max_num_animals,
         num_bodyparts=parameters.num_joints,
@@ -90,7 +94,7 @@ def main(
     output_path.mkdir(exist_ok=True)
     for mode in ["train", "test"]:
         scores, predictions = evaluate(
-            pose_task=Task(pytorch_config.get("method", "bu")),
+            pose_task=Task(loader.model_cfg["method"]),
             pose_runner=pose_runner,
             loader=loader,
             mode=mode,
@@ -108,13 +112,15 @@ def main(
         annotation_types = ["keypoints"]
         if detector_runner is not None:
             annotation_types.append("bbox")
+
+        ground_truth = loader.load_data(mode=mode)
         for annotation_type in annotation_types:
             kpt_oks_sigmas = oks_sigma * np.ones(parameters.num_joints)
             pycocotools_evaluation(
+                ground_truth=ground_truth,
+                predictions=coco_predictions,
                 kpt_oks_sigmas=kpt_oks_sigmas,
                 annotation_type=annotation_type,
-                gt_path=str(Path(project_root) / "annotations" / train_file),
-                predictions_path=str(predictions_file),
             )
 
         print(80 * "-")

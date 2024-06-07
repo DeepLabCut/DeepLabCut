@@ -49,6 +49,11 @@ def bbox_from_keypoints(
         the bounding boxes for the keypoints, of shape (..., 4) in the xywh format
     """
     squeeze = False
+
+    # we do not estimate bbox on keypoints that have 0 or -1 flag
+    mask = keypoints[..., -1] > 0
+    keypoints = keypoints[mask]
+
     if len(keypoints.shape) == 2:
         squeeze = True
         keypoints = np.expand_dims(keypoints, axis=0)
@@ -453,22 +458,10 @@ def _annotation_to_keypoints(annotation: dict, h: int, w: int) -> np.array:
 
     Returns:
         keypoints: np.array where the first two columns are x and y coordinates of the
-            keypoints and the third column is the visibility of the keypoints
+    
     """
-    keypoints = annotation["keypoints"].reshape(-1, 3)
-    visibility_mask = np.logical_and(
-        np.logical_and(
-            0 < keypoints[..., 0],
-            keypoints[..., 0] < w,
-        ),
-        np.logical_and(
-            0 < keypoints[..., 1],
-            keypoints[..., 1] < h,
-        ),
-    )
-    keypoints[~visibility_mask] = 0
-    keypoints[:, 2] = 2 * visibility_mask
-    return keypoints
+    # we don't mess up visibility flags here
+    return annotation["keypoints"].reshape(-1, 3)
 
 
 def apply_transform(
@@ -495,19 +488,23 @@ def apply_transform(
     """
 
     if transform:
-        defined_keypoint_mask = _check_keypoints_within_bounds(keypoints, image.shape)
+        oob_mask = _out_of_bounds_keypoints(keypoints, image.shape)
         transformed = _apply_transform(
             transform, image, keypoints, bboxes, class_labels
         )
-        transformed["keypoints"] = np.array(transformed["keypoints"])
-        transformed["keypoints"][~defined_keypoint_mask] = -1
-        shape_transformed = transformed["image"].shape
 
+        transformed["keypoints"] = np.array(transformed["keypoints"])
+
+        # out-of-bound keypoints have visibility flag 0. But we don't touch coordinates
+        if np.sum(oob_mask) > 0:
+            transformed["keypoints"][oob_mask][..., -1] = 0
+
+        out_shape = transformed["image"].shape
         if len(transformed["keypoints"]) > 0:
-            mask_valid = _check_keypoints_within_bounds(
-                transformed["keypoints"], shape_transformed
-            )
-            transformed["keypoints"][~mask_valid] = -1
+            oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
+            # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
+            if np.sum(oob_mask) > 0:
+                transformed["keypoints"][oob_mask][..., -1] = 0
 
         # TODO: Check that the transformed bboxes are still within the image
         if len(transformed["bboxes"]) > 0:
@@ -517,8 +514,9 @@ def apply_transform(
 
     else:
         transformed = {"keypoints": keypoints, "image": image}
-    np.nan_to_num(transformed["keypoints"], copy=False, nan=-1)
 
+    # do we ever need to do this if we had check_keypoints_within_bounds above?
+    # np.nan_to_num(transformed["keypoints"], copy=False, nan=-1)
     return transformed
 
 
@@ -552,9 +550,11 @@ def _apply_transform(
         bboxes=bboxes,
         bbox_labels=np.arange(len(bboxes)),
     )
-    transformed = _set_invalid_keypoints_to_neg_one(
-        transformed, keypoints, class_labels
-    )
+
+    # why are we repeatedly doing this?
+    # transformed = _set_invalid_keypoints_to_neg_one(
+    #     transformed, keypoints, class_labels
+    # )
 
     bboxes_out = np.zeros(bboxes.shape)
     for bbox, bbox_id in zip(transformed["bboxes"], transformed["bbox_labels"]):
@@ -589,25 +589,25 @@ def _set_invalid_keypoints_to_neg_one(
     return transformed
 
 
-def _check_keypoints_within_bounds(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
-    """
-    Check if each keypoint in an array of keypoints is within given bounds.
-    Parameters:
-    - keypoints (np.ndarray): A (N, 2) shaped array where N is the number of keypoints
-                            and each keypoint is represented as [x, y] or [width, height].
-    - shape (tuple): A tuple representing the shape or bounds as (height, width).
+def _out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
+    """Computes which visible keypoints are outside an image
+
+    Args:
+        keypoints: A (N, 3) shaped array where N is the number of keypoints and each
+            keypoint is represented as (x, y, visibility).
+        shape: A tuple representing the shape or bounds as (height, width).
+
     Returns:
-    - np.ndarray: A boolean array of shape (N,) where each element corresponds to whether
-                the respective keypoint is within the bounds. `True` indicates the keypoint
-                is within bounds, while `False` indicates it's outside.
-    Example:
-    >>> are_keypoints_within_bounds(np.array([[5, 5], [15, 15]]), (10, 10))
-    array([ True, False])
+        A boolean array of shape (N,) where each element corresponds to whether
+        the respective keypoint is visible (visibility > 0) and outside the image
+        bounds. This mask can be used to set the visibility bit to 0 for keypoints that
+        were kicked off an image due to augmentation.
     """
-    return np.all(
-        (keypoints[..., :2] > 0)
-        & (keypoints[..., :2] < np.array([shape[1], shape[0]])),
-        axis=1,
+    return (keypoints[..., 2] > 0) & (
+        (keypoints[..., 0] < 0)
+        | (keypoints[..., 0] > shape[1])
+        | (keypoints[..., 1] < 0)
+        | (keypoints[..., 1] > shape[0])
     )
 
 

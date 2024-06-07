@@ -937,6 +937,7 @@ def create_training_dataset(
             testIndices=testIndices,
             userfeedback=userfeedback,
             engine=engine,
+            weight_init=weight_init,
         )
     else:
         scorer = cfg["scorer"]

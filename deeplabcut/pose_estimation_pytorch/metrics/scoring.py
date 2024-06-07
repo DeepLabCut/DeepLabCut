@@ -31,6 +31,7 @@ def get_scores(
     unique_bodypart_poses: dict[str, np.ndarray] | None = None,
     unique_bodypart_gt: dict[str, np.ndarray] | None = None,
     pcutoff: float = -1,
+    bbox_margin: int = 0,
 ) -> dict[str, float]:
     """Computes for the different scores given the ground truth and the predictions.
 
@@ -51,6 +52,8 @@ def get_scores(
         pcutoff: the pcutoff used to use
         unique_bodypart_poses: the predicted poses for unique bodyparts
         unique_bodypart_gt: the ground truth for unique bodyparts
+        bbox_margin: the margin used to create bounding boxes from keypoints to compute
+            keypoint mAP.
 
     Returns:
         a dictionary of scores containign the following keys
@@ -110,8 +113,8 @@ def get_scores(
     pred_poses[pred_poses == -1] = np.nan
     rmse, rmse_pcutoff = compute_rmse(pred_poses, gt_poses, pcutoff=pcutoff)
 
-    oks = compute_oks(poses, ground_truth, pcutoff=None)
-    oks_pcutoff = compute_oks(poses, ground_truth, pcutoff=pcutoff)
+    oks = compute_oks(poses, ground_truth, margin=bbox_margin, pcutoff=None)
+    oks_pcutoff = compute_oks(poses, ground_truth, margin=bbox_margin, pcutoff=pcutoff)
 
     return {
         "rmse": rmse,
@@ -379,9 +382,7 @@ def pair_predicted_individuals_with_gt(
     """
     matched_poses = {}
     for image, pose in predictions.items():
-        gt_pose = mask_invisible(ground_truth[image], mask_value=-1)
-        gt_pose = np.nan_to_num(gt_pose, nan=-1)
-        match_individuals = rmse_match_prediction_to_gt(pose, gt_pose)
+        match_individuals = rmse_match_prediction_to_gt(pose, ground_truth[image])
         matched_poses[image] = pose[match_individuals]
 
     return matched_poses
@@ -403,7 +404,6 @@ def mask_invisible(
         as invisible replaced with the mask value
     """
     keypoints = keypoints.copy()
-    visibility = keypoints[..., 2] == 0
-    keypoints[visibility, 0] = mask_value
-    keypoints[visibility, 1] = mask_value
+    not_visible = keypoints[..., 2] <= 0
+    keypoints[not_visible, :2] = mask_value
     return keypoints[..., :2]

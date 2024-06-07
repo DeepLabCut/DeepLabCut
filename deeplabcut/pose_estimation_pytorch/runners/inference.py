@@ -186,7 +186,6 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
             batch_inputs = inputs[i : i + batch_size]
             batch_inputs = batch_inputs.to(self.device)
             _, raw_predictions = self.model(batch_inputs)
-
             for b, item in enumerate(raw_predictions):
                 # take the top-k bounding boxes as individuals
                 batch_predictions.append(

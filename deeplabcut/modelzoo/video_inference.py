@@ -11,13 +11,23 @@
 
 import json
 import os
-import warnings
+from pathlib import Path
 from typing import Optional, Union
 
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
+from ruamel.yaml import YAML
 
 from deeplabcut.modelzoo.utils import parse_project_model_name
+from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    get_config_model_paths,
+    update_config,
+)
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+from deeplabcut.utils.pseudo_label import (
+    dlc3predictions_2_annotation_from_video,
+    video_to_frames,
+)
 
 
 def video_inference_superanimal(
@@ -31,8 +41,14 @@ def video_inference_superanimal(
     pcutoff: float = 0.1,
     adapt_iterations: int = 1000,
     pseudo_threshold: float = 0.1,
+    bbox_threshold: float = 0.9,
+    detector_epochs: int = 4,
+    pose_epochs: int = 4,
     max_individuals: int = 10,
+    video_adapt_batch_size: int = 8,
     device: Optional[str] = None,
+    customized_pose_checkpoint: Optional[str] = None,
+    customized_detector_checkpoint: Optional[str] = None,
 ):
     """
     This function performs inference on videos using a superanimal model. The model is downloaded from hugginface to the `modelzoo/checkpoints` folder.
@@ -57,11 +73,23 @@ def video_inference_superanimal(
 
         adapt_iterations (int): Number of iterations for adaptation training. Empirically 1000 is sufficient.
 
+        bbox_threshold (float): The pseudo-label threshold for the confidence of the detector. The default is 0.9
+
+        detector_epochs (int): Used in the pytorch engine. The number of epochs for training the detector. The default is 4.
+
+        pose_epochs (int): Used in the pytorch engine. The number of epochs for training the pose estimator. The default is 4.
+
         pseudo_threshold (float): The pseudo-label threshold for the confidence of the prediction. The default is 0.1.
 
         max_individuals (int): The maximum number of individuals in the video. The default is 30. Used only for top down models.
 
+        video_adapt_batch_size (int): The batch size to use for video adaptation.
+
         device (str): The device to use for inference. The default is None (CPU). Used only for pytorch models.
+
+        customized_pose_checkpoint (str): Used in the pytorch engine. If specified, replacing the default pose checkpoint.
+
+        customized_detector_checkpoint (str): Used in the pytorch engine. If specified, replacing the default detector checkpoint.
 
     Raises:
         NotImplementedError: If the model is not found in the modelzoo.
@@ -88,7 +116,10 @@ def video_inference_superanimal(
             "pose_model.pth": pose_model_name,
             "detector.pt": detector_name,
         }
-        pose_model_path = os.path.join(weight_folder, pose_model_name)
+        if customized_pose_checkpoint is None:
+            pose_model_path = os.path.join(weight_folder, pose_model_name)
+        else:
+            pose_model_path = customized_pose_checkpoint
         detector_model_path = os.path.join(weight_folder, detector_name)
         if not (
             os.path.exists(pose_model_path) and os.path.exists(detector_model_path)
@@ -129,9 +160,124 @@ def video_inference_superanimal(
         )
 
         if video_adapt:
-            warnings.warn(f"Video adaptation is not yet implemented for HRNet models.")
+            # the users can pass in many videos. For now, we only use one video for
+            # video adaptation. As reported in Ye et al. 2023, one video should be
+            # sufficient for video adaptation.
+            video_path = Path(videos[0])
+            print(f"using {video_path} for video adaptation training")
 
-        _video_inference_superanimal(
+            # video inference to get pseudo label
+            _video_inference_superanimal(
+                [str(video_path)],
+                project_name,
+                model_name,
+                max_individuals,
+                pcutoff,
+                device,
+                dest_folder,
+                customized_pose_checkpoint=None,
+                customized_detector_checkpoint=None,
+            )
+
+            (
+                model_config,
+                project_config,
+                pose_model_path,
+                detector_path,
+            ) = get_config_model_paths(project_name, model_name)
+            config = {**project_config, **model_config}
+            config = update_config(config, max_individuals, device)
+
+            # we need config to fetch the correct keypoints to dlc3predictions_2_annotation_from_video
+            bodyparts = config["metadata"]["bodyparts"]
+
+            # we prepare the pseudo dataset in the same folder of the target video
+            pseudo_dataset_folder = video_path.with_name(f"pseudo_{video_path.stem}")
+            pseudo_dataset_folder.mkdir(exist_ok=True)
+            model_folder = pseudo_dataset_folder / "checkpoints"
+            model_folder.mkdir(exist_ok=True)
+
+            image_folder = pseudo_dataset_folder / "images"
+            if image_folder.exists():
+                print(f"{image_folder} exists, skipping the frame extraction")
+            else:
+                image_folder.mkdir()
+                video_to_frames(video_path, pseudo_dataset_folder)
+
+            anno_folder = pseudo_dataset_folder / "annotations"
+            if anno_folder.exists():
+                print(f"{anno_folder} exists, skipping the annotation construction")
+            else:
+                anno_folder.mkdir()
+
+                if dest_folder is None:
+                    pseudo_anno_dir = video_path.parent
+                else:
+                    pseudo_anno_dir = Path(dest_folder)
+                dlc_scorer = f"{project_name}_{model_name}"
+                pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
+                with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
+                    predictions = json.load(f)
+
+                # make sure we tune parameters inside this function such as pseudo
+                # threshold etc.
+                dlc3predictions_2_annotation_from_video(
+                    predictions,
+                    pseudo_dataset_folder,
+                    bodyparts,
+                    superanimal_name,
+                    pose_threshold=pseudo_threshold,
+                    bbox_threshold=bbox_threshold,
+                )
+
+            # this is probably needed for video generation
+            individuals = [f"animal{i}" for i in range(max_individuals)]
+            config["metadata"]["individuals"] = individuals
+
+            # the model config's parameters need to be updated for adaptation training
+            model_config_path = model_folder / "pytorch_config.yaml"
+            with open(model_config_path, "w") as f:
+                yaml = YAML()
+                yaml.dump(config, f)
+
+            adapted_detector_checkpoint = (
+                model_folder / f"snapshot-detector-{detector_epochs:03}.pt"
+            )
+            adapted_pose_checkpoint = model_folder / f"snapshot-{pose_epochs:03}.pt"
+
+            if (
+                adapted_detector_checkpoint.exists()
+                and adapted_pose_checkpoint.exists()
+            ):
+                print(
+                    f"Video adaptation already ran; pose ({adapted_pose_checkpoint}) "
+                    f"and detector ({adapted_detector_checkpoint}) already exist. To "
+                    "rerun video adaptation training, delete the checkpoints or select"
+                    "a different number of adaptation epochs. Continuing with the"
+                    "existing checkpoints.")
+            else:
+                adaptation_train(
+                    project_root=pseudo_dataset_folder,
+                    model_folder=model_folder,
+                    train_file="train.json",
+                    test_file="test.json",
+                    model_config_path=model_config_path,
+                    device=device,
+                    epochs=pose_epochs,
+                    save_epochs=1,
+                    detector_epochs=detector_epochs,
+                    detector_save_epochs=1,
+                    snapshot_path=pose_model_path,
+                    detector_path=detector_path,
+                    batch_size=video_adapt_batch_size,
+                    detector_batch_size=video_adapt_batch_size,
+                )
+
+            # Set the customized checkpoint paths
+            customized_pose_checkpoint = str(adapted_pose_checkpoint)
+            customized_detector_checkpoint = str(adapted_detector_checkpoint)
+
+        return _video_inference_superanimal(
             videos,
             project_name,
             model_name,
@@ -139,4 +285,6 @@ def video_inference_superanimal(
             pcutoff,
             device,
             dest_folder,
+            customized_pose_checkpoint=customized_pose_checkpoint,
+            customized_detector_checkpoint=customized_detector_checkpoint,
         )

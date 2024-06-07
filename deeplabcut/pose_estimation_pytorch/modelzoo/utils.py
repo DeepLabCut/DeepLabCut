@@ -16,7 +16,6 @@ from pathlib import Path
 
 import torch
 from dlclibrary import download_huggingface_model
-
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
@@ -154,9 +153,7 @@ def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> 
 
         parsed_model_snapshot = {
             "model": _map_model_keys(snapshot["model_state_dict"]),
-            "metadata": {
-                "epoch": snapshot["epoch"],
-            },
+            "metadata": {"epoch": 0},
         }
         torch.save(parsed_model_snapshot, parsed)
     return parsed
@@ -170,3 +167,5 @@ def get_pose_model_type(backbone: str) -> str:
         return backbone.replace("_", "")
 
     raise ValueError(f"Unknown backbone for SuperAnimal Weights")
+
+

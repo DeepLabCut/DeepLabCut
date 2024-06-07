@@ -24,13 +24,36 @@ from deeplabcut.pose_estimation_pytorch.models.heads.base import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.weight_init import (
+    BaseWeightInitializer,
+    WEIGHT_INIT,
+)
 
 
 @HEADS.register_module
 class HeatmapHead(WeightConversionMixin, BaseHead):
-    """
-    Deconvolutional head to predict maps from the extracted features.
-    This class implements a simple deconvolutional head to predict maps from the extracted features.
+    """Deconvolutional head to predict maps from the extracted features.
+
+    This class implements a simple deconvolutional head to predict maps from the
+    extracted features.
+
+    Args:
+        predictor: The predictor used to transform heatmaps into keypoints.
+        target_generator: The module to generate target heatmaps from keypoints.
+        criterion: The loss criterion(s) for the head.
+        aggregator: The loss aggregator to use, if multiple criterions are used.
+        heatmap_config: The configuration for the heatmap outputs of the head.
+        locref_config: The configuration for the location refinement outputs (None if
+            no location refinement should be used).
+        weight_init: The way to initialize weights for the head. If None, default
+            PyTorch initialization is used. Otherwise, a BaseWeightInitializer can be
+            given (or a configuration for a BaseWeightInitializer). To initialize
+            the weights with a normal distribution, you could pass
+            ``weight_init="normal"`` (which initializes weights using a Normal
+            distribution 0.001 and biases with 0), or you could pass ``weight_init={
+            type="normal", std=0.01}`` to change the standard deviation used. All
+            BaseWeightInitializers are defined in deeplabcut/pose_estimation_pytorch/
+            models/weight_init.py.
     """
 
     def __init__(
@@ -41,6 +64,7 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
         aggregator: BaseLossAggregator | None,
         heatmap_config: dict,
         locref_config: dict | None = None,
+        weight_init: str | dict | BaseWeightInitializer | None = None,
     ) -> None:
         heatmap_head = DeconvModule(**heatmap_config)
         locref_head = None
@@ -61,6 +85,15 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
         )
         self.heatmap_head = heatmap_head
         self.locref_head = locref_head
+
+        if weight_init is not None:
+            if isinstance(weight_init, (str, dict)):
+                weight_init = WEIGHT_INIT.build(weight_init)
+            elif not isinstance(weight_init, BaseWeightInitializer):
+                raise ValueError(
+                    f"Could not parse ``weight_init`` parameter: {weight_init}."
+                )
+            weight_init.init_weights(self)
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         outputs = {"heatmap": self.heatmap_head(x)}

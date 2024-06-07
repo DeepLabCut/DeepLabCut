@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import copy
 import logging
+from pathlib import Path
 
 import albumentations as A
 from torch.utils.data import DataLoader
@@ -20,16 +21,24 @@ from torch.utils.data import DataLoader
 import deeplabcut.pose_estimation_pytorch.config as torch_config
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.pose_estimation_pytorch.data import build_transforms, DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data import (
+    build_transforms,
+    COCOLoader,
+    DLCLoader,
+    Loader,
+)
 from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.modelzoo.memory_replay import (
+    prepare_memory_replay,
+)
 from deeplabcut.pose_estimation_pytorch.runners import build_training_runner
-from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
-    LOGGER,
     destroy_file_logging,
+    LOGGER,
     setup_file_logging,
 )
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def train(
@@ -172,6 +181,24 @@ def train_network(
         trainset_index=trainingsetindex,
         modelprefix=modelprefix,
     )
+    if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
+        weight_init = WeightInitialization.from_dict(weight_init_cfg)
+        if weight_init.memory_replay:
+            raise ValueError(f"Memory replay is not yet implemented! Come back soon!")
+            # dlc_proj_root = Path(config).parent
+            # superanimal_model_config = prepare_memory_replay(
+            #     dlc_proj_root,
+            #     shuffle,
+            #     superanimal_name,
+            #     model_name,
+            #     device,
+            #     max_individuals=3,
+            # )
+            # loader = COCOLoader(
+            #     project_root=loader.model_folder / "memory-replay",
+            #     model_config_path=loader.model_config_path,
+            # )
+
     batch_size = kwargs.pop("batch_size", None)
     epochs = kwargs.pop("epochs", None)
     loader.update_model_cfg(kwargs)
@@ -200,7 +227,9 @@ def train_network(
 
         detector_run_config = loader.model_cfg["detector"]
         detector_run_config["device"] = loader.model_cfg["device"]
-        detector_run_config["train_settings"]["weight_init"] = loader.model_cfg["train_settings"].get("weight_init")
+        detector_run_config["train_settings"]["weight_init"] = loader.model_cfg[
+            "train_settings"
+        ].get("weight_init")
         train(
             loader=loader,
             run_config=detector_run_config,

@@ -112,12 +112,18 @@ class DEKRGenerator(BaseGenerator):
                 ct_x_sm = (ct_x - stride_x / 2) / stride_x
                 ct_y_sm = (ct_y - stride_y / 2) / stride_y
                 for idx, pt in enumerate(p):
+                    if pt[-1] == -1:
+                        # full gradient masking
+                        heatmap_weights[b, idx] = 0.0
+                        continue
+                    elif pt[-1] <= 0:
+                        continue
+
                     if idx == idx_center:
                         sigma = ct_sgm
                     else:
                         sigma = sgm
-                    if np.any(pt <= 0.0):
-                        continue
+
                     x, y = pt[0], pt[1]
                     x_sm, y_sm = (
                         (x - stride_x / 2) / stride_x,

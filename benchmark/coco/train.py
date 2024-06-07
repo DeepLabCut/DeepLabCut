@@ -11,7 +11,7 @@ from deeplabcut.pose_estimation_pytorch import COCOLoader, utils
 from deeplabcut.pose_estimation_pytorch.apis.train import train
 from deeplabcut.pose_estimation_pytorch.runners.logger import setup_file_logging
 from deeplabcut.pose_estimation_pytorch.task import Task
-
+from collections import defaultdict
 
 def main(
     project_root: str,
@@ -25,8 +25,11 @@ def main(
     detector_save_epochs: int | None,
     snapshot_path: str | None,
     detector_path: str | None,
+    batch_size: int = 64,
+    dataloader_workers: int = 12,
+    detector_batch_size: int = 64,
+    detector_dataloader_workers: int = 12,
 ):
-    model_folder = Path(model_config_path).parent.parent
     log_path = Path(model_config_path).parent / "log.txt"
     setup_file_logging(log_path)
 
@@ -36,17 +39,38 @@ def main(
         train_json_filename=train_file,
         test_json_filename=test_file,
     )
+    
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
-    updates = {}
-    if epochs is not None:
-        updates["train_settings"]["epochs"] = epochs
-    if save_epochs is not None:
-        updates["train_settings"]["save_epochs"] = save_epochs
-    if detector_epochs is not None:
-        updates["detector"]["train_settings"]["epochs"] = detector_epochs
-    if detector_save_epochs is not None:
-        updates["detector"]["train_settings"]["save_epochs"] = detector_save_epochs
+    if epochs is None:
+        epochs = loader.model_cfg["train_settings"]["epochs"]
+    if save_epochs is None:
+        save_epochs = loader.model_cfg["runner"]["snapshots"]["save_epochs"]
+
+    updates = dict(
+        runner=dict(snapshots=dict(save_epochs=save_epochs)),
+        train_settings=dict(
+            batch_size=batch_size,
+            dataloader_workers=dataloader_workers,
+            epochs=epochs,
+        ),
+    )
+
+    det_cfg = loader.model_cfg("detector")
+    if det_cfg is not None:
+        if detector_epochs is None:
+            detector_epochs = det_cfg["train_settings"]["epochs"]
+        if detector_save_epochs is None:
+            detector_save_epochs = det_cfg["runner"]["snapshots"]["save_epochs"]
+        updates_detector = dict(
+            runner=dict(snapshots=dict(save_epochs=detector_save_epochs)),
+            train_settings=dict(
+                batch_size=detector_batch_size,
+                dataloader_workers=detector_dataloader_workers,
+            ),
+        )
+        updates["detector"] = updates_detector
+
     loader.update_model_cfg(updates)
 
     pose_task = Task(loader.model_cfg["method"])
@@ -56,7 +80,8 @@ def main(
             logger_config = copy.deepcopy(loader.model_cfg["logger"])
             logger_config["run_name"] += "-detector"
 
-        if detector_epochs > 0:
+        # skipping detector training if a detector_path is given 
+        if args.detector_path is None and detector_epochs > 0:
             train(
                 loader=loader,
                 run_config=loader.model_cfg["detector"],
@@ -66,14 +91,15 @@ def main(
                 snapshot_path=detector_path,
             )
 
-    train(
-        loader=loader,
-        run_config=loader.model_cfg,
-        task=pose_task,
-        device=device,
-        logger_config=loader.model_cfg.get("logger"),
-        snapshot_path=snapshot_path,
-    )
+    if epochs > 0:
+        train(
+            loader=loader,
+            run_config=loader.model_cfg,
+            task=pose_task,
+            device=device,
+            logger_config=loader.model_cfg.get("logger"),
+            snapshot_path=snapshot_path,
+        )
 
 
 if __name__ == "__main__":

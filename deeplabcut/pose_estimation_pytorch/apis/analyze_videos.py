@@ -44,9 +44,9 @@ class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str, context: list[dict[str, Any]] | None = None
+        self, video_path: str | Path, context: list[dict[str, Any]] | None = None
     ) -> None:
-        super().__init__(video_path)
+        super().__init__(str(video_path))
         self._context = context
         self._index = 0
 
@@ -117,6 +117,7 @@ def video_inference(
 
         print("Running Detector")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
+
         video.set_context(bbox_predictions)
 
     print("Running Pose Prediction")
@@ -213,7 +214,11 @@ def analyze_videos(
     project_path = Path(cfg["project_path"])
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
+        train_fraction,
+        shuffle,
+        cfg,
+        modelprefix=modelprefix,
+        engine=Engine.PYTORCH,
     )
     train_folder = model_folder / "train"
 
@@ -250,7 +255,7 @@ def analyze_videos(
         model_cfg["device"] = device
 
     print(f"Analyzing videos with {snapshot.path}")
-    detector_path, detector_snapshot = None,  None
+    detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
             detector_snapshot_index = -1

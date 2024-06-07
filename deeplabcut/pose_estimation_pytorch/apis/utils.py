@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Callable
 
@@ -45,6 +46,51 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+
+
+def parse_snapshot_index_for_analysis(
+    cfg: dict,
+    model_cfg: dict,
+    snapshot_index: int | str | None,
+    detector_snapshot_index: int | str | None
+) -> tuple[int, int | None]:
+    """Gets the index of the snapshots to use for data analysis (e.g. video analysis)
+
+    Args:
+        cfg: The project configuration.
+        model_cfg: The model configuration.
+        snapshot_index: The index of the snapshot to use, if one was given by the user.
+        detector_snapshot_index: The index of the detector snapshot to use, if one
+            was given by the user.
+
+    Returns:
+        snapshot_index: the snapshot index to use for analysis
+        detector_snapshot_index: the detector index to use for analysis, or None if no
+            detector should be used
+    """
+    if snapshot_index is None:
+        snapshot_index = cfg["snapshotindex"]
+    if snapshot_index == "all":
+        logging.warning(
+            "snapshotindex is set to 'all' (in the config.yaml file or as given to "
+            "`analyze_...`). Running data analysis with all snapshots is very "
+            "costly! Use the function 'evaluate_network' to choose the best the "
+            "snapshot. For now, changing snapshot index to -1. To evaluate another "
+            "snapshot, you can change the value in the config file or call "
+            "`analyze_videos` or `analyze_images` with your desired snapshot index."
+        )
+        snapshot_index = -1
+
+    pose_task = Task(model_cfg["method"])
+    if pose_task == Task.TOP_DOWN:
+        if detector_snapshot_index is None:
+            detector_snapshot_index = cfg.get("detector_snapshotindex", -1)
+        if detector_snapshot_index is None or detector_snapshot_index == "all":
+            detector_snapshot_index = -1
+    else:
+        detector_snapshot_index = None
+
+    return snapshot_index, detector_snapshot_index
 
 
 def return_train_network_path(

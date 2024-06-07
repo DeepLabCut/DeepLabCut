@@ -80,7 +80,7 @@ class CreateTrainingDataset(DefaultTab):
 
         # Dataset choices
         self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
-        self.weight_init_choice = QtWidgets.QComboBox()
+        self.weight_init_selector = WeightInitializationSelector(self.root)
         self.update_weight_init_methods(self.root.engine)
         self.root.engine_change.connect(self.update_weight_init_methods)
 
@@ -94,12 +94,13 @@ class CreateTrainingDataset(DefaultTab):
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
+        self.net_choice.setMinimumWidth(80)
         self.update_nets(self.root.engine)
         self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
         # Update Net types when selected weight init changes
-        self.weight_init_choice.currentTextChanged.connect(
+        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.update_nets(None)
         )
 
@@ -118,7 +119,7 @@ class CreateTrainingDataset(DefaultTab):
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
         layout.addWidget(self.weight_init_label, 0, 2)
-        layout.addWidget(self.weight_init_choice, 0, 3)
+        layout.addWidget(self.weight_init_selector, 0, 3)
 
         layout.addWidget(nnet_label, 1, 0)
         layout.addWidget(self.net_choice, 1, 1)
@@ -161,7 +162,7 @@ class CreateTrainingDataset(DefaultTab):
                 return
 
         try:
-            weight_init = self.get_weight_init()
+            weight_init = self.weight_init_selector.get_weight_init()
         except ValueError as err:
             print(f"The training dataset could not be created: {err}.")
             return
@@ -315,23 +316,67 @@ class CreateTrainingDataset(DefaultTab):
     def update_weight_init_methods(self, engine: Engine) -> None:
         if engine != Engine.PYTORCH:
             self.weight_init_label.hide()
-            self.weight_init_choice.hide()
+            self.weight_init_selector.hide()
             return
 
-        while self.weight_init_choice.count() > 0:
-            self.weight_init_choice.removeItem(0)
-
         self.weight_init_label.show()
-        self.weight_init_choice.show()
-        self.weight_init_choice.addItems(list(_WEIGHT_INIT_OPTIONS.keys()))
+        self.weight_init_selector.update_choices(list(_WEIGHT_INIT_OPTIONS.keys()))
+        self.weight_init_selector.show()
 
     def get_net_filter(self) -> list[str] | None:
         """Returns: the net type that can be used based on weight initialization"""
         if self.root.engine != Engine.PYTORCH:
             return None
 
+        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+            return None
+
+        return _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]["model_filter"]
+
+
+class WeightInitializationSelector(QtWidgets.QWidget):
+    """Widget to select weight initialization"""
+
+    def __init__(self, root):
+        super().__init__()
+        self.root = root
+
+        self.weight_init_choice = QtWidgets.QComboBox()
+
+        self.memory_replay_label = QtWidgets.QLabel("With memory replay")
+        self.memory_replay_box = QtWidgets.QCheckBox()
+        self.memory_replay_label.hide()
+        self.memory_replay_box.hide()
+
+        memory_replay_layout = QtWidgets.QHBoxLayout()
+        memory_replay_layout.addWidget(self.memory_replay_label)
+        memory_replay_layout.addWidget(self.memory_replay_box)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.weight_init_choice)
+        layout.addLayout(memory_replay_layout)
+        self.setLayout(layout)
+
+        self.weight_init_choice.currentTextChanged.connect(self._choice_changed)
+
+    @property
+    def weight_init(self) -> str:
+        return self.weight_init_choice.currentText()
+
+    @property
+    def with_decoder(self) -> bool:
         weight_init_choice = self.weight_init_choice.currentText()
-        return _WEIGHT_INIT_OPTIONS[weight_init_choice]["model_filter"]
+        return "fine-tuning" in weight_init_choice.lower()
+
+    @property
+    def memory_replay(self) -> bool:
+        return self.memory_replay_box.isChecked()
+
+    def update_choices(self, choices: list[str]) -> None:
+        """Updates the WeightInitialization methods that can be selected"""
+        while self.weight_init_choice.count() > 0:
+            self.weight_init_choice.removeItem(0)
+        self.weight_init_choice.addItems(choices)
 
     def get_weight_init(self) -> WeightInitialization | None:
         """
@@ -348,12 +393,12 @@ class CreateTrainingDataset(DefaultTab):
 
         weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
         super_animal = weight_init_data["super_animal"]
-        with_decoder = "fine-tuning" in weight_init_choice.lower()
         try:
             weight_init = WeightInitialization.build(
                 self.root.cfg,
                 super_animal=super_animal,
-                with_decoder=with_decoder,
+                with_decoder=self.with_decoder,
+                memory_replay=self.memory_replay,
             )
         except ValueError as err:
             QtWidgets.QMessageBox.critical(
@@ -369,6 +414,14 @@ class CreateTrainingDataset(DefaultTab):
             raise err
 
         return weight_init
+
+    def _choice_changed(self, state: str) -> None:
+        if "fine-tuning" in str(state).lower():
+            self.memory_replay_label.show()
+            self.memory_replay_box.show()
+        else:
+            self.memory_replay_label.hide()
+            self.memory_replay_box.hide()
 
 
 def _create_message_box(text, info_text):
@@ -409,7 +462,6 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "model_filter": [
             "dekr_w32",
             "hrnet_w32",
-            "resnet_50",
         ],
         "super_animal": "superanimal_quadruped",
     },
@@ -417,7 +469,6 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "model_filter": [
             "dekr_w32",
             "hrnet_w32",
-            "resnet_50",
         ],
         "super_animal": "superanimal_topviewmouse",
     },

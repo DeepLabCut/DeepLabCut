@@ -132,9 +132,7 @@ class Loader(ABC):
                 annotations[i]["individual"]: annotations[i]["keypoints"]
                 for i in img_to_ann_map[image["id"]]
             }
-            gt_array = np.empty((len(individuals), num_bodyparts, 3))
-            gt_array.fill(np.nan)
-
+            gt_array = np.zeros((len(individuals), num_bodyparts, 3))
             # Keep the shape of the ground truth
             for idv_idx, idv in enumerate(individuals):
                 if idv in individual_keypoints:
@@ -168,9 +166,11 @@ class Loader(ABC):
             image_path = image["file_name"]
             img_shape = image["height"], image["width"], 3
             bboxes = [annotations[i]["bbox"] for i in img_to_ann_map[image["id"]]]
-            ground_truth_dict[image_path] = _compute_crop_bounds(
-                np.stack(bboxes, axis=0), img_shape
-            )
+            if len(bboxes) == 0:
+                bboxes = np.zeros((0, 4))
+            else:
+                bboxes = _compute_crop_bounds(np.stack(bboxes, axis=0), img_shape)
+            ground_truth_dict[image_path] = bboxes
 
         return ground_truth_dict
 

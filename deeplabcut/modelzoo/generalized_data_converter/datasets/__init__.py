@@ -13,3 +13,5 @@ from .multi import MultiSourceDataset
 from .coco import COCOPoseDataset
 from .materialize import mat_func_factory
 from .single_dlc import SingleDLCPoseDataset
+from .single_dlc_dataframe import SingleDLCDataFrame
+from .ma_dlc_dataframe import MaDLCDataFrame

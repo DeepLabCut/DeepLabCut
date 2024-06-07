@@ -35,13 +35,16 @@ class WeightInitialization:
             cfg=project_cfg,
             super_animal="superanimal_quadruped",
             with_decoder=True,
+            memory_replay=True,
         )
         ```
 
     Args:
         dataset: The dataset on which the model weights were trained. Must be one of the
             SuperAnimal weights.
-        with_decoder: Whether to load the decoder weights as well.
+        `with_decoder`: Whether to load the decoder weights as well.
+        memory_replay: Only when ``with_decoder=True``. Whether to train the model with
+            memory replay, so that it predicts all SuperAnimal bodyparts.
         conversion_array: The mapping from SuperAnimal to project bodyparts. Required
             when `with_decoder=True`.
 
@@ -52,12 +55,21 @@ class WeightInitialization:
     """
     dataset: str
     with_decoder: bool = False
+    memory_replay: bool = False
     conversion_array: np.ndarray | None = None
     bodyparts: list[str] | None = None
 
     def __post_init__(self):
         # check that the dataset exists; raises a ValueError if it doesn't
         _ = modelzoo_utils.get_super_animal_project_cfg(self.dataset)
+        if self.memory_replay and not self.with_decoder:
+            raise ValueError(
+                "You cannot train a model with memory replay if you do not keep the "
+                "decoder layers (``with_decoder=True``), but you passed "
+                "`memory_replay=True` and `with_decoder=False`. Please change your "
+                "WeightInitialization parameters."
+            )
+
         if self.with_decoder and self.conversion_array is None:
             raise ValueError(
                 f"You must specify a conversion_array to initialize decoder weights "
@@ -82,6 +94,7 @@ class WeightInitialization:
         data = {
             "dataset": self.dataset,
             "with_decoder": self.with_decoder,
+            "memory_replay": self.memory_replay,
         }
         if self.conversion_array is not None:
             data["conversion_array"] = self.conversion_array.tolist()
@@ -97,6 +110,7 @@ class WeightInitialization:
         return WeightInitialization(
             dataset=data["dataset"],
             with_decoder=data["with_decoder"],
+            memory_replay=data["memory_replay"],
             conversion_array=conversion_array,
         )
 
@@ -105,6 +119,7 @@ class WeightInitialization:
         cfg: dict,
         super_animal: str,
         with_decoder: bool = False,
+        memory_replay: bool = False,
     ) -> "WeightInitialization":
         """Builds a WeightInitialization for a project
 
@@ -116,6 +131,8 @@ class WeightInitialization:
                 project configuration file. See
                 ``deeplabcut.modelzoo.utils.create_conversion_table`` to create a
                 conversion table.
+            memory_replay: Only when ``with_decoder=True``. Whether to train the model
+                with memory replay, so that it predicts all SuperAnimal bodyparts.
 
         Returns:
             The built WeightInitialization.
@@ -130,6 +147,7 @@ class WeightInitialization:
         return WeightInitialization(
             dataset=super_animal,
             with_decoder=with_decoder,
+            memory_replay=memory_replay,
             conversion_array=conversion_array,
             bodyparts=bodyparts,
         )

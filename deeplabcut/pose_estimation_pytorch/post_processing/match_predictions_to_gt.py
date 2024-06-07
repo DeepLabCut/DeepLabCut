@@ -20,53 +20,77 @@ from deeplabcut.core.inferenceutils import (
 def rmse_match_prediction_to_gt(
     pred_kpts: np.ndarray, gt_kpts: np.ndarray
 ) -> np.ndarray:
-    """Summary:
-    Hungarian algorithm predicted individuals to ground truth ones, using root mean squared error (rmse). The function provides a way to
-    match predicted individuals to ground truth individuals based on the rmse distance between their corresponding
-    keypoints. This algorithm is used to find the optimal matching, taking into account the potential missing animal.
+    """
+    Hungarian algorithm predicted individuals to ground truth ones, using root mean
+    squared error (rmse). The function provides a way to match predicted individuals to
+    ground truth individuals based on the rmse distance between their corresponding
+    keypoints. This algorithm is used to find the optimal matching, taking into account
+    the potential missing animal.
 
     Raises:
         ValueError: if `gt_kpts.shape != pred_kpts.shape`
 
     Args:
-        pred_kpts: predicted keypoints for each animal. The shape of the array is (num_animals, num_keypoints, 3):
-            num_animals: number of animals
-            num_keypoints: number of keypoints
-            3: (x,y,score) coordinates of each keypoint
-        gt_kpts: ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints, 2):
-            num_animals: number of animals
-            num_keypoints: number of keypoints
-            2: (x,y) coordinates of each keypoint
+        pred_kpts: shape (num_individuals, num_keypoints, 3), ground truth keypoints for
+            an image, where the 3 values are (x,y,score) for each keypoint
+        gt_kpts: shape (num_individuals, num_keypoints, 3), ground truth keypoints for
+            an image, where the 3 values are (x,y,visibility) for each keypoint
 
     Returns:
-        col_ind (np.array): array of the individuals indices for prediction
+        col_ind: array of the individuals indices for prediction
     """
-    num_animals, num_keypoints, _ = pred_kpts.shape
-    if num_keypoints + 1 == gt_kpts.shape[1]:
-        gt_kpts_without_ctr = gt_kpts[:, :-1, :].copy()
-    elif num_keypoints == gt_kpts.shape[1]:
-        gt_kpts_without_ctr = gt_kpts.copy()
+    num_pred, num_keypoints, _ = pred_kpts.shape
+    num_idv, num_keypoints_gt, _ = gt_kpts.shape
+    if num_keypoints + 1 == num_keypoints_gt:
+        gt_kpts = gt_kpts[:, :-1, :].copy()
+    elif num_keypoints == num_keypoints_gt:
+        gt_kpts = gt_kpts.copy()
     else:
         raise ValueError("Shape mismatch between ground truth and predictions")
 
-    # Computation of the number of annotated animals in the ground truth
-    num_animals_gt = num_animals
-    for animal_index in range(num_animals):
-        if (gt_kpts_without_ctr[animal_index] < 0).all():
-            num_animals_gt -= 1
+    if num_pred != num_idv:
+        raise ValueError(
+            "Must have the same number of GT and predicted individuals, found "
+            f"pred_kpts={pred_kpts.shape} and gt_kpts={gt_kpts.shape}"
+        )
 
-    distance_matrix = np.zeros((num_animals_gt, num_animals))
-    for g in range(num_animals_gt):
-        for p in range(num_animals):
-            distance_matrix[g, p] = np.nansum(
-                (gt_kpts_without_ctr[g] - pred_kpts[p, :, :2]) ** 2
-            )
+    valid_gt = np.any(gt_kpts[..., 2] > 0, axis=1)
+    valid_gt_indices = np.nonzero(valid_gt)[0]
+    if len(valid_gt_indices) == 0:
+        return np.arange(num_idv)
 
-    _, col_ind = linear_sum_assignment(distance_matrix)
-    # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
-    col_ind = extend_col_ind(col_ind, num_animals)
+    valid_pred = np.any(pred_kpts[..., 2] > 0, axis=1)
+    valid_pred_indices = np.nonzero(valid_pred)[0]
+    if len(valid_pred_indices) == 0:
+        return np.arange(num_idv)
 
-    return col_ind
+    distance_matrix = np.full((len(valid_gt_indices), len(valid_pred_indices)), np.inf)
+    for g in valid_gt_indices:
+        gt_idv = gt_kpts[g]
+        mask = gt_idv[:, 2] > 0
+        for p in valid_pred_indices:
+            pred_idv = pred_kpts[p]
+            d = (gt_idv[mask, :2] - pred_idv[mask, :2]) ** 2
+            distance_matrix[g, p] = np.nanmean(d)
+
+    _, col_ind = linear_sum_assignment(distance_matrix)  # len == len(valid_gt_indices)
+
+    gt_idx_to_pred_idx = {
+        valid_gt_indices[valid_gt_index]: valid_pred_indices[valid_pred_index]
+        for valid_gt_index, valid_pred_index in enumerate(col_ind)
+    }
+    matched_pred = {valid_pred_indices[i] for i in col_ind}
+    unmatched_pred = [i for i in range(num_idv) if i not in matched_pred]
+    next_unmatched = 0
+    col_ind = []
+    for gt_index in range(num_idv):
+        if gt_index in gt_idx_to_pred_idx:
+            col_ind.append(gt_idx_to_pred_idx[gt_index])
+        else:
+            col_ind.append(unmatched_pred[next_unmatched])
+            next_unmatched += 1
+
+    return np.array(col_ind)
 
 
 def oks_match_prediction_to_gt(
