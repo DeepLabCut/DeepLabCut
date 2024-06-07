@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
+    CSVLogger,
     ImageLoggerMixin,
 )
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
@@ -73,6 +74,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.scheduler = scheduler
         self.snapshot_manager = snapshot_manager
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
+        self.csv_logger = CSVLogger(train_folder=snapshot_manager.model_folder)
         self.logger = logger
         self.starting_epoch = 0
         self.current_epoch = 0
@@ -230,19 +232,20 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         epoch_loss = np.mean(epoch_loss).item()
         self.history[f"{mode}_loss"].append(epoch_loss)
 
+        metrics_to_log = {}
+        if perf_metrics:
+            for name, score in perf_metrics.items():
+                if not isinstance(score, (int, float)):
+                    score = 0.0
+                metrics_to_log[name] = score
+
+        for key in loss_metrics:
+            name, val = f"{mode}.{key}", np.nanmean(loss_metrics[key]).item()
+            self._metadata["losses"][name] = val
+            metrics_to_log[f"losses/{name}"] = val
+
+        self.csv_logger.log(metrics_to_log, step=self.current_epoch)
         if self.logger:
-            metrics_to_log = {}
-            if perf_metrics:
-                for name, score in perf_metrics.items():
-                    if not isinstance(score, (int, float)):
-                        score = 0.0
-                    metrics_to_log[name] = score
-
-            for key in loss_metrics:
-                name, val = f"{mode}.{key}", np.nanmean(loss_metrics[key]).item()
-                self._metadata["losses"][name] = val
-                metrics_to_log[f"losses/{name}"] = val
-
             self.logger.log(metrics_to_log, step=self.current_epoch)
 
         return epoch_loss

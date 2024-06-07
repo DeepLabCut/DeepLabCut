@@ -155,6 +155,10 @@ def train_network(
     device: str | None = None,
     snapshot_path: str | None = None,
     detector_path: str | None = None,
+    batch_size: int | None = None,
+    epochs: int | None = None,
+    save_epochs: int | None = None,
+    display_iters: int | None = None,
     max_snapshots_to_keep: int | None = None,
     **kwargs,
 ) -> None:
@@ -168,9 +172,14 @@ def train_network(
             to train the network (and where snapshots will be saved). By default, they
              are assumed to exist in the project folder.
         device: the torch device to train on (such as "cpu", "cuda", "mps")
-        snapshot_path: if resuming training, used to specify the snapshot from which to resume
+        snapshot_path: if resuming training, the snapshot from which to resume
         detector_path: if resuming training of a top-down model, used to specify the
             detector snapshot from which to resume
+        batch_size: overrides the batch size to train with
+        epochs: overrides the maximum number of epochs to train the model for
+        save_epochs: overrides the number of epochs between each snapshot save
+        display_iters: overrides the number of iterations between each log of the loss
+            within an epoch
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
@@ -181,6 +190,7 @@ def train_network(
         trainset_index=trainingsetindex,
         modelprefix=modelprefix,
     )
+
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
         if weight_init.memory_replay:
@@ -199,13 +209,16 @@ def train_network(
             #     model_config_path=loader.model_config_path,
             # )
 
-    batch_size = kwargs.pop("batch_size", None)
-    epochs = kwargs.pop("epochs", None)
-    loader.update_model_cfg(kwargs)
     if batch_size is not None:
         loader.model_cfg["train_settings"]["batch_size"] = batch_size
     if epochs is not None:
         loader.model_cfg["train_settings"]["epochs"] = epochs
+    if save_epochs is not None:
+        loader.model_cfg["runner"]["snapshots"]["save_epochs"] = save_epochs
+    if display_iters is not None:
+        loader.model_cfg["train_settings"]["display_iters"] = display_iters
+
+    loader.update_model_cfg(kwargs)
     setup_file_logging(loader.model_folder / "train.txt")
 
     logging.info("Training with configuration:")

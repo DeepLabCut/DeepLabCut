@@ -102,6 +102,9 @@ def train_network(
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import train_network
         _update_device(gputouse, torch_kwargs)
+        if "display_iters" not in torch_kwargs:
+            torch_kwargs["display_iters"] = displayiters
+
         return train_network(
             config,
             shuffle=shuffle,

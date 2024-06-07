@@ -227,7 +227,7 @@ def pretty_print(
     for k, v in config.items():
         if isinstance(v, dict):
             print_fn(f"{indent * ' '}{k}:")
-            pretty_print(v, indent + 2)
+            pretty_print(v, indent + 2, print_fn=print_fn)
         else:
             print_fn(f"{indent * ' '}{k}: {v}")
 
