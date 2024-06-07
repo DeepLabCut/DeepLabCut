@@ -19,6 +19,10 @@ parts:
   chapters:
   - file: docs/PROJECT_GUI
   - file: docs/napari_GUI
+- caption: New: DLC3 PyTorch Specific Docs
+  - file: docs/pytorch/user_guide.md
+  - file: docs/pytorch/pytorch_config.md
+  - file: docs/pytorch/architectures.md
 - caption: Quick Start Tutorials
   chapters:
   - file: docs/single_animal_quick_guide
