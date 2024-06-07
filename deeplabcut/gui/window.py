@@ -95,6 +95,8 @@ class MainWindow(QMainWindow):
         self.videotype = "mp4"
         self.files = set()
 
+        self._engine = Engine.PYTORCH
+
         self.default_set()
 
         self._generate_welcome_page()
@@ -107,8 +109,6 @@ class MainWindow(QMainWindow):
         self.load_settings()
         self._toolbar = None
         self.create_toolbar()
-
-        self._engine = Engine.PYTORCH
 
         # Thread-safe Stdout redirector
         self.writer = StreamWriter()
@@ -410,6 +410,7 @@ class MainWindow(QMainWindow):
         self.file_menu.removeAction(self.openAction)
 
     def create_toolbar(self):
+        self.toolbar.clear()
         self.toolbar.addAction(self.newAction)
         self.toolbar.addAction(self.openAction)
         self.toolbar.addAction(self.helpAction)
@@ -435,6 +436,7 @@ class MainWindow(QMainWindow):
         change_engine_widget.addItems([e.aliases[0] for e in engines])
         change_engine_widget.setFixedWidth(180)
         change_engine_widget.currentIndexChanged.connect(_update_engine)
+        change_engine_widget.setCurrentIndex(engines.index(self.engine))
 
         self.toolbar.addWidget(spacer)
         self.toolbar.addWidget(engine_label)
