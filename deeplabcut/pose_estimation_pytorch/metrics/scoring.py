@@ -290,11 +290,16 @@ def _match_identity_preds_to_gt(
 ) -> tuple[np.ndarray, list]:
     with open(full_pickle_path, "rb") as f:
         data = pickle.load(f)
-    cfg = read_config(config_path)
-    all_ids = cfg["individuals"]
     metadata = data.pop("metadata")
+    cfg = read_config(config_path)
+    all_ids = cfg["individuals"].copy()
+    all_bpts = cfg["multianimalbodyparts"] * len(all_ids)
+    n_multibodyparts = len(all_bpts)
+    if cfg["uniquebodyparts"]:
+        all_ids += ["single"]
+        all_bpts += cfg["uniquebodyparts"]
+    all_bpts = np.asarray(all_bpts)
     joints = metadata["all_joints_names"]
-    all_bpts = np.asarray(len(all_ids) * joints + cfg["uniquebodyparts"])
     ids = np.full((len(data), len(all_bpts), 2), np.nan)
     for i, dict_ in enumerate(data.values()):
         id_gt, _, df_gt = dict_["groundtruth"]
@@ -319,18 +324,18 @@ def _match_identity_preds_to_gt(
                 ids[i, inds[inds_gt[found]], 1] = np.argmax(
                     id_[neighbors[found]], axis=1
                 )
+    ids = ids[:, :n_multibodyparts].reshape((len(data), len(cfg["individuals"]), -1, 2))
     return ids, list(data)
 
 
 def compute_id_accuracy(ids: np.ndarray, mask_test: np.ndarray) -> np.ndarray:
-    ids2 = ids.reshape((ids.shape[0], 2, -1, 2))
-    nbpts = ids2.shape[2]
+    nbpts = ids.shape[2]  # ids shape is (n_images, n_individuals, n_bodyparts, 2)
     accu = np.empty((nbpts, 2))
     for i in range(nbpts):
-        temp = ids2[:, :, i].reshape((-1, 2))
+        temp = ids[:, :, i].reshape((-1, 2))
         valid = np.isfinite(temp).all(axis=1)
         y_true, y_pred = temp[valid].T
-        mask = np.repeat(mask_test, 2)[valid]
+        mask = np.repeat(mask_test, ids.shape[1])[valid]
         ac_train = accuracy_score(y_true[~mask], y_pred[~mask])
         ac_test = accuracy_score(y_true[mask], y_pred[mask])
         accu[i] = ac_train, ac_test
