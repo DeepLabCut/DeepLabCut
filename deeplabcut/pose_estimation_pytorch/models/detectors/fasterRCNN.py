@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import torch
 import torchvision.models.detection as detection
-from torch import nn
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     DETECTORS,

@@ -131,6 +131,7 @@ heads_dicts = [
         "total_stride": 1,
         "input_channels": -1,
         "output_channels": -1,
+        "head_stride": 1,
     },
     {
         "type": "DEKRHead",

@@ -44,14 +44,12 @@ def test_sequential_generator():
             1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
         )
     }
-    prediction = [torch.rand((batch_size, num_keypoints, image_size[0], image_size[1]))]
-    inputs = torch.rand(batch_size, 3, *image_size)
     head_outputs = {
         "heatmap": torch.rand(batch_size, num_keypoints, 32, 32),
         "locref": torch.rand(batch_size, num_keypoints * 2, 32, 32),
         "paf": torch.rand(batch_size, num_limbs * 2, 32, 32),
     }
-    out = gen(inputs=inputs, outputs=head_outputs, labels=annotations)
+    out = gen(stride=1, outputs=head_outputs, labels=annotations)
     assert all(s in out for s in list(head_outputs))
     for k, v in head_outputs.items():
         assert out[k]["target"].shape == v.shape

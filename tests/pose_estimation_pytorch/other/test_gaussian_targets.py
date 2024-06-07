@@ -28,7 +28,7 @@ def test_gaussian_target_generation(
         )
     }  # batch size, num animals, num keypoints, 2 for x,y
     # generate predictions
-    inputs = torch.rand((batch_size, 3, *image_size[:2]))
+    stride = 1
     prediction = {
         "heatmap": torch.rand((batch_size, num_keypoints, *image_size[:2])),
         "locref": torch.rand((batch_size, 2 * num_keypoints, *image_size[:2])),
@@ -41,7 +41,7 @@ def test_gaussian_target_generation(
         locref_std=5.0,
     )
     output = torch.tensor(
-        output(inputs, prediction, labels)["heatmap"]["target"].reshape(
+        output(stride, prediction, labels)["heatmap"]["target"].reshape(
             batch_size, num_keypoints, image_size[0] * image_size[1]
         )
     )

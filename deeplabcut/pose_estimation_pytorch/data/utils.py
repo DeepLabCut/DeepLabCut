@@ -497,14 +497,14 @@ def apply_transform(
 
         # out-of-bound keypoints have visibility flag 0. But we don't touch coordinates
         if np.sum(oob_mask) > 0:
-            transformed["keypoints"][oob_mask][..., -1] = 0
+            transformed["keypoints"][oob_mask, 2] = 0.0
 
         out_shape = transformed["image"].shape
         if len(transformed["keypoints"]) > 0:
             oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
             # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
             if np.sum(oob_mask) > 0:
-                transformed["keypoints"][oob_mask][..., -1] = 0
+                transformed["keypoints"][oob_mask, -1] = 0.0
 
         # TODO: Check that the transformed bboxes are still within the image
         if len(transformed["bboxes"]) > 0:
@@ -604,7 +604,9 @@ def _out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
         were kicked off an image due to augmentation.
     """
     return (keypoints[..., 2] > 0) & (
-        (keypoints[..., 0] < 0)
+        np.isnan(keypoints[..., 0])
+        | np.isnan(keypoints[..., 1])
+        | (keypoints[..., 0] < 0)
         | (keypoints[..., 0] > shape[1])
         | (keypoints[..., 1] < 0)
         | (keypoints[..., 1] > shape[0])

@@ -26,7 +26,8 @@ def animals_and_keypoints_invalid():
              ground truth keypoints (gt_kpts), of shape num_animals, num_keypoints, (x,y)
              individual names (indv_names)
     """
-    gt_kpts = np.random.rand(6, 6, 2)  # num animals, num keypoints, (x,y)
+    gt_kpts = 2 * np.ones((6, 6, 3))  # num animals, num keypoints, (x,y,vis)
+    gt_kpts[:, :, :2] = np.random.rand(6, 6, 2)
     pred_kpts = np.random.rand(6, 8, 3)  # num animals, num keypoints, (x,y,score)
     indv_names = ["indv1", "indv2"]
     return pred_kpts, gt_kpts, indv_names
@@ -43,7 +44,8 @@ def animals_and_keypoints():
              ground truth keypoints (gt_kpts), of shape num_animals, num_keypoints, (x,y)
              individual names (indv_names)
     """
-    gt_kpts = np.random.rand(6, 6, 2)  # num animals, num keypoints, (x,y)
+    gt_kpts = 2 * np.ones((6, 6, 3))  # num animals, num keypoints, (x,y,vis)
+    gt_kpts[:, :, :2] = np.random.rand(6, 6, 2)
 
     # adding score value because the shape of pred_kpts should be (6,6,3)
     score = np.full((gt_kpts.shape[0], gt_kpts.shape[1], 1), 0.5)

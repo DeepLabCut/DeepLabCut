@@ -45,7 +45,7 @@ def train(
     loader: Loader,
     run_config: dict,
     task: Task,
-    device: str = "cpu",
+    device: str | None = "cpu",
     logger_config: dict | None = None,
     snapshot_path: str | None = None,
     transform: A.BaseCompose | None = None,
@@ -68,13 +68,23 @@ def train(
         max_snapshots_to_keep: the maximum number of snapshots to store for each model
     """
     weight_init = None
+    pretrained = True
     if weight_init_cfg := run_config["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
+        pretrained = False
 
     if task == Task.DETECT:
-        model = DETECTORS.build(run_config["model"], weight_init=weight_init)
+        model = DETECTORS.build(
+            run_config["model"],
+            weight_init=weight_init,
+            pretrained=pretrained,
+        )
     else:
-        model = PoseModel.build(run_config["model"], weight_init=weight_init)
+        model = PoseModel.build(
+            run_config["model"],
+            weight_init=weight_init,
+            pretrained_backbone=pretrained,
+        )
 
     if max_snapshots_to_keep is not None:
         run_config["runner"]["snapshots"]["max_snapshots"] = max_snapshots_to_keep
@@ -86,6 +96,9 @@ def train(
 
     if device is None:
         device = utils.resolve_device(run_config)
+
+    if device == "mps" and task == Task.DETECT:
+        device = "cpu"  # FIXME: Cannot train detectors on MPS
 
     model.to(device)  # Move model before giving its parameters to the optimizer
     runner = build_training_runner(

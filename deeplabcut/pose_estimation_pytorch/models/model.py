@@ -138,19 +138,21 @@ class PoseModel(nn.Module):
     def build(
         cfg: dict,
         weight_init: None | WeightInitialization = None,
+        pretrained_backbone: bool = False,
     ) -> "PoseModel":
         """
         Args:
             cfg: The configuration of the model to build.
             weight_init: How model weights should be initialized. If None, ImageNet
                 pre-trained backbone weights are loaded from Timm.
+            pretrained_backbone: Whether to load an ImageNet-pretrained weights for
+                the backbone. This should only be set to True when building a model
+                which will be trained on a transfer learning task.
 
         Returns:
             the built pose model
         """
-        if weight_init is None:  # Transfer learning from ImageNet
-            cfg["backbone"]["pretrained"] = True
-
+        cfg["backbone"]["pretrained"] = pretrained_backbone
         backbone = BACKBONES.build(dict(cfg["backbone"]))
 
         neck = None

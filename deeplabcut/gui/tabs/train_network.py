@@ -75,7 +75,7 @@ class TrainNetwork(DefaultTab):
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
-        label = QtWidgets.QLabel(deeplabcut.train_network.__doc__, self)
+        label = QtWidgets.QLabel(compat.train_network.__doc__, self)
         scroll = QtWidgets.QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

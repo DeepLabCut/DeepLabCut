@@ -21,21 +21,23 @@ from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
 def _build_detector(
-    cfg: dict, weight_init: WeightInitialization | None = None, **kwargs,
+    cfg: dict,
+    weight_init: WeightInitialization | None = None,
+    pretrained: bool = False,
+    **kwargs,
 ) -> BaseDetector:
     """Builds a detector using its configuration file
 
     Args:
         cfg: The detector configuration.
         weight_init: The weight initialization to use.
+        pretrained: Whether COCO pretrained weights should be loaded for the detector
         **kwargs: Other parameters given by the Registry.
 
     Returns:
         the built detector
     """
-    if weight_init is not None:
-        cfg["pretrained"] = False
-
+    cfg["pretrained"] = pretrained
     detector: BaseDetector = build_from_cfg(cfg, **kwargs)
 
     if weight_init is not None:

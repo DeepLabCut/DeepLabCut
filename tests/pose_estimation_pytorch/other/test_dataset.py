@@ -120,7 +120,7 @@ def test_iter_all_dataset_no_transform(batch_size):
         b, _, h, w = item["image"].shape
         kpts, bboxes = anno["keypoints"], anno["boxes"]
         assert (
-            kpts.shape == (batch_size, max_num_animals, num_keypoints, 2)
+            kpts.shape == (batch_size, max_num_animals, num_keypoints, 3)
             or is_last_batch
         ), "keypoints have the wrong shape"
         assert (
@@ -184,7 +184,7 @@ def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):
         b, _, h, w = item["image"].shape
         assert (h == y_size) and (w == x_size)
         assert (
-            kpts.shape == (batch_size, max_num_animals, num_keypoints, 2)
+            kpts.shape == (batch_size, max_num_animals, num_keypoints, 3)
             or is_last_batch
         ), "keypoints have the wrong shape"
         assert (
