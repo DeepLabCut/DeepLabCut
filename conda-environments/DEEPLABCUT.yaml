@@ -1,11 +1,11 @@
 # DEEPLABCUT.yaml
 
-#DeepLabCut2.0 Toolbox (deeplabcut.org)
+#DeepLabCut Toolbox (deeplabcut.org)
 #© A. & M.W. Mathis Labs
 #https://github.com/DeepLabCut/DeepLabCut
 #Please see AUTHORS for contributors.
 
-#https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+#https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #Licensed under GNU Lesser General Public License v3.0
 #
 # DeepLabCut environment
@@ -28,4 +28,4 @@ dependencies:
   - notebook<7.0.0
   - ffmpeg
   - pip:
-    - "deeplabcut[gui,tf]"
+    - "deeplabcut[gui]"
