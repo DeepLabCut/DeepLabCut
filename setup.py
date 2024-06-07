@@ -49,7 +49,7 @@ setuptools.setup(
         "imgaug>=0.4.0",
         "imageio-ffmpeg",
         "numba>=0.54",
-        "matplotlib>=3.3,!=3.7.0,!=3.7.1",
+        "matplotlib>=3.3,<3.9,!=3.7.0,!=3.7.1",
         "networkx>=2.6",
         "numpy>=1.18.5",
         "pandas>=1.0.1,!=1.5.0",
