@@ -177,7 +177,7 @@ def _generic2madlc(
     full_image_path=True,
 ):
     """
-    For DLC, the complexity is that if we don't explicity call deeplabcut.create_traindataset(), the train and test split might just be arbitrarily messed up. So here we need to calculate train and test indices to
+    Within DeepLabCut, if we don't explicitly call deeplabcut.create_traindataset(), the train and test split might just be arbitrarily messed up. So here we need to calculate train and test indices to
 
     Args:
     proj_root where to materialize the data
@@ -253,7 +253,7 @@ def _generic2madlc(
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
         dest_image_name = f"{pre}_{image_id}.{suffix}"
-        # the generic data has original pointers to images in the original foders
+        # the generic data has original pointers to images in the original folders
         # Here, we have to change the image name and location of these to fit corresponding framework's convention
 
         dataset_name = imageid2datasetname[image_id]
@@ -490,7 +490,7 @@ def _generic2sdlc(
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
         dest_image_name = f"{pre}_{image_id}.{suffix}"
-        # the generic data has original pointers to images in the original foders
+        # the generic data has original pointers to images in the original folders
         # Here, we have to change the image name and location of these to fit corresponding framework's convention
 
         dataset_name = imageid2datasetname[image_id]
@@ -553,7 +553,7 @@ def _generic2sdlc(
                     df.loc[file_name][scorer, kpt_name, "x"] = coord[0]
                     df.loc[file_name][scorer, kpt_name, "y"] = coord[1]
                 elif coord[2] == -1:
-                    # if -1, it's expaned keypoints by keypoint space projection
+                    # if -1, it's expanded keypoints by keypoint space projection
                     df.loc[file_name][scorer, kpt_name, "x"] = -1
                     df.loc[file_name][scorer, kpt_name, "y"] = -1
 
