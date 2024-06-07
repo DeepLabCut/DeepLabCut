@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial &#8212; DeepLabCut</title>
+    <title>Labeling GUI &#8212; DeepLabCut</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/tutorial_maDLC';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/labelling';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Technical (Hardware) Considerations" href="recipes/TechHardware.html" />
-    <link rel="prev" title="QUICK GUIDE to single Animal Training:" href="single_animal_quick_guide.html" />
+    <link rel="next" title="Training and Evaluation in the GUI" href="Training-Evaluation.html" />
+    <link rel="prev" title="Managing Your DeepLabCut Project" href="manage-project.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -203,9 +203,9 @@
 <li class="toctree-l1"><a class="reference internal" href="napari_GUI.html">napari labeling GUI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
 <ul class="nav bd-sidenav">
@@ -242,10 +242,10 @@
 <li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Beginner's Guide to DeepLabCut in the GUI</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="beginners-guide.html">Using DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="manage-project.html">Managing Your DeepLabCut Project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="labelling.html">Labeling GUI</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Labeling GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Training-Evaluation.html">Training and Evaluation in the GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="video-analysis.html">Video Analysis with DeepLabCut</a></li>
 </ul>
@@ -329,7 +329,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/tutorial_maDLC.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/labelling.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -359,7 +359,7 @@
       
       
       
-      <li><a href="../_sources/docs/tutorial_maDLC.md" target="_blank"
+      <li><a href="../_sources/docs/labelling.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -443,7 +443,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</h1>
+    <h1>Labeling GUI</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -453,8 +453,22 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gui">GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-frames-to-label">Selecting Frames to Label</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#here-s-how-to-get-started">Here’s how to get started:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-your-first-set-of-frames-in-deeplabcut">Labeling Your First Set of Frames in DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entering-the-label-frames-area">Entering the Label Frames Area</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-napari-deeplabcut-labeler">The napari DeepLabCut Labeler</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-setup">Labeling Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-labeling-process">The Labeling Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#completing-the-set">Completing the Set</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-your-labels">Checking Your Labels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-check-your-labels">How to Check Your Labels</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -466,131 +480,83 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial">
-<h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial<a class="headerlink" href="#multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial" title="Link to this heading">#</a></h1>
-<section id="gui">
-<h2>GUI:<a class="headerlink" href="#gui" title="Link to this heading">#</a></h2>
-<p>Full graphical user interface: just follow the tabs in the GUI! <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> launches the GUI.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="labeling-gui">
+<h1>Labeling GUI<a class="headerlink" href="#labeling-gui" title="Link to this heading">#</a></h1>
+<section id="selecting-frames-to-label">
+<h2>Selecting Frames to Label<a class="headerlink" href="#selecting-frames-to-label" title="Link to this heading">#</a></h2>
+<p>In DeepLabCut, choosing the right frames for labeling is a key step. The trick is always to select the MOST DIVERSE data you can that your model will see. That means good lighting, bad lighting, anything you want to throw at it. So, first, pick a range of diverse videos! Then, we will help you pick frames. You’ve got two easy ways to do this:</p>
+<ol class="arabic simple">
+<li><p><strong>Let DeepLabCut Choose:</strong> DeepLabCut can extract frames automatically for you. It’s got two neat ways to do that:</p>
+<ul class="simple">
+<li><p><strong>Uniform:</strong> This is like taking a snapshot at regular time intervals.</p></li>
+<li><p><strong>K-means clustering:</strong> This one applies k-means and picks images from different clusters. This is typically better, as it gives you a variety of actions and poses. Note, as it is a clustering tool, it will mis rare events, so ideally run this step, then perhaps consider running the mannual GUI to get some rare frames! You can do both within DLC.</p></li>
+</ul>
+</li>
+<li><p><strong>Pick Frames Yourself:</strong> Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye - this is great for finding rare frames. Choose the <strong><code class="docutils literal notranslate"><span class="pre">manual</span></code></strong> extraction method.</p></li>
+</ol>
+<section id="here-s-how-to-get-started">
+<h3>Here’s how to get started:<a class="headerlink" href="#here-s-how-to-get-started" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Step 1:</strong> Click on <strong><code class="docutils literal notranslate"><span class="pre">automatic</span></code></strong> in the frame selection area.</p></li>
+<li><p><strong>Step 2:</strong> Choose <strong><code class="docutils literal notranslate"><span class="pre">k-means</span></code></strong> for some variety.</p></li>
+<li><p><strong>Step 3:</strong> Hit the <strong><code class="docutils literal notranslate"><span class="pre">Extract</span> <span class="pre">Frames</span></code></strong> button, usually found at the bottom right corner.</p></li>
+</ul>
+<p>By default, DeepLabCut will grab 20 frames from each of your videos and put them into sub-folders, per video, under <strong>labeled-data</strong> in your project. Now, you’re all set to start labeling!</p>
 </section>
-<section id="terminal">
-<h2>Terminal:<a class="headerlink" href="#terminal" title="Link to this heading">#</a></h2>
-<p><strong>Import deeplabcut</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
-</pre></div>
-</div>
-<p><strong>(1) Create a project</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;cutemice&quot;</span>
-<span class="n">experimenter</span> <span class="o">=</span> <span class="s2">&quot;teamdlc&quot;</span>
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;path_to_a_video_file&quot;</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="n">project_name</span><span class="p">,</span>
-    <span class="n">experimenter</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video_paths</span><span class="p">],</span>
-    <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+</section>
+<section id="labeling-your-first-set-of-frames-in-deeplabcut">
+<h2>Labeling Your First Set of Frames in DeepLabCut<a class="headerlink" href="#labeling-your-first-set-of-frames-in-deeplabcut" title="Link to this heading">#</a></h2>
+<p>Alright, you’ve got your extracted frames ready. Now comes the labeling!</p>
+<section id="entering-the-label-frames-area">
+<h3>Entering the Label Frames Area<a class="headerlink" href="#entering-the-label-frames-area" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Click on <code class="docutils literal notranslate"><span class="pre">Label</span> <span class="pre">Frames</span></code>:</strong> This takes you straight to where your frames are, sorted in the <strong>labeled-data</strong> folder, each video in its own sub-folder.</p></li>
+<li><p><strong>Open a Folder:</strong> Click on the first one to start, and then click <strong><code class="docutils literal notranslate"><span class="pre">open</span></code></strong>.</p></li>
+</ul>
+</section>
+<section id="the-napari-deeplabcut-labeler">
+<h3>The napari DeepLabCut Labeler<a class="headerlink" href="#the-napari-deeplabcut-labeler" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Plugin Window Opens:</strong> As soon as you click <strong><code class="docutils literal notranslate"><span class="pre">open</span></code></strong>, the napari DeepLabCut plugin window appears, your main stage for labeling.</p></li>
+<li><p><strong>Tutorial Popup:</strong> A quick tutorial window shows up. It’s a brief guide, so give it a look to understand the basics.</p></li>
+</ul>
+<p><img alt="Labeling Frames in DeepLabCut using Napari Interface" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779602092-LVR2TI6OADSHEYRCGS6F/labeling-napari.png?format=500w" />)</p>
+</section>
+<section id="labeling-setup">
+<h3>Labeling Setup<a class="headerlink" href="#labeling-setup" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Frames on Display:</strong> Your frames are lined up in the middle, with a slider below to shuffle through them.</p></li>
+<li><p><strong>Tools and Keypoints:</strong> To the bottom right, you find a list of bodyparts from your configuration. On the top left, all your labeling tools are ready.</p></li>
+</ul>
+</section>
+<section id="the-labeling-process">
+<h3>The Labeling Process<a class="headerlink" href="#the-labeling-process" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Start with <code class="docutils literal notranslate"><span class="pre">Add</span> <span class="pre">points</span></code>:</strong> Click this to begin placing keypoints on your first frame. If you can’t see a bodypart, just move to the next one.</p></li>
+<li><p><strong>Navigate Through Frames:</strong> Use the slider to go from one frame to the next after you’re done labeling.</p></li>
+<li><p><strong>Save Progress:</strong> Remember to save your work as you go with <strong><code class="docutils literal notranslate"><span class="pre">Command</span> <span class="pre">and</span> <span class="pre">S</span></code></strong> (or <strong><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">and</span> <span class="pre">S</span></code></strong> on Windows).</p></li>
+</ul>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong>  Make sure to specify the absolute path to the video file(s).
-It is quickly obtained on Windows with <kbd>⇧ Shift</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">path</span></code>,
-and on Mac with <kbd>⌥ Option</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">Pathname</span></code>.
-Ubuntu users only need to copy the file and its path gets added to the clipboard.</p>
+<div><p>💡 <strong>Note:</strong> For a detailed walkthrough on using the Napari labeling GUI, have a look at the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/napari_GUI.html">DeepLabCut Napari Guide</a>. Additionally, you can watch our instructional <a class="reference external" href="https://www.youtube.com/watch?v=hsA9IB5r73E">YouTube video</a> for more insights and tips.</p>
 </div></blockquote>
-<blockquote>
-<div><p>Next, you can set a variable for the config_path: ‘Full path of the project configuration file*’</p>
-</div></blockquote>
-<p><strong>(2) Edit the config.ymal file to set up your project</strong></p>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> Here is were you will define your key point names and animal IDs. Also you can change the default # of frames to extract for the next step.</p>
-</div></blockquote>
-<p><strong>(3) Extract video frames to annotate</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span>
-    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;kmeans&quot;</span><span class="p">,</span>
-    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> try to extract a few frames from many videos vs. a lot of frames from one video!</p>
-</div></blockquote>
-<p><strong>(4) Annotate Frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(5) Visually check annotated frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(6) Create the training dataset</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;dlcrnet_ms5&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(7) Train the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">saveiters</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-    <span class="n">maxiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
-    <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(8) Evaluate the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(9) Analyze a video (extracts detections and association costs)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code> will complete steps 10-11 for you automatically so you get the “final” H5 file. Use the below steps if you need to change the parameters of tracking based on your dataset.</p>
-</div></blockquote>
-<p><strong>(10) Spatial and (locally) temporal grouping: Track body part assemblies frame-by-frame</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(11) Reconstruct full animal trajectories (tracks from tracklets)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-    <span class="n">min_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(12) Create a pretty video output</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
-    <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+</section>
+<section id="completing-the-set">
+<h3>Completing the Set<a class="headerlink" href="#completing-the-set" title="Link to this heading">#</a></h3>
+<p>Work through all the frames in the first folder. Then, proceed to the next, continuing this way until each folder in your <strong>labeled-data</strong> directory is done.</p>
+</section>
+</section>
+<section id="checking-your-labels">
+<h2>Checking Your Labels<a class="headerlink" href="#checking-your-labels" title="Link to this heading">#</a></h2>
+<p>After you’ve labeled all your frames, it’s important to ensure they’re accurate.</p>
+<section id="how-to-check-your-labels">
+<h3>How to Check Your Labels<a class="headerlink" href="#how-to-check-your-labels" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Return to the Main Window:</strong> Once you’re done with labeling, head back to DeepLabCut’s main window, and click on <strong><code class="docutils literal notranslate"><span class="pre">Check</span> <span class="pre">Labels</span></code></strong>.</p></li>
+<li><p><strong>Review the Labeled Folders:</strong> The system will have created new folders for each labeled set inside your labeled-data folder. These folders contain your original frames overlaid with the keypoints you’ve added.</p></li>
+</ul>
+<p><img alt="Checking Labels in DeepLabCut" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779615252-6BNW661XB2ULH85RTAD3/evaluation-example.png?format=500w" /></p>
+<p>Take the time to go through each folder. Accurate labels are key. If there are mistakes, the model might learn incorrectly and mislabel your videos later on. It’s all about setting the right foundation for accurate analysis.</p>
+</section>
 </section>
 </section>
 
@@ -625,20 +591,20 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="single_animal_quick_guide.html"
+       href="manage-project.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">QUICK GUIDE to single Animal Training:</p>
+        <p class="prev-next-title">Managing Your DeepLabCut Project</p>
       </div>
     </a>
     <a class="right-next"
-       href="recipes/TechHardware.html"
+       href="Training-Evaluation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Technical (Hardware) Considerations</p>
+        <p class="prev-next-title">Training and Evaluation in the GUI</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -658,8 +624,22 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gui">GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-frames-to-label">Selecting Frames to Label</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#here-s-how-to-get-started">Here’s how to get started:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-your-first-set-of-frames-in-deeplabcut">Labeling Your First Set of Frames in DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entering-the-label-frames-area">Entering the Label Frames Area</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-napari-deeplabcut-labeler">The napari DeepLabCut Labeler</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-setup">Labeling Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-labeling-process">The Labeling Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#completing-the-set">Completing the Set</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-your-labels">Checking Your Labels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-check-your-labels">How to Check Your Labels</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial &#8212; DeepLabCut</title>
+    <title>Training and Evaluation in the GUI &#8212; DeepLabCut</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/tutorial_maDLC';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/Training-Evaluation';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Technical (Hardware) Considerations" href="recipes/TechHardware.html" />
-    <link rel="prev" title="QUICK GUIDE to single Animal Training:" href="single_animal_quick_guide.html" />
+    <link rel="next" title="Video Analysis with DeepLabCut" href="video-analysis.html" />
+    <link rel="prev" title="Labeling GUI" href="labelling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -203,9 +203,9 @@
 <li class="toctree-l1"><a class="reference internal" href="napari_GUI.html">napari labeling GUI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
 <ul class="nav bd-sidenav">
@@ -242,11 +242,11 @@
 <li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Beginner's Guide to DeepLabCut in the GUI</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="beginners-guide.html">Using DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="manage-project.html">Managing Your DeepLabCut Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labelling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Training-Evaluation.html">Training and Evaluation in the GUI</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Training and Evaluation in the GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="video-analysis.html">Video Analysis with DeepLabCut</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
@@ -329,7 +329,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/tutorial_maDLC.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/Training-Evaluation.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -359,7 +359,7 @@
       
       
       
-      <li><a href="../_sources/docs/tutorial_maDLC.md" target="_blank"
+      <li><a href="../_sources/docs/Training-Evaluation.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -443,7 +443,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</h1>
+    <h1>Training and Evaluation in the GUI</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -453,8 +453,13 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gui">GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-training-dataset">Your Training Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kickstarting-the-training-process">Kickstarting the Training Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-network">Evaluate the Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#steps-to-evaluate-the-network">Steps to Evaluate the Network</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#understanding-the-evaluation-results">Understanding the Evaluation Results</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -466,131 +471,65 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial">
-<h1>Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial<a class="headerlink" href="#multi-animal-pose-estimation-with-deeplabcut-a-5-minute-tutorial" title="Link to this heading">#</a></h1>
-<section id="gui">
-<h2>GUI:<a class="headerlink" href="#gui" title="Link to this heading">#</a></h2>
-<p>Full graphical user interface: just follow the tabs in the GUI! <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code> launches the GUI.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="training-and-evaluation-in-the-gui">
+<h1>Training and Evaluation in the GUI<a class="headerlink" href="#training-and-evaluation-in-the-gui" title="Link to this heading">#</a></h1>
+<section id="your-training-dataset">
+<h2>Your Training Dataset<a class="headerlink" href="#your-training-dataset" title="Link to this heading">#</a></h2>
+<p>Before training your model, the first step is to assemble your training dataset.</p>
+<ul class="simple">
+<li><p><strong>Create Training Dataset:</strong> Move to the corresponding tab and click <strong><code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">Training</span> <span class="pre">Dataset</span></code></strong>. For starters, the default settings will do just fine. While there are more powerful models and data augmentations you might want to consider, you can trust that for most projects the defaults are an ideal place to start.</p></li>
+</ul>
+<blockquote>
+<div><p>💡 <strong>Note:</strong> This guide assumes you have a GPU on your local machine. If you’re CPU-bound and finding training challenging, consider using Google Colab. Our <a class="reference external" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb">Colab Guide</a> can help you get started!</p>
+</div></blockquote>
 </section>
-<section id="terminal">
-<h2>Terminal:<a class="headerlink" href="#terminal" title="Link to this heading">#</a></h2>
-<p><strong>Import deeplabcut</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
-</pre></div>
-</div>
-<p><strong>(1) Create a project</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;cutemice&quot;</span>
-<span class="n">experimenter</span> <span class="o">=</span> <span class="s2">&quot;teamdlc&quot;</span>
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;path_to_a_video_file&quot;</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="n">project_name</span><span class="p">,</span>
-    <span class="n">experimenter</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video_paths</span><span class="p">],</span>
-    <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+<section id="kickstarting-the-training-process">
+<h2>Kickstarting the Training Process<a class="headerlink" href="#kickstarting-the-training-process" title="Link to this heading">#</a></h2>
+<p>With your training dataset ready, it’s time to train your model.</p>
+<ul class="simple">
+<li><p><strong>Navigate to Train Network:</strong> Head over to the <strong><code class="docutils literal notranslate"><span class="pre">Train</span> <span class="pre">Network</span></code></strong> tab.</p></li>
+<li><p><strong>Set Training Parameters:</strong> Here, you’ll specify:</p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">Display</span> <span class="pre">iterations/epochs</span></code>:</strong> To specify how often the training progress will be visually updated. Note that our TensorFlow models are “iterations” while PyTorch is epochs.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">Maximum</span> <span class="pre">Iterations/epochs</span></code>:</strong> Decide how many iterations to run. For TensorFlow models for a quick demo, 10K is great. For PyTorch models, 200 epochs is fine!</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">Number</span> <span class="pre">of</span> <span class="pre">Snapshots</span> <span class="pre">to</span> <span class="pre">keep</span></code>:</strong> Choose how many snapshots of the model you want to keep, <strong><code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">iterations</span></code>:</strong> and at what iteration intervals they should be saved.</p></li>
+</ul>
+</li>
+<li><p><strong>Launch Training:</strong> Click on <strong><code class="docutils literal notranslate"><span class="pre">Train</span> <span class="pre">Network</span></code></strong> to begin.</p></li>
+</ul>
+<p>You can keep an eye on the training progress via your terminal window. This will give you a real-time update on how your model is learning (added bonus of the PyTorch model is it also shows you evaluation metrics after each epoch!).</p>
+<p><img alt="DeepLabCut Training in Terminal with TF" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779598041-DC8UJA2NXJXG65ZWJH1O/training-terminal.png?format=500w" /></p>
+</section>
+<section id="evaluate-the-network">
+<h2>Evaluate the Network<a class="headerlink" href="#evaluate-the-network" title="Link to this heading">#</a></h2>
+<p>After training, it’s time to see how well your model performs.</p>
+<section id="steps-to-evaluate-the-network">
+<h3>Steps to Evaluate the Network<a class="headerlink" href="#steps-to-evaluate-the-network" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Find and click on the <strong><code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Network</span></code></strong> tab.</p></li>
+<li><p><strong>Choose Evaluation Options:</strong></p>
+<ul class="simple">
+<li><p><strong>Plot Predictions:</strong> Select this to visualize the model’s predictions, similar to standard DeepLabCut (DLC) evaluations.</p></li>
+<li><p><strong>Compare Bodyparts:</strong> Opt to compare all the bodyparts for a comprehensive evaluation.</p></li>
+</ul>
+</li>
+<li><p>Click the <strong><code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Network</span></code></strong> button, located on the right side of the main window.</p></li>
+</ol>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong>  Make sure to specify the absolute path to the video file(s).
-It is quickly obtained on Windows with <kbd>⇧ Shift</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">path</span></code>,
-and on Mac with <kbd>⌥ Option</kbd>+<kbd>Right click</kbd> and <code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">as</span> <span class="pre">Pathname</span></code>.
-Ubuntu users only need to copy the file and its path gets added to the clipboard.</p>
+<div><p>💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the <code class="docutils literal notranslate"><span class="pre">snapshotindex</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">all</span></code>.</p>
 </div></blockquote>
-<blockquote>
-<div><p>Next, you can set a variable for the config_path: ‘Full path of the project configuration file*’</p>
-</div></blockquote>
-<p><strong>(2) Edit the config.ymal file to set up your project</strong></p>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> Here is were you will define your key point names and animal IDs. Also you can change the default # of frames to extract for the next step.</p>
-</div></blockquote>
-<p><strong>(3) Extract video frames to annotate</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span>
-    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;kmeans&quot;</span><span class="p">,</span>
-    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> try to extract a few frames from many videos vs. a lot of frames from one video!</p>
-</div></blockquote>
-<p><strong>(4) Annotate Frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(5) Visually check annotated frames</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(6) Create the training dataset</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;dlcrnet_ms5&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(7) Train the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">saveiters</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-    <span class="n">maxiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
-    <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(8) Evaluate the network</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(9) Analyze a video (extracts detections and association costs)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<blockquote>
-<div><p><strong><em>NOTE:</em></strong> <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code> will complete steps 10-11 for you automatically so you get the “final” H5 file. Use the below steps if you need to change the parameters of tracking based on your dataset.</p>
-</div></blockquote>
-<p><strong>(10) Spatial and (locally) temporal grouping: Track body part assemblies frame-by-frame</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(11) Reconstruct full animal trajectories (tracks from tracklets)</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-    <span class="n">min_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>(12) Create a pretty video output</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
-    <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+</section>
+<section id="understanding-the-evaluation-results">
+<h3>Understanding the Evaluation Results<a class="headerlink" href="#understanding-the-evaluation-results" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Performance Metrics:</strong> DLC will assess the latest snapshot of your model, generating a <code class="docutils literal notranslate"><span class="pre">.CSV</span></code> file with performance metrics. This file is stored in the <strong><code class="docutils literal notranslate"><span class="pre">evaluate</span> <span class="pre">network</span></code></strong> folder within your project.</p></li>
+</ul>
+<p><img alt="Combined Evaluation Results in DeepLabCut" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779617667-0RLTM9DVRALN9YIKSHJZ/combined-evaluation-results.png?format=750w" />)</p>
+<ul class="simple">
+<li><p><strong>Visual Feedback:</strong> Additionally, DLC creates subfolders containing your frames overlaid with both the labeled bodyparts and the model’s predictions, allowing you to visually gauge the network’s performance.</p></li>
+</ul>
+<p><img alt="Evaluation Example in DeepLabCut" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779623162-BFDAW37B9TO94EGME2O5/check-labels.png?format=500w" />)</p>
+</section>
 </section>
 </section>
 
@@ -625,20 +564,20 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="single_animal_quick_guide.html"
+       href="labelling.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">QUICK GUIDE to single Animal Training:</p>
+        <p class="prev-next-title">Labeling GUI</p>
       </div>
     </a>
     <a class="right-next"
-       href="recipes/TechHardware.html"
+       href="video-analysis.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Technical (Hardware) Considerations</p>
+        <p class="prev-next-title">Video Analysis with DeepLabCut</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -658,8 +597,13 @@ Ubuntu users only need to copy the file and its path gets added to the clipboard
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gui">GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-training-dataset">Your Training Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kickstarting-the-training-process">Kickstarting the Training Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-the-network">Evaluate the Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#steps-to-evaluate-the-network">Steps to Evaluate the Network</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#understanding-the-evaluation-results">Understanding the Evaluation Results</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
