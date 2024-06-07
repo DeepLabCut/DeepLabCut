@@ -1,5 +1,5 @@
 (dlc3-architectures)=
-# DeepLabCut - PyTorch Model Architectures
+# DeepLabCut 3.0 - PyTorch Model Architectures
 
 ## Introduction
 
@@ -10,13 +10,12 @@ from deeplabcut.pose_estimation_pytorch import available_models
 print(available_models())
 ```
 
-## Backbones
+## Backbones (neural networks)
 
-Two families of backbones are currently implemented in DeepLabCut PyTorch (more will 
-come soon!).
+Several  backbones are currently implemented in DeepLabCut PyTorch (more will come, and you can add more easily in our new model registry).
 
 **ResNets**
-- From [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on computer vision and pattern recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html)
+- From [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html)
 - Current variants are `resnet_50` and `resnet_101`
 
 **HRNet**
@@ -24,7 +23,29 @@ come soon!).
 - Variants are `hrnet_w18`, `hrnet_w32` and `hrnet_w48`
 - Slower but more powerful than ResNets
 
-## Single Animal Models
+**DEKR**
+- From [Geng, Sun et al. "Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.](https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf)
+- This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints.
+- Three variants are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
+- Note, this is a powerful multi-animal model but very heavy (slow).
+
+**BUTCTD**
+- From [Zhou, Stoffl, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf)
+- [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rethinking-pose-estimation-in-crowds/pose-estimation-on-crowdpose)](https://paperswithcode.com/sota/pose-estimation-on-crowdpose?p=rethinking-pose-estimation-in-crowds)
+- Variants are `BUCTD-hrnet_w32` and `BUCTD-w48`
+- This is a top-performing mutli-animal (or humans, which are also animals) method that can be used with other architectures.
+
+**DLCRNet**
+- From [Lauer, Zhou, et al. "Multi-animal pose estimation, identification and tracking with DeepLabCut." Nature Methods 19.4 (2022): 496-504.](https://www.nature.com/articles/s41592-022-01443-0)
+- This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals
+- Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5
+
+**AnimalTokenPose**
+-  Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
+  - One variant is implemented as: `animal_tokenpose_base`
+
+
+## Information on Single Animal Models
 
 Single-animal models are composed of a backbone (encoder) and a head (decoder) 
 predicting the position of keypoints. The default head contains a single deconvolutional
@@ -37,7 +58,7 @@ but it might improve performance), you can simply edit your `pytorch_config.yaml
 
 Of course, any multi-animal model can also be used for single-animal projects!
 
-## Multi-Animal Models
+## Information on Multi-Animal Models
 
 ### Backbones with Part-Affinity Fields
 
@@ -64,21 +85,3 @@ for pose estimation. It's also possible to add deconvolutional layers to top-dow
 heads.
 
 Example top-down models would be `top_down_resnet_50` and `top_down_hrnet_w32`.
-
-### Special Architectures
-
-**Bottom-Up models**
- - DEKR: Bottom-Up Human Pose Estimation via Disentangled Keypoint Regression
-   - [Geng, Zigang, et al. "Bottom-up human pose estimation via disentangled keypoint regression." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2021.](https://openaccess.thecvf.com/content/CVPR2021/html/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.html)
-   - This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints.
-   - Three variants are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
- - DLCRNet: 
-   - [Lauer, Jessy, et al. "Multi-animal pose estimation, identification and tracking with DeepLabCut." Nature Methods 19.4 (2022): 496-504.](https://www.nature.com/articles/s41592-022-01443-0)
-   - This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity 
-fields to assemble individuals
-   - Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5`
-
-**Top-Down models**
-- Tokenpose: Learning Keypoint Tokens for Human Pose Estimation
-  - [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516)
-  - One variant is implemented: `tokenpose_base`
