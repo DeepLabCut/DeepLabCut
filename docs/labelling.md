@@ -6,7 +6,7 @@ In DeepLabCut, choosing the right frames for labeling is a key step. The trick i
 
 1. **Let DeepLabCut Choose:** DeepLabCut can extract frames automatically for you. It's got two neat ways to do that:
    - **Uniform:** This is like taking a snapshot at regular time intervals.
-   - **K-means clustering:** This one applies k-means and picks images from different clusters. This is typically better, as it gives you a variety of actions and poses. Note, as it is a clustering tool, it will mis rare events, so ideally run this step, then perhaps consider running the mannual GUI to get some rare frames! You can do both within DLC.
+   - **K-means clustering:** This one applies k-means and picks images from different clusters. This is typically better, as it gives you a variety of actions and poses. Note, as it is a clustering tool, it will miss rare events, so ideally run this step, then perhaps consider running the manual GUI to get some rare frames! You can do both within DLC.
 
 2. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye - this is great for finding rare frames. Choose the **`manual`** extraction method.
 
