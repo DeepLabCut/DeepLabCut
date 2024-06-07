@@ -14,6 +14,7 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+from pathlib import Path
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
@@ -27,7 +28,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
-from deeplabcut.gui.widgets import ConfigEditor
+from deeplabcut.gui.widgets import ConfigEditor, launch_napari
 
 
 class GridCanvas(QtWidgets.QDialog):
@@ -202,3 +203,7 @@ class EvaluateNetwork(DefaultTab):
             show_errors=True,
             comparisonbodyparts=bodyparts_to_use,
         )
+
+        if plotting:
+            labeled_images = list(Path(config).parent / "evaluation-results").rglob("**/Labeled*/*.png")
+            _ = launch_napari(labeled_images)
