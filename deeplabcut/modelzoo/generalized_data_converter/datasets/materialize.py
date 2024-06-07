@@ -553,7 +553,7 @@ def _generic2sdlc(
                     df.loc[file_name][scorer, kpt_name, "x"] = coord[0]
                     df.loc[file_name][scorer, kpt_name, "y"] = coord[1]
                 elif coord[2] == -1:
-                    # if -1, it's expanded keypoints by keypoint space projection
+                    # if -1, this visibility flag means a given keypoint was not annotated in the original dataset
                     df.loc[file_name][scorer, kpt_name, "x"] = -1
                     df.loc[file_name][scorer, kpt_name, "y"] = -1
 
