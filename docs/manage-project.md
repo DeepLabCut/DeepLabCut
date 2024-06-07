@@ -23,7 +23,7 @@ A **`Configuration Editor`** window will open, displaying all the configuration 
   - Add more entries by right-clicking on a row number and selecting **`Insert`**.
 
 
-![Editing Bodyparts in DeepLabCut's Config File](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/bodyparts.png?raw=true)
+![Editing Bodyparts in DeepLabCut's Config File](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779624617-CIVZCM23U69NYK9BO3GY/bodyparts.png?format=500w)
 
 
 #### 2. Defining the Skeleton
@@ -32,7 +32,7 @@ A **`Configuration Editor`** window will open, displaying all the configuration 
 - **Adjust the Skeleton List:** Click on the arrow to expand this section. You can then:
   - Update the pairs of bodyparts to define the skeleton structure of your model.
 
-![Defining the Skeleton Structure in Config File](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/skeleton.png?raw=true)
+![Defining the Skeleton Structure in Config File](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779598505-HQNECHIKSQ6XL033JX8M/skeleton.png?format=500w))
 
 > 💡 **Tip:** If you're new to DeepLabCut, spend some time visualizing how the chosen bodyparts can be connected effectively to form a coherent skeleton.
 
