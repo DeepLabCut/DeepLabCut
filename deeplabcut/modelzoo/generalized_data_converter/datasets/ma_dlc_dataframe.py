@@ -204,7 +204,7 @@ class MaDLCDataFrame(BasePoseDataset):
                         .reshape((-1, 2))
                     )
                 except:
-                    # somehow there are duplicates. So only use the first occurence
+                    # somehow there are duplicates. So only use the first occurrence
                     data = data.iloc[0]
                     kpts = (
                         data.xs(individual, level="individuals")
