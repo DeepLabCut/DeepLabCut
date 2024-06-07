@@ -19,13 +19,6 @@ parts:
   chapters:
   - file: docs/PROJECT_GUI
   - file: docs/napari_GUI
-- caption: Beginner's Guide to the GUI
-  chapters:
-  - file: docs/beginners-guide
-  - file: docs/manage-project
-  - file: docs/labelling
-  - file: docs/Training-Evaluation
-  - file: docs/video-analysis
 - caption: Quick Start Tutorials
   chapters:
   - file: docs/single_animal_quick_guide
@@ -55,6 +48,13 @@ parts:
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
+- caption: Beginner's Guide to DeepLabCut in the GUI
+  chapters:
+  - file: docs/beginners-guide
+  - file: docs/manage-project
+  - file: docs/labelling
+  - file: docs/Training-Evaluation
+  - file: docs/video-analysis
 - caption: DeepLabCut Benchmark
   chapters:
   - file: docs/benchmark
