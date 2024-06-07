@@ -21,7 +21,7 @@
 [📚Documentation](https://deeplabcut.github.io/DeepLabCut/README.html) |
 [🛠️ Installation](https://deeplabcut.github.io/DeepLabCut/docs/installation.html) |
 [🌎 Home Page](https://www.deeplabcut.org) |
-[🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/dlc-modelzoo/) |
+[🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/deeplabcut/) |
 [🚨 News](https://deeplabcut.github.io/DeepLabCut/README.html#news-and-in-the-news) |
 [🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues) 
 
