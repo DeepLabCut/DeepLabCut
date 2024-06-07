@@ -9,7 +9,7 @@ parts:
   - file: docs/installation
   - file: docs/recipes/installTips
   - file: docs/docker
-- caption: User Guides
+- caption: Main User Guides
   chapters:
   - file: docs/standardDeepLabCut_UserGuide
   - file: docs/maDLC_UserGuide
@@ -36,6 +36,7 @@ parts:
   - file: docs/recipes/MegaDetectorDLCLive
 - caption: Cookbook
   chapters:
+  - file: docs/tutorial
   - file: docs/convert_maDLC
   - file: docs/recipes/io
   - file: docs/recipes/nn
@@ -47,6 +48,13 @@ parts:
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
+- caption: Beginner's Guide to DeepLabCut in the GUI
+  chapters:
+  - file: docs/beginners-guide
+  - file: docs/manage-project
+  - file: docs/labelling
+  - file: docs/Training-Evaluation
+  - file: docs/video-analysis
 - caption: DeepLabCut Benchmark
   chapters:
   - file: docs/benchmark
