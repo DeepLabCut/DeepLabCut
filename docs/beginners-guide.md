@@ -26,7 +26,7 @@ conda activate DEEPLABCUT
 >**⚠️ Attention macOS M1 Users:**
 ><br/>
 >
->🍏 If you are on a macOS with an M1 chip, please use the following special command to activate DeepLabCut:
+>🍏 If you are on a macOS with an M chipset, please use the  DEEPLABCUT_M1 conda file and then activate:
 >```bash
 >conda activate DEEPLABCUT_M1
 
@@ -35,9 +35,9 @@ In the terminal, enter:
 ```bash
 python -m deeplabcut
 ```
-This will open a new DeepLabCut window.
+This will open the DeepLabCut App (note, the default is dark mode, but you can click "appearance" to change:
 
-![DeepLabCut GUI Screenshot](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/GUI-screenshot.png?raw=true)
+![DeepLabCut GUI Screenshot](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779625875-5UHPC367I293CBSP8CT6/GUI-screenshot.png?format=500w)
 
 > 💡 **Note:** For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
 
@@ -58,7 +58,10 @@ When you first launch the GUI, you'll find three primary main options:
 ## 🐾 Steps to Start a New Project
 
 1. **Launch New Project:**
-   - When you start a new project, you'll be presented with an empty project window.
+   - When you start a new project, you'll be presented with an empty project window. In DLC3+ you will see a new option "Engine".
+   - We recommend using the PyTorch Engine:
+  
+ ![DeepLabCut Engine](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717780414978-17LOVBUJ8JR102QVSFDY/Screen+Shot+2024-06-07+at+7.13.14+PM.png?format=1500w))
 
 2. **Filling in Project Details:**
    - **Naming Your Project:**
@@ -67,7 +70,7 @@ When you first launch the GUI, you'll find three primary main options:
       > **💡 Tip:** Avoid empty spaces in your project name.
 
    - **Naming the Experimenter:**
-     - Fill in the name of the experimenter or the project head. This part of the data remains immutable.
+     - Fill in the name of the experimenter. This part of the data remains immutable.
 
 3. **Determine Project Location:** 
    - By default, your project will be located on the **Desktop**.
@@ -92,5 +95,5 @@ When you first launch the GUI, you'll find three primary main options:
 
 ### 📽 Video Tutorial: Setting Up Your Project in DeepLabCut
 
-![DeepLabCut Create Project GIF](https://github.com/Timokleia/DeepLabCut/blob/create-tutorial/docs/images/create-project.gif)
+![DeepLabCut Create Project GIF](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779616437-30U5RFYV0OY6ACGDG7F4/create-project.gif?format=500w)
 
