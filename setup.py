@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DeepLabCut2.0-2.3 Toolbox (deeplabcut.org)
+DeepLabCut2.0-3.0 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs
 https://github.com/DeepLabCut/DeepLabCut
 Please see AUTHORS for contributors.
@@ -32,7 +32,7 @@ def pytorch_config_paths() -> list[str]:
 
 setuptools.setup(
     name="deeplabcut",
-    version="2.3.9",
+    version="3.0.0rc1",
     author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
