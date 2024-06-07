@@ -1250,7 +1250,11 @@ def create_training_dataset(
 
 def get_largestshuffle_index(config):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
-    return get_existing_shuffle_indices(config)[-1]
+    shuffle_indices = get_existing_shuffle_indices(config)
+    if len(shuffle_indices) > 0:
+        return shuffle_indices[-1]
+
+    return None
 
 
 def get_existing_shuffle_indices(
@@ -1511,3 +1515,129 @@ def create_training_model_comparison(
                 logger.info(log_info)
 
     return shuffle_list
+
+
+def create_training_dataset_from_existing_split(
+    config: str,
+    from_shuffle: int,
+    from_trainsetindex: int = 0,
+    num_shuffles: int = 1,
+    shuffles: list[int] | None = None,
+    userfeedback: bool = True,
+    net_type: str | None = None,
+    augmenter_type: str | None = None,
+    posecfg_template: dict | None = None,
+    superanimal_name: str = "",
+    weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
+) -> None | list[int]:
+    """
+    Labels from all the extracted frames are merged into a single .h5 file.
+    Only the videos included in the config file are used to create this dataset.
+
+    Args:
+        config: Full path of the ``config.yaml`` file as a string.
+
+        from_shuffle: The index of the shuffle from which to copy the train/test split.
+
+        from_trainsetindex: The trainset index of the shuffle from which to use the data
+            split. Default is 0.
+
+        num_shuffles: Number of shuffles of training dataset to create, used if
+            ``shuffles`` is None.
+
+        shuffles: If defined, ``num_shuffles`` is ignored and a shuffle is created for
+            each index given in the list.
+
+        userfeedback: If ``False``, all requested train/test splits are created (no
+            matter if they already exist). If you want to assure that previous splits
+            etc. are not overwritten, set this to ``True`` and you will be asked for
+            each existing split if you want to overwrite it.
+
+        net_type: The type of network to create the shuffle for. Currently supported
+            options for engine=Engine.TF are:
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            Currently supported  options for engine=Engine.TF can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_models()``.
+
+        augmenter_type: Type of augmenter. Currently supported augmenters for
+            engine=Engine.TF are
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            The only supported augmenter for Engine.PYTORCH is ``albumentations``.
+
+        posecfg_template: Only for Engine.TF. Path to a ``pose_cfg.yaml`` file to use as
+            a template for generating the new one for the current iteration. Useful if
+            you would like to start with the same parameters a previous training
+            iteration. None uses the default ``pose_cfg.yaml``.
+
+        superanimal_name: Specify the superanimal name is transfer learning with
+            superanimal is desired. This makes sure the pose config template uses
+            superanimal configs as template.
+
+        weight_init: Only for Engine.PYTORCH. Specify how model weights should be
+            initialized. The default mode uses transfer learning from ImageNet weights.
+
+        engine: Whether to create a pose config for a Tensorflow or PyTorch model.
+            Defaults to the value specified in the project configuration file. If no
+            engine is specified for the project, defaults to
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
+
+    Returns:
+        If training dataset was successfully created, a list of tuples is returned.
+        The first two elements in each tuple represent the training fraction and the
+        shuffle value. The last two elements in each tuple are arrays of integers
+        representing the training and test indices.
+
+        Returns None if training dataset could not be created.
+
+    Raises:
+        ValueError: If the shuffle from which to copy the data split doesn't exist.
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    trainset_meta_path = metadata.TrainingDatasetMetadata.path(cfg)
+    if not trainset_meta_path.exists():
+        meta = metadata.TrainingDatasetMetadata.create(cfg)
+        meta.save()
+    else:
+        meta = metadata.TrainingDatasetMetadata.load(cfg, load_splits=False)
+
+    shuffle = meta.get(trainset_index=from_trainsetindex, index=from_shuffle)
+    shuffle = shuffle.load_split(cfg, trainset_path=trainset_meta_path.parent)
+
+    num_copies = num_shuffles
+    if shuffles is not None:
+        num_copies = len(shuffles)
+
+    train_indices = [shuffle.split.train_indices for _ in range(num_copies)]
+    test_indices = [shuffle.split.test_indices for _ in range(num_copies)]
+    return create_training_dataset(
+        config=config,
+        num_shuffles=num_shuffles,
+        Shuffles=shuffles,
+        userfeedback=userfeedback,
+        trainIndices=train_indices,
+        testIndices=test_indices,
+        net_type=net_type,
+        augmenter_type=augmenter_type,
+        posecfg_template=posecfg_template,
+        superanimal_name=superanimal_name,
+        weight_init=weight_init,
+        engine=engine,
+    )

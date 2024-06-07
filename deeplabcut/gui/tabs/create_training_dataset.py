@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
 
 from PySide6 import QtWidgets
@@ -20,6 +22,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -49,6 +52,10 @@ class CreateTrainingDataset(DefaultTab):
         self.ok_button.clicked.connect(self.create_training_dataset)
 
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
+
+        self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
+        self.view_shuffles_button.clicked.connect(self.view_shuffles)
+        self.main_layout.addWidget(self.view_shuffles_button, alignment=Qt.AlignLeft)
 
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
@@ -116,6 +123,9 @@ class CreateTrainingDataset(DefaultTab):
             lambda s: self.root.logger.info(f"Overwrite: {s}")
         )
 
+        # Use same data split as another shuffle
+        self.data_split_selection = DataSplitSelector(self.root, self)
+
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
         layout.addWidget(self.weight_init_label, 0, 2)
@@ -127,6 +137,7 @@ class CreateTrainingDataset(DefaultTab):
         layout.addWidget(self.aug_choice, 1, 3)
 
         layout.addWidget(self.overwrite, 2, 0)
+        layout.addWidget(self.data_split_selection, 3, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -176,9 +187,27 @@ class CreateTrainingDataset(DefaultTab):
             #     net_types=self.net_type,
             #     augmenter_types=self.aug_type,
             # )
-
         else:
-            if self.root.is_multianimal:
+            if self.data_split_selection.selected:
+                try:
+                    deeplabcut.create_training_dataset_from_existing_split(
+                        self.root.config,
+                        from_shuffle=self.data_split_selection.from_shuffle,
+                        shuffles=[self.shuffle.value()],
+                        net_type=self.net_choice.currentText(),
+                        userfeedback=not overwrite,
+                        weight_init=weight_init,
+                        engine=self.root.engine,
+                    )
+                except ValueError as err:
+                    msg = _create_message_box(
+                        f"The training dataset could not be created.",
+                        str(err),
+                    )
+                    msg.exec_()
+                    return
+
+            elif self.root.is_multianimal:
                 deeplabcut.create_multianimaltraining_dataset(
                     self.root.config,
                     shuffle,
@@ -199,6 +228,7 @@ class CreateTrainingDataset(DefaultTab):
                     weight_init=weight_init,
                     engine=self.root.engine,
                 )
+
             # Check that training data files were indeed created.
             trainingsetfolder = get_training_set_folder(self.root.cfg)
             filenames = list(
@@ -333,6 +363,10 @@ class CreateTrainingDataset(DefaultTab):
 
         return _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]["model_filter"]
 
+    def view_shuffles(self) -> None:
+        viewer = ShuffleMetadataViewer(root=self.root, parent=self)
+        viewer.show()
+
 
 class WeightInitializationSelector(QtWidgets.QWidget):
     """Widget to select weight initialization"""
@@ -422,6 +456,69 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         else:
             self.memory_replay_label.hide()
             self.memory_replay_box.hide()
+
+
+class DataSplitSelector(QtWidgets.QWidget):
+    """Allows users to create training sets with the same train/test split as another"""
+
+    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
+        super().__init__()
+        self.root = root
+        self.parent = parent
+
+        self.setToolTip(
+            "This allows you to create a shuffle where the data split is the same as "
+            "one of your existing shuffles (the images on which the model is "
+            "trained/tested are the same)."
+        )
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        box_layout = QtWidgets.QHBoxLayout()
+        box_layout.setSpacing(0)
+        box_layout.setContentsMargins(0, 0, 0, 0)
+
+        selector_layout = QtWidgets.QHBoxLayout()
+        selector_layout.setSpacing(0)
+        selector_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.shuffle_label = QtWidgets.QLabel("From shuffle:")
+        self.shuffle_label.hide()
+        self.shuffle_selector = QtWidgets.QSpinBox()
+        self.shuffle_selector.setMaximum(10_000)
+        self.shuffle_selector.setValue(0)
+        self.shuffle_selector.hide()
+
+        self.box = QtWidgets.QCheckBox(parent=self)
+        self.box.stateChanged.connect(self._checkbox_status_changed)
+        self.box_label = QtWidgets.QLabel("Use an existing data split")
+
+        box_layout.addWidget(self.box)
+        box_layout.addWidget(self.box_label)
+        selector_layout.addWidget(self.shuffle_label)
+        selector_layout.addWidget(self.shuffle_selector)
+        layout.addLayout(box_layout)
+        layout.addLayout(selector_layout)
+        self.setLayout(layout)
+
+    @property
+    def selected(self) -> bool:
+        return self.box.isChecked()
+
+    @property
+    def from_shuffle(self) -> int:
+        """The shuffle from which to copy the data split"""
+        return self.shuffle_selector.value()
+
+    def _checkbox_status_changed(self, state: int) -> None:
+        if Qt.CheckState(state) == Qt.Checked:
+            self.shuffle_selector.show()
+            self.shuffle_label.show()
+        else:
+            self.shuffle_selector.hide()
+            self.shuffle_label.hide()
 
 
 def _create_message_box(text, info_text):
