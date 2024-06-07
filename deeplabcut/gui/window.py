@@ -27,17 +27,18 @@ from PySide6.QtWidgets import QMessageBox, QMenu, QWidget, QMainWindow
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 
-def _check_for_updates():
+def _check_for_updates(silent=True):
     is_latest, latest_version = utils.is_latest_deeplabcut_version()
     is_latest_plugin, latest_plugin_version = misc.is_latest_version()
     if is_latest and is_latest_plugin:
-        msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut is up-to-date",
-        )
-        msg.exec_()
+        if not silent:
+            msg = QtWidgets.QMessageBox(
+                text=f"DeepLabCut is up-to-date",
+            )
+            msg.exec_()
     else:
         if not is_latest and is_latest_plugin:
             text = f"DeepLabCut {latest_version} available"
@@ -302,6 +303,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
+        QTimer.singleShot(1000, lambda: _check_for_updates(silent=True))
+
     def default_set(self):
         self.name_default = ""
         self.proj_default = ""
@@ -349,7 +352,7 @@ class MainWindow(QMainWindow):
         self.aboutAction.triggered.connect(self._learn_dlc)
 
         self.check_updates = QAction("&Check for Updates...", self)
-        self.check_updates.triggered.connect(_check_for_updates)
+        self.check_updates.triggered.connect(lambda: _check_for_updates(silent=False))
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
