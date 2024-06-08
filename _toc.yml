@@ -4,6 +4,7 @@ parts:
 - caption: Getting Started
   chapters:
   - file: docs/UseOverviewGuide
+  - file: docs/course
 - caption: Installation
   chapters:
   - file: docs/installation
@@ -27,6 +28,13 @@ parts:
   chapters:
   - file: docs/single_animal_quick_guide
   - file: docs/tutorial_maDLC
+- caption: Beginner's Guide to DeepLabCut
+  chapters:
+  - file: docs/beginners-guide
+  - file: docs/manage-project
+  - file: docs/labelling
+  - file: docs/Training-Evaluation
+  - file: docs/video-analysis
 - caption: Hardware Tips
   chapters:
   - file: docs/recipes/TechHardware
@@ -38,7 +46,7 @@ parts:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
-- caption: Cookbook
+- caption: Cookbook (detailed helper guides)
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC
@@ -52,13 +60,6 @@ parts:
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
-- caption: Beginner's Guide to DeepLabCut in the GUI
-  chapters:
-  - file: docs/beginners-guide
-  - file: docs/manage-project
-  - file: docs/labelling
-  - file: docs/Training-Evaluation
-  - file: docs/video-analysis
 - caption: DeepLabCut Benchmark
   chapters:
   - file: docs/benchmark
