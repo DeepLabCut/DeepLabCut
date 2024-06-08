@@ -171,14 +171,9 @@ Ctrl + C: Copy labels from previous frame. With multi-animal DLC, only the keypo
 Keyboard arrows: advance frames
 delete key: delete label
 ```
+![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
 
-#### API Docs
-````{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.label_frames.rst
-```
-````
+
 
 ###  (E) Check Annotated Frames
 
