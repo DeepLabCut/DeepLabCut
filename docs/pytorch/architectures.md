@@ -20,20 +20,20 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 
 **HRNet**
 - From [Wang, Jingdong, et al. "Deep high-resolution representation learning for visual recognition." IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.](https://arxiv.org/abs/1908.07919)
-- Variants are `hrnet_w18`, `hrnet_w32` and `hrnet_w48`
-- Slower but more powerful than ResNets
+- Current variants are `hrnet_w18`, `hrnet_w32` and `hrnet_w48`
+- Slower but typically more powerful than ResNets
 
 **DEKR**
 - From [Geng, Sun et al. "Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.](https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf)
-- This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints.
-- Three variants are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
-- Note, this is a powerful multi-animal model but very heavy (slow).
+- This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints
+- Current variants that are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
+- Note, this is a powerful multi-animal model but very heavy (slow)
 
 **BUTCTD**
 - From [Zhou, Stoffl, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf)
 - [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rethinking-pose-estimation-in-crowds/pose-estimation-on-crowdpose)](https://paperswithcode.com/sota/pose-estimation-on-crowdpose?p=rethinking-pose-estimation-in-crowds)
-- Variants are `BUCTD-hrnet_w32` and `BUCTD-w48`
-- This is a top-performing mutli-animal (or humans, which are also animals) method that can be used with other architectures.
+- Current variants are `BUCTD-hrnet_w32` and `BUCTD-w48`
+- This is a top-performing mutli-animal (and for humans, which are also animals) method that can be used with other architectures
 
 **DLCRNet**
 - From [Lauer, Zhou, et al. "Multi-animal pose estimation, identification and tracking with DeepLabCut." Nature Methods 19.4 (2022): 496-504.](https://www.nature.com/articles/s41592-022-01443-0)
@@ -42,7 +42,7 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 
 **AnimalTokenPose**
 -  Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
-  - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this here).
+  - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this here)
 
 
 ## Information on Single Animal Models
