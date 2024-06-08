@@ -32,7 +32,7 @@ parts:
   chapters:
   - file: docs/beginners-guide
   - file: docs/manage-project
-  - file: docs/labelling
+  - file: docs/labeling
   - file: docs/Training-Evaluation
   - file: docs/video-analysis
 - caption: Hardware Tips
