@@ -1,6 +1,9 @@
-# Using DeepLabCut
+# Using DeepLabCut 
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
-This guide is meant as a very-new-to-python beginner guide to DeepLabCut. After you are comfortable with this material we recommend then jumping into the more detailed User Guides!
+This guide, and related pages, are meant as a very-new-to-python beginner guide to DeepLabCut. After you are comfortable with this material we recommend then jumping into the more detailed User Guides!
+
+- **ProTip:** For even more 'in-depth' understanding, head over to check out the [DeepLabCut Course](https://deeplabcut.github.io/DeepLabCut/docs/course.html), which provides a deeper dive into the science behind DeepLabCut.
 
 ## Installation
 
@@ -122,3 +125,4 @@ When you first launch the GUI, you'll find three primary main options:
 
 ![DeepLabCut Create Project GIF](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779616437-30U5RFYV0OY6ACGDG7F4/create-project.gif?format=500w)
 
+## Next, head over the beginner guide for [Setting up what keypoints to track](https://deeplabcut.github.io/DeepLabCut/docs/manage-project)
