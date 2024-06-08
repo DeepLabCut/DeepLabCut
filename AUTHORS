@@ -1,5 +1,5 @@
 DeepLabCut (www.deeplabcut.org) was initially developed by
-Alexander & Mackenzie Mathis in collaboration with Matthias Bethge.
+Alexander & Mackenzie Mathis in collaboration with Matthias Bethge in 2017.
 It is actively developed by Alexander & Mackenzie Mathis (steering council and owners).
 
 DeepLabCut is an open-source tool and has benefited from suggestions and edits by many
@@ -108,13 +108,27 @@ A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
 M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
 J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
 N Poulsen, neils.poulsen@epfl.ch | https://github.com/n-poulsen
-S Ye, https://github.com/yeshaokai
+S Schneider, stes@hey.com | https://github.com/stes
+S Ye, shaokai.ye@epfl.ch | https://github.com/yeshaokai
 
 Preprint:
-Ye, S., Filippova, A., Lauer, J., Vidal, M., Schneider, S., Qiu, T., Mathis, A., & Mathis, M.W. (2022).
+Ye, S., Filippova, A., Lauer, J., Schneider, S., Vidal, M., Qiu, T., Mathis, A., & Mathis, M.W. (2023).
 SuperAnimal pretrained pose estimation models for behavioral analysis. https://arxiv.org/abs/2203.07436
 
 
 ############################################################################################################
-DeepLabCut 3.0+ additions:
-staty tuned, but includes BUCTD!
+
+DeepLabCut 3.0 Toolbox
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
+N Poulsen, neils.poulsen@epfl.ch | https://github.com/n-poulsen
+S Ye, shaokai.ye@epfl.ch | https://github.com/yeshaokai
+A Filippova, anastasiia.filippova@epfl.ch | https://github.com/nastya236
+Q Macé | https://github.com/QuentinJGMace
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+L Stoffl, lucas.stoffl@epfl.ch | https://github.com/LucZot
+
+Products:
+PyTorch backend for DeepLabCut
+Expanded SuperAnimal capabilities
+New model architectures (WIP: staty tuned, but includes BUCTD)
