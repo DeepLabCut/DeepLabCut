@@ -61,7 +61,7 @@ skeleton_color: black
 pcutoff:
 dotsize:
 alphavalue:
-colormap:
+colormap: rainbow
 
 
 # Training,Evaluation and Analysis configuration
