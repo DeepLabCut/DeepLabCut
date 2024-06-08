@@ -1,4 +1,4 @@
-# Managing Your DeepLabCut Project
+# Setting up what keypoints to track
 
 ## Editing the Configuration File
 
