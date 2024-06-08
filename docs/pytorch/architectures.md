@@ -16,11 +16,11 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 
 **ResNets**
 - Adapted from [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) and [Insafutdinov, Eldar et al. "DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model". European Conference on Computer Vision (ECCV) 2016.]
-- Current variants are `resnet_50` and `resnet_101`
+- Current variants are `resnet_50`, `resnet_101`, `top_down_resnet_101`, `top_down_resnet_50`
 
 **HRNet**
 - Adapted from [Wang, Jingdong, et al. "Deep high-resolution representation learning for visual recognition." IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.](https://arxiv.org/abs/1908.07919)
-- Current variants are `hrnet_w18`, `hrnet_w32` and `hrnet_w48`
+- Current variants are `hrnet_w18`, `hrnet_w32`, `hrnet_w48`, `top_down_hrnet_w18`, `top_down_hrnet_w32`, `top_down_hrnet_w48`
 - Slower but typically more powerful than ResNets
 
 **DEKR**
@@ -40,9 +40,10 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 - This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals
 - Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5`
 
+
 **AnimalTokenPose**
 -  Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
-  - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this here)
+  - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this within deeplabcut)
 
 
 ## Information on Single Animal Models
