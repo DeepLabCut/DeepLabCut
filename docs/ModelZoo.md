@@ -62,12 +62,6 @@ To provide the community with easy access to such high performance models across
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
 
-### To use our models in DeepLabCut (versions 3+), please use the following API
-
-```
-pip install deeplabcut[modelzoo]
-```
-
 #### Practical example: Using SuperAnimal models for inference without training.
 In the `deeplabcut.video_inference_superanimal` function, if the output video appears to be jittery, consider setting the `video_adapt` option to __True__. Be aware, that enabling this option might extend the processing time. 
 
