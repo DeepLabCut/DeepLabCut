@@ -30,6 +30,7 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -47,10 +48,14 @@ class CreateTrainingDataset(DefaultTab):
         self._generate_layout_attributes(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
+        self.mapping_button = QtWidgets.QPushButton("Edit Conversion Table")
+        self.mapping_button.clicked.connect(self.edit_conversion_table)
+
         self.ok_button = QtWidgets.QPushButton("Create Training Dataset")
         self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.create_training_dataset)
 
+        self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
         self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
@@ -144,6 +149,11 @@ class CreateTrainingDataset(DefaultTab):
 
     def log_augmentation_choice(self, augmentation):
         self.root.logger.info(f"Image augmentation set to {augmentation.upper()}")
+
+    def edit_conversion_table(self):
+        # Test beforehand whether a conversion table exists
+        weight_init = self.weight_init_selector.get_weight_init()
+        _ = launch_napari(self.root.config)
 
     def create_training_dataset(self):
         shuffle = self.shuffle.value()
