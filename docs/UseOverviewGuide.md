@@ -3,6 +3,11 @@
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
+```{Hint}
+💡📚 If you are new to Python and DeepLabCut, you might consider checking our [beginner guide](https://deeplabcut.github.io/DeepLabCut/docs/beginners-guide.html) once you are ready to jump into using the DeepLabCut App!
+```
+
+
 ## [How to install DeepLabCut](how-to-install)
 
 We don't cover installation in depth on this page, so click on the link above if that is what you are looking for. See below for details on getting started with DeepLabCut!

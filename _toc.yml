@@ -18,23 +18,24 @@ parts:
   - file: docs/HelperFunctions
 - caption: Graphical User Interfaces (GUIs)
   chapters:
-  - file: docs/PROJECT_GUI
-  - file: docs/napari_GUI
-- caption: New: DLC3 PyTorch Specific Docs
+  - file: docs/gui/PROJECT_GUI
+  - file: docs/gui/napari_GUI
+- caption: DLC3 PyTorch Specific Docs
+  chapters:
   - file: docs/pytorch/user_guide.md
   - file: docs/pytorch/pytorch_config.md
   - file: docs/pytorch/architectures.md
 - caption: Quick Start Tutorials
   chapters:
-  - file: docs/single_animal_quick_guide
-  - file: docs/tutorial_maDLC
+  - file: docs/quick-start/single_animal_quick_guide
+  - file: docs/quick-start/tutorial_maDLC
 - caption: Beginner's Guide to DeepLabCut
   chapters:
-  - file: docs/beginners-guide
-  - file: docs/manage-project
-  - file: docs/labeling
-  - file: docs/Training-Evaluation
-  - file: docs/video-analysis
+  - file: docs/beginner-guides/beginners-guide
+  - file: docs/beginner-guides/manage-project
+  - file: docs/beginner-guides/labeling
+  - file: docs/beginner-guides/Training-Evaluation
+  - file: docs/beginner-guides/video-analysis
 - caption: Hardware Tips
   chapters:
   - file: docs/recipes/TechHardware
