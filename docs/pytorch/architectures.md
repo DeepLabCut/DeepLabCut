@@ -32,7 +32,7 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 **BUTCTD**
 - From [Zhou, Stoffl, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf)
 - [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rethinking-pose-estimation-in-crowds/pose-estimation-on-crowdpose)](https://paperswithcode.com/sota/pose-estimation-on-crowdpose?p=rethinking-pose-estimation-in-crowds)
-- Current variants are `BUCTD-hrnet_w32` and `BUCTD-w48`
+- Current variants are `BUCTD-hrnet_w32` and `BUCTD-hrnet_w48`
 - This is a top-performing mutli-animal (and for humans, which are also animals) method that can be used with other architectures
 
 **DLCRNet**
