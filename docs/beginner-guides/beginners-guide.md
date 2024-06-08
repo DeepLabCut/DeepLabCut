@@ -79,7 +79,7 @@ When you first launch the GUI, you'll find three primary main options:
 2. **Load Project:** Use this to resume your on-hold or past work.
 3. **Model Zoo:** Best suited for those who want to explore Model Zoo.
 
-#### Commencing a Your Work:
+#### Commencing Your Work:
 
 - For a first-time or new user, please click on **`Start New Project`**.
 
