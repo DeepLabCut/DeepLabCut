@@ -11,18 +11,15 @@
 import glob
 import os
 import pickle
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import (
-    MaDLC_config,
     SingleDLC_config,
 )
-from deeplabcut.pose_estimation_tensorflow.config import load_config
 
 
 def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
@@ -35,7 +32,7 @@ def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
     except:
         data = df[scorer]
 
-    cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
 
     bodyparts = cfg["multianimalbodyparts"]
 
@@ -206,11 +203,12 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     trainFraction = cfg["TrainingFraction"][0]
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(deeplabcut.auxiliaryfunctions.get_model_folder(trainFraction, 0, cfg)),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, 0, cfg)),
     )
 
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-    test_cfg = load_config(str(path_test_config))
+    test_cfg = auxiliaryfunctions.read_plainconfig(path_test_config)
+
     start = 0
     stop = 10
     fps = 10
@@ -274,17 +272,17 @@ def add_skeleton(config_path, pretrain_model_name):
 
     skeleton = skeleton_dict[pretrain_model_name]
 
-    cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
     cfg["skeleton"] = skeleton
     print(f"overwriting skeleton for {config_path}")
-    deeplabcut.auxiliaryfunctions.write_config(config_path, cfg)
+    auxiliaryfunctions.write_config(config_path, cfg)
 
 
 def customized_colormap(config_path):
     # look for all symmetric keypoints
     # make symmetric keypoints the same color
 
-    cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
     bodyparts = cfg["multianimalbodyparts"]
     n_bodyparts = len(cfg["multianimalbodyparts"])
 

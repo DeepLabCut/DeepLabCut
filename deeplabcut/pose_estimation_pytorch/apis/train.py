@@ -19,6 +19,7 @@ import albumentations as A
 from torch.utils.data import DataLoader
 
 import deeplabcut.pose_estimation_pytorch.config as torch_config
+import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.data import (
@@ -173,6 +174,7 @@ def train_network(
     save_epochs: int | None = None,
     display_iters: int | None = None,
     max_snapshots_to_keep: int | None = None,
+    pose_threshold: float | None = 0.1,
     **kwargs,
 ) -> None:
     """Trains a network for a project
@@ -194,6 +196,7 @@ def train_network(
         display_iters: overrides the number of iterations between each log of the loss
             within an epoch
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
+        pose_threshold: used for memory-replay. pseudo predictions that are below this are discarded for memory-replay
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
     """
@@ -206,21 +209,27 @@ def train_network(
 
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
+
         if weight_init.memory_replay:
-            raise ValueError(f"Memory replay is not yet implemented! Come back soon!")
-            # dlc_proj_root = Path(config).parent
-            # superanimal_model_config = prepare_memory_replay(
-            #     dlc_proj_root,
-            #     shuffle,
-            #     superanimal_name,
-            #     model_name,
-            #     device,
-            #     max_individuals=3,
-            # )
-            # loader = COCOLoader(
-            #     project_root=loader.model_folder / "memory-replay",
-            #     model_config_path=loader.model_config_path,
-            # )
+            dataset_params = loader.get_dataset_parameters()
+            backbone_name = loader.model_cfg["model"]["backbone"]["model_name"]
+            model_name = modelzoo_utils.get_pose_model_type(backbone_name)
+            # at some point train_network should support a different train_file passing so memory replay can also take the same train file
+            superanimal_model_config = prepare_memory_replay(
+                loader.project_path,
+                shuffle,
+                weight_init.dataset,
+                model_name,
+                device,
+                train_file = "train.json",
+                max_individuals=dataset_params.max_num_animals,
+                pose_threshold = pose_threshold
+            )
+            loader = COCOLoader(
+                project_root=Path(loader.model_folder).parent / "memory_replay",
+                model_config_path=loader.model_config_path,
+                train_json_filename = "memory_replay_train.json"
+            )
 
     if batch_size is not None:
         loader.model_cfg["train_settings"]["batch_size"] = batch_size

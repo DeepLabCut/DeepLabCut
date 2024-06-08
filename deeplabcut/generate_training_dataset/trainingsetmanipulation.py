@@ -1226,7 +1226,9 @@ def create_training_dataset(
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
                     from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
 
-                    pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
+                    pose_cfg_path = path_train_config.replace(
+                        "pose_cfg.yaml", "pytorch_config.yaml"
+                    )
                     if weight_init is not None and weight_init.with_decoder:
                         pytorch_cfg = make_super_animal_finetune_config(
                             project_config=cfg,

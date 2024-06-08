@@ -39,6 +39,32 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 )
 
 
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()  # Convert ndarray to list
+        return super().default(obj)
+
+def xywh2xyxy(bbox):
+    temp_bbox = np.copy(bbox)
+    temp_bbox[2:] = temp_bbox[:2] + temp_bbox[2:]
+    return temp_bbox
+
+def optimal_match(gts_list, preds_list):
+    arranged_preds_list = []
+    num_gts = len(gts_list)
+    num_preds = len(preds_list)
+    cost_matrix = np.zeros((num_gts, num_preds))
+
+    for i in range(num_gts):
+        for j in range(num_preds):
+            cost_matrix[i, j] = distance.euclidean(
+                gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
+            )
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+
+    return col_ind
+    
 def calculate_iou(box1, box2):
     # Unpack the coordinates
     x1_1, y1_1, x2_1, y2_1 = box1
@@ -116,7 +142,7 @@ def plot_cost_matrix(
 
 
 def keypoint_matching(
-    config_path, superanimal_name, model_name, device=None, train_file="train.json"
+        config_path, superanimal_name, model_name, device=None, train_file="train.json", pose_threshold = 0.1
 ):
 
     cfg = af.read_config(config_path)
@@ -225,6 +251,10 @@ def keypoint_matching(
     # pose inference should return meta data for pseudo labeling
     predictions = pose_runner.inference(pose_inputs)
 
+    with open(str(memory_replay_folder / 'pseudo_predictions.json'), 'w') as f:
+        
+        json.dump(pose_inputs, f, cls = NumpyEncoder)
+    
     assert len(images) == len(predictions)
 
     imagename2prediction = {}
@@ -233,33 +263,12 @@ def keypoint_matching(
         imagename = image_path.split(os.sep)[-1]
         imagename2prediction[imagename] = prediction
 
-    def xywh2xyxy(bbox):
-        temp_bbox = np.copy(bbox)
-        temp_bbox[2:] = temp_bbox[:2] + temp_bbox[2:]
-        return temp_bbox
-
-    def optimal_match(gts_list, preds_list):
-        arranged_preds_list = []
-        num_gts = len(gts_list)
-        num_preds = len(preds_list)
-        cost_matrix = np.zeros((num_gts, num_preds))
-
-        for i in range(num_gts):
-            for j in range(num_preds):
-                cost_matrix[i, j] = distance.euclidean(
-                    gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
-                )
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-
-        return col_ind
-
     pred_keypoint_names = config["bodyparts"]
     num_pred_keypoints = len(pred_keypoint_names)
     gt_keypoint_names = categories[0]["keypoints"]
     num_gt_keypoints = len(gt_keypoint_names)
 
     match_matrix = np.zeros((num_pred_keypoints, num_gt_keypoints))
-
     match_dict = defaultdict(lambda: defaultdict(int))
 
     for imagename, gts in imagename2gt.items():
@@ -328,184 +337,6 @@ def keypoint_matching(
             source = conversion_table.get(target, "")
             out += f"{source}, {target}\n"
         f.write(out)
-
-
-# this is reading from a coco project
-def prepare_memory_replay_dataset(
-    source_dataset_folder,
-    superanimal_name,
-    model_name,
-    max_individuals=1,
-    train_file="train.json",
-    test_file="test.json",
-    pose_threshold=0.0,
-    bbox_threshold=0.0,
-    device=None,
-    pose_model_path="",
-    detector_path="",
-    customized_pose_checkpoint=None,
-):
-    """
-    Need to first run inference on the source project train file
-    """
-
-    (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_path,
-    ) = get_config_model_paths(superanimal_name, model_name)
-
-    if customized_pose_checkpoint is not None:
-        pose_model_path = customized_pose_checkpoint
-
-    if device is None:
-        device = select_device()
-
-    config = {**project_config, **model_config}
-    config = update_config(config, max_individuals, device)
-    individuals = [f"animal{i}" for i in range(max_individuals)]
-    config["individuals"] = individuals
-    num_bodyparts = len(config["bodyparts"])
-    train_file_path = os.path.join(source_dataset_folder, "annotations", train_file)
-
-    pose_runner, detector_runner = get_inference_runners(
-        model_config,
-        snapshot_path=pose_model_path,
-        max_individuals=max_individuals,
-        num_bodyparts=len(model_config["metadata"]["bodyparts"]),
-        num_unique_bodyparts=0,
-        detector_path=detector_path,
-    )
-
-    import json
-
-    with open(train_file_path, "r") as f:
-        train_obj = json.load(f)
-
-    images = train_obj["images"]
-    annotations = train_obj["annotations"]
-    categories = train_obj["categories"]
-    imagename2id = {}
-    imageid2name = {}
-    imagename2gt = defaultdict(list)
-
-    for image in images:
-        # this only works with relative path as the testing image can be at a different folder
-        imagename = image["file_name"].split(os.sep)[-1]
-        imagename2id[imagename] = image["id"]
-        imageid2name[image["id"]] = imagename
-
-    imagename2bbox = defaultdict(list)
-    for anno in annotations:
-        imagename = imageid2name[anno["image_id"]]
-        imagename2gt[imagename].append(anno)
-        imagename2bbox[imagename].append(anno["bbox"])
-
-    imageid2annotations = defaultdict(list)
-
-    imageids = list(imagename2id.values())
-    for annotation in annotations:
-        image_id = annotation["image_id"]
-        if annotation["image_id"] in imageids:
-            imageid2annotations[image_id].append(annotation)
-
-    # need to support more image types
-    images_in_folder = glob.glob(os.path.join(source_dataset_folder, "images", "*.png"))
-
-    corresponded_images = []
-    for image in images_in_folder:
-        image_path = image
-        imagename = image.split(os.sep)[-1]
-        if imagename in imagename2id:
-            corresponded_images.append(image_path)
-
-    images = corresponded_images
-
-    bbox_predictions = detector_runner.inference(images=images)
-
-    bbox_gts = [
-        {"bboxes": np.array(imagename2bbox[image.split(os.sep)[-1]])}
-        for image in images
-    ]
-
-    pose_inputs = list(zip(images, bbox_gts))
-
-    # pose inference should return meta data for pseudo labeling
-    predictions = pose_runner.inference(pose_inputs)
-
-    assert len(images) == len(predictions)
-
-    imagename2prediction = {}
-
-    for image_path, prediction in zip(images, predictions):
-        imagename = image_path.split(os.sep)[-1]
-        imagename2prediction[imagename] = prediction
-
-    def xywh2xyxy(bbox):
-        temp_bbox = np.copy(bbox)
-        temp_bbox[2:] = temp_bbox[:2] + temp_bbox[2:]
-        return temp_bbox
-
-    def optimal_match(gts_list, preds_list):
-        arranged_preds_list = []
-        num_gts = len(gts_list)
-        num_preds = len(preds_list)
-        cost_matrix = np.zeros((num_gts, num_preds))
-
-        for i in range(num_gts):
-            for j in range(num_preds):
-                cost_matrix[i, j] = distance.euclidean(
-                    gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
-                )
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-
-        return col_ind
-
-    for imagename, gts in imagename2gt.items():
-        bbox_gts = [np.array(gt["bbox"]) for gt in gts]
-        bbox_gts = [xywh2xyxy(e) for e in bbox_gts]
-        prediction = imagename2prediction[imagename]
-        bbox_preds = [xywh2xyxy(pred) for pred in prediction["bboxes"]]
-        optimal_pred_indices = optimal_match(bbox_gts, bbox_preds)
-
-        for idx in range(len(bbox_gts)):
-            if idx == len(optimal_pred_indices):
-                break
-
-            optimal_index = optimal_pred_indices[idx]
-            matched_gt = np.array(gts[idx]["keypoints"])
-            matched_pred = prediction["bodyparts"][optimal_index]
-            bbox_gt = bbox_gts[idx]
-            bbox_pred = bbox_preds[idx]
-
-            # maybe check iou of two bbox
-            iou = calculate_iou(bbox_gt, bbox_pred)
-            if iou < 0.7:
-                matched_gt = np.ones_like(matched_gt) * -1
-                gts[idx]["keypoints"] = list(matched_gt.flatten())
-            else:
-                matched_gt = matched_gt.reshape(num_bodyparts, -1)
-                matched_pred = matched_pred.reshape(num_bodyparts, -1)
-                mask = matched_gt == -1
-                matched_gt[mask] = matched_pred[mask]
-                # after the mixing, we don't care about confidence anymore
-
-                for kpt_idx in range(len(matched_gt)):
-                    if matched_gt[kpt_idx][2] < 0.7 and matched_gt[kpt_idx][2] > 0:
-                        matched_gt[kpt_idx][2] = 0
-                    elif matched_gt[kpt_idx][2] > 0:
-                        matched_gt[kpt_idx][2] = 2
-
-                gts[idx]["keypoints"] = list(matched_gt.flatten())
-
-    # memory replay path
-    memory_replay_train_file_path = os.path.join(
-        source_dataset_folder, "annotations", "memory_replay_train.json"
-    )
-    with open(memory_replay_train_file_path, "w") as f:
-        json.dump(train_obj, f, indent=4)
-
 
 # this is to generate a coco project as an intermediate data
 def dlc3predictions_2_annotation_from_video(
@@ -669,3 +500,4 @@ def dlc3predictions_2_annotation_from_video(
 
     with open(os.path.join(dest_proj_folder, "annotations", "train.json"), "w") as f:
         json.dump(train_obj, f, indent=4)
+        

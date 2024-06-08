@@ -18,9 +18,14 @@ import pandas as pd
 import scipy.io as sio
 import yaml
 
-import deeplabcut
+import deeplabcut.compat as compat
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
+    create_multianimaltraining_dataset,
     format_multianimal_training_data,
+)
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
+    create_training_dataset,
 )
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     format_training_data as format_single_training_data,
@@ -39,24 +44,24 @@ def modify_train_test_cfg(config_path, shuffle=1, modelprefix=""):
     # use gradient masking
     # set batch size as 8
     trainposeconfigfile, testposeconfigfile, snapshotfolder = (
-        deeplabcut.return_train_network_path(
+        compat.return_train_network_path(
             config_path, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
         )
     )
 
-    train_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
+    train_cfg = auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
     train_cfg["multi_stage"] = True
     train_cfg["batch_size"] = 8
     train_cfg["gradient_masking"] = True
 
-    deeplabcut.auxiliaryfunctions.write_plainconfig(trainposeconfigfile, train_cfg)
+    auxiliaryfunctions.write_plainconfig(trainposeconfigfile, train_cfg)
 
-    test_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(testposeconfigfile)
+    test_cfg = auxiliaryfunctions.read_plainconfig(testposeconfigfile)
     test_cfg["multi_stage"] = True
     test_cfg["batch_size"] = 8
     test_cfg["gradient_masking"] = True
 
-    deeplabcut.auxiliaryfunctions.write_plainconfig(testposeconfigfile, test_cfg)
+    auxiliaryfunctions.write_plainconfig(testposeconfigfile, test_cfg)
 
 
 class NpEncoder(json.JSONEncoder):
@@ -332,7 +337,7 @@ def _generic2madlc(
             mode="w",
         )
     # paf_graph default as None. But I am not sure how to do better
-    deeplabcut.create_multianimaltraining_dataset(
+    create_multianimaltraining_dataset(
         os.path.join(proj_root, "config.yaml"), paf_graph=None
     )
 
@@ -341,14 +346,14 @@ def _generic2madlc(
 
     config_path = os.path.join(proj_root, "config.yaml")
 
-    cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
 
     train_folder = os.path.join(
-        proj_root, deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg)
     )
 
     datafilename, metafilename = (
-        deeplabcut.auxiliaryfunctions.GetDataandMetaDataFilenames(
+        auxiliaryfunctions.GetDataandMetaDataFilenames(
             train_folder, train_fraction, 1, cfg
         )
     )
@@ -566,22 +571,20 @@ def _generic2sdlc(
             mode="w",
         )
 
-    deeplabcut.create_training_dataset(
-        os.path.join(proj_root, "config.yaml"),
-    )
+    create_training_dataset(os.path.join(proj_root, "config.yaml"))
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
     # I could have done it in a more elegant way if I could modify part of DLC source code, but for backward compatibility reasons, overriding documentation is smarter
 
     config_path = os.path.join(proj_root, "config.yaml")
-    cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config_path)
 
     train_folder = os.path.join(
-        proj_root, deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(cfg)
+        proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg)
     )
 
     datafilename, metafilename = (
-        deeplabcut.auxiliaryfunctions.GetDataandMetaDataFilenames(
+        auxiliaryfunctions.GetDataandMetaDataFilenames(
             train_folder, train_fraction, 1, cfg
         )
     )

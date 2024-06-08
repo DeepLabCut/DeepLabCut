@@ -14,8 +14,8 @@ import pickle
 import numpy as np
 import pandas as pd
 
-import deeplabcut
 from deeplabcut.modelzoo.generalized_data_converter.datasets.base import BasePoseDataset
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class BaseDLCPoseDataset(BasePoseDataset):
@@ -37,15 +37,14 @@ class BaseDLCPoseDataset(BasePoseDataset):
         else:
             config_file = os.path.join(self.proj_root, "config.yaml")
 
-        cfg = deeplabcut.auxiliaryfunctions.read_config(config_file)
+        cfg = auxiliaryfunctions.read_config(config_file)
 
         task = cfg["Task"]
 
         scorer = cfg["scorer"]
 
         datasets_folder = os.path.join(
-            self.proj_root,
-            deeplabcut.auxiliaryfunctions.GetTrainingSetFolder(cfg),
+            self.proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg),
         )
 
         self.datasets_folder = datasets_folder

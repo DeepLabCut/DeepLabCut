@@ -18,22 +18,19 @@ config_path = str(dlc_proj_root / "config.yaml")
 superanimal_name = "superanimal_topviewmouse"
 model_name = "hrnetw32"
 shuffle = 0
-conversion_table_out_path = "conversion_table.csv"
 max_individuals = 3
 device = "cuda"
-
 
 # keypoint matching before create training dataset
 # keypoint matching creates pseudo prediction and a conversion table
 
-
-# should be fine to infer max individuals in keypoint matching
 keypoint_matching(
     config_path,
     superanimal_name,
     model_name,
 )
 
+# keypoint matching creates a memory_replay folder in the root. The conversion table can be read from there
 conversion_table_path = dlc_proj_root / "memory_replay" / "conversion_table.csv"
 
 table = create_conversion_table(
@@ -42,7 +39,6 @@ table = create_conversion_table(
     project_to_super_animal=read_conversion_table_from_csv(conversion_table_path),
 )
 
-# make sure to merge this weight init with the example given by Niels below
 weight_init = WeightInitialization(
     dataset=superanimal_name,
     conversion_array=table.to_array(),
@@ -59,11 +55,7 @@ deeplabcut.create_training_dataset(
     engine=Engine.PYTORCH,
     userfeedback=False,
 )
-"""
-# check the max individual thing one more time
-deeplabcut.train_network(config_path,
-                                 shuffle = shuffle,
-                                 superanimal_name = superanimal_name,
-                                 max_individuals = max_individuals,
-                                 device = device)
-"""
+
+# passing pose_threshold controls the behavior of memory replay. We discard predictions that are lower than the threshold
+deeplabcut.train_network(config_path, shuffle=shuffle, device=device, pose_threshold = 0.1)
+
