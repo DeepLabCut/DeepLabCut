@@ -63,11 +63,28 @@ To provide the community with easy access to such high performance models across
 
 
 #### Practical example: Using SuperAnimal models for inference without training.
-In the `deeplabcut.video_inference_superanimal` function, if the output video appears to be jittery, consider setting the `video_adapt` option to __True__. Be aware, that enabling this option might extend the processing time. 
+
+You can simply call the model and run video inference. 
+
+To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the `deeplabcut.video_inference_superanimal` simply function set the `video_adapt` option to __True__. Be aware, that enabling this option will (minimally) extend the processing time. 
 
 ```python
 video_path = 'demo-video.mp4'
-superanimal_name = 'superanimal_quadruped'
+superanimal_name = 'superanimal_quadruped_hrnetw32'
+
+deeplabcut.video_inference_superanimal([video_path],
+                                        superanimal_name,
+                                        video_adapt = False)
+```
+
+
+#### Practical example: Using SuperAnimal model bottom up, considering video/animal size.
+
+In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the `scale_list`:
+
+```python
+video_path = 'demo-video.mp4'
+superanimal_name = 'superanimal_quadruped_dlcrnet'
 
 # The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.
 scale_list = range(200, 600, 50)
@@ -77,12 +94,13 @@ deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_lis
 
 #### Practical example: Using transfer learning with superanimal weights.
 In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
-  Specifically:
-* `superquadruped` uses 39 keypoints and,
-* `supertopview` uses 27 keypoints
+
+Specifically:
+* `superanimal_quadruped_x` uses 39 keypoints and,
+* `superanimal_topviewmouse_x` uses 27 keypoints
 
 ```python
-superanimal_name = "superanimal_topviewmouse"
+superanimal_name = "ssuperanimal_topviewmouse_hrnetw32"
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
@@ -104,13 +122,15 @@ Pixel statistics domain shift: The brightness of your video might look very diff
 
 
 
-### Our longer term perspective...
+### Our longer term perspective ...
 
-Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.
+Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods. We will also continue to expand this project to new model/data classes. Please do get in touch is you have data or ideas: modelzoo@deeplabcut.org
 
 ## Publication:
 
-To see our first preprint on the work, check out [our paper](https://arxiv.org/abs/2203.07436v1). 
+To see the first preprint on the work, click [here](https://arxiv.org/abs/2203.07436v1). 
+
+Our first publication on this project is now published at Nature Communications:
 
 ```{hint}
 Here is the citation:
