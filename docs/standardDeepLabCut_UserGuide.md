@@ -167,9 +167,9 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 
 HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
 ```
-Ctrl + C: Copy labels from previous frame. With multi-animal DLC, only the keypoints of the animal currently selected are duplicated.
-Keyboard arrows: advance frames
-delete key: delete label
+Ctrl + C: Copy labels from previous frame.
+Keyboard arrows: advance frames.
+Delete key: delete label.
 ```
 ![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
 
@@ -194,47 +194,49 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```
 ````
 
-### (F) Create Training Dataset(s)
+### (F) Create Training Dataset(s) and selection of your neural network
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it saves file sets as both Linux and Windows for you).
 
-- If you move your project folder, you must **only** change the `project_path` in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
+- If you move your project folder, you must only change the `project_path` (which is done automatically) in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
-- If you run this on the cloud, before importing `deeplabcut` you need to suppress GUIs. As you can see in our [demo notebooks]((https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB_DEMO_mouse_openfield.ipynb) for running DLC training, evaluation, and novel video analysis on the Cloud, you must first suppress GUIs - server computers don't have a screen you can interact with. So, before you launch ipython, run `export DLClight=True` (see more tips in the full PDF user-guide).
+- Be aware you can also select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but this will be phased out). 
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function **create_training_dataset** performs those steps.
 
 ```python
-deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')
+deeplabcut.create_training_dataset(config_path)
 ```
 
-- OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
-training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
+- OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
 
-- Each iteration of the creation of a training dataset will create a ``.mat`` file, which is used by the feature detectors,
-and a ``.pickle`` file that contains the meta information about the training dataset. This also creates two subdirectories
 within **dlc-models** called ``test`` and ``train``, and these each have a configuration file called pose_cfg.yaml.
-Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdirectory before starting the training. These
-configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
-are listed in Box 2.
-
-- At this step, the ImageNet pre-trained networks (i.e. ResNet-50, ResNet-101 and ResNet-152, etc) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[docs for more help!](https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html)**).
+Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdirectory before starting the training. These configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters are listed in Box 2.
 
 **CRITICAL POINT:** At this step, for **create_training_dataset** you select the network you want to use, and any additional data augmentation (beyond our defaults). You can set ``net_type`` and ``augmenter_type`` when you call the function.
 
+- Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained networks weights will be downloaded, as you select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We suggest seeing our [dedicated documentation on models](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more information.
+
+
+```{Hint}
+🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do so - be sure to open your terminal "as an admin" (This is only something we have seen with some Windows users - see the **[docs for more help!](https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html)**).
+```
+
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug`. You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
 
-The differences of the loaders are as follows:
+**For TensorFlow Models:** the differences of the loaders are as follows:
 - `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. This is the recommended DEFAULT!
 - `crop_scale`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
 - `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1
 - `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
 
-Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
+**For PyTorch Models:**
+- #TODO: more information coming soon; in the meantime see the docstrings!
 
-**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, or use the function ``deeplabcut.create_training_model_comparison``.
 
-Please also consult the following page on selecting models: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations
+**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks. You can easily do this in the Project Manager GUI, which also lets you compare PyTorch and TensorFlow models.
+
+Please also consult the [following page on selecting models]( https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#what-neural-network-should-i-use-trade-offs-speed-performance-and-considerations)
 
  See Box 2 on how to specify **which network is loaded for training (including your own network, etc):**
 
@@ -271,17 +273,17 @@ Example parameters that one can call:
 deeplabcut.train_network(config_path, shuffle=1, trainingsetindex=0, gputouse=None, max_snapshots_to_keep=5, autotune=False, displayiters=100, saveiters=15000, maxiters=30000, allow_growth=True)
 ```
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*.
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow* or *Pose_Estimation_PyTorch*.
 At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
 the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1. If you want to batch train, we recommend using Adam, see more here: https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#using-custom-image-augmentation.
+**CRITICAL POINT, For TensorFlow models:**  it is recommended to train the ResNets or MobileNets for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1. If you want to batch train, [we recommend using Adam, see more here](https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html#using-custom-image-augmentation).
 
-The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+**CRITICAL POINT, For PyTorch models:** PyTorch uses "epochs" not iterations. Please see our dedicated documentation that [explains how best to set the number of epochs here](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/user_guide.html). When in doubt, stick to the default! A bonus, training time is much less!
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
+**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e., we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!
 
 #### API Docs
 ````{admonition} Click the button to see API Docs
@@ -300,9 +302,11 @@ for all pairs and only likely pairs (>p-cutoff). This helps to exclude, for exam
 strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
 legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
+
 ```python
-deeplabcut.evaluate_network(config_path,Shuffles=[1], plotting=True)
+deeplabcut.evaluate_network(config_path, Shuffles=[1], plotting=True)
 ```
+
 Setting ``plotting`` to true plots all the testing and training frames with the manual and predicted labels. The user
 should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
 Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
