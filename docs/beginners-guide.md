@@ -1,36 +1,61 @@
 # Using DeepLabCut
 
+This guide is meant as a very-new-to-python beginner guide to DeepLabCut. After you are comfortable with this material we recommend then jumping into the more detailed User Guides!
+
 ## Installation
 
-Before you begin, make sure that DeepLabCut is installed on your system. For detailed installation instructions, refer to the [Installation Guide](https://deeplabcut.github.io/DeepLabCut/docs/installation.html).
+Before you begin, make sure that DeepLabCut is installed on your system.
+
+- **ProTip:** For detailed installation instructions, geared towards a bit more advanced users, refer to the [Full Installation Guide](https://deeplabcut.github.io/DeepLabCut/docs/installation.html).
+
+## Beginner User Guide
+If you are new to Python, the best way to get Python installed onto your computer is with Anaconda. [Head over here and download the version that is best for your computer](https://www.anaconda.com/download).
+
+- "Conda", as it's often called, it a very nice way to create "environments (env)" on your computer. While there can be some cross-talk, in general, it allows you to separate the different tools you need to use to get your science done 💪. 
+
+## Let's learn an bit and create a DeeplabCut env:
+
+After you have installed Anaconda, open the new program (Anaconda Terminal). You will be in your "root" directory by default. 
+
+**(0) Create a fresh `conda environment`** 
+
+In the terminal, type:
+
+```
+$ conda create -n deeplabcut python==3.10
+```
+You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type: 
+
+```
+$ conda activate deeplabcut
+```
+Now, we are going to install the core dependencies. The way this works is that there are "package managers" such as `conda` itself and python's `pip`. We are going to deploy a mix based on what we know works across ooperating systems.
+
+**(1) Install PyTorch**
+
+`PyTorch` is the backend deep-learning language we wrote DLC3 in. To select the right version, head to the [“Install PyTorch”](https://pytorch.org/get-started/locally/) instructions in the official PyTorch Docs. Select your desired PyTorch build, operating system, select conda as your package manager and Python as the language. Select your compute platform (either a CUDA version or CPU only). Then, use the command to install the PyTorch package. Below are a few possible examples:
+
+- **GPU version of pytorch for CUDA 11.3**
+```
+$ conda install pytorch cudatoolkit=11.3 -c pytorch
+```
+- **CPU only version of pytorch, using the latest version**
+```
+$ conda install pytorch cpuonly -c pytorch
+```
+
+**(2) Install DeepLabCut** 
+
+Alright! Next, we will install `Tables` (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the `deeplabcut` source code 🔥. Please type: 
+
+```
+conda install -c conda-forge pytables==3.8.0
+pip install "deeplabcut[gui,modelzoo,wandb]"
+```
+- This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!
 
 ## Starting DeepLabCut
->### 🔔 Reminder: How to Open a Terminal
->
-> - **Windows:** 
->   - Use the Start menu to search for 'Anaconda Command Prompt' if you are using Miniconda, or 'Command Prompt' if not.
->
-> - **Linux:** 
->   - Press `Ctrl + Alt + T` to open a new terminal.
-> 
-> - **Mac:** 
->   - Press `Cmd + Space` and search for 'Terminal'.
 
-### Activating DeepLabCut Environment
-
-If you have installed DeepLabCut via conda, activate the environment with the following command:
-
-```bash
-conda activate DEEPLABCUT
-```
->**⚠️ Attention macOS M1 Users:**
-><br/>
->
->🍏 If you are on a macOS with an M chipset, please use the  DEEPLABCUT_M1 conda file and then activate:
->```bash
->conda activate DEEPLABCUT_M1
-
-## Launching the DeepLabCut GUI
 In the terminal, enter:
 ```bash
 python -m deeplabcut
