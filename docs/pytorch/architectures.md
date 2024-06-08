@@ -38,11 +38,11 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 **DLCRNet**
 - From [Lauer, Zhou, et al. "Multi-animal pose estimation, identification and tracking with DeepLabCut." Nature Methods 19.4 (2022): 496-504.](https://www.nature.com/articles/s41592-022-01443-0)
 - This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals
-- Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5
+- Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5`
 
 **AnimalTokenPose**
 -  Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
-  - One variant is implemented as: `animal_tokenpose_base`
+  - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this here).
 
 
 ## Information on Single Animal Models
