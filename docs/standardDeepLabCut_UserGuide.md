@@ -200,7 +200,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 
 - If you move your project folder, you must only change the `project_path` (which is done automatically) in the main config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
-- Be aware you can also select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but this will be phased out). 
+- Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but this will be phased out). 
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test datasets. The training data will be used to train the network, while the test data set will be used for evaluating the network. The function **create_training_dataset** performs those steps.
 
