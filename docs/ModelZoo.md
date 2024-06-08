@@ -24,23 +24,29 @@ Animal pose estimation is critical in applications ranging from neuroscience to 
 
 To provide the community with easy access to such high performance models across diverse environments and species, we present a new paradigm for building pre-trained animal pose models -- which we call SuperAnimal models -- and the ability to use them for transfer learning (e.g., fine-tune them if needed).
 
-### We now  introduce two SuperAnimal members, namely, `superanimal_quadruped` and `superanimal_topviewmouse`.
+## SuperAnimal members:
+- Models are based on what they are trained on, for example `superanimal_quadruped_x` is trained on [SuperAnimal-Quadruped-80K](https://zenodo.org/records/10619173). Each model class is described below:
+
+### SuperAnimal-Quadruped: 
 
 - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
+- [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10619173)
+- [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
+- We provide several models: `superanimal_quadruped_hrnet_32`
 
 - Here are example images of what the model is trained on:
-
 ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
 
--  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice. Here are example images of what the model is trained on:
 
+### SuperAnimal-TopViewMouse:
+
+-  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
+- [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
+- [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
+- We Provide several models:
+  
+-  Here are example images of what the model is trained on:
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
-
-
-
-### Our perspective.
-
-Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.
 
 
 ### To use our models in DeepLabCut (versions 3+), please use the following API
@@ -88,9 +94,16 @@ deeplabcut.train_network(config_path,
 Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of `scale_list` in the API (details in the API docs). For `superanimal_quadruped`, we empirically observe that if your video is larger than 1500 pixels, it is better to pass `scale_list` in the range within 1000.
 
 Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). You can use our "video adaptation" model (released soon) to counter this.
-### To see our first preprint on the work, check out [our paper](https://arxiv.org/abs/2203.07436v1). 
+
+
+
+### Our longer term perspective...
+
+Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods.
 
 ## Publication:
+
+To see our first preprint on the work, check out [our paper](https://arxiv.org/abs/2203.07436v1). 
 
 ```{hint}
 Here is the citation:
