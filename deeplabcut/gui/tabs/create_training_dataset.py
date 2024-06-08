@@ -159,8 +159,7 @@ class CreateTrainingDataset(DefaultTab):
         shuffle = self.shuffle.value()
         cfg = self.root.cfg
         existing_indices = get_existing_shuffle_indices(
-            cfg=cfg,
-            train_fraction=cfg["TrainingFraction"][self.root.trainingset_index]
+            cfg=cfg, train_fraction=cfg["TrainingFraction"][self.root.trainingset_index]
         )
 
         overwrite = self.overwrite.isChecked()
@@ -293,7 +292,7 @@ class CreateTrainingDataset(DefaultTab):
             description=(
                 f"As shuffle {shuffle} already exists{engine_str}, "
                 f"the training-dataset files would be overwritten."
-            )
+            ),
         )
         result = conf.exec()
         if result != QtWidgets.QMessageBox.Yes:
@@ -315,6 +314,7 @@ class CreateTrainingDataset(DefaultTab):
         if engine is None:
             engine = self.root.engine
 
+        default_net = None
         if engine == Engine.TF:
             nets = DLCParams.NNETS.copy()
             if not self.root.is_multianimal:
@@ -324,14 +324,18 @@ class CreateTrainingDataset(DefaultTab):
             from deeplabcut.pose_estimation_pytorch import available_models
             nets = available_models()
             net_filter = self.get_net_filter()
+            default_net = self.get_default_net()
             td_prefix = "top_down_"
             if net_filter is not None:
                 nets = [
                     n
                     for n in nets
                     if (
-                        n in net_filter or
-                        (n.startswith(td_prefix) and n[len(td_prefix):] in net_filter)
+                        n in net_filter
+                        or (
+                            n.startswith(td_prefix)
+                            and n[len(td_prefix) :] in net_filter
+                        )
                     )
                 ]
 
@@ -339,9 +343,11 @@ class CreateTrainingDataset(DefaultTab):
             self.net_choice.removeItem(0)
 
         self.net_choice.addItems(nets)
-        default_net_type = self.root.cfg.get("default_net_type", "resnet_50")
-        if default_net_type in nets:
-            self.net_choice.setCurrentIndex(nets.index(default_net_type))
+        if default_net is None:
+            default_net = self.root.cfg.get("default_net_type", "resnet_50")
+
+        if default_net in nets:
+            self.net_choice.setCurrentIndex(nets.index(default_net))
 
     @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
@@ -371,7 +377,19 @@ class CreateTrainingDataset(DefaultTab):
         if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
             return None
 
-        return _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]["model_filter"]
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        return weight_init_cfg["model_filter"]
+
+    def get_default_net(self) -> str | None:
+        """Returns: the net type that can be used based on weight initialization"""
+        if self.root.engine != Engine.PYTORCH:
+            return None
+
+        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+            return None
+
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        return weight_init_cfg.get("default_net")
 
     def view_shuffles(self) -> None:
         viewer = ShuffleMetadataViewer(root=self.root, parent=self)
@@ -566,6 +584,7 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "model_filter": None,
     },
     "Transfer Learning - SuperAnimal Quadruped": {
+        "default_net": "top_down_hrnet_w32",
         "model_filter": [
             "dekr_w32",
             "hrnet_w32",
@@ -573,6 +592,7 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "super_animal": "superanimal_quadruped",
     },
     "Transfer Learning - SuperAnimal TopViewMouse": {
+        "default_net": "top_down_hrnet_w32",
         "model_filter": [
             "dekr_w32",
             "hrnet_w32",
@@ -580,10 +600,12 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "super_animal": "superanimal_topviewmouse",
     },
     "Fine-tuning - SuperAnimal Quadruped": {
+        "default_net": "top_down_hrnet_w32",
         "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
         "super_animal": "superanimal_quadruped",
     },
     "Fine-tuning - SuperAnimal TopViewMouse": {
+        "default_net": "top_down_hrnet_w32",
         "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
         "super_animal": "superanimal_topviewmouse",
     },
