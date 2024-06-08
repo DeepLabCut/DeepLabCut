@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import abc
 import os
 import random
 from pathlib import Path
@@ -64,7 +63,7 @@ def resolve_device(model_config: dict) -> str:
     supports_mps = "resnet" in model_config.get("net_type", "resnet")
     if device == "auto":
         if torch.cuda.is_available():
-            return "cuda:0"
+            return "cuda"
         elif supports_mps and torch.backends.mps.is_available():
             return "mps"
         return "cpu"

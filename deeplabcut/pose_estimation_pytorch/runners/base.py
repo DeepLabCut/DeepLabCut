@@ -31,16 +31,19 @@ class Runner(ABC, Generic[ModelType]):
         self,
         model: ModelType,
         device: str = "cpu",
+        gpus: list[int] | None = None,
         snapshot_path: str | Path | None = None,
     ):
         """
         Args:
             model: the model to run
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            gpus: the list of GPU indices to use for multi-GPU training
             snapshot_path: the path of a snapshot from which to load model weights
         """
         self.model = model
         self.device = device
+        self.gpus = gpus
         self.snapshot_path = snapshot_path
 
     @staticmethod

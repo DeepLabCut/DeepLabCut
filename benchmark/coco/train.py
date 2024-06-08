@@ -6,7 +6,6 @@ import argparse
 import copy
 from pathlib import Path
 
-import torch
 from deeplabcut.pose_estimation_pytorch import COCOLoader, utils
 from deeplabcut.pose_estimation_pytorch.apis.train import train
 from deeplabcut.pose_estimation_pytorch.runners.logger import setup_file_logging
@@ -19,6 +18,7 @@ def main(
     test_file: str,
     model_config_path: str,
     device: str | None,
+    gpus: list[int] | None,
     epochs: int | None,
     save_epochs: int | None,
     detector_epochs: int | None,
@@ -39,7 +39,6 @@ def main(
         train_json_filename=train_file,
         test_json_filename=test_file,
     )
-    
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
     if epochs is None:
@@ -87,6 +86,7 @@ def main(
                 run_config=loader.model_cfg["detector"],
                 task=Task.DETECT,
                 device=device,
+                gpus=gpus,
                 logger_config=logger_config,
                 snapshot_path=detector_path,
             )
@@ -97,6 +97,7 @@ def main(
             run_config=loader.model_cfg,
             task=pose_task,
             device=device,
+            gpus=gpus,
             logger_config=loader.model_cfg.get("logger"),
             snapshot_path=snapshot_path,
         )
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     parser.add_argument("--train_file", default="train.json")
     parser.add_argument("--test_file", default="test.json")
     parser.add_argument("--device", default=None)
+    parser.add_argument("--gpus", default=None, nargs="+", type=int)
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--save-epochs", type=int, default=None)
     parser.add_argument("--detector-epochs", type=int, default=None)
@@ -122,6 +124,7 @@ if __name__ == "__main__":
         args.test_file,
         args.pytorch_config,
         args.device,
+        args.gpus,
         args.epochs,
         args.save_epochs,
         args.detector_epochs,

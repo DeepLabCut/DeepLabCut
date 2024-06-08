@@ -87,6 +87,9 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             )
         )
 
+    if (longest_max_size := augmentations.get("longest_max_size")) is not None:
+        transforms.append(A.LongestMaxSize(longest_max_size))
+
     if augmentations.get("hist_eq", False):
         transforms.append(A.Equalize(p=0.5))
     if augmentations.get("motion_blur", False):

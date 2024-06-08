@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.nn.parallel import DataParallel
 
 from deeplabcut.pose_estimation_pytorch.metrics import compute_bbox_metrics
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
@@ -51,6 +52,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         optimizer: torch.optim.Optimizer,
         snapshot_manager: TorchSnapshotManager,
         device: str = "cpu",
+        gpus: list[int] | None = None,
         eval_interval: int = 1,
         snapshot_path: Path | None = None,
         scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
@@ -62,13 +64,14 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             optimizer: the optimizer to use when fitting the model
             snapshot_manager: the module to use to manage snapshots
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            eval_interval: how often evaluation is run on the test set in epochs
+            gpus: the list of GPU indices to use for multi-GPU training
+            eval_interval: how often evaluation is run on the test set (in epochs)
             snapshot_path: if defined, the path of a snapshot from which to load
                 pretrained weights
             scheduler: scheduler for adjusting the lr of the optimizer
             logger: logger to monitor training (e.g WandB logger)
         """
-        super().__init__(model=model, device=device, snapshot_path=snapshot_path)
+        super().__init__(model=model, device=device, gpus=gpus, snapshot_path=snapshot_path)
         self.eval_interval = eval_interval
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -144,7 +147,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner = Runner(model, optimizer, cfg, device='cuda')
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
-        self.model.to(self.device)
+        if self.gpus:
+            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+        else:
+            self.model.to(self.device)
+
         if isinstance(self.logger, ImageLoggerMixin):
             self.logger.select_images_to_log(train_loader, valid_loader)
 
@@ -293,8 +300,14 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         inputs = batch["image"]
         inputs = inputs.to(self.device).float()
         outputs = self.model(inputs)
-        target = self.model.get_target(outputs, batch["annotations"])
-        losses_dict = self.model.get_loss(outputs, target)
+
+        if self.gpus:
+            underlying_model = self.model.module
+        else:
+            underlying_model = self.model
+
+        target = underlying_model.get_target(outputs, batch["annotations"])
+        losses_dict = underlying_model.get_loss(outputs, target)
         if mode == "train":
             losses_dict["total_loss"].backward()
             self.optimizer.step()
@@ -305,7 +318,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         if mode == "eval":
             predictions = {
                 name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
-                for name, pred in self.model.get_predictions(outputs).items()
+                for name, pred in underlying_model.get_predictions(outputs).items()
             }
 
             ground_truth = batch["annotations"]["keypoints"]
@@ -385,7 +398,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         for path, gt, pred, scale, offset in zip(
             paths, gt_keypoints, pred_keypoints, scales, offsets,
         ):
-
             # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
             gt_with_vis = ground_truth
@@ -465,7 +477,12 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        target = self.model.get_target(batch["annotations"])
+        if self.gpus:
+            underlying_model = self.model.module
+        else:
+            underlying_model = self.model
+
+        target = underlying_model.get_target(batch["annotations"])
         for item in target:  # target is a list here
             for key in item:
                 if item[key] is not None:
@@ -558,6 +575,7 @@ def build_training_runner(
     task: Task,
     model: nn.Module,
     device: str,
+    gpus: list[int] | None = None,
     snapshot_path: str | None = None,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
@@ -570,6 +588,7 @@ def build_training_runner(
         task: the task the runner will perform
         model: the model to run
         device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+        gpus: the list of GPU indices to use for multi-GPU training
         snapshot_path: the snapshot from which to load the weights
         logger: the logger to use, if any
 
@@ -593,6 +612,7 @@ def build_training_runner(
             save_optimizer_state=runner_config["snapshots"]["save_optimizer_state"],
         ),
         device=device,
+        gpus=gpus,
         eval_interval=runner_config.get("eval_interval"),
         snapshot_path=snapshot_path,
         scheduler=scheduler,

@@ -47,6 +47,7 @@ def train(
     run_config: dict,
     task: Task,
     device: str | None = "cpu",
+    gpus: list[int] | None = None,
     logger_config: dict | None = None,
     snapshot_path: str | None = None,
     transform: A.BaseCompose | None = None,
@@ -60,6 +61,7 @@ def train(
         run_config: the model and run configuration
         task: the task to train the model for
         device: the torch device to train on (such as "cpu", "cuda", "mps")
+        gpus: the list of GPU indices to use for multi-GPU training
         logger_config: the configuration of a logger to use
         snapshot_path: if continuing to train from a snapshot, the path containing the
             weights to load
@@ -108,6 +110,7 @@ def train(
         task=task,
         model=model,
         device=device,
+        gpus=gpus,
         snapshot_path=snapshot_path,
         logger=logger,
     )
