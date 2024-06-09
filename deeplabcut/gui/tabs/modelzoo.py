@@ -13,8 +13,10 @@ from functools import partial
 
 import deeplabcut
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Signal, QTimer, QRegularExpression
+from PySide6.QtCore import Qt, Signal, QTimer, QRegularExpression, Slot
 from PySide6.QtGui import QPixmap, QRegularExpressionValidator
+
+from deeplabcut.core.engine import Engine
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
@@ -40,6 +42,7 @@ class ModelZoo(DefaultTab):
         super().__init__(root, parent, h1_description)
         self._val_pattern = QRegularExpression(r"(\d{3,5},\s*)+\d{3,5}")
         self._set_page()
+        self.root.engine_change.connect(self._update_available_models)
 
     @property
     def files(self):
@@ -58,15 +61,7 @@ class ModelZoo(DefaultTab):
 
         model_combo_text = QtWidgets.QLabel("Supermodel name")
         self.model_combo = QtWidgets.QComboBox()
-        supermodels = [
-            model
-            for model in MODELOPTIONS
-            if (
-                "superanimal" in model
-                and model not in ("superanimal_topviewmouse", "superanimal_quadruped")
-            )
-        ]
-        self.model_combo.addItems(supermodels)
+        self._update_available_models(self.root.engine)
 
         scales_label = QtWidgets.QLabel("Scale list")
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
@@ -204,3 +199,22 @@ class ModelZoo(DefaultTab):
                 pseudo_threshold=self.pseudo_threshold_spinbox.value(),
                 adapt_iterations=self.adapt_iter_spinbox.value(),
             )
+
+    @Slot(Engine)
+    def _update_available_models(self, engine: Engine) -> None:
+        while self.model_combo.count() > 0:
+            self.model_combo.removeItem(0)
+
+        supermodels = [
+            model
+            for model in MODELOPTIONS
+            if (
+                "superanimal" in model
+                and model not in ("superanimal_topviewmouse", "superanimal_quadruped")
+                and (
+                    (engine == Engine.TF and "dlcrnet" in model)
+                    or (engine == Engine.PYTORCH and "dlcrnet" not in model)
+                )
+            )
+        ]
+        self.model_combo.addItems(supermodels)
