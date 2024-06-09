@@ -77,6 +77,7 @@ class MainWindow(QMainWindow):
     video_type_ = QtCore.Signal(str)
     video_files_ = QtCore.Signal(set)
     engine_change = QtCore.Signal(Engine)
+    shuffle_change = QtCore.Signal(int)
 
     def __init__(self, app):
         super(MainWindow, self).__init__()
@@ -230,6 +231,7 @@ class MainWindow(QMainWindow):
 
     def update_shuffle(self, value):
         self.shuffle_value = value
+        self.shuffle_change.emit(value)
         self.logger.info(f"Shuffle set to {self.shuffle_value}")
 
     @property

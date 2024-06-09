@@ -128,10 +128,6 @@ def train(
     valid_dataset = loader.create_dataset(
         transform=inference_transform, mode="test", task=task
     )
-    logging.info(
-        f"Using {len(train_dataset)} images to train {task} and {len(valid_dataset)}"
-        f" for testing"
-    )
 
     collate_fn = None
     if collate_fn_cfg := run_config["data"]["train"].get("collate"):
@@ -156,6 +152,15 @@ def train(
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
+
+    logging.info(
+        f"Using {len(train_dataset)} images and {len(valid_dataset)} for testing"
+    )
+    if task == task.DETECT:
+        logging.info("\nStarting object detector training...\n" + (50 * "-"))
+    else:
+        logging.info("\nStarting pose model training...\n" + (50 * "-"))
+
     runner.fit(
         train_dataloader,
         valid_dataloader,
@@ -175,6 +180,9 @@ def train_network(
     batch_size: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
+    detector_batch_size: int | None = None,
+    detector_epochs: int | None = None,
+    detector_save_epochs: int | None = None,
     display_iters: int | None = None,
     max_snapshots_to_keep: int | None = None,
     pose_threshold: float | None = 0.1,
@@ -196,6 +204,13 @@ def train_network(
         batch_size: overrides the batch size to train with
         epochs: overrides the maximum number of epochs to train the model for
         save_epochs: overrides the number of epochs between each snapshot save
+        detector_batch_size: Only for top-down models. Overrides the batch size with
+            which to train the detector.
+        detector_epochs: Only for top-down models. Overrides the maximum number of
+            epochs to train the model for. Setting to 0 means the detector will not be
+            trained.
+        detector_save_epochs: Only for top-down models. Overrides the number of epochs
+            between each snapshot of the detector is saved.
         display_iters: overrides the number of iterations between each log of the loss
             within an epoch
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
@@ -242,6 +257,17 @@ def train_network(
         loader.model_cfg["runner"]["snapshots"]["save_epochs"] = save_epochs
     if display_iters is not None:
         loader.model_cfg["train_settings"]["display_iters"] = display_iters
+
+    detector_cfg = loader.model_cfg.get("detector")
+    if detector_cfg is not None:
+        if detector_batch_size is not None:
+            detector_cfg["train_settings"]["batch_size"] = detector_batch_size
+        if detector_epochs is not None:
+            detector_cfg["train_settings"]["epochs"] = detector_epochs
+        if detector_save_epochs is not None:
+            detector_cfg["runner"]["snapshots"]["save_epochs"] = detector_save_epochs
+        if display_iters is not None:
+            detector_cfg["train_settings"]["display_iters"] = display_iters
 
     loader.update_model_cfg(kwargs)
     setup_file_logging(loader.model_folder / "train.txt")

@@ -155,9 +155,12 @@ def train_network(
     torch_kwargs:
         You can add any keyword arguments for the deeplabcut.pose_estimation_pytorch
         train_network method here. These arguments are passed to the downstream method.
-        Some of the parameters that can be passed are "epochs" (maximum number of
-        epochs to train the network for), "save_epochs" (the number of epochs between
-        each snapshot saved), "batch_size" (the batch size to use while training).
+        Some of the parameters that can be passed are ``epochs`` (maximum number of
+        epochs to train the network for), ``save_epochs`` (the number of epochs between
+        each snapshot saved), ``batch_size`` (the batch size to use while training).
+        When training a top-down model, these parameters are also available for the
+        detector, with the parameters ``detector_batch_size``, ``detector_epochs`` and
+        ``detector_save_epochs``.
 
     Returns
     -------

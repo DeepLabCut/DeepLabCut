@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 
@@ -33,6 +35,13 @@ class IntTrainAttribute:
     default: int
     min: int
     max: int
+    tooltip: str | None = None
+
+
+@dataclass
+class TrainAttributeRow:
+    attributes: list[IntTrainAttribute]
+    description: str | None = None
 
 
 class TrainNetwork(DefaultTab):
@@ -86,30 +95,52 @@ class TrainNetwork(DefaultTab):
         dialog.exec_()
 
     def _generate_layout_attributes(self) -> None:
+        row_margin = 25
         for engine in Engine:
             train_attributes = get_train_attributes(engine)
             layout = _create_grid_layout(margins=(20, 0, 0, 0))
+            layout.setVerticalSpacing(0)
 
             # Shuffle
             shuffle_label = QtWidgets.QLabel("Shuffle")
             self._shuffles[engine] = ShuffleSpinBox(root=self.root, parent=self)
+
+            # Add spacing
+            shuffle_label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+            self._shuffles[engine].setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+
             layout.addWidget(shuffle_label, 0, 0)
             layout.addWidget(self._shuffles[engine], 0, 1)
 
             # Other parameters
             self._attribute_kwargs[engine] = {}
-            for i, attribute in enumerate(train_attributes):
-                label = QtWidgets.QLabel(attribute.label)
-                spin_box = QtWidgets.QSpinBox()
-                spin_box.setMinimum(attribute.min)
-                spin_box.setMaximum(attribute.max)
-                spin_box.setValue(attribute.default)
-                spin_box.valueChanged.connect(
-                    lambda new_val: self.log_attribute_change(attribute, new_val)
-                )
-                self._attribute_kwargs[engine][attribute.fn_key] = spin_box
-                layout.addWidget(label, 0, 2 * (i + 1))
-                layout.addWidget(spin_box, 0, 2 * (i + 1) + 1)
+            row_index = 0
+            for row in train_attributes:
+                if row.description is not None:
+                    row_label = QtWidgets.QLabel(row.description)
+                    row_label.setStyleSheet("font-weight: bold")
+                    layout.addWidget(row_label, row_index, 2)
+                    row_index += 1
+
+                for j, attribute in enumerate(row.attributes):
+                    label = QtWidgets.QLabel(attribute.label)
+                    spin_box = QtWidgets.QSpinBox()
+                    spin_box.setMinimum(attribute.min)
+                    spin_box.setMaximum(attribute.max)
+                    spin_box.setValue(attribute.default)
+                    spin_box.valueChanged.connect(
+                        lambda new_val: self.log_attribute_change(attribute, new_val)
+                    )
+                    self._attribute_kwargs[engine][attribute.fn_key] = spin_box
+
+                    # Pad below to create spacing with other rows
+                    label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+                    spin_box.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+
+                    layout.addWidget(label, row_index, 2 * (j + 1))
+                    layout.addWidget(spin_box, row_index, 2 * (j + 1) + 1)
+
+                row_index += 1
 
             layout_widget = QtWidgets.QWidget()
             layout_widget.setLayout(layout)
@@ -150,67 +181,104 @@ class TrainNetwork(DefaultTab):
         msg.exec_()
 
 
-def get_train_attributes(engine: Engine) -> list[IntTrainAttribute]:
+def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
     if engine == Engine.TF:
         return [
-            IntTrainAttribute(
-                label="Display iterations",
-                fn_key="displayiters",
-                default=1000,
-                min=1,
-                max=1000,
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Display iterations",
+                        fn_key="displayiters",
+                        default=1000,
+                        min=1,
+                        max=1000,
+                    ),
+                    IntTrainAttribute(
+                        label="Number of snapshots to keep",
+                        fn_key="max_snapshots_to_keep",
+                        default=5,
+                        min=1,
+                        max=100,
+                    ),
+                ],
             ),
-            IntTrainAttribute(
-                label="Save iterations",
-                fn_key="saveiters",
-                default=50_000,
-                min=1,
-                max=50_000,
-            ),
-            IntTrainAttribute(
-                label="Maximum iterations",
-                fn_key="maxiters",
-                default=100_000,
-                min=1,
-                max=1_030_000,
-            ),
-            IntTrainAttribute(
-                label="Number of snapshots to keep",
-                fn_key="max_snapshots_to_keep",
-                default=5,
-                min=1,
-                max=100,
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Maximum iterations",
+                        fn_key="maxiters",
+                        default=100_000,
+                        min=1,
+                        max=1_030_000,
+                    ),
+                    IntTrainAttribute(
+                        label="Save iterations",
+                        fn_key="saveiters",
+                        default=50_000,
+                        min=1,
+                        max=50_000,
+                    ),
+                ],
             ),
         ]
     elif engine == Engine.PYTORCH:
-        return[
-            IntTrainAttribute(
-                label="Display iterations",
-                fn_key="display_iters",
-                default=1_000,
-                min=1,
-                max=100_000,
+        return [
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Display iterations",
+                        fn_key="display_iters",
+                        default=1_000,
+                        min=1,
+                        max=100_000,
+                    ),
+                    IntTrainAttribute(
+                        label="Number of snapshots to keep",
+                        fn_key="max_snapshots_to_keep",
+                        default=5,
+                        min=1,
+                        max=100,
+                    ),
+                ],
             ),
-            IntTrainAttribute(
-                label="Save epochs",
-                fn_key="save_epochs",
-                default=50,
-                min=1,
-                max=250,
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Maximum epochs",
+                        fn_key="epochs",
+                        default=200,
+                        min=1,
+                        max=1000,
+                    ),
+                    IntTrainAttribute(
+                        label="Save epochs",
+                        fn_key="save_epochs",
+                        default=50,
+                        min=1,
+                        max=250,
+                    ),
+                ],
             ),
-            IntTrainAttribute(
-                label="Maximum epochs",
-                fn_key="epochs",
-                default=200,
-                min=1,
-                max=1000,
-            ),
-            IntTrainAttribute(  # FIXME: Implement
-                label="Number of snapshots to keep",
-                fn_key="max_snapshots_to_keep",
-                default=5,
-                min=1,
-                max=100,
+            TrainAttributeRow(
+                description="Top-down models parameters",
+                attributes=[
+                    IntTrainAttribute(
+                        label="Detector max epochs",
+                        fn_key="detector_epochs",
+                        default=200,
+                        min=1,
+                        max=1000,
+                        tooltip="",
+                    ),
+                    IntTrainAttribute(
+                        label="Detector save epochs",
+                        fn_key="detector_save_epochs",
+                        default=50,
+                        min=1,
+                        max=250,
+                        tooltip="",
+                    ),
+                ],
             ),
         ]
 

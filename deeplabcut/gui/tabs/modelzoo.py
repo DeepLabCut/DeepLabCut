@@ -58,7 +58,14 @@ class ModelZoo(DefaultTab):
 
         model_combo_text = QtWidgets.QLabel("Supermodel name")
         self.model_combo = QtWidgets.QComboBox()
-        supermodels = [model for model in MODELOPTIONS if "superanimal" in model]
+        supermodels = [
+            model
+            for model in MODELOPTIONS
+            if (
+                "superanimal" in model
+                and model not in ("superanimal_topviewmouse", "superanimal_quadruped")
+            )
+        ]
         self.model_combo.addItems(supermodels)
 
         scales_label = QtWidgets.QLabel("Scale list")
