@@ -132,24 +132,26 @@ def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> Conversio
     )
     return conversion_table
 
+
 def read_conversion_table_from_csv(csv_path):
     df = pd.read_csv(csv_path, skiprows=1, header=None)
     df = df.dropna()
-    df[0] = df[0].str.replace(r'\s+', '', regex=True)
-    df[1] = df[1].str.replace(r'\s+', '', regex=True)
+    df[0] = df[0].str.replace(r"\s+", "", regex=True)
+    df[1] = df[1].str.replace(r"\s+", "", regex=True)
     _map = dict(zip(df[0], df[1]))
     return _map
+
 
 def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     """Parses model zoo model names for SuperAnimal models
 
-     Args:
-         superanimal_name: the name of the SuperAnimal model name to parse
+    Args:
+        superanimal_name: the name of the SuperAnimal model name to parse
 
-     Returns:
-         project_name: the parsed SuperAnimal model name
-         model_name: the model architecture (e.g., dlcrnet, hrnetw32)
-     """
+    Returns:
+        project_name: the parsed SuperAnimal model name
+        model_name: the model architecture (e.g., dlcrnet, hrnetw32)
+    """
 
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
@@ -192,3 +194,79 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     ]
 
     return project_name, model_name
+
+
+def get_superanimal_colormaps():
+    superanimal_colormaps = {
+        "superanimal_topviewmouse": [
+            [127, 0, 255],
+            [109, 28, 254],
+            [91, 56, 253],
+            [71, 86, 251],
+            [53, 112, 248],
+            [33, 139, 244],
+            [15, 162, 239],
+            [4, 185, 234],
+            [22, 203, 228],
+            [42, 220, 220],
+            [60, 233, 213],
+            [80, 244, 204],
+            [98, 250, 195],
+            [118, 254, 185],
+            [136, 254, 175],
+            [156, 250, 163],
+            [174, 244, 152],
+            [194, 233, 139],
+            [212, 220, 127],
+            [232, 203, 113],
+            [250, 185, 100],
+            [255, 162, 86],
+            [255, 139, 72],
+            [255, 112, 57],
+            [255, 86, 43],
+            [255, 56, 28],
+            [255, 28, 14],
+        ],
+        "superanimal_quadruped": [
+            [255.0, 0.0, 0.0],
+            [255.0, 39.63408568671726, 0.0],
+            [255.0, 79.26817137343453, 0.0],
+            [255.0, 118.9022570601518, 0.0],
+            [255.0, 158.53634274686905, 0.0],
+            [255.0, 198.17042843358632, 0.0],
+            [255.0, 237.8045141203036, 0.0],
+            [232.56140019297916, 255.0, 0.0],
+            [192.92731450626187, 255.0, 0.0],
+            [153.2932288195446, 255.0, 0.0],
+            [113.65914313282731, 255.0, 0.0],
+            [74.02505744611004, 255.0, 0.0],
+            [34.390971759392784, 255.0, 0.0],
+            [3.5647953575585385, 255.0, 8.807909284882923],
+            [0.0, 255.0, 44.87701729490043],
+            [0.0, 255.0, 84.51085328820125],
+            [0.0, 255.0, 124.14468928150207],
+            [0.0, 255.0, 163.77852527480275],
+            [0.0, 255.0, 203.4123612681037],
+            [0.0, 255.0, 243.04619726140453],
+            [0, 220, 255],
+            [0, 255, 255],
+            [0, 165, 255],
+            [0, 150, 255],
+            [0.0, 68.78344961404169, 255.0],
+            [0.0, 29.14936392732455, 255.0],
+            [10.484721759392611, 0.0, 255.0],
+            [50.11880744611004, 0.0, 255.0],
+            [89.75289313282732, 0.0, 255.0],
+            [129.38697881954448, 0.0, 255.0],
+            [169.02106450626192, 0.0, 255.0],
+            [169.02106450626192, 0.0, 255.0],
+            [255.0, 0.0, 142.80850706015173],
+            [169.02106450626192, 0.0, 255.0],
+            [255.0, 0.0, 142.80850706015173],
+            [255.0, 0.0, 142.80850706015173],
+            [255.0, 0.0, 103.17442137343447],
+            [255.0, 0.0, 63.54033568671722],
+            [255.0, 0.0, 23.90625],
+        ],
+    }
+    return superanimal_colormaps

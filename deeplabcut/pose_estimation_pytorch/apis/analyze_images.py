@@ -36,7 +36,100 @@ from deeplabcut.utils import (
     auxfun_videos,
     auxiliaryfunctions,
 )
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    get_config_model_paths,
+    update_config
+)
+from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 
+def superanimal_analyze_images(superanimal_name: str,
+                               model_name: str,
+                               images: str | Path | list[str] | list[Path],          
+                               max_individuals: int,
+                               out_folder: str,
+                               progress_bar: bool = True,
+                               device: str | None = None,                               
+):
+    """
+    This funciton inferences a superanimal model on a set of images and saves the results as labeled images.
+
+    Parameters
+    ----------
+    superanimal_name: str
+        The name of the superanimal to analyze.
+        supported list:
+        superanimal_topviewmouse
+        superanimal_quadruped
+    model_name: str
+        The name of the model to use for inference.
+        supported list:
+        hrnetw32
+    images: str | Path | list[str] | list[Path]
+        The images to analyze. Can either be a directory containing images, or
+        a list of paths of images.
+    max_individuals: int
+        The maximum number of individuals to detect in each image.
+    out_folder: str
+        The directory where the labeled images will be saved.
+    progress_bar: bool
+        Whether to display a progress bar when running inference.
+    device: str | None
+        The device to use to run image analysis.
+
+    Returns
+    -------
+    The predictions over the images
+
+    Examples
+    --------
+    >>> import deeplabcut
+    >>> from deeplabcut.pose_estimation_pytorch.apis.analyze_images import superanimal_analyze_images
+    >>> superanimal_name = 'superanimal_quadruped'
+    >>> model_name = 'hrnetw32'
+    >>> device = 'cuda'
+    >>> max_individuals = 3
+    >>> test_images_folder = 'test_rodent_images'
+    >>> out_images_folder = 'vis_test_rodent_images'
+    >>> ret = superanimal_analyze_images(superanimal_name,
+                                model_name,
+                                test_images_folder,
+                                max_individuals,
+                                out_images_folder)
+    """
+
+    os.makedirs(out_folder, exist_ok = True)
+    
+    (
+        model_cfg,
+        project_config,
+        snapshot_path,
+        detector_path,
+    ) = get_config_model_paths(superanimal_name, model_name)        
+    
+    config = {**project_config, **model_cfg}
+    config = update_config(config, max_individuals, device)
+    individuals = [f"animal{i}" for i in range(max_individuals)]
+    config["individuals"] = individuals
+    
+    predictions = analyze_image_folder(
+        model_cfg=config,
+        images=images,
+        snapshot_path=snapshot_path,
+        detector_path=detector_path,
+        max_individuals=max_individuals,
+        device=device,
+        progress_bar=progress_bar,
+    )
+
+    superanimal_colormaps = get_superanimal_colormaps()
+    kpts_color = superanimal_colormaps[superanimal_name]
+    
+    create_labeled_images_from_predictions(predictions,
+                                           out_folder,
+                                           kpts_color)
+    
+    return predictions
+        
 
 def analyze_images(
     config: str | Path,
@@ -50,6 +143,9 @@ def analyze_images(
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
+    superanimal_name = None,
+    model_name = None
+        
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -146,7 +242,7 @@ def analyze_image_folder(
     detector_path: str | Path | None = None,
     device: str | None = None,
     max_individuals: int | None = None,
-    progress_bar: bool = True,
+    progress_bar: bool = True
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images
 
@@ -171,7 +267,7 @@ def analyze_image_folder(
     """
     if not isinstance(model_cfg, dict):
         model_cfg = config_utils.read_config_as_dict(model_cfg)
-
+        
     pose_task = Task(model_cfg["method"])
     if pose_task == Task.TOP_DOWN and detector_path is None:
         raise ValueError(
@@ -209,18 +305,51 @@ def analyze_image_folder(
         if progress_bar:
             detector_image_paths = tqdm(detector_image_paths)
         bbox_predictions = detector_runner.inference(images=detector_image_paths)
-        image_paths = list(zip(image_paths, bbox_predictions))
+        pose_inputs = list(zip(image_paths, bbox_predictions))
 
     logging.info(f"Running pose estimation with {detector_path}")
-    pose_image_paths = image_paths
-    if progress_bar:
-        pose_image_paths = tqdm(pose_image_paths)
-    predictions = pose_runner.inference(pose_image_paths)
 
+    if progress_bar:
+        pose_image_paths = tqdm(pose_inputs)
+    predictions = pose_runner.inference(pose_inputs)
+
+    
     return {
         image_path: image_predictions
         for image_path, image_predictions in zip(image_paths, predictions)
     }
+
+def create_labeled_images_from_predictions(predictions,
+                                           out_folder,
+                                           kpts_color,
+):
+    
+    for image_path, prediction in predictions.items():
+        
+        frame = auxfun_videos.imread(str(image_path), mode="skimage")
+        fig, ax = plt.subplots()
+        ax.imshow(frame)
+        
+        for idx, pose in enumerate(prediction["bodyparts"]):
+            x, y, confidence = pose[:, 0], pose[:, 1], pose[:, 2]
+            if np.sum(pose) < 0:
+                continue
+            mask = confidence > 0.0
+            x = x[mask]
+            y = y[mask]
+            rgb_1 = np.array(kpts_color)/ 255
+            ax.scatter(x, y, c=rgb_1)
+        bboxes = prediction["bboxes"]
+        for bbox in bboxes:
+            # Draw bounding boxes around detected objects
+            xmin, ymin, w, h = bbox
+            rect = plt.Rectangle(
+                (xmin, ymin), w, h, fill=False, edgecolor="green", linewidth=2
+            )
+
+            ax.add_patch(rect)
+        image_name = image_path.split(os.sep)[-1]        
+        fig.savefig(os.path.join(out_folder, f'vis_{image_name}'))
 
 
 def plot_images_coco(
