@@ -15,6 +15,7 @@ from typing import Optional, Union
 
 import numpy as np
 
+from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
     create_df_from_prediction,
     video_inference,
@@ -191,12 +192,17 @@ def _video_inference_superanimal(
             output_video = output_path / f"{output_prefix}_labeled_after_adapt.mp4"
         else:
             output_video = output_path / f"{output_prefix}_labeled.mp4"
+
+        superanimal_colormaps = get_superanimal_colormaps()
+        colormap = superanimal_colormaps[project_name]
+
         _create_labeled_video(
             video_path,
             output_h5,
             pcutoff=pcutoff,
             fps=video_metadata["fps"],
             bbox=bbox,
+            cmap=colormap,
             output_path=str(output_video),
         )
 
