@@ -34,7 +34,7 @@ from deeplabcut.utils.pseudo_label import (
 def video_inference_superanimal(
     videos: Union[str, list],
     superanimal_name: str,
-    scale_list: list | None = None,
+    scale_list: Optional[list] = None,
     videotype: str = ".mp4",
     dest_folder: Optional[str] = None,
     video_adapt: bool = False,

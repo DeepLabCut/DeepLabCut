@@ -51,6 +51,7 @@ class CreateTrainingDataset(DefaultTab):
 
         self.mapping_button = QtWidgets.QPushButton("Edit Conversion Table")
         self.mapping_button.clicked.connect(self.edit_conversion_table)
+        self.root.engine_change.connect(self.set_edit_table_visibility)
 
         self.ok_button = QtWidgets.QPushButton("Create Training Dataset")
         self.ok_button.setMinimumWidth(150)
@@ -66,6 +67,10 @@ class CreateTrainingDataset(DefaultTab):
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def set_edit_table_visibility(self) -> None:
+        has_conversion_tables = "SuperAnimalConversionTables" in self.root.cfg
+        self.mapping_button.setVisible(has_conversion_tables & (self.root.engine == Engine.PYTORCH))
 
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
