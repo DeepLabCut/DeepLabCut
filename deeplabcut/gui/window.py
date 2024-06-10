@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6 import QtCore
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt
 
@@ -67,9 +67,7 @@ def _check_for_updates():
         _ = msg.addButton("Skip", msg.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
-            subprocess.check_call(
-                [sys.executable, "-m", *command]
-            )
+            subprocess.check_call([sys.executable, "-m", *command])
 
 
 class MainWindow(QMainWindow):
@@ -428,11 +426,23 @@ class MainWindow(QMainWindow):
         engine_label.setText("Engine")
         engine_label.setStyleSheet("background: transparent;")
 
+        engine_icon = QLabel()
+        engine_icon.setStyleSheet("background: transparent;")
+
+        def _update_icon(engine: str):
+            pixmap = QPixmap(f"deeplabcut/gui/media/dlc-{engine}.png")
+            engine_icon.setPixmap(
+                pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
+            )
+
+        _update_icon("pt" if self.engine == Engine.PYTORCH else "tf")
+
         engines = [engine for engine in Engine]
 
         def _update_engine(index: int) -> None:
             self.logger.info(f"Changed engine to {engines[index]}")
             self.engine = engines[index]
+            _update_icon("pt" if self.engine == Engine.PYTORCH else "tf")
 
         change_engine_widget = QComboBox()
         change_engine_widget.addItems([e.aliases[0] for e in engines])
@@ -441,6 +451,7 @@ class MainWindow(QMainWindow):
         change_engine_widget.setCurrentIndex(engines.index(self.engine))
 
         self.toolbar.addWidget(spacer)
+        self.toolbar.addWidget(engine_icon)
         self.toolbar.addWidget(engine_label)
         self.toolbar.addWidget(change_engine_widget)
 

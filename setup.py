@@ -105,6 +105,8 @@ setuptools.setup(
                 "deeplabcut/gui/style.qss",
                 "deeplabcut/gui/media/logo.png",
                 "deeplabcut/gui/media/dlc_1-01.png",
+                "deeplabcut/gui/media/dlc-pt.png",
+                "deeplabcut/gui/media/dlc-tf.png",
                 "deeplabcut/gui/assets/logo.png",
                 "deeplabcut/gui/assets/logo_transparent.png",
                 "deeplabcut/gui/assets/welcome.png",
