@@ -33,6 +33,7 @@ from deeplabcut.gui.components import (
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
+    get_model_folder,
     get_training_set_folder,
 )
 
@@ -153,7 +154,15 @@ class CreateTrainingDataset(DefaultTab):
     def edit_conversion_table(self):
         # Test beforehand whether a conversion table exists
         weight_init = self.weight_init_selector.get_weight_init()
-        _ = launch_napari(self.root.config)
+        model_folder = self.root / get_model_folder(
+            self.root.cfg["TrainingFraction"][0],
+            self.shuffle.value(),
+            self.root.cfg,
+            engine=Engine.PYTORCH,
+        )
+        memory_replay_folder = model_folder / "memory_replay"
+        conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
+        _ = launch_napari([self.root.config, conversion_matrix_out_path])
 
     def create_training_dataset(self):
         shuffle = self.shuffle.value()
@@ -322,6 +331,7 @@ class CreateTrainingDataset(DefaultTab):
         else:
             # FIXME: Circular imports make it impossible to import this at the top
             from deeplabcut.pose_estimation_pytorch import available_models
+
             nets = available_models()
             net_filter = self.get_net_filter()
             default_net = self.get_default_net()
