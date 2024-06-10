@@ -57,7 +57,7 @@ class HeatmapGenerator(BaseGenerator):
         heatmap_mode: str | Mode = Mode.KEYPOINT,
         generate_locref: bool = True,
         locref_std: float = 7.2801,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -79,7 +79,7 @@ class HeatmapGenerator(BaseGenerator):
         super().__init__(**kwargs)
         self.num_heatmaps = num_heatmaps
         self.dist_thresh = float(pos_dist_thresh)
-        self.dist_thresh_sq = self.dist_thresh ** 2
+        self.dist_thresh_sq = self.dist_thresh**2
         self.std = 2 * self.dist_thresh / 3
 
         if isinstance(heatmap_mode, str):
@@ -145,7 +145,9 @@ class HeatmapGenerator(BaseGenerator):
         heatmap = np.zeros((*map_size, self.num_heatmaps), dtype=np.float32)
 
         # coords shape: (batch_size, n_keypoints, 1, 2)
-        weights = np.ones((batch_size, coords.shape[1], height, width))
+        weights = np.ones(
+            (batch_size, coords.shape[1], height, width), dtype=np.float32
+        )
 
         locref_map, locref_mask = None, None
         if self.generate_locref:
@@ -183,7 +185,7 @@ class HeatmapGenerator(BaseGenerator):
         target = {
             "heatmap": {
                 "target": torch.tensor(heatmap, device=hm_device),
-                "weights": torch.tensor(weights.astype(float), device=hm_device)
+                "weights": torch.tensor(weights, device=hm_device),
             }
         }
 
@@ -199,7 +201,10 @@ class HeatmapGenerator(BaseGenerator):
         return target
 
     def get_locref(
-        self, locref_map_or_mask: np.ndarray | None, batch_idx: int, heatmap_idx: int,
+        self,
+        locref_map_or_mask: np.ndarray | None,
+        batch_idx: int,
+        heatmap_idx: int,
     ) -> np.ndarray | None:
         """
         Args:
@@ -259,9 +264,9 @@ class HeatmapGaussianGenerator(HeatmapGenerator):
         """Updates the heatmap (and locref if defined) with gaussian values"""
         # revert keypoints to follow image convention: from x,y to y,x
         keypoint = keypoint.copy()[::-1]
-        
+
         dist = np.linalg.norm(grid - keypoint, axis=2) ** 2
-        heatmap_j = np.exp(-dist / (2 * self.std ** 2))
+        heatmap_j = np.exp(-dist / (2 * self.std**2))
         heatmap[:, :] = np.maximum(heatmap, heatmap_j)
 
         if locref_map is not None:
