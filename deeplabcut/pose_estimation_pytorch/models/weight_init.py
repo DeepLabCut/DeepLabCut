@@ -1,4 +1,5 @@
 """Ways to initialize weights for PyTorch modules"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -53,7 +54,35 @@ class Normal(BaseWeightInitializer):
 
     def init_weights(self, model: nn.Module) -> None:
         for name, module in model.named_parameters():
-            if 'bias' in name:
+            if "bias" in name:
                 nn.init.constant_(module, 0)
             else:
                 nn.init.normal_(module, std=self.std)
+
+
+@WEIGHT_INIT.register_module
+class Dekr(BaseWeightInitializer):
+    """Class to used to initialize model weights in the same way as DEKR
+
+    Attributes:
+        std: the standard deviation to use to initialize weights
+    """
+
+    def __init__(self, std: float = 0.001):
+        self.std = std
+
+    def init_weights(self, model: nn.Module) -> None:
+        for name, module in model.named_parameters():
+            if "bias" in name:
+                nn.init.constant_(module, 0)
+            else:
+                nn.init.normal_(module, std=self.std)
+
+            if hasattr(module, "transform_matrix_conv"):
+                nn.init.constant_(module.transform_matrix_conv.weight, 0)
+                if hasattr(module, "bias"):
+                    nn.init.constant_(module.transform_matrix_conv.bias, 0)
+            if hasattr(module, "translation_conv"):
+                nn.init.constant_(module.translation_conv.weight, 0)
+                if hasattr(module, "bias"):
+                    nn.init.constant_(module.translation_conv.bias, 0)

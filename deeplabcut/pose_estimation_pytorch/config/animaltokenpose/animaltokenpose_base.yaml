@@ -1,33 +1,13 @@
 # TODO: This default configuration file needs to be reviewed so it matches the original
  #  base TokenPose configuration, as defined in
  #  https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
-data:
-  colormode: RGB
-  inference:
-    auto_padding: # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
-    normalize_images: true
-  train:
-    affine:
-      p: 0.5
-      rotation: 30
-      translation: 0
-    auto_padding: # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
-    collate: null
-    covering: true
-    gaussian_noise: 12.75
-    hist_eq: true
-    motion_blur: true
-    normalize_images: true
 method: td  # Need to add a detector
 model:
   backbone:
     type: HRNet
     model_name: hrnet_w32
-    pretrained: true
+    freeze_bn_stats: true
+    freeze_bn_weights: false
     interpolate_branches: false
     increased_channel_count: false  # changes backbone_output_channels to 128 when true
   backbone_output_channels: 32

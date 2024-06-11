@@ -21,6 +21,10 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.weight_init import (
+    BaseWeightInitializer,
+    WEIGHT_INIT,
+)
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 HEADS = Registry("heads", build_func=build_from_cfg)
@@ -55,6 +59,7 @@ class BaseHead(ABC, nn.Module):
         target_generator: BaseGenerator,
         criterion: dict[str, BaseCriterion] | BaseCriterion,
         aggregator: BaseLossAggregator | None = None,
+        weight_init: str | dict | BaseWeightInitializer | None = None,
     ) -> None:
         super().__init__()
         if stride == 0:
@@ -65,6 +70,16 @@ class BaseHead(ABC, nn.Module):
         self.target_generator = target_generator
         self.criterion = criterion
         self.aggregator = aggregator
+
+        self.weight_init: BaseWeightInitializer | None = None
+        if isinstance(weight_init, BaseWeightInitializer):
+            self.weight_init = weight_init
+        elif isinstance(weight_init, (str, dict)):
+            self.weight_init = WEIGHT_INIT.build(weight_init)
+        elif weight_init is not None:
+            raise ValueError(
+                f"Could not parse ``weight_init`` parameter: {weight_init}."
+            )
 
         if isinstance(criterion, dict):
             if aggregator is None:
@@ -119,6 +134,11 @@ class BaseHead(ABC, nn.Module):
         }
         losses["total_loss"] = self.aggregator(losses)
         return losses
+
+    def _init_weights(self) -> None:
+        """Should be called once all modules for the class are created"""
+        if self.weight_init is not None:
+            self.weight_init.init_weights(self)
 
 
 class WeightConversionMixin(ABC):

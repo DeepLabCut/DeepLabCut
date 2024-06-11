@@ -155,6 +155,26 @@ def train(
         pin_memory=pin_memory,
     )
 
+    if (
+        loader.model_cfg["model"].get("freeze_bn_stats", False)
+        or loader.model_cfg["model"].get("backbone", {}).get("freeze_bn_stats", False)
+        or batch_size == 1
+    ):
+        logging.info(
+            "\nNote: According to your model configuration, you're training with batch "
+            "size 1 and/or ``freeze_bn_stats=false``. This is not an optimal setting "
+            "if you have powerful GPUs.\n"
+            "This is good for small batch sizes (e.g., when training on a CPU), where "
+            "you should keep ``freeze_bn_stats=true``.\n"
+            "If you're using a GPU to train, you can obtain faster performance by "
+            "setting a larger batch size (the biggest power of 2 where you don't get"
+            "a CUDA out-of-memory error, such as 8, 16, 32 or 64 depending on the "
+            "model, size of your images, and GPU memory) and ``freeze_bn_stats=false`` "
+            "for the backbone of your model. \n"
+            "This also allows you to increase the learning rate (empirically you can "
+            "scale the learning rate by sqrt(batch_size) times).\n"
+        )
+
     logging.info(
         f"Using {len(train_dataset)} images and {len(valid_dataset)} for testing"
     )

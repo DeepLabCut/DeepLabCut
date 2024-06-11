@@ -22,9 +22,8 @@ detector:
   device: auto
   model:
     type: FasterRCNN
-    freeze_bn_stats: false
+    freeze_bn_stats: true
     freeze_bn_weights: false
-    pretrained: true
     variant: fasterrcnn_mobilenet_v3_large_fpn
   runner:
     type: DetectorTrainingRunner

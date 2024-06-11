@@ -404,9 +404,25 @@ class PoseDataset(Dataset):
 
     @staticmethod
     def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """Adds a keypoint in the mean of each individual"""
-        center_keypoints = keypoints.copy()
-        center_keypoints[center_keypoints == -1] = np.nan
-        center_keypoints = np.nanmean(center_keypoints, axis=1)
-        np.nan_to_num(center_keypoints, copy=False, nan=-1)
-        return np.concatenate((keypoints, center_keypoints[:, None, :]), axis=1)
+        """Adds a keypoint in the mean of each individual
+
+        Args:
+            keypoints: shape (num_idv, num_kpts, 3)
+
+        Returns:
+            keypoints with centers, of shape (num_idv, num_kpts + 1, 3)
+        """
+        num_idv = keypoints.shape[0]
+        centers = np.full((num_idv, 1, 3), np.nan)
+
+        keypoints_xy = keypoints.copy()[..., :2]
+        keypoints_xy[keypoints[..., 2] <= 0] = np.nan
+        if np.sum(~np.isnan(keypoints_xy)) > 0:
+            centers[:, 0, :2] = np.nanmean(keypoints_xy, axis=1)
+
+        masked_centers = np.any(np.isnan(centers), axis=2)
+        centers[masked_centers, 2] = 0
+        centers[~masked_centers, 2] = 2
+        np.nan_to_num(centers, copy=False, nan=0)
+
+        return np.concatenate((keypoints, centers), axis=1)

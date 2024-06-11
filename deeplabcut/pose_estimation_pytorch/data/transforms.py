@@ -45,6 +45,9 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
 
+    if (lms_cfg := augmentations.get("longest_max_size")) is not None:
+        transforms.append(A.LongestMaxSize(lms_cfg))
+
     if hflip_cfg := augmentations.get("hflip"):
         hflip_proba = 0.5
         symmetries = None
@@ -86,9 +89,6 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
                 keep_ratio=True,
             )
         )
-
-    if (longest_max_size := augmentations.get("longest_max_size")) is not None:
-        transforms.append(A.LongestMaxSize(longest_max_size))
 
     if augmentations.get("hist_eq", False):
         transforms.append(A.Equalize(p=0.5))

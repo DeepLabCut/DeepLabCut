@@ -62,6 +62,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         sigma: float,
         min_affinity: float,
         add_discarded: bool = False,
+        apply_sigmoid: bool = True,
+        clip_scores: bool = False,
         force_fusion: bool = False,
         return_preds: bool = False,
     ):
@@ -92,6 +94,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         self.nms_radius = nms_radius
         self.return_preds = return_preds
         self.sigma = sigma
+        self.apply_sigmoid = apply_sigmoid
+        self.clip_scores = clip_scores
         self.sigmoid = torch.nn.Sigmoid()
         self.assembler = inferenceutils.Assembler.empty(
             num_animals,
@@ -130,7 +134,9 @@ class PartAffinityFieldPredictor(BasePredictor):
         pafs = outputs["paf"]
         scale_factors = stride, stride
         batch_size, n_channels, height, width = heatmaps.shape
-        heatmaps = self.sigmoid(heatmaps)
+
+        if self.apply_sigmoid:
+            heatmaps = self.sigmoid(heatmaps)
 
         # Filter predicted heatmaps with a 2D Gaussian kernel as in:
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
@@ -172,6 +178,9 @@ class PartAffinityFieldPredictor(BasePredictor):
                 poses[i, j, :, 4] = assembly.affinity
             if unique is not None:
                 poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
+
+        if self.clip_scores:
+            poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
 
         out = {"poses": poses}
         if self.return_preds:

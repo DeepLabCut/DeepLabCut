@@ -7,7 +7,14 @@ train:
     rotation: 30
     scaling: [1.0, 1.0]
     translation: 0
-  collate: null
+  collate:
+    type: ResizeFromDataSizeCollate
+    min_scale: 0.4
+    max_scale: 1.0
+    min_short_side: 128
+    max_short_side: 1152
+    multiple_of: 32
+    to_square: false
   covering: false
   gaussian_noise: 12.75
   hist_eq: false

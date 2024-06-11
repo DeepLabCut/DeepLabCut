@@ -114,10 +114,12 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        model_cfg["data"] = read_config_as_dict(
-            configs_dir / "base" / "aug_top_down.yaml"
-        )
         model_cfg = add_detector(configs_dir, model_cfg, len(individuals))
+
+    # add the default augmentations to the config
+    aug_filename = "aug_top_down.yaml" if is_top_down else "aug_default.yaml"
+    aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
+    pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
     pose_config = update_config(pose_config, model_cfg)

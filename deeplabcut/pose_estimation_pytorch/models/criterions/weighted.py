@@ -48,12 +48,11 @@ class WeightedCriterion(BaseCriterion):
         """
         # shape of loss: (batch_size, n_kpts, heatmap_size, heatmap_size)
         loss = self.criterion(output, target)
-        loss *= weights
         n_elems = utils.count_nonzero_elems(loss, weights)
         if n_elems == 0:
-            return torch.tensor(0.0, device=output.device)
+            n_elems = 1
 
-        return torch.mean(loss)
+        return torch.sum(loss * weights) / n_elems
 
 
 @CRITERIONS.register_module
@@ -89,11 +88,11 @@ class WeightedMSECriterion(WeightedCriterion):
         """
         # shape of loss: (batch_size, n_kpts, h, w)
         loss = self.criterion(output, target)
-        loss *= weights
         n_elems = utils.count_nonzero_elems(loss, weights)
         if n_elems == 0:
-            return torch.tensor(0.0, device=output.device)
-        return torch.mean(loss)
+            n_elems = 1
+
+        return torch.sum(loss * weights) / n_elems
 
 
 @CRITERIONS.register_module

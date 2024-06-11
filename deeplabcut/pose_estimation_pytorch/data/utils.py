@@ -504,7 +504,7 @@ def apply_transform(
             oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
             # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
             if np.sum(oob_mask) > 0:
-                transformed["keypoints"][oob_mask, -1] = 0.0
+                transformed["keypoints"][oob_mask, 2] = 0.0
 
         # TODO: Check that the transformed bboxes are still within the image
         if len(transformed["bboxes"]) > 0:
@@ -551,41 +551,11 @@ def _apply_transform(
         bbox_labels=np.arange(len(bboxes)),
     )
 
-    # why are we repeatedly doing this?
-    # transformed = _set_invalid_keypoints_to_neg_one(
-    #     transformed, keypoints, class_labels
-    # )
-
     bboxes_out = np.zeros(bboxes.shape)
     for bbox, bbox_id in zip(transformed["bboxes"], transformed["bbox_labels"]):
         bboxes_out[bbox_id] = bbox
 
     transformed["bboxes"] = bboxes_out
-    return transformed
-
-
-def _set_invalid_keypoints_to_neg_one(
-    transformed: dict[str, list], keypoints: np.ndarray, class_labels: list
-) -> dict[str, list]:
-    """
-    Updates keypoints that are out of bounds or undefined to (-1, -1).
-
-    Args:
-        transformed: A dictionary containing the transformed image and keypoints.
-        keypoints: Array of keypoints to be transformed along with the image.
-        class_labels: List of class labels corresponding to the keypoints.
-
-    Returns:
-        A dictionary containing the transformed image and with masked invalid keypoints.
-
-    """
-    undef_class_labels = [
-        class_labels[i] for i, kpt in enumerate(keypoints) if kpt[2] == 0
-    ]
-    for label in undef_class_labels:
-        new_index = transformed["class_labels"].index(label)
-        transformed["keypoints"][new_index] = (-1, -1, -1)
-
     return transformed
 
 

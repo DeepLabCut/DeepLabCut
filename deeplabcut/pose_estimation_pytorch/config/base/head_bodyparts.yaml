@@ -1,10 +1,13 @@
 type: HeatmapHead
+weight_init: normal
 predictor:
   type: HeatmapPredictor
+  apply_sigmoid: false
+  clip_scores: true
   location_refinement: true
   locref_std: 7.2801
 target_generator:
-  type: HeatmapPlateauGenerator
+  type: HeatmapGaussianGenerator
   num_heatmaps: "num_bodyparts"
   pos_dist_thresh: 17
   heatmap_mode: KEYPOINT
@@ -12,7 +15,7 @@ target_generator:
   locref_std: 7.2801
 criterion:
   heatmap:
-    type: WeightedBCECriterion
+    type: WeightedMSECriterion
     weight: 1.0
   locref:
     type: WeightedHuberCriterion

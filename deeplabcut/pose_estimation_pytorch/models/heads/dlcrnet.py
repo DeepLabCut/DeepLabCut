@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.models.heads.simple_head import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInitializer
 
 
 @HEADS.register_module
@@ -41,6 +42,7 @@ class DLCRNetHead(HeatmapHead):
         paf_config: dict,
         num_stages: int = 5,
         features_dim: int = 128,
+        weight_init: str | dict | BaseWeightInitializer | None = None,
     ) -> None:
         self.num_stages = num_stages
         # FIXME Cleaner __init__ to avoid initializing unused layers
@@ -49,9 +51,9 @@ class DLCRNetHead(HeatmapHead):
         num_limbs = paf_config["channels"][-1]  # Already has the 2x multiplier
         in_refined_channels = features_dim + num_keypoints + num_limbs
         if num_stages > 0:
-            heatmap_config["channels"][0] = paf_config["channels"][
-                0
-            ] = in_refined_channels
+            heatmap_config["channels"][0] = paf_config["channels"][0] = (
+                in_refined_channels
+            )
             locref_config["channels"][0] = locref_config["channels"][-1]
         super().__init__(
             predictor,
@@ -60,6 +62,7 @@ class DLCRNetHead(HeatmapHead):
             aggregator,
             heatmap_config,
             locref_config,
+            weight_init,
         )
         self.paf_head = DeconvModule(**paf_config)
 
@@ -88,6 +91,7 @@ class DLCRNetHead(HeatmapHead):
                     in_channels=in_refined_channels, out_channels=num_limbs
                 )
             )
+        self._init_weights()
 
     def _make_layer_same_padding(
         self, in_channels: int, out_channels: int

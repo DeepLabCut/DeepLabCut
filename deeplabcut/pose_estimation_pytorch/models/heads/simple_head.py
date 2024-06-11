@@ -24,10 +24,7 @@ from deeplabcut.pose_estimation_pytorch.models.heads.base import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
-from deeplabcut.pose_estimation_pytorch.models.weight_init import (
-    BaseWeightInitializer,
-    WEIGHT_INIT,
-)
+from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInitializer
 
 
 @HEADS.register_module
@@ -81,19 +78,16 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
                 )
 
         super().__init__(
-            heatmap_head.stride, predictor, target_generator, criterion, aggregator
+            heatmap_head.stride,
+            predictor,
+            target_generator,
+            criterion,
+            aggregator,
+            weight_init,
         )
         self.heatmap_head = heatmap_head
         self.locref_head = locref_head
-
-        if weight_init is not None:
-            if isinstance(weight_init, (str, dict)):
-                weight_init = WEIGHT_INIT.build(weight_init)
-            elif not isinstance(weight_init, BaseWeightInitializer):
-                raise ValueError(
-                    f"Could not parse ``weight_init`` parameter: {weight_init}."
-                )
-            weight_init.init_weights(self)
+        self._init_weights()
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         outputs = {"heatmap": self.heatmap_head(x)}

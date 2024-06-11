@@ -7,13 +7,15 @@ model:
   backbone:
     type: HRNet
     model_name: hrnet_w32
-    pretrained: true
+    freeze_bn_stats: false
+    freeze_bn_weights: false
     interpolate_branches: true
     increased_channel_count: false
   backbone_output_channels: 480
   heads:
     bodypart:
       type: DEKRHead
+      weight_init: dekr
       target_generator:
         type: DEKRGenerator
         num_joints: "num_bodyparts"
@@ -21,13 +23,15 @@ model:
         bg_weight: 0.1
       criterion:
         heatmap:
-          type: WeightedBCECriterion
+          type: DEKRHeatmapLoss
           weight: 1
         offset:
-          type: WeightedHuberCriterion
+          type: DEKROffsetLoss
           weight: 0.03
       predictor:
         type: DEKRPredictor
+        apply_sigmoid: false
+        clip_scores: true
         num_animals: "num_individuals"
         keypoint_score_type: combined
         max_absorb_distance: 75

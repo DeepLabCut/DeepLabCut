@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 from typing import Iterable
 
@@ -298,7 +299,7 @@ def evaluate_network(
     show_errors: bool = True,
     transform: A.Compose = None,
     modelprefix: str = "",
-    detector_snapshot_index: int | None = -1,
+    detector_snapshot_index: int | None = None,
 ) -> None:
     """Evaluates a snapshot.
 
@@ -366,6 +367,9 @@ def evaluate_network(
     if snapshotindex is None:
         snapshotindex = cfg["snapshotindex"]
 
+    if detector_snapshot_index is None:
+        detector_snapshot_index = cfg["detector_snapshotindex"]
+
     for train_set_index in train_set_indices:
         for shuffle in shuffles:
             loader = DLCLoader(
@@ -394,7 +398,9 @@ def evaluate_network(
                         detector_snapshot_index, loader.model_folder, Task.DETECT,
                     )[0]
                 else:
-                    print("Using GT bounding boxes to compute evaluation metrics")
+                    logging.info(
+                        "Using GT bounding boxes to compute evaluation metrics"
+                    )
 
             for snapshot in snapshots:
                 scorer = get_scorer_name(
@@ -446,8 +452,8 @@ def save_evaluation_results(
         pcutoff: the pcutoff used to get the evaluation results
     """
     if print_results:
-        print(f"Evaluation results for {scores_path.name} (pcutoff: {pcutoff}):")
-        print(df_scores.iloc[0])
+        logging.info(f"Evaluation results for {scores_path.name} (pcutoff: {pcutoff}):")
+        logging.info(df_scores.iloc[0])
 
     # Save scores file
     df_scores.to_csv(scores_path)

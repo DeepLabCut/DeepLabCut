@@ -112,7 +112,7 @@ class CreateTrainingDataset(DefaultTab):
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
-        self.net_choice.setMinimumWidth(80)
+        self.net_choice.setMinimumWidth(200)
         self.update_nets(self.root.engine)
         self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
