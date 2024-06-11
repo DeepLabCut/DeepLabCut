@@ -54,16 +54,7 @@ def video_inference_superanimal(
     customized_model_config: Optional[str] = None,
 ):
     """
-    This function performs inference on videos using a SuperAnimal model. It does not
-    require you to have a DeepLabCut project. So it can be seen as a plug-and-play
-    solution.
-
-    If the predictions are jittery, you should run video adaptation by setting
-    video_adapt = True. This will take some time but it will generally improve the
-    inference results.
-
-    If you want to further improve the results, you can try finetune it on your own
-    data.
+    This function performs inference on videos using a pretrained SuperAnimal model.
 
     IMPORTANT: Note that since we have both TensorFlow and PyTorch Engines, we will
     route the engine based on the model you select.
@@ -72,9 +63,6 @@ def video_inference_superanimal(
     * superanimal_quadruped_hrnetw32 -> PyTorch
     * superanimal_topviewmouse_dlcrnet -> TensorFlow
     * superanimal_quadruped_dlcrnet -> TensorFlow
-
-    More details about those models in the examples section. In general, currently
-    PyTorch models are better but slower.
 
     Parameters
     ----------
@@ -86,6 +74,7 @@ def video_inference_superanimal(
         The name of the SuperAnimal model.
         The name should be in the format: {project_name}_{modelname}.
         For example: `superanimal_topviewmouse_dlcrnet` or `superanimal_quadruped_hrnetw32`.
+        See (model explanation section below).
 
     scale_list (list):
         A list of different resolutions for the spatial pyramid. Used only for bottom up models.
@@ -142,11 +131,11 @@ def video_inference_superanimal(
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
     
-    ### (Model Explanation) SuperAnimal-Quadruped: 
+   (Model Explanation) SuperAnimal-Quadruped: 
 
     - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
-    - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10619173)
-    - [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
+    - PLEASE SEE THE FULL DATASHEET: https://zenodo.org/records/10619173
+    - MORE DETAILS ON THE MODELS (detector, pose estimators): https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped
     - We provide several models:
         - `superanimal_quadruped_hrnetw32` (pytorch engine)
             - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
@@ -155,11 +144,7 @@ def video_inference_superanimal(
         - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
         - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
 
-    - Here are example images of what the model is trained on:
-    ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
-
-
-    ### (Model Explanation) SuperAnimal-TopViewMouse:
+    (Model Explanation) SuperAnimal-TopViewMouse:
 
     -  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
     - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
@@ -171,9 +156,6 @@ def video_inference_superanimal(
             - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
         - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
         - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
-        
-    -  Here are example images of what the model is trained on:
-    ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
     Examples (PyTorch Engine)
     --------
