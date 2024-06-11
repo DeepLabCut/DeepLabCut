@@ -610,8 +610,8 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
-            self.refine_tracklets.setEnabled(False)
-        self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
+            self.tab_widget.removeTab(self.tab_widget.indexOf(self.unsupervised_id_tracking))
+            self.tab_widget.removeTab(self.tab_widget.indexOf(self.refine_tracklets))
 
         self.setCentralWidget(self.tab_widget)
         self.tab_widget.currentChanged.connect(self.refresh_active_tab)
