@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Module to display information about the selected shuffle in the GUI"""
+from __future__ import annotations
+
 from pathlib import Path
 
 import PySide6.QtCore as QtCore

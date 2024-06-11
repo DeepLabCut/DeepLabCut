@@ -578,26 +578,36 @@ def get_model_folder(
 
 
 def get_evaluation_folder(
-    trainFraction,
-    shuffle,
-    cfg,
-    engine: Engine = Engine.TF,
-    modelprefix="",
-):
+    trainFraction: float,
+    shuffle: int,
+    cfg: dict,
+    engine: Engine | None = None,
+    modelprefix: str = "",
+) -> Path:
     """
-        Args:
-            trainFraction: the training fraction (as defined in the project configuration)
-                for which to get the evaluation folder
-            shuffle: the index of the shuffle for which to get the evaluation folder
-            cfg: the project configuration
-            engine: The engine for which we want the model folder. Defaults to `tensorflow`
-                for backwards compatibility with DeepLabCut 2.X
-            modelprefix: The name of the folder
+    Args:
+        trainFraction: the training fraction (as defined in the project configuration)
+            for which to get the evaluation folder
+        shuffle: the index of the shuffle for which to get the evaluation folder
+        cfg: the project configuration
+        engine: The engine for which we want the model folder. Defaults to None,
+            which automatically gets the engine for the shuffle from the training
+            dataset metadata file.
+        modelprefix: The name of the folder
 
-        Returns:
-            the relative path from the project root to the folder containing the model files
-            for a shuffle (configuration files, snapshots, training logs, ...)
-        """
+    Returns:
+        the relative path from the project root to the folder containing the model files
+        for a shuffle (configuration files, snapshots, training logs, ...)
+    """
+    if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+        engine = get_shuffle_engine(
+            cfg=cfg,
+            trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
+
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])

@@ -24,12 +24,12 @@ from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     ensure_multianimal_df_format,
-    get_model_snapshots,
     get_inference_runners,
+    get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
 )
-from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
+from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     compute_identity_scores,
     get_scores,
@@ -148,8 +148,7 @@ def evaluate(
     # TODO: Evaluate identity predictions
     if loader.model_cfg["metadata"]["with_identity"]:
         pred_id_scores = {
-            filename: pred["identity_scores"]
-            for filename, pred in predictions.items()
+            filename: pred["identity_scores"] for filename, pred in predictions.items()
         }
         id_scores = compute_identity_scores(
             individuals=parameters.individuals,
@@ -213,14 +212,17 @@ def evaluate_snapshot(
         with_identity=loader.model_cfg["metadata"]["with_identity"],
         transform=transform,
         detector_path=detector_path,
-        detector_transform=None
+        detector_transform=None,
     )
 
     predictions = {}
     scores = {
-        "Training epochs": snapshot.uid(),
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
+        "Training epochs": snapshot.epochs,
+        "Detector epochs (TD only)": (
+            -1 if detector_snapshot is None else detector_snapshot.epochs
+        ),
         "pcutoff": pcutoff,
     }
     for split in ["train", "test"]:
@@ -250,7 +252,13 @@ def evaluate_snapshot(
     df_predictions.to_hdf(output_filename, key="df_with_missing")
 
     df_scores = pd.DataFrame([scores]).set_index(
-        ["Training epochs", "%Training dataset", "Shuffle number", "pcutoff"]
+        [
+            "%Training dataset",
+            "Shuffle number",
+            "Training epochs",
+            "Detector epochs (TD only)",
+            "pcutoff",
+        ]
     )
     scores_filepath = output_filename.with_suffix(".csv")
     scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
@@ -395,7 +403,9 @@ def evaluate_network(
             if task == Task.TOP_DOWN:
                 if detector_snapshot_index is not None:
                     detector_snapshot = get_model_snapshots(
-                        detector_snapshot_index, loader.model_folder, Task.DETECT,
+                        detector_snapshot_index,
+                        loader.model_folder,
+                        Task.DETECT,
                     )[0]
                 else:
                     logging.info(
@@ -461,7 +471,9 @@ def save_evaluation_results(
     # Update combined results
     combined_scores_path = scores_path.parent.parent / "CombinedEvaluation-results.csv"
     if combined_scores_path.exists():
-        df_existing_results = pd.read_csv(combined_scores_path, index_col=[0, 1, 2, 3])
+        df_existing_results = pd.read_csv(
+            combined_scores_path, index_col=[0, 1, 2, 3, 4]
+        )
         df_scores = df_scores.combine_first(df_existing_results)
 
     df_scores = df_scores.sort_index()

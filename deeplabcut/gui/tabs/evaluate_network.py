@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
 import matplotlib.image as mpimg
 from matplotlib.backends.backend_qt5agg import (
@@ -20,7 +22,6 @@ from PySide6.QtCore import Qt
 
 import deeplabcut
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
-from deeplabcut.utils.auxiliaryfunctions import get_evaluation_folder
 from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -30,6 +31,7 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.widgets import ConfigEditor, launch_napari
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class GridCanvas(QtWidgets.QDialog):
@@ -128,7 +130,7 @@ class EvaluateNetwork(DefaultTab):
         dest_folder = os.path.join(
             self.root.project_folder,
             str(
-                get_evaluation_folder(
+                auxiliaryfunctions.get_evaluation_folder(
                     self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
                 )
             ),
@@ -188,8 +190,7 @@ class EvaluateNetwork(DefaultTab):
 
     def evaluate_network(self):
         config = self.root.config
-
-        Shuffles = [self.root.shuffle_value]
+        shuffle = self.root.shuffle_value
         plotting = self.plot_predictions.isChecked()
 
         bodyparts_to_use = "all"
@@ -201,12 +202,30 @@ class EvaluateNetwork(DefaultTab):
 
         deeplabcut.evaluate_network(
             config,
-            Shuffles=Shuffles,
+            Shuffles=[shuffle],
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=bodyparts_to_use,
         )
 
         if plotting:
-            labeled_images = list(Path(config).parent / "evaluation-results").rglob("**/Labeled*/*.png")
-            _ = launch_napari(labeled_images)
+            project_cfg = self.root.cfg
+            eval_folder = auxiliaryfunctions.get_evaluation_folder(
+                trainFraction=project_cfg["TrainingFraction"][0],
+                shuffle=shuffle,
+                cfg=project_cfg,
+            )
+            scorer, _ = auxiliaryfunctions.get_scorer_name(
+                cfg=project_cfg,
+                shuffle=shuffle,
+                trainFraction=project_cfg["TrainingFraction"][0],
+            )
+
+            image_dir = (
+                Path(self.root.project_folder)
+                / eval_folder
+                / f"LabeledImages_{scorer}"
+            )
+            labeled_images = [str(p) for p in image_dir.rglob("*.png")]
+            if len(labeled_images) > 0:
+                _ = launch_napari(image_dir)
