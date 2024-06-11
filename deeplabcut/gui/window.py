@@ -116,6 +116,10 @@ class MainWindow(QMainWindow):
         self.receiver = StreamReceiver(self.writer.queue)
         self.receiver.new_text.connect(self.print_to_status_bar)
 
+        # create logger to also log to the console
+        logging.basicConfig()
+        logging.getLogger("console").setLevel(logging.INFO)
+
         self._progress_bar = QtWidgets.QProgressBar()
         self._progress_bar.setMaximum(0)
         self._progress_bar.hide()
@@ -124,6 +128,7 @@ class MainWindow(QMainWindow):
     def print_to_status_bar(self, text):
         self.status_bar.showMessage(text)
         self.status_bar.repaint()
+        logging.getLogger("console").info(text)
 
     @property
     def toolbar(self):

@@ -99,11 +99,13 @@ def video_inference(
     video = VideoIterator(str(video_path))
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
-    logging.info(
+    print(f"Starting to analyze {video_path}")
+    print(
         f"Video metadata: \n"
-        f"  n_frames:   {n_frames}\n"
-        f"  fps:        {video.fps}\n"
-        f"  resolution: w={vid_w}, h={vid_h}\n"
+        f"  Overall # of frames:    {n_frames}\n"
+        f"  Duration of video [s]:  {n_frames / max(1, video.fps):.2f}\n"
+        f"  fps:                    {video.fps}\n"
+        f"  resolution:             w={vid_w}, h={vid_h}\n"
     )
     video_metadata = {
         "n_frames": n_frames,
@@ -116,12 +118,12 @@ def video_inference(
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
 
-        logging.info("Running Detector")
+        print("Running Detector")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
 
         video.set_context(bbox_predictions)
 
-    logging.info("Running Pose Prediction")
+    print("Running Pose Prediction")
     predictions = pose_runner.inference(images=tqdm(video))
 
     if with_identity:
@@ -164,7 +166,7 @@ def analyze_videos(
     auto_track: bool | None = True,
     identity_only: bool | None = False,
     overwrite: bool = False,
-) -> list[tuple[str, pd.DataFrame]]:
+) -> str:
     """Makes prediction based on a trained network.
 
     # TODO:
@@ -217,7 +219,7 @@ def analyze_videos(
             prediction.
 
     Returns:
-        A list containing tuples (video_name, df_video_predictions)
+        The scorer used to analyze the videos
     """
     # Create the output folder
     _validate_destfolder(destfolder)
@@ -258,7 +260,7 @@ def analyze_videos(
         model_cfg["device"] = device
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
-    logging.info(f"Analyzing videos with {snapshot.path}")
+    print(f"Analyzing videos with {snapshot.path}")
     detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
@@ -272,7 +274,7 @@ def analyze_videos(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
         detector_path = detector_snapshot.path
-        logging.info(f"  -> Using detector {detector_path}")
+        print(f"  -> Using detector {detector_path}")
 
     dlc_scorer = get_scorer_name(
         cfg,
@@ -307,7 +309,7 @@ def analyze_videos(
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
         if not overwrite and output_pkl.exists():
-            logging.info(f"Video already analyzed at {output_pkl}!")
+            print(f"Video {video} already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
             predictions = video_inference(
@@ -386,7 +388,15 @@ def analyze_videos(
                         destfolder=str(destfolder),
                     )
 
-    return results
+    print(
+        "The videos are analyzed. Now your research can truly start!\n"
+        "You can create labeled videos with 'create_labeled_video'.\n"
+        "If the tracking is not satisfactory for some videos, consider expanding the "
+        "training set. You can use the function 'extract_outlier_frames' to extract a "
+        "few representative outlier frames.\n"
+    )
+
+    return dlc_scorer
 
 
 def create_df_from_prediction(
@@ -400,7 +410,7 @@ def create_df_from_prediction(
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
-    logging.info(f"Saving results in {output_h5} and {output_pkl}")
+    print(f"Saving results in {output_h5} and {output_pkl}")
     cols = [
         [dlc_scorer],
         list(auxiliaryfunctions.get_bodyparts(cfg)),
@@ -479,7 +489,7 @@ def _validate_destfolder(destfolder: str | None) -> None:
     if destfolder is not None and destfolder != "":
         output_folder = Path(destfolder)
         if not output_folder.exists():
-            logging.info(f"Creating the output folder {output_folder}")
+            print(f"Creating the output folder {output_folder}")
             output_folder.mkdir(parents=True)
 
         assert Path(
