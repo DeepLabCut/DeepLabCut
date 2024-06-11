@@ -182,7 +182,7 @@ class TrainNetwork(DefaultTab):
 
     def train_network(self):
         config = self.root.config
-        shuffle = int(self._shuffles[self.root.engine].value())
+        shuffle = int(self._shuffle.value())
         kwargs = dict(gputouse=None, autotune=False)
         for k, spin_box in self._attribute_kwargs[self.root.engine].items():
             kwargs[k] = int(spin_box.value())
