@@ -29,7 +29,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.make_labeled_video import _create_labeled_video
-
+from deeplabcut.utils.auxiliaryfunctions import read_config
 
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy types"""
@@ -58,6 +58,7 @@ def _video_inference_superanimal(
     dest_folder: Optional[str] = None,
     customized_pose_checkpoint: Optional[str] = None,
     customized_detector_checkpoint: Optional[str] = None,
+    customized_model_config: Optional[str] = None
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -101,13 +102,21 @@ def _video_inference_superanimal(
     """
 
     raise_warning_if_called_directly()
-    (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_path,
-    ) = get_config_model_paths(project_name, model_name)
 
+    if customized_model_config is None:
+        (
+            model_config,
+            project_config,
+            pose_model_path,
+            detector_path,
+        ) = get_config_model_paths(project_name, model_name)
+
+        config = {**project_config, **model_config}
+        config = update_config(config, max_individuals, device)
+    else:
+        config = read_config(customized_model_config)
+        config['bodyparts'] = config['metadata']['bodyparts']
+        
     if customized_pose_checkpoint is not None:
         pose_model_path = customized_pose_checkpoint
     if customized_detector_checkpoint is not None:
@@ -116,8 +125,7 @@ def _video_inference_superanimal(
     if device is None:
         device = select_device()
 
-    config = {**project_config, **model_config}
-    config = update_config(config, max_individuals, device)
+
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["individuals"] = individuals
 
@@ -193,6 +201,7 @@ def _video_inference_superanimal(
             customized_pose_checkpoint is not None
             and customized_detector_checkpoint is not None
         ):
+            # FIXME: customized pose and customized detector passed does not mean it's adapted anymore
             output_video = output_path / f"{output_prefix}_labeled_after_adapt.mp4"
         else:
             output_video = output_path / f"{output_prefix}_labeled.mp4"

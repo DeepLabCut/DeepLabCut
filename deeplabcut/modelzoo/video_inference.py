@@ -51,6 +51,7 @@ def video_inference_superanimal(
     device: Optional[str] = "auto",
     customized_pose_checkpoint: Optional[str] = None,
     customized_detector_checkpoint: Optional[str] = None,
+    customized_model_config: Optional[str] = None,
 ):
     """
     This function performs inference on videos using a SuperAnimal model. It does not
@@ -132,6 +133,9 @@ def video_inference_superanimal(
 
     customized_detector_checkpoint (str):
         Used in the PyTorch engine. If specified, it replaces the default detector checkpoint.
+
+    customized_model_config (str):
+        Used for loading customized model config. Only supported in Pytorch
 
     Raises:
         NotImplementedError:
@@ -292,10 +296,11 @@ def video_inference_superanimal(
                 model_name,
                 max_individuals,
                 pcutoff,
-                device,
-                dest_folder,
-                customized_pose_checkpoint=None,
-                customized_detector_checkpoint=None,
+                device=device,
+                dest_folder=dest_folder,
+                customized_pose_checkpoint=customized_pose_checkpoint,
+                customized_detector_checkpoint=customized_detector_checkpoint,
+                customized_model_config=customized_model_config,
             )
 
             (
@@ -431,8 +436,9 @@ video adaptation batch size: {video_adapt_batch_size}"""
             model_name,
             max_individuals,
             pcutoff,
-            device,
-            dest_folder,
+            device=device,
+            dest_folder=dest_folder,
             customized_pose_checkpoint=customized_pose_checkpoint,
             customized_detector_checkpoint=customized_detector_checkpoint,
+            customized_model_config=customized_model_config,
         )

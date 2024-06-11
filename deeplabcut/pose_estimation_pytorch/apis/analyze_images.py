@@ -38,6 +38,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 def superanimal_analyze_images(
@@ -50,6 +51,7 @@ def superanimal_analyze_images(
     device: str | None = None,
     customized_pose_checkpoint: str | None = None,
     customized_detector_checkpoint: str | None = None,
+    customized_model_config: str | None = None,
 ):
     """
     This funciton inferences a superanimal model on a set of images and saves the results as labeled images.
@@ -82,6 +84,8 @@ def superanimal_analyze_images(
     customized_detector_checkpoint: str | None
         A customized SuperAnimal detector checkpoint, as an alternative to the Hugging
         Face SuperAnimal models.
+    customized_model_config: str | None
+        A customized SuperAnimal model config. This is for internal dev/testing use
 
     Returns
     -------
@@ -106,20 +110,27 @@ def superanimal_analyze_images(
 
     os.makedirs(out_folder, exist_ok=True)
 
-    (
-        model_cfg,
-        project_config,
-        snapshot_path,
-        detector_path,
-    ) = get_config_model_paths(superanimal_name, model_name)
+    snapshot_path = None
+    detector_path = None
+    if customized_model_config is None:    
+        (
+            model_cfg,
+            project_config,
+            snapshot_path,
+            detector_path,
+        ) = get_config_model_paths(superanimal_name, model_name)
+        config = {**project_config, **model_cfg}
+        config = update_config(config, max_individuals, device)        
+    else:
+        config = read_config(customized_model_config)
+        if customized_pose_checkpoint is None:
+            raise ValueError(f"You must pass a custom checkpoint")
 
     if customized_pose_checkpoint is not None:
         snapshot_path = customized_pose_checkpoint
     if customized_detector_checkpoint is not None:
         detector_path = customized_detector_checkpoint
 
-    config = {**project_config, **model_cfg}
-    config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["individuals"] = individuals
 
@@ -210,6 +221,7 @@ def analyze_images(
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
+
 
     predictions = analyze_image_folder(
         model_cfg=model_cfg,
