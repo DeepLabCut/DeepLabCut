@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
@@ -33,7 +34,6 @@ from deeplabcut.gui.components import (
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
-    get_model_folder,
     get_training_set_folder,
 )
 
@@ -159,15 +159,12 @@ class CreateTrainingDataset(DefaultTab):
     def edit_conversion_table(self):
         # Test beforehand whether a conversion table exists
         weight_init = self.weight_init_selector.get_weight_init()
-        model_folder = self.root / get_model_folder(
-            self.root.cfg["TrainingFraction"][0],
-            self.shuffle.value(),
-            self.root.cfg,
-            engine=Engine.PYTORCH,
-        )
-        memory_replay_folder = model_folder / "memory_replay"
+        memory_replay_folder = Path(self.root.project_folder) / "memory_replay"
         conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
-        _ = launch_napari([self.root.config, conversion_matrix_out_path])
+        files = [self.root.config]
+        if os.path.exists(conversion_matrix_out_path):
+            files.append(conversion_matrix_out_path)
+        _ = launch_napari(files)
 
     def create_training_dataset(self):
         shuffle = self.shuffle.value()
