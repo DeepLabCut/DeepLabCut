@@ -71,7 +71,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             scheduler: scheduler for adjusting the lr of the optimizer
             logger: logger to monitor training (e.g WandB logger)
         """
-        super().__init__(model=model, device=device, gpus=gpus, snapshot_path=snapshot_path)
+        super().__init__(
+            model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
+        )
         self.eval_interval = eval_interval
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -81,6 +83,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.logger = logger
         self.starting_epoch = 0
         self.current_epoch = 0
+
+        # some models cannot compute a validation loss (e.g. detectors)
+        self._print_valid_loss = True
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.starting_epoch = self.load_snapshot(
@@ -98,7 +103,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return {
             "metadata": self._metadata,
             "model": self.model.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         }
 
     @abstractmethod
@@ -168,7 +173,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if self.scheduler:
                 self.scheduler.step()
 
-            lr = self.optimizer.param_groups[0]['lr']
+            lr = self.optimizer.param_groups[0]["lr"]
             msg = f"Epoch {e}/{epochs} (lr={lr}), train loss {float(train_loss):.5f}"
             if e % self.eval_interval == 0:
                 with torch.no_grad():
@@ -176,7 +181,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     valid_loss = self._epoch(
                         valid_loader, mode="eval", display_iters=display_iters
                     )
-                    msg += f", valid loss {float(valid_loss):.5f}"
+                    if self._print_valid_loss:
+                        msg += f", valid loss {float(valid_loss):.5f}"
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
@@ -247,7 +253,10 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 metrics_to_log[name] = score
 
         for key in loss_metrics:
-            name, val = f"{mode}.{key}", np.nanmean(loss_metrics[key]).item()
+            name = f"{mode}.{key}"
+            val = np.nan
+            if np.sum(~np.isnan(loss_metrics[key])) > 0:
+                val = np.nanmean(loss_metrics[key]).item()
             self._metadata["losses"][name] = val
             metrics_to_log[f"losses/{name}"] = val
 
@@ -354,8 +363,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
         )
         poses = pair_predicted_individuals_with_gt(
-            self._epoch_predictions["bodyparts"],
-            self._epoch_ground_truth["bodyparts"]
+            self._epoch_predictions["bodyparts"], self._epoch_ground_truth["bodyparts"]
         )
 
         # pad predictions if there are any missing (needed for top-down models)
@@ -364,7 +372,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
                 if len(kpts) < num_animals:
                     padded_kpts = -np.ones((num_animals, *kpts.shape[1:]))
-                    padded_kpts[:len(kpts)] = kpts
+                    padded_kpts[: len(kpts)] = kpts
                     kpt_dict[path] = padded_kpts
                 else:
                     kpt_dict[path] = kpts
@@ -396,7 +404,11 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         offsets = offsets.detach().cpu().numpy()
 
         for path, gt, pred, scale, offset in zip(
-            paths, gt_keypoints, pred_keypoints, scales, offsets,
+            paths,
+            gt_keypoints,
+            pred_keypoints,
+            scales,
+            offsets,
         ):
             # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
@@ -421,9 +433,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
                 epoch_gt_metric[path] = np.concatenate(
                     [epoch_gt_metric[path], gt_with_vis], axis=0
                 )
-                epoch_metric[path] = np.concatenate(
-                    [epoch_metric[path], pred], axis=0
-                )
+                epoch_metric[path] = np.concatenate([epoch_metric[path], pred], axis=0)
             else:
                 epoch_gt_metric[path] = gt_with_vis
                 epoch_metric[path] = pred
@@ -443,6 +453,8 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             **kwargs: TrainingRunner kwargs
         """
         super().__init__(model, optimizer, **kwargs)
+        self._pycoco_warning_displayed = False
+        self._print_valid_loss = False
 
     def step(
         self, batch: dict[str, Any], mode: str = "train"
@@ -511,7 +523,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         return losses
 
     def _compute_epoch_metrics(self) -> dict[str, float]:
-        """Returns: bounding box metrics, if """
+        """Returns: bounding box metrics, if"""
         try:
             return {
                 f"metrics/test.{k}": v
@@ -520,9 +532,15 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
                 ).items()
             }
         except ModuleNotFoundError:
-            logging.info(
-                "Cannot compute bounding box metrics; pycocotools is not installed"
-            )
+            if not self._pycoco_warning_displayed:
+                logging.info(
+                    "\nNote:\n"
+                    "Cannot compute bounding box metrics as ``pycocotools`` is not "
+                    "installed. If you want bounding box mAP metrics when training "
+                    "detectors for top-down models, please run ``pip install "
+                    "pycocotools``.\n"
+                )
+                self._pycoco_warning_displayed = True
 
         return {}
 

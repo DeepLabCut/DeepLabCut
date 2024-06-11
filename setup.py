@@ -62,6 +62,7 @@ setuptools.setup(
         "torch>=2.0.0",
         "torchvision",
         "tqdm",
+        "pycocotools",
         "pyyaml",
         "Pillow>=7.1",
     ],
