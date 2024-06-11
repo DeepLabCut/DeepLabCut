@@ -163,19 +163,19 @@ class EvaluateNetwork(DefaultTab):
         layout.addWidget(self.bodyparts_list_widget, alignment=Qt.AlignLeft)
 
     def update_map_choice(self, state):
-        if state == Qt.Checked:
+        if Qt.CheckState(state) == Qt.Checked:
             self.root.logger.info("Plot scoremaps ENABLED")
         else:
             self.root.logger.info("Plot predictions DISABLED")
 
     def update_plot_predictions(self, s):
-        if s == Qt.Checked:
+        if Qt.CheckState(s) == Qt.Checked:
             self.root.logger.info("Plot predictions ENABLED")
         else:
             self.root.logger.info("Plot predictions DISABLED")
 
     def update_bodypart_choice(self, s):
-        if s == Qt.Checked:
+        if Qt.CheckState(s) == Qt.Checked:
             self.bodyparts_list_widget.setEnabled(False)
             self.bodyparts_list_widget.hide()
             self.root.logger.info("Use all bodyparts")
@@ -190,13 +190,13 @@ class EvaluateNetwork(DefaultTab):
         config = self.root.config
 
         Shuffles = [self.root.shuffle_value]
-        plotting = self.plot_predictions.checkState() == Qt.Checked
+        plotting = self.plot_predictions.isChecked()
 
         bodyparts_to_use = "all"
         if (
             len(self.root.all_bodyparts)
             != len(self.bodyparts_list_widget.selected_bodyparts)
-        ) and self.use_all_bodyparts.checkState() == False:
+        ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(

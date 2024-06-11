@@ -185,10 +185,10 @@ def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> st
     Returns:
         the uid to use for the scorer
     """
-    snapshot_id = snapshot.uid()
+    snapshot_id = f"snapshot_{snapshot.uid()}"
     if detector_snapshot is not None:
         detect_id = detector_snapshot.uid()
-        snapshot_id = f"detector_{detect_id}_snapshot_{snapshot_id}"
+        snapshot_id = f"detector_{detect_id}_{snapshot_id}"
     return snapshot_id
 
 
