@@ -141,33 +141,42 @@ def video_inference_superanimal(
         NotImplementedError:
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
+    
+    ### (Model Explanation) SuperAnimal-Quadruped: 
+
+    - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
+    - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10619173)
+    - [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
+    - We provide several models:
+        - `superanimal_quadruped_hrnetw32` (pytorch engine)
+            - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
+        - `superanimal_quadruped_dlcrnet` (tensorflow engine)
+            - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
+        - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
+        - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+
+    - Here are example images of what the model is trained on:
+    ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
+
+
+    ### (Model Explanation) SuperAnimal-TopViewMouse:
+
+    -  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
+    - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
+    - [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
+    - We provide several models:
+        - `superanimal_topviewmouse_hrnetw32` (pytorch engine)
+            - `superanimal_topviewmouse_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
+        - `superanimal_topviewmouse_dlcrnet` (tensorflow engine)
+            - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
+        - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
+        - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+        
+    -  Here are example images of what the model is trained on:
+    ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
     Examples (PyTorch Engine)
     --------
-
-    In PyTorch, we currently only support
-    - superanimal_topviewmouse_hrnetw32
-    - superanimal_quadruped_hrnetw32
-
-    topviewmouse series are for topview lab mice
-    quadruped series are for quadruped animals (across many different species)
-
-    The prefix hrnetw32 denotes the backbone of the pose estimator. Compared to resnet,
-    they are stronger but slower.
-    Check the official repo for more details (https://github.com/HRNet/HRNet-Image-Classification)
-
-    superanimal_topviewmouse_hrnetw32 and superanimal_quadruped_hrnetw32 are top-down
-    models. That means they take the cropped image from an object detector and predicts
-    the keypoints. It's generally more accurate but slower. These 2 superanimal models
-    come with a ResNet50-based Faster-RCNN object detector. They are automatically
-    downloaded to modelzoo/checkpoints.
-
-    For object detectors, Check https://pytorch.org/vision/stable/models/faster_rcnn.html
-    for more details
-
-    Note in PyTorch, we don't support bottom-up models SuperAnimal models yet. We will
-    add them in the future.
-
     >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
     >>> video_inference_superanimal(
         videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
@@ -213,6 +222,8 @@ def video_inference_superanimal(
     are sensitive to the scales of the image.
     If you find your predictions not good without scale_list or it's too hard to find
     the right scale_list, you can try to use the PyTorch engine.
+
+
     """
     if scale_list is None:
         scale_list = []
@@ -284,7 +295,7 @@ def video_inference_superanimal(
 
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
-            # video adaptation. As reported in Ye et al. 2023, one video should be
+            # video adaptation. As reported in Ye et al. 2024, one video should be
             # sufficient for video adaptation.
             video_path = Path(videos[0])
             print(f"using {video_path} for video adaptation training")

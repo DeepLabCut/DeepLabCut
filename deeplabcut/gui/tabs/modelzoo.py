@@ -26,6 +26,7 @@ from deeplabcut.gui.components import (
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.utils import move_to_separate_thread
 from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
+import webbrowser
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -122,7 +123,11 @@ class ModelZoo(DefaultTab):
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
-
+           
+        self.go_to_button = QtWidgets.QPushButton("Read Documentation")
+        # go to url https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models when button is clicked
+        self.go_to_button.clicked.connect(lambda: webbrowser.open('https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models'))
+        self.main_layout.addWidget(self.go_to_button, alignment=Qt.AlignLeft)
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
