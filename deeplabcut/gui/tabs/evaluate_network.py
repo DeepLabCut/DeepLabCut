@@ -19,6 +19,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
 import deeplabcut
+from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.utils.auxiliaryfunctions import get_evaluation_folder
 from deeplabcut.gui.components import (
     BodypartListWidget,
@@ -108,9 +109,11 @@ class EvaluateNetwork(DefaultTab):
     def _generate_layout_attributes(self, layout):
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        self.shuffle_display = SelectedShuffleDisplay(self.root, row_margin=0)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
+        layout.addWidget(self.shuffle_display)
 
     def open_inferencecfg_editor(self):
         editor = ConfigEditor(self.root.inference_cfg_path)

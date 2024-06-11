@@ -268,6 +268,7 @@ class CreateTrainingDataset(DefaultTab):
                 os.path.exists(os.path.join(self.root.project_folder, file))
                 for file in filenames
             ):
+                self.root.shuffle_created.emit(self.shuffle.value())
                 msg = _create_message_box(
                     "The training dataset is successfully created.",
                     "Use the function 'train_network' to start training. Happy training!",

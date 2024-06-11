@@ -76,6 +76,7 @@ class MainWindow(QMainWindow):
     video_files_ = QtCore.Signal(set)
     engine_change = QtCore.Signal(Engine)
     shuffle_change = QtCore.Signal(int)
+    shuffle_created = QtCore.Signal(int)
 
     def __init__(self, app):
         super(MainWindow, self).__init__()

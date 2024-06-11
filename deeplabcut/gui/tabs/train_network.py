@@ -25,6 +25,7 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -42,16 +43,22 @@ class IntTrainAttribute:
 class TrainAttributeRow:
     attributes: list[IntTrainAttribute]
     description: str | None = None
+    show_when_cfg: tuple[str, str] | None = None
 
 
 class TrainNetwork(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
-        self.root.engine_change.connect(self._on_engine_change)
+        self._shuffle: ShuffleSpinBox = ShuffleSpinBox(root=self.root, parent=self)
+        self._shuffle_display = SelectedShuffleDisplay(self.root)
+
         self._attribute_layouts: dict[Engine, QtWidgets.QWidget] = {}
-        self._shuffles: dict[Engine, ShuffleSpinBox] = {}
         self._attribute_kwargs: dict[Engine, dict] = {}
+        self._rows_with_requirements: list = []
         self._set_page()
+
+        self.root.engine_change.connect(self._on_engine_change)
+        self._shuffle_display.pose_cfg_signal.connect(self._pose_cfg_change)
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
@@ -96,30 +103,37 @@ class TrainNetwork(DefaultTab):
 
     def _generate_layout_attributes(self) -> None:
         row_margin = 25
+
+        # top layout
+        shuffle_label = QtWidgets.QLabel("Shuffle")
+        shuffle_label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+        self._shuffle.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+        self._shuffle_display.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+
+        base_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+        base_layout.addWidget(shuffle_label, 0, 0)
+        base_layout.addWidget(self._shuffle, 0, 1)
+        base_layout.addWidget(self._shuffle_display, 0, 2)
+        base_layout_widget = QtWidgets.QWidget()
+        base_layout_widget.setLayout(base_layout)
+        self.main_layout.addWidget(base_layout_widget)
+
         for engine in Engine:
             train_attributes = get_train_attributes(engine)
-            layout = _create_grid_layout(margins=(20, 0, 0, 0))
-            layout.setVerticalSpacing(0)
-
-            # Shuffle
-            shuffle_label = QtWidgets.QLabel("Shuffle")
-            self._shuffles[engine] = ShuffleSpinBox(root=self.root, parent=self)
-
-            # Add spacing
-            shuffle_label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
-            self._shuffles[engine].setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
-
-            layout.addWidget(shuffle_label, 0, 0)
-            layout.addWidget(self._shuffles[engine], 0, 1)
 
             # Other parameters
+            param_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+            param_layout.setVerticalSpacing(0)
+
             self._attribute_kwargs[engine] = {}
-            row_index = 0
+            row_index = 1
             for row in train_attributes:
+                row_elements = []
                 if row.description is not None:
                     row_label = QtWidgets.QLabel(row.description)
                     row_label.setStyleSheet("font-weight: bold")
-                    layout.addWidget(row_label, row_index, 2)
+                    row_elements.append(row_label)
+                    param_layout.addWidget(row_label, row_index, 0)
                     row_index += 1
 
                 for j, attribute in enumerate(row.attributes):
@@ -137,18 +151,27 @@ class TrainNetwork(DefaultTab):
                     label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
                     spin_box.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
 
-                    layout.addWidget(label, row_index, 2 * (j + 1))
-                    layout.addWidget(spin_box, row_index, 2 * (j + 1) + 1)
+                    row_elements.append(label)
+                    row_elements.append(spin_box)
+
+                    param_layout.addWidget(label, row_index, 2 * j)
+                    param_layout.addWidget(spin_box, row_index, 2 * j + 1)
+
+                if row.show_when_cfg is not None:
+                    self._rows_with_requirements.append(
+                        (row.show_when_cfg, row_elements)
+                    )
 
                 row_index += 1
 
             layout_widget = QtWidgets.QWidget()
-            layout_widget.setLayout(layout)
+            layout_widget.setLayout(param_layout)
             self._attribute_layouts[engine] = layout_widget
             if engine != self.root.engine:
                 layout_widget.hide()
 
             self.main_layout.addWidget(layout_widget)
+            self._pose_cfg_change(self._shuffle_display.pose_cfg)
 
     def log_attribute_change(self, attribute: IntTrainAttribute, value: int) -> None:
         self.root.logger.info(f"{attribute.label} set to {value}")
@@ -179,6 +202,20 @@ class TrainNetwork(DefaultTab):
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
+
+    @Slot(dict)
+    def _pose_cfg_change(self, pose_cfg: dict | None) -> None:
+        if pose_cfg is None:
+            return
+
+        for requirement, widgets in self._rows_with_requirements:
+            key, value = requirement
+            show = pose_cfg.get(key) == value
+            for w in widgets:
+                if show:
+                    w.show()
+                else:
+                    w.hide()
 
 
 def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
@@ -260,7 +297,8 @@ def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
                 ],
             ),
             TrainAttributeRow(
-                description="Top-down models parameters",
+                description="Detector parameters",
+                show_when_cfg=("method", "td"),
                 attributes=[
                     IntTrainAttribute(
                         label="Detector max epochs",
