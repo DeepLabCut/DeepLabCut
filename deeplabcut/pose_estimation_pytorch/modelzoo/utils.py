@@ -89,6 +89,7 @@ def get_gpu_memory_map():
     )
     gpu_memory = [int(x) for x in result.strip().split("\n")]
     gpu_memory_map = dict(zip(range(len(gpu_memory)), gpu_memory))
+
     return gpu_memory_map
 
 

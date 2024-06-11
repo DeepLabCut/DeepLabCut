@@ -45,10 +45,12 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()  # Convert ndarray to list
         return super().default(obj)
 
+
 def xywh2xyxy(bbox):
     temp_bbox = np.copy(bbox)
     temp_bbox[2:] = temp_bbox[:2] + temp_bbox[2:]
     return temp_bbox
+
 
 def optimal_match(gts_list, preds_list):
     arranged_preds_list = []
@@ -64,7 +66,8 @@ def optimal_match(gts_list, preds_list):
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
     return col_ind
-    
+
+
 def calculate_iou(box1, box2):
     # Unpack the coordinates
     x1_1, y1_1, x2_1, y2_1 = box1
@@ -142,7 +145,12 @@ def plot_cost_matrix(
 
 
 def keypoint_matching(
-        config_path, superanimal_name, model_name, device=None, train_file="train.json", pose_threshold = 0.1
+    config_path,
+    superanimal_name,
+    model_name,
+    device=None,
+    train_file="train.json",
+    pose_threshold=0.1,
 ):
 
     cfg = af.read_config(config_path)
@@ -251,10 +259,10 @@ def keypoint_matching(
     # pose inference should return meta data for pseudo labeling
     predictions = pose_runner.inference(pose_inputs)
 
-    with open(str(memory_replay_folder / 'pseudo_predictions.json'), 'w') as f:
-        
-        json.dump(pose_inputs, f, cls = NumpyEncoder)
-    
+    with open(str(memory_replay_folder / "pseudo_predictions.json"), "w") as f:
+
+        json.dump(pose_inputs, f, cls=NumpyEncoder)
+
     assert len(images) == len(predictions)
 
     imagename2prediction = {}
@@ -338,6 +346,7 @@ def keypoint_matching(
             out += f"{source}, {target}\n"
         f.write(out)
 
+
 # this is to generate a coco project as an intermediate data
 def dlc3predictions_2_annotation_from_video(
     predictions,
@@ -369,9 +378,6 @@ def dlc3predictions_2_annotation_from_video(
 
     """
 
-    print("pose threshold", pose_threshold)
-    print("bbox threshold", bbox_threshold)
-
     category_id = 1  # the default for superanimal. But it might be changed
 
     images = []
@@ -380,9 +386,11 @@ def dlc3predictions_2_annotation_from_video(
     annotation_id = 0
     image_folder = os.path.join(dest_proj_folder, "images")
 
-    print("image folder", image_folder)
     # video_to_frames function by default outputs png or jpg
     image_paths = sorted(glob.glob(os.path.join(image_folder, "*.png")))
+
+    # skipping every 4 frames should speed up and not impact the performance
+    predictions, image_paths = predictions[::10], image_paths[::10]
 
     # because inference api does not return image path. I am assuming the predictions come in an oder from the video
     assert len(image_paths) == len(
@@ -479,6 +487,7 @@ def dlc3predictions_2_annotation_from_video(
 
             annotation_id += 1
             annotations.append(anno)
+
         # this is to prevent images that do not have annotations
         if len(imageid2annotations[image_id]) > 0:
             images.append(image)
@@ -500,4 +509,3 @@ def dlc3predictions_2_annotation_from_video(
 
     with open(os.path.join(dest_proj_folder, "annotations", "train.json"), "w") as f:
         json.dump(train_obj, f, indent=4)
-        

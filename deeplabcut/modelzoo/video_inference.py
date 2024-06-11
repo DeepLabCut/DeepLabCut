@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
+import numpy as np
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
@@ -47,7 +48,7 @@ def video_inference_superanimal(
     pose_epochs: int = 4,
     max_individuals: int = 10,
     video_adapt_batch_size: int = 8,
-    device: Optional[str] = None,
+    device: Optional[str] = "auto",
     customized_pose_checkpoint: Optional[str] = None,
     customized_detector_checkpoint: Optional[str] = None,
 ):
@@ -214,6 +215,8 @@ def video_inference_superanimal(
 
     project_name, model_name = parse_project_model_name(superanimal_name)
 
+    print(f"running video inference on {videos} with {project_name}_{model_name}")
+
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
     available_architectures = json.load(
@@ -318,11 +321,16 @@ def video_inference_superanimal(
                 print(f"{image_folder} exists, skipping the frame extraction")
             else:
                 image_folder.mkdir()
+                print(
+                    f"Video frames being extracted to {image_folder} for video adaptation."
+                )
                 video_to_frames(video_path, pseudo_dataset_folder)
 
             anno_folder = pseudo_dataset_folder / "annotations"
             if anno_folder.exists():
-                print(f"{anno_folder} exists, skipping the annotation construction")
+                print(
+                    f"{anno_folder} exists, skipping the annotation construction. Delete the folder if you want to re-construct pseudo annotations"
+                )
             else:
                 anno_folder.mkdir()
 
@@ -337,6 +345,7 @@ def video_inference_superanimal(
 
                 # make sure we tune parameters inside this function such as pseudo
                 # threshold etc.
+                print(f"Constructing pseudo dataset at {pseudo_dataset_folder}")
                 dlc3predictions_2_annotation_from_video(
                     predictions,
                     pseudo_dataset_folder,
@@ -373,6 +382,28 @@ def video_inference_superanimal(
                     "existing checkpoints."
                 )
             else:
+
+                print(
+                    f"""
+Running video adaptation with following parameters: 
+(pose training) pose_epochs: {pose_epochs}
+(pose) save_epochs: 1
+detector_epochs: {detector_epochs}
+detector_save_epochs: 1
+video adaptation batch size: {video_adapt_batch_size}"""
+                )
+                with open(
+                    os.path.join(pseudo_dataset_folder, "annotations", "train.json"),
+                    "r",
+                ) as f:
+                    temp_obj = json.load(f)
+                    annotations = temp_obj["annotations"]
+                    if len(annotations) == 0:
+                        print(
+                            f"No valid predictions from {str(video_path)}. Check the quality of the video"
+                        )
+                        return
+
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
                     model_folder=model_folder,

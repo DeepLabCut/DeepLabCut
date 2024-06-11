@@ -61,6 +61,7 @@ def resolve_device(model_config: dict) -> str:
     """
     device = model_config["device"]
     supports_mps = "resnet" in model_config.get("net_type", "resnet")
+
     if device == "auto":
         if torch.cuda.is_available():
             return "cuda"
