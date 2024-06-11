@@ -19,8 +19,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import (
     BaseHead,
-    WeightConversionMixin,
     HEADS,
+    WeightConversionMixin,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
@@ -115,7 +115,9 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
             conversion: the mapping of old indices to new indices
         """
         state_dict = DeconvModule.convert_weights(
-            state_dict, f"{module_prefix}heatmap_head.", conversion,
+            state_dict,
+            f"{module_prefix}heatmap_head.",
+            conversion,
         )
 
         locref_conversion = torch.stack(
@@ -123,7 +125,9 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
             dim=1,
         ).reshape(-1)
         state_dict = DeconvModule.convert_weights(
-            state_dict, f"{module_prefix}locref_head.", locref_conversion,
+            state_dict,
+            f"{module_prefix}locref_head.",
+            locref_conversion,
         )
         return state_dict
 

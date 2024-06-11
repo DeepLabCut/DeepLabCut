@@ -83,11 +83,15 @@ def _video_inference_superanimal(
             If not specified, the device is automatically determined by the
             `select_device` function. Defaults to None, which triggers
             automatic device selection.
+
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
 
-        customized_pose_checkpoint: A customized checkpoint to replace the default superanimal pose checkpoint
-        customized_detector_checkpoint: A customized checkpoint to replace the default superanimal detector checkpoint
+        customized_pose_checkpoint: A customized checkpoint to replace the default
+            SuperAnimal pose checkpoint
+
+        customized_detector_checkpoint: A customized checkpoint to replace the default
+            SuperAnimal detector checkpoint
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video

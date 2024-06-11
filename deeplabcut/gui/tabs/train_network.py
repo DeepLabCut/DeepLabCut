@@ -266,7 +266,7 @@ def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
                         label="Detector max epochs",
                         fn_key="detector_epochs",
                         default=200,
-                        min=1,
+                        min=0,
                         max=1000,
                         tooltip="",
                     ),

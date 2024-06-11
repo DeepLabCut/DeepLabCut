@@ -152,7 +152,9 @@ class BasePoseDataset:
     def populate_generic(self):
         raise NotImplementedError("Must implement this function")
 
-    def materialize(self, proj_root, framework="coco", deepcopy=False):
+    def materialize(
+        self, proj_root, framework="coco", deepcopy=False, append_image_id=True
+    ):
         mat_func = mat_func_factory(framework)
         self.meta["mat_datasets"] = {self.meta["dataset_name"]: self}
         self.meta["imageid2datasetname"] = self.imageid2datasetname
@@ -164,6 +166,7 @@ class BasePoseDataset:
             self.generic_test_annotations,
             self.meta,
             deepcopy=deepcopy,
+            append_image_id=append_image_id,
         )
 
     def whether_anno_image_match(self, images, annotations):

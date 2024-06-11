@@ -19,7 +19,6 @@ import scipy.io as sio
 import yaml
 
 import deeplabcut.compat as compat
-from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
     create_multianimaltraining_dataset,
     format_multianimal_training_data,
@@ -30,6 +29,7 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     format_training_data as format_single_training_data,
 )
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def get_filename(filename):
@@ -348,14 +348,10 @@ def _generic2madlc(
 
     cfg = auxiliaryfunctions.read_config(config_path)
 
-    train_folder = os.path.join(
-        proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    )
+    train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
-    datafilename, metafilename = (
-        auxiliaryfunctions.GetDataandMetaDataFilenames(
-            train_folder, train_fraction, 1, cfg
-        )
+    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        train_folder, train_fraction, 1, cfg
     )
 
     modify_train_test_cfg(config_path)
@@ -579,14 +575,10 @@ def _generic2sdlc(
     config_path = os.path.join(proj_root, "config.yaml")
     cfg = auxiliaryfunctions.read_config(config_path)
 
-    train_folder = os.path.join(
-        proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg)
-    )
+    train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
-    datafilename, metafilename = (
-        auxiliaryfunctions.GetDataandMetaDataFilenames(
-            train_folder, train_fraction, 1, cfg
-        )
+    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(
+        train_folder, train_fraction, 1, cfg
     )
 
     modify_train_test_cfg(config_path)
@@ -656,6 +648,7 @@ def _generic2coco(
     meta,
     deepcopy=False,
     full_image_path=True,
+    append_image_id=True,
 ):
     """
     Take generic data and create coco structure
@@ -712,8 +705,11 @@ def _generic2coco(
             # this does not work for image file that looks like image9.5.jpg..
             pre, suffix = image_name.split(".")
 
-        dest_image_name = f"{pre}_{image_id}.{suffix}"
-
+        # not to repeatedly add image id in memory replay training
+        if append_image_id:
+            dest_image_name = f"{pre}_{image_id}.{suffix}"
+        else:
+            dest_image_name = image_name
         dest = os.path.join(proj_root, "images", dest_image_name)
 
         # now, we will also need to update the path in the config files

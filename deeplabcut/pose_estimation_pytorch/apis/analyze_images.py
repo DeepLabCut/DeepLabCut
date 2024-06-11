@@ -48,6 +48,8 @@ def superanimal_analyze_images(
     out_folder: str,
     progress_bar: bool = True,
     device: str | None = None,
+    customized_pose_checkpoint: str | None = None,
+    customized_detector_checkpoint: str | None = None,
 ):
     """
     This funciton inferences a superanimal model on a set of images and saves the results as labeled images.
@@ -74,6 +76,12 @@ def superanimal_analyze_images(
         Whether to display a progress bar when running inference.
     device: str | None
         The device to use to run image analysis.
+    customized_pose_checkpoint: str | None
+        A customized SuperAnimal pose checkpoint, as an alternative to the Hugging Face
+        model SuperAnimal models.
+    customized_detector_checkpoint: str | None
+        A customized SuperAnimal detector checkpoint, as an alternative to the Hugging
+        Face SuperAnimal models.
 
     Returns
     -------
@@ -105,6 +113,11 @@ def superanimal_analyze_images(
         detector_path,
     ) = get_config_model_paths(superanimal_name, model_name)
 
+    if customized_pose_checkpoint is not None:
+        snapshot_path = customized_pose_checkpoint
+    if customized_detector_checkpoint is not None:
+        detector_path = customized_detector_checkpoint
+
     config = {**project_config, **model_cfg}
     config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
@@ -121,9 +134,9 @@ def superanimal_analyze_images(
     )
 
     superanimal_colormaps = get_superanimal_colormaps()
-    kpts_color = superanimal_colormaps[superanimal_name]
+    colormap = superanimal_colormaps[superanimal_name]
 
-    create_labeled_images_from_predictions(predictions, out_folder, kpts_color)
+    create_labeled_images_from_predictions(predictions, out_folder, colormap)
 
     return predictions
 
@@ -321,12 +334,7 @@ def analyze_image_folder(
     }
 
 
-def create_labeled_images_from_predictions(
-    predictions,
-    out_folder,
-    cmap,
-    kpts_color,
-):
+def create_labeled_images_from_predictions(predictions, out_folder, cmap):
 
     for image_path, prediction in predictions.items():
 

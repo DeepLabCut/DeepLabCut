@@ -10,7 +10,16 @@
 #
 from __future__ import annotations
 
+import glob
+import json
+import os
+from collections import defaultdict
 from pathlib import Path
+
+import numpy as np
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial import distance
+from scipy.spatial.distance import cdist
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
@@ -21,20 +30,13 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets import (
     MultiSourceDataset,
     SingleDLCPoseDataset,
 )
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_config_model_paths,
     update_config,
 )
-import json
-import os
-from scipy.optimize import linear_sum_assignment
-from scipy.spatial import distance
-from scipy.spatial.distance import cdist
-from deeplabcut.utils.pseudo_label import xywh2xyxy, optimal_match,calculate_iou
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
-import glob
-import numpy as np
-from collections import defaultdict
+from deeplabcut.utils.pseudo_label import calculate_iou, optimal_match, xywh2xyxy
+
 
 # this is reading from a coco project
 def prepare_memory_replay_dataset(
@@ -62,7 +64,10 @@ def prepare_memory_replay_dataset(
     ) = get_config_model_paths(superanimal_name, model_name)
 
     if customized_pose_checkpoint is not None:
-        pose_model_path = customized_pose_checkpoint
+        print(
+            "memory replay fine-tuning pose checkpoint is replaced by",
+            customized_pose_checkpoint,
+        )
 
     config = {**project_config, **model_config}
     config = update_config(config, max_individuals, device)
@@ -110,10 +115,9 @@ def prepare_memory_replay_dataset(
         if annotation["image_id"] in imageids:
             imageid2annotations[image_id].append(annotation)
 
-
     # need to support more image types
     image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tiff"]
-    
+
     images_in_folder = []
     for ext in image_extensions:
         images_in_folder.extend(
@@ -199,7 +203,10 @@ def prepare_memory_replay_dataset(
                 # after the mixing, we don't care about confidence anymore
 
                 for kpt_idx in range(len(matched_gt)):
-                    if matched_gt[kpt_idx][2] < pose_threshold and matched_gt[kpt_idx][2] > 0:
+                    if (
+                        matched_gt[kpt_idx][2] < pose_threshold
+                        and matched_gt[kpt_idx][2] > 0
+                    ):
                         matched_gt[kpt_idx][2] = -1
                     elif matched_gt[kpt_idx][2] > 0:
                         matched_gt[kpt_idx][2] = 2
@@ -208,12 +215,11 @@ def prepare_memory_replay_dataset(
 
     # memory replay path
     memory_replay_train_file_path = os.path.join(
-        source_dataset_folder, "annotations", "memory_replay_train.json")
-    
+        source_dataset_folder, "annotations", "memory_replay_train.json"
+    )
+
     with open(memory_replay_train_file_path, "w") as f:
         json.dump(train_obj, f, indent=4)
-
-
 
 
 def prepare_memory_replay(
@@ -224,16 +230,11 @@ def prepare_memory_replay(
     device: str,
     max_individuals=3,
     trainingsetindex: int = 0,
-    train_file = "train.json",
-    pose_threshold = 0.1
+    train_file="train.json",
+    pose_threshold=0.1,
+    customized_pose_checkpoint=None,
 ):
     """TODO: Documentation"""
-    (
-        superanimal_model_config,
-        project_config,
-        pose_model_path,
-        detector_path,
-    ) = get_config_model_paths(superanimal_name, model_name)
 
     # in order to fill the num_bodyparts stuff
 
@@ -249,11 +250,6 @@ def prepare_memory_replay(
             str(dlc_proj_root), "temp_dataset", shuffle=shuffle
         )
 
-    superanimal_model_config = {**project_config, **superanimal_model_config}
-    superanimal_model_config = update_config(
-        superanimal_model_config, max_individuals, device
-    )
-
     dlc_proj_root = Path(dlc_proj_root)
     config_path = dlc_proj_root / "config.yaml"
 
@@ -267,7 +263,9 @@ def prepare_memory_replay(
 
     memory_replay_folder = model_folder / "memory_replay"
 
-    temp_dataset.materialize(memory_replay_folder, framework="coco")
+    temp_dataset.materialize(
+        memory_replay_folder, framework="coco", append_image_id=False
+    )
 
     original_model_config = af.read_config(
         str(model_folder / "train" / "pytorch_config.yaml")
@@ -295,15 +293,22 @@ def prepare_memory_replay(
 
     conversion_table_path = dlc_proj_root / "memory_replay" / "conversion_table.csv"
 
+    # here we project the original DLC projects to superanimal space and save them into a coco project format
     dataset.project_with_conversion_table(str(conversion_table_path))
     dataset.materialize(memory_replay_folder, deepcopy=False, framework="coco")
 
-    prepare_memory_replay_dataset(memory_replay_folder,
-                                  superanimal_name,
-                                  model_name,
-                                  max_individuals = max_individuals,
-                                  device = device,
-                                  train_file = train_file,
-                                  pose_threshold = pose_threshold
-                                  
-    )    
+    # then in this function, we do pseudo label to match prediction and gts to create memory-replay dataset that will be named memory_replay_train.json
+    memory_replay_train_file = os.path.join(
+        memory_replay_folder, "annotations", "memory_replay_train.json"
+    )
+
+    prepare_memory_replay_dataset(
+        memory_replay_folder,
+        superanimal_name,
+        model_name,
+        max_individuals=max_individuals,
+        device=device,
+        train_file=train_file,
+        pose_threshold=pose_threshold,
+        customized_pose_checkpoint=customized_pose_checkpoint,
+    )

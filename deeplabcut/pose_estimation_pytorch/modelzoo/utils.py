@@ -16,6 +16,7 @@ from pathlib import Path
 
 import torch
 from dlclibrary import download_huggingface_model
+
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
@@ -63,8 +64,9 @@ def get_config_model_paths(
             f"{project_name}_{pose_model_type}",
             target_dir=str(weight_folder),
             rename_mapping={
-                "pose_model.pth": pose_model_name, "detector.pt": detector_name
-            }
+                "pose_model.pth": pose_model_name,
+                "detector.pt": detector_name,
+            },
         )
 
     # FIXME: Needed due to changes in code - remove when new snapshots are uploaded
@@ -92,11 +94,7 @@ def get_gpu_memory_map():
 
 def select_device():
     if torch.cuda.is_available():
-        gpu_memory_map = get_gpu_memory_map()
-        selected_device = max(gpu_memory_map, key=gpu_memory_map.get)
-        print(f"Device was set to cuda:{selected_device}")
-
-        return torch.device(f"cuda:{selected_device}")
+        return torch.device(f"cuda:0")
     else:
         return torch.device("cpu")
 
@@ -118,7 +116,7 @@ def update_config(config, max_individuals, device):
         config,
         num_bodyparts=len(config["bodyparts"]),
         num_individuals=max_individuals,
-        backbone_output_channels=config["model"]["backbone_output_channels"]
+        backbone_output_channels=config["model"]["backbone_output_channels"],
     )
     config["device"] = device
     config_utils.pretty_print(config)
@@ -127,6 +125,7 @@ def update_config(config, max_individuals, device):
 
 def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> Path:
     """FIXME: A new snapshot should be uploaded and used"""
+
     def _map_model_keys(state_dict: dict) -> dict:
         updated_dict = {}
         for k, v in state_dict.items():
@@ -167,5 +166,3 @@ def get_pose_model_type(backbone: str) -> str:
         return backbone.replace("_", "")
 
     raise ValueError(f"Unknown backbone for SuperAnimal Weights")
-
-

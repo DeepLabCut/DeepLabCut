@@ -72,6 +72,7 @@ def train(
     """
     weight_init = None
     pretrained = True
+
     if weight_init_cfg := run_config["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
         pretrained = False
@@ -82,6 +83,7 @@ def train(
             weight_init=weight_init,
             pretrained=pretrained,
         )
+
     else:
         model = PoseModel.build(
             run_config["model"],
@@ -233,20 +235,23 @@ def train_network(
             backbone_name = loader.model_cfg["model"]["backbone"]["model_name"]
             model_name = modelzoo_utils.get_pose_model_type(backbone_name)
             # at some point train_network should support a different train_file passing so memory replay can also take the same train file
-            superanimal_model_config = prepare_memory_replay(
+
+            prepare_memory_replay(
                 loader.project_path,
                 shuffle,
                 weight_init.dataset,
                 model_name,
                 device,
-                train_file = "train.json",
+                train_file="train.json",
                 max_individuals=dataset_params.max_num_animals,
-                pose_threshold = pose_threshold
+                pose_threshold=pose_threshold,
+                customized_pose_checkpoint=weight_init.customized_pose_checkpoint,
             )
+
             loader = COCOLoader(
                 project_root=Path(loader.model_folder).parent / "memory_replay",
                 model_config_path=loader.model_config_path,
-                train_json_filename = "memory_replay_train.json"
+                train_json_filename="memory_replay_train.json",
             )
 
     if batch_size is not None:
@@ -280,6 +285,7 @@ def train_network(
 
     # get the pose task
     pose_task = Task(loader.model_cfg.get("method", "bu"))
+    # We should allow people to set detector epochs to 0 if it was already trained. because they will most likely tune the pose estimator
     if (
         pose_task == Task.TOP_DOWN
         and loader.model_cfg["detector"]["train_settings"]["epochs"] > 0

@@ -42,22 +42,28 @@ class WeightInitialization:
     Args:
         dataset: The dataset on which the model weights were trained. Must be one of the
             SuperAnimal weights.
-        `with_decoder`: Whether to load the decoder weights as well.
+        with_decoder: Whether to load the decoder weights as well.
         memory_replay: Only when ``with_decoder=True``. Whether to train the model with
             memory replay, so that it predicts all SuperAnimal bodyparts.
         conversion_array: The mapping from SuperAnimal to project bodyparts. Required
             when `with_decoder=True`.
-
             An array [7, 0, 1] means the project has 3 bodyparts, where the 1st bodypart
             corresponds to the 8th bodypart in the pretrained model, the 2nd to the 1st
             and the 3rd to the 2nd (as arrays are 0-indexed).
         bodyparts: Optionally, the name of each bodypart entry in the conversion array.
+        customized_pose_checkpoint: A customized SuperAnimal pose checkpoint, as an
+            alternative to the Hugging Face one
+        customized_detector_checkpoint: A customized SuperAnimal detector
+            checkpoint, as an alternative to the Hugging Face one
     """
+
     dataset: str
     with_decoder: bool = False
     memory_replay: bool = False
     conversion_array: np.ndarray | None = None
     bodyparts: list[str] | None = None
+    customized_pose_checkpoint: str | None = None
+    customized_detector_checkpoint: str | None = None
 
     def __post_init__(self):
         # check that the dataset exists; raises a ValueError if it doesn't
@@ -96,8 +102,13 @@ class WeightInitialization:
             "with_decoder": self.with_decoder,
             "memory_replay": self.memory_replay,
         }
+
         if self.conversion_array is not None:
             data["conversion_array"] = self.conversion_array.tolist()
+        if self.customized_pose_checkpoint is not None:
+            data["customized_pose_checkpoint"] = self.customized_pose_checkpoint
+        if self.customized_detector_checkpoint is not None:
+            data["customized_detector_checkpoint"] = self.customized_detector_checkpoint
 
         return data
 
@@ -105,6 +116,7 @@ class WeightInitialization:
     def from_dict(data: dict) -> "WeightInitialization":
         conversion_array = data.get("conversion_array")
         if conversion_array is not None:
+
             conversion_array = np.array(conversion_array, dtype=int)
 
         return WeightInitialization(
@@ -112,6 +124,8 @@ class WeightInitialization:
             with_decoder=data["with_decoder"],
             memory_replay=data["memory_replay"],
             conversion_array=conversion_array,
+            customized_pose_checkpoint=data.get("customized_pose_checkpoint"),
+            customized_detector_checkpoint=data.get("customized_detector_checkpoint"),
         )
 
     @staticmethod
@@ -120,6 +134,8 @@ class WeightInitialization:
         super_animal: str,
         with_decoder: bool = False,
         memory_replay: bool = False,
+        customized_pose_checkpoint: str | None = None,
+        customized_detector_checkpoint: str | None = None,
     ) -> "WeightInitialization":
         """Builds a WeightInitialization for a project
 
@@ -133,6 +149,10 @@ class WeightInitialization:
                 conversion table.
             memory_replay: Only when ``with_decoder=True``. Whether to train the model
                 with memory replay, so that it predicts all SuperAnimal bodyparts.
+            customized_pose_checkpoint: A customized SuperAnimal pose checkpoint, as an
+                alternative to the Hugging Face one
+            customized_detector_checkpoint: A customized SuperAnimal detector
+                checkpoint, as an alternative to the Hugging Face one
 
         Returns:
             The built WeightInitialization.
@@ -150,4 +170,6 @@ class WeightInitialization:
             memory_replay=memory_replay,
             conversion_array=conversion_array,
             bodyparts=bodyparts,
+            customized_pose_checkpoint=customized_pose_checkpoint,
+            customized_detector_checkpoint=customized_detector_checkpoint,
         )

@@ -170,6 +170,7 @@ class HeatmapGenerator(BaseGenerator):
                     elif keypoint[-1] == -1:
                         # full gradient masking
                         weights[b, heatmap_idx] = 0.0
+
                     elif keypoint[-1] > 0:
                         # keypoint visible
                         self.update(
