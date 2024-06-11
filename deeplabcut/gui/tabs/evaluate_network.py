@@ -18,9 +18,10 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 from pathlib import Path
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 
 import deeplabcut
+from deeplabcut.core.engine import Engine
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.components import (
     BodypartListWidget,
@@ -94,6 +95,9 @@ class EvaluateNetwork(DefaultTab):
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+        self.root.engine_change.connect(self._on_engine_change)
+        self._on_engine_change(self.root.engine)
 
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
@@ -229,3 +233,11 @@ class EvaluateNetwork(DefaultTab):
             labeled_images = [str(p) for p in image_dir.rglob("*.png")]
             if len(labeled_images) > 0:
                 _ = launch_napari(image_dir)
+
+    @Slot(Engine)
+    def _on_engine_change(self, engine: Engine) -> None:
+        if engine == Engine.PYTORCH:
+            self.opt_button.hide()
+            return
+
+        self.opt_button.show()
