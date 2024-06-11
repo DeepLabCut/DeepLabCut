@@ -99,7 +99,7 @@ def video_inference(
     video = VideoIterator(str(video_path))
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
-    print(
+    logging.info(
         f"Video metadata: \n"
         f"  n_frames:   {n_frames}\n"
         f"  fps:        {video.fps}\n"
@@ -116,12 +116,12 @@ def video_inference(
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
 
-        print("Running Detector")
+        logging.info("Running Detector")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
 
         video.set_context(bbox_predictions)
 
-    print("Running Pose Prediction")
+    logging.info("Running Pose Prediction")
     predictions = pose_runner.inference(images=tqdm(video))
 
     if with_identity:
@@ -131,8 +131,20 @@ def video_inference(
         )
         for i, p_with_id in enumerate(bodypart_predictions):
             predictions[i]["bodyparts"] = p_with_id
+
+    if len(predictions) != n_frames:
+        tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+        header = "#tips-on-video-re-encoding-and-preprocessing"
+        logging.warning(
+            f"The video metadata indicates that there {n_frames} in the video, but "
+            f"only {len(predictions)} were able to be processed. This can happen if "
+            "the video is corrupted. You can try to fix the issue by re-encoding your "
+            f"video (tips on how to do that: {tip_url}{header})"
+        )
+
     if return_video_metadata:
         return predictions, video_metadata
+
     return predictions
 
 
@@ -246,8 +258,7 @@ def analyze_videos(
         model_cfg["device"] = device
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
-    print(f"Analyzing videos with {snapshot.path}")
-
+    logging.info(f"Analyzing videos with {snapshot.path}")
     detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
@@ -261,7 +272,7 @@ def analyze_videos(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
         detector_path = detector_snapshot.path
-        print(f"  -> Using detector {detector_path}")
+        logging.info(f"  -> Using detector {detector_path}")
 
     dlc_scorer = get_scorer_name(
         cfg,
@@ -296,7 +307,7 @@ def analyze_videos(
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
         if not overwrite and output_pkl.exists():
-            print(f"Video already analyzed at {output_pkl}!")
+            logging.info(f"Video already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
             predictions = video_inference(
@@ -389,7 +400,7 @@ def create_df_from_prediction(
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
-    print(f"Saving results in {output_h5} and {output_pkl}")
+    logging.info(f"Saving results in {output_h5} and {output_pkl}")
     cols = [
         [dlc_scorer],
         list(auxiliaryfunctions.get_bodyparts(cfg)),
@@ -468,7 +479,7 @@ def _validate_destfolder(destfolder: str | None) -> None:
     if destfolder is not None and destfolder != "":
         output_folder = Path(destfolder)
         if not output_folder.exists():
-            print(f"Creating the output folder {output_folder}")
+            logging.info(f"Creating the output folder {output_folder}")
             output_folder.mkdir(parents=True)
 
         assert Path(
