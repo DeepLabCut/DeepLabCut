@@ -34,7 +34,7 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
-def launch_napari(files=None):
+def launch_napari(files=None, stack=False):
     viewer = napari.Viewer()
     # Automatically activate the napari-deeplabcut plugin
     for action in viewer.window.plugins_menu.actions():
@@ -42,7 +42,7 @@ def launch_napari(files=None):
             action.trigger()
             break
     if files is not None:
-        viewer.open(files, plugin="napari-deeplabcut")
+        viewer.open(files, plugin="napari-deeplabcut", stack=stack)
     return viewer
 
 

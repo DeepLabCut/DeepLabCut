@@ -62,4 +62,4 @@ class LabelFrames(DefaultTab):
     def check_labels(self):
         check_labels(self.root.config, visualizeindividuals=self.root.is_multianimal)
         labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
-        _ = launch_napari(labeled_images)
+        _ = launch_napari(labeled_images, stack=True)
