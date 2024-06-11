@@ -70,7 +70,7 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
     def set_edit_table_visibility(self) -> None:
-        has_conversion_tables = "SuperAnimalConversionTables" in self.root.cfg
+        has_conversion_tables = bool(self.root.cfg.get("SuperAnimalConversionTables", {}))
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
         is_finetuning = self.weight_init_selector.with_decoder
         self.mapping_button.setVisible(has_conversion_tables & is_pytorch_engine & is_finetuning)
