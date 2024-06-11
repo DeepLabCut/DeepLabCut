@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.make_labeled_video import _create_labeled_video
 from deeplabcut.utils.auxiliaryfunctions import read_config
 
+
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy types"""
 
@@ -58,7 +59,7 @@ def _video_inference_superanimal(
     dest_folder: Optional[str] = None,
     customized_pose_checkpoint: Optional[str] = None,
     customized_detector_checkpoint: Optional[str] = None,
-    customized_model_config: Optional[str] = None
+    customized_model_config: Optional[str] = None,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -100,9 +101,13 @@ def _video_inference_superanimal(
     Raises:
         Warning: If the function is called directly.
     """
-
     raise_warning_if_called_directly()
 
+    if device is None:
+        device = select_device()
+
+    pose_model_path = None
+    detector_path = None
     if customized_model_config is None:
         (
             model_config,
@@ -115,16 +120,18 @@ def _video_inference_superanimal(
         config = update_config(config, max_individuals, device)
     else:
         config = read_config(customized_model_config)
-        config['bodyparts'] = config['metadata']['bodyparts']
-        
+        config["bodyparts"] = config["metadata"]["bodyparts"]
+
+        if customized_pose_checkpoint is None:
+            raise ValueError(
+                "When specifying a `customized_model_config`, you must also specify "
+                "the `customized_pose_checkpoint` that goes with it."
+            )
+
     if customized_pose_checkpoint is not None:
         pose_model_path = customized_pose_checkpoint
     if customized_detector_checkpoint is not None:
         detector_path = customized_detector_checkpoint
-
-    if device is None:
-        device = select_device()
-
 
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["individuals"] = individuals

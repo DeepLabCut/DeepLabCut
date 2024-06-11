@@ -282,7 +282,7 @@ class CreateVideos(DefaultTab):
             failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
-        if self.plot_trajectories.checkState():
+        if self.plot_trajectories.isChecked():
             deeplabcut.plot_trajectories(
                 config=config,
                 videos=videos,

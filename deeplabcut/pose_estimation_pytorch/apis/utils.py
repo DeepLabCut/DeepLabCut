@@ -85,8 +85,19 @@ def parse_snapshot_index_for_analysis(
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
             detector_snapshot_index = cfg.get("detector_snapshotindex", -1)
-        if detector_snapshot_index is None or detector_snapshot_index == "all":
+
+        if detector_snapshot_index == "all":
+            logging.warning(
+                f"detector_snapshotindex is set to '{detector_snapshot_index}' (in the "
+                "config.yaml file or as given to `analyze_...`). Running data analysis "
+                "with all snapshots is very costly! Use 'evaluate_network' to choose "
+                "the best detector snapshot. For now, changing the detector snapshot "
+                "index to -1. To evaluate another detector snapshot, you can change "
+                "the value in the config file or call `analyze_videos` or "
+                "`analyze_images` with your desired detector snapshot index."
+            )
             detector_snapshot_index = -1
+
     else:
         detector_snapshot_index = None
 
@@ -243,7 +254,7 @@ def get_scorer_name(
 
         snapshot = get_model_snapshots(snapshot_index, train_dir, pose_task)[0]
         detector_snapshot = None
-        if pose_task == Task.TOP_DOWN:
+        if detector_index is not None and pose_task == Task.TOP_DOWN:
             detector_snapshot = get_model_snapshots(
                 detector_index, train_dir, Task.DETECT
             )[0]
@@ -404,6 +415,11 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
+        # FIXME: Cannot run detectors on MPS
+        detector_device = device
+        if device == "mps":
+            detector_device = "cpu"
+
         pose_preprocessor = build_top_down_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,
@@ -428,7 +444,7 @@ def get_inference_runners(
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
                 model=DETECTORS.build(detector_config),
-                device=device,
+                device=detector_device,
                 snapshot_path=detector_path,
                 preprocessor=build_bottom_up_preprocessor(
                     color_mode=model_config["detector"]["data"]["colormode"],

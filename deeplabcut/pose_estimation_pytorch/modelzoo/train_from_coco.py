@@ -56,7 +56,7 @@ def adaptation_train(
         ),
         model=dict(backbone=dict(freeze_bn_stats=True)),
         runner=dict(snapshots=dict(max_snapshots=5, save_epochs=1)),
-        train_settings=dict(batch_size=batch_size, epochs=4, dataloader_workers=12),
+        train_settings=dict(batch_size=batch_size, epochs=4),
     )
 
     if epochs is not None:

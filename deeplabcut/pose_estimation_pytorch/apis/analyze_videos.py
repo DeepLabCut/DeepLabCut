@@ -32,6 +32,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
     get_scorer_uid,
     list_videos_in_folder,
+    parse_snapshot_index_for_analysis,
 )
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
@@ -230,19 +231,9 @@ def analyze_videos(
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
-    if snapshot_index is None:
-        snapshot_index = cfg["snapshotindex"]
-    if snapshot_index == "all":
-        logging.warning(
-            "snapshotindex is set to 'all' (in the config.yaml file or as given to "
-            "`analyze_videos`). Running video analysis with all snapshots is very "
-            "costly! Use the function 'evaluate_network' to choose the best the "
-            "snapshot. For now, changing snapshot index to -1. To evaluate another "
-            "snapshot, you can change the value in the config file or call "
-            "`analyze_videos` with your desired snapshot index."
-        )
-        snapshot_index = -1
-    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
+    snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
+        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+    )
 
     # Get general project parameters
     bodyparts = model_cfg["metadata"]["bodyparts"]
@@ -254,11 +245,18 @@ def analyze_videos(
     if device is not None:
         model_cfg["device"] = device
 
+    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
+
     detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
-            detector_snapshot_index = -1
+            raise ValueError(
+                "Cannot run videos analysis for top-down models without a detector "
+                "snapshot! Please specify your desired detector_snapshotindex in your "
+                "project's configuration file."
+            )
+
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]

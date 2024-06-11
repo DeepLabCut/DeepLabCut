@@ -222,7 +222,6 @@ def analyze_images(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
 
-
     predictions = analyze_image_folder(
         model_cfg=model_cfg,
         images=images,

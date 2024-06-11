@@ -101,6 +101,9 @@ def train(
 
     if device is None:
         device = utils.resolve_device(run_config)
+    elif device == "auto":
+        run_config["device"] = device
+        device = utils.resolve_device(run_config)
 
     if device == "mps" and task == Task.DETECT:
         device = "cpu"  # FIXME: Cannot train detectors on MPS
