@@ -417,12 +417,15 @@ class PoseDataset(Dataset):
 
         keypoints_xy = keypoints.copy()[..., :2]
         keypoints_xy[keypoints[..., 2] <= 0] = np.nan
-        if np.sum(~np.isnan(keypoints_xy)) > 0:
-            centers[:, 0, :2] = np.nanmean(keypoints_xy, axis=1)
 
-        masked_centers = np.any(np.isnan(centers), axis=2)
-        centers[masked_centers, 2] = 0
-        centers[~masked_centers, 2] = 2
+        # only set centers for individuals where at least 1 bodypart is visible
+        vis_mask = (~np.isnan(keypoints_xy) > 0).all(axis=2).any(axis=1)
+        if np.any(vis_mask):
+            centers[vis_mask, 0, :2] = np.nanmean(keypoints_xy[vis_mask], axis=1)
+
+        masked_centers = np.any(np.isnan(centers[:, 0, :2]), axis=1)
+        centers[masked_centers, 0, 2] = 0
+        centers[~masked_centers, 0, 2] = 2
         np.nan_to_num(centers, copy=False, nan=0)
 
         return np.concatenate((keypoints, centers), axis=1)

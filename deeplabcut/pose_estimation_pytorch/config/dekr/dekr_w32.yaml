@@ -52,4 +52,14 @@ model:
         num_blocks: 2
         dilation_rate: 1
         final_conv_kernel: 1
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
+      milestones: [ 90, 120 ]
 with_center_keypoints: true
