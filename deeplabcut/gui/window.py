@@ -191,8 +191,7 @@ class MainWindow(QMainWindow):
                     "        pip install 'deeplabcut[tf]'\n"
                     "    Apple Silicon:\n"
                     "        pip install 'deeplabcut[apple_mchips]'\n\n"
-                    "Please switch back to the PyTorch engine to use DeepLabCut, or\n"
-                    "install TensorFlow."
+                    "Please switch back to the PyTorch engine to use DeepLabCut, or install TensorFlow."
                 )
 
                 msg.setWindowTitle("Info")
