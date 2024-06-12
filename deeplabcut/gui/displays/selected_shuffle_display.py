@@ -66,7 +66,22 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
         try:
             pose_cfg_path = Path(self.root.pose_cfg_path)
         except ValueError as err:
-            self._set_text_error()
+            self._set_text_error(
+                f"Failed to read shuffle {self._current_index} - check that it exists!"
+            )
+            return
+        except ModuleNotFoundError as err:
+            # Loading a TF shuffle but TF is not installed
+            self._set_text_error(
+                f"Failed to read shuffle {self._current_index} due to error `{err}`.\n"
+                "If the error is `ModuleNotFoundError: No module named 'tensorflow'`, "
+                f"this is because\nshuffle {self._current_index} uses the tensorflow "
+                " engine, but TensorFlow is not installed in your environment.\n"
+                "Ignore this error if you'll just train PyTorch models. To train "
+                "TensorFlow models, install it with \n"
+                "    Windows/Linux: pip install 'deeplabcut[tf]'\n"
+                "    Apple Silicon: pip install 'deeplabcut[apple_mchips]'"
+            )
             return
 
         if not pose_cfg_path.exists():
@@ -94,10 +109,8 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
         self._label.setStyleSheet(style)
         self._label.setText(text)
 
-    def _set_text_error(self) -> None:
-        self._label.setText(
-            f"Failed to read shuffle {self._current_index} - check that it exists!"
-        )
+    def _set_text_error(self, error: str) -> None:
+        self._label.setText(error)
         style = f"margin: 0px 0px {self._row_margin}px 0px; color: orange;"
         self._label.setStyleSheet(style)
         self.pose_cfg = None

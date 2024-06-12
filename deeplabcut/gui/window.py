@@ -177,6 +177,32 @@ class MainWindow(QMainWindow):
         if self._engine == e:
             return
 
+        if e == e.TF:
+            try:
+                import tensorflow
+            except ModuleNotFoundError as err:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setText("Cannot use the TensorFlow engine.")
+                msg.setInformativeText(
+                    f"Error `{err}`\nCannot use the TensorFlow engine as TensorFlow "
+                    "is not installed. To use it, install TensorFlow with\n"
+                    "    Windows/Linux:\n"
+                    "        pip install 'deeplabcut[tf]'\n"
+                    "    Apple Silicon:\n"
+                    "        pip install 'deeplabcut[apple_mchips]'\n\n"
+                    "Please switch back to the PyTorch engine to use DeepLabCut, or"
+                    "install TensorFlow."
+                )
+
+                msg.setWindowTitle("Info")
+                msg.setMinimumWidth(900)
+                logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+                logo = logo_dir + "/assets/logo.png"
+                msg.setWindowIcon(QIcon(logo))
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                msg.exec_()
+
         self._engine = e
         self.engine_change.emit(e)
 
