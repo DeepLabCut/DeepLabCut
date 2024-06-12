@@ -29,4 +29,4 @@ dependencies:
   - ffmpeg
   - pytables==3.8.0
   - pip:
-    - "deeplabcut[gui]"
+    - "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_docs#egg=deeplabcut[gui,modelzoo,wandb]"
