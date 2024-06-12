@@ -212,6 +212,7 @@ def calc_map_from_obj(
             oks_sigma,
             margin=margin,
             symmetric_kpts=symmetric_kpts,
+            greedy_matching=True,
         )
     return oks["mAP"]
 

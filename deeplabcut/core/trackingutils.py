@@ -11,9 +11,10 @@
 
 import abc
 import math
-import numpy as np
 import warnings
 from collections import defaultdict
+
+import numpy as np
 from filterpy.common import kinematic_kf
 from filterpy.kalman import KalmanFilter
 from matplotlib import patches
@@ -22,7 +23,6 @@ from numba.core.errors import NumbaPerformanceWarning
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import mode
 from tqdm import tqdm
-
 
 warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 

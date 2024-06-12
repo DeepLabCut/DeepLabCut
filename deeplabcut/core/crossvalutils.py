@@ -15,18 +15,18 @@ import pickle
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from tqdm import tqdm
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 from sklearn.metrics.cluster import contingency_matrix
+from tqdm import tqdm
 
 from deeplabcut.core.inferenceutils import (
+    _parse_ground_truth_data,
     Assembler,
     evaluate_assembly,
-    _parse_ground_truth_data,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -56,7 +56,9 @@ def _unsorted_unique(array):
     return np.asarray(array)[np.sort(inds)]
 
 
-def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np.ndarray:
+def find_closest_neighbors(
+    query: np.ndarray, ref: np.ndarray, k: int = 3
+) -> np.ndarray:
     """Greedy matching of predicted keypoints to ground truth keypoints
 
     Args:
