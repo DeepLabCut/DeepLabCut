@@ -813,40 +813,64 @@ def create_training_dataset(
         List of one or multiple lists containing test indexes.
 
     net_type: list, optional, default=None
-        Type of networks. Currently supported options are
-
-        * ``resnet_50``
-        * ``resnet_101``
-        * ``resnet_152``
-        * ``mobilenet_v2_1.0``
-        * ``mobilenet_v2_0.75``
-        * ``mobilenet_v2_0.5``
-        * ``mobilenet_v2_0.35``
-        * ``efficientnet-b0``
-        * ``efficientnet-b1``
-        * ``efficientnet-b2``
-        * ``efficientnet-b3``
-        * ``efficientnet-b4``
-        * ``efficientnet-b5``
-        * ``efficientnet-b6``
+        Type of networks. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
+            complete list)
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``hrnet_w18``
+                * ``hrnet_w32``
+                * ``hrnet_w48``
+                * ``dekr_w18``
+                * ``dekr_w32``
+                * ``dekr_w48``
+                * ``top_down_resnet_50``
+                * ``top_down_resnet_101``
+                * ``top_down_hrnet_w18``
+                * ``top_down_hrnet_w32``
+                * ``top_down_hrnet_w48``
+                * ``animaltokenpose_base``
 
     augmenter_type: string, optional, default=None
-        Type of augmenter. Currently supported augmenters are
-
-        * ``default``
-        * ``scalecrop``
-        * ``imgaug``
-        * ``tensorpack``
-        * ``deterministic``
+        Type of augmenter. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            PyTorch
+                * ``albumentations``
 
     posecfg_template: string, optional, default=None
+        Only for the TensorFlow engine.
         Path to a ``pose_cfg.yaml`` file to use as a template for generating the new
         one for the current iteration. Useful if you would like to start with the same
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
     superanimal_name: string, optional, default=""
-        Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+        Only for the TensorFlow engine. For the PyTorch engine, use the ``weight_init``
+        parameter.
+        Specify the superanimal name is transfer learning with superanimal is desired.
+        This makes sure the pose config template uses superanimal configs as template.
 
     weight_init: WeightInitialisation, optional, default=None
         PyTorch engine only. Specify how model weights should be initialized. The
@@ -901,6 +925,7 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
+        # FIXME(niels): this is deprecated
         supermodels = parse_available_supermodels()
         posecfg_template = os.path.join(
             dlc_root_path,

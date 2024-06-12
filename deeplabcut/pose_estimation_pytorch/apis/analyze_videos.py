@@ -156,6 +156,7 @@ def analyze_videos(
     videotype: str | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
+    save_as_csv: bool = False,
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
@@ -171,7 +172,7 @@ def analyze_videos(
 
     # TODO:
         - allow batch size greater than 1
-        - other options such as save_as_csv
+        - other options missing options such as shelve
         - pass detector path or detector runner
 
     The index of the trained network is specified by parameters in the config file
@@ -188,6 +189,7 @@ def analyze_videos(
         shuffle: An integer specifying the shuffle index of the training dataset used for
             training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
+        save_as_csv: Saves the predictions in a .csv file.
         device: the device to use for video analysis
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
@@ -347,6 +349,7 @@ def analyze_videos(
                 dlc_scorer=dlc_scorer,
                 output_path=output_path,
                 output_prefix=output_prefix,
+                save_as_csv=save_as_csv,
             )
             results.append((str(video), df))
 
@@ -406,6 +409,7 @@ def create_df_from_prediction(
     cfg: dict,
     output_path: str | Path,
     output_prefix: str | Path,
+    save_as_csv: bool = False,
 ) -> pd.DataFrame:
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
@@ -448,6 +452,8 @@ def create_df_from_prediction(
         df = df.join(df_u, how="outer")
 
     df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
+    if save_as_csv:
+        df.to_csv(output_h5.with_suffix(".csv"))
     return df
 
 
