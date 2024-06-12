@@ -399,37 +399,49 @@ def evaluate_network(
                 task=task,
             )
 
-            detector_snapshot = None
+            detector_snapshots = [None]
             if task == Task.TOP_DOWN:
                 if detector_snapshot_index is not None:
-                    detector_snapshot = get_model_snapshots(
-                        detector_snapshot_index,
-                        loader.model_folder,
-                        Task.DETECT,
-                    )[0]
-                else:
-                    logging.info(
-                        "Using GT bounding boxes to compute evaluation metrics"
+                    det_snapshots = get_model_snapshots(
+                        "all", loader.model_folder, Task.DETECT
                     )
+                    if len(det_snapshots) == 0:
+                        print(
+                            "The detector_snapshot_index was set to "
+                            f"{detector_snapshot_index} but no detector snapshots were "
+                            f"found in {loader.model_folder}. Using ground truth "
+                            "bounding boxes to compute metrics.\n"
+                            "To analyze videos with a top-down model, you'll need to "
+                            "train a detector!"
+                        )
+                    else:
+                        detector_snapshots = get_model_snapshots(
+                            detector_snapshot_index,
+                            loader.model_folder,
+                            Task.DETECT,
+                        )
+                else:
+                    print("Using GT bounding boxes to compute evaluation metrics")
 
-            for snapshot in snapshots:
-                scorer = get_scorer_name(
-                    cfg=cfg,
-                    shuffle=shuffle,
-                    train_fraction=loader.train_fraction,
-                    snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
-                    modelprefix=modelprefix,
-                )
-                evaluate_snapshot(
-                    loader=loader,
-                    cfg=cfg,
-                    scorer=scorer,
-                    snapshot=snapshot,
-                    transform=transform,
-                    plotting=plotting,
-                    show_errors=show_errors,
-                    detector_snapshot=detector_snapshot,
-                )
+            for detector_snapshot in detector_snapshots:
+                for snapshot in snapshots:
+                    scorer = get_scorer_name(
+                        cfg=cfg,
+                        shuffle=shuffle,
+                        train_fraction=loader.train_fraction,
+                        snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
+                        modelprefix=modelprefix,
+                    )
+                    evaluate_snapshot(
+                        loader=loader,
+                        cfg=cfg,
+                        scorer=scorer,
+                        snapshot=snapshot,
+                        transform=transform,
+                        plotting=plotting,
+                        show_errors=show_errors,
+                        detector_snapshot=detector_snapshot,
+                    )
 
 
 def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
@@ -462,8 +474,8 @@ def save_evaluation_results(
         pcutoff: the pcutoff used to get the evaluation results
     """
     if print_results:
-        logging.info(f"Evaluation results for {scores_path.name} (pcutoff: {pcutoff}):")
-        logging.info(df_scores.iloc[0])
+        print(f"Evaluation results for {scores_path.name} (pcutoff: {pcutoff}):")
+        print(df_scores.iloc[0])
 
     # Save scores file
     df_scores.to_csv(scores_path)
