@@ -83,7 +83,14 @@ Be sure you are in the folder that has the `.yaml` file, then run:
 Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DEEPLABCUT) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
+#### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
+```{Hint}
+:class: dropdown
+As of June 2024 we have a PyTorch Engine backend and we will be depreciating the TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you need to run `pip install deeplabcut[tf]` in order to install the correct version of TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.
+```
+
 **Great, that's it! DeepLabCut is installed!** 🎉💜
+
 
 ### Step 3: Really, that's it! Let's run DeepLabCut
 
@@ -102,7 +109,7 @@ To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). 
 
 ### PIP:
 
-- Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui,tf]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut'`.
+- Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support w/tensorflow) or without the gui: `pip install 'deeplabcut'`.
 - If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,modelzoo]'`. 
 
 ## DOCKER:
