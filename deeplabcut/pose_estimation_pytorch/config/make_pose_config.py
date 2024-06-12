@@ -114,7 +114,23 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        model_cfg = add_detector(configs_dir, model_cfg, len(individuals))
+        # FIXME(niels): Currently, the variant used is the default MobileNet. In the
+        #  future, we want users to be able to choose which detector variant they use
+        #  when creating the configuration file, instead of having to update it once
+        #  created
+        variant = None
+        if weight_init is not None:
+            # FIXME(niels): We only have fasterrcnn_resnet50_fpn_v2 SuperAnimal weights.
+            #  This should be updated once more SuperAnimal detectors are uploaded,
+            #  so that users can choose which pre-trained detector they use.
+            variant = "fasterrcnn_resnet50_fpn_v2"
+
+        model_cfg = add_detector(
+            configs_dir,
+            model_cfg,
+            len(individuals),
+            variant=variant,
+        )
 
     # add the default augmentations to the config
     aug_filename = "aug_top_down.yaml" if is_top_down else "aug_default.yaml"
@@ -291,13 +307,20 @@ def create_backbone_with_paf_model(
     return model_config
 
 
-def add_detector(configs_dir: Path, config: dict, num_individuals: int) -> dict:
+def add_detector(
+    configs_dir: Path,
+    config: dict,
+    num_individuals: int,
+    variant: str | None = None
+) -> dict:
     """Adds a detector to a model
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
         config: model configuration to update
         num_individuals: the maximum number of individuals the model should detect
+        variant: the detector variant to use (if None, uses the variant set in the
+            default detector.yaml config)
 
     Returns:
         the model configuration with an added detector config
@@ -308,6 +331,9 @@ def add_detector(configs_dir: Path, config: dict, num_individuals: int) -> dict:
         detector_config,
         num_individuals=num_individuals,
     )
+    if variant is not None:
+        detector_config["detector"]["model"]["variant"] = variant
+
     config = update_config(config, detector_config)
     return config
 
