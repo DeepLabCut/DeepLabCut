@@ -15,7 +15,7 @@ from functools import partial
 from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QPixmap, QRegularExpressionValidator
+from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
@@ -27,6 +27,8 @@ from deeplabcut.gui.components import (
     VideoSelectionWidget,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
+from deeplabcut.gui.widgets import ClickableLabel
+from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -44,6 +46,8 @@ class ModelZoo(DefaultTab):
         self._val_pattern = QRegularExpression(r"(\d{3,5},\s*)+\d{3,5}")
         self._set_page()
         self.root.engine_change.connect(self._on_engine_change)
+        self.root.engine_change.connect(self._update_available_models)
+        self._destfolder = None
 
     @property
     def files(self):
@@ -62,6 +66,9 @@ class ModelZoo(DefaultTab):
         self.run_button.clicked.connect(self.run_video_adaptation)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
+        self.home_button = QtWidgets.QPushButton("Return to Welcome page")
+        self.home_button.clicked.connect(self.root._generate_welcome_page)
+        self.main_layout.addWidget(self.home_button, alignment=Qt.AlignLeft)
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
@@ -87,9 +94,21 @@ class ModelZoo(DefaultTab):
         self.model_combo = QtWidgets.QComboBox()
         self.model_combo.setMinimumWidth(250)
 
+        loc_label = ClickableLabel("Folder to store results:", parent=self)
+        loc_label.signal.connect(self.select_folder)
+        self.loc_line = QtWidgets.QLineEdit(self.root.project_folder, self)
+        self.loc_line.setReadOnly(True)
+        action = self.loc_line.addAction(
+            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            QtWidgets.QLineEdit.TrailingPosition,
+        )
+        action.triggered.connect(self.select_folder)
+
         settings_layout.addWidget(section_title, 0, 0)
         settings_layout.addWidget(model_combo_text, 1, 0)
         settings_layout.addWidget(self.model_combo, 1, 1)
+        settings_layout.addWidget(loc_label, 2, 0)
+        settings_layout.addWidget(self.loc_line, 2, 1)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
@@ -199,6 +218,16 @@ class ModelZoo(DefaultTab):
         self.torch_widget.hide()
         self.main_layout.addWidget(self.torch_widget)
 
+    def select_folder(self):
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", self.root.project_folder
+        )
+        if not dirname:
+            return
+
+        self._destfolder = dirname
+        self.loc_line.setText(dirname)
+
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
@@ -245,6 +274,7 @@ class ModelZoo(DefaultTab):
                 videos,
                 supermodel_name,
                 videotype=videotype,
+                dest_folder=self._destfolder,
                 **kwargs,
             )
 
@@ -254,13 +284,13 @@ class ModelZoo(DefaultTab):
             self.thread.start()
             self.run_button.setEnabled(False)
             self.root._progress_bar.show()
-
         else:
             print(f"Calling video_inference_superanimal with kwargs={kwargs}")
             deeplabcut.video_inference_superanimal(
                 videos,
                 supermodel_name,
                 videotype=videotype,
+                dest_folder=self._destfolder,
                 **kwargs,
             )
 

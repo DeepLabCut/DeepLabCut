@@ -214,8 +214,14 @@ class CreateTrainingDataset(DefaultTab):
             #     augmenter_types=self.aug_type,
             # )
         else:
-            if self.data_split_selection.selected:
-                try:
+            try:
+                engine = self.root.engine
+                if engine == Engine.TF:
+                    import tensorflow
+                    # try importing TF so they can't create shuffles for it if they
+                    # don't have it installed
+
+                if self.data_split_selection.selected:
                     deeplabcut.create_training_dataset_from_existing_split(
                         self.root.config,
                         from_shuffle=self.data_split_selection.from_shuffle,
@@ -223,37 +229,54 @@ class CreateTrainingDataset(DefaultTab):
                         net_type=self.net_choice.currentText(),
                         userfeedback=not overwrite,
                         weight_init=weight_init,
-                        engine=self.root.engine,
+                        engine=engine,
                     )
-                except ValueError as err:
-                    msg = _create_message_box(
-                        f"The training dataset could not be created.",
-                        str(err),
-                    )
-                    msg.exec_()
-                    return
 
-            elif self.root.is_multianimal:
-                deeplabcut.create_multianimaltraining_dataset(
-                    self.root.config,
-                    shuffle,
-                    Shuffles=[self.shuffle.value()],
-                    net_type=self.net_choice.currentText(),
-                    userfeedback=not overwrite,
-                    weight_init=weight_init,
-                    engine=self.root.engine,
+                elif self.root.is_multianimal:
+                    deeplabcut.create_multianimaltraining_dataset(
+                        self.root.config,
+                        shuffle,
+                        Shuffles=[self.shuffle.value()],
+                        net_type=self.net_choice.currentText(),
+                        userfeedback=not overwrite,
+                        weight_init=weight_init,
+                        engine=engine,
+                    )
+                else:
+                    deeplabcut.create_training_dataset(
+                        self.root.config,
+                        shuffle,
+                        Shuffles=[self.shuffle.value()],
+                        net_type=self.net_choice.currentText(),
+                        augmenter_type=self.aug_choice.currentText(),
+                        userfeedback=not overwrite,
+                        weight_init=weight_init,
+                        engine=engine,
+                    )
+            except ValueError as err:
+                msg = _create_message_box(
+                    f"The training dataset could not be created.",
+                    str(err),
                 )
-            else:
-                deeplabcut.create_training_dataset(
-                    self.root.config,
-                    shuffle,
-                    Shuffles=[self.shuffle.value()],
-                    net_type=self.net_choice.currentText(),
-                    augmenter_type=self.aug_choice.currentText(),
-                    userfeedback=not overwrite,
-                    weight_init=weight_init,
-                    engine=self.root.engine,
+                msg.exec_()
+                return
+            except ModuleNotFoundError as err:
+                info_text = (
+                    f"Error `{err}`. If the error is `ModuleNotFoundError: No module "
+                    "named 'tensorflow'`, this is because you tried creating a "
+                    "TensorFlow shuffle, but TensorFlow is not installed in your "
+                    "environment. To create TensorFlow shuffles (and use TensorFlow "
+                    "models), install it with\n"
+                    "    Windows/Linux:\n"
+                    "      pip install 'deeplabcut[tf]'\n"
+                    "    Apple Silicon:\n"
+                    "      pip install 'deeplabcut[apple_mchips]'"
                 )
+                msg = _create_message_box(
+                    f"The training dataset could not be created.", info_text
+                )
+                msg.exec_()
+                return
 
             # Check that training data files were indeed created.
             trainingsetfolder = get_training_set_folder(self.root.cfg)

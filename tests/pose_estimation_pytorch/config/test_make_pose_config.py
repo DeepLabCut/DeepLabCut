@@ -306,7 +306,7 @@ def test_make_dlcrnet_config(
 @pytest.mark.parametrize("bodyparts", [["nose", "eyes"], ["nose", "ear", "eye"]])
 @pytest.mark.parametrize("identity", [False, True])
 @pytest.mark.parametrize("unique_bodyparts", [[], ["tail"]])
-@pytest.mark.parametrize("net_type", ["tokenpose_base"])
+@pytest.mark.parametrize("net_type", ["animaltokenpose_base"])
 def test_make_tokenpose_config(
     individuals: list[str],
     bodyparts: list[str],

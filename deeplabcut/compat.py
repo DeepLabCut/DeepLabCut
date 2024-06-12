@@ -104,33 +104,42 @@ def train_network(
         ``None``, the value from there is used, otherwise it is overwritten!
 
     saveiters: optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
+        you can use ``save_epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
         overwrite it with this hack. Don't use this regularly, just if you are too lazy
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
     maxiters: optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
+        you can use ``epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
         overwrite it with this hack. Don't use this regularly, just if you are too lazy
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
     allow_growth: bool, optional, default=True.
+        Only for the TensorFlow engine.
         For some smaller GPUs the memory issues happen. If ``True``, the memory
         allocator does not pre-allocate the entire specified GPU memory region, instead
         starting small and growing as needed.
         See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
     gputouse: optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
+        you can use ``device``).
         Natural number indicating the number of your GPU (see number in nvidia-smi).
         If you do not have a GPU put None.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     autotune: bool, optional, default=False
+        Only for the TensorFlow engine.
         Property of TensorFlow, somehow faster if ``False``
         (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317).
 
     keepdeconvweights: bool, optional, default=True
+        Only for the TensorFlow engine.
         Also restores the weights of the deconvolution layers (and the backbone) when
         training from a snapshot. Note that if you change the number of bodyparts, you
         need to set this to false for re-training.
@@ -140,9 +149,13 @@ def train_network(
         By default, the models are assumed to exist in the project folder.
 
     superanimal_name: str, optional, default =""
+        Only for the TensorFlow engine. For the PyTorch engine, you need to specify
+        this through the ``weight_init`` when creating the training dataset.
         Specified if transfer learning with superanimal is desired
 
     superanimal_transfer_learning: bool, optional, default = False.
+        Only for the TensorFlow engine. For the PyTorch engine, you need to specify
+        this through the ``weight_init`` when creating the training dataset.
         If set true, the training is transfer learning (new decoding layer). If set
         false, and superanimal_name is True, then the training is fine-tuning (reusing
         the decoding layer)
@@ -155,9 +168,12 @@ def train_network(
     torch_kwargs:
         You can add any keyword arguments for the deeplabcut.pose_estimation_pytorch
         train_network method here. These arguments are passed to the downstream method.
-        Some of the parameters that can be passed are ``epochs`` (maximum number of
-        epochs to train the network for), ``save_epochs`` (the number of epochs between
-        each snapshot saved), ``batch_size`` (the batch size to use while training).
+        Some of the parameters that can be passed are
+            * ``device`` (the CUDA device to use for training)
+            * ``epochs`` (maximum number of epochs to train the network for)
+            * ``save_epochs`` (the number of epochs between each snapshot saved)
+        `   * ``batch_size`` (the batch size to use while training).
+
         When training a top-down model, these parameters are also available for the
         detector, with the parameters ``detector_batch_size``, ``detector_epochs`` and
         ``detector_save_epochs``.
@@ -609,6 +625,8 @@ def analyze_videos(
         By default the first (note that TrainingFraction is a list in config.yaml).
 
     gputouse: int or None, optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
+        you can use ``device``).
         Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
         GPU put ``None``.
         See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
@@ -617,6 +635,7 @@ def analyze_videos(
         Saves the predictions in a .csv file.
 
     in_random_order: bool, optional (default=True)
+        Only for the TensorFlow engine.
         Whether or not to analyze videos in a random order.
         This is only relevant when specifying a video directory in `videos`.
 
@@ -626,21 +645,25 @@ def analyze_videos(
         be passed.
 
     batchsize: int or None, optional, default=None
+        Currently not supported by the PyTorch engine.
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
     cropping: list or None, optional, default=None
+        Currently not supported by the PyTorch engine.
         List of cropping coordinates as [x1, x2, y1, y2].
         Note that the same cropping parameters will then be used for all videos.
         If different video crops are desired, run ``analyze_videos`` on individual
         videos with the corresponding cropping coordinates.
 
     TFGPUinference: bool, optional, default=True
+        Only for the TensorFlow engine.
         Perform inference on GPU with TensorFlow code. Introduced in "Pretraining
         boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
         Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
         Source: https://arxiv.org/abs/1909.11229
 
     dynamic: tuple(bool, float, int) triple containing (state, detectiontreshold, margin)
+        Currently not supported by the PyTorch engine.
         If the state is true, then dynamic cropping will be performed. That means that
         if an object is detected (i.e. any body part > detectiontreshold), then object
         boundaries are computed according to the smallest/largest x position and
@@ -655,17 +678,20 @@ def analyze_videos(
         By default, the models are assumed to exist in the project folder.
 
     robust_nframes: bool, optional, default=False
+        Currently not supported by the PyTorch engine.
         Evaluate a video's number of frames in a robust manner.
         This option is slower (as the whole video is read frame-by-frame),
         but does not rely on metadata, hence its robustness against file corruption.
 
     allow_growth: bool, optional, default=False.
+        Only for the TensorFlow engine.
         For some smaller GPUs the memory issues happen. If ``True``, the memory
         allocator does not pre-allocate the entire specified GPU memory region, instead
         starting small and growing as needed.
         See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
     use_shelve: bool, optional, default=False
+        Currently not supported by the PyTorch engine.
         By default, data are dumped in a pickle file at the end of the video analysis.
         Otherwise, data are written to disk on the fly using a "shelf"; i.e., a
         pickle-based, persistent, database-like object by default, resulting in
@@ -688,6 +714,7 @@ def analyze_videos(
         rely exclusively on identity prediction.
 
     calibrate: bool, optional, default=False
+        Currently not supported by the PyTorch engine.
         If ``True``, use training data to calibrate the animal assembly procedure. This
         improves its robustness to wrong body part links, but requires very little
         missing data.
@@ -699,12 +726,17 @@ def analyze_videos(
         trained on.
 
     use_openvino: str, optional
+        Only for the TensorFlow engine.
         Use "CPU" for inference if OpenVINO is available in the Python environment.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
+
+    torch_kwargs:
+        Any extra parameters to pass to the PyTorch API, such as ``device`` which can
+        be used to specify the CUDA device to use for training.
 
     Returns
     -------
@@ -822,6 +854,7 @@ def analyze_videos(
             videotype=videotype,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
+            save_as_csv=save_as_csv,
             destfolder=destfolder,
             batchsize=batchsize,
             modelprefix=modelprefix,
@@ -1182,6 +1215,10 @@ def extract_maps(
 def visualize_scoremaps(
     image: np.ndarray, scmap: np.ndarray, engine: Engine = DEFAULT_ENGINE,
 ):
+    """
+    This function is only implemented for tensorflow models/shuffles, and will throw
+    an error if called with a PyTorch shuffle.
+    """
     if engine == Engine.TF:
         # TODO: also works for Pytorch, but should not import as then requires TF
         from deeplabcut.pose_estimation_tensorflow import visualize_scoremaps
@@ -1199,6 +1236,10 @@ def visualize_locrefs(
     zoom_width: int = 0,
     engine: Engine = DEFAULT_ENGINE,
 ):
+    """
+    This function is only implemented for tensorflow models/shuffles, and will throw
+    an error if called with a PyTorch shuffle.
+    """
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import visualize_locrefs
         return visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
@@ -1213,6 +1254,10 @@ def visualize_paf(
     colors: list | None = None,
     engine: Engine = DEFAULT_ENGINE,
 ):
+    """
+    This function is only implemented for tensorflow models/shuffles, and will throw
+    an error if called with a PyTorch shuffle.
+    """
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import visualize_paf
         return visualize_paf(image, paf, step=step, colors=colors)

@@ -120,13 +120,15 @@ def create_multianimaltraining_dataset(
     engine: Engine | None = None,
 ):
     """
-    Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
+    Creates a training dataset for multi-animal datasets. Labels from all the extracted
+    frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
+    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more
+    videos to the project.
 
     Important differences to standard:
      - stores coordinates with numdigits as many digits
-     - creates
+
     Parameter
     ----------
     config : string
@@ -139,17 +141,43 @@ def create_multianimaltraining_dataset(
         Alternatively the user can also give a list of shuffles (integers!).
 
     net_type: string
-        Type of networks. Currently resnet_50, resnet_101, and resnet_152, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
-        efficientnet-b4, efficientnet-b5, and efficientnet-b6 as well as dlcrnet_ms5 are supported (not the MobileNets!).
-        See Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+        Type of networks. The options available depend on which engine is used. See
+        Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+        Currently supported options are:
+            TensorFlow
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
+            complete list)
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``dekr_w18``
+                * ``dekr_w32``
+                * ``dekr_w48``
+                * ``top_down_resnet_50``
+                * ``top_down_resnet_101``
+                * ``top_down_hrnet_w18``
+                * ``top_down_hrnet_w32``
+                * ``top_down_hrnet_w48``
+                * ``animaltokenpose_base``
 
     numdigits: int, optional
 
     crop_size: tuple of int, optional
+        Only for the TensorFlow engine.
         Dimensions (width, height) of the crops for data augmentation.
         Default is 400x400.
 
     crop_sampling: str, optional
+        Only for the TensorFlow engine.
         Crop centers sampling method. Must be either:
         "uniform" (randomly over the image),
         "keypoints" (randomly over the annotated keypoints),
@@ -158,6 +186,7 @@ def create_multianimaltraining_dataset(
         Default is "hybrid".
 
     paf_graph: list of lists, or "config" optional (default=None)
+        Only for the TensorFlow engine.
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
         the data-driven selection procedure upon model evaluation will be skipped.
@@ -172,9 +201,11 @@ def create_multianimaltraining_dataset(
         List of one or multiple lists containing test indexes.
 
     n_edges_threshold: int, optional (default=105)
+        Only for the TensorFlow engine.
         Number of edges above which the graph is automatically pruned.
 
     paf_graph_degree: int, optional (default=6)
+        Only for the TensorFlow engine.
         Degree of paf_graph when automatically pruning it (before training).
 
     userfeedback: bool, optional, default=True

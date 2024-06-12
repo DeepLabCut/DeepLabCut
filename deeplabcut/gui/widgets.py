@@ -34,15 +34,16 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
-def launch_napari(files=None, stack=False):
+def launch_napari(files=None, plugin="napari-deeplabcut", stack=False):
     viewer = napari.Viewer()
-    # Automatically activate the napari-deeplabcut plugin
-    for action in viewer.window.plugins_menu.actions():
-        if "deeplabcut" in action.text():
-            action.trigger()
-            break
+    if plugin == "napari-deeplabcut":
+        # Automatically activate the napari-deeplabcut plugin
+        for action in viewer.window.plugins_menu.actions():
+            if "deeplabcut" in action.text():
+                action.trigger()
+                break
     if files is not None:
-        viewer.open(files, plugin="napari-deeplabcut", stack=stack)
+        viewer.open(files, plugin=plugin, stack=stack)
     return viewer
 
 
