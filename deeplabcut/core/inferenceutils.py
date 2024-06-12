@@ -12,22 +12,23 @@
 import heapq
 import itertools
 import multiprocessing
-import networkx as nx
-import numpy as np
 import operator
-import pandas as pd
 import pickle
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
-from math import sqrt, erf
+from math import erf, sqrt
+from typing import Tuple
+
+import networkx as nx
+import numpy as np
+import pandas as pd
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
-from scipy.spatial.distance import pdist, cdist
+from scipy.spatial.distance import cdist, pdist
 from scipy.special import softmax
-from scipy.stats import gaussian_kde, chi2
+from scipy.stats import chi2, gaussian_kde
 from tqdm import tqdm
-from typing import Tuple
 
 
 def _conv_square_to_condensed_indices(ind_row, ind_col, n):
@@ -408,7 +409,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length ** 2 - mu) / sigma
+        z = (link.length**2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod

@@ -24,6 +24,7 @@ class ConversionTable:
         - All SuperAnimal bodyparts must be valid (defined for the SuperAnimal model)
         - All project bodyparts must be valid (defined for the DLC project)
     """
+
     super_animal: str
     project_bodyparts: list[str]
     super_animal_bodyparts: list[str]
