@@ -65,13 +65,13 @@ def rmse_match_prediction_to_gt(
         return np.arange(num_idv)
 
     distance_matrix = np.full((len(valid_gt_indices), len(valid_pred_indices)), np.inf)
-    for g in valid_gt_indices:
-        gt_idv = gt_kpts[g]
+    for i, gt_idx in enumerate(valid_gt_indices):
+        gt_idv = gt_kpts[gt_idx]
         mask = gt_idv[:, 2] > 0
-        for p in valid_pred_indices:
-            pred_idv = pred_kpts[p]
+        for j, pred_idx in enumerate(valid_pred_indices):
+            pred_idv = pred_kpts[pred_idx]
             d = (gt_idv[mask, :2] - pred_idv[mask, :2]) ** 2
-            distance_matrix[g, p] = np.nanmean(d)
+            distance_matrix[i, j] = np.nanmean(d)
 
     _, col_ind = linear_sum_assignment(distance_matrix)  # len == len(valid_gt_indices)
 

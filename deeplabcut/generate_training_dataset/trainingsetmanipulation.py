@@ -1011,7 +1011,7 @@ def create_training_dataset(
         if engine == Engine.PYTORCH:
             if net_type.startswith("top_down_"):
                 top_down = True
-                net_type = net_type[len("top_down_"):]
+                net_type = net_type[len("top_down_") :]
 
         augmenters = compat.get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
@@ -1062,9 +1062,7 @@ def create_training_dataset(
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(
-                net_type, Path(dlcparent_path)
-            )
+            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1175,7 +1173,10 @@ def create_training_dataset(
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
                 modelfoldername = auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, engine=engine,
+                    trainFraction,
+                    shuffle,
+                    cfg,
+                    engine=engine,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
@@ -1248,8 +1249,12 @@ def create_training_dataset(
 
                 # Populate the pytorch config yaml file
                 if engine == Engine.PYTORCH:
-                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
+                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+                        make_pytorch_pose_config,
+                    )
+                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
+                        make_super_animal_finetune_config,
+                    )
 
                     pose_cfg_path = path_train_config.replace(
                         "pose_cfg.yaml", "pytorch_config.yaml"
@@ -1302,6 +1307,7 @@ def get_existing_shuffle_indices(
         the indices of existing shuffles for this iteration of the project, sorted by
         ascending index
     """
+
     def is_valid_data_stem(stem: str) -> bool:
         if len(stem) == 0:
             return False
@@ -1313,7 +1319,8 @@ def get_existing_shuffle_indices(
             return False
         train_frac, idx = info
         return (
-            train_frac.isdigit() and idx.isdigit()
+            train_frac.isdigit()
+            and idx.isdigit()
             and (train_fraction is None or int(train_frac) == int(100 * train_fraction))
         )
 
@@ -1341,9 +1348,11 @@ def get_existing_shuffle_indices(
             )
 
         shuffle_indices = [
-            idx for idx in shuffle_indices
+            idx
+            for idx in shuffle_indices
             if (
-                project / auxiliaryfunctions.get_model_folder(
+                project
+                / auxiliaryfunctions.get_model_folder(
                     trainFraction=train_fraction,
                     shuffle=idx,
                     cfg=cfg,
@@ -1652,15 +1661,24 @@ def create_training_dataset_from_existing_split(
     if shuffles is not None:
         num_copies = len(shuffles)
 
-    train_indices = [shuffle.split.train_indices for _ in range(num_copies)]
-    test_indices = [shuffle.split.test_indices for _ in range(num_copies)]
+    # pad the train and test indices with -1s so the training fraction is exact
+    train_idx = list(shuffle.split.train_indices)
+    test_idx = list(shuffle.split.test_indices)
+    n_train, n_test = len(train_idx), len(test_idx)
+
+    train_fraction = round(cfg["TrainingFraction"][from_trainsetindex], 2)
+    if round(n_train / (n_train + n_test), 2) != train_fraction:
+        train_padding, test_padding = _compute_padding(train_fraction, n_train, n_test)
+        train_idx = train_idx + (train_padding * [-1])
+        test_idx = test_idx + (test_padding * [-1])
+
     return create_training_dataset(
         config=config,
         num_shuffles=num_shuffles,
         Shuffles=shuffles,
         userfeedback=userfeedback,
-        trainIndices=train_indices,
-        testIndices=test_indices,
+        trainIndices=[train_idx for _ in range(num_copies)],
+        testIndices=[test_idx for _ in range(num_copies)],
         net_type=net_type,
         augmenter_type=augmenter_type,
         posecfg_template=posecfg_template,
@@ -1668,3 +1686,35 @@ def create_training_dataset_from_existing_split(
         weight_init=weight_init,
         engine=engine,
     )
+
+
+def _compute_padding(
+    train_fraction: float,
+    num_train: int,
+    num_test: int,
+) -> tuple[int, int]:
+    """
+    Computes the amount of padding to add to train/test indices such that
+    train_fraction = num_train / (num_train + num_test).
+
+    Returns:
+        the number of padding indices to add to the train indices
+        the number of padding indices to add to the test indices
+    """
+    if train_fraction <= 0 or train_fraction >= 1:
+        raise ValueError(
+            f"The training fraction must satisfy 0 < TrainingFraction < 1, but "
+            f"{train_fraction} was found"
+        )
+
+    base_images = 100
+    train_step = int(round(round(train_fraction, 2) * base_images))
+    test_step = base_images - train_step
+
+    tgt_train = train_step
+    tgt_test = test_step
+    while tgt_train < num_train or tgt_test < num_test:
+        tgt_train += train_step
+        tgt_test += test_step
+
+    return (tgt_train - num_train), (tgt_test - num_test)
