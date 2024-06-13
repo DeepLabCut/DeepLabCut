@@ -29,7 +29,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -46,7 +46,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -287,9 +287,9 @@
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -430,9 +430,9 @@ document.write(`
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -495,7 +495,7 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-install-deeplabcut">
 <span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Link to this heading">#</a></h1>
 <ul class="simple">
-<li><p>DeepLabCut can be run on Windows, Linux, or MacOS (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p></li>
+<li><p>DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p></li>
 <li><p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference internal" href="#system-wide-considerations-during-install"><span class="std std-ref">note below</span></a>), <strong>conda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref"><strong>Docker container</strong></span></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p></li>
 <li><p>We recommend for most users to use our supplied CONDA environment.</p></li>
 <li><p>Please note, you will get the best performance with using a GPU! Please see the section on <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support">GPU support</a> to install your GPU driver and CUDA.</p></li>
@@ -522,7 +522,7 @@ document.write(`
 <h4>💡 miniconda for Mac<a class="headerlink" href="#miniconda-for-mac" title="Link to this heading">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see code for miniconda for Mac</p>
-<p>wget <a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh">https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh</a> -O ~/miniconda.sh
+<p>wget <a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh">https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh</a> -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 source ~/miniconda/bin/activate
 conda init zsh</p>
@@ -624,7 +624,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p
 <p>*Note in a fresh ubuntu install, you will often have to run: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-dev</span></code> to install the GNU Compiler Collection and the python developing environment.</p>
 <p>Some users might want to create their own customize env. -  Here is an example.</p>
 <p>In the terminal type:</p>
-<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">DLC</span> <span class="pre">python=3.8</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">DLC</span> <span class="pre">python=3.10</span></code></p>
 <p><strong>Current version:</strong> The only thing you then need to add to the env is deeplabcut (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[tf]</span></code>) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,tf]'</span></code> which has a pyside/napari based GUI.</p>
 <p><strong>Pre-version2.3 (Dec 2022):</strong> The only thing you then need to add to the env is deeplabcut (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> which has wxPython for GUI support. For Windows and MacOS, you just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">wxPython&lt;4.1.0</span></code> but for linux you might need the specific wheel (<a class="reference external" href="https://wxpython.org/pages/downloads/index.html">https://wxpython.org/pages/downloads/index.html</a>).</p>
 <p>We have some tips for linux users here, as the latest Ubuntu doesn’t easily support a 1-click install: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html</a></p>
