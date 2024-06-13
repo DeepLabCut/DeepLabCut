@@ -118,6 +118,12 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
+        if "weight_init" in self.model_cfg["train_settings"]:
+            weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
+            if weight_init_cfg["memory_replay"]:
+                conversion_array = weight_init_cfg["conversion_array"]
+                num_bodyparts = len(conversion_array)
+
         if mode not in self._loaded_data:
             self._loaded_data[mode] = self.load_data(mode)
         data = self._loaded_data[mode]
@@ -234,9 +240,8 @@ class Loader(ABC):
         filtered_annotations = []
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
-            if (
-                task in (Task.DETECT, Task.TOP_DOWN) and
-                (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0)
+            if task in (Task.DETECT, Task.TOP_DOWN) and (
+                annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0
             ):
                 continue
             elif task != Task.DETECT and np.all(keypoints[:, :2] <= 0):

@@ -180,6 +180,7 @@ def _generic2madlc(
     meta,
     deepcopy=False,
     full_image_path=True,
+    append_image_id=True,
 ):
     """
     Within DeepLabCut, if we don't explicitly call deeplabcut.create_traindataset(), the train and test split might just be arbitrarily messed up. So here we need to calculate train and test indices to
@@ -257,7 +258,10 @@ def _generic2madlc(
         file_name = image["file_name"]
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
-        dest_image_name = f"{pre}_{image_id}.{suffix}"
+        if append_image_id == True:
+            dest_image_name = f"{pre}_{image_id}.{suffix}"
+        else:
+            dest_image_name = image_name
         # the generic data has original pointers to images in the original folders
         # Here, we have to change the image name and location of these to fit corresponding framework's convention
 
@@ -368,7 +372,10 @@ def _generic2madlc(
         video_folder = file_name.split(os.sep)[-2]
         pre, suffix = image_name.split(".")
         image_id = image["id"]
-        ret = f"{pre}_{image_id}.{suffix}"
+        if append_image_id:
+            ret = f"{pre}_{image_id}.{suffix}"
+        else:
+            ret = image_name
         parent_trace[ret] = video_folder
         return ret
 
@@ -427,6 +434,7 @@ def _generic2sdlc(
     meta,
     deepcopy=False,
     full_image_path=True,
+    append_image_id=True,
 ):
 
     assert full_image_path, "DLC wants full image path"
@@ -490,7 +498,11 @@ def _generic2sdlc(
 
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
-        dest_image_name = f"{pre}_{image_id}.{suffix}"
+
+        if append_image_id == True:
+            dest_image_name = f"{pre}_{image_id}.{suffix}"
+        else:
+            dest_image_name = image_name
         # the generic data has original pointers to images in the original folders
         # Here, we have to change the image name and location of these to fit corresponding framework's convention
 
@@ -573,6 +585,7 @@ def _generic2sdlc(
     # I could have done it in a more elegant way if I could modify part of DLC source code, but for backward compatibility reasons, overriding documentation is smarter
 
     config_path = os.path.join(proj_root, "config.yaml")
+
     cfg = auxiliaryfunctions.read_config(config_path)
 
     train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
@@ -593,7 +606,10 @@ def _generic2sdlc(
         video_folder = file_name.split(os.sep)[-2]
         pre, suffix = image_name.split(".")
         image_id = image["id"]
-        ret = f"{pre}_{image_id}.{suffix}"
+        if append_image_id:
+            ret = f"{pre}_{image_id}.{suffix}"
+        else:
+            ret = image_name
 
         parent_trace[ret] = video_folder
 
@@ -634,9 +650,7 @@ def _generic2sdlc(
 
     print(f"overwriting data file {datafilename}")
 
-    sio.savemat(
-        os.path.join(cfg["project_path"], datafilename), {"dataset": MatlabData}
-    )
+    sio.savemat(os.path.join(datafilename), {"dataset": MatlabData})
 
 
 def _generic2coco(

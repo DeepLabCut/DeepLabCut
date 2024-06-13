@@ -45,14 +45,14 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
-from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 
 def parse_snapshot_index_for_analysis(
     cfg: dict,
     model_cfg: dict,
     snapshot_index: int | str | None,
-    detector_snapshot_index: int | str | None
+    detector_snapshot_index: int | str | None,
 ) -> tuple[int, int | None]:
     """Gets the index of the snapshots to use for data analysis (e.g. video analysis)
 
@@ -105,10 +105,7 @@ def parse_snapshot_index_for_analysis(
 
 
 def return_train_network_path(
-    config: str,
-    shuffle: int = 1,
-    trainingsetindex: int = 0,
-    modelprefix: str = ""
+    config: str, shuffle: int = 1, trainingsetindex: int = 0, modelprefix: str = ""
 ) -> tuple[Path, Path, Path]:
     """
     Args:
@@ -137,7 +134,9 @@ def return_train_network_path(
 
 
 def get_model_snapshots(
-    index: int | str, model_folder: Path, task: Task,
+    index: int | str,
+    model_folder: Path,
+    task: Task,
 ) -> list[Snapshot]:
     """
     Args:
@@ -284,8 +283,12 @@ def list_videos_in_folder(
             else:
                 video_suffixes = [video_type]
 
-            video_suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
-            videos += [file for file in video_path.iterdir() if file.suffix in video_suffixes]
+            video_suffixes = [
+                s if s.startswith(".") else "." + s for s in video_suffixes
+            ]
+            videos += [
+                file for file in video_path.iterdir() if file.suffix in video_suffixes
+            ]
         else:
             assert (
                 video_path.exists()
@@ -373,7 +376,7 @@ def get_inference_runners(
     with_identity: bool = False,
     transform: A.BaseCompose | None = None,
     detector_path: str | Path | None = None,
-    detector_transform: A.BaseCompose | None = None
+    detector_transform: A.BaseCompose | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -406,7 +409,8 @@ def get_inference_runners(
     detector_runner = None
     if pose_task == Task.BOTTOM_UP:
         pose_preprocessor = build_bottom_up_preprocessor(
-            color_mode=model_config["data"]["colormode"], transform=transform,
+            color_mode=model_config["data"]["colormode"],
+            transform=transform,
         )
         pose_postprocessor = build_bottom_up_postprocessor(
             max_individuals=max_individuals,

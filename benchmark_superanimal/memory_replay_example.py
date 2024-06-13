@@ -30,6 +30,7 @@ keypoint_matching(
     model_name,
 )
 
+
 # keypoint matching creates a memory_replay folder in the root. The conversion table can be read from there
 conversion_table_path = dlc_proj_root / "memory_replay" / "conversion_table.csv"
 
@@ -58,4 +59,3 @@ deeplabcut.create_training_dataset(
 
 # passing pose_threshold controls the behavior of memory replay. We discard predictions that are lower than the threshold
 deeplabcut.train_network(config_path, shuffle=shuffle, device=device, pose_threshold = 0.1)
-

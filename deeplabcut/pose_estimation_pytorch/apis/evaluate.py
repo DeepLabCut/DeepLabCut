@@ -30,6 +30,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     compute_identity_scores,
     get_scores,
@@ -123,7 +124,15 @@ def evaluate(
         mode=mode,
         detector_runner=detector_runner,
     )
+    if "weight_init" in loader.model_cfg["train_settings"]:
+        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
+        if weight_init_cfg["memory_replay"]:
+            conversion_array = weight_init_cfg["conversion_array"]
+            for filename, pred in predictions.items():
+                pred["bodyparts"] = pred["bodyparts"][:, conversion_array]
+
     poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
+
     gt_keypoints = loader.ground_truth_keypoints(mode)
     if parameters.max_num_animals > 1:
         poses = pair_predicted_individuals_with_gt(poses, gt_keypoints)
@@ -197,6 +206,16 @@ def evaluate_snapshot(
     """
     pose_task = Task(loader.model_cfg.get("method", "bu"))
     parameters = loader.get_dataset_parameters()
+
+    if "weight_init" in loader.model_cfg["train_settings"]:
+        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
+        if weight_init_cfg["memory_replay"]:
+            conversion_array = weight_init_cfg["conversion_array"]
+            bodyparts = list(np.array(parameters.bodyparts)[conversion_array])
+            parameters = PoseDatasetParameters(
+                bodyparts, parameters.unique_bpts, parameters.individuals
+            )
+
     pcutoff = cfg.get("pcutoff")
 
     detector_path = None

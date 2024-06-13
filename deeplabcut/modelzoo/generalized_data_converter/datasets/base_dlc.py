@@ -44,7 +44,8 @@ class BaseDLCPoseDataset(BasePoseDataset):
         scorer = cfg["scorer"]
 
         datasets_folder = os.path.join(
-            self.proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg),
+            self.proj_root,
+            auxiliaryfunctions.GetTrainingSetFolder(cfg),
         )
 
         self.datasets_folder = datasets_folder
