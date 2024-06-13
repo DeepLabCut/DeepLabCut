@@ -5,7 +5,7 @@
 
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
 
-Started in 2020, expanded in 20222 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the first proper [SuperAnimal Foundation Models]() published in 2024 🔥, the Model Zoo is four things:
+Started in 2020, expanded in 2022 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the first proper [SuperAnimal Foundation Models]() published in 2024 🔥, the Model Zoo is four things:
 
 - (1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: [contrib.deeplabcut.org](https://contrib.deeplabcut.org/).
@@ -100,7 +100,7 @@ Specifically:
 * `superanimal_topviewmouse_x` uses 27 keypoints
 
 ```python
-superanimal_name = "ssuperanimal_topviewmouse_hrnetw32"
+superanimal_name = "superanimal_topviewmouse_hrnetw32"
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
