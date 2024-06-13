@@ -18,6 +18,9 @@ examples/.DS_Store
 *.ckpt
 snapshot-*
 
+# Modelzoo checkpoints
+deeplabcut/modelzoo/checkpoints/
+
 # Wandb files
 wandb/
 
