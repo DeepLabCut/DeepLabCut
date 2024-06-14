@@ -59,7 +59,13 @@
 
 # [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
-Very quick start: `pip install "deeplabcut[gui]"` that includes all functions plus GUIs, or `pip install deeplabcut` (headless version with PyTorch).
+Please click the link above for all the information you need to get started!
+
+Developers Stable Release:
+- Very quick start: `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch ).
+  
+Developers Alpha Release:
+- We also have an alpha release of PyTorch DeepLabCut available! [Please see here for instructions and information](https://github.com/DeepLabCut/DeepLabCut/blob/pytorch_docs/docs/pytorch/user_guide.md).
 * We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). Please note that currently we support Python 3.10+ (see conda files for guidance).
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
