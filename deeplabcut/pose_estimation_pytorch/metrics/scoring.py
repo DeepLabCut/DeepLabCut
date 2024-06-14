@@ -216,6 +216,7 @@ def compute_oks(
         oks_sigma,
         margin=margin,
         symmetric_kpts=symmetric_kpts,
+        greedy_matching=True,
         with_tqdm=False,
     )
 

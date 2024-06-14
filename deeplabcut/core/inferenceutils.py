@@ -1006,7 +1006,7 @@ def match_assemblies(
             matched to ground truth assemblies.
     """
     # Only consider assemblies of at least two keypoints
-    predictions = [a for a in predictions if len(a) > 1]  # TODO: SHOULD WE????
+    predictions = [a for a in predictions if len(a) > 1]
     ground_truth = [a for a in ground_truth if len(a) > 1]
     num_ground_truth = len(ground_truth)
 

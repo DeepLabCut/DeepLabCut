@@ -59,8 +59,8 @@ def bbox_from_keypoints(
         keypoints = np.expand_dims(keypoints, axis=0)
 
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
-    bboxes[:, :2] = np.floor(np.nanmin(keypoints[..., :2], axis=1)) - margin  # X1, Y1
-    bboxes[:, 2:4] = np.ceil(np.nanmax(keypoints[..., :2], axis=1)) + margin  # X2, Y2
+    bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
+    bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
     bboxes = np.clip(
         bboxes,
         a_min=[0, 0, 0, 0],
