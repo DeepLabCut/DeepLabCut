@@ -19,6 +19,16 @@ that will be created will be a PyTorch model (see
 to learn more about training PyTorch models. To train Tensorflow models again, you can
 set `engine: tensorflow`.
 
+### Installation
+
+During the alpha phase, you can use the `yaml` we provide, or create a new `env`. 
+- If you are a beginner user, [please see these docs!](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html)
+- If you are an advanced user, here is a quick start. [“Install PyTorch”](https://pytorch.org/get-started/locally/), then:
+```
+conda install -c conda-forge pytables==3.8.0
+pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
+```
+
 ### Using the GUI
 
 You can use the GUI to train DeepLabCut projects. However, you cannot switch between 
