@@ -182,6 +182,9 @@
 <li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
 
 
+<li class="toctree-l1"><a class="reference internal" href="course.html">DeepLabCut Self-paced Course</a></li>
+
+
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
@@ -199,13 +202,27 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="napari_GUI.html">napari labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
 <ul class="nav bd-sidenav">
@@ -222,7 +239,7 @@
 <li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
 
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
@@ -240,14 +257,6 @@
 
 
 <li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Beginner's Guide to DeepLabCut in the GUI</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="beginners-guide.html">Using DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="manage-project.html">Managing Your DeepLabCut Project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="labelling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Training-Evaluation.html">Training and Evaluation in the GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="video-analysis.html">Video Analysis with DeepLabCut</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
 <ul class="nav bd-sidenav">
@@ -479,7 +488,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="d-deeplabcut">
 <span id="d-overview"></span><h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Link to this heading">#</a></h1>
-<p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
+<p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 <section id="attention-our-code-base-in-this-repo-assumes-you">
 <h2><strong>ATTENTION: Our code base in this repo assumes you:</strong><a class="headerlink" href="#attention-our-code-base-in-this-repo-assumes-you" title="Link to this heading">#</a></h2>

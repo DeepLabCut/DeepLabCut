@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Publishing Notebooks into the Main DLC Cookbook &#8212; DeepLabCut</title>
+    <title>DeepLabCut 3.0 - Pytorch User Guide &#8212; DeepLabCut</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/pytorch/user_guide';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="DeepLabCut benchmark" href="../benchmark.html" />
-    <link rel="prev" title="The pose_cfg.yaml Guideline Handbook" href="pose_cfg_file_breakdown.html" />
+    <link rel="next" title="The PyTorch Configuration file" href="pytorch_config.html" />
+    <link rel="prev" title="napari labeling GUI" href="../gui/napari_GUI.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -189,7 +189,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
@@ -206,10 +206,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../gui/napari_GUI.html">napari labeling GUI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -226,7 +226,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="TechHardware.html">Technical (Hardware) Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
@@ -235,28 +235,28 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Model Zoo</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
 
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook (detailed helper guides)</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
 
 
-<li class="toctree-l1"><a class="reference internal" href="pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
 
 
 
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
 <ul class="nav bd-sidenav">
@@ -338,7 +338,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/publishing_notebooks_into_the_DLC_main_cookbook.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/pytorch/user_guide.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -368,7 +368,7 @@
       
       
       
-      <li><a href="../../_sources/docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook.md" target="_blank"
+      <li><a href="../../_sources/docs/pytorch/user_guide.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -452,7 +452,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Publishing Notebooks into the Main DLC Cookbook</h1>
+    <h1>DeepLabCut 3.0 - Pytorch User Guide</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -462,15 +462,20 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-recipe-guide-to-contributing-to-the-dlc-cookbook">Your Recipe Guide to Contributing to the DLC Cookbook</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preliminary-checks">Preliminary Checks</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-existing-recipes-or-tutorials">Check Existing Recipes or Tutorials</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-3-0">Using DeepLabCut 3.0</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gui">Using the GUI</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-a-recipe">Structure of a Recipe</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-up">Wrap-Up 🎉</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-changes">Major changes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-iterations-to-epochs">From iterations to epochs</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-shuffles-and-model-configuration">Creating Shuffles and Model Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-state-and-road-map">Development State and Road Map 🚧</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -482,176 +487,161 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="publishing-notebooks-into-the-main-dlc-cookbook">
-<h1>Publishing Notebooks into the Main DLC Cookbook<a class="headerlink" href="#publishing-notebooks-into-the-main-dlc-cookbook" title="Link to this heading">#</a></h1>
-<section id="your-recipe-guide-to-contributing-to-the-dlc-cookbook">
-<h2>Your Recipe Guide to Contributing to the DLC Cookbook<a class="headerlink" href="#your-recipe-guide-to-contributing-to-the-dlc-cookbook" title="Link to this heading">#</a></h2>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-3-0-pytorch-user-guide">
+<span id="dlc3-user-guide"></span><h1>DeepLabCut 3.0 - Pytorch User Guide<a class="headerlink" href="#deeplabcut-3-0-pytorch-user-guide" title="Link to this heading">#</a></h1>
+<section id="using-deeplabcut-3-0">
+<h2>Using DeepLabCut 3.0<a class="headerlink" href="#using-deeplabcut-3-0" title="Link to this heading">#</a></h2>
+<p><strong>DeepLabCut 3.0 keeps the same high-level API that you know, but has a full new PyTorch backend.
+Moreover, it is a rewrite that more developer friendly, more powerful, and built for modern deep
+learning-based computer vision applications.</strong></p>
+<p><strong>NOTE</strong>🔥: We suggest that if you’re just starting with DeepLabCut you start with the PyTorch backend.
+You will easily know which “engine” you are using by looking at the main <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, or top right corner in the GUI.
+If you have DeepLabCut projects in TensorFlow, we’ve got you covered too: you can seamlessly switch to train your already labeled data
+by simply switching the engine (and thereby also compare performance). In short, expect a boost 🔥.</p>
+<p>In short, PyTorch models can be trained in any DeepLabCut project. If you have a project already made,  simply add a new key to your
+project <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file specifying <code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">pytorch</span></code>. Then any new training dataset
+that will be created will be a PyTorch model (see
+<a class="reference internal" href="#Creating-Shuffles-and-Model-Configuration"><span class="xref myst">Creating Shuffles and Model Configuration</span></a>)
+to learn more about training PyTorch models. To train Tensorflow models again, you can
+set <code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">tensorflow</span></code>.</p>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h3>
+<p>During the alpha phase, you can use the <code class="docutils literal notranslate"><span class="pre">yaml</span></code> we provide, or create a new <code class="docutils literal notranslate"><span class="pre">env</span></code>.</p>
+<ul class="simple">
+<li><p>If you are a beginner user, <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html">please see these docs!</a></p></li>
+<li><p>If you are an advanced user, here is a quick start. <a class="reference external" href="https://pytorch.org/get-started/locally/">“Install PyTorch”</a>, then:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pytables</span><span class="o">==</span><span class="mf">3.8.0</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">.</span><span class="n">git</span><span class="nd">@pytorch_dlc</span><span class="c1">#egg=deeplabcut[gui,modelzoo,wandb]</span>
+</pre></div>
+</div>
 </section>
-<section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
-<p>Hey there, DLC enthusiast! 🌟 Ready to sprinkle your magic into the main DLC cookbook? Whether you’re introducing a zesty new dish or giving an old one a twist, this guide’s got your back. We’ll walk you through how to publish a new notebook or spice up an existing one in the DLC cookbook. Let’s get cooking! 🍲📘</p>
-</section>
-<section id="preliminary-checks">
-<h2>Preliminary Checks<a class="headerlink" href="#preliminary-checks" title="Link to this heading">#</a></h2>
-<section id="check-existing-recipes-or-tutorials">
-<h3>Check Existing Recipes or Tutorials<a class="headerlink" href="#check-existing-recipes-or-tutorials" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p><strong>Search and Review</strong>: Before you start writing a new recipe, go through the existing DLC Jupyter book to ensure there isn’t a tutorial or recipe that covers the topic you have in mind.</p></li>
-<li><p><strong>Expand Existing Content</strong>: If your content is related to an existing topic, like I/O manipulations, consider expanding or refining that section instead of creating an entirely new recipe. This ensures that the Jupyter book remains concise and that related information is found in one place.</p>
-<ul>
-<li><p><strong>Locate and Review</strong>: Navigate to the particular recipe or tutorial you wish to update in the DLC Jupyter book.</p></li>
-<li><p><strong>Consider Minor vs. Major Changes</strong>: If you’re adding a new section or significantly altering the current content, it might be worth noting the changes at the beginning or end of the recipe for clarity.</p></li>
-<li><p><strong>Maintain Consistency</strong>: Ensure your updates adhere to the current style, tone, and structure of the existing content to maintain a seamless reading experience.</p></li>
-</ul>
-</li>
-</ul>
+<section id="using-the-gui">
+<h3>Using the GUI<a class="headerlink" href="#using-the-gui" title="Link to this heading">#</a></h3>
+<p>You can use the GUI to train DeepLabCut projects. However, you cannot switch between
+PyTorch and Tensorflow models while using the GUI. If you have set your engine to
+<code class="docutils literal notranslate"><span class="pre">pytorch</span></code>, then the GUI will only offer the creation of PyTorch shuffles.</p>
+<p>You can create <code class="docutils literal notranslate"><span class="pre">tensorflow</span></code> shuffles and train them again by setting the
+<code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">tensorflow</span></code> in the top right corner of the GUI.</p>
 </section>
 </section>
-<section id="structure-of-a-recipe">
-<h2>Structure of a Recipe<a class="headerlink" href="#structure-of-a-recipe" title="Link to this heading">#</a></h2>
-<p>When crafting your recipe, adhere to the following structure:</p>
+<section id="major-changes">
+<h2>Major changes<a class="headerlink" href="#major-changes" title="Link to this heading">#</a></h2>
+<section id="from-iterations-to-epochs">
+<h3>From iterations to epochs<a class="headerlink" href="#from-iterations-to-epochs" title="Link to this heading">#</a></h3>
+<p>Pytorch models in DeepLabCut 3.0 are trained for a set number of <code class="docutils literal notranslate"><span class="pre">epochs</span></code>, instead of a
+maximum number of <code class="docutils literal notranslate"><span class="pre">iterations</span></code>. An epoch is a single pass through the training dataset,
+which means your model has seen each training image exactly once.</p>
 <ul class="simple">
-<li><p><strong>Introduction</strong>: Begin with an introductory paragraph that highlights the importance and relevance of the recipe. This sets the stage and gives readers context.</p></li>
-<li><p><strong>Examples/Workflow</strong>: Provide step-by-step instructions or a workflow, supported by examples. This makes it easy for readers to understand and follow along.</p></li>
-<li><p><strong>Conclusion</strong>: Conclude with a summary or highlight the key takeaways of your recipe. You can also provide references or further reading.</p></li>
+<li><p>So if you have 64 training images for your network, an epoch is 64 iterations with batch
+size 1 (or 32 iterations with batch size 2, 16 with batch size 4, etc.).</p></li>
 </ul>
-<p>Now, let’s dive into the process of contributing your content to the DLC Jupyter book.</p>
 </section>
-<section id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading">#</a></h2>
-<ol class="arabic">
-<li><p><strong>Set-up your local environment.</strong> You need <code class="docutils literal notranslate"><span class="pre">deeplabcut[docs]</span></code> installed:
-You can do this by running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="p">[</span><span class="n">docs</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-</ol>
-<p>This command installs DeepLabCut along with the dependencies required to build the documentation.</p>
-<ol class="arabic" start="2">
-<li><p><strong>Fork the DLC Repository</strong>:</p>
-<ul class="simple">
-<li><p>Go to the DeepLabCut GitHub repository: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut">DeepLabCut/DeepLabCut</a></p></li>
-<li><p>Click on the <code class="docutils literal notranslate"><span class="pre">Fork</span></code> button on the top-right corner of the page. This will create a copy of the repository in your own GitHub account.</p></li>
-</ul>
-</li>
-<li><p><strong>Clone your forked repository</strong>:</p>
-<ul class="simple">
-<li><p>Navigate to your forked repo on GitHub.</p></li>
-<li><p>Click the <code class="docutils literal notranslate"><span class="pre">Code</span></code> button and copy the URL.</p></li>
-<li><p>Clone the repository to your local machine:</p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="p">[</span><span class="n">REPO_URL</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Create a new branch</strong>:
-It’s a good practice to create a new branch for each new feature or change:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">cd</span> <span class="p">[</span><span class="n">YOUR_REPO_DIRECTORY</span><span class="p">]</span>
- <span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">my</span><span class="o">-</span><span class="n">new</span><span class="o">-</span><span class="n">notebook</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Create a new notebook</strong> or <strong>update an existing one</strong>.</p>
-<ul>
-<li><p><strong>Creating a new notebook</strong></p>
-<ul class="simple">
-<li><p><strong>Choose Your Topic Wisely:</strong> Before you start, make sure your topic fits the DLC Jupyter book’s theme and brings value to its readers. A novel topic or a unique twist on an existing topic can be particularly impactful.</p></li>
-<li><p><strong>Craft with Care:</strong> Remember, your notebook will be a reference for many. Begin with an engaging introduction, followed by well-structured content, and wrap it up with a conclusion.</p></li>
-<li><p><strong>Interactive Elements:</strong> One of the strengths of Jupyter notebooks is the ability to combine code, visuals, and narrative. Use interactive plots, widgets, or any other tools that enhance the content and make it engaging.</p></li>
-<li><p><strong>Save Regularly:</strong> Jupyter auto-saves your work, but it’s a good habit to manually save your notebook frequently, especially after making significant changes.</p></li>
-<li><p><strong>Naming Convention:</strong> Name your notebook in a way that reflects its content and is consistent with other notebook titles in the DLC Jupyter book. This makes it easier for readers to understand the topic at a glance.</p></li>
-</ul>
-</li>
-<li><p><strong>Updating an existing notebook</strong></p>
-<ul>
-<li><p>Navigate to the location of the existing recipe within the directory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">YOUR_REPO_DIRECTORY</span><span class="p">]</span><span class="o">/</span><span class="n">docs</span><span class="o">/</span><span class="n">recipes</span><span class="o">/</span>
-</pre></div>
-</div>
-</li>
-<li><p>Open the corresponding Jupyter notebook (.ipynb file) you wish to update.</p></li>
-<li><p>Make the necessary changes or additions to the content.</p></li>
-<li><p>Save the notebook once your updates are finalized.</p></li>
-<li><p>Proceed to <strong>Step 6</strong> <em>(Proofreading)</em> and <strong>9</strong> <em>(Testing the documentation)</em> (skip Steps 7 and 8).</p></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>Proofread:</strong> Double check for spelling and grammatical errors by using Jupyter notebook’s spellcheck extension called <code class="docutils literal notranslate"><span class="pre">spellchecker</span></code> (or your preferred spell-checker).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">nbextension</span> <span class="n">enable</span> <span class="n">spellchecker</span><span class="o">/</span><span class="n">main</span>
-</pre></div>
-</div>
-<p>Once installed, restart your notebook, and when you load your notebook again, you will see the incorrectly spelled words highlighted in red.</p>
-</li>
-<li><p><strong>Add your notebook</strong> to the recipe directory at <code class="docutils literal notranslate"><span class="pre">[YOUR_REPO_DIRECTORY]/docs/recipes/</span></code></p>
-<ul class="simple">
-<li><p>Navigate to the appropriate directory where the Jupyter notebooks are stored for the Jupyter book.</p></li>
-<li><p>Add your Jupyter notebook (.ipynb file) to this directory.</p></li>
-</ul>
-<p>To copy via terminal:</p>
-<ul>
-<li><p>Unix-based OS users</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="p">[</span><span class="n">YOUR_NOTEBOOK_FILENAME</span><span class="p">]</span><span class="o">.</span><span class="n">ipynb</span> <span class="p">[</span><span class="n">YOUR_REPO_DIRECTORY</span><span class="p">]</span><span class="o">/</span><span class="n">docs</span><span class="o">/</span><span class="n">recipes</span>
-</pre></div>
-</div>
-</li>
-<li><p>WinOS users:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">copy</span> <span class="n">new_recipe</span><span class="o">.</span><span class="n">ipynb</span> <span class="p">[</span><span class="n">YOUR_REPO_DIRECTORY</span><span class="p">]</span>\<span class="n">docs</span>\<span class="n">recipes</span>
-
-</pre></div>
-</div>
-</li>
-</ul>
-</li>
-<li><p><strong>Update <code class="docutils literal notranslate"><span class="pre">[YOUR_REPO_DIRECTORY]/_toc.yml</span></code></strong> by adding under the <em>Tutorials &amp; Cookbook</em> section a <strong>new line</strong> containing the path to your notebook. This creates a link to your notebook on the main DLC book sidebar.</p>
-<ul>
-<li><p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">file</span><span class="p">:</span> <span class="n">docs</span><span class="o">/</span><span class="n">recipes</span><span class="o">/</span><span class="p">[</span><span class="n">YOUR_NOTEBOOK_FILENAME</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</li>
-<li><p><strong>Test the documentation:</strong></p>
-<ul>
-<li><p>Build your notebook into the DLC recipe book</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">book</span> <span class="n">build</span> <span class="p">[</span><span class="n">YOUR_REPO_DIRECTORY</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once build is successful, the newly built book can be accessed at <code class="docutils literal notranslate"><span class="pre">[YOUR_REPO_DIRECTORY]/_build/html/</span></code>.</p></li>
-<li><p>Open <code class="docutils literal notranslate"><span class="pre">index.html</span></code> and check whether your notebook was rendered properly and if the links are working.</p></li>
-</ul>
-</li>
-<li><p><strong>Commit your changes:</strong>
-When everything is a-okay, commit your changes to your branch. If not, edit your file and go to back to step 1.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">add</span> <span class="p">[</span><span class="n">YOUR_NOTEBOOK_FILENAME</span><span class="p">]</span>
-<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;Added a new notebook about [YOUR_TOPIC]&quot;</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Push your branch to your fork:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">my</span><span class="o">-</span><span class="n">new</span><span class="o">-</span><span class="n">notebook</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Submit a Pull Request (PR):</strong></p>
-<ul class="simple">
-<li><p>Go to your forked repository on GitHub.</p></li>
-<li><p>You’ll likely see a message prompting you to create a pull request from your recently pushed branch. Click <code class="docutils literal notranslate"><span class="pre">Compare</span> <span class="pre">&amp;</span> <span class="pre">pull</span> <span class="pre">request</span></code>.</p></li>
-<li><p>Fill out the PR form with a descriptive title and comments describing your notebook. This will help the maintainers understand the context and purpose of your notebook.</p></li>
-<li><p>Click <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">pull</span> <span class="pre">request</span></code>.</p></li>
-</ul>
-</li>
-<li><p><strong>Make Necessary Changes</strong>: The DeepLabCut maintainers will then review your PR and provide feedback. If changes are required, make the necessary changes on your local branch, commit them, and push the branch again. The PR will automatically update.</p></li>
-<li><p><strong>🎉PR Approval:🎉</strong> Once your PR is approved, the maintainers will merge it into the main repository. Your notebook will then be a part of the DeepLabCut Jupyter book! Yay!</p></li>
-</ol>
-<p>Remember to always check the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/CONTRIBUTING.md">DLC CONTRIBUTING guidelines</a>.</p>
 </section>
-<section id="wrap-up">
-<h2>Wrap-Up 🎉<a class="headerlink" href="#wrap-up" title="Link to this heading">#</a></h2>
-<p>Alright! 🌟 By now, you’ve got the playbook to jazz up the DeepLabCut Jupyter book. Remember, it’s not just about cooking up new recipes but also spicing up the old ones. Dive in, have fun, and let’s make this book a flavor-packed feast for all DLC enthusiasts out there. High-five for joining the party! 🙌🎈</p>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h2>
+<section id="creating-shuffles-and-model-configuration">
+<h3>Creating Shuffles and Model Configuration<a class="headerlink" href="#creating-shuffles-and-model-configuration" title="Link to this heading">#</a></h3>
+<p>You can configure models using the <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> file, as described
+<a class="reference internal" href="pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref">here</span></a>. You can use the same methods to create new shuffles in
+DeepLabCut 3.0 as you did for Tensorflow models (<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset</span></code>
+and <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison</span></code>).</p>
+<p>More information about the different PyTorch model architectures available in DeepLabCut
+is available <a class="reference internal" href="pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref">here</span></a>. You can see a list of supported
+architectures/variants by using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deeplabcut.pose_estimation_pytorch</span> <span class="kn">import</span> <span class="n">available_models</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">available_models</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="development-state-and-road-map">
+<h3>Development State and Road Map 🚧<a class="headerlink" href="#development-state-and-road-map" title="Link to this heading">#</a></h3>
+<p>The table below describes the DeepLabCut API methods that have been implemented,
+as well as indications which options are not yet implemented, and which parameters
+are not valid for the DLC 3.0 API.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>API Method</p></th>
+<th class="head text-center"><p>Implemented</p></th>
+<th class="head"><p>Parameters not yet implemented</p></th>
+<th class="head"><p>Parameters invalid for pytorch</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train_network</span></code></p></td>
+<td class="text-center"><p>🟢</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">keepdeconvweights</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">maxiters</span></code>, <code class="docutils literal notranslate"><span class="pre">saveiters</span></code>, <code class="docutils literal notranslate"><span class="pre">allow_growth</span></code>, <code class="docutils literal notranslate"><span class="pre">autotune</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">return_train_network_path</span></code></p></td>
+<td class="text-center"><p>🟢</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code></p></td>
+<td class="text-center"><p>🟢</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">comparisonbodyparts</span></code>, <code class="docutils literal notranslate"><span class="pre">rescale</span></code>, <code class="docutils literal notranslate"><span class="pre">per_keypoint_evaluation</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">return_evaluate_network_data</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TFGPUinference</span></code>, <code class="docutils literal notranslate"><span class="pre">allow_growth</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code></p></td>
+<td class="text-center"><p>🟢</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">use_shelve</span></code>, <code class="docutils literal notranslate"><span class="pre">save_as_csv</span></code>, <code class="docutils literal notranslate"><span class="pre">in_random_order</span></code>, <code class="docutils literal notranslate"><span class="pre">batchsize</span></code>, <code class="docutils literal notranslate"><span class="pre">cropping</span></code>, <code class="docutils literal notranslate"><span class="pre">dynamic</span></code>, <code class="docutils literal notranslate"><span class="pre">robust_nframes</span></code>, <code class="docutils literal notranslate"><span class="pre">n_tracks</span></code>, <code class="docutils literal notranslate"><span class="pre">calibrate</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">create_tracking_dataset</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">analyze_time_lapse_frames</span></code></p></td>
+<td class="text-center"><p>🟠</p></td>
+<td><p>the name has changed to  <code class="docutils literal notranslate"><span class="pre">analyze_images</span></code> to better reflect what it actually does (no video needed)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code></p></td>
+<td class="text-center"><p>🟢</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">greedy</span></code>, <code class="docutils literal notranslate"><span class="pre">calibrate</span></code>, <code class="docutils literal notranslate"><span class="pre">window_size</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">extract_maps</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">visualize_scoremaps</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">visualize_locrefs</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">visualize_paf</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">extract_save_all_maps</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">export_model</span></code></p></td>
+<td class="text-center"><p>🔴</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 </section>
 </section>
 
@@ -668,7 +658,7 @@ When everything is a-okay, commit your changes to your branch. If not, edit your
         },
         kernelOptions: {
             name: "python3",
-            path: "./docs/recipes"
+            path: "./docs/pytorch"
         },
         predefinedOutput: true
     }
@@ -686,20 +676,20 @@ When everything is a-okay, commit your changes to your branch. If not, edit your
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pose_cfg_file_breakdown.html"
+       href="../gui/napari_GUI.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</p>
+        <p class="prev-next-title">napari labeling GUI</p>
       </div>
     </a>
     <a class="right-next"
-       href="../benchmark.html"
+       href="pytorch_config.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">DeepLabCut benchmark</p>
+        <p class="prev-next-title">The PyTorch Configuration file</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -719,15 +709,20 @@ When everything is a-okay, commit your changes to your branch. If not, edit your
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-recipe-guide-to-contributing-to-the-dlc-cookbook">Your Recipe Guide to Contributing to the DLC Cookbook</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preliminary-checks">Preliminary Checks</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-existing-recipes-or-tutorials">Check Existing Recipes or Tutorials</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-3-0">Using DeepLabCut 3.0</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gui">Using the GUI</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-a-recipe">Structure of a Recipe</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-up">Wrap-Up 🎉</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-changes">Major changes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-iterations-to-epochs">From iterations to epochs</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-shuffles-and-model-configuration">Creating Shuffles and Model Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-state-and-road-map">Development State and Road Map 🚧</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -6,14 +6,14 @@
 </p>
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=250w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=180w" height="150">
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=250w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=180w" height="150">
 
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=250w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=180w" height="150">
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=250w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
 
 
   
@@ -34,6 +34,7 @@
 [👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 
 
 
+![Vesion](https://img.shields.io/badge/python_version-3.10-purple)
 [![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
 [![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
@@ -58,8 +59,15 @@
 
 # [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
-Very quick start: `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
-* We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). Please note that currently we support Python 3.9 (see conda files for guidance).
+Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
+
+Developers Stable Release:
+- Very quick start: You need to have TensorFlow installed (up to v2.10 supported across platforms) `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
+  
+Developers Alpha Release:
+- We also have an alpha release of PyTorch DeepLabCut available! [Please see here for instructions and information](https://github.com/DeepLabCut/DeepLabCut/blob/pytorch_docs/docs/pytorch/user_guide.md).
+
+We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
 
@@ -209,6 +217,8 @@ SuperAnimal models are provided for research use only (non-commercial use).
 
 - For all versions, please see [here](https://github.com/DeepLabCut/DeepLabCut/releases).
 
+VERSION 3.0: A whole new experience with PyTorch🔥. While the high-level API remains the same, the backend and developer friendliness have greatly improved, along with performance gains!
+
 VERSION 2.3: Model Zoo SuperAnimals, and a whole new GUI experience.
 
 VERSION 2.2: Multi-animal pose estimation, identification, and tracking with DeepLabCut is supported (as well as single-animal projects).
@@ -220,6 +230,8 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 # News (and in the news):
 
+:purple_heart: We released a major update, moving from 2.x --> 3.x with the backend change to PyTorch
+
 :purple_heart: The DeepLabCut Model Zoo launches SuperAnimals, see more [here](http://www.mackenziemathislab.org/dlc-modelzoo/).
 
 :purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [paper, Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
@@ -228,6 +240,9 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
+
+- June 2024: Our second DLC paper ['Using DeepLabCut for 3D markerless pose estimation across species and behaviors'](https://www.nature.com/articles/s41596-019-0176-0) in Nature Protocols has surpassed 1,000 Google Scholar citations!
+- May 2024: DeepLabCut was featured in Nature: ['DeepLabCut: the motion-tracking tool that went viral'](https://www.nature.com/articles/d41586-024-01474-x)
 - January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 Google Scholar citations! 
 - December 2023: DeepLabCut hit 600,000 downloads!
 - October 2023: DeepLabCut celebrates a milestone with 4,000 🌟 in Github!

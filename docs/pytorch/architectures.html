@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to write a DLC Methods Section &#8212; DeepLabCut</title>
+    <title>DeepLabCut 3.0 - PyTorch Model Architectures &#8212; DeepLabCut</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/DLCMethods';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/pytorch/architectures';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Clustering in the napari-DeepLabCut GUI" href="ClusteringNapari.html" />
-    <link rel="prev" title="Automate training and video analysis: Batch Processing" href="BatchProcessing.html" />
+    <link rel="next" title="QUICK GUIDE to single Animal Training:" href="../quick-start/single_animal_quick_guide.html" />
+    <link rel="prev" title="The PyTorch Configuration file" href="pytorch_config.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -189,7 +189,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
@@ -206,10 +206,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../gui/napari_GUI.html">napari labeling GUI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -226,7 +226,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="TechHardware.html">Technical (Hardware) Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
@@ -235,28 +235,28 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Model Zoo</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
 
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook (detailed helper guides)</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
 
 
-<li class="toctree-l1"><a class="reference internal" href="pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
 
 
 
-<li class="toctree-l1"><a class="reference internal" href="publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmark</span></p>
 <ul class="nav bd-sidenav">
@@ -338,7 +338,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/DLCMethods.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/pytorch/architectures.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -368,7 +368,7 @@
       
       
       
-      <li><a href="../../_sources/docs/recipes/DLCMethods.md" target="_blank"
+      <li><a href="../../_sources/docs/pytorch/architectures.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -439,7 +439,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -450,11 +452,26 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>How to write a DLC Methods Section</h1>
+    <h1>DeepLabCut 3.0 - PyTorch Model Architectures</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-neural-networks">Backbones (neural networks)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-down-models">Top-Down Models</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -464,56 +481,92 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="how-to-write-a-dlc-methods-section">
-<h1>How to write a DLC Methods Section<a class="headerlink" href="#how-to-write-a-dlc-methods-section" title="Link to this heading">#</a></h1>
-<p><strong>Pose estimation using DeepLabCut</strong></p>
-<p>For body part tracking we used DeepLabCut (version 2.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, etc.)*** with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.</p>
-<p>*If any defaults were changed in <em><code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code></em>, mention them.</p>
-<p>i.e. common things one might change:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-3-0-pytorch-model-architectures">
+<span id="dlc3-architectures"></span><h1>DeepLabCut 3.0 - PyTorch Model Architectures<a class="headerlink" href="#deeplabcut-3-0-pytorch-model-architectures" title="Link to this heading">#</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>You can see a list of supported architectures/variants by using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deeplabcut.pose_estimation_pytorch</span> <span class="kn">import</span> <span class="n">available_models</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">available_models</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="backbones-neural-networks">
+<h2>Backbones (neural networks)<a class="headerlink" href="#backbones-neural-networks" title="Link to this heading">#</a></h2>
+<p>Several  backbones are currently implemented in DeepLabCut PyTorch (more will come, and you can add more easily in our new model registry).</p>
+<p><strong>ResNets</strong></p>
 <ul class="simple">
-<li><p>the loader (options are <code class="docutils literal notranslate"><span class="pre">default</span></code>, <code class="docutils literal notranslate"><span class="pre">imgaug</span></code>, <code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>, <code class="docutils literal notranslate"><span class="pre">deterministic</span></code>).</p></li>
-<li><p>the <code class="docutils literal notranslate"><span class="pre">post_dist_threshold</span></code> (default is 17 and determines training resolution).</p></li>
-<li><p>optimizer: do you use the default <code class="docutils literal notranslate"><span class="pre">SGD</span></code> or <code class="docutils literal notranslate"><span class="pre">ADAM</span></code>?</p></li>
+<li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html">He, Kaiming, et al. “Deep residual learning for image recognition.” Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.</a> and [Insafutdinov, Eldar et al. “DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model”. European Conference on Computer Vision (ECCV) 2016.]</p></li>
+<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet_101</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_resnet_101</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_resnet_50</span></code></p></li>
 </ul>
-<p>*** here, you could add additional citations.
-If you use ResNets, consider citing Insafutdinov et al 2016 &amp; He et al 2016. If you use the MobileNetV2s consider citing Mathis et al 2021, and Sandler et al, 2018. If you use DLCRNet, please cite Lauer et al, 2021.</p>
-<blockquote>
-<div><p>Mathis, A. et al. Deeplabcut: markerless pose estimation
-of user-defined body parts with deep learning. Nature
-Neuroscience 21, 1281–1289 (2018).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Nath, T. et al. Using deeplabcut for 3d markerless pose
-estimation across species and behaviors. Nature Protocols
-14, 2152–2176 (2019).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Mathis, A. Biasi, T. et al. Pretraining boosts out-of-domain robustness for pose estimation. WACV (2021).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Lauer et al. Multi-animal pose estimation and tracking with DeepLabCut. BioRxiv (2021).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Insafutdinov, E., Pishchulin, L., Andres, B., Andriluka,
-M. &amp; Schiele, B. DeeperCut: A deeper, stronger, and
-faster multi-person pose estimation model. In European
-Conference on Computer Vision, 34–50 (Springer, 2016).</p>
-</div></blockquote>
-<blockquote>
-<div><p>Sandler, M., Howard, A., Zhu, M., Zhmoginov, A. &amp;
-Chen, L.-C. Mobilenetv2: Inverted residuals and linear
-bottlenecks. In Proceedings of the IEEE Conference
-on Computer Vision and Pattern Recognition, 4510–4520
-(2018).</p>
-</div></blockquote>
-<blockquote>
-<div><p>He, K., Zhang, X., Ren, S. &amp; Sun, J. Deep residual
-learning for image recognition. In Proceedings of the
-IEEE conference on computer vision and pattern recognition,
-770–778 (2016). URL <a class="reference external" href="https://arxiv.org/abs/">https://arxiv.org/abs/</a>
-1512.03385.</p>
-</div></blockquote>
-<p>We also have the network graphic freely available on <a class="reference external" href="http://SciDraw.io">SciDraw.io</a> if you’d like to use it! <a class="reference external" href="https://scidraw.io/drawing/290">https://scidraw.io/drawing/290</a>. If you use our DLC logo, please include the TM symbol, thank you!</p>
+<p><strong>HRNet</strong></p>
+<ul class="simple">
+<li><p>Adapted from <a class="reference external" href="https://arxiv.org/abs/1908.07919">Wang, Jingdong, et al. “Deep high-resolution representation learning for visual recognition.” IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.</a></p></li>
+<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w48</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w48</span></code></p></li>
+<li><p>Slower but typically more powerful than ResNets</p></li>
+</ul>
+<p><strong>DEKR</strong></p>
+<ul class="simple">
+<li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf">Geng, Zigang et al. “Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression.” Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.</a></p></li>
+<li><p>This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints</p></li>
+<li><p>Current variants that are implemented (from smallest to largest): <code class="docutils literal notranslate"><span class="pre">dekr_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">dekr_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">dekr_w48</span></code></p></li>
+<li><p>Note, this is a powerful multi-animal model but very heavy (slow)</p></li>
+</ul>
+<p><strong>BUTCTD</strong></p>
+<ul class="simple">
+<li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">Zhou, Stoffl, Mathis, Mathis. “Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity.” Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023</a></p></li>
+<li><p><a class="reference external" href="https://paperswithcode.com/sota/pose-estimation-on-crowdpose?p=rethinking-pose-estimation-in-crowds"><img alt="PWC" src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rethinking-pose-estimation-in-crowds/pose-estimation-on-crowdpose" /></a></p></li>
+<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">BUCTD-hrnet_w32</span></code> and <code class="docutils literal notranslate"><span class="pre">BUCTD-hrnet_w48</span></code></p></li>
+<li><p>This is a top-performing mutli-animal (and for humans, which are also animals) method that can be used with other architectures</p></li>
+</ul>
+<p><strong>DLCRNet</strong></p>
+<ul class="simple">
+<li><p>From <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer, Zhou, et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19.4 (2022): 496-504.</a></p></li>
+<li><p>This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals</p></li>
+<li><p>Variants: <code class="docutils literal notranslate"><span class="pre">dlcrnet_stride16_ms5</span></code>, <code class="docutils literal notranslate"><span class="pre">dlcrnet_stride32_ms5</span></code></p></li>
+</ul>
+<p><strong>AnimalTokenPose</strong></p>
+<ul class="simple">
+<li><p>Adapted from <a class="reference external" href="https://arxiv.org/abs/2104.03516">Li, Yanjie, et al. “Tokenpose: Learning keypoint tokens for human pose estimation.” Proceedings of the IEEE/CVF International conference on computer vision. 2021.</a> as in Ye et al. “SuperAnimal pretrained pose estimation models for behavioral analysis.” Nature Communications. 2024](<a class="reference external" href="https://arxiv.org/abs/2203.07436">https://arxiv.org/abs/2203.07436</a>)</p></li>
+<li><p>One variant is implemented as: <code class="docutils literal notranslate"><span class="pre">animal_tokenpose_base</span></code> for video inference only (we don’t support directly training this within deeplabcut)</p></li>
+</ul>
+</section>
+<section id="information-on-single-animal-models">
+<h2>Information on Single Animal Models<a class="headerlink" href="#information-on-single-animal-models" title="Link to this heading">#</a></h2>
+<p>Single-animal models are composed of a backbone (encoder) and a head (decoder)
+predicting the position of keypoints. The default head contains a single deconvolutional
+layer. To create the single animal model composed of a backbone and head, you can call
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset</span></code> with <code class="docutils literal notranslate"><span class="pre">net_type</span></code> set to the backbone name (e.g.
+<code class="docutils literal notranslate"><span class="pre">resnet_50</span></code> or <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>).</p>
+<p>If you want to add a second deconvolutional layer (which will make your model slower,
+but it might improve performance), you can simply edit your <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> file.</p>
+<p>Of course, any multi-animal model can also be used for single-animal projects!</p>
+</section>
+<section id="information-on-multi-animal-models">
+<h2>Information on Multi-Animal Models<a class="headerlink" href="#information-on-multi-animal-models" title="Link to this heading">#</a></h2>
+<section id="backbones-with-part-affinity-fields">
+<h3>Backbones with Part-Affinity Fields<a class="headerlink" href="#backbones-with-part-affinity-fields" title="Link to this heading">#</a></h3>
+<p>As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder)
+and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to
+assemble keypoints for individuals.</p>
+<p>Passing a backbone as a net type (e.g., <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>) for a multi-animal
+project will create a model consisting of a backbone and a heatmap + PAF head.</p>
+</section>
+<section id="top-down-models">
+<h3>Top-Down Models<a class="headerlink" href="#top-down-models" title="Link to this heading">#</a></h3>
+<p>Top-down pose estimation models split the task into two distinct parts: individual
+localization (through an object detector), followed by pose estimation (for each
+individual). As localization of individuals is handled by the detector, this simplifies
+the pose task to single-animal pose estimation!</p>
+<p>Hence any single-animal model can be transformed into a top-down, multi-animal model. To
+do so, simply prefix <code class="docutils literal notranslate"><span class="pre">top_down</span></code> to your single-animal model name. Currently only a
+single FasterRCNN variant is available as a detector. Other variants will be added soon!</p>
+<p>The pose model for top-down nets is simply the backbone followed by a single convolution
+for pose estimation. It’s also possible to add deconvolutional layers to top-down model
+heads.</p>
+<p>Example top-down models would be <code class="docutils literal notranslate"><span class="pre">top_down_resnet_50</span></code> and <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w32</span></code>.</p>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -529,7 +582,7 @@ IEEE conference on computer vision and pattern recognition,
         },
         kernelOptions: {
             name: "python3",
-            path: "./docs/recipes"
+            path: "./docs/pytorch"
         },
         predefinedOutput: true
     }
@@ -547,20 +600,20 @@ IEEE conference on computer vision and pattern recognition,
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="BatchProcessing.html"
+       href="pytorch_config.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Automate training and video analysis: Batch Processing</p>
+        <p class="prev-next-title">The PyTorch Configuration file</p>
       </div>
     </a>
     <a class="right-next"
-       href="ClusteringNapari.html"
+       href="../quick-start/single_animal_quick_guide.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Clustering in the napari-DeepLabCut GUI</p>
+        <p class="prev-next-title">QUICK GUIDE to single Animal Training:</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -570,6 +623,28 @@ IEEE conference on computer vision and pattern recognition,
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-neural-networks">Backbones (neural networks)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-down-models">Top-Down Models</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
