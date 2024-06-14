@@ -1,10 +1,10 @@
-# Training and Evaluation in the GUI
+# Neural Network training and evaluation in the GUI
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
-## Your Training Dataset
 
 Before training your model, the first step is to assemble your training dataset.
 
-- **Create Training Dataset:** Move to the corresponding tab and click **`Create Training Dataset`**. For starters, the default settings will do just fine. While there are more powerful models and data augmentations you might want to consider, you can trust that for most projects the defaults are an ideal place to start.
+**Create Training Dataset:** Move to the corresponding tab and click **`Create Training Dataset`**. For starters, the default settings will do just fine. While there are more powerful models and data augmentations you might want to consider, you can trust that for most projects the defaults are an ideal place to start.
 
 > 💡 **Note:** This guide assumes you have a GPU on your local machine. If you're CPU-bound and finding training challenging, consider using Google Colab. Our [Colab Guide](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb) can help you get started!
 
@@ -48,3 +48,4 @@ After training, it's time to see how well your model performs.
 
 ![Evaluation Example in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779623162-BFDAW37B9TO94EGME2O5/check-labels.png?format=500w))
 
+## Next, head over the beginner guide for [using your new neural network for video analysis](video-analysis)

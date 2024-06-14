@@ -10,7 +10,7 @@ As some users may be more comfortable working with an interactive interface, we 
 (1) Install DeepLabCut using the simple-install with Anaconda found [here!](how-to-install)*.
 Now you have DeepLabCut installed, but if you want to update it, either follow the prompt in the GUI which will ask you to upgrade when a new version is available, or just go into your env (activate DEEPLABCUT) then run:
 
-` pip install 'deeplabcut[gui,tf,modelzoo]'` *but please see [full install guide](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)!
+` pip install 'deeplabcut[gui,modelzoo]'` *but please see [full install guide](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)!
 
 
 (2) Open the terminal and run: `python -m deeplabcut`
