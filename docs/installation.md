@@ -1,7 +1,7 @@
 (how-to-install)=
 # How To Install DeepLabCut
 
-- DeepLabCut can be run on Windows, Linux, or MacOS (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
+- DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 - Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
 - We recommend for most users to use our supplied CONDA environment.
 - Please note, you will get the best performance with using a GPU! Please see the section on [GPU support](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support) to install your GPU driver and CUDA.
@@ -40,7 +40,7 @@ Download anaconda for your operating system: https://www.anaconda.com/distributi
 #### 💡 miniconda for Mac
 ````{admonition} Click the button to see code for miniconda for Mac
 :class: dropdown
-wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
+wget https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 source ~/miniconda/bin/activate
 conda init zsh
