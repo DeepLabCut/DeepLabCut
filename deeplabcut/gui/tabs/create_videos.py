@@ -134,7 +134,7 @@ class CreateVideos(DefaultTab):
 
         # Skeleton
         self.draw_skeleton_checkbox = QtWidgets.QCheckBox("Draw skeleton")
-        self.draw_skeleton_checkbox.setCheckState(Qt.Checked)
+        self.draw_skeleton_checkbox.setCheckState(Qt.Unchecked)
         self.draw_skeleton_checkbox.stateChanged.connect(self.update_draw_skeleton)
         tmp_layout.addWidget(self.draw_skeleton_checkbox)
 
