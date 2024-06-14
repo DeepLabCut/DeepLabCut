@@ -14,7 +14,7 @@ import pickle
 import pytest
 from conftest import TEST_DATA_DIR
 from copy import deepcopy
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from scipy.spatial.distance import squareform
 
 

@@ -61,6 +61,5 @@ jobs:
 
       - name: Run functional tests
         run: |
-          pip install git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
           python examples/testscript.py
           python examples/testscript_multianimal.py

@@ -856,7 +856,7 @@ def evaluate_network(
                         cfg,
                         shuffle,
                         trainFraction,
-                        trainingsiterations,
+                        trainingsiterations=trainingsiterations,
                         modelprefix=modelprefix,
                     )
                     print(

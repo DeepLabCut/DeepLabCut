@@ -11,7 +11,7 @@
 import os
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
 
@@ -54,7 +54,7 @@ def _create_grid_layout(
     alignment=None,
     spacing: int = 20,
     margins: tuple = None,
-) -> QtWidgets.QGridLayout():
+) -> QtWidgets.QGridLayout:
     layout = QtWidgets.QGridLayout()
     layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     layout.setSpacing(spacing)
@@ -190,9 +190,15 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
         self.root = root
         self.parent = parent
 
-        self.setMaximum(100)
+        self.setMaximum(10_000)
         self.setValue(self.root.shuffle_value)
         self.valueChanged.connect(self.root.update_shuffle)
+        self.root.shuffle_change.connect(self.update_shuffle)
+
+    @Slot(int)
+    def update_shuffle(self, new_shuffle: int):
+        if new_shuffle != self.value():
+            self.setValue(new_shuffle)
 
 
 class DefaultTab(QtWidgets.QWidget):

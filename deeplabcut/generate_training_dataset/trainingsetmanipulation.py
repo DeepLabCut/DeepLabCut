@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 import math
 import logging
@@ -24,7 +25,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from deeplabcut.pose_estimation_tensorflow import training
+import deeplabcut.compat as compat
+import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -32,8 +36,6 @@ from deeplabcut.utils import (
     auxfun_multianimal,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.modelzoo.utils import parse_available_supermodels
 
 
 def comparevideolistsanddatafolders(config):
@@ -771,13 +773,15 @@ def create_training_dataset(
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
-    userfeedback=False,
+    userfeedback=True,
     trainIndices=None,
     testIndices=None,
     net_type=None,
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
+    weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
 ):
     """Creates a training dataset.
 
@@ -796,7 +800,7 @@ def create_training_dataset(
     Shuffles: list[int], optional
         Alternatively the user can also give a list of shuffles.
 
-    userfeedback: bool, optional, default=False
+    userfeedback: bool, optional, default=True
         If ``False``, all requested train/test splits are created (no matter if they
         already exist). If you want to assure that previous splits etc. are not
         overwritten, set this to ``True`` and you will be asked for each split.
@@ -809,41 +813,73 @@ def create_training_dataset(
         List of one or multiple lists containing test indexes.
 
     net_type: list, optional, default=None
-        Type of networks. Currently supported options are
-
-        * ``resnet_50``
-        * ``resnet_101``
-        * ``resnet_152``
-        * ``mobilenet_v2_1.0``
-        * ``mobilenet_v2_0.75``
-        * ``mobilenet_v2_0.5``
-        * ``mobilenet_v2_0.35``
-        * ``efficientnet-b0``
-        * ``efficientnet-b1``
-        * ``efficientnet-b2``
-        * ``efficientnet-b3``
-        * ``efficientnet-b4``
-        * ``efficientnet-b5``
-        * ``efficientnet-b6``
+        Type of networks. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
+            complete list)
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``hrnet_w18``
+                * ``hrnet_w32``
+                * ``hrnet_w48``
+                * ``dekr_w18``
+                * ``dekr_w32``
+                * ``dekr_w48``
+                * ``top_down_resnet_50``
+                * ``top_down_resnet_101``
+                * ``top_down_hrnet_w18``
+                * ``top_down_hrnet_w32``
+                * ``top_down_hrnet_w48``
+                * ``animaltokenpose_base``
 
     augmenter_type: string, optional, default=None
-        Type of augmenter. Currently supported augmenters are
-
-        * ``default``
-        * ``scalecrop``
-        * ``imgaug``
-        * ``tensorpack``
-        * ``deterministic``
+        Type of augmenter. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            PyTorch
+                * ``albumentations``
 
     posecfg_template: string, optional, default=None
+        Only for the TensorFlow engine.
         Path to a ``pose_cfg.yaml`` file to use as a template for generating the new
         one for the current iteration. Useful if you would like to start with the same
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
     superanimal_name: string, optional, default=""
-        Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+        Only for the TensorFlow engine. For the PyTorch engine, use the ``weight_init``
+        parameter.
+        Specify the superanimal name is transfer learning with superanimal is desired.
+        This makes sure the pose config template uses superanimal configs as template.
 
+    weight_init: WeightInitialisation, optional, default=None
+        PyTorch engine only. Specify how model weights should be initialized. The
+        default mode uses transfer learning from ImageNet weights.
+
+    engine: Engine, optional
+        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
+        the value specified in the project configuration file. If no engine is specified
+        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
 
     Returns
     -------
@@ -889,6 +925,7 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
+        # FIXME(niels): this is deprecated
         supermodels = parse_available_supermodels()
         posecfg_template = os.path.join(
             dlc_root_path,
@@ -923,10 +960,16 @@ def create_training_dataset(
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
+            userfeedback=userfeedback,
+            engine=engine,
+            weight_init=weight_init,
         )
     else:
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
+        if engine is None:
+            engine = compat.get_project_engine(cfg)
+
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
@@ -934,6 +977,11 @@ def create_training_dataset(
         auxiliaryfunctions.attempt_to_make_folder(
             Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
         )
+
+        # Create the trainset metadata file, if it doesn't yet exist
+        if not metadata.TrainingDatasetMetadata.path(cfg).exists():
+            trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)
+            trainset_metadata.save()
 
         Data = merge_annotateddatasets(
             cfg,
@@ -946,6 +994,8 @@ def create_training_dataset(
         # loading & linking pretrained models
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
+        elif engine == Engine.PYTORCH:
+            pass
         else:
             if (
                 "resnet" in net_type
@@ -957,20 +1007,40 @@ def create_training_dataset(
             else:
                 raise ValueError("Invalid network type:", net_type)
 
+        top_down = False
+        if engine == Engine.PYTORCH:
+            if net_type.startswith("top_down_"):
+                top_down = True
+                net_type = net_type[len("top_down_") :]
+
+        augmenters = compat.get_available_aug_methods(engine)
+        default_augmenter = augmenters[0]
         if augmenter_type is None:
-            augmenter_type = cfg.get("default_augmenter", "imgaug")
+            augmenter_type = cfg.get("default_augmenter", default_augmenter)
+
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": "imgaug"})
-                augmenter_type = "imgaug"
-        elif augmenter_type not in [
-            "default",
-            "scalecrop",
-            "imgaug",
-            "tensorpack",
-            "deterministic",
-        ]:
-            raise ValueError("Invalid augmenter type:", augmenter_type)
+                augmenter_type = default_augmenter
+                auxiliaryfunctions.edit_config(
+                    config, {"default_augmenter": augmenter_type}
+                )
+            elif augmenter_type not in augmenters:
+                # as the default augmenter might not be available for the given engine
+                augmenter_type = default_augmenter
+                logging.info(
+                    f"Default augmenter {augmenter_type} not available for engine "
+                    f"{engine}: using {default_augmenter} instead"
+                )
+
+        if augmenter_type not in augmenters:
+            if engine != Engine.PYTORCH:
+                raise ValueError(
+                    f"Invalid augmenter type: {augmenter_type} (available: for "
+                    f"engine={engine}: {augmenters})"
+                )
+
+            logging.info(f"Switching augmentation to {default_augmenter} for PyTorch")
+            augmenter_type = default_augmenter
 
         if posecfg_template:
             if net_type != prior_cfg["net_type"]:
@@ -988,14 +1058,13 @@ def create_training_dataset(
             defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path = auxfun_models.check_for_weights(
-            net_type, Path(dlcparent_path)
-        )
 
-        if Shuffles is None:
-            Shuffles = range(1, num_shuffles + 1)
+        if engine == Engine.PYTORCH:
+            model_path = dlcparent_path
         else:
-            Shuffles = [i for i in Shuffles if isinstance(i, int)]
+            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
+
+        Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
         # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
         if trainIndices is None and testIndices is None:
@@ -1033,15 +1102,16 @@ def create_training_dataset(
                     (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
                 )
 
-        bodyparts = cfg["bodyparts"]
+        bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
         nbodyparts = len(bodyparts)
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = training.return_train_network_path(
+                    trainposeconfigfile, _, _ = compat.return_train_network_path(
                         config,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+                        engine=engine,
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
@@ -1088,13 +1158,25 @@ def create_training_dataset(
                     testIndices,
                     trainFraction,
                 )
+                metadata.update_metadata(
+                    cfg=cfg,
+                    train_fraction=trainFraction,
+                    shuffle=shuffle,
+                    engine=engine,
+                    train_indices=trainIndices,
+                    test_indices=testIndices,
+                    overwrite=not userfeedback,
+                )
 
                 ################################################################################
                 # Creating file structure for training &
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
                 modelfoldername = auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg
+                    trainFraction,
+                    shuffle,
+                    cfg,
+                    engine=engine,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
@@ -1125,6 +1207,7 @@ def create_training_dataset(
                 # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
                 items2change = {
                     "dataset": datafilename,
+                    "engine": engine.aliases[0],
                     "metadataset": metadatafilename,
                     "num_joints": len(bodyparts),
                     "all_joints": [[i] for i in range(len(bodyparts))],
@@ -1164,26 +1247,151 @@ def create_training_dataset(
                     "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
                 )
 
+                # Populate the pytorch config yaml file
+                if engine == Engine.PYTORCH:
+                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+                        make_pytorch_pose_config,
+                    )
+                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
+                        make_super_animal_finetune_config,
+                    )
+
+                    pose_cfg_path = path_train_config.replace(
+                        "pose_cfg.yaml", "pytorch_config.yaml"
+                    )
+                    if weight_init is not None and weight_init.with_decoder:
+                        pytorch_cfg = make_super_animal_finetune_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            weight_init=weight_init,
+                        )
+                    else:
+                        pytorch_cfg = make_pytorch_pose_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            top_down=top_down,
+                            weight_init=weight_init,
+                        )
+
+                    auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
+
         return splits
 
 
 def get_largestshuffle_index(config):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
-    cfg = auxiliaryfunctions.read_config(config)
-    project_path = cfg["project_path"]
-    iterate = "iteration-" + str(cfg["iteration"])
-    dlc_model_path = os.path.join(project_path, "dlc-models", iterate)
-    if os.path.isdir(dlc_model_path):
-        models = os.listdir(dlc_model_path)
-        # sort the model directories
-        models.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
+    shuffle_indices = get_existing_shuffle_indices(config)
+    if len(shuffle_indices) > 0:
+        return shuffle_indices[-1]
 
-        # get the shuffle index and offset by 1.
-        max_shuffle_index = int(models[-1].split("shuffle")[-1]) + 1
+    return None
+
+
+def get_existing_shuffle_indices(
+    cfg: dict | str | Path,
+    train_fraction: float | None = None,
+    engine: Engine | None = None,
+) -> List[int]:
+    """
+    Args:
+        cfg: The content of a project configuration file, or the path to the project
+            configuration file.
+        train_fraction: If defined, only get the indices of shuffles with this train
+            fraction.
+        engine: If specified, returns only the shuffle indices that were created with
+            the given engine. Can only be used when train_fraction is also defined.
+
+    Returns:
+        the indices of existing shuffles for this iteration of the project, sorted by
+        ascending index
+    """
+
+    def is_valid_data_stem(stem: str) -> bool:
+        if len(stem) == 0:
+            return False
+        suffix = stem.split("_")[-1]
+        if len(suffix) == 0:
+            return False
+        info = suffix.split("shuffle")
+        if len(info) != 2:
+            return False
+        train_frac, idx = info
+        return (
+            train_frac.isdigit()
+            and idx.isdigit()
+            and (train_fraction is None or int(train_frac) == int(100 * train_fraction))
+        )
+
+    if isinstance(cfg, (str, Path)):
+        cfg = auxiliaryfunctions.read_config(cfg)
+
+    project = Path(cfg["project_path"])
+    trainset_folder = project / auxiliaryfunctions.get_training_set_folder(cfg)
+    if not trainset_folder.exists():
+        return []
+
+    shuffle_indices = [
+        int(p.stem.split("shuffle")[-1])
+        for p in trainset_folder.iterdir()
+        if (
+            p.stem.startswith("Documentation_data")
+            and p.suffix == ".pickle"
+            and is_valid_data_stem(p.stem)
+        )
+    ]
+    if engine is not None:
+        if train_fraction is None:
+            raise ValueError(
+                f"Must select {train_fraction} to filter shuffles by engine"
+            )
+
+        shuffle_indices = [
+            idx
+            for idx in shuffle_indices
+            if (
+                project
+                / auxiliaryfunctions.get_model_folder(
+                    trainFraction=train_fraction,
+                    shuffle=idx,
+                    cfg=cfg,
+                    engine=engine,
+                )
+            ).exists()
+        ]
+
+    return sorted(shuffle_indices)
+
+
+def validate_shuffles(
+    cfg: dict,
+    shuffles: list[int] | None,
+    num_shuffles: int | None,
+    userfeedback: bool,
+) -> list[int]:
+    existing_shuffles = get_existing_shuffle_indices(cfg)
+    if shuffles is None:
+        first_index = 1
+        if len(existing_shuffles) > 0:
+            first_index = existing_shuffles[-1] + 1
+
+        shuffles = range(first_index, num_shuffles + first_index)
     else:
-        max_shuffle_index = 0
+        shuffles = [i for i in shuffles if isinstance(i, int)]
+        for shuffle_idx in shuffles:
+            if userfeedback and shuffle_idx in existing_shuffles:
+                raise ValueError(
+                    f"Cannot create shuffle {shuffle_idx} as it already exists - "
+                    f"you must either create the dataset with `userfeedback=False` "
+                    f"or delete the shuffle with index {shuffle_idx} manually (in "
+                    f"`dlc-models`/`dlc-models-pytorch` and in the "
+                    f"`training-datasets` folder) if you want to create a new "
+                    f"shuffle with that index. You can otherwise create a shuffle "
+                    f"with a new index. Existing indices are {existing_shuffles}."
+                )
 
-    return max_shuffle_index
+    return shuffles
 
 
 def create_training_model_comparison(
@@ -1302,7 +1510,7 @@ def create_training_model_comparison(
     else:
         pass
 
-    largestshuffleindex = get_largestshuffle_index(config)
+    largestshuffleindex = get_existing_shuffle_indices(cfg)[-1] + 1
 
     shuffle_list = []
     for shuffle in range(num_shuffles):
@@ -1343,3 +1551,170 @@ def create_training_model_comparison(
                 logger.info(log_info)
 
     return shuffle_list
+
+
+def create_training_dataset_from_existing_split(
+    config: str,
+    from_shuffle: int,
+    from_trainsetindex: int = 0,
+    num_shuffles: int = 1,
+    shuffles: list[int] | None = None,
+    userfeedback: bool = True,
+    net_type: str | None = None,
+    augmenter_type: str | None = None,
+    posecfg_template: dict | None = None,
+    superanimal_name: str = "",
+    weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
+) -> None | list[int]:
+    """
+    Labels from all the extracted frames are merged into a single .h5 file.
+    Only the videos included in the config file are used to create this dataset.
+
+    Args:
+        config: Full path of the ``config.yaml`` file as a string.
+
+        from_shuffle: The index of the shuffle from which to copy the train/test split.
+
+        from_trainsetindex: The trainset index of the shuffle from which to use the data
+            split. Default is 0.
+
+        num_shuffles: Number of shuffles of training dataset to create, used if
+            ``shuffles`` is None.
+
+        shuffles: If defined, ``num_shuffles`` is ignored and a shuffle is created for
+            each index given in the list.
+
+        userfeedback: If ``False``, all requested train/test splits are created (no
+            matter if they already exist). If you want to assure that previous splits
+            etc. are not overwritten, set this to ``True`` and you will be asked for
+            each existing split if you want to overwrite it.
+
+        net_type: The type of network to create the shuffle for. Currently supported
+            options for engine=Engine.TF are:
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            Currently supported  options for engine=Engine.TF can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_models()``.
+
+        augmenter_type: Type of augmenter. Currently supported augmenters for
+            engine=Engine.TF are
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            The only supported augmenter for Engine.PYTORCH is ``albumentations``.
+
+        posecfg_template: Only for Engine.TF. Path to a ``pose_cfg.yaml`` file to use as
+            a template for generating the new one for the current iteration. Useful if
+            you would like to start with the same parameters a previous training
+            iteration. None uses the default ``pose_cfg.yaml``.
+
+        superanimal_name: Specify the superanimal name is transfer learning with
+            superanimal is desired. This makes sure the pose config template uses
+            superanimal configs as template.
+
+        weight_init: Only for Engine.PYTORCH. Specify how model weights should be
+            initialized. The default mode uses transfer learning from ImageNet weights.
+
+        engine: Whether to create a pose config for a Tensorflow or PyTorch model.
+            Defaults to the value specified in the project configuration file. If no
+            engine is specified for the project, defaults to
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
+
+    Returns:
+        If training dataset was successfully created, a list of tuples is returned.
+        The first two elements in each tuple represent the training fraction and the
+        shuffle value. The last two elements in each tuple are arrays of integers
+        representing the training and test indices.
+
+        Returns None if training dataset could not be created.
+
+    Raises:
+        ValueError: If the shuffle from which to copy the data split doesn't exist.
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    trainset_meta_path = metadata.TrainingDatasetMetadata.path(cfg)
+    if not trainset_meta_path.exists():
+        meta = metadata.TrainingDatasetMetadata.create(cfg)
+        meta.save()
+    else:
+        meta = metadata.TrainingDatasetMetadata.load(cfg, load_splits=False)
+
+    shuffle = meta.get(trainset_index=from_trainsetindex, index=from_shuffle)
+    shuffle = shuffle.load_split(cfg, trainset_path=trainset_meta_path.parent)
+
+    num_copies = num_shuffles
+    if shuffles is not None:
+        num_copies = len(shuffles)
+
+    # pad the train and test indices with -1s so the training fraction is exact
+    train_idx = list(shuffle.split.train_indices)
+    test_idx = list(shuffle.split.test_indices)
+    n_train, n_test = len(train_idx), len(test_idx)
+
+    train_fraction = round(cfg["TrainingFraction"][from_trainsetindex], 2)
+    if round(n_train / (n_train + n_test), 2) != train_fraction:
+        train_padding, test_padding = _compute_padding(train_fraction, n_train, n_test)
+        train_idx = train_idx + (train_padding * [-1])
+        test_idx = test_idx + (test_padding * [-1])
+
+    return create_training_dataset(
+        config=config,
+        num_shuffles=num_shuffles,
+        Shuffles=shuffles,
+        userfeedback=userfeedback,
+        trainIndices=[train_idx for _ in range(num_copies)],
+        testIndices=[test_idx for _ in range(num_copies)],
+        net_type=net_type,
+        augmenter_type=augmenter_type,
+        posecfg_template=posecfg_template,
+        superanimal_name=superanimal_name,
+        weight_init=weight_init,
+        engine=engine,
+    )
+
+
+def _compute_padding(
+    train_fraction: float,
+    num_train: int,
+    num_test: int,
+) -> tuple[int, int]:
+    """
+    Computes the amount of padding to add to train/test indices such that
+    train_fraction = num_train / (num_train + num_test).
+
+    Returns:
+        the number of padding indices to add to the train indices
+        the number of padding indices to add to the test indices
+    """
+    if train_fraction <= 0 or train_fraction >= 1:
+        raise ValueError(
+            f"The training fraction must satisfy 0 < TrainingFraction < 1, but "
+            f"{train_fraction} was found"
+        )
+
+    base_images = 100
+    train_step = int(round(round(train_fraction, 2) * base_images))
+    test_step = base_images - train_step
+
+    tgt_train = train_step
+    tgt_test = test_step
+    while tgt_train < num_train or tgt_test < num_test:
+        tgt_train += train_step
+        tgt_test += test_step
+
+    return (tgt_train - num_train), (tgt_test - num_test)

@@ -8,17 +8,21 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
 import matplotlib.image as mpimg
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
+from pathlib import Path
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 
 import deeplabcut
-from deeplabcut.utils.auxiliaryfunctions import get_evaluation_folder
+from deeplabcut.core.engine import Engine
+from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -27,7 +31,8 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
-from deeplabcut.gui.widgets import ConfigEditor
+from deeplabcut.gui.widgets import ConfigEditor, launch_napari
+from deeplabcut.utils import auxiliaryfunctions
 
 
 class GridCanvas(QtWidgets.QDialog):
@@ -91,6 +96,9 @@ class EvaluateNetwork(DefaultTab):
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
+        self.root.engine_change.connect(self._on_engine_change)
+        self._on_engine_change(self.root.engine)
+
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
@@ -107,9 +115,11 @@ class EvaluateNetwork(DefaultTab):
     def _generate_layout_attributes(self, layout):
         opt_text = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        self.shuffle_display = SelectedShuffleDisplay(self.root, row_margin=0)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.shuffle)
+        layout.addWidget(self.shuffle_display)
 
     def open_inferencecfg_editor(self):
         editor = ConfigEditor(self.root.inference_cfg_path)
@@ -124,7 +134,7 @@ class EvaluateNetwork(DefaultTab):
         dest_folder = os.path.join(
             self.root.project_folder,
             str(
-                get_evaluation_folder(
+                auxiliaryfunctions.get_evaluation_folder(
                     self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
                 )
             ),
@@ -159,19 +169,19 @@ class EvaluateNetwork(DefaultTab):
         layout.addWidget(self.bodyparts_list_widget, alignment=Qt.AlignLeft)
 
     def update_map_choice(self, state):
-        if state == Qt.Checked:
+        if Qt.CheckState(state) == Qt.Checked:
             self.root.logger.info("Plot scoremaps ENABLED")
         else:
             self.root.logger.info("Plot predictions DISABLED")
 
     def update_plot_predictions(self, s):
-        if s == Qt.Checked:
+        if Qt.CheckState(s) == Qt.Checked:
             self.root.logger.info("Plot predictions ENABLED")
         else:
             self.root.logger.info("Plot predictions DISABLED")
 
     def update_bodypart_choice(self, s):
-        if s == Qt.Checked:
+        if Qt.CheckState(s) == Qt.Checked:
             self.bodyparts_list_widget.setEnabled(False)
             self.bodyparts_list_widget.hide()
             self.root.logger.info("Use all bodyparts")
@@ -184,21 +194,50 @@ class EvaluateNetwork(DefaultTab):
 
     def evaluate_network(self):
         config = self.root.config
-
-        Shuffles = [self.root.shuffle_value]
-        plotting = self.plot_predictions.checkState() == Qt.Checked
+        shuffle = self.root.shuffle_value
+        plotting = self.plot_predictions.isChecked()
 
         bodyparts_to_use = "all"
         if (
             len(self.root.all_bodyparts)
             != len(self.bodyparts_list_widget.selected_bodyparts)
-        ) and self.use_all_bodyparts.checkState() == False:
+        ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(
             config,
-            Shuffles=Shuffles,
+            Shuffles=[shuffle],
             plotting=plotting,
             show_errors=True,
             comparisonbodyparts=bodyparts_to_use,
         )
+
+        if plotting:
+            project_cfg = self.root.cfg
+            eval_folder = auxiliaryfunctions.get_evaluation_folder(
+                trainFraction=project_cfg["TrainingFraction"][0],
+                shuffle=shuffle,
+                cfg=project_cfg,
+            )
+            scorer, _ = auxiliaryfunctions.get_scorer_name(
+                cfg=project_cfg,
+                shuffle=shuffle,
+                trainFraction=project_cfg["TrainingFraction"][0],
+            )
+
+            image_dir = (
+                Path(self.root.project_folder)
+                / eval_folder
+                / f"LabeledImages_{scorer}"
+            )
+            labeled_images = [str(p) for p in image_dir.rglob("*.png")]
+            if len(labeled_images) > 0:
+                _ = launch_napari(image_dir)
+
+    @Slot(Engine)
+    def _on_engine_change(self, engine: Engine) -> None:
+        if engine == Engine.PYTORCH:
+            self.opt_button.hide()
+            return
+
+        self.opt_button.show()
