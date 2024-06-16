@@ -25,12 +25,12 @@ After you have installed Anaconda, open the new program (Anaconda Terminal). You
 In the terminal, type:
 
 ```
-$ conda create -n deeplabcut python=3.10
+conda create -n deeplabcut python=3.10
 ```
 You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type: 
 
 ```
-$ conda activate deeplabcut
+conda activate deeplabcut
 ```
 Now, we are going to install the core dependencies. The way this works is that there are "package managers" such as `conda` itself and python's `pip`. We are going to deploy a mix based on what we know works across ooperating systems.
 
@@ -40,11 +40,11 @@ Now, we are going to install the core dependencies. The way this works is that t
 
 - **GPU version of pytorch for CUDA 11.8**
 ```
-$ conda install pytorch cudatoolkit=11.8 -c pytorch
+conda install pytorch cudatoolkit=11.8 -c pytorch
 ```
 - **CPU only version of pytorch, using the latest version**
 ```
-$ conda install pytorch cpuonly -c pytorch
+conda install pytorch cpuonly -c pytorch
 ```
 
 **(2) Install DeepLabCut** 
