@@ -464,7 +464,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#beginner-user-guide">Beginner User Guide</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-learn-an-bit-and-create-a-deeplabcut-env">Let’s learn an bit and create a DeeplabCut env:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-learn-a-bit-and-create-a-deeplabcut-env">Let’s learn a bit and create a DeeplabCut env:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-deeplabcut">Starting DeepLabCut</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-a-new-project">Starting a New Project</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#navigating-the-gui-on-initial-launch">Navigating the GUI on Initial Launch</a><ul class="nav section-nav flex-column">
@@ -510,16 +510,16 @@ document.write(`
 <li><p>“Conda”, as it’s often called, it a very nice way to create “environments (env)” on your computer. While there can be some cross-talk, in general, it allows you to separate the different tools you need to use to get your science done 💪.</p></li>
 </ul>
 </section>
-<section id="let-s-learn-an-bit-and-create-a-deeplabcut-env">
-<h2>Let’s learn an bit and create a DeeplabCut env:<a class="headerlink" href="#let-s-learn-an-bit-and-create-a-deeplabcut-env" title="Link to this heading">#</a></h2>
+<section id="let-s-learn-a-bit-and-create-a-deeplabcut-env">
+<h2>Let’s learn a bit and create a DeeplabCut env:<a class="headerlink" href="#let-s-learn-a-bit-and-create-a-deeplabcut-env" title="Link to this heading">#</a></h2>
 <p>After you have installed Anaconda, open the new program (Anaconda Terminal). You will be in your “root” directory by default.</p>
 <p><strong>(0) Create a fresh <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">environment</span></code></strong></p>
 <p>In the terminal, type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda create -n deeplabcut python==3.10
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">deeplabcut</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.10</span>
 </pre></div>
 </div>
 <p>You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda activate deeplabcut
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">deeplabcut</span>
 </pre></div>
 </div>
 <p>Now, we are going to install the core dependencies. The way this works is that there are “package managers” such as <code class="docutils literal notranslate"><span class="pre">conda</span></code> itself and python’s <code class="docutils literal notranslate"><span class="pre">pip</span></code>. We are going to deploy a mix based on what we know works across ooperating systems.</p>
@@ -528,19 +528,30 @@ document.write(`
 <ul class="simple">
 <li><p><strong>GPU version of pytorch for CUDA 11.8</strong></p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda install pytorch cudatoolkit=11.8 -c pytorch
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">11.8</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><strong>CPU only version of pytorch, using the latest version</strong></p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda install pytorch cpuonly -c pytorch
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cpuonly</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
 </pre></div>
 </div>
 <p><strong>(2) Install DeepLabCut</strong></p>
-<p>Alright! Next, we will install <code class="docutils literal notranslate"><span class="pre">Tables</span></code> (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> source code 🔥. Please type:</p>
+<p>Alright! Next, we will install <code class="docutils literal notranslate"><span class="pre">Tables</span></code> (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> source code 🔥. Please decide which version you want (stable or alpha), then type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pytables</span><span class="o">==</span><span class="mf">3.8.0</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[gui,modelzoo,wandb]&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Alpha release:</strong></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>OR run for the <strong>Stable release:</strong></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[gui,modelzoo,tf]&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -713,7 +724,7 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#beginner-user-guide">Beginner User Guide</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-learn-an-bit-and-create-a-deeplabcut-env">Let’s learn an bit and create a DeeplabCut env:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-learn-a-bit-and-create-a-deeplabcut-env">Let’s learn a bit and create a DeeplabCut env:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-deeplabcut">Starting DeepLabCut</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-a-new-project">Starting a New Project</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#navigating-the-gui-on-initial-launch">Navigating the GUI on Initial Launch</a><ul class="nav section-nav flex-column">
