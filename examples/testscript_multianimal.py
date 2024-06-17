@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.get_model_folder(
-        TRAIN_SIZE, 1, cfg, cfg["project_path"]
+        TRAIN_SIZE, 1, cfg, engine=ENGINE, modelprefix=cfg["project_path"]
     )
     pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {

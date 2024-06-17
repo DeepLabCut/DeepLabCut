@@ -552,8 +552,8 @@ def get_model_folder(
     trainFraction: float,
     shuffle: int,
     cfg: dict,
-    engine: Engine = Engine.TF,
     modelprefix: str = "",
+    engine: Engine = Engine.TF,
 ) -> Path:
     """
     Args:
@@ -561,9 +561,9 @@ def get_model_folder(
             for which to get the model folder
         shuffle: the index of the shuffle for which to get the model folder
         cfg: the project configuration
+        modelprefix: The name of the folder
         engine: The engine for which we want the model folder. Defaults to `tensorflow`
             for backwards compatibility with DeepLabCut 2.X
-        modelprefix: The name of the folder
 
     Returns:
         the relative path from the project root to the folder containing the model files
@@ -670,9 +670,9 @@ def get_scorer_name(
     cfg: dict,
     shuffle: int,
     trainFraction: float,
-    engine: Engine | None = None,
     trainingsiterations: str | int = "unknown",
     modelprefix: str = "",
+    engine: Engine | None = None,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
     If the engine is not specified, determines which to use from
