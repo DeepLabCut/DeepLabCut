@@ -16,7 +16,7 @@ If you are new to Python, the best way to get Python installed onto your compute
 
 - "Conda", as it's often called, it a very nice way to create "environments (env)" on your computer. While there can be some cross-talk, in general, it allows you to separate the different tools you need to use to get your science done 💪. 
 
-## Let's learn an bit and create a DeeplabCut env:
+## Let's learn a bit and create a DeeplabCut env:
 
 After you have installed Anaconda, open the new program (Anaconda Terminal). You will be in your "root" directory by default. 
 
@@ -25,12 +25,12 @@ After you have installed Anaconda, open the new program (Anaconda Terminal). You
 In the terminal, type:
 
 ```
-$ conda create -n deeplabcut python==3.10
+conda create -n deeplabcut python=3.10
 ```
 You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type: 
 
 ```
-$ conda activate deeplabcut
+conda activate deeplabcut
 ```
 Now, we are going to install the core dependencies. The way this works is that there are "package managers" such as `conda` itself and python's `pip`. We are going to deploy a mix based on what we know works across ooperating systems.
 
@@ -40,20 +40,28 @@ Now, we are going to install the core dependencies. The way this works is that t
 
 - **GPU version of pytorch for CUDA 11.8**
 ```
-$ conda install pytorch cudatoolkit=11.8 -c pytorch
+conda install pytorch cudatoolkit=11.8 -c pytorch
 ```
 - **CPU only version of pytorch, using the latest version**
 ```
-$ conda install pytorch cpuonly -c pytorch
+conda install pytorch cpuonly -c pytorch
 ```
 
 **(2) Install DeepLabCut** 
 
-Alright! Next, we will install `Tables` (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the `deeplabcut` source code 🔥. Please type: 
+Alright! Next, we will install `Tables` (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type: 
 
 ```
 conda install -c conda-forge pytables==3.8.0
-pip install "deeplabcut[gui,modelzoo,wandb]"
+```
+
+- **Alpha release:**
+```
+pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]"
+```
+- OR run for the **Stable release:**
+```
+pip install "deeplabcut[gui,modelzoo,tf]"
 ```
 - This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!
 
