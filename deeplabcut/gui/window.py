@@ -63,9 +63,9 @@ def _check_for_updates(silent=True):
             text=text,
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton("Update", msg.AcceptRole)
+        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
         msg.setDefaultButton(update_btn)
-        _ = msg.addButton("Skip", msg.RejectRole)
+        _ = msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call([sys.executable, "-m", *command])
