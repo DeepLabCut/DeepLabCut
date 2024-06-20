@@ -98,12 +98,33 @@ def test_keypoint_horizontal_flip(
         keypoints=list(map(str, range(12))),
         symmetric_pairs=pairs,
     )
+    keypoints_aug = aug(images=[sample_image], keypoints=[sample_keypoints],)[
+        1
+    ][0]
+    temp = keypoints_aug.reshape((3, 12, 2))
+    for pair in pairs:
+        temp[:, pair] = temp[:, pair[::-1]]
+    keypoints_unaug = temp.reshape((-1, 2))
+    np.testing.assert_allclose(keypoints_unaug, keypoints_flipped)
+
+
+def test_keypoint_horizontal_flip_with_nans(
+    sample_image,
+    sample_keypoints,
+):
+    sample_keypoints[::12] = np.nan
+    sample_keypoints[2::12] = np.nan
+    keypoints_flipped = sample_keypoints.copy()
+    keypoints_flipped[:, 0] = sample_image.shape[1] - keypoints_flipped[:, 0]
+    pairs = [(0, 1), (2, 3)]
+    aug = augmentation.KeypointFliplr(
+        keypoints=list(map(str, range(12))),
+        symmetric_pairs=pairs,
+    )
     keypoints_aug = aug(
         images=[sample_image],
         keypoints=[sample_keypoints],
-    )[
-        1
-    ][0]
+    )[1][0]
     temp = keypoints_aug.reshape((3, 12, 2))
     for pair in pairs:
         temp[:, pair] = temp[:, pair[::-1]]

@@ -1,21 +1,45 @@
 (overview)=
-# Documentation Overview
+# 🥳 Get started with DeepLabCut: our key recommendations 
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
+```{Hint}
+💡📚 If you are new to Python and DeepLabCut, you might consider checking our [beginner guide](https://deeplabcut.github.io/DeepLabCut/docs/beginners-guide.html) once you are ready to jump into using the DeepLabCut App!
+```
+
+
 ## [How to install DeepLabCut](how-to-install)
 
-- Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick:
+We don't cover installation in depth on this page, so click on the link above if that is what you are looking for. See below for details on getting started with DeepLabCut!
+
+## What we support:
+
+We are primarily a package that enables deep learning-based pose estimation. We have a lot of models and options, but don't get overwhelmed -- the developer team has tried our best to "set the best defaults we possibly can"!
+
+- Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick a user guide:
 
 - (1) [How to use standard DeepLabCut](single-animal-userguide)
 - (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
 
+- To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support **top-down**,  **bottom-up**, and a new "hybrid" approach that is state-of-the-art, called **BUCTD** (bottom-up conditional top down), models.
+   - If these terms are new to you, check out our [Primer on Motion Capture with Deep Learning!](https://www.sciencedirect.com/science/article/pii/S0896627320307170). In brief, both work for single or multiple animals and each method can be better or worse on your data. 
+
+<p align="center">
+<img src= https://ars.els-cdn.com/content/image/1-s2.0-S0896627320307170-gr5_lrg.jpg?format=1000w width="50%">
+ </p>
+
+  - Here is more information on BUCTD:
+<p align="center">
+<img src= https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w width="50%">
+ </p>
+ 
  **Additional Learning Resources:**
 
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.
  - [HOW-TO-GUIDES:](overview) step-by-step user guidelines for using DeepLabCut on your own datasets (see below)
  - [EXPLANATIONS:](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials) resources on understanding how DeepLabCut works
  - [REFERENCES:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
+ - [BEGINNER GUIDE TO THE GUI](https://deeplabcut.github.io/DeepLabCut/docs/beginners-guide.html)
 
 Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
 
@@ -24,14 +48,14 @@ Getting Started: [a video tutorial on navigating the documentation!](https://www
 
  - **a set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
 
- - **minimally, a computer w/a CPU.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/DeepLabCutDeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md)).
+ - **minimally, a computer w/a CPU.** If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/DeepLabCut/DeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md)).
 
 
 ### What you DON'T need to get started:
 
  - no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).
 
- - no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS, although we recommend Ubuntu.
+ - no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS.
 
 
 ### Overview:
@@ -42,23 +66,15 @@ Getting Started: [a video tutorial on navigating the documentation!](https://www
 <img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
  </p>
 
+ <p align="center">
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
+</p>
 
 ### Overview of the workflow:
 This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
 
  <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" height="270">
-
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" height="270">
-</p>
-
-**NOTE:** There is a highly similar workflow for 2.2+ (and your 2.X projects are still fully compatible with this format!).
-
-** DLC 2.2:** as of 2.2 we support "multi-animal projects," but these new features can also be used on single animals too (details below). The workflow is highly similar, but with a few key additional steps. Please carefully review the functions below for more details. You can search/look for **maDeepLabCut** for specific steps that are changed, or see this more comprehensive guide [here](/docs/maDLC_AdvUserGuide.md)
-
- <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" height="570">
- </p>
 
 
 You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](/conda-environments) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
@@ -74,11 +90,11 @@ You can have as many projects on your computer as you wish. You can have DeepLab
 
 ## Important information on using DeepLabCut:
 
-We recommend first using **DeepLabCut for a single animal scenario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into 2.2...
+We recommend first using **DeepLabCut for a single animal scenario** to understand the workflow - even if it's just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into multi-animals...
 
-### Additional information for getting started with maDeepLabCut (aka DeepLabCut 2.2):
+### Additional information for getting started with maDeepLabCut:
 
-We highly recommend using 2.2 first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
+We highly recommend using it first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
 
 #### *What scenario do you have?*
 
@@ -129,8 +145,8 @@ own dataset. See all the demo's [here!](/examples) Please note that GUIs are not
 
 [VIDEO TUTORIAL#2!](https://youtu.be/Kp-stcTm77g)
 
-Start iPython, or if you are using MacOS, you must use ``pythonw`` vs. typing ``ipython`` or ``python``, but otherwise it's the same.
-If you are using DeepLabCut on the cloud, you cannot use the GUIs and you need to first set `DLClight=True`. If you use Windows, please always open the terminal with administrator privileges. Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+Start Python by typing ``ipython`` or ``python`` in the terminal (note: using pythonw for Mac users was depreciated in 2022).
+If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Windows, please always open the terminal with administrator privileges. Please read more in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Simply open the terminal and type:
 ```python

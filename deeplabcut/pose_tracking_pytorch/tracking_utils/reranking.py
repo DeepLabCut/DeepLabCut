@@ -76,7 +76,9 @@ def re_ranking(
         k_reciprocal_expansion_index = np.unique(k_reciprocal_expansion_index)
         weight = np.exp(-original_dist[i, k_reciprocal_expansion_index])
         V[i, k_reciprocal_expansion_index] = weight / np.sum(weight)
-    original_dist = original_dist[:query_num,]
+    original_dist = original_dist[
+        :query_num,
+    ]
     if k2 != 1:
         V_qe = np.zeros_like(V, dtype=np.float16)
         for i in range(all_num):

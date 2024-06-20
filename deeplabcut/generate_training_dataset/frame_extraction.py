@@ -262,7 +262,6 @@ def extract_frames(
     from deeplabcut.utils import frameselectiontools
     from deeplabcut.utils import auxiliaryfunctions
 
-
     config_file = Path(config).resolve()
     cfg = auxiliaryfunctions.read_config(config_file)
     print("Config file read successfully.")

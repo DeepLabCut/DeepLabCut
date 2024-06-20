@@ -44,7 +44,7 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def check_for_weights(modeltype, parent_path, num_shuffles):
+def check_for_weights(modeltype, parent_path):
     """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
 
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
@@ -52,7 +52,7 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
             "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
         )
         # Exit the function early if an unknown modeltype is provided.
-        return parent_path, -1
+        return parent_path
 
     exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
@@ -70,7 +70,7 @@ def check_for_weights(modeltype, parent_path, num_shuffles):
         else:
             download_weights(modeltype, model_path)
 
-    return str(model_path), num_shuffles
+    return str(model_path)
 
 
 def download_weights(modeltype, model_path):
@@ -166,6 +166,23 @@ def set_visible_devices(gputouse: int):
             f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {list(range(n_devices))}."
         )
     tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
+
+
+def smart_restore(restorer, sess, checkpoint_path, net_type):
+    "Restore pretrained weights, smartly redownloading them if missing."
+    try:
+        restorer.restore(sess, checkpoint_path)
+    except ValueError as e:  # The path may be wrong, or the weights no longer exist
+        dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
+        correct_model_path = os.path.join(
+            dlcparent_path, MODELTYPE_FILEPATH_MAP[net_type],
+        )
+        if checkpoint_path == correct_model_path:
+            # The path is right, hence the weights are missing; we'll download them again.
+            _ = check_for_weights(net_type, Path(dlcparent_path))
+            restorer.restore(sess, checkpoint_path)
+        else:
+            raise ValueError(e)
 
 
 # Aliases for backwards-compatibility

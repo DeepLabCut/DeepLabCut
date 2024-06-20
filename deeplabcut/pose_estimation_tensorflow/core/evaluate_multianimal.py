@@ -22,6 +22,7 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     make_results_file,
     keypoint_error,
 )
+from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
 from deeplabcut.utils import visualization
@@ -176,50 +177,51 @@ def evaluate_multianimal_full(
             ##################################################
             # Load and setup CNN part detector
             ##################################################
-            datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-                trainingsetfolder, trainFraction, shuffle, cfg
+            modelfolder_rel_path = auxiliaryfunctions.get_model_folder(
+                trainFraction, shuffle, cfg, modelprefix=modelprefix
             )
-            modelfolder = os.path.join(
-                cfg["project_path"],
-                str(
-                    auxiliaryfunctions.get_model_folder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
-                    )
-                ),
-            )
-            path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
+            modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
-            # Load meta data
-            (
-                data,
-                trainIndices,
-                testIndices,
-                trainFraction,
-            ) = auxiliaryfunctions.load_metadata(
-                os.path.join(cfg["project_path"], metadatafn)
-            )
-
-            try:
-                dlc_cfg = load_config(str(path_test_config))
-            except FileNotFoundError:
+            # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
+            #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
+            #  Not sure if this should throw an exception or just be a warning...
+            if not modelfolder.exists():
                 raise FileNotFoundError(
-                    "It seems the model for shuffle %s and trainFraction %s does not exist."
-                    % (shuffle, trainFraction)
+                    f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist."
                 )
 
+            if trainingsetindex == "all":
+                train_frac_idx = cfg["TrainingFraction"].index(trainFraction)
+            else:
+                train_frac_idx = trainingsetindex
+
+            path_train_config, path_test_config, _ = return_train_network_path(
+                config=config,
+                shuffle=shuffle,
+                trainingsetindex=train_frac_idx,
+                modelprefix=modelprefix,
+            )
+
+            test_pose_cfg = load_config(str(path_test_config))
+            train_pose_cfg = load_config(str(path_train_config))
+            # Load meta data
+            _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+                os.path.join(cfg["project_path"], train_pose_cfg["metadataset"])
+            )
+
             pipeline = iaa.Sequential(random_order=False)
-            pre_resize = dlc_cfg.get("pre_resize")
+            pre_resize = test_pose_cfg.get("pre_resize")
             if pre_resize:
                 width, height = pre_resize
                 pipeline.add(iaa.Resize({"height": height, "width": width}))
 
             # TODO: IMPLEMENT for different batch sizes?
-            dlc_cfg["batch_size"] = 1  # due to differently sized images!!!
+            test_pose_cfg["batch_size"] = 1  # due to differently sized images!!!
 
-            stride = dlc_cfg["stride"]
+            stride = test_pose_cfg["stride"]
             # Ignore best edges possibly defined during a prior evaluation
-            _ = dlc_cfg.pop("paf_best", None)
-            joints = dlc_cfg["all_joints_names"]
+            _ = test_pose_cfg.pop("paf_best", None)
+            joints = test_pose_cfg["all_joints_names"]
 
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
@@ -231,7 +233,6 @@ def evaluate_multianimal_full(
                 ),
             )
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
-            # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
             # Check which snapshots are available and sort them by # iterations
             Snapshots = np.array(
@@ -268,11 +269,11 @@ def evaluate_multianimal_full(
                 # Compute predictions over images
                 ##################################################
                 for snapindex in snapindices:
-                    dlc_cfg["init_weights"] = os.path.join(
+                    test_pose_cfg["init_weights"] = os.path.join(
                         str(modelfolder), "train", Snapshots[snapindex]
                     )  # setting weights to corresponding snapshot.
                     trainingsiterations = (
-                        dlc_cfg["init_weights"].split(os.sep)[-1]
+                        test_pose_cfg["init_weights"].split(os.sep)[-1]
                     ).split("-")[
                         -1
                     ]  # read how many training siterations that corresponds to.
@@ -320,7 +321,7 @@ def evaluate_multianimal_full(
                             sess,
                             inputs,
                             outputs,
-                        ) = predict.setup_pose_prediction(dlc_cfg)
+                        ) = predict.setup_pose_prediction(test_pose_cfg)
 
                         PredicteData = {}
                         dist = np.full((len(Data), len(all_bpts)), np.nan)
@@ -373,7 +374,7 @@ def evaluate_multianimal_full(
                             peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
 
                             pred = predictma.predict_batched_peaks_and_costs(
-                                dlc_cfg,
+                                test_pose_cfg,
                                 np.expand_dims(frame, axis=0),
                                 sess,
                                 inputs,
@@ -543,21 +544,21 @@ def evaluate_multianimal_full(
                             )
 
                         PredicteData["metadata"] = {
-                            "nms radius": dlc_cfg["nmsradius"],
-                            "minimal confidence": dlc_cfg["minconfidence"],
-                            "sigma": dlc_cfg.get("sigma", 1),
-                            "PAFgraph": dlc_cfg["partaffinityfield_graph"],
+                            "nms radius": test_pose_cfg["nmsradius"],
+                            "minimal confidence": test_pose_cfg["minconfidence"],
+                            "sigma": test_pose_cfg.get("sigma", 1),
+                            "PAFgraph": test_pose_cfg["partaffinityfield_graph"],
                             "PAFinds": np.arange(
-                                len(dlc_cfg["partaffinityfield_graph"])
+                                len(test_pose_cfg["partaffinityfield_graph"])
                             ),
                             "all_joints": [
-                                [i] for i in range(len(dlc_cfg["all_joints"]))
+                                [i] for i in range(len(test_pose_cfg["all_joints"]))
                             ],
                             "all_joints_names": [
-                                dlc_cfg["all_joints_names"][i]
-                                for i in range(len(dlc_cfg["all_joints"]))
+                                test_pose_cfg["all_joints_names"][i]
+                                for i in range(len(test_pose_cfg["all_joints"]))
                             ],
-                            "stride": dlc_cfg.get("stride", 8),
+                            "stride": test_pose_cfg.get("stride", 8),
                         }
                         print(
                             "Done and results stored for snapshot: ",
@@ -566,7 +567,7 @@ def evaluate_multianimal_full(
 
                         dictionary = {
                             "Scorer": DLCscorer,
-                            "DLC-model-config file": dlc_cfg,
+                            "DLC-model-config file": test_pose_cfg,
                             "trainIndices": trainIndices,
                             "testIndices": testIndices,
                             "trainFraction": trainFraction,
@@ -585,7 +586,7 @@ def evaluate_multianimal_full(
                     # Skip data-driven skeleton selection unless
                     # the model was trained on the full graph.
                     max_n_edges = n_multibpts * (n_multibpts - 1) // 2
-                    n_edges = len(dlc_cfg["partaffinityfield_graph"])
+                    n_edges = len(test_pose_cfg["partaffinityfield_graph"])
                     if n_edges == max_n_edges:
                         print("Selecting best skeleton...")
                         n_graphs = 10
@@ -604,9 +605,9 @@ def evaluate_multianimal_full(
                         data_path.replace("_full.", "_meta."),
                         n_graphs=n_graphs,
                         paf_inds=paf_inds,
-                        oks_sigma=dlc_cfg.get("oks_sigma", 0.1),
-                        margin=dlc_cfg.get("bbox_margin", 0),
-                        symmetric_kpts=dlc_cfg.get("symmetric_kpts"),
+                        oks_sigma=test_pose_cfg.get("oks_sigma", 0.1),
+                        margin=test_pose_cfg.get("bbox_margin", 0),
+                        symmetric_kpts=test_pose_cfg.get("symmetric_kpts"),
                     )
                     if plotting == "individual":
                         assemblies, assemblies_unique, image_paths = best_assemblies

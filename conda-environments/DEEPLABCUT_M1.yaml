@@ -30,13 +30,14 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.9
+  - python=3.10
   - pip
   - ipython
   - jupyter
   - nb_conda
+  - notebook<7.0.0
   - python.app
   - ffmpeg
   - apple::tensorflow-deps
   - pip:
-    - -e ../[gui,apple_mchips]
+    - "deeplabcut[gui,apple_mchips]"

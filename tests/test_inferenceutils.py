@@ -107,7 +107,7 @@ def test_link():
     j1 = inferenceutils.Joint(pos1, conf, idx=idx1)
     j2 = inferenceutils.Joint(pos2, conf, idx=idx2)
     link = inferenceutils.Link(j1, j2)
-    assert link.confidence == conf**2
+    assert link.confidence == conf ** 2
     assert link.idx == (idx1, idx2)
     assert link.to_vector() == [*pos1, *pos2]
 

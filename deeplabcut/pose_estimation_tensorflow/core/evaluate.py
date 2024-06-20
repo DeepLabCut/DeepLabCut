@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
+
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
     """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
@@ -81,9 +83,6 @@ def calculatepafdistancebounds(
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-            trainingsetfolder, trainFraction, shuffle, cfg
-        )
         modelfolder = os.path.join(
             cfg["project_path"],
             str(
@@ -94,14 +93,6 @@ def calculatepafdistancebounds(
         )
 
         # Load meta data & annotations
-        (
-            data,
-            trainIndices,
-            testIndices,
-            trainFraction,
-        ) = auxiliaryfunctions.load_metadata(
-            os.path.join(cfg["project_path"], metadatafn)
-        )
         Data = pd.read_hdf(
             os.path.join(
                 cfg["project_path"],
@@ -110,13 +101,24 @@ def calculatepafdistancebounds(
             )
         )[cfg["scorer"]]
 
-        path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-        dlc_cfg = load_config(str(path_test_config))
+        path_train_config, path_test_config, _ = return_train_network_path(
+            config=config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            modelprefix=modelprefix,
+        )
+        train_pose_cfg = load_config(str(path_train_config))
+        test_pose_cfg = load_config(str(path_test_config))
+
+        _, trainIndices, _, _ = auxiliaryfunctions.load_metadata(
+            Path(cfg["project_path"]) / train_pose_cfg["metadataset"]
+        )
 
         # get the graph!
-        partaffinityfield_graph = dlc_cfg["partaffinityfield_graph"]
+        partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
         jointnames = [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
+            test_pose_cfg["all_joints_names"][i]
+            for i in range(len(test_pose_cfg["all_joints"]))
         ]
         path_inferencebounds_config = (
             Path(modelfolder) / "test" / "inferencebounds.yaml"
@@ -139,7 +141,7 @@ def calculatepafdistancebounds(
                                     (Data[ind, j1, "x"] - Data[ind2, j2, "x"]) ** 2
                                     + (Data[ind, j1, "y"] - Data[ind2, j2, "y"]) ** 2
                                 )
-                                / dlc_cfg["stride"]
+                                / test_pose_cfg["stride"]
                             )
                         else:
                             distances = None
@@ -286,9 +288,6 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainingsetfolder, trainFraction, shuffle, cfg
-    )
     modelfolder = os.path.join(
         cfg["project_path"],
         str(
@@ -297,23 +296,30 @@ def return_evaluate_network_data(
             )
         ),
     )
-    path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-    # Load meta data
-    data, trainIndices, testIndices, trainFraction = auxiliaryfunctions.load_metadata(
-        os.path.join(cfg["project_path"], metadatafn)
+    path_train_config, path_test_config, _ = return_train_network_path(
+        config=config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
     )
 
     try:
-        dlc_cfg = load_config(str(path_test_config))
+        test_pose_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
             "It seems the model for shuffle %s and trainFraction %s does not exist."
             % (shuffle, trainFraction)
         )
 
+    train_pose_cfg = load_config(str(path_train_config))
+    # Load meta data
+    data, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+        Path(cfg["project_path"]) / train_pose_cfg["metadataset"],
+    )
+
     ########################### RESCALING (to global scale)
     if rescale == True:
-        scale = dlc_cfg["global_scale"]
+        scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
             pd.read_hdf(
@@ -379,10 +385,12 @@ def return_evaluate_network_data(
     results = []
     resultsfns = []
     for snapindex in snapindices:
-        dlc_cfg["init_weights"] = os.path.join(
+        test_pose_cfg["init_weights"] = os.path.join(
             str(modelfolder), "train", Snapshots[snapindex]
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
+            "-"
+        )[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -463,7 +471,7 @@ def return_evaluate_network_data(
                     np.round(testerrorpcutoff, 2),
                     Snapshots[snapindex],
                     scale,
-                    dlc_cfg["net_type"],
+                    test_pose_cfg["net_type"],
                 ]
                 results.append(r)
             else:
@@ -695,10 +703,7 @@ def evaluate_network(
         if trainingsetindex == "all":
             TrainingFractions = cfg["TrainingFraction"]
         else:
-            if (
-                trainingsetindex < len(cfg["TrainingFraction"])
-                and trainingsetindex >= 0
-            ):
+            if 0 <= trainingsetindex < len(cfg["TrainingFraction"]):
                 TrainingFractions = [cfg["TrainingFraction"][int(trainingsetindex)]]
             else:
                 raise Exception(
@@ -733,39 +738,41 @@ def evaluate_network(
                 ##################################################
                 # Load and setup CNN part detector
                 ##################################################
-                datafn, metadatafn = auxiliaryfunctions.get_data_and_metadata_filenames(
-                    trainingsetfolder, trainFraction, shuffle, cfg
-                )
-                modelfolder = os.path.join(
-                    cfg["project_path"],
-                    str(
-                        auxiliaryfunctions.get_model_folder(
-                            trainFraction, shuffle, cfg, modelprefix=modelprefix
-                        )
-                    ),
-                )
 
-                path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
-                # Load meta data
-                (
-                    data,
-                    trainIndices,
-                    testIndices,
-                    trainFraction,
-                ) = auxiliaryfunctions.load_metadata(
-                    os.path.join(cfg["project_path"], metadatafn)
+                modelfolder_rel_path = auxiliaryfunctions.get_model_folder(
+                    trainFraction, shuffle, cfg, modelprefix=modelprefix
                 )
+                modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
-                try:
-                    dlc_cfg = load_config(str(path_test_config))
-                except FileNotFoundError:
+                # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
+                #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
+                #  Not sure if this should throw an exception or just be a warning...
+                if not modelfolder.exists():
                     raise FileNotFoundError(
-                        "It seems the model for shuffle %s and trainFraction %s does not exist."
-                        % (shuffle, trainFraction)
+                        f"Model with shuffle {shuffle} and trainFraction {trainFraction} does not exist."
                     )
 
+                if trainingsetindex == "all":
+                    train_frac_idx = cfg["TrainingFraction"].index(trainFraction)
+                else:
+                    train_frac_idx = trainingsetindex
+
+                path_train_config, path_test_config, _ = return_train_network_path(
+                    config=config,
+                    shuffle=shuffle,
+                    trainingsetindex=train_frac_idx,
+                    modelprefix=modelprefix,
+                )
+
+                test_pose_cfg = load_config(str(path_test_config))
+                train_pose_cfg = load_config(str(path_train_config))
+                # Load meta data
+                _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
+                    Path(cfg["project_path"], train_pose_cfg["metadataset"])
+                )
+
                 # change batch size, if it was edited during analysis!
-                dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
+                test_pose_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
                 # Create folder structure to store results.
                 evaluationfolder = os.path.join(
@@ -779,7 +786,6 @@ def evaluate_network(
                 auxiliaryfunctions.attempt_to_make_folder(
                     evaluationfolder, recursive=True
                 )
-                # path_train_config = modelfolder / 'train' / 'pose_cfg.yaml'
 
                 # Check which snapshots are available and sort them by # iterations
                 Snapshots = np.array(
@@ -817,7 +823,7 @@ def evaluate_network(
 
                 ########################### RESCALING (to global scale)
                 if rescale:
-                    scale = dlc_cfg["global_scale"]
+                    scale = test_pose_cfg["global_scale"]
                     Data = (
                         pd.read_hdf(
                             os.path.join(
@@ -836,11 +842,11 @@ def evaluate_network(
                 # Compute predictions over images
                 ##################################################
                 for snapindex in snapindices:
-                    dlc_cfg["init_weights"] = os.path.join(
+                    test_pose_cfg["init_weights"] = os.path.join(
                         str(modelfolder), "train", Snapshots[snapindex]
                     )  # setting weights to corresponding snapshot.
                     trainingsiterations = (
-                        dlc_cfg["init_weights"].split(os.sep)[-1]
+                        test_pose_cfg["init_weights"].split(os.sep)[-1]
                     ).split("-")[
                         -1
                     ]  # read how many training siterations that corresponds to.
@@ -871,10 +877,12 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+                        sess, inputs, outputs = predict.setup_pose_prediction(
+                            test_pose_cfg
+                        )
                         Numimages = len(Data.index)
                         PredicteData = np.zeros(
-                            (Numimages, 3 * len(dlc_cfg["all_joints_names"]))
+                            (Numimages, 3 * len(test_pose_cfg["all_joints_names"]))
                         )
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
@@ -891,12 +899,12 @@ def evaluate_network(
                                 outputs, feed_dict={inputs: image_batch}
                             )
                             scmap, locref = predict.extract_cnn_output(
-                                outputs_np, dlc_cfg
+                                outputs_np, test_pose_cfg
                             )
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
                             pose = predict.argmax_pose_predict(
-                                scmap, locref, dlc_cfg["stride"]
+                                scmap, locref, test_pose_cfg["stride"]
                             )
                             PredicteData[
                                 imageindex, :
@@ -909,7 +917,7 @@ def evaluate_network(
                         index = pd.MultiIndex.from_product(
                             [
                                 [DLCscorer],
-                                dlc_cfg["all_joints_names"],
+                                test_pose_cfg["all_joints_names"],
                                 ["x", "y", "likelihood"],
                             ],
                             names=["scorer", "bodyparts", "coords"],

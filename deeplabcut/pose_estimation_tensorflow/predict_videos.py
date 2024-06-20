@@ -294,6 +294,14 @@ def analyze_videos(
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshotindex').
 
+    The labels are stored as MultiIndex Pandas Array, which contains the name of
+    the network, body part name, (x, y) label position in pixels, and the
+    likelihood for each frame per body part. These arrays are stored in an
+    efficient Hierarchical Data Format (HDF) in the same directory where the video
+    is stored. However, if the flag save_as_csv is set to True, the data can also
+    be exported in comma-separated values format (.csv), which in turn can be
+    imported in many programs, such as MATLAB, R, Prism, etc.
+
     Parameters
     ----------
     config: str
@@ -408,14 +416,8 @@ def analyze_videos(
 
     Returns
     -------
-    pandas array
-        The labels are stored as MultiIndex Pandas Array, which contains the name of
-        the network, body part name, (x, y) label position in pixels, and the
-        likelihood for each frame per body part. These arrays are stored in an
-        efficient Hierarchical Data Format (HDF) in the same directory, where the video
-        is stored. However, if the flag save_as_csv is set to True, the data can also
-        be exported in comma-separated values format (.csv), which in turn can be
-        imported in many programs, such as MATLAB, R, Prism, etc.
+    DLCScorer: str
+        the scorer used to analyze the videos
 
     Examples
     --------
@@ -1527,7 +1529,9 @@ def _convert_detections_to_tracklets(
         assemblies = assembly_builder.assemblies.get(i)
         if assemblies is None:
             continue
-        animals = np.stack([assembly_builder.data[:, :3] for assembly_builder in assemblies])
+        animals = np.stack(
+            [assembly_builder.data[:, :3] for assembly_builder in assemblies]
+        )
         if track_method == "box":
             xy = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0)
@@ -1811,7 +1815,9 @@ def convert_detections2tracklets(
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
                 if not os.path.exists(assemblies_filename) or overwrite:
                     if calibrate:
-                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
+                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
+                            cfg
+                        )
                         train_data_file = os.path.join(
                             cfg["project_path"],
                             str(trainingsetfolder),
@@ -1822,7 +1828,7 @@ def convert_detections2tracklets(
                     assembly_builder.to_pickle(assemblies_filename)
                 else:
                     assembly_builder.from_pickle(assemblies_filename)
-                    print(f"Loading assemblies from {ass_filename}")
+                    print(f"Loading assemblies from {assemblies_filename}")
                 try:
                     data.close()
                 except AttributeError:
@@ -1855,7 +1861,9 @@ def convert_detections2tracklets(
                         assemblies = assembly_builder.assemblies.get(index)
                         if assemblies is None:
                             continue
-                        animals = np.stack([assembly_builder.data for assembly_builder in assemblies])
+                        animals = np.stack(
+                            [assembly_builder.data for assembly_builder in assemblies]
+                        )
                         if not identity_only:
                             if track_method == "box":
                                 xy = trackingutils.calc_bboxes_from_keypoints(

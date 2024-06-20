@@ -22,18 +22,36 @@ from deeplabcut import auxiliaryfunctions, VERSION
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
+from napari_deeplabcut import misc
 from PySide6.QtWidgets import QMessageBox, QMenu, QWidget, QMainWindow
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 
-def _check_for_updates():
+def _check_for_updates(silent=True):
     is_latest, latest_version = utils.is_latest_deeplabcut_version()
-    if not is_latest:
+    is_latest_plugin, latest_plugin_version = misc.is_latest_version()
+    if is_latest and is_latest_plugin:
+        if not silent:
+            msg = QtWidgets.QMessageBox(
+                text=f"DeepLabCut is up-to-date",
+            )
+            msg.exec_()
+    else:
+        if not is_latest and is_latest_plugin:
+            text = f"DeepLabCut {latest_version} available"
+            command = "pip", "install", "-U", "deeplabcut"
+        elif not is_latest_plugin and is_latest:
+            text = f"DeepLabCut labeling plugin {latest_plugin_version} available"
+            command = "pip", "install", "-U", "napari-deeplabcut"
+        else:
+            text = f"DeepLabCut {latest_version}\nand labeling plugin {latest_plugin_version} available"
+            command = "pip", "install", "-U", "deeplabcut", "napari-deeplabcut"
+
         msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut {latest_version} available",
+            text=text,
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
         update_btn = msg.addButton("Update", msg.AcceptRole)
@@ -42,13 +60,8 @@ def _check_for_updates():
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "-U", "deeplabcut"]
+                [sys.executable, "-m", *command]
             )
-    else:
-        msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut is up-to-date",
-        )
-        msg.exec_()
 
 
 class MainWindow(QMainWindow):
@@ -290,6 +303,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
+        QTimer.singleShot(1000, lambda: _check_for_updates(silent=True))
+
     def default_set(self):
         self.name_default = ""
         self.proj_default = ""
@@ -337,7 +352,7 @@ class MainWindow(QMainWindow):
         self.aboutAction.triggered.connect(self._learn_dlc)
 
         self.check_updates = QAction("&Check for Updates...", self)
-        self.check_updates.triggered.connect(_check_for_updates)
+        self.check_updates.triggered.connect(lambda: _check_for_updates(silent=False))
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -395,13 +410,17 @@ class MainWindow(QMainWindow):
     def _ask_for_help(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Ask for help")
-        dlg.setText('''Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!''')
+        dlg.setText(
+            """Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!"""
+        )
         _ = dlg.exec()
 
     def _learn_dlc(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Learn DLC")
-        dlg.setText('''Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!''')
+        dlg.setText(
+            """Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!"""
+        )
         _ = dlg.exec()
 
     def _create_project(self):
