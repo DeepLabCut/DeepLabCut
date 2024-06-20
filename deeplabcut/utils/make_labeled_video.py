@@ -20,6 +20,7 @@ Licensed under GNU Lesser General Public License v3.0
 Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
+from __future__ import annotations
 
 import argparse
 import os
@@ -382,7 +383,7 @@ def create_labeled_video(
     init_weights="",
     track_method="",
     superanimal_name="",
-    pcutoff=0.6,
+    pcutoff=None,
     skeleton=[],
     skeleton_color="white",
     dotsize=8,
@@ -501,6 +502,9 @@ def create_labeled_video(
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
 
+    pcutoff: string, optional, default=None
+        Overrides the pcutoff set in the project configuration to plot the trajectories.
+
     overwrite: bool, optional, default=False
         If ``True`` overwrites existing labeled videos.
 
@@ -560,13 +564,16 @@ def create_labeled_video(
         )
     """
     if config == "":
-        pass
+        if pcutoff is None:
+            pcutoff = 0.6
     else:
         cfg = auxiliaryfunctions.read_config(config)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
         track_method = auxfun_multianimal.get_track_method(
             cfg, track_method=track_method
         )
+        if pcutoff is None:
+            pcutoff = cfg["pcutoff"]
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
@@ -659,6 +666,7 @@ def create_labeled_video(
         keypoints_only,
         overwrite,
         init_weights=init_weights,
+        pcutoff=pcutoff,
         confidence_to_alpha=confidence_to_alpha,
     )
 
@@ -699,6 +707,7 @@ def proc_video(
     overwrite,
     video,
     init_weights="",
+    pcutoff: float | None = None,
     confidence_to_alpha: Optional[Callable[[float], float]] = None,
 ):
     """Helper function for create_videos
@@ -715,6 +724,9 @@ def proc_video(
     videofolder = Path(video).parents[0]
     if destfolder is None:
         destfolder = videofolder  # where your folder with videos is.
+
+    if pcutoff is None:
+        pcutoff = cfg["pcutoff"]
 
     auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
@@ -751,7 +763,10 @@ def proc_video(
                 s = "_id" if color_by == "individual" else "_bp"
             else:
                 s = ""
-            videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
+
+            videooutname = filepath.replace(
+                ".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
+            )
             if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
@@ -779,7 +794,7 @@ def proc_video(
                     df,
                     videooutname,
                     inds,
-                    cfg["pcutoff"],
+                    pcutoff,
                     cfg["dotsize"],
                     cfg["alphavalue"],
                     skeleton_color=skeleton_color,
@@ -801,7 +816,7 @@ def proc_video(
                     cfg["dotsize"],
                     cfg["colormap"],
                     cfg["alphavalue"],
-                    cfg["pcutoff"],
+                    pcutoff,
                     trailpoints,
                     cropping,
                     x1,
@@ -828,7 +843,7 @@ def proc_video(
                     bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
-                    pcutoff=cfg["pcutoff"],
+                    pcutoff=pcutoff,
                     dotsize=cfg["dotsize"],
                     cmap=cfg["colormap"],
                     color_by=color_by,
