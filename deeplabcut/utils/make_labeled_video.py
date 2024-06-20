@@ -566,7 +566,6 @@ def create_labeled_video(
     if config == "":
         if pcutoff is None:
             pcutoff = 0.6
-        pass
     else:
         cfg = auxiliaryfunctions.read_config(config)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
