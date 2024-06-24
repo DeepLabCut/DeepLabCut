@@ -166,7 +166,18 @@ class PoseDataset(Dataset):
             bboxes,
             annotations_merged,
         ) = self.extract_keypoints_and_bboxes(anns, image.shape)
-        scales, offsets = (1, 1), (0, 0)
+
+        # this is applying data augmentations before the cropping
+        # though normalization should be applied after the cropping
+        transformed = self.apply_transform_all_keypoints(
+            image, keypoints, keypoints_unique, bboxes
+        )
+        image = transformed["image"]
+        keypoints = transformed["keypoints"]
+        keypoints_unique = transformed["keypoints_unique"]
+        bboxes = transformed["bboxes"]
+        offsets = (0, 0)
+        scales = (1, 1)
 
         if self.task in (Task.TOP_DOWN, Task.CTD):
             if self.parameters.cropped_image_size is None:
@@ -186,13 +197,16 @@ class PoseDataset(Dataset):
                 synthesized_keypoints = self.generative_sampler(
                      keypoints=keypoints.reshape(-1, 3),
                      near_keypoints=near_keypoints.reshape(len(near_keypoints),-1, 3),
-                     area=bboxes[0,2]*bboxes[0,3],
+                     area=bboxes[0, 2]*bboxes[0, 3],
                      image_size=original_size,
                 )
-                # for testing the speed of the generative sampling
-                #synthesized_keypoints = keypoints.reshape(-1,3) + np.random.normal(0, 1, keypoints.reshape(-1,3).shape)
-                
-                bboxes[0] = bbox_from_keypoints(synthesized_keypoints[:, :2], original_size[0], original_size[1], 10)
+
+                bboxes[0] = bbox_from_keypoints(
+                    synthesized_keypoints[:, :2],
+                    original_size[0],
+                    original_size[1],
+                    10,  # FIXME: bbox_margin should be a parameter set in cfg
+                )
 
             # TODO: The following code should be replaced by a numpy version
             image, offsets, scales = _crop_and_pad_image_torch(
@@ -203,7 +217,8 @@ class PoseDataset(Dataset):
             if self.task == Task.CTD:
                 synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
                 synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
-                keypoints = safe_stack([keypoints, synthesized_keypoints[None,...]], (0, self.parameters.num_joints, 3))
+                keypoints = safe_stack([keypoints, synthesized_keypoints[None, ...]], (0, self.parameters.num_joints, 3))
+
             bboxes = bboxes[:1]
             bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
             bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
@@ -211,19 +226,13 @@ class PoseDataset(Dataset):
             bboxes[..., 3] = bboxes[..., 3] / scales[1]
             bboxes = np.clip(bboxes, 0, self.parameters.cropped_image_size[0] - 1) #TODO: clip based on [x,y,x,y]?
 
-        transformed = self.apply_transform_all_keypoints(
-            image, keypoints, keypoints_unique, bboxes
-        )
-        keypoints = transformed["keypoints"]
-        bboxes = transformed["bboxes"]
-
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
 
-        item = self._prepare_final_data_dict(
-            transformed["image"],
+        return self._prepare_final_data_dict(
+            image,
             keypoints,
-            transformed["keypoints_unique"],
+            keypoints_unique,
             original_size,
             image_path,
             bboxes,
@@ -232,7 +241,6 @@ class PoseDataset(Dataset):
             offsets,
             scales,
         )
-        return item
 
     def _prepare_final_data_dict(
         self,
@@ -249,7 +257,8 @@ class PoseDataset(Dataset):
     ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
         context = dict()
         if self.task == Task.CTD:
-            context["cond_keypoints"] = keypoints[1,:,:,:2].astype(np.single)
+            context["cond_keypoints"] = keypoints[1, :, :, :2].astype(np.single)
+
         return {
             "image": image.transpose((2, 0, 1)),
             "image_id": image_id,
@@ -281,12 +290,15 @@ class PoseDataset(Dataset):
         bbox_widths = np.maximum(1, bboxes[..., 2])
         bbox_heights = np.maximum(1, bboxes[..., 3])
         area = bbox_widths * bbox_heights
-        if 'individual_id' not in anns:
-            anns['individual_id'] = -np.ones(len(anns['category_id']), dtype=int)
+        if "individual_id" not in anns:
+            anns["individual_id"] = -np.ones(len(anns["category_id"]), dtype=int)
 
+        # we use ..., :3 to pass the visibility flag along
         return {
-            "keypoints": pad_to_length(keypoints[..., :2], num_animals, -1).astype(np.single),
-            "keypoints_unique": keypoints_unique[..., :2].astype(np.single),
+            "keypoints": pad_to_length(keypoints[..., :3], num_animals, -1).astype(
+                np.single
+            ),
+            "keypoints_unique": keypoints_unique[..., :3].astype(np.single),
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
@@ -431,9 +443,28 @@ class PoseDataset(Dataset):
 
     @staticmethod
     def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """Adds a keypoint in the mean of each individual"""
-        center_keypoints = keypoints.copy()
-        center_keypoints[center_keypoints == -1] = np.nan
-        center_keypoints = np.nanmean(center_keypoints, axis=1)
-        np.nan_to_num(center_keypoints, copy=False, nan=-1)
-        return np.concatenate((keypoints, center_keypoints[:, None, :]), axis=1)
+        """Adds a keypoint in the mean of each individual
+
+        Args:
+            keypoints: shape (num_idv, num_kpts, 3)
+
+        Returns:
+            keypoints with centers, of shape (num_idv, num_kpts + 1, 3)
+        """
+        num_idv = keypoints.shape[0]
+        centers = np.full((num_idv, 1, 3), np.nan)
+
+        keypoints_xy = keypoints.copy()[..., :2]
+        keypoints_xy[keypoints[..., 2] <= 0] = np.nan
+
+        # only set centers for individuals where at least 1 bodypart is visible
+        vis_mask = (~np.isnan(keypoints_xy) > 0).all(axis=2).any(axis=1)
+        if np.any(vis_mask):
+            centers[vis_mask, 0, :2] = np.nanmean(keypoints_xy[vis_mask], axis=1)
+
+        masked_centers = np.any(np.isnan(centers[:, 0, :2]), axis=1)
+        centers[masked_centers, 0, 2] = 0
+        centers[~masked_centers, 0, 2] = 2
+        np.nan_to_num(centers, copy=False, nan=0)
+
+        return np.concatenate((keypoints, centers), axis=1)

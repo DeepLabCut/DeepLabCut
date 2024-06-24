@@ -31,16 +31,19 @@ class Runner(ABC, Generic[ModelType]):
         self,
         model: ModelType,
         device: str = "cpu",
+        gpus: list[int] | None = None,
         snapshot_path: str | Path | None = None,
     ):
         """
         Args:
             model: the model to run
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            gpus: the list of GPU indices to use for multi-GPU training
             snapshot_path: the path of a snapshot from which to load model weights
         """
         self.model = model
         self.device = device
+        self.gpus = gpus
         self.snapshot_path = snapshot_path
 
     @staticmethod
@@ -61,8 +64,8 @@ class Runner(ABC, Generic[ModelType]):
             the number of epochs the model was trained for
         """
         snapshot = torch.load(snapshot_path, map_location=device)
-        model.load_state_dict(snapshot["model"])
-        if optimizer is not None:
+        model.load_state_dict(snapshot['model'])
+        if optimizer is not None and 'optimizer' in snapshot:
             optimizer.load_state_dict(snapshot["optimizer"])
 
-        return snapshot["metadata"]["epoch"]
+        return snapshot.get("metadata", {}).get("epoch", 0)

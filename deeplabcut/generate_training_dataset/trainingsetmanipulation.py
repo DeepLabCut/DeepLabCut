@@ -28,6 +28,7 @@ import yaml
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxiliaryfunctions,
     conversioncode,
@@ -466,6 +467,50 @@ def _robust_path_split(path):
     return parent, filename, ext
 
 
+def parse_video_filenames(videos: List[str]) -> List[str]:
+    """Parses the names of all videos listed in a project's ``config.yaml`` file
+
+    Goes through the paths all videos listed for a project, and removes entries with a
+    duplicate video name (e.g. if a video is listed twice, once with the path
+    ``/data/video-1.mov`` and once with the path ``/my-dlc-project/videos/video-1.mov``,
+    then ``video-1`` will only be returned once). The order of videos listed is
+    preserved.
+
+    This prevents the same labeled-data to be added multiple times when merging
+    annotated datasets.
+
+    Prints a warning for each filename with duplicate video paths.
+
+    Args:
+        videos: the videos listed in the project's config.yaml file
+
+    Returns:
+        the filenames of videos listed in the project's config.yaml file, with duplicate
+        entries removed
+    """
+    filenames = []
+    filename_to_videos = {}
+    for video in videos:
+        _, filename, _ = _robust_path_split(video)
+        videos_with_filename = filename_to_videos.get(filename, [])
+        if len(videos_with_filename) == 0:
+            filenames.append(filename)
+
+        videos_with_filename.append(video)
+        filename_to_videos[filename] = videos_with_filename
+
+    for filename, videos in filename_to_videos.items():
+        if len(videos) > 1:
+            video_str = "\n  * " + "\n  * ".join(videos)
+            logging.warning(
+                f"Found multiple videos with the same filename (``{filename}``). To "
+                f"avoid issues, please edit your project's `config.yaml` file to have "
+                f"each video added only once.\nDuplicate entries: {video_str}"
+            )
+
+    return filenames
+
+
 def merge_annotateddatasets(cfg, trainingsetfolder_full):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
@@ -477,8 +522,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
     videos = cfg["video_sets"].keys()
-    for video in videos:
-        _, filename, _ = _robust_path_split(video)
+    video_filenames = parse_video_filenames(videos)
+    for filename in video_filenames:
         file_path = os.path.join(
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
@@ -735,6 +780,7 @@ def create_training_dataset(
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
+    weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
 ):
     """Creates a training dataset.
@@ -767,40 +813,68 @@ def create_training_dataset(
         List of one or multiple lists containing test indexes.
 
     net_type: list, optional, default=None
-        Type of networks. Currently supported options are
-
-        * ``resnet_50``
-        * ``resnet_101``
-        * ``resnet_152``
-        * ``mobilenet_v2_1.0``
-        * ``mobilenet_v2_0.75``
-        * ``mobilenet_v2_0.5``
-        * ``mobilenet_v2_0.35``
-        * ``efficientnet-b0``
-        * ``efficientnet-b1``
-        * ``efficientnet-b2``
-        * ``efficientnet-b3``
-        * ``efficientnet-b4``
-        * ``efficientnet-b5``
-        * ``efficientnet-b6``
+        Type of networks. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
+            complete list)
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``hrnet_w18``
+                * ``hrnet_w32``
+                * ``hrnet_w48``
+                * ``dekr_w18``
+                * ``dekr_w32``
+                * ``dekr_w48``
+                * ``top_down_resnet_50``
+                * ``top_down_resnet_101``
+                * ``top_down_hrnet_w18``
+                * ``top_down_hrnet_w32``
+                * ``top_down_hrnet_w48``
+                * ``animaltokenpose_base``
 
     augmenter_type: string, optional, default=None
-        Type of augmenter. Currently supported augmenters are
-
-        * ``default``
-        * ``scalecrop``
-        * ``imgaug``
-        * ``tensorpack``
-        * ``deterministic``
+        Type of augmenter. The options available depend on which engine is used.
+        Currently supported options are:
+            TensorFlow
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            PyTorch
+                * ``albumentations``
 
     posecfg_template: string, optional, default=None
+        Only for the TensorFlow engine.
         Path to a ``pose_cfg.yaml`` file to use as a template for generating the new
         one for the current iteration. Useful if you would like to start with the same
         parameters a previous training iteration. None uses the default
         ``pose_cfg.yaml``.
 
     superanimal_name: string, optional, default=""
-        Specify the superanimal name is transfer learning with superanimal is desired. This makes sure the pose config template uses superanimal configs as template
+        Only for the TensorFlow engine. For the PyTorch engine, use the ``weight_init``
+        parameter.
+        Specify the superanimal name is transfer learning with superanimal is desired.
+        This makes sure the pose config template uses superanimal configs as template.
+
+    weight_init: WeightInitialisation, optional, default=None
+        PyTorch engine only. Specify how model weights should be initialized. The
+        default mode uses transfer learning from ImageNet weights.
 
     engine: Engine, optional
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
@@ -851,6 +925,7 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
+        # FIXME(niels): this is deprecated
         supermodels = parse_available_supermodels()
         posecfg_template = os.path.join(
             dlc_root_path,
@@ -885,7 +960,9 @@ def create_training_dataset(
             net_type=net_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
+            userfeedback=userfeedback,
             engine=engine,
+            weight_init=weight_init,
         )
     else:
         scorer = cfg["scorer"]
@@ -929,6 +1006,12 @@ def create_training_dataset(
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
+
+        top_down = False
+        if engine == Engine.PYTORCH:
+            if net_type.startswith("top_down_"):
+                top_down = True
+                net_type = net_type[len("top_down_") :]
 
         augmenters = compat.get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
@@ -979,9 +1062,7 @@ def create_training_dataset(
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(
-                net_type, Path(dlcparent_path)
-            )
+            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1092,7 +1173,10 @@ def create_training_dataset(
                 # Test files as well as pose_yaml files (containing training and testing information)
                 #################################################################################
                 modelfoldername = auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, engine=engine,
+                    trainFraction,
+                    shuffle,
+                    cfg,
+                    engine=engine,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(
                     Path(config).parents[0] / modelfoldername, recursive=True
@@ -1165,20 +1249,32 @@ def create_training_dataset(
 
                 # Populate the pytorch config yaml file
                 if engine == Engine.PYTORCH:
-                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-
-                    top_down = False
-                    if net_type.startswith("top_down_"):
-                        top_down = True
-                        net_type = net_type[len("top_down_"):]
-
-                    pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
-                    pytorch_cfg = make_pytorch_pose_config(
-                        project_config=cfg,
-                        pose_config_path=path_train_config,
-                        net_type=net_type,
-                        top_down=top_down,
+                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+                        make_pytorch_pose_config,
                     )
+                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
+                        make_super_animal_finetune_config,
+                    )
+
+                    pose_cfg_path = path_train_config.replace(
+                        "pose_cfg.yaml", "pytorch_config.yaml"
+                    )
+                    if weight_init is not None and weight_init.with_decoder:
+                        pytorch_cfg = make_super_animal_finetune_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            weight_init=weight_init,
+                        )
+                    else:
+                        pytorch_cfg = make_pytorch_pose_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            top_down=top_down,
+                            weight_init=weight_init,
+                        )
+
                     auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
         return splits
@@ -1186,7 +1282,11 @@ def create_training_dataset(
 
 def get_largestshuffle_index(config):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
-    return get_existing_shuffle_indices(config)[-1]
+    shuffle_indices = get_existing_shuffle_indices(config)
+    if len(shuffle_indices) > 0:
+        return shuffle_indices[-1]
+
+    return None
 
 
 def get_existing_shuffle_indices(
@@ -1207,6 +1307,7 @@ def get_existing_shuffle_indices(
         the indices of existing shuffles for this iteration of the project, sorted by
         ascending index
     """
+
     def is_valid_data_stem(stem: str) -> bool:
         if len(stem) == 0:
             return False
@@ -1218,7 +1319,8 @@ def get_existing_shuffle_indices(
             return False
         train_frac, idx = info
         return (
-            train_frac.isdigit() and idx.isdigit()
+            train_frac.isdigit()
+            and idx.isdigit()
             and (train_fraction is None or int(train_frac) == int(100 * train_fraction))
         )
 
@@ -1246,9 +1348,11 @@ def get_existing_shuffle_indices(
             )
 
         shuffle_indices = [
-            idx for idx in shuffle_indices
+            idx
+            for idx in shuffle_indices
             if (
-                project / auxiliaryfunctions.get_model_folder(
+                project
+                / auxiliaryfunctions.get_model_folder(
                     trainFraction=train_fraction,
                     shuffle=idx,
                     cfg=cfg,
@@ -1447,3 +1551,170 @@ def create_training_model_comparison(
                 logger.info(log_info)
 
     return shuffle_list
+
+
+def create_training_dataset_from_existing_split(
+    config: str,
+    from_shuffle: int,
+    from_trainsetindex: int = 0,
+    num_shuffles: int = 1,
+    shuffles: list[int] | None = None,
+    userfeedback: bool = True,
+    net_type: str | None = None,
+    augmenter_type: str | None = None,
+    posecfg_template: dict | None = None,
+    superanimal_name: str = "",
+    weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
+) -> None | list[int]:
+    """
+    Labels from all the extracted frames are merged into a single .h5 file.
+    Only the videos included in the config file are used to create this dataset.
+
+    Args:
+        config: Full path of the ``config.yaml`` file as a string.
+
+        from_shuffle: The index of the shuffle from which to copy the train/test split.
+
+        from_trainsetindex: The trainset index of the shuffle from which to use the data
+            split. Default is 0.
+
+        num_shuffles: Number of shuffles of training dataset to create, used if
+            ``shuffles`` is None.
+
+        shuffles: If defined, ``num_shuffles`` is ignored and a shuffle is created for
+            each index given in the list.
+
+        userfeedback: If ``False``, all requested train/test splits are created (no
+            matter if they already exist). If you want to assure that previous splits
+            etc. are not overwritten, set this to ``True`` and you will be asked for
+            each existing split if you want to overwrite it.
+
+        net_type: The type of network to create the shuffle for. Currently supported
+            options for engine=Engine.TF are:
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``mobilenet_v2_1.0``
+                * ``mobilenet_v2_0.75``
+                * ``mobilenet_v2_0.5``
+                * ``mobilenet_v2_0.35``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            Currently supported  options for engine=Engine.TF can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_models()``.
+
+        augmenter_type: Type of augmenter. Currently supported augmenters for
+            engine=Engine.TF are
+                * ``default``
+                * ``scalecrop``
+                * ``imgaug``
+                * ``tensorpack``
+                * ``deterministic``
+            The only supported augmenter for Engine.PYTORCH is ``albumentations``.
+
+        posecfg_template: Only for Engine.TF. Path to a ``pose_cfg.yaml`` file to use as
+            a template for generating the new one for the current iteration. Useful if
+            you would like to start with the same parameters a previous training
+            iteration. None uses the default ``pose_cfg.yaml``.
+
+        superanimal_name: Specify the superanimal name is transfer learning with
+            superanimal is desired. This makes sure the pose config template uses
+            superanimal configs as template.
+
+        weight_init: Only for Engine.PYTORCH. Specify how model weights should be
+            initialized. The default mode uses transfer learning from ImageNet weights.
+
+        engine: Whether to create a pose config for a Tensorflow or PyTorch model.
+            Defaults to the value specified in the project configuration file. If no
+            engine is specified for the project, defaults to
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
+
+    Returns:
+        If training dataset was successfully created, a list of tuples is returned.
+        The first two elements in each tuple represent the training fraction and the
+        shuffle value. The last two elements in each tuple are arrays of integers
+        representing the training and test indices.
+
+        Returns None if training dataset could not be created.
+
+    Raises:
+        ValueError: If the shuffle from which to copy the data split doesn't exist.
+    """
+    cfg = auxiliaryfunctions.read_config(config)
+    trainset_meta_path = metadata.TrainingDatasetMetadata.path(cfg)
+    if not trainset_meta_path.exists():
+        meta = metadata.TrainingDatasetMetadata.create(cfg)
+        meta.save()
+    else:
+        meta = metadata.TrainingDatasetMetadata.load(cfg, load_splits=False)
+
+    shuffle = meta.get(trainset_index=from_trainsetindex, index=from_shuffle)
+    shuffle = shuffle.load_split(cfg, trainset_path=trainset_meta_path.parent)
+
+    num_copies = num_shuffles
+    if shuffles is not None:
+        num_copies = len(shuffles)
+
+    # pad the train and test indices with -1s so the training fraction is exact
+    train_idx = list(shuffle.split.train_indices)
+    test_idx = list(shuffle.split.test_indices)
+    n_train, n_test = len(train_idx), len(test_idx)
+
+    train_fraction = round(cfg["TrainingFraction"][from_trainsetindex], 2)
+    if round(n_train / (n_train + n_test), 2) != train_fraction:
+        train_padding, test_padding = _compute_padding(train_fraction, n_train, n_test)
+        train_idx = train_idx + (train_padding * [-1])
+        test_idx = test_idx + (test_padding * [-1])
+
+    return create_training_dataset(
+        config=config,
+        num_shuffles=num_shuffles,
+        Shuffles=shuffles,
+        userfeedback=userfeedback,
+        trainIndices=[train_idx for _ in range(num_copies)],
+        testIndices=[test_idx for _ in range(num_copies)],
+        net_type=net_type,
+        augmenter_type=augmenter_type,
+        posecfg_template=posecfg_template,
+        superanimal_name=superanimal_name,
+        weight_init=weight_init,
+        engine=engine,
+    )
+
+
+def _compute_padding(
+    train_fraction: float,
+    num_train: int,
+    num_test: int,
+) -> tuple[int, int]:
+    """
+    Computes the amount of padding to add to train/test indices such that
+    train_fraction = num_train / (num_train + num_test).
+
+    Returns:
+        the number of padding indices to add to the train indices
+        the number of padding indices to add to the test indices
+    """
+    if train_fraction <= 0 or train_fraction >= 1:
+        raise ValueError(
+            f"The training fraction must satisfy 0 < TrainingFraction < 1, but "
+            f"{train_fraction} was found"
+        )
+
+    base_images = 100
+    train_step = int(round(round(train_fraction, 2) * base_images))
+    test_step = base_images - train_step
+
+    tgt_train = train_step
+    tgt_test = test_step
+    while tgt_train < num_train or tgt_test < num_test:
+        tgt_train += train_step
+        tgt_test += test_step
+
+    return (tgt_train - num_train), (tgt_test - num_test)

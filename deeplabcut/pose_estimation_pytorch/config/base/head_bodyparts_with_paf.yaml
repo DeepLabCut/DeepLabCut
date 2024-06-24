@@ -1,4 +1,5 @@
 type: DLCRNetHead
+weight_init: normal
 predictor:
   type: PartAffinityFieldPredictor
   num_animals: "num_individuals"
@@ -10,10 +11,12 @@ predictor:
   min_affinity: 0.05
   graph: "paf_graph"
   edges_to_keep: "paf_edges_to_keep"
+  apply_sigmoid: false
+  clip_scores: true
 target_generator:
   type: SequentialGenerator
   generators:
-  - type: HeatmapPlateauGenerator
+  - type: HeatmapGaussianGenerator
     num_heatmaps: "num_bodyparts"
     pos_dist_thresh: 17
     heatmap_mode: KEYPOINT
@@ -24,7 +27,7 @@ target_generator:
     width: 20
 criterion:
   heatmap:
-    type: WeightedBCECriterion
+    type: WeightedMSECriterion
     weight: 1.0
   locref:
     type: WeightedHuberCriterion

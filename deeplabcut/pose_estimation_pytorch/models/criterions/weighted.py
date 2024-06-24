@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -45,10 +46,12 @@ class WeightedCriterion(BaseCriterion):
         Returns:
             the weighted loss
         """
+        # shape of loss: (batch_size, n_kpts, heatmap_size, heatmap_size)
         loss = self.criterion(output, target)
         n_elems = utils.count_nonzero_elems(loss, weights)
         if n_elems == 0:
-            return torch.tensor(0.0, device=output.device)
+            n_elems = 1
+
         return torch.sum(loss * weights) / n_elems
 
 
@@ -65,6 +68,31 @@ class WeightedMSECriterion(WeightedCriterion):
 
     def __init__(self) -> None:
         super().__init__(nn.MSELoss(reduction="none"))
+
+    def forward(
+        self,
+        output: torch.Tensor,
+        target: torch.Tensor,
+        weights: torch.Tensor | float = 1.0,
+        **kwargs,
+    ) -> torch.Tensor:
+        """
+        Args:
+            output: predicted tensor
+            target: target tensor
+            weights: weights for each element in the loss calculation. If a float,
+                weights all elements by that value. Defaults to 1.
+
+        Returns:
+            the weighted loss
+        """
+        # shape of loss: (batch_size, n_kpts, h, w)
+        loss = self.criterion(output, target)
+        n_elems = utils.count_nonzero_elems(loss, weights)
+        if n_elems == 0:
+            n_elems = 1
+
+        return torch.sum(loss * weights) / n_elems
 
 
 @CRITERIONS.register_module

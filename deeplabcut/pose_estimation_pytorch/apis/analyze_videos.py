@@ -29,8 +29,10 @@ from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets imp
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_inference_runners,
+    get_scorer_name,
     get_scorer_uid,
     list_videos_in_folder,
+    parse_snapshot_index_for_analysis,
 )
 from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
@@ -43,9 +45,9 @@ class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str, context: list[dict[str, Any]] | None = None
+        self, video_path: str | Path, context: list[dict[str, Any]] | None = None
     ) -> None:
-        super().__init__(video_path)
+        super().__init__(str(video_path))
         self._context = context
         self._index = 0
 
@@ -97,11 +99,13 @@ def video_inference(
     video = VideoIterator(str(video_path))
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
+    print(f"Starting to analyze {video_path}")
     print(
         f"Video metadata: \n"
-        f"  n_frames:   {n_frames}\n"
-        f"  fps:        {video.fps}\n"
-        f"  resolution: w={vid_w}, h={vid_h}\n"
+        f"  Overall # of frames:    {n_frames}\n"
+        f"  Duration of video [s]:  {n_frames / max(1, video.fps):.2f}\n"
+        f"  fps:                    {video.fps}\n"
+        f"  resolution:             w={vid_w}, h={vid_h}\n"
     )
     video_metadata = {
         "n_frames": n_frames,
@@ -116,6 +120,7 @@ def video_inference(
 
         print("Running Detector")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
+
         video.set_context(bbox_predictions)
 
     print("Running Pose Prediction")
@@ -128,8 +133,20 @@ def video_inference(
         )
         for i, p_with_id in enumerate(bodypart_predictions):
             predictions[i]["bodyparts"] = p_with_id
+
+    if len(predictions) != n_frames:
+        tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+        header = "#tips-on-video-re-encoding-and-preprocessing"
+        logging.warning(
+            f"The video metadata indicates that there {n_frames} in the video, but "
+            f"only {len(predictions)} were able to be processed. This can happen if "
+            "the video is corrupted. You can try to fix the issue by re-encoding your "
+            f"video (tips on how to do that: {tip_url}{header})"
+        )
+
     if return_video_metadata:
         return predictions, video_metadata
+
     return predictions
 
 
@@ -139,6 +156,7 @@ def analyze_videos(
     videotype: str | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
+    save_as_csv: bool = False,
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
@@ -149,12 +167,12 @@ def analyze_videos(
     auto_track: bool | None = True,
     identity_only: bool | None = False,
     overwrite: bool = False,
-) -> list[tuple[str, pd.DataFrame]]:
+) -> str:
     """Makes prediction based on a trained network.
 
     # TODO:
         - allow batch size greater than 1
-        - other options such as save_as_csv
+        - other options missing options such as shelve
         - pass detector path or detector runner
 
     The index of the trained network is specified by parameters in the config file
@@ -171,6 +189,7 @@ def analyze_videos(
         shuffle: An integer specifying the shuffle index of the training dataset used for
             training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
+        save_as_csv: Saves the predictions in a .csv file.
         device: the device to use for video analysis
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
@@ -202,7 +221,7 @@ def analyze_videos(
             prediction.
 
     Returns:
-        A list containing tuples (video_name, df_video_predictions)
+        The scorer used to analyze the videos
     """
     # Create the output folder
     _validate_destfolder(destfolder)
@@ -212,7 +231,11 @@ def analyze_videos(
     project_path = Path(cfg["project_path"])
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
+        train_fraction,
+        shuffle,
+        cfg,
+        modelprefix=modelprefix,
+        engine=Engine.PYTORCH,
     )
     train_folder = model_folder / "train"
 
@@ -224,19 +247,9 @@ def analyze_videos(
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
-    if snapshot_index is None:
-        snapshot_index = config["snapshotindex"]
-    if snapshot_index == "all":
-        logging.warning(
-            "snapshotindex is set to 'all' (in the config.yaml file or as given to "
-            "`analyze_videos`). Running video analysis with all snapshots is very "
-            "costly! Use the function 'evaluate_network' to choose the best the "
-            "snapshot. For now, changing snapshot index to -1. To evaluate another "
-            "snapshot, you can change the value in the config file or call "
-            "`analyze_videos` with your desired snapshot index."
-        )
-        snapshot_index = -1
-    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
+    snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
+        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+    )
 
     # Get general project parameters
     bodyparts = model_cfg["metadata"]["bodyparts"]
@@ -248,23 +261,28 @@ def analyze_videos(
     if device is not None:
         model_cfg["device"] = device
 
+    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
-    detector_path, detector_snapshot = None,  None
+    detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
-            detector_snapshot_index = -1
+            raise ValueError(
+                "Cannot run videos analysis for top-down models without a detector "
+                "snapshot! Please specify your desired detector_snapshotindex in your "
+                "project's configuration file."
+            )
+
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
         detector_path = detector_snapshot.path
         print(f"  -> Using detector {detector_path}")
 
-    dlc_scorer, _ = auxiliaryfunctions.get_scorer_name(
+    dlc_scorer = get_scorer_name(
         cfg,
         shuffle,
         train_fraction,
-        trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
-        engine=Engine.PYTORCH,
+        snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
         modelprefix=modelprefix,
     )
     pose_runner, detector_runner = get_inference_runners(
@@ -293,7 +311,7 @@ def analyze_videos(
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
         if not overwrite and output_pkl.exists():
-            print(f"Video already analyzed at {output_pkl}!")
+            print(f"Video {video} already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
             predictions = video_inference(
@@ -331,6 +349,7 @@ def analyze_videos(
                 dlc_scorer=dlc_scorer,
                 output_path=output_path,
                 output_prefix=output_prefix,
+                save_as_csv=save_as_csv,
             )
             results.append((str(video), df))
 
@@ -361,7 +380,7 @@ def analyze_videos(
                         trainingsetindex=trainingsetindex,
                         overwrite=False,
                         identity_only=identity_only,
-                        destfolder=destfolder,
+                        destfolder=str(destfolder),
                     )
                     stitch_tracklets(
                         config,
@@ -369,19 +388,28 @@ def analyze_videos(
                         videotype,
                         shuffle,
                         trainingsetindex,
-                        destfolder=destfolder,
+                        destfolder=str(destfolder),
                     )
 
-    return results
+    print(
+        "The videos are analyzed. Now your research can truly start!\n"
+        "You can create labeled videos with 'create_labeled_video'.\n"
+        "If the tracking is not satisfactory for some videos, consider expanding the "
+        "training set. You can use the function 'extract_outlier_frames' to extract a "
+        "few representative outlier frames.\n"
+    )
+
+    return dlc_scorer
 
 
 def create_df_from_prediction(
     pred_bodyparts: np.ndarray,
-    pred_unique_bodyparts: np.ndarray,
+    pred_unique_bodyparts: np.ndarray | None,
     dlc_scorer: str,
     cfg: dict,
     output_path: str | Path,
     output_prefix: str | Path,
+    save_as_csv: bool = False,
 ) -> pd.DataFrame:
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
@@ -424,6 +452,8 @@ def create_df_from_prediction(
         df = df.join(df_u, how="outer")
 
     df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
+    if save_as_csv:
+        df.to_csv(output_h5.with_suffix(".csv"))
     return df
 
 

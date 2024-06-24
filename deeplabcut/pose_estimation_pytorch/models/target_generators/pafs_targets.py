@@ -52,11 +52,10 @@ class PartAffinityFieldGenerator(BaseGenerator):
         self.num_limbs = len(graph)
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
-        batch_size, _, input_h, input_w = inputs.shape
-        height, width = outputs["heatmap"].shape[2:]
-        stride_y, stride_x = input_h / height, input_w / width
+        stride_y, stride_x = stride, stride
+        batch_size, _, height, width = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
 
         partaffinityfield_map = np.zeros(
@@ -69,7 +68,8 @@ class PartAffinityFieldGenerator(BaseGenerator):
 
         for b in range(batch_size):
             for _, kpts_animal in enumerate(coords[b]):
-                visible = set(np.flatnonzero(np.any(kpts_animal > 0.0, axis=1)))
+                visible = set(np.flatnonzero(kpts_animal[..., -1]))
+                kpts_animal = kpts_animal[..., :2]
                 for l, (bp1, bp2) in enumerate(self.graph):
                     if not (bp1 in visible and bp2 in visible):
                         continue

@@ -22,6 +22,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -30,6 +31,7 @@ def make_pytorch_pose_config(
     pose_config_path: str,
     net_type: str | None = None,
     top_down: bool = False,
+    weight_init: WeightInitialization | None = None,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -57,6 +59,8 @@ def make_pytorch_pose_config(
             by associating a detector to the pose model. Required for multi-animal
             projects when net_type is a backbone (as a backbone + heatmap head can only
             predict pose for single individuals).
+        weight_init: Specify how model weights should be initialized. If None, ImageNet
+            pretrained weights from Timm will be loaded when training.
 
     Returns:
         the PyTorch pose configuration file
@@ -110,10 +114,35 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        model_cfg = add_detector(configs_dir, model_cfg, len(individuals))
+        # FIXME(niels): Currently, the variant used is the default MobileNet. In the
+        #  future, we want users to be able to choose which detector variant they use
+        #  when creating the configuration file, instead of having to update it once
+        #  created
+        variant = None
+        if weight_init is not None:
+            # FIXME(niels): We only have fasterrcnn_resnet50_fpn_v2 SuperAnimal weights.
+            #  This should be updated once more SuperAnimal detectors are uploaded,
+            #  so that users can choose which pre-trained detector they use.
+            variant = "fasterrcnn_resnet50_fpn_v2"
+
+        model_cfg = add_detector(
+            configs_dir,
+            model_cfg,
+            len(individuals),
+            variant=variant,
+        )
+
+    # add the default augmentations to the config
+    aug_filename = "aug_top_down.yaml" if is_top_down else "aug_default.yaml"
+    aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
+    pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
     pose_config = update_config(pose_config, model_cfg)
+
+    # set the dataset from which to load weights
+    if weight_init is not None:
+        pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
@@ -278,13 +307,20 @@ def create_backbone_with_paf_model(
     return model_config
 
 
-def add_detector(configs_dir: Path, config: dict, num_individuals: int) -> dict:
+def add_detector(
+    configs_dir: Path,
+    config: dict,
+    num_individuals: int,
+    variant: str | None = None
+) -> dict:
     """Adds a detector to a model
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
         config: model configuration to update
         num_individuals: the maximum number of individuals the model should detect
+        variant: the detector variant to use (if None, uses the variant set in the
+            default detector.yaml config)
 
     Returns:
         the model configuration with an added detector config
@@ -295,6 +331,9 @@ def add_detector(configs_dir: Path, config: dict, num_individuals: int) -> dict:
         detector_config,
         num_individuals=num_individuals,
     )
+    if variant is not None:
+        detector_config["detector"]["model"]["variant"] = variant
+
     config = update_config(config, detector_config)
     return config
 

@@ -7,7 +7,8 @@ model:
   backbone:
     type: HRNet
     model_name: hrnet_w48
-    pretrained: true
+    freeze_bn_stats: true
+    freeze_bn_weights: false
     interpolate_branches: false
     increased_channel_count: false  # changes backbone_output_channels to 128 when true
   backbone_output_channels: 48

@@ -8,6 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import torch
@@ -22,12 +24,19 @@ class BaseBackbone(ABC, nn.Module):
     """Base Backbone class for pose estimation.
 
     Attributes:
+        stride: the stride for the backbone
         freeze_bn_weights: freeze weights of batch norm layers during training
         freeze_bn_stats: freeze stats of batch norm layers during training
     """
 
-    def __init__(self, freeze_bn_weights: bool = True, freeze_bn_stats: bool = True):
+    def __init__(
+        self,
+        stride: int | float,
+        freeze_bn_weights: bool = True,
+        freeze_bn_stats: bool = True,
+    ):
         super().__init__()
+        self.stride = stride
         self.freeze_bn_weights = freeze_bn_weights
         self.freeze_bn_stats = freeze_bn_stats
 

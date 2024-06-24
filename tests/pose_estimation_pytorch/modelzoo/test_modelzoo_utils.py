@@ -12,7 +12,7 @@ import os
 
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import _get_config_model_paths
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import get_config_model_paths
 
 
 @pytest.mark.skip(reason="require-models")
@@ -25,7 +25,7 @@ def test_get_config_model_paths(project_name):
         project_config,
         pose_model_path,
         detector_model_path,
-    ) = _get_config_model_paths(
+    ) = get_config_model_paths(
         project_name,
         "hrnetw32",
         detector_type="fasterrcnn",

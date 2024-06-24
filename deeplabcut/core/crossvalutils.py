@@ -15,18 +15,18 @@ import pickle
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from tqdm import tqdm
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 from sklearn.metrics.cluster import contingency_matrix
+from tqdm import tqdm
 
 from deeplabcut.core.inferenceutils import (
+    _parse_ground_truth_data,
     Assembler,
     evaluate_assembly,
-    _parse_ground_truth_data,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
@@ -56,7 +56,9 @@ def _unsorted_unique(array):
     return np.asarray(array)[np.sort(inds)]
 
 
-def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np.ndarray:
+def find_closest_neighbors(
+    query: np.ndarray, ref: np.ndarray, k: int = 3
+) -> np.ndarray:
     """Greedy matching of predicted keypoints to ground truth keypoints
 
     Args:
@@ -153,7 +155,7 @@ def _calc_within_between_pafs(
             inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
-                neighbors = _find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
+                neighbors = find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
                 found = neighbors != -1
                 lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
 
@@ -261,11 +263,20 @@ def _benchmark_paf_graphs(
         all_assemblies.append((ass.assemblies, ass.unique, ass.metadata["imnames"]))
         if split_inds is not None:
             oks = []
+
+            # get the indices of the images in the training set
+            dataset_idx = [data[image_name]["index"] for image_name in image_paths]
             for inds in split_inds:
-                ass_gt = {k: v for k, v in ass_true_dict.items() if k in inds}
+                ass_gt = {
+                    k: v for k, v in ass_true_dict.items() if dataset_idx[k] in inds
+                }
+                ass_pred = {
+                    k: v for k, v in ass.assemblies.items() if dataset_idx[k] in inds
+                }
+
                 oks.append(
                     evaluate_assembly(
-                        ass.assemblies,
+                        ass_pred,
                         ass_gt,
                         oks_sigma,
                         margin=margin,
@@ -304,7 +315,7 @@ def _benchmark_paf_graphs(
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
                 scores[i, 0] = max(0, (n_dets - hyp.shape[0]) / n_dets)
-                neighbors = _find_closest_neighbors(gt[:, :2], hyp[:, :2])
+                neighbors = find_closest_neighbors(gt[:, :2], hyp[:, :2])
                 valid = neighbors != -1
                 id_gt = gt[valid, 2]
                 id_hyp = hyp[neighbors[valid], -1]

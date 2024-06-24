@@ -17,6 +17,10 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
     BaseCriterion,
     BaseLossAggregator,
 )
+from deeplabcut.pose_estimation_pytorch.models.criterions.dekr import (
+    DEKRHeatmapLoss,
+    DEKROffsetLoss,
+)
 from deeplabcut.pose_estimation_pytorch.models.criterions.weighted import (
     WeightedBCECriterion,
     WeightedHuberCriterion,

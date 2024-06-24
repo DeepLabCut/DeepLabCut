@@ -30,6 +30,7 @@ model:
   heads:
     bodypart:
       type: HeatmapHead
+      weight_init: normal
       predictor:
         type: HeatmapPredictor
         apply_sigmoid: false

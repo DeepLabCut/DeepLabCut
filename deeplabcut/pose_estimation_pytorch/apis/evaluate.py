@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 from typing import Iterable
 
@@ -19,26 +20,24 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     ensure_multianimal_df_format,
-    get_model_snapshots,
     get_inference_runners,
+    get_model_snapshots,
+    get_scorer_name,
     get_scorer_uid,
 )
-from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader
+from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
+from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
     compute_identity_scores,
     get_scores,
     pair_predicted_individuals_with_gt,
 )
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
-from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
-    Snapshot,
-    TorchSnapshotManager,
-)
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
@@ -133,7 +132,15 @@ def evaluate(
         mode=mode,
         detector_runner=detector_runner,
     )
+    if "weight_init" in loader.model_cfg["train_settings"]:
+        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
+        if weight_init_cfg["memory_replay"]:
+            conversion_array = weight_init_cfg["conversion_array"]
+            for filename, pred in predictions.items():
+                pred["bodyparts"] = pred["bodyparts"][:, conversion_array]
+
     poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
+
     gt_keypoints = loader.ground_truth_keypoints(mode)
     if parameters.max_num_animals > 1:
         poses = pair_predicted_individuals_with_gt(poses, gt_keypoints)
@@ -158,8 +165,7 @@ def evaluate(
     # TODO: Evaluate identity predictions
     if loader.model_cfg["metadata"]["with_identity"]:
         pred_id_scores = {
-            filename: pred["identity_scores"]
-            for filename, pred in predictions.items()
+            filename: pred["identity_scores"] for filename, pred in predictions.items()
         }
         id_scores = compute_identity_scores(
             individuals=parameters.individuals,
@@ -208,6 +214,16 @@ def evaluate_snapshot(
     """
     pose_task = Task(loader.model_cfg.get("method", "bu"))
     parameters = loader.get_dataset_parameters()
+
+    if "weight_init" in loader.model_cfg["train_settings"]:
+        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
+        if weight_init_cfg["memory_replay"]:
+            conversion_array = weight_init_cfg["conversion_array"]
+            bodyparts = list(np.array(parameters.bodyparts)[conversion_array])
+            parameters = PoseDatasetParameters(
+                bodyparts, parameters.unique_bpts, parameters.individuals
+            )
+
     pcutoff = cfg.get("pcutoff")
 
     detector_path = None
@@ -223,14 +239,17 @@ def evaluate_snapshot(
         with_identity=loader.model_cfg["metadata"]["with_identity"],
         transform=transform,
         detector_path=detector_path,
-        detector_transform=None
+        detector_transform=None,
     )
 
     predictions = {}
     scores = {
-        "Training epochs": snapshot.uid(),
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
+        "Training epochs": snapshot.epochs,
+        "Detector epochs (TD only)": (
+            -1 if detector_snapshot is None else detector_snapshot.epochs
+        ),
         "pcutoff": pcutoff,
     }
     for split in ["train", "test"]:
@@ -260,7 +279,13 @@ def evaluate_snapshot(
     df_predictions.to_hdf(output_filename, key="df_with_missing")
 
     df_scores = pd.DataFrame([scores]).set_index(
-        ["Training epochs", "%Training dataset", "Shuffle number", "pcutoff"]
+        [
+            "%Training dataset",
+            "Shuffle number",
+            "Training epochs",
+            "Detector epochs (TD only)",
+            "pcutoff",
+        ]
     )
     scores_filepath = output_filename.with_suffix(".csv")
     scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
@@ -319,7 +344,7 @@ def evaluate_network(
     show_errors: bool = True,
     transform: A.Compose = None,
     modelprefix: str = "",
-    detector_snapshot_index: int | None = -1,
+    detector_snapshot_index: int | None = None,
 ) -> None:
     """Evaluates a snapshot.
 
@@ -387,6 +412,9 @@ def evaluate_network(
     if snapshotindex is None:
         snapshotindex = cfg["snapshotindex"]
 
+    if detector_snapshot_index is None:
+        detector_snapshot_index = cfg["detector_snapshotindex"]
+
     for train_set_index in train_set_indices:
         for shuffle in shuffles:
             loader = DLCLoader(
@@ -408,34 +436,49 @@ def evaluate_network(
                 task=task,
             )
 
-            detector_snapshot = None
+            detector_snapshots = [None]
             if task == Task.TOP_DOWN:
                 if detector_snapshot_index is not None:
-                    detector_snapshot = get_model_snapshots(
-                        detector_snapshot_index, loader.model_folder, Task.DETECT,
-                    )[0]
+                    det_snapshots = get_model_snapshots(
+                        "all", loader.model_folder, Task.DETECT
+                    )
+                    if len(det_snapshots) == 0:
+                        print(
+                            "The detector_snapshot_index was set to "
+                            f"{detector_snapshot_index} but no detector snapshots were "
+                            f"found in {loader.model_folder}. Using ground truth "
+                            "bounding boxes to compute metrics.\n"
+                            "To analyze videos with a top-down model, you'll need to "
+                            "train a detector!"
+                        )
+                    else:
+                        detector_snapshots = get_model_snapshots(
+                            detector_snapshot_index,
+                            loader.model_folder,
+                            Task.DETECT,
+                        )
                 else:
                     print("Using GT bounding boxes to compute evaluation metrics")
 
-            for snapshot in snapshots:
-                scorer, _ = auxiliaryfunctions.get_scorer_name(
-                    cfg=cfg,
-                    shuffle=shuffle,
-                    trainFraction=loader.train_fraction,
-                    engine=Engine.PYTORCH,
-                    trainingsiterations=get_scorer_uid(snapshot, detector_snapshot),
-                    modelprefix=modelprefix,
-                )
-                evaluate_snapshot(
-                    loader=loader,
-                    cfg=cfg,
-                    scorer=scorer,
-                    snapshot=snapshot,
-                    transform=transform,
-                    plotting=plotting,
-                    show_errors=show_errors,
-                    detector_snapshot=detector_snapshot,
-                )
+            for detector_snapshot in detector_snapshots:
+                for snapshot in snapshots:
+                    scorer = get_scorer_name(
+                        cfg=cfg,
+                        shuffle=shuffle,
+                        train_fraction=loader.train_fraction,
+                        snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
+                        modelprefix=modelprefix,
+                    )
+                    evaluate_snapshot(
+                        loader=loader,
+                        cfg=cfg,
+                        scorer=scorer,
+                        snapshot=snapshot,
+                        transform=transform,
+                        plotting=plotting,
+                        show_errors=show_errors,
+                        detector_snapshot=detector_snapshot,
+                    )
 
 
 def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
@@ -477,7 +520,9 @@ def save_evaluation_results(
     # Update combined results
     combined_scores_path = scores_path.parent.parent / "CombinedEvaluation-results.csv"
     if combined_scores_path.exists():
-        df_existing_results = pd.read_csv(combined_scores_path, index_col=[0, 1, 2, 3])
+        df_existing_results = pd.read_csv(
+            combined_scores_path, index_col=[0, 1, 2, 3, 4]
+        )
         df_scores = df_scores.combine_first(df_existing_results)
 
     df_scores = df_scores.sort_index()

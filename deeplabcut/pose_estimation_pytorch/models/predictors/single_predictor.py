@@ -36,28 +36,32 @@ class HeatmapPredictor(BasePredictor):
     def __init__(
         self,
         apply_sigmoid: bool = True,
+        clip_scores: bool = False,
         location_refinement: bool = True,
         locref_std: float = 7.2801,
     ):
         """
         Args:
             apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
+            clip_scores: If a sigmoid is not applied, this can be used to clip scores
+                for predicted keypoints to values in [0, 1].
             location_refinement : Enable location refinement.
             locref_std: Standard deviation for location refinement.
         """
         super().__init__()
         self.apply_sigmoid = apply_sigmoid
+        self.clip_scores = clip_scores
         self.sigmoid = torch.nn.Sigmoid()
         self.location_refinement = location_refinement
         self.locref_std = locref_std
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
+        self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of SinglePredictor. Gets predictions from model output.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: output of the model heads (heatmap, locref)
 
         Returns:
@@ -70,9 +74,7 @@ class HeatmapPredictor(BasePredictor):
             >>> poses = predictor.forward(inputs, output)
         """
         heatmaps = outputs["heatmap"]
-        h_in, w_in = inputs.shape[2:]
-        h_out, w_out = heatmaps.shape[2:]
-        scale_factors = h_in / h_out, w_in / w_out
+        scale_factors = stride, stride
 
         if self.apply_sigmoid:
             heatmaps = self.sigmoid(heatmaps)
@@ -88,9 +90,11 @@ class HeatmapPredictor(BasePredictor):
             )
             locrefs = locrefs * self.locref_std
 
-        poses = self.get_pose_prediction(
-            heatmaps, locrefs, scale_factors
-        )
+        poses = self.get_pose_prediction(heatmaps, locrefs, scale_factors)
+
+        if self.clip_scores:
+            poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
+
         return {"poses": poses}
 
     def get_top_values(
@@ -111,11 +115,9 @@ class HeatmapPredictor(BasePredictor):
         """
         batchsize, ny, nx, num_joints = heatmap.shape
         heatmap_flat = heatmap.reshape(batchsize, nx * ny, num_joints)
-
         heatmap_top = torch.argmax(heatmap_flat, dim=1)
-
-        Y, X = heatmap_top // nx, heatmap_top % nx
-        return Y, X
+        y, x = heatmap_top // nx, heatmap_top % nx
+        return y, x
 
     def get_pose_prediction(
         self, heatmap: torch.Tensor, locref: torch.Tensor | None, scale_factors
@@ -138,6 +140,7 @@ class HeatmapPredictor(BasePredictor):
             >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
         Y, X = self.get_top_values(heatmap)
+
         batch_size, num_joints = X.shape
 
         DZ = torch.zeros((batch_size, 1, num_joints, 3)).to(X.device)
@@ -151,11 +154,9 @@ class HeatmapPredictor(BasePredictor):
 
         X = X * scale_factors[1] + 0.5 * scale_factors[1] + DZ[:, :, :, 0]
         Y = Y * scale_factors[0] + 0.5 * scale_factors[0] + DZ[:, :, :, 1]
-        # P = DZ[:, :, 2]
 
         pose = torch.empty((batch_size, 1, num_joints, 3))
         pose[:, :, :, 0] = X
         pose[:, :, :, 1] = Y
         pose[:, :, :, 2] = DZ[:, :, :, 2]
-
         return pose

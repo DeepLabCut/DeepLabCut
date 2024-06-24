@@ -202,7 +202,9 @@ class DLCLoader(Loader):
         splits = self.load_split(self._project_config, trainset_index, shuffle)
         dfs = self.split_data(df, splits)
         dfs["full"] = df
-        return _validate_dataframes(dfs, df_train), image_sizes
+        # let's not validate for now
+        # dfs = _validate_dataframes(dfs, df_train)
+        return dfs, image_sizes
 
     @staticmethod
     def load_split(

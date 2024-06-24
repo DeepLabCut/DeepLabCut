@@ -1,29 +1,8 @@
-data:
-  colormode: RGB
-  inference:
-    normalize_images: true
-  train:
-    affine:
-      p: 0.9
-      rotation: 30
-      translation: 40
-    collate:
-      type: ResizeFromDataSizeCollate
-      min_scale: 0.4
-      max_scale: 1.0
-      min_short_side: 128
-      max_short_side: 1152
-      multiple_of: 32
-      to_square: false
-    covering: true
-    gaussian_noise: 12.75
-    hist_eq: true
-    motion_blur: true
-    normalize_images: true
 device: auto
 method: bu
 runner:
   type: PoseTrainingRunner
+  gpus: null
   key_metric: "test.mAP"
   key_metric_asc: true
   eval_interval: 1
@@ -46,5 +25,4 @@ train_settings:
   dataloader_pin_memory: true
   display_iters: 500
   epochs: 200
-  pretrained_weights: null
   seed: 42

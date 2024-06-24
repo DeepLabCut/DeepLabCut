@@ -62,6 +62,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         sigma: float,
         min_affinity: float,
         add_discarded: bool = False,
+        apply_sigmoid: bool = True,
+        clip_scores: bool = False,
         force_fusion: bool = False,
         return_preds: bool = False,
     ):
@@ -92,6 +94,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         self.nms_radius = nms_radius
         self.return_preds = return_preds
         self.sigma = sigma
+        self.apply_sigmoid = apply_sigmoid
+        self.clip_scores = clip_scores
         self.sigmoid = torch.nn.Sigmoid()
         self.assembler = inferenceutils.Assembler.empty(
             num_animals,
@@ -105,15 +109,16 @@ class PartAffinityFieldPredictor(BasePredictor):
         )
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
+        self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of PartAffinityFieldPredictor. Gets predictions from model output.
 
         Args:
-            output: Output tensors from previous layers.
-                        output = heatmaps, locref, pafs
-                        heatmaps: torch.Tensor([batch_size, num_joints, height, width])
-                        locref: torch.Tensor([batch_size, num_joints, height, width])
+            stride: the stride of the model
+            outputs: Output tensors from previous layers.
+                output = heatmaps, locref, pafs
+                heatmaps: torch.Tensor([batch_size, num_joints, height, width])
+                locref: torch.Tensor([batch_size, num_joints, height, width])
 
         Returns:
             A dictionary containing a "poses" key with the output tensor as value.
@@ -121,17 +126,17 @@ class PartAffinityFieldPredictor(BasePredictor):
         Example:
             >>> predictor = PartAffinityFieldPredictor(num_animals=3, location_refinement=True, locref_stdev=7.2801)
             >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 34, 64, 64), torch.rand(32, 136, 64, 64))
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.forward(output, scale_factors)
+            >>> stride = 8
+            >>> poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]
         locrefs = outputs["locref"]
         pafs = outputs["paf"]
-        h_in, w_in = inputs.shape[2:]
-        h_out, w_out = heatmaps.shape[2:]
-        scale_factors = h_in / h_out, w_in / w_out
+        scale_factors = stride, stride
         batch_size, n_channels, height, width = heatmaps.shape
-        heatmaps = self.sigmoid(heatmaps)
+
+        if self.apply_sigmoid:
+            heatmaps = self.sigmoid(heatmaps)
 
         # Filter predicted heatmaps with a 2D Gaussian kernel as in:
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
@@ -173,6 +178,9 @@ class PartAffinityFieldPredictor(BasePredictor):
                 poses[i, j, :, 4] = assembly.affinity
             if unique is not None:
                 poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
+
+        if self.clip_scores:
+            poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
 
         out = {"poses": poses}
         if self.return_preds:

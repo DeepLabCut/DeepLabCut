@@ -19,10 +19,12 @@ detector:
         to_square: false
       hflip: true
       normalize_images: true
+  device: auto
   model:
     type: FasterRCNN
+    freeze_bn_stats: true
+    freeze_bn_weights: false
     variant: fasterrcnn_mobilenet_v3_large_fpn
-    pretrained: true
   runner:
     type: DetectorTrainingRunner
     eval_interval: 1

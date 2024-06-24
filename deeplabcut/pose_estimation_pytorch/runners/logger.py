@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import csv
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -106,8 +107,10 @@ class ImageLoggerMixin(ABC):
 
         for i in range(epochs):
             for batch_inputs in train_loader:
+                batch_labels = batch_data["annotations"]
+                batch_inputs = batch_data["image"]
                 batch_outputs = model(batch_inputs)
-                batch_targets = model.get_targets(batch_inputs, batch_outputs)
+                batch_targets = model.get_target(batch_outputs, batch_labels)
                 loss = criterion(batch_targets, batch_outputs)
                 loss.backwards()
                 optim.step()
@@ -358,3 +361,71 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 
         """
         self.run.config.update(config)
+
+
+@LOGGER.register_module
+class CSVLogger(BaseLogger):
+    """Logger saving stats and metrics to a CSV file"""
+
+    def __init__(self, train_folder: Path) -> None:
+        """Initialize the WandbLogger class.
+
+        Args:
+            train_folder: The path of the folder containing training files.
+        """
+        super().__init__()
+        self.train_folder = train_folder
+        self.log_file = train_folder / "learning_stats.csv"
+
+        self._steps: list[int] = []
+        self._metric_store: list[dict] = []
+        self._logged_metrics: set[str] = set()
+
+    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
+        """Logs metrics from runs
+
+        Args:
+            metrics: the metrics to log
+            step: The global step in processing. Defaults to None.
+        """
+        if step is None:
+            if len(self._steps) == 0:
+                step = 0
+            else:
+                step = self._steps[-1] + 1
+
+        self._logged_metrics = self._logged_metrics.union(metrics.keys())
+        if len(self._steps) > 0 and step == self._steps[-1]:
+            self._metric_store[-1].update(metrics)
+        else:
+            self._steps.append(step)
+            self._metric_store.append(metrics)
+
+        self.save()
+
+    def save(self):
+        """Saves the metrics to the file system"""
+        logs = self._prepare_logs()
+        with open(self.log_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(logs)
+
+    def log_config(self, config: dict = None) -> None:
+        """Does not do anything as the config should already be saved
+
+        Args:
+            config: Experiment config file.
+        """
+        pass
+
+    def _prepare_logs(self) -> list[list]:
+        """Prepares the data to log as a list of strings"""
+        if len(self._metric_store) == 0:
+            return []
+
+        metrics = list(sorted(self._logged_metrics))
+        logs = [["step"] + metrics]
+        for step, step_metrics in zip(self._steps, self._metric_store):
+            logs.append([step] + [step_metrics.get(m) for m in metrics])
+
+        return logs

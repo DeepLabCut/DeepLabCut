@@ -8,26 +8,28 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 import heapq
 import itertools
 import multiprocessing
-import networkx as nx
-import numpy as np
 import operator
-import pandas as pd
 import pickle
 import warnings
 from collections import defaultdict
 from dataclasses import dataclass
-from math import sqrt, erf
+from math import erf, sqrt
+from typing import Any, Iterable, Tuple
+
+import networkx as nx
+import numpy as np
+import pandas as pd
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
-from scipy.spatial.distance import pdist, cdist
+from scipy.spatial.distance import cdist, pdist
 from scipy.special import softmax
-from scipy.stats import gaussian_kde, chi2
+from scipy.stats import chi2, gaussian_kde
 from tqdm import tqdm
-from typing import Tuple
 
 
 def _conv_square_to_condensed_indices(ind_row, ind_col, n):
@@ -111,6 +113,10 @@ class Assembly:
     @classmethod
     def from_array(cls, array):
         n_bpts, n_cols = array.shape
+
+        # if a single coordinate is NaN for a bodypart, set all to NaN
+        array[np.isnan(array).any(axis=-1)] = np.nan
+
         ass = cls(size=n_bpts)
         ass.data[:, :n_cols] = array
         visible = np.flatnonzero(~np.isnan(array).any(axis=1))
@@ -408,7 +414,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length ** 2 - mu) / sigma
+        z = (link.length**2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
@@ -915,6 +921,28 @@ class Assembler:
             pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 
+@dataclass
+class MatchedPrediction:
+    """A match between a prediction and a ground truth assembly
+
+    The ground truth assembly should be None f the prediction was not matched to any GT,
+    and the OKS should be 0.
+
+    Attributes:
+        prediction: A prediction made by a pose model.
+        score: The confidence score for the prediction.
+        ground_truth: If None, then this prediction is not matched to any ground truth
+            (this can happen when there are more predicted individuals than GT).
+            Otherwise, the ground truth assembly to which this prediction is matched.
+        oks: The OKS score between the prediction and the ground truth pose.
+    """
+
+    prediction: Assembly
+    score: float
+    ground_truth: Assembly | None
+    oks: float
+
+
 def calc_object_keypoint_similarity(
     xy_pred,
     xy_true,
@@ -925,10 +953,12 @@ def calc_object_keypoint_similarity(
     visible_gt = ~np.isnan(xy_true).all(axis=1)
     if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
         return np.nan
+
     true = xy_true[visible_gt]
     scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
     if np.isclose(scale_squared, 0):
         return np.nan
+
     k_squared = (2 * sigma) ** 2
     denom = 2 * scale_squared * k_squared
     if symmetric_kpts is None:
@@ -960,47 +990,80 @@ def calc_object_keypoint_similarity(
 
 
 def match_assemblies(
-    ass_pred, ass_true, sigma, margin=0, symmetric_kpts=None, greedy_matching=False
-):
-    # Only consider assemblies of at least two keypoints
-    ass_pred = [a for a in ass_pred if len(a) > 1]
-    ass_true = [a for a in ass_true if len(a) > 1]
+    predictions: list[Assembly],
+    ground_truth: list[Assembly],
+    sigma: float,
+    margin: int = 0,
+    symmetric_kpts: list[tuple[int, int]] | None = None,
+    greedy_matching: bool = False,
+    greedy_oks_threshold: float = 0.0,
+) -> tuple[int, list[MatchedPrediction]]:
+    """Matches assemblies to ground truth predictions
 
-    matched = []
+    Returns:
+        int: the total number of valid ground truth assemblies
+        list[MatchedPrediction]: a list containing all valid predictions, potentially
+            matched to ground truth assemblies.
+    """
+    # Only consider assemblies of at least two keypoints
+    predictions = [a for a in predictions if len(a) > 1]
+    ground_truth = [a for a in ground_truth if len(a) > 1]
+    num_ground_truth = len(ground_truth)
+
+    # Sort predictions by score
+    inds_pred = np.argsort(
+        [ins.affinity if ins.n_links else ins.confidence for ins in predictions]
+    )[::-1]
+    predictions = np.asarray(predictions)[inds_pred]
+
+    # indices of unmatched ground truth assemblies
+    matched = [
+        MatchedPrediction(
+            prediction=p,
+            score=(p.affinity if p.n_links else p.confidence),
+            ground_truth=None,
+            oks=0.0,
+        )
+        for p in predictions
+    ]
 
     # Greedy assembly matching like in pycocotools
     if greedy_matching:
-        inds_true = list(range(len(ass_true)))
-        inds_pred = np.argsort(
-            [ins.affinity if ins.n_links else ins.confidence for ins in ass_pred]
-        )[::-1]
-        for ind_pred in inds_pred:
-            xy_pred = ass_pred[ind_pred].xy
-            oks = []
-            for ind_true in inds_true:
-                xy_true = ass_true[ind_true].xy
-                oks.append(
-                    calc_object_keypoint_similarity(
-                        xy_pred,
-                        xy_true,
-                        sigma,
-                        margin,
-                        symmetric_kpts,
-                    )
+        matched_gt_indices = set()
+        for idx, pred in enumerate(predictions):
+            oks = [
+                calc_object_keypoint_similarity(
+                    pred.xy,
+                    gt.xy,
+                    sigma,
+                    margin,
+                    symmetric_kpts,
                 )
+                for gt in ground_truth
+            ]
             if np.all(np.isnan(oks)):
                 continue
+
             ind_best = np.nanargmax(oks)
-            ind_true_best = inds_true.pop(ind_best)
-            matched.append((ass_pred[ind_pred], ass_true[ind_true_best], oks[ind_best]))
-            if not inds_true:
-                break
+
+            # if this gt already matched, and not a crowd, continue
+            if ind_best in matched_gt_indices:
+                continue
+
+            # Only match the pred to the GT if the OKS value is above a given threshold
+            if oks[ind_best] < greedy_oks_threshold:
+                continue
+
+            matched_gt_indices.add(ind_best)
+            matched[idx].ground_truth = ground_truth[ind_best]
+            matched[idx].oks = oks[ind_best]
 
     # Global rather than greedy assembly matching
     else:
-        mat = np.zeros((len(ass_pred), len(ass_true)))
-        for i, a_pred in enumerate(ass_pred):
-            for j, a_true in enumerate(ass_true):
+        inds_true = list(range(len(ground_truth)))
+        mat = np.zeros((len(predictions), len(ground_truth)))
+        for i, a_pred in enumerate(predictions):
+            for j, a_true in enumerate(ground_truth):
                 oks = calc_object_keypoint_similarity(
                     a_pred.xy,
                     a_true.xy,
@@ -1011,13 +1074,12 @@ def match_assemblies(
                 if ~np.isnan(oks):
                     mat[i, j] = oks
         rows, cols = linear_sum_assignment(mat, maximize=True)
-        inds_true = list(range(len(ass_true)))
         for row, col in zip(rows, cols):
-            matched.append((ass_pred[row], ass_true[col], mat[row, col]))
+            matched[row].ground_truth = ground_truth[col]
+            matched[row].oks = mat[row, col]
             _ = inds_true.remove(col)
 
-    unmatched = [ass_true[ind] for ind in inds_true]
-    return matched, unmatched
+    return num_ground_truth, matched
 
 
 def parse_ground_truth_data_file(h5_file):
@@ -1072,6 +1134,113 @@ def find_outlier_assemblies(dict_of_assemblies, criterion="area", qs=(5, 95)):
     return list(set(frame_inds[i] for i in inds))
 
 
+def _compute_precision_and_recall(
+    num_gt_assemblies: int,
+    oks_values: np.ndarray,
+    oks_threshold: float,
+    recall_thresholds: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Computes the precision and recall scores at a given OKS threshold
+
+    Args:
+        num_gt_assemblies: the number of ground truth assemblies (used to compute false
+            negatives + true positives).
+        oks_values: the OKS value to the matched GT assembly for each prediction
+        oks_threshold: the OKS threshold at which recall and precision are being
+            computed
+        recall_thresholds: the recall thresholds to use to compute scores
+
+    Returns:
+        The precision and recall arrays at each recall threshold
+    """
+    tp = np.cumsum(oks_values >= oks_threshold)
+    fp = np.cumsum(oks_values < oks_threshold)
+    rc = tp / num_gt_assemblies
+    pr = tp / (fp + tp + np.spacing(1))
+    recall = rc[-1]
+
+    # Guarantee precision decreases monotonically, see
+    # https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
+    for i in range(len(pr) - 1, 0, -1):
+        if pr[i] > pr[i - 1]:
+            pr[i - 1] = pr[i]
+
+    inds_rc = np.searchsorted(rc, recall_thresholds, side="left")
+    precision = np.zeros(inds_rc.shape)
+    valid = inds_rc < len(pr)
+    precision[valid] = pr[inds_rc[valid]]
+    return precision, recall
+
+
+def evaluate_assembly_greedy(
+    assemblies_gt: dict[Any, list[Assembly]],
+    assemblies_pred: dict[Any, list[Assembly]],
+    oks_sigma: float,
+    oks_thresholds: Iterable[float],
+    margin: int | float = 0,
+    symmetric_kpts: list[tuple[int, int]] | None = None,
+) -> dict:
+    """Runs greedy mAP evaluation, as done by pycocotools
+
+    Args:
+        assemblies_gt: A dictionary mapping image ID (e.g. filepath) to ground truth
+            assemblies. Should contain all the same keys as ``assemblies_pred``.
+        assemblies_pred: A dictionary mapping image ID (e.g. filepath) to predicted
+            assemblies. Should contain all the same keys as ``assemblies_gt``.
+        oks_sigma: The sigma to use to compute OKS values for keypoints .
+        oks_thresholds: The OKS thresholds at which to compute precision & recall.
+        margin: The margin to use to compute bounding boxes from keypoints.
+        symmetric_kpts: The symmetric keypoints in the dataset.
+    """
+    recall_thresholds = np.linspace(  # np.linspace(0, 1, 101)
+        start=0.0, stop=1.00, num=int(np.round((1.00 - 0.0) / 0.01)) + 1, endpoint=True
+    )
+    precisions = []
+    recalls = []
+    for oks_t in oks_thresholds:
+        all_matched = []
+        total_gt_assemblies = 0
+        for ind, gt_assembly in assemblies_gt.items():
+            pred_assemblies = assemblies_pred.get(ind, [])
+            num_gt_assemblies, matched = match_assemblies(
+                pred_assemblies,
+                gt_assembly,
+                oks_sigma,
+                margin,
+                symmetric_kpts,
+                greedy_matching=True,
+                greedy_oks_threshold=oks_t,
+            )
+            all_matched.extend(matched)
+            total_gt_assemblies += num_gt_assemblies
+
+        if len(all_matched) == 0:
+            precisions.append(0.0)
+            recalls.append(0.0)
+            continue
+
+        # Global sort of assemblies (across all images) by score
+        scores = np.asarray([-m.score for m in all_matched])
+        sorted_pred_indices = np.argsort(scores, kind="mergesort")
+        oks = np.asarray([match.oks for match in all_matched])[sorted_pred_indices]
+
+        # Compute prediction and recall
+        p, r = _compute_precision_and_recall(
+            total_gt_assemblies, oks, oks_t, recall_thresholds
+        )
+        precisions.append(p)
+        recalls.append(r)
+
+    precisions = np.asarray(precisions)
+    recalls = np.asarray(recalls)
+    return {
+        "precisions": precisions,
+        "recalls": recalls,
+        "mAP": precisions.mean(),
+        "mAR": recalls.mean(),
+    }
+
+
 def evaluate_assembly(
     ass_pred_dict,
     ass_true_dict,
@@ -1082,24 +1251,37 @@ def evaluate_assembly(
     greedy_matching=False,
     with_tqdm: bool = True,
 ):
+    if greedy_matching:
+        return evaluate_assembly_greedy(
+            ass_true_dict,
+            ass_pred_dict,
+            oks_sigma=oks_sigma,
+            oks_thresholds=oks_thresholds,
+            margin=margin,
+            symmetric_kpts=symmetric_kpts,
+        )
+
     # sigma is taken as the median of all COCO keypoint standard deviations
     all_matched = []
-    all_unmatched = []
-    items = ass_true_dict.items()
+    total_gt_assemblies = 0
+
+    gt_assemblies = ass_true_dict.items()
     if with_tqdm:
-        items = tqdm(items)
-    for ind, ass_true in items:
-        ass_pred = ass_pred_dict.get(ind, [])
-        matched, unmatched = match_assemblies(
-            ass_pred,
-            ass_true,
+        gt_assemblies = tqdm(gt_assemblies)
+
+    for ind, gt_assembly in gt_assemblies:
+        pred_assemblies = ass_pred_dict.get(ind, [])
+        num_gt, matched = match_assemblies(
+            pred_assemblies,
+            gt_assembly,
             oks_sigma,
             margin,
             symmetric_kpts,
             greedy_matching,
         )
         all_matched.extend(matched)
-        all_unmatched.extend(unmatched)
+        total_gt_assemblies += num_gt
+
     if not all_matched:
         return {
             "precisions": np.array([]),
@@ -1108,31 +1290,20 @@ def evaluate_assembly(
             "mAR": 0.0,
         }
 
-    conf_pred = np.asarray([match[0].affinity for match in all_matched])
+    conf_pred = np.asarray([match.score for match in all_matched])
     idx = np.argsort(-conf_pred, kind="mergesort")
     # Sort matching score (OKS) in descending order of assembly affinity
-    oks = np.asarray([match[2] for match in all_matched])[idx]
-    ntot = len(all_matched) + len(all_unmatched)
+    oks = np.asarray([match.oks for match in all_matched])[idx]
     recall_thresholds = np.linspace(0, 1, 101)
     precisions = []
     recalls = []
-    for th in oks_thresholds:
-        tp = np.cumsum(oks >= th)
-        fp = np.cumsum(oks < th)
-        rc = tp / ntot
-        pr = tp / (fp + tp + np.spacing(1))
-        recall = rc[-1]
-        # Guarantee precision decreases monotonically
-        # See https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
-        for i in range(len(pr) - 1, 0, -1):
-            if pr[i] > pr[i - 1]:
-                pr[i - 1] = pr[i]
-        inds_rc = np.searchsorted(rc, recall_thresholds)
-        precision = np.zeros(inds_rc.shape)
-        valid = inds_rc < len(pr)
-        precision[valid] = pr[inds_rc[valid]]
-        precisions.append(precision)
-        recalls.append(recall)
+    for t in oks_thresholds:
+        p, r = _compute_precision_and_recall(
+            total_gt_assemblies, oks, t, recall_thresholds
+        )
+        precisions.append(p)
+        recalls.append(r)
+
     precisions = np.asarray(precisions)
     recalls = np.asarray(recalls)
     return {

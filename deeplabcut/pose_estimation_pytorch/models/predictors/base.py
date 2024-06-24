@@ -48,12 +48,12 @@ class BasePredictor(ABC, nn.Module):
 
     @abstractmethod
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
+        self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Abstract method for the forward pass of the Predictor.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: outputs of the model heads
 
         Returns:

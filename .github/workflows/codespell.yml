@@ -18,4 +18,4 @@ jobs:
       - name: Codespell
         uses: codespell-project/actions-codespell@v1
         with:
-           ignore_words_list: bu,BU,td,TD,ctd,CTD
+           ignore_words_list: bu,BU,td,TD,ctd,CTD, Wither

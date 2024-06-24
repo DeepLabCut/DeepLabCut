@@ -33,7 +33,7 @@ class ResNet(BaseBackbone):
         self,
         model_name: str = "resnet50",
         output_stride: int = 32,
-        pretrained: bool = True,
+        pretrained: bool = False,
         drop_path_rate: float = 0.0,
         drop_block_rate: float = 0.0,
         **kwargs,
@@ -48,7 +48,7 @@ class ResNet(BaseBackbone):
             drop_block_rate: Drop block rate
             kwargs: BaseBackbone kwargs
         """
-        super().__init__(**kwargs)
+        super().__init__(stride=output_stride, **kwargs)
         self.model = timm.create_model(
             model_name,
             output_stride=output_stride,

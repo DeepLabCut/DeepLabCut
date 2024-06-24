@@ -14,8 +14,8 @@ import numpy as np
 
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    _get_config_model_paths,
-    _update_config,
+    get_config_model_paths,
+    update_config,
 )
 
 
@@ -81,11 +81,11 @@ class SuperanimalPyTorchInference:
             project_config,
             _,
             _,
-        ) = _get_config_model_paths(project_name, pose_model_type)
+        ) = get_config_model_paths(project_name, pose_model_type)
 
         self.max_individuals = max_individuals
         config = {**project_config, **model_config}
-        config = _update_config(config, max_individuals, device)
+        config = update_config(config, max_individuals, device)
 
         self._config = config
 

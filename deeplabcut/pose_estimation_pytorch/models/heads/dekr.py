@@ -25,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
+from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInitializer
 
 
 @HEADS.register_module
@@ -45,10 +46,15 @@ class DEKRHead(BaseHead):
         aggregator: BaseLossAggregator,
         heatmap_config: dict,
         offset_config: dict,
+        weight_init: str | dict | BaseWeightInitializer | None = "dekr",
+        stride: int | float = 1,  # head stride - should always be 1 for DEKR
     ) -> None:
-        super().__init__(predictor, target_generator, criterion, aggregator)
+        super().__init__(
+            stride, predictor, target_generator, criterion, aggregator, weight_init
+        )
         self.heatmap_head = DEKRHeatmap(**heatmap_config)
         self.offset_head = DEKROffset(**offset_config)
+        self._init_weights()
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         return {"heatmap": self.heatmap_head(x), "offset": self.offset_head(x)}

@@ -56,7 +56,7 @@ def get_target(
             1, min(image_size), (batch_size, num_animals, num_joints, 2)
         )
     }  # 2 for x,y coords
-    inputs = torch.rand((batch_size, 3, image_size[0], image_size[1]))
+    stride = 1
     prediction = {
         "heatmap": torch.rand((batch_size, num_joints, image_size[0], image_size[1])),
         "locref": torch.rand((batch_size, 2 * num_joints, image_size[0], image_size[1])),
@@ -68,7 +68,7 @@ def get_target(
         generate_locref=True,
     )
 
-    targets_output = generator(inputs, prediction, labels)
+    targets_output = generator(stride, prediction, labels)
     return targets_output, labels
 
 

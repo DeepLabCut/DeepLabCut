@@ -45,6 +45,7 @@ from deeplabcut.generate_training_dataset import (
     mergeandsplit,
 )
 from deeplabcut.generate_training_dataset import (
+    create_training_dataset_from_existing_split,
     create_training_model_comparison,
     create_multianimaltraining_dataset,
 )

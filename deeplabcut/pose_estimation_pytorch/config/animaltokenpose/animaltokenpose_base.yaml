@@ -1,0 +1,49 @@
+# TODO: This default configuration file needs to be reviewed so it matches the original
+ #  base TokenPose configuration, as defined in
+ #  https://github.com/leeyegy/TokenPose/blob/main/experiments/coco/tokenpose/tokenpose_b_256_192_patch43_dim192_depth12_heads8.yaml
+method: td  # Need to add a detector
+model:
+  backbone:
+    type: HRNet
+    model_name: hrnet_w32
+    freeze_bn_stats: true
+    freeze_bn_weights: false
+    interpolate_branches: false
+    increased_channel_count: false  # changes backbone_output_channels to 128 when true
+  backbone_output_channels: 32
+  neck:
+    type: Transformer
+    feature_size:
+      - 64
+      - 64
+    patch_size:
+      - 4
+      - 4
+    num_keypoints: "num_bodyparts"
+    channels: 32
+    dim: 192
+    heads: 8
+    depth: 6
+  heads:
+    bodypart:
+      type: TransformerHead
+      target_generator:
+        type: HeatmapPlateauGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+      criterion:
+        type: WeightedBCECriterion
+      predictor:
+        type: HeatmapPredictor
+        location_refinement: false
+      dim: 192
+      hidden_heatmap_dim: 384
+      heatmap_dim: 4096
+      apply_multi: true
+      heatmap_size:
+        - 64
+        - 64
+      apply_init: true
+      head_stride: 1

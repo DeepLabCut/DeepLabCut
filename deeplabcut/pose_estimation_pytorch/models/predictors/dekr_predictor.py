@@ -71,6 +71,7 @@ class DEKRPredictor(BasePredictor):
         num_animals: int,
         detection_threshold: float = 0.01,
         apply_sigmoid: bool = True,
+        clip_scores: bool = False,
         use_heatmap: bool = True,
         keypoint_score_type: str = "combined",
         max_absorb_distance: int = 75,
@@ -80,6 +81,8 @@ class DEKRPredictor(BasePredictor):
             num_animals: Number of animals in the project.
             detection_threshold: Threshold for detection
             apply_sigmoid: Apply sigmoid to heatmaps
+            clip_scores: If a sigmoid is not applied, this can be used to clip scores
+                for predicted keypoints to values in [0, 1].
             use_heatmap: Use heatmap to refine the keypoint predictions.
             keypoint_score_type: Type of score to compute for keypoints. "heatmap"
                 applies the heatmap score to each keypoint. "center" applies the score
@@ -90,6 +93,7 @@ class DEKRPredictor(BasePredictor):
         self.num_animals = num_animals
         self.detection_threshold = detection_threshold
         self.apply_sigmoid = apply_sigmoid
+        self.clip_scores = clip_scores
         self.use_heatmap = use_heatmap
         self.keypoint_score_type = keypoint_score_type
         if self.keypoint_score_type not in ("heatmap", "center", "combined"):
@@ -99,12 +103,12 @@ class DEKRPredictor(BasePredictor):
         self.max_absorb_distance = max_absorb_distance
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor]
+        self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Forward pass of DEKRPredictor.
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
+            stride: the stride of the model
             outputs: outputs of the model heads (heatmap, locref)
 
         Returns:
@@ -116,9 +120,7 @@ class DEKRPredictor(BasePredictor):
             poses_with_scores = predictor.forward(outputs, scale_factors)
         """
         heatmaps, offsets = outputs["heatmap"], outputs["offset"]
-        h_in, w_in = inputs.shape[2:]
-        h_out, w_out = heatmaps.shape[2:]
-        scale_factors = h_in / h_out, w_in / w_out
+        scale_factors = stride, stride
 
         if self.apply_sigmoid:
             heatmaps = F.sigmoid(heatmaps)
@@ -167,6 +169,9 @@ class DEKRPredictor(BasePredictor):
         poses[:, :, :, 1] = (
             poses[:, :, :, 1] * scale_factors[0] + 0.5 * scale_factors[0]
         )
+
+        if self.clip_scores:
+            score = torch.clip(score, min=0, max=1)
 
         poses_w_scores = torch.cat([poses, score], dim=3)
         # self.pose_nms(heatmaps, poses_w_scores)

@@ -123,7 +123,7 @@ class Tracklet:
         return self._centroid
 
     def _update_centroid(self):
-        like = self.data[..., 2:3]
+        like = self.data[..., 2:3] + 1e-10 # Avoid division by zero in very uncertain tracklets
         self._centroid = np.nansum(self.xy * like, axis=1) / np.nansum(like, axis=1)
 
     @property
@@ -606,6 +606,9 @@ class TrackletStitcher:
         return max_gap
 
     def mine(self, n_samples):
+        if not self._lu_overlap:
+            raise ValueError("No overlapping tracklets found.")
+
         p = np.asarray([t.likelihood for t in self])
         p /= p.sum()
         triplets = []
@@ -1132,7 +1135,7 @@ def stitch_tracklets(
     if n_tracks is None:
         n_tracks = len(animal_names)
 
-    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.GetScorerName(
+    DLCscorer, _ = deeplabcut.utils.auxiliaryfunctions.get_scorer_name(
         cfg,
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],

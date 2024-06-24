@@ -18,20 +18,9 @@ NECKS = Registry("necks", build_func=build_from_cfg)
 
 
 class BaseNeck(ABC, torch.nn.Module):
-    """Base Neck class for pose estimation.
-
-    This class defines the base Neck for pose estimation models.
-
-    Attributes:
-        None
-    """
+    """Base Neck class for pose estimation"""
 
     def __init__(self):
-        """Initialize the BaseNeck.
-
-        Args:
-            None
-        """
         super().__init__()
 
     @abstractmethod

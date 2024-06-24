@@ -1,6 +1,9 @@
 type: HeatmapHead
+weight_init: normal
 predictor:
   type: HeatmapPredictor
+  apply_sigmoid: false
+  clip_scores: true
   location_refinement: false
 target_generator:
   type: HeatmapGaussianGenerator
@@ -10,7 +13,7 @@ target_generator:
   generate_locref: false
 criterion:
   heatmap:
-    type: WeightedBCECriterion
+    type: WeightedMSECriterion
     weight: 1.0
 heatmap_config:
   channels:

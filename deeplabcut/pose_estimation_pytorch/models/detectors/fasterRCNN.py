@@ -54,6 +54,8 @@ class FasterRCNN(BaseDetector):
 
     def __init__(
         self,
+        freeze_bn_stats: bool = False,
+        freeze_bn_weights: bool = False,
         variant: str = "fasterrcnn_mobilenet_v3_large_fpn",
         pretrained: bool = True,
         box_score_thresh: float = 0.01,
@@ -64,10 +66,14 @@ class FasterRCNN(BaseDetector):
                 "https://pytorch.org/vision/stable/models.html#object-detection"
             )
 
-        super().__init__()
+        super().__init__(
+            freeze_bn_stats=freeze_bn_stats,
+            freeze_bn_weights=freeze_bn_weights,
+            pretrained=pretrained,
+        )
         model_fn = getattr(detection, variant)
         weights = None
-        if pretrained:
+        if self._pretrained:
             weights = "COCO_V1"
 
         # Load the model

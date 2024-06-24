@@ -149,8 +149,8 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 batch_outputs = self.model(batch_inputs, **kwargs_)
             else:
                 batch_outputs = self.model(batch_inputs, **kwargs)
-            raw_predictions = self.model.get_predictions(batch_inputs, batch_outputs)
 
+            raw_predictions = self.model.get_predictions(batch_outputs)
             for b in range(batch_size):
                 image_predictions = {}
                 for head, head_outputs in raw_predictions.items():
@@ -194,7 +194,6 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
             batch_inputs = inputs[i : i + batch_size]
             batch_inputs = batch_inputs.to(self.device)
             _, raw_predictions = self.model(batch_inputs)
-
             for b, item in enumerate(raw_predictions):
                 # take the top-k bounding boxes as individuals
                 batch_predictions.append(

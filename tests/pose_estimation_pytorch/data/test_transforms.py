@@ -90,3 +90,14 @@ def test_dlc_resize_pad_bad_aspect_ratio_with_keypoints(data):
     transformed = transform(image=fake_image, keypoints=data["in_keypoints"])
     assert transformed["image"].shape == data["out_shape"]
     assert transformed["keypoints"] == data["out_keypoints"]
+
+
+def test_coarse_dropout():
+    aug = transforms.CoarseDropout(
+        max_holes=10,
+        max_height=0.05,
+        min_height=0.01,
+        max_width=0.05,
+        min_width=0.01,
+        p=0.5,
+    )

@@ -70,7 +70,7 @@ skeleton_color: black
 pcutoff:
 dotsize:
 alphavalue:
-colormap:
+colormap: rainbow
 
 
 # Training,Evaluation and Analysis configuration
@@ -79,6 +79,7 @@ iteration:
 default_net_type:
 default_augmenter:
 snapshotindex:
+detector_snapshotindex:
 batch_size: 1
 
 
@@ -94,3 +95,6 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:

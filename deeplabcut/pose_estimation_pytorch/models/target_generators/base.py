@@ -40,13 +40,13 @@ class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
 
     @abstractmethod
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         """Generates targets
 
         Args:
-            inputs: the input images given to the model, of shape (b, c, w, h)
-            outputs: output of each model head
+            stride: the stride of the model
+            outputs: output of a model head
             labels: the labels for the inputs (each tensor should have shape (b, ...))
 
         Returns:
@@ -75,13 +75,16 @@ class SequentialGenerator(BaseGenerator):
         return self._generators
 
     def forward(
-        self, inputs: torch.Tensor, outputs: dict[str, torch.Tensor], labels: dict
+        self, stride: int, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
         dict_ = {}
         for gen in self.generators:
-            dict_.update(gen(inputs, outputs, labels))
+            dict_.update(gen(stride, outputs, labels))
         return dict_
 
     def __repr__(self):
         generators_repr = ", ".join(repr(gen) for gen in self._generators)
-        return f"<{self.__class__.__name__}(generators=[{generators_repr}], label_keypoint_key='{self.label_keypoint_key}')>"
+        return (
+            f"<{self.__class__.__name__}(generators=[{generators_repr}], "
+            f"label_keypoint_key='{self.label_keypoint_key}')>"
+        )

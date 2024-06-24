@@ -272,6 +272,7 @@ def create_new_project(
     cfg_file["TrainingFraction"] = [0.95]
     cfg_file["iteration"] = 0
     cfg_file["snapshotindex"] = -1
+    cfg_file["detector_snapshotindex"] = -1
     cfg_file["x1"] = 0
     cfg_file["x2"] = 640
     cfg_file["y1"] = 277

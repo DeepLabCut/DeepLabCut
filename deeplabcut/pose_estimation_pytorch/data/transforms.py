@@ -45,15 +45,31 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
 
-    if augmentations.get("hflip"):
-        warnings.warn(
-            "Be careful! Do not train pose models with horizontal flips if you have"
-            " symmetric keypoints!"
-        )
+    if (lms_cfg := augmentations.get("longest_max_size")) is not None:
+        transforms.append(A.LongestMaxSize(lms_cfg))
+
+    if hflip_cfg := augmentations.get("hflip"):
         hflip_proba = 0.5
-        if isinstance(augmentations["hflip"], float):
-            hflip_proba = augmentations["hflip"]
-        transforms.append(A.HorizontalFlip(p=hflip_proba))
+        symmetries = None
+        if isinstance(hflip_cfg, float):
+            hflip_proba = hflip_cfg
+        elif isinstance(hflip_cfg, dict):
+            if "p" in hflip_cfg:
+                hflip_proba = float(hflip_cfg["p"])
+
+            if "symmetries" in hflip_cfg:
+                symmetries = []
+                for kpt_a, kpt_b in hflip_cfg["symmetries"]:
+                    symmetries.append((int(kpt_a), int(kpt_b)))
+
+        if symmetries is not None:
+            transforms.append(HFlip(symmetries=symmetries, p=hflip_proba))
+        else:
+            warnings.warn(
+                "Be careful! Do not train pose models with horizontal flips if you have"
+                " symmetric keypoints!"
+            )
+            transforms.append(A.HorizontalFlip(p=hflip_proba))
 
     if (affine := augmentations.get("affine")) is not None:
         scaling = affine.get("scaling")
@@ -194,6 +210,24 @@ def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
     else:
         transforms.append(A.Resize(height, width))
     return transforms
+
+
+class HFlip(A.HorizontalFlip):
+    """Horizontal Flip which swaps symmetric keypoints"""
+
+    def __init__(self, symmetries: list[tuple[int, int]], *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._symmetries = {}
+        for i, j in symmetries:
+            self._symmetries[i] = j
+            self._symmetries[j] = i
+
+    def apply_to_keypoints(self, keypoints, **params):
+        swapped_keypoints = [
+            keypoints[self._symmetries.get(kpt_idx, kpt_idx)]
+            for kpt_idx in range(len(keypoints))
+        ]
+        return super().apply_to_keypoints(swapped_keypoints, **params)
 
 
 class KeypointAwareCrop(A.RandomCrop):

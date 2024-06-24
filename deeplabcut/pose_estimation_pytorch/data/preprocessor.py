@@ -387,8 +387,11 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
         if "cond_kpts" not in context:
             raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
 
-        context["bboxes"] = [bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
-                             for cond_kpts in context[self.cond_kpt_key]]
+        context["bboxes"] = [
+            # FIXME: bbox_margin should be a parameter set in the configuration
+            bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
+            for cond_kpts in context[self.cond_kpt_key]
+        ]
 
         return image, context
 

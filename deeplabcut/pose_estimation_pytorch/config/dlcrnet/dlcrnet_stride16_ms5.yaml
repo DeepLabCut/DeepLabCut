@@ -68,3 +68,5 @@ model:
         strides:
         - 2
       num_stages: 5
+runner:
+  eval_interval: 25  # slow evaluation with poor Part-Affinity fields

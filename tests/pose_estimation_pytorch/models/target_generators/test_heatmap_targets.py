@@ -69,13 +69,13 @@ def test_gaussian_heatmap_generation_single_keypoint(data):
         heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
         generate_locref=False,
     )
-    inputs = torch.zeros((1, 3, *data["in_shape"]))
+    stride = data["in_shape"][0] / data["out_shape"][0]
     outputs = torch.zeros((1, data["num_heatmaps"], *data["out_shape"]))
     ann_shape = (1, len(data["centers"]), data["num_heatmaps"], 2)
     annotations = {
         "keypoints": torch.tensor(data["centers"]).reshape(ann_shape)  # x, y
     }
-    targets = generator(inputs, {"heatmap": outputs}, annotations)
+    targets = generator(stride, {"heatmap": outputs}, annotations)
 
     print("Targets")
     print(targets["heatmap"]["target"])
@@ -101,8 +101,8 @@ def test_random_gaussian_target_generation(
         )
     }  # batch size, num animals, num keypoints, 2 for x,y
 
-    # generate input images (batch_size, 3, h, w)
-    inputs = torch.zeros((batch_size, 3, *image_size))
+    # model stride 1
+    stride = 1
 
     # generate predictions
     predicted_heatmaps = {
@@ -116,7 +116,7 @@ def test_random_gaussian_target_generation(
         heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
         generate_locref=False,
     )
-    targets = generator(inputs, predicted_heatmaps, annotations)
+    targets = generator(stride, predicted_heatmaps, annotations)
     target_heatmap = targets["heatmap"]["target"].reshape(
         batch_size, num_keypoints, image_size[0] * image_size[1]
     )

@@ -118,6 +118,12 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
+        if "weight_init" in self.model_cfg["train_settings"]:
+            weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
+            if weight_init_cfg["memory_replay"]:
+                conversion_array = weight_init_cfg["conversion_array"]
+                num_bodyparts = len(conversion_array)
+
         if mode not in self._loaded_data:
             self._loaded_data[mode] = self.load_data(mode)
         data = self._loaded_data[mode]
@@ -132,9 +138,7 @@ class Loader(ABC):
                 annotations[i]["individual"]: annotations[i]["keypoints"]
                 for i in img_to_ann_map[image["id"]]
             }
-            gt_array = np.empty((len(individuals), num_bodyparts, 3))
-            gt_array.fill(np.nan)
-
+            gt_array = np.zeros((len(individuals), num_bodyparts, 3))
             # Keep the shape of the ground truth
             for idv_idx, idv in enumerate(individuals):
                 if idv in individual_keypoints:
@@ -168,9 +172,11 @@ class Loader(ABC):
             image_path = image["file_name"]
             img_shape = image["height"], image["width"], 3
             bboxes = [annotations[i]["bbox"] for i in img_to_ann_map[image["id"]]]
-            ground_truth_dict[image_path] = _compute_crop_bounds(
-                np.stack(bboxes, axis=0), img_shape
-            )
+            if len(bboxes) == 0:
+                bboxes = np.zeros((0, 4))
+            else:
+                bboxes = _compute_crop_bounds(np.stack(bboxes, axis=0), img_shape)
+            ground_truth_dict[image_path] = bboxes
 
         return ground_truth_dict
 
@@ -234,9 +240,8 @@ class Loader(ABC):
         filtered_annotations = []
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
-            if (
-                task in (Task.DETECT, Task.TOP_DOWN) and
-                (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0)
+            if task in (Task.DETECT, Task.TOP_DOWN) and (
+                annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0
             ):
                 continue
             elif task != Task.DETECT and np.all(keypoints[:, :2] <= 0):

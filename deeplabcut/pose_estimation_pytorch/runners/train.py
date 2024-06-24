@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.nn.parallel import DataParallel
 
 from deeplabcut.pose_estimation_pytorch.metrics import compute_bbox_metrics
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
@@ -31,6 +32,7 @@ from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
+    CSVLogger,
     ImageLoggerMixin,
 )
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
@@ -50,6 +52,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         optimizer: torch.optim.Optimizer,
         snapshot_manager: TorchSnapshotManager,
         device: str = "cpu",
+        gpus: list[int] | None = None,
         eval_interval: int = 1,
         snapshot_path: Path | None = None,
         scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
@@ -61,23 +64,30 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             optimizer: the optimizer to use when fitting the model
             snapshot_manager: the module to use to manage snapshots
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            eval_interval: how often evaluation is run on the test set in epochs
+            gpus: the list of GPU indices to use for multi-GPU training
+            eval_interval: how often evaluation is run on the test set (in epochs)
             snapshot_path: if defined, the path of a snapshot from which to load
                 pretrained weights
             scheduler: scheduler for adjusting the lr of the optimizer
             logger: logger to monitor training (e.g WandB logger)
         """
-        super().__init__(model=model, device=device, snapshot_path=snapshot_path)
+        super().__init__(
+            model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
+        )
         self.eval_interval = eval_interval
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.snapshot_manager = snapshot_manager
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
+        self.csv_logger = CSVLogger(train_folder=snapshot_manager.model_folder)
         self.logger = logger
         self.starting_epoch = 0
         self.current_epoch = 0
 
-        if self.snapshot_path is not None and len(self.snapshot_path) > 0:
+        # some models cannot compute a validation loss (e.g. detectors)
+        self._print_valid_loss = True
+
+        if self.snapshot_path is not None and self.snapshot_path != "":
             self.starting_epoch = self.load_snapshot(
                 self.snapshot_path,
                 self.device,
@@ -93,7 +103,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return {
             "metadata": self._metadata,
             "model": self.model.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         }
 
     @abstractmethod
@@ -142,9 +152,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner = Runner(model, optimizer, cfg, device='cuda')
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
-        self.model.to(self.device)
+        if self.gpus:
+            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+        else:
+            self.model.to(self.device)
+
         if isinstance(self.logger, ImageLoggerMixin):
             self.logger.select_images_to_log(train_loader, valid_loader)
+
+        # continuing to train a model: either total epochs or extra epochs
+        if self.starting_epoch > epochs:
+            epochs = self.starting_epoch + epochs
 
         for e in range(self.starting_epoch + 1, epochs + 1):
             self.current_epoch = e
@@ -155,7 +173,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if self.scheduler:
                 self.scheduler.step()
 
-            lr = self.optimizer.param_groups[0]['lr']
+            lr = self.optimizer.param_groups[0]["lr"]
             msg = f"Epoch {e}/{epochs} (lr={lr}), train loss {float(train_loss):.5f}"
             if e % self.eval_interval == 0:
                 with torch.no_grad():
@@ -163,7 +181,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     valid_loss = self._epoch(
                         valid_loader, mode="eval", display_iters=display_iters
                     )
-                    msg += f", valid loss {float(valid_loss):.5f}"
+                    if self._print_valid_loss:
+                        msg += f", valid loss {float(valid_loss):.5f}"
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
@@ -218,7 +237,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._metadata["metrics"] = perf_metrics
             self._epoch_predictions = {}
             self._epoch_ground_truth = {}
-            if len(perf_metrics) > 0:
+            if perf_metrics is not None and len(perf_metrics) > 0:
                 logging.info(f"Epoch {self.current_epoch} performance:")
                 for name, score in perf_metrics.items():
                     logging.info(f"{name + ':': <20}{score:.3f}")
@@ -226,19 +245,23 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         epoch_loss = np.mean(epoch_loss).item()
         self.history[f"{mode}_loss"].append(epoch_loss)
 
+        metrics_to_log = {}
+        if perf_metrics:
+            for name, score in perf_metrics.items():
+                if not isinstance(score, (int, float)):
+                    score = 0.0
+                metrics_to_log[name] = score
+
+        for key in loss_metrics:
+            name = f"{mode}.{key}"
+            val = np.nan
+            if np.sum(~np.isnan(loss_metrics[key])) > 0:
+                val = np.nanmean(loss_metrics[key]).item()
+            self._metadata["losses"][name] = val
+            metrics_to_log[f"losses/{name}"] = val
+
+        self.csv_logger.log(metrics_to_log, step=self.current_epoch)
         if self.logger:
-            metrics_to_log = {}
-            if perf_metrics:
-                for name, score in perf_metrics.items():
-                    if not isinstance(score, (int, float)):
-                        score = 0.0
-                    metrics_to_log[name] = score
-
-            for key in loss_metrics:
-                name, val = f"{mode}.{key}", np.nanmean(loss_metrics[key]).item()
-                self._metadata["losses"][name] = val
-                metrics_to_log[f"losses/{name}"] = val
-
             self.logger.log(metrics_to_log, step=self.current_epoch)
 
         return epoch_loss
@@ -284,7 +307,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             self.optimizer.zero_grad()
 
         inputs = batch["image"]
-        inputs = inputs.to(self.device)
+        inputs = inputs.to(self.device).float()
         if 'cond_keypoints' in batch['context']:
             cond_kpts = batch['context']['cond_keypoints']
             #cond_kpts = cond_kpts.to(self.device) # cond kpts are put on device after heatmap creation
@@ -292,8 +315,13 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         else:
             outputs = self.model(inputs)
 
-        target = self.model.get_target(inputs, outputs, batch["annotations"])
-        losses_dict = self.model.get_loss(outputs, target)
+        if self.gpus:
+            underlying_model = self.model.module
+        else:
+            underlying_model = self.model
+
+        target = underlying_model.get_target(outputs, batch["annotations"])
+        losses_dict = underlying_model.get_loss(outputs, target)
         if mode == "train":
             losses_dict["total_loss"].backward()
             self.optimizer.step()
@@ -304,7 +332,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         if mode == "eval":
             predictions = {
                 name: {k: v.detach().cpu().numpy() for k, v in pred.items()}
-                for name, pred in self.model.get_predictions(inputs, outputs).items()
+                for name, pred in underlying_model.get_predictions(outputs).items()
             }
 
             ground_truth = batch["annotations"]["keypoints"]
@@ -340,8 +368,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
         )
         poses = pair_predicted_individuals_with_gt(
-            self._epoch_predictions["bodyparts"],
-            self._epoch_ground_truth["bodyparts"]
+            self._epoch_predictions["bodyparts"], self._epoch_ground_truth["bodyparts"]
         )
 
         # pad predictions if there are any missing (needed for top-down models)
@@ -349,9 +376,8 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
             for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
                 if len(kpts) < num_animals:
-                    padded_kpts = np.zeros((num_animals, *kpts.shape[1:]))
-                    padded_kpts.fill(np.nan)
-                    padded_kpts[:len(kpts)] = kpts
+                    padded_kpts = -np.ones((num_animals, *kpts.shape[1:]))
+                    padded_kpts[: len(kpts)] = kpts
                     kpt_dict[path] = padded_kpts
                 else:
                     kpt_dict[path] = kpts
@@ -383,13 +409,24 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         offsets = offsets.detach().cpu().numpy()
 
         for path, gt, pred, scale, offset in zip(
-            paths, gt_keypoints, pred_keypoints, scales, offsets,
+            paths,
+            gt_keypoints,
+            pred_keypoints,
+            scales,
+            offsets,
         ):
+            # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
-            vis = 2 * np.all(ground_truth >= 0, axis=-1)
-            gt_with_vis = np.zeros((*ground_truth.shape[:-1], 3))
-            gt_with_vis[..., :2] = ground_truth
-            gt_with_vis[..., 2] = vis
+            gt_with_vis = ground_truth
+
+            # FIXME: convert (-1, -2) to 0. Else error is incorrectly calculated
+            for batch_id in range(len(ground_truth)):
+                # keypoints (num_kpts, 3)
+                keypoints = ground_truth[batch_id]
+                for kpts in keypoints:
+                    vis = kpts[-1]
+                    if vis < 0:
+                        kpts[-1] = 0
 
             # rescale to the full image for TD or CTD
             gt_with_vis[..., :2] = (gt_with_vis[..., :2] * scale) + offset
@@ -401,9 +438,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
                 epoch_gt_metric[path] = np.concatenate(
                     [epoch_gt_metric[path], gt_with_vis], axis=0
                 )
-                epoch_metric[path] = np.concatenate(
-                    [epoch_metric[path], pred], axis=0
-                )
+                epoch_metric[path] = np.concatenate([epoch_metric[path], pred], axis=0)
             else:
                 epoch_gt_metric[path] = gt_with_vis
                 epoch_metric[path] = pred
@@ -423,6 +458,8 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             **kwargs: TrainingRunner kwargs
         """
         super().__init__(model, optimizer, **kwargs)
+        self._pycoco_warning_displayed = False
+        self._print_valid_loss = False
 
     def step(
         self, batch: dict[str, Any], mode: str = "train"
@@ -457,9 +494,12 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        target = self.model.get_target(
-            batch["annotations"]
-        )  # (batch_size, channels, h, w)
+        if self.gpus:
+            underlying_model = self.model.module
+        else:
+            underlying_model = self.model
+
+        target = underlying_model.get_target(batch["annotations"])
         for item in target:  # target is a list here
             for key in item:
                 if item[key] is not None:
@@ -488,7 +528,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         return losses
 
     def _compute_epoch_metrics(self) -> dict[str, float]:
-        """Returns: bounding box metrics, if """
+        """Returns: bounding box metrics, if"""
         try:
             return {
                 f"metrics/test.{k}": v
@@ -497,9 +537,17 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
                 ).items()
             }
         except ModuleNotFoundError:
-            logging.info(
-                "Cannot compute bounding box metrics; pycocotools is not installed"
-            )
+            if not self._pycoco_warning_displayed:
+                logging.info(
+                    "\nNote:\n"
+                    "Cannot compute bounding box metrics as ``pycocotools`` is not "
+                    "installed. If you want bounding box mAP metrics when training "
+                    "detectors for top-down models, please run ``pip install "
+                    "pycocotools``.\n"
+                )
+                self._pycoco_warning_displayed = True
+
+        return {}
 
     def _update_epoch_predictions(
         self,
@@ -550,6 +598,7 @@ def build_training_runner(
     task: Task,
     model: nn.Module,
     device: str,
+    gpus: list[int] | None = None,
     snapshot_path: str | None = None,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
@@ -562,6 +611,7 @@ def build_training_runner(
         task: the task the runner will perform
         model: the model to run
         device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+        gpus: the list of GPU indices to use for multi-GPU training
         snapshot_path: the snapshot from which to load the weights
         logger: the logger to use, if any
 
@@ -585,6 +635,7 @@ def build_training_runner(
             save_optimizer_state=runner_config["snapshots"]["save_optimizer_state"],
         ),
         device=device,
+        gpus=gpus,
         eval_interval=runner_config.get("eval_interval"),
         snapshot_path=snapshot_path,
         scheduler=scheduler,

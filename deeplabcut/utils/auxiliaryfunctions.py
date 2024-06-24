@@ -32,7 +32,6 @@ from ruamel.yaml import YAML
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
@@ -82,6 +81,7 @@ default_net_type:
 default_augmenter:
 default_track_method:
 snapshotindex:
+detector_snapshotindex:
 batch_size:
 \n
 # Cropping Parameters (for analysis and outlier frame detection)
@@ -95,6 +95,9 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
     else:
         yaml_str = """\
@@ -134,6 +137,7 @@ iteration:
 default_net_type:
 default_augmenter:
 snapshotindex:
+detector_snapshotindex:
 batch_size:
 \n
 # Cropping Parameters (for analysis and outlier frame detection)
@@ -147,6 +151,9 @@ y2:
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
 
     ruamelFile = YAML()
@@ -220,7 +227,7 @@ def read_config(configname):
 
     else:
         raise FileNotFoundError(
-            "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
+            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
         )
     return cfg
 
@@ -434,7 +441,7 @@ def get_list_of_videos(
         videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
-        v   
+        v
         for v in videos
         if os.path.isfile(v)
         and any(v.endswith(ext) for ext in videotype)
@@ -537,6 +544,7 @@ def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, c
         + str(shuffle)
         + ".mat",
     )
+
     return datafn, metadatafn
 
 
@@ -571,26 +579,36 @@ def get_model_folder(
 
 
 def get_evaluation_folder(
-    trainFraction,
-    shuffle,
-    cfg,
-    engine: Engine = Engine.TF,
-    modelprefix="",
-):
+    trainFraction: float,
+    shuffle: int,
+    cfg: dict,
+    engine: Engine | None = None,
+    modelprefix: str = "",
+) -> Path:
     """
-        Args:
-            trainFraction: the training fraction (as defined in the project configuration)
-                for which to get the evaluation folder
-            shuffle: the index of the shuffle for which to get the evaluation folder
-            cfg: the project configuration
-            engine: The engine for which we want the model folder. Defaults to `tensorflow`
-                for backwards compatibility with DeepLabCut 2.X
-            modelprefix: The name of the folder
+    Args:
+        trainFraction: the training fraction (as defined in the project configuration)
+            for which to get the evaluation folder
+        shuffle: the index of the shuffle for which to get the evaluation folder
+        cfg: the project configuration
+        engine: The engine for which we want the model folder. Defaults to None,
+            which automatically gets the engine for the shuffle from the training
+            dataset metadata file.
+        modelprefix: The name of the folder
 
-        Returns:
-            the relative path from the project root to the folder containing the model files
-            for a shuffle (configuration files, snapshots, training logs, ...)
-        """
+    Returns:
+        the relative path from the project root to the folder containing the model files
+        for a shuffle (configuration files, snapshots, training logs, ...)
+    """
+    if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+        engine = get_shuffle_engine(
+            cfg=cfg,
+            trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
+
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
@@ -661,6 +679,7 @@ def get_scorer_name(
     Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
     if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -668,28 +687,36 @@ def get_scorer_name(
             modelprefix=modelprefix,
         )
 
+    if engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
+        snapshot_index = None
+        if isinstance(trainingsiterations, int):
+            snapshot_index = trainingsiterations
+
+        dlc3_scorer = get_scorer_name(
+            cfg=cfg,
+            shuffle=shuffle,
+            train_fraction=trainFraction,
+            snapshot_index=snapshot_index,
+            detector_index=None,
+            modelprefix=modelprefix,
+        )
+        return dlc3_scorer, dlc3_scorer
+
     Task = cfg["Task"]
     date = cfg["date"]
 
     if trainingsiterations == "unknown":
-        snapshotindex = cfg["snapshotindex"]
-        if cfg["snapshotindex"] == "all":
-            print(
-                "Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth) in the config file."
-            )
-            snapshotindex = -1
-
+        snapshotindex = get_snapshot_index_for_scorer(
+            "snapshotindex", cfg["snapshotindex"]
+        )
         modelfolder = os.path.join(
             cfg["project_path"],
             str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
             "train",
         )
         Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(modelfolder)
-                if ("index" in fn) or ("snapshot" in fn and not "detector" in fn)
-            ]
+            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
         )
         increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
         Snapshots = Snapshots[increasing_indices]
@@ -705,9 +732,7 @@ def get_scorer_name(
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-    if engine == Engine.PYTORCH:
-        netname = "".join([p.capitalize() for p in dlc_cfg["net_type"].split("_")])
-    elif "resnet" in dlc_cfg["net_type"]:
+    if "resnet" in dlc_cfg["net_type"]:
         if dlc_cfg.get("multi_stage", False):
             netname = "dlcrnetms5"
         else:
@@ -936,6 +961,18 @@ def find_next_unlabeled_folder(config_path, verbose=False):
                 frac = (~df.isna()).sum().sum() / df.size
                 print(f"{folder.name} | {int(100 * frac)} %")
     return next_folder
+
+
+def get_snapshot_index_for_scorer(name: str, index: int | str) -> int:
+    if index == "all":
+        print(
+            f"Changing {name} to the last one -- plotting, videomaking, etc. should "
+            "not be performed for all indices. For more selectivity enter the ordinal "
+            "number of the snapshot you want (ie. 4 for the fifth) in the config file."
+        )
+        return -1
+
+    return index
 
 
 # aliases for backwards-compatibility.
