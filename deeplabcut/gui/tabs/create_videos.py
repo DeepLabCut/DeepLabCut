@@ -282,6 +282,7 @@ class CreateVideos(DefaultTab):
             draw_skeleton=self.draw_skeleton_checkbox.isChecked(),
             trailpoints=trailpoints,
             color_by=color_by,
+            overwrite=self.overwrite_videos.isChecked(),
         )
         if all(videos_created):
             self.root.writer.write("Labeled videos created.")
