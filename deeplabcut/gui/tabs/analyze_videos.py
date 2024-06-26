@@ -204,40 +204,40 @@ class AnalyzeVideos(DefaultTab):
         layout.addLayout(tmp_layout)
 
     def update_create_video_detections(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Create video with all detections {s}")
 
     def update_assemble_with_ID_only(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Assembly with ID only {s}")
 
     def update_calibrate_assembly(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Assembly calibration {s}")
 
     def update_tracker_type(self, method):
         self.root.logger.info(f"Using {method.upper()} tracker")
 
     def update_csv_choice(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Save results as CSV {s}")
 
     def update_nwb_choice(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Save results as NWB {s}")
 
     def update_filter_choice(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Filtering predictions {s}")
 
     def update_showfigs_choice(self, state):
-        if state == Qt.Checked:
+        if Qt.CheckState(state) == Qt.Checked:
             self.root.logger.info("Plots will show as pop ups.")
         else:
             self.root.logger.info("Plots will not show up.")
 
     def update_crop_choice(self, state):
-        if state == Qt.Checked:
+        if Qt.CheckState(state) == Qt.Checked:
             self.root.logger.info("Dynamic bodypart cropping ENABLED.")
             self.dynamic_cropping = True
         else:
@@ -245,7 +245,7 @@ class AnalyzeVideos(DefaultTab):
             self.dynamic_cropping = False
 
     def update_plot_trajectory_choice(self, state):
-        if state == Qt.Checked:
+        if Qt.CheckState(state) == Qt.Checked:
             self.bodyparts_list_widget.show()
             self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
@@ -269,16 +269,12 @@ class AnalyzeVideos(DefaultTab):
         shuffle = self.root.shuffle_value
 
         videos = list(self.files)
-        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        save_as_csv = self.save_as_csv.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
         if self.root.is_multianimal:
-            calibrate_assembly = (
-                self.calibrate_assembly_checkbox.checkState() == Qt.Checked
-            )
-            assemble_with_ID_only = (
-                self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
-            )
+            calibrate_assembly = self.calibrate_assembly_checkbox.isChecked()
+            assemble_with_ID_only = self.assemble_with_ID_only_checkbox.isChecked()
             track_method = self.tracker_type_widget.currentText()
             edit_config(self.root.config, {"default_track_method": track_method})
             num_animals_in_videos = self.num_animals_in_videos.value()

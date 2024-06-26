@@ -61,7 +61,10 @@ def train(
 
     setup_logging()
 
-    cfg = load_config(config_yaml)
+    if isinstance(config_yaml, dict):
+        cfg = config_yaml
+    else:
+        cfg = load_config(config_yaml)
 
     cfg["pseudo_threshold"] = pseudo_threshold
     cfg["video_path"] = video_path
@@ -192,8 +195,10 @@ def train(
 
     cumloss, partloss, locrefloss, pwloss = 0.0, 0.0, 0.0, 0.0
     lr_gen = LearningRate(cfg)
-    stats_path = Path(config_yaml).with_name("learning_stats.csv")
-    lrf = open(str(stats_path), "w")
+    lrf = None
+    if not isinstance(config_yaml, dict):
+        stats_path = Path(config_yaml).with_name("learning_stats.csv")
+        lrf = open(str(stats_path), "w")
 
     print("Training parameters:")
     print(cfg)
@@ -232,26 +237,28 @@ def train(
                 )
             )
 
-            lrf.write(
-                "iteration: {}, loss: {}, scmap loss: {}, locref loss: {}, limb loss: {}, lr: {}\n".format(
-                    it,
-                    "{0:.4f}".format(cumloss / display_iters),
-                    "{0:.4f}".format(partloss / display_iters),
-                    "{0:.4f}".format(locrefloss / display_iters),
-                    "{0:.4f}".format(pwloss / display_iters),
-                    current_lr,
+            if lrf:
+                lrf.write(
+                    "iteration: {}, loss: {}, scmap loss: {}, locref loss: {}, limb loss: {}, lr: {}\n".format(
+                        it,
+                        "{0:.4f}".format(cumloss / display_iters),
+                        "{0:.4f}".format(partloss / display_iters),
+                        "{0:.4f}".format(locrefloss / display_iters),
+                        "{0:.4f}".format(pwloss / display_iters),
+                        current_lr,
+                    )
                 )
-            )
 
             cumloss, partloss, locrefloss, pwloss = 0.0, 0.0, 0.0, 0.0
-            lrf.flush()
+            if lrf:
+                lrf.flush()
 
         # Save snapshot
         if (it % save_iters == 0 and it != start_iter) or it == max_iter:
             model_name = cfg["snapshot_prefix"]
             saver.save(sess, model_name, global_step=it)
-
-    lrf.close()
+    if lrf:
+        lrf.close()
 
     sess.close()
     coord.request_stop()

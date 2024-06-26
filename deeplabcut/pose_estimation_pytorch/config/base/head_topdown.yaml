@@ -1,0 +1,25 @@
+type: HeatmapHead
+weight_init: normal
+predictor:
+  type: HeatmapPredictor
+  apply_sigmoid: false
+  clip_scores: true
+  location_refinement: false
+target_generator:
+  type: HeatmapGaussianGenerator
+  num_heatmaps: "num_bodyparts"
+  pos_dist_thresh: 17
+  heatmap_mode: KEYPOINT
+  generate_locref: false
+criterion:
+  heatmap:
+    type: WeightedMSECriterion
+    weight: 1.0
+heatmap_config:
+  channels:
+  - "backbone_output_channels"
+  kernel_size: []
+  strides: []
+  final_conv:
+    out_channels: "num_bodyparts"
+    kernel_size: 1

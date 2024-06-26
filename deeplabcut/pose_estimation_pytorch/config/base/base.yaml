@@ -1,0 +1,28 @@
+device: auto
+method: bu
+runner:
+  type: PoseTrainingRunner
+  gpus: null
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 1
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-5 ], [ 1e-6 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: true
+  display_iters: 500
+  epochs: 200
+  seed: 42

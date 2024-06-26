@@ -29,8 +29,7 @@ import numpy as np
 import pandas as pd
 
 import deeplabcut.benchmark.utils
-from deeplabcut.pose_estimation_tensorflow.core import evaluate_multianimal
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils, crossvalutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
@@ -99,7 +98,7 @@ def calc_prediction_errors(preds, gt):
             if visible.size and xy_pred_.size:
                 # Pick the predictions closest to ground truth,
                 # rather than the ones the model has most confident in.
-                neighbors = evaluate_multianimal._find_closest_neighbors(
+                neighbors = crossvalutils.find_closest_neighbors(
                     xy_gt_[visible], xy_pred_, k=3
                 )
                 found = neighbors != -1
@@ -213,6 +212,7 @@ def calc_map_from_obj(
             oks_sigma,
             margin=margin,
             symmetric_kpts=symmetric_kpts,
+            greedy_matching=True,
         )
     return oks["mAP"]
 

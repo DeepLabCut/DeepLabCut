@@ -20,6 +20,7 @@ Licensed under GNU Lesser General Public License v3.0
 Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
+from __future__ import annotations
 
 import argparse
 import os
@@ -28,10 +29,10 @@ import os
 # Dependencies
 ####################################################
 import os.path
-from pathlib import Path
 from functools import partial
-from multiprocessing import Pool, get_start_method
-from typing import Iterable, Callable, List, Optional, Union
+from multiprocessing import get_start_method, Pool
+from pathlib import Path
+from typing import Callable, Iterable, List, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -42,13 +43,12 @@ from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
-from deeplabcut.modelzoo.utils import parse_available_supermodels
-from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
+
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
-from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 def get_segment_indices(bodyparts2connect, all_bpts):
@@ -383,7 +383,7 @@ def create_labeled_video(
     init_weights="",
     track_method="",
     superanimal_name="",
-    pcutoff=0.6,
+    pcutoff=None,
     skeleton=[],
     skeleton_color="white",
     dotsize=8,
@@ -502,6 +502,9 @@ def create_labeled_video(
         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
         be taken from the config.yaml file if none is given.
 
+    pcutoff: string, optional, default=None
+        Overrides the pcutoff set in the project configuration to plot the trajectories.
+
     overwrite: bool, optional, default=False
         If ``True`` overwrites existing labeled videos.
 
@@ -561,16 +564,19 @@ def create_labeled_video(
         )
     """
     if config == "":
-        pass
+        if pcutoff is None:
+            pcutoff = 0.6
     else:
         cfg = auxiliaryfunctions.read_config(config)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
         track_method = auxfun_multianimal.get_track_method(
             cfg, track_method=track_method
         )
+        if pcutoff is None:
+            pcutoff = cfg["pcutoff"]
 
     if init_weights == "":
-        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
+        DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg, shuffle, trainFraction, modelprefix=modelprefix
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
@@ -587,17 +593,17 @@ def create_labeled_video(
 
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-        supermodels = parse_available_supermodels()
-        test_cfg = load_config(
+        dataset_name = "_".join(superanimal_name.split("_")[:-1])
+        test_cfg = auxiliaryfunctions.read_plainconfig(
             os.path.join(
                 dlc_root_path,
-                "pose_estimation_tensorflow",
-                "superanimal_configs",
-                supermodels[superanimal_name],
+                "modelzoo",
+                "project_configs",
+                f"{dataset_name}.yaml",
             )
         )
 
-        bodyparts = test_cfg["all_joints_names"]
+        bodyparts = test_cfg["bodyparts"]
         cfg = {
             "skeleton": skeleton,
             "skeleton_color": skeleton_color,
@@ -660,6 +666,7 @@ def create_labeled_video(
         keypoints_only,
         overwrite,
         init_weights=init_weights,
+        pcutoff=pcutoff,
         confidence_to_alpha=confidence_to_alpha,
     )
 
@@ -700,6 +707,7 @@ def proc_video(
     overwrite,
     video,
     init_weights="",
+    pcutoff: float | None = None,
     confidence_to_alpha: Optional[Callable[[float], float]] = None,
 ):
     """Helper function for create_videos
@@ -716,6 +724,9 @@ def proc_video(
     videofolder = Path(video).parents[0]
     if destfolder is None:
         destfolder = videofolder  # where your folder with videos is.
+
+    if pcutoff is None:
+        pcutoff = cfg["pcutoff"]
 
     auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
@@ -752,7 +763,10 @@ def proc_video(
                 s = "_id" if color_by == "individual" else "_bp"
             else:
                 s = ""
-            videooutname = filepath.replace(".h5", f"{s}_labeled.mp4")
+
+            videooutname = filepath.replace(
+                ".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
+            )
             if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
@@ -780,7 +794,7 @@ def proc_video(
                     df,
                     videooutname,
                     inds,
-                    cfg["pcutoff"],
+                    pcutoff,
                     cfg["dotsize"],
                     cfg["alphavalue"],
                     skeleton_color=skeleton_color,
@@ -802,7 +816,7 @@ def proc_video(
                     cfg["dotsize"],
                     cfg["colormap"],
                     cfg["alphavalue"],
-                    cfg["pcutoff"],
+                    pcutoff,
                     trailpoints,
                     cropping,
                     x1,
@@ -829,7 +843,7 @@ def proc_video(
                     bbox=(x1, x2, y1, y2),
                     codec=codec,
                     output_path=videooutname,
-                    pcutoff=cfg["pcutoff"],
+                    pcutoff=pcutoff,
                     dotsize=cfg["dotsize"],
                     cmap=cfg["colormap"],
                     color_by=color_by,
@@ -854,8 +868,8 @@ def _create_labeled_video(
     animals2show="all",
     skeleton_edges=None,
     pcutoff=0.6,
-    dotsize=8,
-    cmap="cool",
+    dotsize=6,
+    cmap="rainbow",
     color_by="bodypart",
     skeleton_color="k",
     trailpoints=0,
@@ -1053,8 +1067,9 @@ def create_video_with_all_detections(
         keypoint will be set as a function of its score: alpha = f(score). The default
         function used when True is f(x) = x.
     """
-    from deeplabcut.pose_estimation_tensorflow.lib.inferenceutils import Assembler
     import re
+
+    from deeplabcut.core.inferenceutils import Assembler
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -1161,6 +1176,7 @@ def create_video_with_all_detections(
 
 def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, scale=1):
     import subprocess
+
     from tqdm import tqdm
 
     if not os.path.isdir(destfolder):

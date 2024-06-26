@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 import os
 import os.path
@@ -19,6 +20,10 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+import deeplabcut.compat as compat
+import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import (
     merge_annotateddatasets,
     read_image_shape_fast,
@@ -27,6 +32,7 @@ from deeplabcut.generate_training_dataset import (
     MakeTest_pose_yaml,
     MakeInference_yaml,
     pad_train_test_indices,
+    validate_shuffles,
 )
 from deeplabcut.utils import (
     auxiliaryfunctions,
@@ -109,15 +115,20 @@ def create_multianimaltraining_dataset(
     testIndices=None,
     n_edges_threshold=105,
     paf_graph_degree=6,
+    userfeedback: bool = True,
+    weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
 ):
     """
-    Creates a training dataset for multi-animal datasets. Labels from all the extracted frames are merged into a single .h5 file.\n
+    Creates a training dataset for multi-animal datasets. Labels from all the extracted
+    frames are merged into a single .h5 file.\n
     Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more videos to the project.
+    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more
+    videos to the project.
 
     Important differences to standard:
      - stores coordinates with numdigits as many digits
-     - creates
+
     Parameter
     ----------
     config : string
@@ -130,17 +141,43 @@ def create_multianimaltraining_dataset(
         Alternatively the user can also give a list of shuffles (integers!).
 
     net_type: string
-        Type of networks. Currently resnet_50, resnet_101, and resnet_152, efficientnet-b0, efficientnet-b1, efficientnet-b2, efficientnet-b3,
-        efficientnet-b4, efficientnet-b5, and efficientnet-b6 as well as dlcrnet_ms5 are supported (not the MobileNets!).
-        See Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+        Type of networks. The options available depend on which engine is used. See
+        Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+        Currently supported options are:
+            TensorFlow
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``resnet_152``
+                * ``efficientnet-b0``
+                * ``efficientnet-b1``
+                * ``efficientnet-b2``
+                * ``efficientnet-b3``
+                * ``efficientnet-b4``
+                * ``efficientnet-b5``
+                * ``efficientnet-b6``
+            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
+            complete list)
+                * ``resnet_50``
+                * ``resnet_101``
+                * ``dekr_w18``
+                * ``dekr_w32``
+                * ``dekr_w48``
+                * ``top_down_resnet_50``
+                * ``top_down_resnet_101``
+                * ``top_down_hrnet_w18``
+                * ``top_down_hrnet_w32``
+                * ``top_down_hrnet_w48``
+                * ``animaltokenpose_base``
 
     numdigits: int, optional
 
     crop_size: tuple of int, optional
+        Only for the TensorFlow engine.
         Dimensions (width, height) of the crops for data augmentation.
         Default is 400x400.
 
     crop_sampling: str, optional
+        Only for the TensorFlow engine.
         Crop centers sampling method. Must be either:
         "uniform" (randomly over the image),
         "keypoints" (randomly over the annotated keypoints),
@@ -149,6 +186,7 @@ def create_multianimaltraining_dataset(
         Default is "hybrid".
 
     paf_graph: list of lists, or "config" optional (default=None)
+        Only for the TensorFlow engine.
         If not None, overwrite the default complete graph. This is useful for advanced users who
         already know a good graph, or simply want to use a specific one. Note that, in that case,
         the data-driven selection procedure upon model evaluation will be skipped.
@@ -163,10 +201,26 @@ def create_multianimaltraining_dataset(
         List of one or multiple lists containing test indexes.
 
     n_edges_threshold: int, optional (default=105)
+        Only for the TensorFlow engine.
         Number of edges above which the graph is automatically pruned.
 
     paf_graph_degree: int, optional (default=6)
+        Only for the TensorFlow engine.
         Degree of paf_graph when automatically pruning it (before training).
+
+    userfeedback: bool, optional, default=True
+        If ``False``, all requested train/test splits are created (no matter if they
+        already exist). If you want to assure that previous splits etc. are not
+        overwritten, set this to ``True`` and you will be asked for each split.
+
+    weight_init: WeightInitialisation, optional, default=None
+        PyTorch engine only. Specify how model weights should be initialized. The
+        default mode uses transfer learning from ImageNet weights.
+
+    engine: Engine, optional
+        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
+        the value specified in the project configuration file. If no engine is specified
+        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
 
     Example
     --------
@@ -202,6 +256,11 @@ def create_multianimaltraining_dataset(
     full_training_path = Path(project_path, trainingsetfolder)
     auxiliaryfunctions.attempt_to_make_folder(full_training_path, recursive=True)
 
+    # Create the trainset metadata file, if it doesn't yet exist
+    if not metadata.TrainingDatasetMetadata.path(cfg).exists():
+        trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)
+        trainset_metadata.save()
+
     Data = merge_annotateddatasets(cfg, full_training_path)
     if Data is None:
         return
@@ -209,13 +268,24 @@ def create_multianimaltraining_dataset(
 
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
-    elif not any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
-        raise ValueError(f"Unsupported network {net_type}.")
+
+    # load the engine to use to create the shuffle
+    if engine is None:
+        engine = compat.get_project_engine(cfg)
+
+    if not (
+        any(net in net_type for net in ("resnet", "eff", "dlc", "mob"))
+        or engine == Engine.PYTORCH
+    ):
+        raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
 
     multi_stage = False
     ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
     ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
-    if all(net in net_type for net in ("dlcr", "_ms5")):
+    if (
+        all(net in net_type for net in ("dlcr", "_ms5"))
+        and engine != Engine.PYTORCH
+    ):
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
@@ -272,14 +342,15 @@ def create_multianimaltraining_dataset(
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
     defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
-    model_path = auxfun_models.check_for_weights(
-        net_type, Path(dlcparent_path)
-    )
 
-    if Shuffles is None:
-        Shuffles = range(1, num_shuffles + 1, 1)
+    if engine == Engine.PYTORCH:
+        model_path = dlcparent_path
     else:
-        Shuffles = [i for i in Shuffles if isinstance(i, int)]
+        model_path = auxfun_models.check_for_weights(
+            net_type, Path(dlcparent_path)
+        )
+
+    Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
     # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
     if trainIndices is None and testIndices is None:
@@ -310,6 +381,11 @@ def create_multianimaltraining_dataset(
             test_inds = np.asarray(test_inds)
             test_inds = test_inds[test_inds != -1]
             splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
+
+    top_down = False
+    if engine == Engine.PYTORCH and net_type.startswith("top_down_"):
+        top_down = True
+        net_type = net_type[len("top_down_"):]
 
     for trainFraction, shuffle, (trainIndices, testIndices) in splits:
         ####################################################
@@ -347,6 +423,15 @@ def create_multianimaltraining_dataset(
                 testIndices,
                 trainFraction,
             )
+            metadata.update_metadata(
+                cfg=cfg,
+                train_fraction=trainFraction,
+                shuffle=shuffle,
+                engine=engine,
+                train_indices=trainIndices,
+                test_indices=testIndices,
+                overwrite=not userfeedback,
+            )
 
             datafilename = datafilename.split(".mat")[0] + ".pickle"
             import pickle
@@ -361,7 +446,7 @@ def create_multianimaltraining_dataset(
             #################################################################################
 
             modelfoldername = auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg
+                trainFraction, shuffle, cfg, engine=engine,
             )
             auxiliaryfunctions.attempt_to_make_folder(
                 Path(config).parents[0] / modelfoldername, recursive=True
@@ -402,6 +487,7 @@ def create_multianimaltraining_dataset(
             jointnames.extend([str(bpt) for bpt in uniquebodyparts])
             items2change = {
                 "dataset": datafilename,
+                "engine": engine.aliases[0],
                 "metadataset": metadatafilename,
                 "num_joints": len(multianimalbodyparts)
                 + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
@@ -409,7 +495,7 @@ def create_multianimaltraining_dataset(
                     [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
                 ],  # cfg["uniquebodyparts"]))],
                 "all_joints_names": jointnames,
-                "init_weights": model_path,
+                "init_weights": str(model_path),
                 "project_path": str(cfg["project_path"]),
                 "net_type": net_type,
                 "multi_stage": multi_stage,
@@ -477,6 +563,30 @@ def create_multianimaltraining_dataset(
             MakeInference_yaml(
                 items2change, path_inference_config, defaultinference_configfile
             )
+
+            # Populate the pytorch config yaml file
+            if engine == Engine.PYTORCH:
+                from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
+                from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
+
+                pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
+                if weight_init is not None and weight_init.with_decoder:
+                    pytorch_cfg = make_super_animal_finetune_config(
+                        project_config=cfg,
+                        pose_config_path=path_train_config,
+                        net_type=net_type,
+                        weight_init=weight_init,
+                    )
+                else:
+                    pytorch_cfg = make_pytorch_pose_config(
+                        project_config=cfg,
+                        pose_config_path=path_train_config,
+                        net_type=net_type,
+                        top_down=top_down,
+                        weight_init=weight_init,
+                    )
+
+                auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
             print(
                 "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"

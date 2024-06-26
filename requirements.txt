@@ -1,24 +1,33 @@
+# novel for pytorch DLC:
+albumentations<=1.4.3
+einops
+pycocotools
+timm
+wandb
+
+# existing:
 dlclibrary
 ipython
 filterpy
 ruamel.yaml>=0.15.0
 intel-openmp
 imageio-ffmpeg
-imgaug==0.4.0
+imgaug>=0.4.0
 numba>=0.54.0
-matplotlib<=3.5.2
+matplotlib>=3.3, <3.8.4
 networkx>=2.6
 numpy>=1.18.5
 pandas>=1.0.1,!=1.5.0
+Pillow>=7.1
 pyyaml
 scikit-image>=0.17
 scikit-learn>=1.0
-scipy>=1.9
+scipy>=1.4,<1.11.0
 statsmodels>=0.11
 tensorflow>=2.0,<2.13.0
 tables==3.8.0
-tensorpack==0.11
-tf_slim==1.1.0
-torch==1.12
+tensorpack>=0.11
+tf_slim>=1.1.0
+torch>=2.0.0
+torchvision
 tqdm
-Pillow>=7.1

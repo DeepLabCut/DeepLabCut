@@ -14,7 +14,7 @@ import pickle
 import pytest
 from conftest import TEST_DATA_DIR
 from copy import deepcopy
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from scipy.spatial.distance import squareform
 
 
@@ -61,17 +61,17 @@ def test_calc_object_keypoint_similarity(real_assemblies):
 
 def test_match_assemblies(real_assemblies):
     assemblies = real_assemblies[0]
-    matched, unmatched = inferenceutils.match_assemblies(
+    num_gt, matches = inferenceutils.match_assemblies(
         assemblies, assemblies[::-1], 0.01
     )
-    assert not unmatched
-    for ass1, ass2, oks in matched:
-        assert ass1 is ass2
-        assert oks == 1
+    assert len(assemblies) == len(matches)
+    for m in matches:
+        assert m.prediction is m.ground_truth
+        assert m.oks == 1
 
-    matched, unmatched = inferenceutils.match_assemblies([], assemblies, 0.01)
-    assert not matched
-    assert all(ass1 is ass2 for ass1, ass2 in zip(unmatched, assemblies))
+    num_gt, matches = inferenceutils.match_assemblies([], assemblies, 0.01)
+    assert len(matches) == 0
+    assert num_gt == len(assemblies)
 
 
 def test_evaluate_assemblies(real_assemblies):
