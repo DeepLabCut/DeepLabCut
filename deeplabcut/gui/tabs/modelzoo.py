@@ -279,8 +279,7 @@ class ModelZoo(DefaultTab):
             )
 
             self.worker, self.thread = move_to_separate_thread(func)
-            self.worker.finished.connect(lambda: self.run_button.setEnabled(True))
-            self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+            self.worker.finished.connect(self.signal_analysis_complete)
             self.thread.start()
             self.run_button.setEnabled(False)
             self.root._progress_bar.show()
@@ -293,6 +292,14 @@ class ModelZoo(DefaultTab):
                 dest_folder=self._destfolder,
                 **kwargs,
             )
+            self.signal_analysis_complete()
+
+    def signal_analysis_complete(self):
+        self.run_button.setEnabled(True)
+        self.root._progress_bar.hide()
+        msg = QtWidgets.QMessageBox(text="Superanimal video inference complete!")
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.exec_()
 
     def _gather_kwargs(self) -> dict:
         kwargs = {}
