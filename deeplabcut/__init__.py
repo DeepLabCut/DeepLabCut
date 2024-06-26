@@ -12,10 +12,6 @@
 
 import os
 
-# Suppress tensorflow warning messages
-import tensorflow as tf
-
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
 from deeplabcut.version import __version__, VERSION
 
@@ -49,6 +45,7 @@ from deeplabcut.generate_training_dataset import (
     mergeandsplit,
 )
 from deeplabcut.generate_training_dataset import (
+    create_training_dataset_from_existing_split,
     create_training_model_comparison,
     create_multianimaltraining_dataset,
 )
@@ -60,6 +57,9 @@ from deeplabcut.generate_training_dataset import (
     dropduplicatesinannotatinfiles,
     dropunlabeledframes,
 )
+
+from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+
 from deeplabcut.utils import (
     create_labeled_video,
     create_video_with_all_detections,
@@ -92,7 +92,7 @@ from deeplabcut.utils.auxfun_videos import (
 )
 
 # Train, evaluate & predict functions / all require TF
-from deeplabcut.pose_estimation_tensorflow import (
+from deeplabcut.compat import (
     train_network,
     return_train_network_path,
     evaluate_network,
@@ -107,7 +107,6 @@ from deeplabcut.pose_estimation_tensorflow import (
     visualize_paf,
     extract_save_all_maps,
     export_model,
-    video_inference_superanimal,
 )
 
 

@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from __future__ import annotations
 
 import os
 import typing
@@ -28,8 +29,10 @@ import pandas as pd
 import ruamel.yaml.representer
 import yaml
 from ruamel.yaml import YAML
-from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
-from deeplabcut.utils import auxfun_videos
+
+from deeplabcut.core.engine import Engine
+from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
 
 def create_config_template(multianimal=False):
@@ -38,105 +41,119 @@ def create_config_template(multianimal=False):
     """
     if multianimal:
         yaml_str = """\
-    # Project definitions (do not edit)
-        Task:
-        scorer:
-        date:
-        multianimalproject:
-        identity:
-        \n
-    # Project path (change when moving around)
-        project_path:
-        \n
-    # Annotation data set configuration (and individual video cropping parameters)
-        video_sets:
-        individuals:
-        uniquebodyparts:
-        multianimalbodyparts:
-        bodyparts:
-        \n
-    # Fraction of video to start/stop when extracting frames for labeling/refinement
-        start:
-        stop:
-        numframes2pick:
-        \n
-    # Plotting configuration
-        skeleton:
-        skeleton_color:
-        pcutoff:
-        dotsize:
-        alphavalue:
-        colormap:
-        \n
-    # Training,Evaluation and Analysis configuration
-        TrainingFraction:
-        iteration:
-        default_net_type:
-        default_augmenter:
-        default_track_method:
-        snapshotindex:
-        batch_size:
-        \n
-    # Cropping Parameters (for analysis and outlier frame detection)
-        cropping:
-    #if cropping is true for analysis, then set the values here:
-        x1:
-        x2:
-        y1:
-        y2:
-        \n
-    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-        corner2move2:
-        move2corner:
+# Project definitions (do not edit)
+Task:
+scorer:
+date:
+multianimalproject:
+identity:
+\n
+# Project path (change when moving around)
+project_path:
+\n
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+\n
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+individuals:
+uniquebodyparts:
+multianimalbodyparts:
+bodyparts:
+\n
+# Fraction of video to start/stop when extracting frames for labeling/refinement
+start:
+stop:
+numframes2pick:
+\n
+# Plotting configuration
+skeleton:
+skeleton_color:
+pcutoff:
+dotsize:
+alphavalue:
+colormap:
+\n
+# Training,Evaluation and Analysis configuration
+TrainingFraction:
+iteration:
+default_net_type:
+default_augmenter:
+default_track_method:
+snapshotindex:
+detector_snapshotindex:
+batch_size:
+\n
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping:
+#if cropping is true for analysis, then set the values here:
+x1:
+x2:
+y1:
+y2:
+\n
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
     else:
         yaml_str = """\
-    # Project definitions (do not edit)
-        Task:
-        scorer:
-        date:
-        multianimalproject:
-        identity:
-        \n
-    # Project path (change when moving around)
-        project_path:
-        \n
-    # Annotation data set configuration (and individual video cropping parameters)
-        video_sets:
-        bodyparts:
-        \n
-    # Fraction of video to start/stop when extracting frames for labeling/refinement
-        start:
-        stop:
-        numframes2pick:
-        \n
-    # Plotting configuration
-        skeleton:
-        skeleton_color:
-        pcutoff:
-        dotsize:
-        alphavalue:
-        colormap:
-        \n
-    # Training,Evaluation and Analysis configuration
-        TrainingFraction:
-        iteration:
-        default_net_type:
-        default_augmenter:
-        snapshotindex:
-        batch_size:
-        \n
-    # Cropping Parameters (for analysis and outlier frame detection)
-        cropping:
-    #if cropping is true for analysis, then set the values here:
-        x1:
-        x2:
-        y1:
-        y2:
-        \n
-    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-        corner2move2:
-        move2corner:
+# Project definitions (do not edit)
+Task:
+scorer:
+date:
+multianimalproject:
+identity:
+\n
+# Project path (change when moving around)
+project_path:
+\n
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+\n
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+bodyparts:
+\n
+# Fraction of video to start/stop when extracting frames for labeling/refinement
+start:
+stop:
+numframes2pick:
+\n
+# Plotting configuration
+skeleton:
+skeleton_color:
+pcutoff:
+dotsize:
+alphavalue:
+colormap:
+\n
+# Training,Evaluation and Analysis configuration
+TrainingFraction:
+iteration:
+default_net_type:
+default_augmenter:
+snapshotindex:
+detector_snapshotindex:
+batch_size:
+\n
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping:
+#if cropping is true for analysis, then set the values here:
+x1:
+x2:
+y1:
+y2:
+\n
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+move2corner:
+\n
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
         """
 
     ruamelFile = YAML()
@@ -150,27 +167,27 @@ def create_config_template_3d():
     """
     yaml_str = """\
 # Project definitions (do not edit)
-    Task:
-    scorer:
-    date:
-    \n
+Task:
+scorer:
+date:
+\n
 # Project path (change when moving around)
-    project_path:
-    \n
+project_path:
+\n
 # Plotting configuration
-    skeleton: # Note that the pairs must be defined, as you want them linked!
-    skeleton_color:
-    pcutoff:
-    colormap:
-    dotsize:
-    alphaValue:
-    markerType:
-    markerColor:
-    \n
+skeleton: # Note that the pairs must be defined, as you want them linked!
+skeleton_color:
+pcutoff:
+colormap:
+dotsize:
+alphaValue:
+markerType:
+markerColor:
+\n
 # Number of cameras, camera names, path of the config files, shuffle index and trainingsetindex used to analyze videos:
-    num_cameras:
-    camera_names:
-    scorername_3d: # Enter the scorer name for the 3D output
+num_cameras:
+camera_names:
+scorername_3d: # Enter the scorer name for the 3D output
     """
     ruamelFile_3d = YAML()
     cfg_file_3d = ruamelFile_3d.load(yaml_str)
@@ -187,7 +204,12 @@ def read_config(configname):
         try:
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
-                curr_dir = os.path.dirname(configname)
+                curr_dir = str(Path(configname).parent.resolve())
+
+                if cfg.get("engine") is None:
+                    cfg["engine"] = Engine.TF.aliases[0]
+                    write_config(configname, cfg)
+
                 if cfg["project_path"] != curr_dir:
                     cfg["project_path"] = curr_dir
                     write_config(configname, cfg)
@@ -205,7 +227,7 @@ def read_config(configname):
 
     else:
         raise FileNotFoundError(
-            "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
+            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
         )
     return cfg
 
@@ -268,6 +290,42 @@ def edit_config(configname, edits, output_name=""):
             cfg.pop(key)
         write_plainconfig(output_name, cfg)
     return cfg
+
+
+def get_bodyparts(cfg: dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: bodyparts listed in the project (does not include the unique_bodyparts entry)
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            _,
+            multianimal_bodyparts,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return multianimal_bodyparts
+
+    return cfg["bodyparts"]
+
+
+def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+    """
+    Args:
+        cfg: a project configuration file
+
+    Returns: all unique bodyparts listed in the project
+    """
+    if cfg.get("multianimalproject", False):
+        (
+            _,
+            unique_bodyparts,
+            _,
+        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        return unique_bodyparts
+
+    return []
 
 
 def write_config_3d(configname, cfg):
@@ -379,7 +437,8 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-
+    if videotype is None:
+        videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
         v
@@ -453,7 +512,7 @@ def get_video_list(filename, videopath, videtype):
 
 
 ## Various functions to get filenames, foldernames etc. based on configuration parameters.
-def get_training_set_folder(cfg):
+def get_training_set_folder(cfg: dict) -> Path:
     """Training Set folder for config file based on parameters"""
     Task = cfg["Task"]
     date = cfg["date"]
@@ -485,34 +544,78 @@ def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, c
         + str(shuffle)
         + ".mat",
     )
+
     return datafn, metadatafn
 
 
-def get_model_folder(trainFraction, shuffle, cfg, modelprefix=""):
-    Task = cfg["Task"]
-    date = cfg["date"]
-    iterate = "iteration-" + str(cfg["iteration"])
+def get_model_folder(
+    trainFraction: float,
+    shuffle: int,
+    cfg: dict,
+    modelprefix: str = "",
+    engine: Engine = Engine.TF,
+) -> Path:
+    """
+    Args:
+        trainFraction: the training fraction (as defined in the project configuration)
+            for which to get the model folder
+        shuffle: the index of the shuffle for which to get the model folder
+        cfg: the project configuration
+        modelprefix: The name of the folder
+        engine: The engine for which we want the model folder. Defaults to `tensorflow`
+            for backwards compatibility with DeepLabCut 2.X
+
+    Returns:
+        the relative path from the project root to the folder containing the model files
+        for a shuffle (configuration files, snapshots, training logs, ...)
+    """
+    proj_id = f"{cfg['Task']}{cfg['date']}"
     return Path(
         modelprefix,
-        "dlc-models",
-        iterate,
-        Task
-        + date
-        + "-trainset"
-        + str(int(trainFraction * 100))
-        + "shuffle"
-        + str(shuffle),
+        engine.model_folder_name,
+        f"iteration-{cfg['iteration']}",
+        f"{proj_id}-trainset{int(trainFraction * 100)}shuffle{shuffle}",
     )
 
 
-def get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=""):
+def get_evaluation_folder(
+    trainFraction: float,
+    shuffle: int,
+    cfg: dict,
+    engine: Engine | None = None,
+    modelprefix: str = "",
+) -> Path:
+    """
+    Args:
+        trainFraction: the training fraction (as defined in the project configuration)
+            for which to get the evaluation folder
+        shuffle: the index of the shuffle for which to get the evaluation folder
+        cfg: the project configuration
+        engine: The engine for which we want the model folder. Defaults to None,
+            which automatically gets the engine for the shuffle from the training
+            dataset metadata file.
+        modelprefix: The name of the folder
+
+    Returns:
+        the relative path from the project root to the folder containing the model files
+        for a shuffle (configuration files, snapshots, training logs, ...)
+    """
+    if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+        engine = get_shuffle_engine(
+            cfg=cfg,
+            trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
+
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
     if "eval_prefix" in cfg:
         eval_prefix = cfg["eval_prefix"]
     else:
-        eval_prefix = "evaluation-results"
+        eval_prefix = engine.results_folder_name
     return Path(
         modelprefix,
         eval_prefix,
@@ -564,28 +667,52 @@ def form_data_containers(df, bodyparts):
 
 
 def get_scorer_name(
-    cfg, shuffle, trainFraction, trainingsiterations="unknown", modelprefix=""
+    cfg: dict,
+    shuffle: int,
+    trainFraction: float,
+    trainingsiterations: str | int = "unknown",
+    modelprefix: str = "",
+    engine: Engine | None = None,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
+    If the engine is not specified, determines which to use from
     Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
+    if engine is None:
+        from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+        engine = get_shuffle_engine(
+            cfg=cfg,
+            trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
+
+    if engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
+        snapshot_index = None
+        if isinstance(trainingsiterations, int):
+            snapshot_index = trainingsiterations
+
+        dlc3_scorer = get_scorer_name(
+            cfg=cfg,
+            shuffle=shuffle,
+            train_fraction=trainFraction,
+            snapshot_index=snapshot_index,
+            detector_index=None,
+            modelprefix=modelprefix,
+        )
+        return dlc3_scorer, dlc3_scorer
 
     Task = cfg["Task"]
     date = cfg["date"]
 
     if trainingsiterations == "unknown":
-        snapshotindex = cfg["snapshotindex"]
-        if cfg["snapshotindex"] == "all":
-            print(
-                "Changing snapshotindext to the last one -- plotting, videomaking, etc. should not be performed for all indices. For more selectivity enter the ordinal number of the snapshot you want (ie. 4 for the fifth) in the config file."
-            )
-            snapshotindex = -1
-        else:
-            snapshotindex = cfg["snapshotindex"]
-
+        snapshotindex = get_snapshot_index_for_scorer(
+            "snapshotindex", cfg["snapshotindex"]
+        )
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
             "train",
         )
         Snapshots = np.array(
@@ -599,9 +726,9 @@ def get_scorer_name(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
             "train",
-            "pose_cfg.yaml",
+            engine.pose_cfg_name,
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
@@ -614,6 +741,8 @@ def get_scorer_name(
         netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
     elif "efficientnet" in dlc_cfg["net_type"]:
         netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
+    else:
+        raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
 
     scorer = (
         "DLC_"
@@ -834,6 +963,18 @@ def find_next_unlabeled_folder(config_path, verbose=False):
     return next_folder
 
 
+def get_snapshot_index_for_scorer(name: str, index: int | str) -> int:
+    if index == "all":
+        print(
+            f"Changing {name} to the last one -- plotting, videomaking, etc. should "
+            "not be performed for all indices. For more selectivity enter the ordinal "
+            "number of the snapshot you want (ie. 4 for the fifth) in the config file."
+        )
+        return -1
+
+    return index
+
+
 # aliases for backwards-compatibility.
 SaveData = save_data
 SaveMetadata = save_metadata
@@ -848,3 +989,5 @@ GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed
 CheckifNotEvaluated = check_if_not_evaluated
+GetEvaluationFolder = get_evaluation_folder
+GetModelFolder = get_model_folder

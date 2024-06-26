@@ -1,0 +1,65 @@
+data:
+  inference:
+    auto_padding: # Required for HRNet backbones
+      pad_width_divisor: 32
+      pad_height_divisor: 32
+model:
+  backbone:
+    type: HRNet
+    model_name: hrnet_w32
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    interpolate_branches: true
+    increased_channel_count: false
+  backbone_output_channels: 480
+  heads:
+    bodypart:
+      type: DEKRHead
+      weight_init: dekr
+      target_generator:
+        type: DEKRGenerator
+        num_joints: "num_bodyparts"
+        pos_dist_thresh: 17
+        bg_weight: 0.1
+      criterion:
+        heatmap:
+          type: DEKRHeatmapLoss
+          weight: 1
+        offset:
+          type: DEKROffsetLoss
+          weight: 0.03
+      predictor:
+        type: DEKRPredictor
+        apply_sigmoid: false
+        clip_scores: true
+        num_animals: "num_individuals"
+        keypoint_score_type: combined
+        max_absorb_distance: 75
+      heatmap_config:
+        channels:
+        - 480
+        - 64
+        - "num_bodyparts + 1"  # num_bodyparts + center keypoint
+        num_blocks: 1
+        dilation_rate: 1
+        final_conv_kernel: 1
+      offset_config:
+        channels:
+        - 480
+        - "num_bodyparts x 15"  # num_bodyparts * num_offset_per_kpt
+        - "num_bodyparts"
+        num_offset_per_kpt: 15
+        num_blocks: 2
+        dilation_rate: 1
+        final_conv_kernel: 1
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
+      milestones: [ 90, 120 ]
+with_center_keypoints: true

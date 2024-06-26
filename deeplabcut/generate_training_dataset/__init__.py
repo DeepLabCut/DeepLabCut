@@ -13,3 +13,8 @@
 from deeplabcut.generate_training_dataset.frame_extraction import *
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import *
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import *
+from deeplabcut.generate_training_dataset.metadata import (
+    DataSplit,
+    ShuffleMetadata,
+    TrainingDatasetMetadata,
+)

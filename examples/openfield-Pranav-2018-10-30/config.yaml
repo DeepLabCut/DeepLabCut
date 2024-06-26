@@ -6,6 +6,11 @@ date: Oct30
 # Project path (change when moving around)
 project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
+
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+
+
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
   WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
@@ -16,23 +21,31 @@ bodyparts:
 - rightear
 - tailbase
 
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 start: 0
 stop: 1
 numframes2pick: 20
 
+
 # Plotting configuration
+skeleton: []
+skeleton_color: black
 pcutoff: 0.4
 dotsize: 8
 alphavalue: 0.7
 colormap: jet
+
 
 # Training,Evaluation and Analysis configuration
 TrainingFraction:
 - 0.95
 iteration: 0
 default_net_type: resnet_50
+default_augmenter: imgaug
 snapshotindex: -1
 batch_size: 4
+
 
 # Cropping Parameters (for analysis and outlier frame detection)
 cropping: false
@@ -42,8 +55,18 @@ x2: 640
 y1: 277
 y2: 624
 
+
 # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
 corner2move2:
 - 50
 - 50
 move2corner: true
+
+
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:
+  superanimal_topviewmouse:
+    snout: nose
+    leftear: left_ear
+    rightear: right_ear
+    tailbase: tail_base

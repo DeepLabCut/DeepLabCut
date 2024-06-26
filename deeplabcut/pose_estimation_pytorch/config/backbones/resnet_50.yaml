@@ -1,0 +1,18 @@
+model:
+  backbone:
+    type: ResNet
+    model_name: resnet50_gn
+    output_stride: 16
+    freeze_bn_stats: true
+    freeze_bn_weights: false
+  backbone_output_channels: 2048
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-5 ], [ 1e-6 ] ]
+      milestones: [ 160, 190 ]

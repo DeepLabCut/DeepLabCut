@@ -1,0 +1,49 @@
+detector:
+  data:
+    colormode: RGB
+    inference:
+      normalize_images: true
+    train:
+      affine:
+        p: 0.5
+        rotation: 30
+        scaling: [ 1.0, 1.0 ]
+        translation: 40
+      collate:
+        type: ResizeFromDataSizeCollate
+        min_scale: 0.4
+        max_scale: 1.0
+        min_short_side: 128
+        max_short_side: 1152
+        multiple_of: 32
+        to_square: false
+      hflip: true
+      normalize_images: true
+  device: auto
+  model:
+    type: FasterRCNN
+    freeze_bn_stats: true
+    freeze_bn_weights: false
+    variant: fasterrcnn_mobilenet_v3_large_fpn
+  runner:
+    type: DetectorTrainingRunner
+    eval_interval: 1
+    optimizer:
+      type: AdamW
+      params:
+        lr: 1e-4
+    scheduler:
+      type: LRListScheduler
+      params:
+        milestones: [ 160 ]
+        lr_list: [ [ 1e-5 ] ]
+    snapshots:
+      max_snapshots: 5
+      save_epochs: 25
+      save_optimizer_state: false
+  train_settings:
+    batch_size: 1
+    dataloader_workers: 0
+    dataloader_pin_memory: true
+    display_iters: 500
+    epochs: 250

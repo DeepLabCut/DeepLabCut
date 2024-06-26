@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+from pathlib import Path
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from deeplabcut.generate_training_dataset import check_labels
@@ -60,3 +61,5 @@ class LabelFrames(DefaultTab):
 
     def check_labels(self):
         check_labels(self.root.config, visualizeindividuals=self.root.is_multianimal)
+        labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
+        _ = launch_napari(labeled_images, plugin="napari", stack=True)
