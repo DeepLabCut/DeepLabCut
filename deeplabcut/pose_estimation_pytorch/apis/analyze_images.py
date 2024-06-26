@@ -47,6 +47,7 @@ def superanimal_analyze_images(
     images: str | Path | list[str] | list[Path],
     max_individuals: int,
     out_folder: str,
+    bbox_threshold: float = 0.6,
     progress_bar: bool = True,
     device: str | None = None,
     customized_pose_checkpoint: str | None = None,
@@ -54,19 +55,18 @@ def superanimal_analyze_images(
     customized_model_config: str | None = None,
 ):
     """
-    This funciton inferences a superanimal model on a set of images and saves the results as labeled images.
+    This funciton inferences a superanimal model on a set of images and saves the
+    results as labeled images.
 
     Parameters
     ----------
     superanimal_name: str
-        The name of the superanimal to analyze.
-        supported list:
-        superanimal_topviewmouse
-        superanimal_quadruped
+        The name of the superanimal to analyze. Supported list:
+            - "superanimal_topviewmouse"
+            - "superanimal_quadruped"
     model_name: str
-        The name of the model to use for inference.
-        supported list:
-        hrnetw32
+        The name of the model to use for inference. Supported list:
+            - "hrnetw32"
     images: str | Path | list[str] | list[Path]
         The images to analyze. Can either be a directory containing images, or
         a list of paths of images.
@@ -74,6 +74,10 @@ def superanimal_analyze_images(
         The maximum number of individuals to detect in each image.
     out_folder: str
         The directory where the labeled images will be saved.
+    bbox_threshold: float, default=0.1
+        The minimum confidence score to keep bounding box detections. Must be in (0, 1).
+        Only used when `customized_model_config=None` (otherwise, edit your
+        `customized_model_config` with the desired bbox_threshold).
     progress_bar: bool
         Whether to display a progress bar when running inference.
     device: str | None
@@ -95,17 +99,19 @@ def superanimal_analyze_images(
     --------
     >>> import deeplabcut
     >>> from deeplabcut.pose_estimation_pytorch.apis.analyze_images import superanimal_analyze_images
-    >>> superanimal_name = 'superanimal_quadruped'
-    >>> model_name = 'hrnetw32'
-    >>> device = 'cuda'
+    >>> superanimal_name = "superanimal_quadruped"
+    >>> model_name = "hrnetw32"
+    >>> device = "cuda"
     >>> max_individuals = 3
-    >>> test_images_folder = 'test_rodent_images'
-    >>> out_images_folder = 'vis_test_rodent_images'
-    >>> ret = superanimal_analyze_images(superanimal_name,
-                                model_name,
-                                test_images_folder,
-                                max_individuals,
-                                out_images_folder)
+    >>> test_images_folder = "test_rodent_images"
+    >>> out_images_folder = "vis_test_rodent_images"
+    >>> ret = superanimal_analyze_images(
+    >>>     superanimal_name,
+    >>>     model_name,
+    >>>     test_images_folder,
+    >>>     max_individuals,
+    >>>     out_images_folder
+    >>> )
     """
 
     os.makedirs(out_folder, exist_ok=True)
@@ -119,6 +125,10 @@ def superanimal_analyze_images(
             snapshot_path,
             detector_path,
         ) = get_config_model_paths(superanimal_name, model_name)
+
+        if "detector" in model_cfg:
+            model_cfg["detector"]["model"]["box_score_thresh"] = bbox_threshold
+
         config = {**project_config, **model_cfg}
         config = update_config(config, max_individuals, device)        
     else:
@@ -146,9 +156,7 @@ def superanimal_analyze_images(
 
     superanimal_colormaps = get_superanimal_colormaps()
     colormap = superanimal_colormaps[superanimal_name]
-
     create_labeled_images_from_predictions(predictions, out_folder, colormap)
-
     return predictions
 
 
@@ -164,8 +172,6 @@ def analyze_images(
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
-    superanimal_name=None,
-    model_name=None,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
