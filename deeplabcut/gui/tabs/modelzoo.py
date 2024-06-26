@@ -297,7 +297,7 @@ class ModelZoo(DefaultTab):
     def signal_analysis_complete(self):
         self.run_button.setEnabled(True)
         self.root._progress_bar.hide()
-        msg = QtWidgets.QMessageBox(text="Superanimal video inference complete!")
+        msg = QtWidgets.QMessageBox(text="SuperAnimal video inference complete!")
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.exec_()
 
