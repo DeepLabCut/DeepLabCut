@@ -363,9 +363,6 @@ class GenerativeSampler:
         np.clip(synth_joints[:, 0], 0, image_size[1], out=synth_joints[:, 0])
         np.clip(synth_joints[:, 1], 0, image_size[0], out=synth_joints[:, 1])
 
-        # bring format of empty annotations back to DLC format (0 -> nan)
-        synth_joints[(synth_joints[...,0]==0) & (synth_joints[...,1]==0)] = np.nan
-
         return synth_joints
 
     def get_distance_wrt_keypoint_sim(self, ks: float, area: float) -> np.ndarray:

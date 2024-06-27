@@ -174,6 +174,8 @@ class HRNetCoAM(HRNet):
         """
 
         # create conditional heatmap
+        if isinstance(cond_kpts, torch.Tensor):
+            cond_kpts = cond_kpts.detach().numpy()
         cond_hm = self.cond_enc(cond_kpts.squeeze(1), x.size()[2:])
         cond_hm = torch.from_numpy(cond_hm).float().to(x.device)
         cond_hm = cond_hm.permute(0, 3, 1, 2)  # (B, C, H, W)

@@ -202,7 +202,7 @@ class PoseDataset(Dataset):
                 )
 
                 bboxes[0] = bbox_from_keypoints(
-                    synthesized_keypoints[:, :2],
+                    synthesized_keypoints,
                     original_size[0],
                     original_size[1],
                     10,  # FIXME: bbox_margin should be a parameter set in cfg
@@ -257,7 +257,7 @@ class PoseDataset(Dataset):
     ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
         context = dict()
         if self.task == Task.CTD:
-            context["cond_keypoints"] = keypoints[1, :, :, :2].astype(np.single)
+            context["cond_keypoints"] = keypoints[1, :, :, :].astype(np.single)
 
         return {
             "image": image.transpose((2, 0, 1)),

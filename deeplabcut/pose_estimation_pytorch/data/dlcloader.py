@@ -297,9 +297,13 @@ class DLCLoader(Loader):
                 img_path = pred_path.parent.parent / Path(*idx)
             else:
                 img_path = pred_path.parent.parent / Path(idx)
-            keypoints = dlc_preds.loc[idx].values.reshape(-1,len(parameters.bodyparts),3)[:,:,:2]
+
+            keypoints = dlc_preds.loc[idx].values.reshape(-1,len(parameters.bodyparts),3)[...,:2]
             keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
-            predictions[str(img_path)] = keypoints
+            cond_keypoints = np.zeros((*keypoints.shape[:-1], 3))
+            cond_keypoints[..., :2] = keypoints
+            cond_keypoints[..., 2] = 2
+            predictions[str(img_path)] = cond_keypoints
 
         return predictions
 

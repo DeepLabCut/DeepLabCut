@@ -19,6 +19,7 @@ import torchvision.transforms.functional as TF
 import matplotlib.pyplot as plt
 
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.pose_estimation_pytorch.data.utils import _out_of_bounds_keypoints
 
 
 KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
@@ -173,13 +174,24 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
                 f"colors, but there are {num_kpts} to encode"
             )
 
-        kpts = np.array(keypoints).astype(int)
+        #kpts = keypoints.detach().numpy()
+        kpts = keypoints.copy()
+        kpts[keypoints[..., 2] <= 0] = 0
+        kpts = np.nan_to_num(kpts)
+        oob_mask = _out_of_bounds_keypoints(kpts, (256,256))
+        if np.sum(oob_mask) > 0:
+            kpts[oob_mask] = 0
+        kpts = kpts.astype(int)
+
+        #kpts = np.array(keypoints).astype(int)
         zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
         
         def _get_condition_matrix(zero_matrix, kpts):
             for i, pose in enumerate(kpts):
-                x, y = pose.T
-                mask = (0 < x) & (x < size[1]) & (0 < y) & (y < size[0])
+                #x, y = pose.T
+                x, y, vis = pose.T
+                #mask = (0 < x) & (x < size[1]) & (0 < y) & (y < size[0])
+                mask = vis > 0
                 x_masked, y_masked, colors_masked = x[mask], y[mask], self.colors[mask]
                 zero_matrix[i, y_masked-1, x_masked-1] = colors_masked
             return zero_matrix
