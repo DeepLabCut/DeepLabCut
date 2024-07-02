@@ -89,6 +89,11 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
         self.itemSelectionChanged.connect(self.update_selected_bodyparts)
 
+    def refresh(self):
+        self.clear()
+        self.addItems(self.root.all_bodyparts)
+        self.update_selected_bodyparts()
+
     def update_selected_bodyparts(self):
         self.selected_bodyparts = [item.text() for item in self.selectedItems()]
         self.root.logger.info(f"Selected bodyparts:\n\t{self.selected_bodyparts}")
