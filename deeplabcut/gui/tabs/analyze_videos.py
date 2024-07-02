@@ -27,6 +27,7 @@ from deeplabcut.gui.components import (
 
 import deeplabcut
 from deeplabcut.utils.auxiliaryfunctions import edit_config
+from deeplabcut.utils import auxfun_multianimal
 
 
 class AnalyzeVideos(DefaultTab):
@@ -246,6 +247,7 @@ class AnalyzeVideos(DefaultTab):
 
     def update_plot_trajectory_choice(self, state):
         if Qt.CheckState(state) == Qt.Checked:
+            self.bodyparts_list_widget.refresh()
             self.bodyparts_list_widget.show()
             self.bodyparts_list_widget.setEnabled(True)
             self.show_trajectory_plots.setEnabled(True)
@@ -346,6 +348,7 @@ class AnalyzeVideos(DefaultTab):
                 shuffle=shuffle,
             )
 
+        track_method = auxfun_multianimal.get_track_method(self.root.cfg)
         if filter_data:
             deeplabcut.filterpredictions(
                 config,
@@ -355,6 +358,7 @@ class AnalyzeVideos(DefaultTab):
                 filtertype="median",
                 windowlength=5,
                 save_as_csv=save_as_csv,
+                track_method=track_method,
             )
 
         if self.plot_trajectories.checkState() == Qt.Checked:
@@ -371,6 +375,7 @@ class AnalyzeVideos(DefaultTab):
                 shuffle=shuffle,
                 filtered=filter_data,
                 showfigures=showfig,
+                track_method=track_method,
             )
 
         if self.root.is_multianimal and save_as_csv:
