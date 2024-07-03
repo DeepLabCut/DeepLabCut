@@ -262,7 +262,9 @@ def KmeansbasedFrameselectioncv2(
     if batchsize > nframes:
         batchsize = nframes // 2
 
-    allocated = False
+    ny_ = np.round(ny * ratio).astype(int)
+    nx_ = np.round(nx * ratio).astype(int)
+    DATA = np.empty((nframes, ny_, nx_ * 3 if color else nx_))
     if len(Index) >= numframes2pick:
         if (
             np.mean(np.diff(Index)) > 1
@@ -282,13 +284,6 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        if (
-                            not allocated
-                        ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
-                            )
-                            allocated = True
                         DATA[counter, :, :] = np.hstack(
                             [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
                         )
@@ -306,13 +301,6 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        if (
-                            not allocated
-                        ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
-                            )
-                            allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
         else:
             print("Extracting and downsampling...", nframes, " frames from the video.")
@@ -329,13 +317,6 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        if (
-                            not allocated
-                        ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1] * 3)
-                            )
-                            allocated = True
                         DATA[counter, :, :] = np.hstack(
                             [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
                         )
@@ -352,13 +333,6 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        if (
-                            not allocated
-                        ):  #'DATA' not in locals(): #allocate memory in first pass
-                            DATA = np.empty(
-                                (nframes, np.shape(image)[0], np.shape(image)[1])
-                            )
-                            allocated = True
                         DATA[counter, :, :] = np.mean(image, 2)
 
         print("Kmeans clustering ... (this might take a while)")

@@ -19,7 +19,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import tensorflow as tf
 from pathlib import Path
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -46,7 +45,6 @@ MODELTYPE_FILEPATH_MAP = {
 
 def check_for_weights(modeltype, parent_path):
     """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
-
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
         print(
             "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
@@ -159,6 +157,8 @@ def download_model(modelname, target_dir):
 
 
 def set_visible_devices(gputouse: int):
+    import tensorflow as tf
+
     physical_devices = tf.config.list_physical_devices("GPU")
     n_devices = len(physical_devices)
     if gputouse >= n_devices:

@@ -1,0 +1,62 @@
+type: DLCRNetHead
+weight_init: normal
+predictor:
+  type: PartAffinityFieldPredictor
+  num_animals: "num_individuals"
+  num_multibodyparts: "num_bodyparts"
+  num_uniquebodyparts: 0
+  nms_radius: 5
+  sigma: 1.0
+  locref_stdev: 7.2801
+  min_affinity: 0.05
+  graph: "paf_graph"
+  edges_to_keep: "paf_edges_to_keep"
+  apply_sigmoid: false
+  clip_scores: true
+target_generator:
+  type: SequentialGenerator
+  generators:
+  - type: HeatmapGaussianGenerator
+    num_heatmaps: "num_bodyparts"
+    pos_dist_thresh: 17
+    heatmap_mode: KEYPOINT
+    generate_locref: true
+    locref_std: 7.2801
+  - type: PartAffinityFieldGenerator
+    graph: "paf_graph"
+    width: 20
+criterion:
+  heatmap:
+    type: WeightedMSECriterion
+    weight: 1.0
+  locref:
+    type: WeightedHuberCriterion
+    weight: 0.05
+  paf:
+    type: WeightedHuberCriterion
+    weight: 0.1
+heatmap_config:
+  channels:
+  - "backbone_output_channels"
+  - "num_bodyparts"
+  kernel_size:
+  - 3
+  strides:
+  - 2
+locref_config:
+  channels:
+  - "backbone_output_channels"
+  - "num_bodyparts x 2"
+  kernel_size:
+  - 3
+  strides:
+  - 2
+paf_config:
+  channels:
+  - "backbone_output_channels"
+  - "num_limbs x 2"  # num_limbs = len(graph)
+  kernel_size:
+  - 3
+  strides:
+  - 2
+num_stages: 5

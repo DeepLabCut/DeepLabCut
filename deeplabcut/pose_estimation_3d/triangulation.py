@@ -19,7 +19,7 @@ from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
-from deeplabcut.pose_estimation_tensorflow.lib.trackingutils import TRACK_METHODS
+from deeplabcut.core.trackingutils import TRACK_METHODS
 
 matplotlib_axes_logger.setLevel("ERROR")
 
