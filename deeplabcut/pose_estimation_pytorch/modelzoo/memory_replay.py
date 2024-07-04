@@ -40,17 +40,14 @@ from deeplabcut.utils.pseudo_label import calculate_iou, optimal_match, xywh2xyx
 
 # this is reading from a coco project
 def prepare_memory_replay_dataset(
-    source_dataset_folder,
-    superanimal_name,
-    model_name,
-    max_individuals=1,
-    train_file="train.json",
-    test_file="test.json",
-    pose_threshold=0.0,
-    device=None,
-    pose_model_path="",
-    detector_path="",
-    customized_pose_checkpoint=None,
+    source_dataset_folder: str,
+    superanimal_name: str,
+    model_name: str,
+    max_individuals: int = 1,
+    train_file: str = "train.json",
+    pose_threshold: float = 0.0,
+    device: str | None = None,
+    customized_pose_checkpoint: str | None = None,
 ):
     """
     Need to first run inference on the source project train file
@@ -96,7 +93,7 @@ def prepare_memory_replay_dataset(
     imagename2gt = defaultdict(list)
 
     for image in images:
-        # this only works with relative path as the testing image can be at a different folder
+        # this only works with rel. path as the test images can be in a different folder
         imagename = image["file_name"].split(os.sep)[-1]
         imagename2id[imagename] = image["id"]
         imageid2name[image["id"]] = imagename
@@ -203,10 +200,7 @@ def prepare_memory_replay_dataset(
                 # after the mixing, we don't care about confidence anymore
 
                 for kpt_idx in range(len(matched_gt)):
-                    if (
-                        matched_gt[kpt_idx][2] < pose_threshold
-                        and matched_gt[kpt_idx][2] > 0
-                    ):
+                    if 0 < matched_gt[kpt_idx][2] < pose_threshold:
                         matched_gt[kpt_idx][2] = -1
                     elif matched_gt[kpt_idx][2] > 0:
                         matched_gt[kpt_idx][2] = 2
@@ -228,11 +222,10 @@ def prepare_memory_replay(
     superanimal_name: str,
     model_name: str,
     device: str,
-    max_individuals=3,
-    trainingsetindex: int = 0,
-    train_file="train.json",
-    pose_threshold=0.1,
-    customized_pose_checkpoint=None,
+    max_individuals: int = 3,
+    train_file: str = "train.json",
+    pose_threshold: float = 0.1,
+    customized_pose_checkpoint: str | None = None,
 ):
     """TODO: Documentation"""
 
@@ -264,7 +257,10 @@ def prepare_memory_replay(
     memory_replay_folder = model_folder / "memory_replay"
 
     temp_dataset.materialize(
-        memory_replay_folder, framework="coco", append_image_id=False
+        memory_replay_folder,
+        framework="coco",
+        append_image_id=False,
+        no_image_copy=True,  # use the images in the labeled-data folder
     )
 
     original_model_config = af.read_config(
@@ -290,14 +286,15 @@ def prepare_memory_replay(
         )
 
     dataset = COCOPoseDataset(memory_replay_folder, "memory_replay_dataset")
-
     conversion_table_path = dlc_proj_root / "memory_replay" / "conversion_table.csv"
 
-    # here we project the original DLC projects to superanimal space and save them into a coco project format
+    # here we project the original DLC projects to superanimal space and save them into
+    # a coco project format
     dataset.project_with_conversion_table(str(conversion_table_path))
     dataset.materialize(memory_replay_folder, deepcopy=False, framework="coco")
 
-    # then in this function, we do pseudo label to match prediction and gts to create memory-replay dataset that will be named memory_replay_train.json
+    # then in this function, we do pseudo label to match prediction and gts to create
+    # memory-replay dataset that will be named memory_replay_train.json
     memory_replay_train_file = os.path.join(
         memory_replay_folder, "annotations", "memory_replay_train.json"
     )

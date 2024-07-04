@@ -298,16 +298,11 @@ def keypoint_matching(
             optimal_index = optimal_pred_indices[idx]
             matched_gt = np.array(gts[idx]["keypoints"])
             matched_pred = prediction["bodyparts"][optimal_index]
-            bbox_gt = bbox_gts[idx]
-            bbox_pred = bbox_preds[idx]
             matched_gt = matched_gt.reshape(num_gt_keypoints, -1)
             matched_pred = matched_pred.reshape(num_pred_keypoints, -1)
 
-            gt_kpt_ids = np.arange(matched_gt.shape[0])
-            pred_kpt_ids = np.arange(matched_pred.shape[0])
             pair_distance = cdist(matched_pred, matched_gt)
             row_ind, column_ind = linear_sum_assignment(pair_distance)
-            original_gt_matched_indices = matched_gt[column_ind]
             for row, column in zip(row_ind, column_ind):
                 pred_kpt_name = pred_keypoint_names[row]
                 anno_kpt_name = gt_keypoint_names[column]

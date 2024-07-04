@@ -661,9 +661,10 @@ def _generic2coco(
     train_annotations,
     test_annotations,
     meta,
-    deepcopy=False,
-    full_image_path=True,
-    append_image_id=True,
+    deepcopy: bool = False,
+    full_image_path: bool = True,
+    append_image_id: bool = True,
+    no_image_copy: bool = True,
 ):
     """
     Take generic data and create coco structure
@@ -673,6 +674,17 @@ def _generic2coco(
     annotations
     - train.json
     - test.json
+
+    Args:
+        deepcopy: Only when no_image_copy=False. If False, images are not copied from
+            their original location and symlinks are created instead.
+        full_image_path: Only when no_image_copy=False. If True, the ``file_name`` for
+            the images in the annotation files contain the resolved path to the images.
+            Otherwise, a relative path is used.
+        append_image_id: Only when no_image_copy=False. Appends the image IDs in the
+            dataset to the image names.
+        no_image_copy: Instead of copying images to the COCO dataset, the full paths to
+            the images in the original dataset are used in the annotations.
     """
 
     os.makedirs(os.path.join(proj_root, "images"), exist_ok=True)
@@ -705,33 +717,35 @@ def _generic2coco(
             broken_links.append(image_id)
             continue
 
-        # in dlc, some images have same name but under different folder
-        # we used to use a parent folder to distinguish them, but it's only applicable
-        # to DLC so here it's easier to just append a id into the filename
+        file_name = str(src)
+        dest = src
+        if not no_image_copy:
+            # in dlc, some images have same name but under different folder
+            # we used to use a parent folder to distinguish them, but it's only
+            # applicable to DLC so here it's easier to append an id into the filename
 
-        # not to repeatedly add image id in memory replay training
-        dest_image_name = src.name
-        if append_image_id:
-            dest_image_name = f"{src.stem}_{image_id}{src.suffix}"
+            # not to repeatedly add image id in memory replay training
+            dest_image_name = src.name
+            if append_image_id:
+                dest_image_name = f"{src.stem}_{image_id}{src.suffix}"
 
-        dest = Path(proj_root) / "images" / dest_image_name
-        dest = dest.resolve()
+            dest = Path(proj_root) / "images" / dest_image_name
+            dest = dest.resolve()
 
-        # now, we will also need to update the path in the config files
-        if full_image_path:
-            image["file_name"] = str(dest)
-        else:
-            image["file_name"] = str(Path(*dest.parts[-2:]))
+            file_name = str(Path(*dest.parts[-2:]))
+            if full_image_path:
+                file_name = str(dest)
 
-        if deepcopy:
-            shutil.copy(src, dest)
-        else:
-            try:
-                os.symlink(src, dest)
-            except Exception as err:
-                print(f"Could not create a symlink from {src} to {dest}: {err}")
-                pass
+            if deepcopy:
+                shutil.copy(src, dest)
+            else:
+                try:
+                    os.symlink(src, dest)
+                except Exception as err:
+                    print(f"Could not create a symlink from {src} to {dest}: {err}")
+                    pass
 
+        image["file_name"] = file_name
         lookuptable[dest] = src
 
     train_annotations = [
