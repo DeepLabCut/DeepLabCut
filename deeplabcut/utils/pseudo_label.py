@@ -148,6 +148,7 @@ def keypoint_matching(
     config_path: str | Path,
     superanimal_name: str,
     model_name: str,
+    copy_images: bool = False,
     device: str | None = None,
     train_file: str = "train.json",
 ):
@@ -157,11 +158,14 @@ def keypoint_matching(
     SuperAnimal inference on all images in the dataset
 
     Args:
-        config_path: the path of the DeepLabCut project configuration file
-        superanimal_name: SuperAnimal dataset with which to run keypoint matching
+        config_path: The path of the DeepLabCut project configuration file.
+        superanimal_name: SuperAnimal dataset with which to run keypoint matching.
         model_name: SuperAnimal model with which to run keypoint matching
-        device: the device on which to run keypoint matching
-        train_file: the name of the file containing the labels to output
+        copy_images: When False, symlinks are created for the dataset used for keypoint
+            matching. Otherwise, images are copied from the `labeled-data` folder to the
+            folder used for keypoint matching.
+        device: The device on which to run keypoint matching.
+        train_file: The name of the file containing the labels to output.
     """
     config_path = Path(config_path)
     cfg = af.read_config(str(config_path))
@@ -175,7 +179,9 @@ def keypoint_matching(
         max_individuals = 1
 
     memory_replay_folder = dlc_proj_root / "memory_replay"
-    temp_dataset.materialize(str(memory_replay_folder), framework="coco")
+    temp_dataset.materialize(
+        str(memory_replay_folder), framework="coco", deepcopy=copy_images
+    )
 
     # inferencing the train set
     (
