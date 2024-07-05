@@ -252,12 +252,18 @@ def evaluate_multianimal_full(
                     available_snapshots=Snapshots,
                 )
             else:
-                # Note: Should I catch any errors here to prevent loop from breaking?
-                #  evaluate.py never did but evaluate_multianimal.py did.
-                snapshot_names = get_snapshots_by_index(
-                    idx=cfg["snapshotindex"],
-                    available_snapshots=Snapshots,
-                )
+                try:
+                    snapshot_names = get_snapshots_by_index(
+                        idx=cfg["snapshotindex"],
+                        available_snapshots=Snapshots,
+                    )
+                except IndexError as err:
+                    print(
+                        "Failed to get snapshot_names for trainFraction="
+                        f"{trainFraction} and shuffle={shuffle}. Error:"
+                    )
+                    print(err)
+                    snapshot_names = []
 
             final_result = []
             ##################################################
@@ -351,8 +357,8 @@ def evaluate_multianimal_full(
                                 )
                                 groundtruthidentity[i] = np.array([], dtype=str)
 
-                        # Form 2D array of shape (n_rows, 4) where the last dimension
-                        # is (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
+                        # Form 2D array of shape (n_rows, 4) where the last dim is
+                        # (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                         temp = df.reset_index(level="bodyparts").dropna()
                         temp["bodyparts"].replace(
                             dict(zip(joints, range(len(joints)))),
