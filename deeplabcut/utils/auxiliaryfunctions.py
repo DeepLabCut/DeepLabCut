@@ -20,6 +20,7 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 import typing
+from typing import List
 import pickle
 import warnings
 from pathlib import Path
@@ -505,6 +506,29 @@ def get_model_folder(trainFraction, shuffle, cfg, modelprefix=""):
     )
 
 
+def get_snapshots_from_folder(train_folder: Path) -> List[str]:
+    """
+    Returns an ordered list of existing snapshot names in the train folder, sorted by
+    increasing training iterations.
+
+    Raises:
+        FileNotFoundError: if no snapshot_names are found in the train_folder.
+    """
+    snapshot_names = [
+        file.stem for file in train_folder.iterdir() if "index" in file.name
+    ]
+
+    if len(snapshot_names) == 0:
+        raise FileNotFoundError(
+            f"No snapshots were found in {train_folder}! Please ensure the network has "
+            f"been trained and verify the iteration, shuffle and trainFraction are "
+            f"correct."
+        )
+
+    # sort in ascending order of iteration number
+    return sorted(snapshot_names, key=lambda name: int(name.split("-")[1]))
+
+
 def get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=""):
     Task = cfg["Task"]
     date = cfg["date"]
@@ -583,18 +607,15 @@ def get_scorer_name(
         else:
             snapshotindex = cfg["snapshotindex"]
 
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
-            "train",
+        train_folder = (
+            Path(cfg["project_path"])
+            / get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
+            / "train"
         )
-        Snapshots = np.array(
-            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
-        )
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-        SNP = Snapshots[snapshotindex]
-        trainingsiterations = (SNP.split(os.sep)[-1]).split("-")[-1]
+        snapshot_names = get_snapshots_from_folder(train_folder)
+
+        snapshot_name = snapshot_names[snapshotindex]
+        trainingsiterations = (snapshot_name.split(os.sep)[-1]).split("-")[-1]
 
     dlc_cfg = read_plainconfig(
         os.path.join(
