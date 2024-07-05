@@ -158,8 +158,8 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         # Create a filter string with both lowercase and uppercase extensions
 
-        video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES] + [
-            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES
+        video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
         ]
         video_files = f"Videos ({' '.join(video_types)})"
 
