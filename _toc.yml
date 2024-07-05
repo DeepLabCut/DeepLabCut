@@ -4,6 +4,7 @@ parts:
 - caption: Getting Started
   chapters:
   - file: docs/UseOverviewGuide
+  - file: docs/course
 - caption: Installation
   chapters:
   - file: docs/installation
@@ -17,12 +18,24 @@ parts:
   - file: docs/HelperFunctions
 - caption: Graphical User Interfaces (GUIs)
   chapters:
-  - file: docs/PROJECT_GUI
-  - file: docs/napari_GUI
+  - file: docs/gui/PROJECT_GUI
+  - file: docs/gui/napari_GUI
+- caption: DLC3 PyTorch Specific Docs
+  chapters:
+  - file: docs/pytorch/user_guide.md
+  - file: docs/pytorch/pytorch_config.md
+  - file: docs/pytorch/architectures.md
 - caption: Quick Start Tutorials
   chapters:
-  - file: docs/single_animal_quick_guide
-  - file: docs/tutorial_maDLC
+  - file: docs/quick-start/single_animal_quick_guide
+  - file: docs/quick-start/tutorial_maDLC
+- caption: Beginner's Guide to DeepLabCut
+  chapters:
+  - file: docs/beginner-guides/beginners-guide
+  - file: docs/beginner-guides/manage-project
+  - file: docs/beginner-guides/labeling
+  - file: docs/beginner-guides/Training-Evaluation
+  - file: docs/beginner-guides/video-analysis
 - caption: Hardware Tips
   chapters:
   - file: docs/recipes/TechHardware
@@ -34,7 +47,7 @@ parts:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
-- caption: Cookbook
+- caption: Cookbook (detailed helper guides)
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC
@@ -48,13 +61,6 @@ parts:
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
-- caption: Beginner's Guide to DeepLabCut in the GUI
-  chapters:
-  - file: docs/beginners-guide
-  - file: docs/manage-project
-  - file: docs/labelling
-  - file: docs/Training-Evaluation
-  - file: docs/video-analysis
 - caption: DeepLabCut Benchmark
   chapters:
   - file: docs/benchmark
