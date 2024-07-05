@@ -201,12 +201,6 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
         self.setMaximum(10_000)
         self.setValue(self.root.shuffle_value)
         self.valueChanged.connect(self.root.update_shuffle)
-        self.root.shuffle_change.connect(self.update_shuffle)
-
-    @Slot(int)
-    def update_shuffle(self, new_shuffle: int):
-        if new_shuffle != self.value():
-            self.setValue(new_shuffle)
 
 
 class DefaultTab(QtWidgets.QWidget):
