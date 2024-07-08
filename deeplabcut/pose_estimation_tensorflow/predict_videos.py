@@ -115,20 +115,9 @@ def create_tracking_dataset(
             % (shuffle, trainFraction)
         )
 
-    # Check which snapshots are available and sort them by # iterations
-    try:
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(modelfolder, "train"))
-                if "index" in fn
-            ]
-        )
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
-            % (shuffle, shuffle)
-        )
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+        train_folder=Path(modelfolder) / "train",
+    )
 
     if cfg["snapshotindex"] == "all":
         print(
@@ -137,9 +126,6 @@ def create_tracking_dataset(
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
-
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
 
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
@@ -513,20 +499,9 @@ def analyze_videos(
             % (iteration, shuffle, trainFraction)
         )
 
-    # Check which snapshots are available and sort them by # iterations
-    try:
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(modelfolder, "train"))
-                if "index" in fn
-            ]
-        )
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Be sure you also have the intended iteration number set.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
-            % (shuffle, shuffle)
-        )
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+        train_folder=Path(modelfolder) / "train",
+    )
 
     if cfg["snapshotindex"] == "all":
         print(
@@ -535,9 +510,6 @@ def analyze_videos(
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
-
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
 
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
@@ -1315,20 +1287,10 @@ def analyze_time_lapse_frames(
             "It seems the model for shuffle %s and trainFraction %s does not exist."
             % (shuffle, trainFraction)
         )
-    # Check which snapshots are available and sort them by # iterations
-    try:
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(modelfolder, "train"))
-                if "index" in fn
-            ]
-        )
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
-            % (shuffle, shuffle)
-        )
+
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+        train_folder=Path(modelfolder) / "train",
+    )
 
     if cfg["snapshotindex"] == "all":
         print(
@@ -1337,9 +1299,6 @@ def analyze_time_lapse_frames(
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
-
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
 
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
 
@@ -1692,20 +1651,9 @@ def convert_detections2tracklets(
         # between trackers cannot be evaluated, resulting in empty tracklets.
         inferencecfg["boundingboxslack"] = max(inferencecfg["boundingboxslack"], 40)
 
-    # Check which snapshots are available and sort them by # iterations
-    try:
-        Snapshots = np.array(
-            [
-                fn.split(".")[0]
-                for fn in os.listdir(os.path.join(modelfolder, "train"))
-                if "index" in fn
-            ]
-        )
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "Snapshots not found! It seems the dataset for shuffle %s has not been trained/does not exist.\n Please train it before using it to analyze videos.\n Use the function 'train_network' to train the network for shuffle %s."
-            % (shuffle, shuffle)
-        )
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+        train_folder=Path(modelfolder) / "train",
+    )
 
     if cfg["snapshotindex"] == "all":
         print(
@@ -1715,8 +1663,6 @@ def convert_detections2tracklets(
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-    Snapshots = Snapshots[increasing_indices]
     print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
     dlc_cfg["init_weights"] = os.path.join(
         modelfolder, "train", Snapshots[snapshotindex]

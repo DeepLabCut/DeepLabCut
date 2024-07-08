@@ -327,6 +327,7 @@ def evaluate_network(
     rescale: bool = False,
     modelprefix: str = "",
     per_keypoint_evaluation: bool = False,
+    snapshots_to_evaluate: list[str] | None = None,
     engine: Engine | None = None,
     **torch_kwargs,
 ):
@@ -385,6 +386,9 @@ def evaluate_network(
     per_keypoint_evaluation: bool, default=False
         Compute the train and test RMSE for each keypoint, and save the results to
         a {model_name}-keypoint-results.csv in the evalution-results folder
+
+    snapshots_to_evaluate: List[str], optional, default=None
+        List of snapshot names to evaluate (e.g. ["snapshot-5000", "snapshot-7500"]).
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -464,6 +468,7 @@ def evaluate_network(
             rescale=rescale,
             modelprefix=modelprefix,
             per_keypoint_evaluation=per_keypoint_evaluation,
+            snapshots_to_evaluate=snapshots_to_evaluate,
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import evaluate_network
