@@ -664,7 +664,7 @@ def _generic2coco(
     deepcopy: bool = False,
     full_image_path: bool = True,
     append_image_id: bool = True,
-    no_image_copy: bool = True,
+    no_image_copy: bool = False,
 ):
     """
     Take generic data and create coco structure
