@@ -152,7 +152,11 @@ class PartAffinityFieldPredictor(BasePredictor):
             heatmaps, self.nms_radius, threshold=0.01
         )
         if ~torch.any(peaks):
-            return {"poses": torch.zeros((batch_size, 0, self.num_multibodyparts, 5))}
+            return {
+                "poses": -torch.ones(
+                    (batch_size, self.num_animals, self.num_multibodyparts, 5)
+                )
+            }
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
         locrefs = locrefs * self.locref_stdev
@@ -169,8 +173,8 @@ class PartAffinityFieldPredictor(BasePredictor):
             scale_factors,
             n_id_channels=0,  # FIXME Handle identity training
         )
-        poses = torch.empty((batch_size, self.num_animals, self.num_multibodyparts, 5))
-        poses_unique = torch.empty((batch_size, 1, self.num_uniquebodyparts, 4))
+        poses = -torch.ones((batch_size, self.num_animals, self.num_multibodyparts, 5))
+        poses_unique = -torch.ones((batch_size, 1, self.num_uniquebodyparts, 4))
         for i, data_dict in enumerate(preds):
             assemblies, unique = self.assembler._assemble(data_dict, ind_frame=0)
             for j, assembly in enumerate(assemblies):
