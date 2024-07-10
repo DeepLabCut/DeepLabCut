@@ -69,9 +69,9 @@ class HeatmapPredictor(BasePredictor):
 
         Example:
             >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> inputs = torch.rand((1, 3, 256, 256))
+            >>> stride = 8
             >>> output = {"heatmap": torch.rand(32, 17, 64, 64), "locref": torch.rand(32, 17, 64, 64)}
-            >>> poses = predictor.forward(inputs, output)
+            >>> poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]
         scale_factors = stride, stride
@@ -139,24 +139,24 @@ class HeatmapPredictor(BasePredictor):
             >>> scale_factors = (0.5, 0.5)
             >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
-        Y, X = self.get_top_values(heatmap)
+        y, x = self.get_top_values(heatmap)
 
-        batch_size, num_joints = X.shape
+        batch_size, num_joints = x.shape
 
-        DZ = torch.zeros((batch_size, 1, num_joints, 3)).to(X.device)
+        dz = torch.zeros((batch_size, 1, num_joints, 3)).to(x.device)
         for b in range(batch_size):
             for j in range(num_joints):
-                DZ[b, 0, j, 2] = heatmap[b, Y[b, j], X[b, j], j]
+                dz[b, 0, j, 2] = heatmap[b, y[b, j], x[b, j], j]
                 if locref is not None:
-                    DZ[b, 0, j, :2] = locref[b, Y[b, j], X[b, j], j, :]
+                    dz[b, 0, j, :2] = locref[b, y[b, j], x[b, j], j, :]
 
-        X, Y = torch.unsqueeze(X, 1), torch.unsqueeze(Y, 1)
+        x, y = torch.unsqueeze(x, 1), torch.unsqueeze(y, 1)
 
-        X = X * scale_factors[1] + 0.5 * scale_factors[1] + DZ[:, :, :, 0]
-        Y = Y * scale_factors[0] + 0.5 * scale_factors[0] + DZ[:, :, :, 1]
+        x = x * scale_factors[1] + 0.5 * scale_factors[1] + dz[:, :, :, 0]
+        y = y * scale_factors[0] + 0.5 * scale_factors[0] + dz[:, :, :, 1]
 
         pose = torch.empty((batch_size, 1, num_joints, 3))
-        pose[:, :, :, 0] = X
-        pose[:, :, :, 1] = Y
-        pose[:, :, :, 2] = DZ[:, :, :, 2]
+        pose[:, :, :, 0] = x
+        pose[:, :, :, 1] = y
+        pose[:, :, :, 2] = dz[:, :, :, 2]
         return pose
