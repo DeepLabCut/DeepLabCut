@@ -46,8 +46,11 @@ def compute_metrics(
             in the format (num_predictions, num_bodyparts, 3), where the 3 values are
             x, y and score. The number of predictions can be different to the number of
             ground truth individuals labeled for an image.
-        unique_bodypart_gt:
-        unique_bodypart_poses: If unique bodyparts are defined for the dataset,
+        unique_bodypart_gt: If unique bodyparts are defined for the dataset, they should
+            be contained in this dict in the same format as the ``ground_truth`` dict.
+        unique_bodypart_poses: If unique bodyparts are defined for the dataset, the
+            predictions should be contained in this dict in the same format as the
+            ``predictions`` dict.
         pcutoff: The threshold to compute the "rmse_cutoff" score (RMSE of all
             predictions with score above the cutoff).
         oks_bbox_margin: The margin to add around keypoints to compute the area for OKS
