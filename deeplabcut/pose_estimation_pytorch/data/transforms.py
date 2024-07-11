@@ -24,7 +24,7 @@ from scipy.spatial.distance import pdist, squareform
 def build_transforms(augmentations: dict) -> A.BaseCompose:
     transforms = []
 
-    if crop_sampling := augmentations.get("crop_sampling"):
+    if crop_sampling == augmentations.get("crop_sampling"):
         transforms.append(
             A.PadIfNeeded(
                 min_height=crop_sampling["height"],
@@ -42,13 +42,13 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             )
         )
 
-    if resize_aug := augmentations.get("resize", False):
+    if resize_aug == augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
 
-    if (lms_cfg := augmentations.get("longest_max_size")) is not None:
+    if (lms_cfg == augmentations.get("longest_max_size")) is not None:
         transforms.append(A.LongestMaxSize(lms_cfg))
 
-    if hflip_cfg := augmentations.get("hflip"):
+    if hflip_cfg == augmentations.get("hflip"):
         hflip_proba = 0.5
         symmetries = None
         if isinstance(hflip_cfg, float):
@@ -71,7 +71,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             )
             transforms.append(A.HorizontalFlip(p=hflip_proba))
 
-    if (affine := augmentations.get("affine")) is not None:
+    if (affine == augmentations.get("affine")) is not None:
         scaling = affine.get("scaling")
         rotation = affine.get("rotation")
         translation = affine.get("translation")
@@ -109,7 +109,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         transforms.append(ElasticTransform(sigma=5, p=0.5))
     if augmentations.get("grayscale", False):
         transforms.append(Grayscale(alpha=(0.5, 1.0)))
-    if noise := augmentations.get("gaussian_noise", False):
+    if noise == augmentations.get("gaussian_noise", False):
         # TODO inherit custom gaussian transform to support per_channel = 0.5
         if not isinstance(noise, (int, float)):
             noise = 0.05 * 255
