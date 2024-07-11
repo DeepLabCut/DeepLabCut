@@ -14,6 +14,7 @@ import numpy as np
 import pickle
 from sklearn.metrics import accuracy_score
 
+import deeplabcut.core.metrics.api as metrics_api
 from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.core.inferenceutils import (
     Assembly,
@@ -35,10 +36,6 @@ def get_scores(
 ) -> dict[str, float]:
     """Computes for the different scores given the ground truth and the predictions.
 
-    The poses and ground truth should already be aligned to the ground truth (the scores
-    will be computed assuming individual i in the poses matches to individual i in the
-    ground truth)
-
     The different scores computed are based on the COCO metrics: https://cocodataset.org/#keypoints-eval
     RMSE (Root Mean Square Error)
     OKS mAP (Mean Average Precision)
@@ -46,7 +43,7 @@ def get_scores(
 
     Args:
         poses: the predicted poses for each image in the format
-            {'image': keypoints with shape (num_individuals, num_keypoints, 3)}
+            {'image': keypoints with shape (num_predictions, num_keypoints, 3)}
         ground_truth: ground truth keypoints for each image in the format
             {'image': keypoints with shape (num_individuals, num_keypoints, 3)}
         pcutoff: the pcutoff used to use
@@ -82,48 +79,15 @@ def get_scores(
             f"images (poses={len(poses)}, gt={len(ground_truth)})"
         )
 
-    ground_truth = {
-        image: mask_invisible(gt_pose, mask_value=np.nan)
-        for image, gt_pose in ground_truth.items()
-    }
-
-    image_paths = list(poses)
-    pred_poses = build_keypoint_array(poses, image_paths)[..., :3].reshape((-1, 3))
-    gt_poses = build_keypoint_array(ground_truth, image_paths).reshape((-1, 2))
-    if unique_bodypart_poses is not None:
-        unique_bodypart_gt = {
-            image: mask_invisible(gt_pose, mask_value=np.nan)
-            for image, gt_pose in unique_bodypart_gt.items()
-        }
-        pred_poses = np.concatenate(
-            [
-                pred_poses,
-                build_keypoint_array(unique_bodypart_poses, image_paths)[
-                    ..., :3
-                ].reshape((-1, 3)),
-            ]
-        )
-        gt_poses = np.concatenate(
-            [
-                gt_poses,
-                build_keypoint_array(unique_bodypart_gt, image_paths).reshape((-1, 2)),
-            ]
-        )
-
-    pred_poses[pred_poses == -1] = np.nan
-    rmse, rmse_pcutoff = compute_rmse(pred_poses, gt_poses, pcutoff=pcutoff)
-
-    oks = compute_oks(poses, ground_truth, margin=bbox_margin, pcutoff=None)
-    oks_pcutoff = compute_oks(poses, ground_truth, margin=bbox_margin, pcutoff=pcutoff)
-
-    return {
-        "rmse": rmse,
-        "rmse_pcutoff": rmse_pcutoff,
-        "mAP": 100 * oks["mAP"],
-        "mAR": 100 * oks["mAR"],
-        "mAP_pcutoff": 100 * oks_pcutoff["mAP"],
-        "mAR_pcutoff": 100 * oks_pcutoff["mAR"],
-    }
+    return metrics_api.compute_metrics(
+        ground_truth=ground_truth,
+        predictions=poses,
+        unique_bodypart_poses=unique_bodypart_poses,
+        unique_bodypart_gt=unique_bodypart_gt,
+        pcutoff=pcutoff,
+        oks_bbox_margin=bbox_margin,
+        oks_sigma=0.1,
+    )
 
 
 def build_keypoint_array(

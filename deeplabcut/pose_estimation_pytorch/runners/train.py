@@ -22,11 +22,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
 
-from deeplabcut.pose_estimation_pytorch.metrics import compute_bbox_metrics
-from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
-    get_scores,
-    pair_predicted_individuals_with_gt,
-)
+import deeplabcut.core.metrics as metrics
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
@@ -336,7 +332,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
             self._update_epoch_predictions(
                 name="bodyparts",
-                paths=batch["path"],
                 gt_keypoints=ground_truth,
                 pred_keypoints=predictions["bodypart"]["poses"],
                 offsets=batch["offsets"],
@@ -345,7 +340,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             if "unique_bodypart" in predictions:
                 self._update_epoch_predictions(
                     name="unique_bodyparts",
-                    paths=batch["path"],
                     gt_keypoints=batch["annotations"]["keypoints_unique"],
                     pred_keypoints=predictions["unique_bodypart"]["poses"],
                     offsets=batch["offsets"],
@@ -359,29 +353,11 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         Returns:
             A dictionary containing the different losses for the step
         """
-        num_animals = max(
-            [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
-        )
-        poses = pair_predicted_individuals_with_gt(
-            self._epoch_predictions["bodyparts"], self._epoch_ground_truth["bodyparts"]
-        )
-
-        # pad predictions if there are any missing (needed for top-down models)
-        gt, pred = {}, {}
-        for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
-            for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
-                if len(kpts) < num_animals:
-                    padded_kpts = -np.ones((num_animals, *kpts.shape[1:]))
-                    padded_kpts[: len(kpts)] = kpts
-                    kpt_dict[path] = padded_kpts
-                else:
-                    kpt_dict[path] = kpts
-
-        scores = get_scores(
-            poses=pred,
-            ground_truth=gt,
-            unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
+        scores = metrics.compute_metrics(
+            ground_truth=self._epoch_ground_truth["bodyparts"],
+            predictions=self._epoch_predictions["bodyparts"],
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
+            unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             pcutoff=0.6,
         )
         return {f"metrics/test.{metric}": value for metric, value in scores.items()}
@@ -389,7 +365,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
     def _update_epoch_predictions(
         self,
         name: str,
-        paths: torch.Tensor,
         gt_keypoints: torch.Tensor,
         pred_keypoints: torch.Tensor,
         scales: torch.Tensor,
@@ -398,45 +373,28 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         """Updates the stored predictions with a new batch"""
         epoch_gt_metric = self._epoch_ground_truth.get(name, {})
         epoch_metric = self._epoch_predictions.get(name, {})
-        assert len(paths) == len(gt_keypoints) == len(pred_keypoints)
-        assert len(paths) == len(offsets) == len(scales)
+        assert len(gt_keypoints) == len(pred_keypoints)
+        assert len(offsets) == len(scales)
         scales = scales.detach().cpu().numpy()
         offsets = offsets.detach().cpu().numpy()
 
-        for path, gt, pred, scale, offset in zip(
-            paths,
+        for gt, pred, scale, offset in zip(
             gt_keypoints,
             pred_keypoints,
             scales,
             offsets,
         ):
-            # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
-            gt_with_vis = ground_truth
-
-            # FIXME: convert (-1, -2) to 0. Else error is incorrectly calculated
-            for batch_id in range(len(ground_truth)):
-                # keypoints (num_kpts, 3)
-                keypoints = ground_truth[batch_id]
-                for kpts in keypoints:
-                    vis = kpts[-1]
-                    if vis < 0:
-                        kpts[-1] = 0
+            pred = pred.copy()
 
             # rescale to the full image for TD or CTD
-            gt_with_vis[..., :2] = (gt_with_vis[..., :2] * scale) + offset
-            pred = pred.copy()
+            ground_truth[..., :2] = (ground_truth[..., :2] * scale) + offset
             pred[..., :2] = (pred[..., :2] * scale) + offset
 
-            # for TD models, individuals are predicted separately
-            if path in epoch_gt_metric:
-                epoch_gt_metric[path] = np.concatenate(
-                    [epoch_gt_metric[path], gt_with_vis], axis=0
-                )
-                epoch_metric[path] = np.concatenate([epoch_metric[path], pred], axis=0)
-            else:
-                epoch_gt_metric[path] = gt_with_vis
-                epoch_metric[path] = pred
+            # we don't care about image paths here - use a default index
+            index = len(epoch_metric) + 1
+            epoch_gt_metric[f"sample{index:09}"] = ground_truth
+            epoch_metric[f"sample{index:09}"] = pred
 
         self._epoch_ground_truth[name] = epoch_gt_metric
         self._epoch_predictions[name] = epoch_metric
@@ -527,7 +485,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         try:
             return {
                 f"metrics/test.{k}": v
-                for k, v in compute_bbox_metrics(
+                for k, v in metrics.compute_bbox_metrics(
                     self._epoch_ground_truth, self._epoch_predictions
                 ).items()
             }
