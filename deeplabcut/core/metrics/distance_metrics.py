@@ -51,8 +51,8 @@ def compute_oks_matrix(
 
 def compute_oks(
     data: list[tuple[np.ndarray, np.ndarray]],
-    oks_sigma: float = 0.1,
     oks_bbox_margin: float = 0.0,
+    oks_sigma: float = 0.1,
     oks_thresholds: np.ndarray | None = None,
     oks_recall_thresholds: np.ndarray | None = None,
 ) -> dict[str, float]:
@@ -83,7 +83,7 @@ def compute_oks(
             start=0.0,
             stop=1.00,
             num=int(np.round((1.00 - 0.0) / 0.01)) + 1,
-            endpoint=True
+            endpoint=True,
         )
 
     total_gt = 0
@@ -104,7 +104,10 @@ def compute_oks(
         matches = []
         for gt, pred, oks_matrix in pose_data:
             image_matches = matching.match_greedy_oks(
-                gt, pred, oks_matrix=oks_matrix, oks_threshold=oks_threshold,
+                gt,
+                pred,
+                oks_matrix=oks_matrix,
+                oks_threshold=oks_threshold,
             )
             matches.extend(image_matches)
 
@@ -159,7 +162,7 @@ def compute_rmse(
         pcutoff: The p-cutoff to use to compute RMSE.
 
     Returns:
-        The RMSE and RMSE after removing all detections below the p-cutoff.
+        The RMSE and RMSE after removing all detections with a score below the pcutoff.
     """
     matches = []
     for gt, pred in data:

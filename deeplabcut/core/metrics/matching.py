@@ -18,24 +18,49 @@ import numpy as np
 
 @dataclass
 class PotentialMatch:
-    """A potential match between predicted pose and ground truth pose."""
+    """A potential match between predicted pose and ground truth pose.
+
+    Args:
+        pose: An array of shape (num_bodyparts, 3)
+        score: The score for the prediction. This could be the mean of the confidence
+            score for each bodypart, or another value representing how confident the
+            model is that this assembly is correct.
+        gt: None if no ground truth pose was matched to the prediction. If defined, the
+            ground truth to which the prediction is matched. It should be of shape
+            (num_bodyparts, 3), where the 3 values are x, y and visibility.
+        oks: The OKS score between the pose and the ground truth.
+    """
+
     pose: np.ndarray
     score: float
     gt: np.ndarray | None = None
     oks: float = 0.0
 
     def keypoint_scores(self) -> np.ndarray:
-        """Returns: """
+        """Returns: The confidence score for each bodypart in the predicted pose."""
         return self.pose[:, 2].copy()
 
     def pixel_errors(self) -> np.ndarray:
-        """Returns: """
+        """
+        Returns:
+            The distance (in pixels) between each predicted and ground truth bodypart.
+            If this prediction is unmatched, returns an array of length num_bodyparts
+            containing all NaNs.
+        """
         if self.gt is None:
             return np.full(len(self.pose), np.nan)
 
         return np.linalg.norm(self.pose[:, :2] - self.gt[:, :2], axis=1)
 
     def match(self, gt: np.ndarray, oks: float) -> None:
+        """Adds a ground truth match to this PotentialMatch
+
+        Args:
+            gt: The ground truth to which the prediction is matched. The ground truth
+                pose should be of shape (num_bodyparts, 3), where the 3 values are x, y
+                and visibility.
+            oks: The OKS similarity between the ground truth and this.
+        """
         self.gt = gt
         self.oks = oks
 
@@ -100,7 +125,7 @@ def match_greedy_oks(
 def match_greedy_rmse(
     ground_truth: np.ndarray,
     predictions: np.ndarray,
-    keep_assemblies: bool = True
+    keep_assemblies: bool = True,
 ) -> list[PotentialMatch]:
     """Greedy matching of ground truth individuals to predicted individuals using RMSE
 
@@ -111,9 +136,8 @@ def match_greedy_rmse(
         predictions: The predictions for an image, of shape (n_idv, n_bpt, 2)
         keep_assemblies: Whether to match predicted keypoints to ground truth keypoints
             while enforcing that all bodyparts for a predicted individual are matched
-            to bodyparts from the same ground truth assembly.
-
-            When set to False, this corresponds to detection RMSE score.
+            to bodyparts from the same ground truth assembly. When set to False, this
+            corresponds to detection RMSE score.
 
     Returns:
         A list containing a PotentialMatch for each predicted pose in the given
