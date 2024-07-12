@@ -149,9 +149,13 @@ def compute_oks(
 
 def compute_rmse(
     data: list[tuple[np.ndarray, np.ndarray]],
+    single_animal: bool,
     pcutoff: float,
+    oks_bbox_margin: float = 0.0,
 ) -> tuple[float, float]:
     """Computes the RMSE for pose predictions.
+
+    TODO(niels): Explain the difference between single and multi-animal RMSE.
 
     Args:
         data: The data for which to compute RMSE. This is a list containing (gt_poses,
@@ -159,14 +163,41 @@ def compute_rmse(
             num_bpts, 3) and predicted_poses is an array of shape (num_predictions,
             num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
             the pose they are (x, y, confidence score).
+        single_animal: Whether this is a single animal dataset.
         pcutoff: The p-cutoff to use to compute RMSE.
+        oks_bbox_margin: When single_animal is False, predictions are matched to GT
+            using OKS. This is the margin used to apply when computing the bbox from
+            the pose to compute OKS.
 
     Returns:
         The RMSE and RMSE after removing all detections with a score below the pcutoff.
     """
     matches = []
     for gt, pred in data:
-        image_matches = matching.match_greedy_rmse(gt, pred, keep_assemblies=True)
+        if single_animal:
+            assert gt.shape[0] <= 1 and pred.shape[0] <= 1, (
+                "At most one individual and one prediction can be given when computing "
+                f"single-animal RMSE. Found gt={gt.shape}, pred={pred.shape}"
+            )
+            image_matches = []
+            if gt.shape[0] == 1 and pred.shape[0] == 1:
+                match = matching.PotentialMatch.from_pose(pred[0])
+                match.match(gt[0], oks=float("nan"))  # OKS not needed for RMSE
+                image_matches.append(match)
+        else:
+            oks_matrix = compute_oks_matrix(
+                gt[:, :, :2],
+                pred[:, :, :2],
+                oks_sigma=0.1,
+                oks_bbox_margin=oks_bbox_margin,
+            )
+            image_matches = matching.match_greedy_oks(
+                gt,
+                pred,
+                oks_matrix=oks_matrix,
+                oks_threshold=0.00001,
+            )
+
         matches.extend(image_matches)
 
     rmse, rmse_cutoff = float("nan"), float("nan")

@@ -182,5 +182,12 @@ def benchmark_paf_graphs(
         poses_ = torch.stack(poses_).detach().cpu().numpy()
         poses_ = dict(zip(paths, poses_))
         poses.append(poses_)
-        results.append(metrics.compute_metrics(poses_gt, poses_, pcutoff=0.6))
+        results.append(
+            metrics.compute_metrics(
+                poses_gt,
+                poses_,
+                single_animal=train_dataset.parameters.max_num_animals == 1,
+                pcutoff=0.6,
+            )
+        )
     return results, poses, best_paf_edges

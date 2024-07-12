@@ -43,3 +43,23 @@ def test_computing_metrics_with_constant_error(error):
     )
     assert_almost_equal(results["rmse"], np.sqrt(2) * error)
     assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
+
+
+@pytest.mark.parametrize("error", [0.5, 1, 2])
+def test_computing_metrics_single_animal(error):
+    # only works for small errors: otherwise another matching can be found
+    gt = np.arange(6 * 3).astype(float).reshape((1, 6, 3))
+    gt[..., 2] = 2
+    predictions = gt.copy()
+    predictions[..., 2] = 0.9
+    predictions[..., :2] += error
+    results = metrics.compute_metrics(
+        ground_truth={"image": gt},
+        predictions={"image": predictions},
+        single_animal=True,
+        unique_bodypart_gt=None,
+        unique_bodypart_poses=None,
+    )
+    assert_almost_equal(results["rmse"], np.sqrt(2) * error)
+    assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
+

@@ -23,17 +23,20 @@ import deeplabcut.core.metrics.identity
             "bodyparts": ["arm"],
             "predictions": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, 3)
-                    [[2.0, 2.0, 0.8]], [[1.0, 1.0, 0.7]],  # x, y, score
+                    [[2.0, 2.0, 0.8]],
+                    [[1.0, 1.0, 0.7]],  # x, y, score
                 ],
             },
             "identity_scores": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
-                    [[0.8, 0.5]], [[0.51, 0.49]],
+                    [[0.8, 0.5]],
+                    [[0.51, 0.49]],
                 ],
             },
             "ground_truth": {
                 "img0.png": [  # (num_individuals, num_bodyparts, 3)
-                    [[1.0, 1.0, 2]], [[0, 0, 0]]  # x, y, visibility
+                    [[1.0, 1.0, 2]],
+                    [[0, 0, 0]],  # x, y, visibility
                 ]
             },
             "accuracy": {
@@ -45,17 +48,20 @@ import deeplabcut.core.metrics.identity
             "bodyparts": ["arm"],
             "predictions": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, 3)
-                    [[1.0, 1.0, 0.7]], [[2.0, 2.0, 0.7]],  # x, y, score
+                    [[1.0, 1.0, 0.7]],
+                    [[2.0, 2.0, 0.7]],  # x, y, score
                 ],
             },
             "identity_scores": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
-                    [[0.4, 0.6]], [[0.6, 0.4]]
+                    [[0.4, 0.6]],
+                    [[0.6, 0.4]],
                 ],
             },
             "ground_truth": {
                 "img0.png": [  # (num_individuals, num_bodyparts, 3)
-                    [[2.0, 2.0, 2]], [[1.0, 1.0, 2]],  # x, y, visibility
+                    [[2.0, 2.0, 2]],
+                    [[1.0, 1.0, 2]],  # x, y, visibility
                 ]
             },
             "accuracy": {
@@ -67,17 +73,20 @@ import deeplabcut.core.metrics.identity
             "bodyparts": ["arm"],
             "predictions": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, 3)
-                    [[1.0, 1.0, 0.7]], [[2.0, 2.0, 0.7]],  # x, y, score
+                    [[1.0, 1.0, 0.7]],
+                    [[2.0, 2.0, 0.7]],  # x, y, score
                 ],
             },
             "identity_scores": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
-                    [[0.6, 0.4]], [[0.6, 0.4]]  # both assemblies assigned to idv 1
+                    [[0.6, 0.4]],
+                    [[0.6, 0.4]],  # both assemblies assigned to idv 1
                 ],
             },
             "ground_truth": {
                 "img0.png": [  # (num_individuals, num_bodyparts, 3)
-                    [[2.0, 2.0, 2]], [[1.0, 1.0, 2]],  # x, y, visibility
+                    [[2.0, 2.0, 2]],
+                    [[1.0, 1.0, 2]],  # x, y, visibility
                 ]
             },
             "accuracy": {
@@ -89,12 +98,14 @@ import deeplabcut.core.metrics.identity
             "bodyparts": ["arm"],
             "predictions": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, 3)
-                    [[1.0, 1.0, 0.7]], [[2.0, 2.0, 0.7]],  # x, y, score
+                    [[1.0, 1.0, 0.7]],
+                    [[2.0, 2.0, 0.7]],  # x, y, score
                 ],
             },
             "identity_scores": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
-                    [[0.6, 0.4]], [[0.4, 0.6]]  # both assigned to wrong ID
+                    [[0.6, 0.4]],
+                    [[0.4, 0.6]],  # both assigned to wrong ID
                 ],
             },
             "ground_truth": {
@@ -176,7 +187,10 @@ import deeplabcut.core.metrics.identity
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
                     [[0.7, 0.3, 0.1], [0.6, 0.2, 0.1]],  # assigned to correct ID
                     [[0.1, 0.2, 0.7], [0.4, 0.3, 0.2]],  # 1st correct, 2nd wrong
-                    [[0.6, 0.3, 0.5], [0.6, 0.2, 0.4]],  # should not matter, not assigned to GT
+                    [
+                        [0.6, 0.3, 0.5],
+                        [0.6, 0.2, 0.4],
+                    ],  # should not matter, not assigned to GT
                 ],
             },
             "ground_truth": {

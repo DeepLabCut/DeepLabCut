@@ -140,6 +140,7 @@ def evaluate(
     results = metrics.compute_metrics(
         gt_keypoints,
         poses,
+        single_animal=parameters.max_num_animals == 1,
         pcutoff=pcutoff,
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,

@@ -345,7 +345,7 @@ def _to_coco_predictions(
 
         img_id = path_to_id[path]
         valid_predictions = [
-            kpt for kpt in image_keypoints  if np.any(np.all(~np.isnan(kpt), axis=-1))
+            kpt for kpt in image_keypoints if np.any(np.all(~np.isnan(kpt), axis=-1))
         ]
         for kpts in valid_predictions:
             score = float(np.nanmean(kpts[:, 2]).item())

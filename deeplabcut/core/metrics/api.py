@@ -19,6 +19,7 @@ import deeplabcut.core.metrics.distance_metrics as distance_metrics
 def compute_metrics(
     ground_truth: dict[str, np.ndarray],
     predictions: dict[str, np.ndarray],
+    single_animal: bool = False,
     unique_bodypart_gt: dict[str, np.ndarray] | None = None,
     unique_bodypart_poses: dict[str, np.ndarray] | None = None,
     pcutoff: float = -1,
@@ -46,6 +47,9 @@ def compute_metrics(
             in the format (num_predictions, num_bodyparts, 3), where the 3 values are
             x, y and score. The number of predictions can be different to the number of
             ground truth individuals labeled for an image.
+        single_animal: Whether the metrics are being computed on a single-animal or
+            multi-animal dataset. This has an impact on RMSE computation.
+            TODO(niels): Explain the difference between single and multi-animal RMSE.
         unique_bodypart_gt: If unique bodyparts are defined for the dataset, they should
             be contained in this dict in the same format as the ``ground_truth`` dict.
         unique_bodypart_poses: If unique bodyparts are defined for the dataset, the
@@ -80,7 +84,7 @@ def compute_metrics(
         }  # Sample output scores
     """
     data = prepare_evaluation_data(ground_truth, predictions)
-    rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, pcutoff=pcutoff)
+    rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, single_animal, pcutoff)
     oks_scores = distance_metrics.compute_oks(
         data=data,
         oks_sigma=oks_sigma,
@@ -92,7 +96,7 @@ def compute_metrics(
         # TODO: Should we integrate unique bodyparts to main RMSE?
         assert unique_bodypart_poses is not None
         unique_bpt = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
-        unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, pcutoff=pcutoff)
+        unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, True, pcutoff)
         results["rmse_unique_bodyparts"] = unique_bpt_metrics[0]
         results["rmse_pcutoff_unique_bodyparts"] = unique_bpt_metrics[1]
 
@@ -129,7 +133,7 @@ def prepare_evaluation_data(
         gt = gt[gt_mask]
 
         pred = predictions[image][..., :3].copy()  # PAF have 5 values; keep xy + score
-        pred[pred[..., 2] <= 0] = np.nan
+        pred[pred[..., 2] < 0] = np.nan
 
         # only keep predicted pose with at least two keypoints
         pred_mask = np.sum(np.all(~np.isnan(pred), axis=-1), axis=-1) > 1
