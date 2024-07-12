@@ -31,7 +31,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.metrics.scoring import compute_identity_scores
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -150,7 +149,7 @@ def evaluate(
         pred_id_scores = {
             filename: pred["identity_scores"] for filename, pred in predictions.items()
         }
-        id_scores = compute_identity_scores(
+        id_scores = metrics.compute_identity_scores(
             individuals=parameters.individuals,
             bodyparts=parameters.bodyparts,
             predictions=poses,

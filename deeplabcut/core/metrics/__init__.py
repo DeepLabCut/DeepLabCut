@@ -10,3 +10,4 @@
 #
 from .api import compute_metrics
 from .bbox import compute_bbox_metrics
+from .identity import compute_identity_scores

@@ -18,7 +18,7 @@ from deeplabcut.core.inferenceutils import (
 
 
 def rmse_match_prediction_to_gt(
-    pred_kpts: list[np.ndarray], gt_kpts: list[np.ndarray]
+    pred_kpts: np.ndarray, gt_kpts: np.ndarray
 ) -> np.ndarray:
     """
     Hungarian algorithm predicted individuals to ground truth ones, using root mean

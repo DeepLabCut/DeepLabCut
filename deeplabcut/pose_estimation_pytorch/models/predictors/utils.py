@@ -20,12 +20,9 @@ from numpy.typing import ArrayLike, NDArray
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+import deeplabcut.core.metrics as metrics
 from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.pose_estimation_pytorch import Loader
-from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
-    get_scores,
-    pair_predicted_individuals_with_gt,
-)
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import Graph
 
@@ -184,7 +181,6 @@ def benchmark_paf_graphs(
                 poses_.extend(preds["poses"])
         poses_ = torch.stack(poses_).detach().cpu().numpy()
         poses_ = dict(zip(paths, poses_))
-        poses_ = pair_predicted_individuals_with_gt(poses_, poses_gt)
         poses.append(poses_)
-        results.append(get_scores(poses_, poses_gt))
+        results.append(metrics.compute_metrics(poses_gt, poses_, pcutoff=0.6))
     return results, poses, best_paf_edges

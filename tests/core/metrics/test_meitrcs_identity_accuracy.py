@@ -12,7 +12,7 @@
 import numpy as np
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.metrics.scoring as scoring
+import deeplabcut.core.metrics.identity
 
 
 @pytest.mark.parametrize(
@@ -194,7 +194,7 @@ import deeplabcut.pose_estimation_pytorch.metrics.scoring as scoring
     ],
 )
 def test_id_accuracy(data) -> None:
-    scores = scoring.compute_identity_scores(
+    scores = deeplabcut.core.metrics.identity.compute_identity_scores(
         individuals=data["individuals"],
         bodyparts=data["bodyparts"],
         predictions={k: np.array(v) for k, v in data["predictions"].items()},

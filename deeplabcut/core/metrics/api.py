@@ -64,8 +64,22 @@ def compute_metrics(
         If unique bodyparts are given, two extra keys "rmse_unique_bodyparts" and
         "rmse_pcutoff_unique_bodyparts" are also returned, containing the metrics for
         the unique bodyparts head.
+
+    Examples:
+        >>> # Define the p-cutoff, prediction, and target DataFrames
+        >>> pcutoff = 0.5
+        >>> ground_truth = {"img0": np.array([[[1.0, 1.0, 2.0], ...], ...]), ...}
+        >>> predictions = {"img0": np.array([[[2.0, 1.0, 0.4], ...], ...]), ...}
+        >>> scores = compute_metrics(ground_truth, predictions, pcutoff=pcutoff)
+        >>> print(scores)
+        {
+            "rmse": 1.0,
+            "rmse_pcutoff": 0.0,
+            'mAP': 84.2,
+            'mAR': 74.5
+        }  # Sample output scores
     """
-    data = _prepare_data(ground_truth, predictions)
+    data = prepare_evaluation_data(ground_truth, predictions)
     rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, pcutoff=pcutoff)
     oks_scores = distance_metrics.compute_oks(
         data=data,
@@ -77,7 +91,7 @@ def compute_metrics(
     if unique_bodypart_gt is not None:
         # TODO: Should we integrate unique bodyparts to main RMSE?
         assert unique_bodypart_poses is not None
-        unique_bpt = _prepare_data(unique_bodypart_gt, unique_bodypart_poses)
+        unique_bpt = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
         unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, pcutoff=pcutoff)
         results["rmse_unique_bodyparts"] = unique_bpt_metrics[0]
         results["rmse_pcutoff_unique_bodyparts"] = unique_bpt_metrics[1]
@@ -85,7 +99,7 @@ def compute_metrics(
     return results
 
 
-def _prepare_data(
+def prepare_evaluation_data(
     ground_truth: dict[str, np.ndarray],
     predictions: dict[str, np.ndarray],
 ) -> list[tuple[np.ndarray, np.ndarray]]:
