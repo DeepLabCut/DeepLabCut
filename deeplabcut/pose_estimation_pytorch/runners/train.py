@@ -418,10 +418,15 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             for batch_id in range(len(ground_truth)):
                 # keypoints (num_kpts, 3)
                 keypoints = ground_truth[batch_id]
-                for kpts in keypoints:
-                    vis = kpts[-1]
+                if name == 'unique_bodyparts':
+                    vis = keypoints[-1]
                     if vis < 0:
-                        kpts[-1] = 0
+                        keypoints[-1] = 0
+                else:
+                    for kpts in keypoints:
+                        vis = kpts[-1]
+                        if vis < 0:
+                            kpts[-1] = 0
 
             # rescale to the full image for TD or CTD
             gt_with_vis[..., :2] = (gt_with_vis[..., :2] * scale) + offset
