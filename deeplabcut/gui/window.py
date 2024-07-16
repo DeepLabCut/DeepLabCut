@@ -15,6 +15,7 @@ import sys
 from functools import cached_property
 from pathlib import Path
 from typing import List
+from urllib.error import URLError
 import qdarkstyle
 
 import deeplabcut
@@ -40,8 +41,12 @@ from PySide6.QtCore import Qt, QTimer
 
 
 def _check_for_updates(silent=True):
-    is_latest, latest_version = utils.is_latest_deeplabcut_version()
-    is_latest_plugin, latest_plugin_version = misc.is_latest_version()
+    try:
+        is_latest, latest_version = utils.is_latest_deeplabcut_version()
+        is_latest_plugin, latest_plugin_version = misc.is_latest_version()
+    except URLError:  # Handle internet connectivity issues
+        is_latest = is_latest_plugin = True
+
     if is_latest and is_latest_plugin:
         if not silent:
             msg = QtWidgets.QMessageBox(
