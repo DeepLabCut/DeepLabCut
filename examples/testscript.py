@@ -91,6 +91,7 @@ if __name__ == "__main__":
 
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
+    frames = [fn for fn in frames if fn.endswith(".png")]
     # As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
     for index, bodypart in enumerate(cfg["bodyparts"]):
         columnindex = pd.MultiIndex.from_product(

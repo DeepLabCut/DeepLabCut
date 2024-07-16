@@ -437,7 +437,7 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-    if videotype is None:
+    if not videotype:
         videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
