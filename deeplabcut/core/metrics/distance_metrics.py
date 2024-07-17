@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 import deeplabcut.core.metrics.matching as matching
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
@@ -210,6 +211,68 @@ def compute_rmse(
 
         keypoint_scores = np.stack([m.keypoint_scores() for m in matches])
         pixel_errors_cutoff = pixel_errors[keypoint_scores >= pcutoff]
+        if np.any(~np.isnan(pixel_errors_cutoff)):
+            rmse_cutoff = np.nanmean(pixel_errors_cutoff).item()
+
+    return rmse, rmse_cutoff
+
+
+def compute_detection_rmse(
+    data: list[tuple[np.ndarray, np.ndarray]],
+    pcutoff: float,
+) -> tuple[float, float]:
+    """Computes the detection RMSE for pose predictions.
+
+    The detection RMSE score
+
+    Args:
+        data: The data for which to compute RMSE. This is a list containing (gt_poses,
+            predicted_poses), where gt_pose is an array of shape (num_gt_individuals,
+            num_bpts, 3) and predicted_poses is an array of shape (num_predictions,
+            num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
+            the pose they are (x, y, confidence score).
+        pcutoff: The p-cutoff to use to compute RMSE.
+
+    Returns:
+        The detection RMSE and detection RMSE after removing all detections with a
+        score below the pcutoff.
+    """
+    distances = []
+    scores = []
+    for image_gt, image_pred in data:
+        image_gt = image_gt.transpose((1, 0, 2))  # to (num_bpts, num_gt_individuals, 3)
+        image_pred = image_pred.transpose((1, 0, 2))  # to (num_bpts, num_pred, 3)
+
+        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred)):
+            # filter NaNs and invalid values
+            bpt_gt = bpt_gt[~np.any(np.isnan(bpt_gt), axis=1)]
+            bpt_pred = bpt_pred[~np.any(np.isnan(bpt_pred), axis=1)]
+            if len(bpt_gt) == 0 or len(bpt_pred) == 0:
+                continue
+
+            # compute distances between each (gt, pred) bodyparts
+            # shape (num_gt, num_pred)
+            bpt_distance_matrix = np.stack(
+                [np.linalg.norm(gt[:2] - bpt_pred[:, :2], axis=1) for gt in bpt_gt],
+                axis=0
+            )
+
+            # optimal assignment of predicted bodyparts to ground truth
+            row_ind, col_ind = linear_sum_assignment(bpt_distance_matrix)
+            for gt_index, pred_index in zip(row_ind, col_ind):
+                distances.append(bpt_distance_matrix[gt_index, pred_index])
+                scores.append(bpt_pred[pred_index, 2])
+
+    rmse, rmse_cutoff = float("nan"), float("nan")
+    if len(distances) == 0:
+        return rmse, rmse_cutoff
+
+    distances = np.stack(distances)
+    if np.any(~np.isnan(distances)):
+        rmse = np.nanmean(distances).item()
+
+        keypoint_scores = np.stack(scores)
+        pixel_errors_cutoff = distances[keypoint_scores >= pcutoff]
         if np.any(~np.isnan(pixel_errors_cutoff)):
             rmse_cutoff = np.nanmean(pixel_errors_cutoff).item()
 

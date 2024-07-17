@@ -13,7 +13,10 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal
 
-from deeplabcut.core.metrics.distance_metrics import compute_rmse
+from deeplabcut.core.metrics.distance_metrics import (
+    compute_detection_rmse,
+    compute_rmse,
+)
 
 
 @pytest.mark.parametrize(
@@ -115,5 +118,84 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
     expected_rmse, expected_rmse_cutoff = result
 
     rmse, rmse_cutoff = compute_rmse(data, False, pcutoff=0.6, oks_bbox_margin=10.0)
+    assert_almost_equal(rmse, expected_rmse)
+    assert_almost_equal(rmse_cutoff, expected_rmse_cutoff)
+
+
+@pytest.mark.parametrize(
+    "gt, pred, result",
+    [
+        (
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [np.nan, np.nan, 0], [10.0, 10.0, 2]],
+            ],
+            [  # predicted pose
+                [[12.0, 10.0, 0.9], [10.0, 10.0, 0.4], [10.0, 10.0, 0.9]],
+            ],
+            (1, 1),  # error 2 on one, 0 on the other; only 2 valid GT
+        ),
+        (
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+            ],
+            [  # predicted pose, perfect detections but mis-assembled
+                [[10.0, 10.0, 0.9], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
+                [[40.0, 40.0, 0.9], [20.0, 20.0, 0.4], [60.0, 60.0, 0.9]],
+            ],
+            (0, 0),  # all pose perfect
+        ),
+        (
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+            ],
+            [  # predicted pose, small error in pose and mis-assembled
+                [[12.0, 10.0, 0.9], [52.0, 50.0, 0.9], [32.0, 30.0, 0.9]],
+                [[42.0, 40.0, 0.9], [18.0, 20.0, 0.4], [62.0, 60.0, 0.9]],
+            ],
+            (2, 2),  # pixel error of 2 on x-axis for all predictions
+        ),
+        (
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+            ],
+            [  # predicted pose, small error in low-conf pose and mis-assembled
+                [[12.0, 10.0, 0.4], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
+                [[40.0, 40.0, 0.9], [22.0, 20.0, 0.4], [62.0, 60.0, 0.4]],
+            ],
+            (1, 0),  # error of 2 on half, 0 on the other half (with good conf)
+        ),
+        (  # more ground truth than detections
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+                [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
+            ],
+            [  # predicted pose, no error
+                [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+            ],
+            (0, 0),
+        ),
+        (  # more detections than GT
+            [  # predicted pose, no error
+                [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+            ],
+            [  # ground truth pose
+                [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+                [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
+            ],
+            (0, 0),
+        ),
+    ],
+)
+def test_detection_rmse(gt: list, pred: list, result: tuple[float, float]):
+    data = [(np.asarray(gt), np.asarray(pred))]
+    expected_rmse, expected_rmse_cutoff = result
+    rmse, rmse_cutoff = compute_detection_rmse(data, pcutoff=0.6)
     assert_almost_equal(rmse, expected_rmse)
     assert_almost_equal(rmse_cutoff, expected_rmse_cutoff)
