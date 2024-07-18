@@ -12,9 +12,9 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
 
 import deeplabcut.core.metrics.matching as matching
+from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 
 
@@ -90,6 +90,10 @@ def compute_oks(
     total_gt = 0
     pose_data = []
     for gt, pred in data:
+        # filter data to only keep individuals with at least 2 valid keypoints
+        gt = gt[np.sum(np.all(~np.isnan(gt), axis=-1), axis=-1) > 1]
+        pred = pred[np.sum(np.all(~np.isnan(pred), axis=-1), axis=-1) > 1]
+
         oks_matrix = compute_oks_matrix(
             gt[:, :, :2],
             pred[:, :, :2],
@@ -250,18 +254,14 @@ def compute_detection_rmse(
             if len(bpt_gt) == 0 or len(bpt_pred) == 0:
                 continue
 
-            # compute distances between each (gt, pred) bodyparts
-            # shape (num_gt, num_pred)
-            bpt_distance_matrix = np.stack(
-                [np.linalg.norm(gt[:2] - bpt_pred[:, :2], axis=1) for gt in bpt_gt],
-                axis=0
-            )
-
-            # optimal assignment of predicted bodyparts to ground truth
-            row_ind, col_ind = linear_sum_assignment(bpt_distance_matrix)
-            for gt_index, pred_index in zip(row_ind, col_ind):
-                distances.append(bpt_distance_matrix[gt_index, pred_index])
-                scores.append(bpt_pred[pred_index, 2])
+            # assignment of predicted bodyparts to ground truth
+            neighbors = find_closest_neighbors(bpt_gt, bpt_pred, k=3)
+            for gt_index, pred_index in enumerate(neighbors):
+                if pred_index != -1:
+                    gt = bpt_gt[gt_index]
+                    pred = bpt_pred[pred_index]
+                    distances.append(np.linalg.norm(gt[:2] - pred[:2]))
+                    scores.append(bpt_pred[pred_index, 2])
 
     rmse, rmse_cutoff = float("nan"), float("nan")
     if len(distances) == 0:

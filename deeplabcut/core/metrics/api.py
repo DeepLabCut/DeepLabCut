@@ -86,11 +86,14 @@ def compute_metrics(
     data = prepare_evaluation_data(ground_truth, predictions)
     rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, single_animal, pcutoff)
     oks_scores = distance_metrics.compute_oks(
-        data=data,
-        oks_sigma=oks_sigma,
-        oks_bbox_margin=oks_bbox_margin,
+        data=data, oks_sigma=oks_sigma, oks_bbox_margin=oks_bbox_margin,
     )
     results = dict(rmse=rmse, rmse_pcutoff=rmse_pcutoff, **oks_scores)
+
+    if not single_animal:
+        det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(data, pcutoff)
+        results["rmse_detections"] = det_rmse
+        results["rmse_detections_pcutoff"] = det_rmse_p
 
     if unique_bodypart_gt is not None:
         # TODO: Should we integrate unique bodyparts to main RMSE?
@@ -128,15 +131,15 @@ def prepare_evaluation_data(
         gt = gt.copy()
         gt[gt[..., 2] <= 0] = np.nan
 
-        # only keep ground truth pose with at least two keypoints
-        gt_mask = np.sum(np.all(~np.isnan(gt), axis=-1), axis=-1) > 1
+        # only keep ground truth pose with at least one keypoint
+        gt_mask = np.any(np.all(~np.isnan(gt), axis=-1), axis=-1)
         gt = gt[gt_mask]
 
         pred = predictions[image][..., :3].copy()  # PAF have 5 values; keep xy + score
         pred[pred[..., 2] < 0] = np.nan
 
         # only keep predicted pose with at least two keypoints
-        pred_mask = np.sum(np.all(~np.isnan(pred), axis=-1), axis=-1) > 1
+        pred_mask = np.any(np.all(~np.isnan(pred), axis=-1), axis=-1)
         pred = pred[pred_mask]
 
         scores = np.nanmean(pred[:, :, 2], axis=-1)
