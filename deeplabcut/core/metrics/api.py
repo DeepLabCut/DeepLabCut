@@ -94,7 +94,9 @@ def compute_metrics(
     data = prepare_evaluation_data(ground_truth, predictions)
     rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, single_animal, pcutoff)
     oks_scores = distance_metrics.compute_oks(
-        data=data, oks_sigma=oks_sigma, oks_bbox_margin=oks_bbox_margin,
+        data=data,
+        oks_sigma=oks_sigma,
+        oks_bbox_margin=oks_bbox_margin,
     )
     results = dict(rmse=rmse, rmse_pcutoff=rmse_pcutoff, **oks_scores)
 
