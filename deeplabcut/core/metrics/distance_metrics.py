@@ -200,7 +200,7 @@ def compute_rmse(
                 gt,
                 pred,
                 oks_matrix=oks_matrix,
-                oks_threshold=0.00001,
+                oks_threshold=1e-6,
             )
 
         matches.extend(image_matches)
