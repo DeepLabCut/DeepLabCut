@@ -34,6 +34,15 @@ def compute_metrics(
     The image paths in the ground_truth dict must be the same as the ones in the
     predictions dict.
 
+    Single animal RMSE is computed by simply calculating the distance between each
+    ground truth keypoint and the corresponding prediction.
+
+    Multi-animal RMSE is computed differently: predictions are first matched to ground
+    truth individuals using greedy OKS matching. RMSE is then computed only between
+    predictions and the ground truth pose they are matched to, only when the OKS is
+    non-zero (greater than a small threshold). Predictions that cannot be matched to
+    any ground truth with non-zero OKS are not used to compute RMSE.
+
     Args:
         ground_truth: The ground truth pose for which to compute metrics in the dataset.
             This should be a dictionary mapping strings (image UIDs, such as image
@@ -49,7 +58,6 @@ def compute_metrics(
             ground truth individuals labeled for an image.
         single_animal: Whether the metrics are being computed on a single-animal or
             multi-animal dataset. This has an impact on RMSE computation.
-            TODO(niels): Explain the difference between single and multi-animal RMSE.
         unique_bodypart_gt: If unique bodyparts are defined for the dataset, they should
             be contained in this dict in the same format as the ``ground_truth`` dict.
         unique_bodypart_poses: If unique bodyparts are defined for the dataset, the

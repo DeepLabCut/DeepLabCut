@@ -160,7 +160,14 @@ def compute_rmse(
 ) -> tuple[float, float]:
     """Computes the RMSE for pose predictions.
 
-    TODO(niels): Explain the difference between single and multi-animal RMSE.
+    Single animal RMSE is computed by simply calculating the distance between each
+    ground truth keypoint and the corresponding prediction.
+
+    Multi-animal RMSE is computed differently: predictions are first matched to ground
+    truth individuals using greedy OKS matching. RMSE is then computed only between
+    predictions and the ground truth pose they are matched to, only when the OKS is
+    non-zero (greater than a small threshold). Predictions that cannot be matched to
+    any ground truth with non-zero OKS are not used to compute RMSE.
 
     Args:
         data: The data for which to compute RMSE. This is a list containing (gt_poses,
@@ -176,14 +183,19 @@ def compute_rmse(
 
     Returns:
         The RMSE and RMSE after removing all detections with a score below the pcutoff.
+
+    Raises:
+        AssertionError
     """
     matches = []
     for gt, pred in data:
         if single_animal:
-            assert gt.shape[0] <= 1 and pred.shape[0] <= 1, (
-                "At most one individual and one prediction can be given when computing "
-                f"single-animal RMSE. Found gt={gt.shape}, pred={pred.shape}"
-            )
+            if gt.shape[0] > 1 or pred.shape[0] > 1:
+                raise ValueError(
+                    "At most 1 individual and 1 prediction can be given when computing "
+                    f"single animal RMSE. Found gt={gt.shape}, pred={pred.shape}"
+                )
+
             image_matches = []
             if gt.shape[0] == 1 and pred.shape[0] == 1:
                 match = matching.PotentialMatch.from_pose(pred[0])
@@ -227,7 +239,11 @@ def compute_detection_rmse(
 ) -> tuple[float, float]:
     """Computes the detection RMSE for pose predictions.
 
-    The detection RMSE score
+    The detection RMSE score does not take individual assemblies into account. It only
+    judges the performance of the detections, matching each predicted keypoint to the
+    closest ground truth for each bodypart.
+
+    This is the same way multi-animal RMSE was computed in DeepLabCut 2.X.
 
     Args:
         data: The data for which to compute RMSE. This is a list containing (gt_poses,
