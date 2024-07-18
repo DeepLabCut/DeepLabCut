@@ -100,8 +100,8 @@ def compute_metrics(
         assert unique_bodypart_poses is not None
         unique_bpt = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
         unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, True, pcutoff)
-        results["rmse_unique_bodyparts"] = unique_bpt_metrics[0]
-        results["rmse_pcutoff_unique_bodyparts"] = unique_bpt_metrics[1]
+        results["rmse_unique_bpts"] = unique_bpt_metrics[0]
+        results["rmse_unique_bpts_pcutoff"] = unique_bpt_metrics[1]
 
     return results
 
