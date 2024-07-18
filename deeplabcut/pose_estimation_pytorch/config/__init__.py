@@ -12,6 +12,7 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
     make_pytorch_pose_config,
 )
 from deeplabcut.pose_estimation_pytorch.config.utils import (
+    available_detectors,
     available_models,
     pretty_print,
     read_config_as_dict,

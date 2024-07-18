@@ -777,6 +777,7 @@ def create_training_dataset(
     trainIndices=None,
     testIndices=None,
     net_type=None,
+    detector_type=None,
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
@@ -830,8 +831,8 @@ def create_training_dataset(
                 * ``efficientnet-b4``
                 * ``efficientnet-b5``
                 * ``efficientnet-b6``
-            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
-            complete list)
+            PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
+            a complete list)
                 * ``resnet_50``
                 * ``resnet_101``
                 * ``hrnet_w18``
@@ -846,6 +847,16 @@ def create_training_dataset(
                 * ``top_down_hrnet_w32``
                 * ``top_down_hrnet_w48``
                 * ``animaltokenpose_base``
+
+    detector_type: string, optional, default=None
+        Only for the PyTorch engine.
+        When passing creating shuffles for top-down models, you can specify which
+        detector you want. If the detector_type is None, the ```ssdlite``` will be used.
+        The list of all available detectors can be obtained by calling
+        ``deeplabcut.pose_estimation_pytorch.available_models()``. Supported options:
+            * ``ssdlite``
+            * ``fasterrcnn_mobilenet_v3_large_fpn``
+            * ``fasterrcnn_resnet50_fpn_v2``
 
     augmenter_type: string, optional, default=None
         Type of augmenter. The options available depend on which engine is used.
@@ -1272,6 +1283,7 @@ def create_training_dataset(
                             pose_config_path=path_train_config,
                             net_type=net_type,
                             top_down=top_down,
+                            detector_type=detector_type,
                             weight_init=weight_init,
                         )
 
@@ -1561,6 +1573,7 @@ def create_training_dataset_from_existing_split(
     shuffles: list[int] | None = None,
     userfeedback: bool = True,
     net_type: str | None = None,
+    detector_type: str | None = None,
     augmenter_type: str | None = None,
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
@@ -1608,6 +1621,16 @@ def create_training_dataset_from_existing_split(
                 * ``efficientnet-b6``
             Currently supported  options for engine=Engine.TF can be obtained by calling
             ``deeplabcut.pose_estimation_pytorch.available_models()``.
+
+        detector_type: string, optional, default=None
+            Only for the PyTorch engine.
+            When passing creating shuffles for top-down models, you can specify which
+            detector you want. If the detector_type is None, the ```ssdlite``` will be
+            used. The list of all available detectors can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_models()``. Supported options:
+                * ``ssdlite``
+                * ``fasterrcnn_mobilenet_v3_large_fpn``
+                * ``fasterrcnn_resnet50_fpn_v2``
 
         augmenter_type: Type of augmenter. Currently supported augmenters for
             engine=Engine.TF are
@@ -1680,6 +1703,7 @@ def create_training_dataset_from_existing_split(
         trainIndices=[train_idx for _ in range(num_copies)],
         testIndices=[test_idx for _ in range(num_copies)],
         net_type=net_type,
+        detector_type=detector_type,
         augmenter_type=augmenter_type,
         posecfg_template=posecfg_template,
         superanimal_name=superanimal_name,
