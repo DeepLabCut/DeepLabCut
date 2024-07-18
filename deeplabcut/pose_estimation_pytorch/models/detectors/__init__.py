@@ -13,3 +13,4 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     BaseDetector,
 )
 from deeplabcut.pose_estimation_pytorch.models.detectors.fasterRCNN import FasterRCNN
+from deeplabcut.pose_estimation_pytorch.models.detectors.ssd import SSDLite
