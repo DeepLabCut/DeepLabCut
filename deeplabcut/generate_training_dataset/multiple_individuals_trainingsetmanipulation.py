@@ -569,6 +569,10 @@ def create_multianimaltraining_dataset(
                 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
                 from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
 
+                # backwards compatibility with version 2.X
+                if net_type == "dlcrnet_ms5":
+                    net_type = "dlcrnet_stride16_ms5"
+
                 pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
                 if weight_init is not None and weight_init.with_decoder:
                     pytorch_cfg = make_super_animal_finetune_config(
