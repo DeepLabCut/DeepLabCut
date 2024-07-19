@@ -24,9 +24,6 @@ from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import QMutex
 
 
-
-
-
 class DraggablePoint:
     lock = None  # only one can be animated at a time
 
@@ -307,6 +304,7 @@ class TrackletVisualizer:
         self.videoname = videoname
         self.video = VideoReader(videoname)
         self.nframes = len(self.video)
+        # Take into consideration imprecise OpenCV estimation of total number of frames
         if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
             print(
                 "Video duration and data length do not match. Continuing nonetheless..."
@@ -322,6 +320,10 @@ class TrackletVisualizer:
         self.cuts = []
 
         self.mutex = QMutex()
+        self.player = BackgroundPlayer(self)
+        self.worker, self.thread_player = move_to_separate_thread(self.player.run)
+        self.thread_player.start()
+
         self.dps = []
 
         self.swap_id1 = None
@@ -438,7 +440,7 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-        self.fig.canvas.mpl_connect("close_event", self.terminate)
+        self.fig.canvas.mpl_connect("close_event", self.player.terminate)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.lasso_toggle = CheckButtons(self.ax_lasso, ["Lasso"])
@@ -502,6 +504,7 @@ class TrackletVisualizer:
 
     def terminate(self, event):
         plt.close(self.fig)
+        self.player.terminate()
 
 
 
