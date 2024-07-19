@@ -131,17 +131,28 @@ def test_backbone_plus_paf_config(
         assert id_head["target_generator"]["heatmap_mode"] == "INDIVIDUAL"
 
 
+@pytest.mark.parametrize(
+    "detector",
+    [
+        (None, "SSDLite"),
+        ("ssdlite", "SSDLite"),
+        ("fasterrcnn_mobilenet_v3_large_fpn", "FasterRCNN"),
+        ("fasterrcnn_resnet50_fpn_v2", "FasterRCNN"),
+    ]
+)
 @pytest.mark.parametrize("individuals", [["single"], ["bugs", "daffy"]])
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
 @pytest.mark.parametrize(
     "net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"]
 )
 def test_top_down_config(
+    detector: tuple[str, str],
     individuals: list[str],
     bodyparts: list[str],
     net_type: str,
 ):
     # Single animal projects can't have unique bodyparts
+    detector_type, expected_detector_type = detector
     project_config = _make_project_config(
         project_path="my/little/project",
         multianimal=True,
@@ -155,6 +166,7 @@ def test_top_down_config(
         "pytorch_config.yaml",
         net_type=net_type,
         top_down=True,
+        detector_type=detector_type,
     )
     pretty_print(pytorch_pose_config)
 
@@ -166,6 +178,10 @@ def test_top_down_config(
     # check heads are there
     assert "bodypart" in pytorch_pose_config["model"]["heads"].keys()
     bodypart_head = pytorch_pose_config["model"]["heads"]["bodypart"]
+
+    # check detector is there
+    assert "detector" in pytorch_pose_config.keys()
+    assert pytorch_pose_config["detector"]["model"]["type"] == expected_detector_type
 
     for name, output_channels in [
         ("heatmap_config", len(bodyparts)),
