@@ -257,8 +257,10 @@ def train_network(
             dataset_params = loader.get_dataset_parameters()
             backbone_name = loader.model_cfg["model"]["backbone"]["model_name"]
             model_name = modelzoo_utils.get_pose_model_type(backbone_name)
-            # at some point train_network should support a different train_file passing so memory replay can also take the same train file
+            # at some point train_network should support a different train_file passing
+            # so memory replay can also take the same train file
 
+            print("Preparing data for memory replay (this can take some time)")
             prepare_memory_replay(
                 loader.project_path,
                 shuffle,
@@ -271,6 +273,7 @@ def train_network(
                 customized_pose_checkpoint=weight_init.customized_pose_checkpoint,
             )
 
+            print("Loading memory replay data")
             loader = COCOLoader(
                 project_root=Path(loader.model_folder).parent / "memory_replay",
                 model_config_path=loader.model_config_path,

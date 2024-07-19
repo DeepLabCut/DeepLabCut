@@ -153,11 +153,20 @@ class BasePoseDataset:
         raise NotImplementedError("Must implement this function")
 
     def materialize(
-        self, proj_root, framework="coco", deepcopy=False, append_image_id=True
+        self,
+        proj_root,
+        framework="coco",
+        deepcopy=False,
+        append_image_id=True,
+        no_image_copy=False,
     ):
         mat_func = mat_func_factory(framework)
         self.meta["mat_datasets"] = {self.meta["dataset_name"]: self}
         self.meta["imageid2datasetname"] = self.imageid2datasetname
+        kwargs = dict(deepcopy=deepcopy, append_image_id=append_image_id)
+        if framework == "coco":
+            kwargs["no_image_copy"] = no_image_copy
+
         mat_func(
             proj_root,
             self.generic_train_images,
@@ -165,8 +174,7 @@ class BasePoseDataset:
             self.generic_train_annotations,
             self.generic_test_annotations,
             self.meta,
-            deepcopy=deepcopy,
-            append_image_id=append_image_id,
+            **kwargs,
         )
 
     def whether_anno_image_match(self, images, annotations):
