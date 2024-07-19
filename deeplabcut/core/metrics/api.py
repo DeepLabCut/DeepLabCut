@@ -34,14 +34,16 @@ def compute_metrics(
     The image paths in the ground_truth dict must be the same as the ones in the
     predictions dict.
 
-    Single animal RMSE is computed by simply calculating the distance between each
-    ground truth keypoint and the corresponding prediction.
+    Single animal RMSE is computed by simply calculating the Euclidean distance between
+    each ground truth keypoint and the corresponding prediction.
 
     Multi-animal RMSE is computed differently: predictions are first matched to ground
-    truth individuals using greedy OKS matching. RMSE is then computed only between
+    truth individuals using greedy OKS matching. OKS (or object keypoint similarity) is
+    a similarity metric for keypoints (you can read more about it and its definition
+    here: https://cocodataset.org/#keypoints-eval). RMSE is then computed only between
     predictions and the ground truth pose they are matched to, only when the OKS is
-    non-zero (greater than a small threshold). Predictions that cannot be matched to
-    any ground truth with non-zero OKS are not used to compute RMSE.
+    greater than a small threshold. Predictions that cannot be matched to any ground
+    truth with non-zero OKS are not used to compute RMSE.
 
     Args:
         ground_truth: The ground truth pose for which to compute metrics in the dataset.
@@ -106,7 +108,7 @@ def compute_metrics(
         results["rmse_detections_pcutoff"] = det_rmse_p
 
     if unique_bodypart_gt is not None:
-        # TODO: Should we integrate unique bodyparts to main RMSE?
+        # TODO: We should integrate unique bodyparts to main RMSE computation
         assert unique_bodypart_poses is not None
         unique_bpt = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
         unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, True, pcutoff)
