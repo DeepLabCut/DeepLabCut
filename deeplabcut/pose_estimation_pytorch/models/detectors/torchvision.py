@@ -153,8 +153,8 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             res.append(
                 {
                     "area": labels["area"][i][mask],
-                    "labels": labels["labels"][i][mask],
-                    "is_crowd": labels["is_crowd"][i][mask],
+                    "labels": labels["labels"][i][mask].long(),
+                    "is_crowd": labels["is_crowd"][i][mask].long(),
                     "boxes": box_ann,
                 }
             )
