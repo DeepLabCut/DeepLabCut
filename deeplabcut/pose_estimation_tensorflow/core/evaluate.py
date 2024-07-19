@@ -13,7 +13,8 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -40,10 +41,6 @@ def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None
             + Pointwisesquareddistance.xs("y", level=1, axis=1)
         )  # Euclidean distance (proportional to RMSE)
         return RMSE, RMSE[mask]
-
-
-def distance(v, w):
-    return np.sqrt(np.sum((v - w) ** 2))
 
 
 def calculatepafdistancebounds(
@@ -349,44 +346,25 @@ def return_evaluate_network_data(
             )
         ),
     )
-    # Check which snapshots are available and sort them by # iterations
-    Snapshots = np.array(
-        [
-            fn.split(".")[0]
-            for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-            if "index" in fn
-        ]
+
+    Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+        train_folder=Path(modelfolder) / "train",
     )
 
-    if len(Snapshots) == 0:
-        print(
-            "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
-            % (shuffle, trainFraction)
-        )
-        snapindices = []
-    else:
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-        if Snapindex is None:
-            Snapindex = cfg["snapshotindex"]
+    if Snapindex is None:
+        Snapindex = cfg["snapshotindex"]
 
-        if Snapindex == -1:
-            snapindices = [-1]
-        elif Snapindex == "all":
-            snapindices = range(len(Snapshots))
-        elif Snapindex < len(Snapshots):
-            snapindices = [Snapindex]
-        else:
-            print(
-                "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-            )
+    snapshot_names = get_snapshots_by_index(
+        idx=Snapindex,
+        available_snapshots=Snapshots,
+    )
 
     DATA = []
     results = []
     resultsfns = []
-    for snapindex in snapindices:
+    for snapshot_name in snapshot_names:
         test_pose_cfg["init_weights"] = os.path.join(
-            str(modelfolder), "train", Snapshots[snapindex]
+            str(modelfolder), "train", snapshot_name
         )  # setting weights to corresponding snapshot.
         trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
             "-"
@@ -411,7 +389,7 @@ def return_evaluate_network_data(
             resultsfilename,
             DLCscorer,
         ) = auxiliaryfunctions.check_if_not_evaluated(
-            str(evaluationfolder), DLCscorer, DLCscorerlegacy, Snapshots[snapindex]
+            str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name
         )
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
@@ -458,7 +436,7 @@ def return_evaluate_network_data(
                         np.round(testerrorpcutoff, 2),
                         "pixels",
                     )
-                    print("Snapshot", Snapshots[snapindex])
+                    print("Snapshot", snapshot_name)
 
                 r = [
                     trainingsiterations,
@@ -469,7 +447,7 @@ def return_evaluate_network_data(
                     cfg["pcutoff"],
                     np.round(trainerrorpcutoff, 2),
                     np.round(testerrorpcutoff, 2),
-                    Snapshots[snapindex],
+                    snapshot_name,
                     scale,
                     test_pose_cfg["net_type"],
                 ]
@@ -489,7 +467,7 @@ def return_evaluate_network_data(
                         comparisonbodyparts,
                         cfg,
                         evaluationfolder,
-                        Snapshots[snapindex],
+                        snapshot_name,
                     ]
                 )
 
@@ -563,6 +541,7 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
+    snapshots_to_evaluate: List[str] = None,
 ):
     """Evaluates the network.
 
@@ -620,6 +599,9 @@ def evaluate_network(
         Compute the train and test RMSE for each keypoint, and save the results to
         a {model_name}-keypoint-results.csv in the evalution-results folder
 
+    snapshots_to_evaluate: List[str], optional, default=None
+        List of snapshot names to evaluate (e.g. ["snapshot-50000", "snapshot-75000", ...])
+
     Returns
     -------
     None
@@ -673,6 +655,7 @@ def evaluate_network(
             gputouse=gputouse,
             modelprefix=modelprefix,
             per_keypoint_evaluation=per_keypoint_evaluation,
+            snapshots_to_evaluate=snapshots_to_evaluate,
         )
     else:
         from deeplabcut.utils.auxfun_videos import imread, imresize
@@ -787,36 +770,19 @@ def evaluate_network(
                     evaluationfolder, recursive=True
                 )
 
-                # Check which snapshots are available and sort them by # iterations
-                Snapshots = np.array(
-                    [
-                        fn.split(".")[0]
-                        for fn in os.listdir(os.path.join(str(modelfolder), "train"))
-                        if "index" in fn
-                    ]
+                Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
+                    train_folder=Path(modelfolder) / "train",
                 )
-                try:  # check if any where found?
-                    Snapshots[0]
-                except IndexError:
-                    raise FileNotFoundError(
-                        "Snapshots not found! It seems the dataset for shuffle %s and trainFraction %s is not trained.\nPlease train it before evaluating.\nUse the function 'train_network' to do so."
-                        % (shuffle, trainFraction)
+
+                if snapshots_to_evaluate is not None:
+                    snapshot_names = get_available_requested_snapshots(
+                        requested_snapshots=snapshots_to_evaluate,
+                        available_snapshots=Snapshots,
                     )
-
-                increasing_indices = np.argsort(
-                    [int(m.split("-")[1]) for m in Snapshots]
-                )
-                Snapshots = Snapshots[increasing_indices]
-
-                if cfg["snapshotindex"] == -1:
-                    snapindices = [-1]
-                elif cfg["snapshotindex"] == "all":
-                    snapindices = range(len(Snapshots))
-                elif cfg["snapshotindex"] < len(Snapshots):
-                    snapindices = [cfg["snapshotindex"]]
                 else:
-                    raise ValueError(
-                        "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
+                    snapshot_names = get_snapshots_by_index(
+                        idx=cfg["snapshotindex"],
+                        available_snapshots=Snapshots,
                     )
 
                 final_result = []
@@ -841,29 +807,25 @@ def evaluate_network(
                 ##################################################
                 # Compute predictions over images
                 ##################################################
-                for snapindex in snapindices:
+                for snapshot_name in snapshot_names:
                     test_pose_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", Snapshots[snapindex]
+                        str(modelfolder), "train", snapshot_name
                     )  # setting weights to corresponding snapshot.
-                    trainingsiterations = (
-                        test_pose_cfg["init_weights"].split(os.sep)[-1]
-                    ).split("-")[
-                        -1
-                    ]  # read how many training siterations that corresponds to.
+                    training_iterations = int(snapshot_name.split("-")[-1])
 
                     # Name for deeplabcut net (based on its parameters)
                     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
                         cfg,
                         shuffle,
                         trainFraction,
-                        trainingsiterations=trainingsiterations,
+                        trainingsiterations=training_iterations,
                         modelprefix=modelprefix,
                     )
                     print(
                         "Running ",
                         DLCscorer,
                         " with # of training iterations:",
-                        trainingsiterations,
+                        training_iterations,
                     )
                     (
                         notanalyzed,
@@ -873,7 +835,7 @@ def evaluate_network(
                         str(evaluationfolder),
                         DLCscorer,
                         DLCscorerlegacy,
-                        Snapshots[snapindex],
+                        snapshot_name,
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
@@ -931,7 +893,7 @@ def evaluate_network(
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
-                            Snapshots[snapindex],
+                            snapshot_name,
                         )
                         DataCombined = pd.concat(
                             [Data.T, DataMachine.T], axis=0, sort=False
@@ -955,7 +917,7 @@ def evaluate_network(
                             RMSEpcutoff.iloc[trainIndices].values.flatten()
                         )
                         results = [
-                            trainingsiterations,
+                            training_iterations,
                             int(100 * trainFraction),
                             shuffle,
                             np.round(trainerror, 2),
@@ -978,7 +940,7 @@ def evaluate_network(
                         if show_errors:
                             print(
                                 "Results for",
-                                trainingsiterations,
+                                training_iterations,
                                 " training iterations:",
                                 int(100 * trainFraction),
                                 shuffle,
@@ -1013,7 +975,7 @@ def evaluate_network(
                                 "LabeledImages_"
                                 + DLCscorer
                                 + "_"
-                                + Snapshots[snapindex],
+                                + snapshot_name,
                             )
                             auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
@@ -1039,7 +1001,7 @@ def evaluate_network(
                                 "LabeledImages_"
                                 + DLCscorer
                                 + "_"
-                                + Snapshots[snapindex],
+                                + snapshot_name,
                             )
                             if not os.path.exists(foldername):
                                 print(
@@ -1110,6 +1072,57 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
         df = pd.concat((temp, df)).reset_index(drop=True)
 
     df.to_csv(output_path)
+
+
+def get_available_requested_snapshots(
+    requested_snapshots: List[str],
+    available_snapshots: List[str],
+) -> List[str]:
+    """
+    Intersects the requested snapshot names with the available snapshots.
+
+    Returns: snapshot names
+    """
+    snapshot_names = []
+    missing_snapshots = []
+    for snap in requested_snapshots:
+        if snap in available_snapshots:
+            snapshot_names.append(snap)
+        else:
+            missing_snapshots.append(snap)
+
+    if len(snapshot_names) == 0:
+        raise ValueError(
+            f"None of the requested snapshots were found: \n{missing_snapshots}"
+        )
+    elif len(missing_snapshots) > 0:
+        print(
+            f"The following requested snapshots were not found and will be skipped:\n"
+            f"{missing_snapshots}"
+        )
+
+    return snapshot_names
+
+
+def get_snapshots_by_index(
+    idx: Union[int, str], available_snapshots: List[str],
+) -> List[str]:
+    """
+    Assume available_snapshots is ordered in ascending order. Returns snapshot names.
+    """
+    if (
+        isinstance(idx, int)
+        and -len(available_snapshots) <= idx < len(available_snapshots)
+    ):
+        return [available_snapshots[idx]]
+    elif idx == "all":
+        return available_snapshots
+
+    raise IndexError(
+        f"Invalid index: {idx}. The index should be an int less than the number of "
+        f"available snapshots, negative indexing is supported. The keyword 'all' "
+        f"is also a valid option."
+    )
 
 
 if __name__ == "__main__":

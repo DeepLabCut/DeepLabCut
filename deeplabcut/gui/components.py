@@ -160,11 +160,19 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
     def select_videos(self):
         cwd = self.root.project_folder
+
+        # Create a filter string with both lowercase and uppercase extensions
+
+        video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
+        ]
+        video_files = f"Videos ({' '.join(video_types)})"
+
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
             self,
             "Select video(s) to analyze",
             cwd,
-            f"Videos ({' *.'.join(DLCParams.VIDEOTYPES)[1:]})",
+            video_files,
         )
 
         if filenames[0]:

@@ -55,6 +55,7 @@ class DLCRNetHead(HeatmapHead):
                 in_refined_channels
             )
             locref_config["channels"][0] = locref_config["channels"][-1]
+
         super().__init__(
             predictor,
             target_generator,
@@ -64,6 +65,9 @@ class DLCRNetHead(HeatmapHead):
             locref_config,
             weight_init,
         )
+        if num_stages > 0:
+            self.stride *= 2  # extra deconv layer where it's multi-stage
+
         self.paf_head = DeconvModule(**paf_config)
 
         self.convt1 = self._make_layer_same_padding(
