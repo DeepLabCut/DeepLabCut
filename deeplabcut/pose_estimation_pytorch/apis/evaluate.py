@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 import argparse
-import logging
 from pathlib import Path
 from typing import Iterable
 
@@ -20,6 +19,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+import deeplabcut.core.metrics as metrics
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
@@ -31,11 +31,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
-from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
-    compute_identity_scores,
-    get_scores,
-    pair_predicted_individuals_with_gt,
-)
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -134,9 +129,6 @@ def evaluate(
     poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
 
     gt_keypoints = loader.ground_truth_keypoints(mode)
-    if parameters.max_num_animals > 1:
-        poses = pair_predicted_individuals_with_gt(poses, gt_keypoints)
-
     unique_poses = None
     gt_unique_keypoints = None
     if parameters.num_unique_bpts > 1:
@@ -145,21 +137,20 @@ def evaluate(
         }
         gt_unique_keypoints = loader.ground_truth_keypoints(mode, unique_bodypart=True)
 
-    # TODO: Check single animal mAP computation
-    results = get_scores(
-        poses,
+    results = metrics.compute_metrics(
         gt_keypoints,
+        poses,
+        single_animal=parameters.max_num_animals == 1,
         pcutoff=pcutoff,
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,
     )
 
-    # TODO: Evaluate identity predictions
     if loader.model_cfg["metadata"]["with_identity"]:
         pred_id_scores = {
             filename: pred["identity_scores"] for filename, pred in predictions.items()
         }
-        id_scores = compute_identity_scores(
+        id_scores = metrics.compute_identity_scores(
             individuals=parameters.individuals,
             bodyparts=parameters.bodyparts,
             predictions=poses,

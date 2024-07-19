@@ -31,7 +31,7 @@ def rmse_match_prediction_to_gt(
         ValueError: if `gt_kpts.shape != pred_kpts.shape`
 
     Args:
-        pred_kpts: shape (num_individuals, num_keypoints, 3), ground truth keypoints for
+        pred_kpts: shape (num_predictions, num_keypoints, 3), ground truth keypoints for
             an image, where the 3 values are (x,y,score) for each keypoint
         gt_kpts: shape (num_individuals, num_keypoints, 3), ground truth keypoints for
             an image, where the 3 values are (x,y,visibility) for each keypoint
@@ -48,12 +48,6 @@ def rmse_match_prediction_to_gt(
     else:
         raise ValueError("Shape mismatch between ground truth and predictions")
 
-    if num_pred != num_idv:
-        raise ValueError(
-            "Must have the same number of GT and predicted individuals, found "
-            f"pred_kpts={pred_kpts.shape} and gt_kpts={gt_kpts.shape}"
-        )
-
     valid_gt = np.any(gt_kpts[..., 2] > 0, axis=1)
     valid_gt_indices = np.nonzero(valid_gt)[0]
     if len(valid_gt_indices) == 0:
@@ -64,15 +58,24 @@ def rmse_match_prediction_to_gt(
     if len(valid_pred_indices) == 0:
         return np.arange(num_idv)
 
-    distance_matrix = np.full((len(valid_gt_indices), len(valid_pred_indices)), np.inf)
+    distance_matrix = np.full((len(valid_gt_indices), len(valid_pred_indices)), np.nan)
     for i, gt_idx in enumerate(valid_gt_indices):
         gt_idv = gt_kpts[gt_idx]
         mask = gt_idv[:, 2] > 0
         for j, pred_idx in enumerate(valid_pred_indices):
             pred_idv = pred_kpts[pred_idx]
             d = (gt_idv[mask, :2] - pred_idv[mask, :2]) ** 2
-            distance_matrix[i, j] = np.nanmean(d)
+            if np.any(~np.isnan(d)):
+                distance_matrix[i, j] = np.nanmean(d)
 
+    if np.all(np.isnan(distance_matrix)):
+        return np.arange(num_idv)
+
+    # np.inf and np.nan in linear_sum_assigment raises error; so when a prediction
+    # cannot be assigned to a ground truth (e.g. with PAFs, where predicted bodyparts
+    # can be NaN) set the distance to a distance greater than the maximum distance
+    max_dist = np.nanmax(distance_matrix)
+    distance_matrix = np.nan_to_num(distance_matrix, nan=100 * max_dist)
     _, col_ind = linear_sum_assignment(distance_matrix)  # len == len(valid_gt_indices)
 
     gt_idx_to_pred_idx = {
