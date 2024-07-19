@@ -853,7 +853,7 @@ def create_training_dataset(
         When passing creating shuffles for top-down models, you can specify which
         detector you want. If the detector_type is None, the ```ssdlite``` will be used.
         The list of all available detectors can be obtained by calling
-        ``deeplabcut.pose_estimation_pytorch.available_models()``. Supported options:
+        ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported options:
             * ``ssdlite``
             * ``fasterrcnn_mobilenet_v3_large_fpn``
             * ``fasterrcnn_resnet50_fpn_v2``
@@ -1627,7 +1627,8 @@ def create_training_dataset_from_existing_split(
             When passing creating shuffles for top-down models, you can specify which
             detector you want. If the detector_type is None, the ```ssdlite``` will be
             used. The list of all available detectors can be obtained by calling
-            ``deeplabcut.pose_estimation_pytorch.available_models()``. Supported options:
+            ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported
+            options:
                 * ``ssdlite``
                 * ``fasterrcnn_mobilenet_v3_large_fpn``
                 * ``fasterrcnn_resnet50_fpn_v2``
