@@ -19,9 +19,12 @@ from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
 from matplotlib.path import Path
-from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
+from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons, TextBox
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import QMutex
+
+
+
 
 
 class DraggablePoint:
@@ -295,7 +298,6 @@ class PointSelector:
         self.lasso.connect_default_events()
         self.is_connected = True
 
-
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
@@ -305,7 +307,6 @@ class TrackletVisualizer:
         self.videoname = videoname
         self.video = VideoReader(videoname)
         self.nframes = len(self.video)
-        # Take into consideration imprecise OpenCV estimation of total number of frames
         if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
             print(
                 "Video duration and data length do not match. Continuing nonetheless..."
@@ -321,11 +322,10 @@ class TrackletVisualizer:
         self.cuts = []
 
         self.mutex = QMutex()
-        self.player = BackgroundPlayer(self)
-        self.worker, self.thread_player = move_to_separate_thread(self.player.run)
-        self.thread_player.start()
-
         self.dps = []
+
+        self.swap_id1 = None
+        self.swap_id2 = None
 
     def _prepare_canvas(self, manager, fig):
         params = {
@@ -374,6 +374,7 @@ class TrackletVisualizer:
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
+
         custom_lines = [
             plt.Line2D([0], [0], color=self.cmap(i), lw=4)
             for i in range(len(manager.individuals))
@@ -420,10 +421,15 @@ class TrackletVisualizer:
         self.ax_flag = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
         self.ax_save = self.fig.add_axes([0.80, 0.1, 0.05, 0.03])
         self.ax_help = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
+        self.ax_swap = self.fig.add_axes([0.90, 0.1, 0.05, 0.03])  # New button
+
         self.save_button = Button(self.ax_save, "Save", color="darkorange")
         self.save_button.on_clicked(self.save)
         self.help_button = Button(self.ax_help, "Help")
         self.help_button.on_clicked(self.display_help)
+        self.swap_button = Button(self.ax_swap, "Swap")  # New button
+        self.swap_button.on_clicked(self.swap_tracklets)  # Placeholder action
+
         self.drag_toggle = CheckButtons(self.ax_drag, ["Drag"])
         self.drag_toggle.on_clicked(self.toggle_draggable_points)
         self.flag_button = Button(self.ax_flag, "Flag")
@@ -432,7 +438,7 @@ class TrackletVisualizer:
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-        self.fig.canvas.mpl_connect("close_event", self.player.terminate)
+        self.fig.canvas.mpl_connect("close_event", self.terminate)
 
         self.selector = PointSelector(self, self.ax1, self.scat, self.alpha)
         self.lasso_toggle = CheckButtons(self.ax_lasso, ["Lasso"])
@@ -441,8 +447,63 @@ class TrackletVisualizer:
         self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
         self.fig.show()
 
+        # Create dropdowns for selecting tracklets to swap, placing them near the swap button
+        self.ax_dropdown1 = self.fig.add_axes([0.9, 0.15, 0.05, 0.03])
+        self.ax_dropdown2 = self.fig.add_axes([0.9, 0.20, 0.05, 0.03])
+        self.textbox1 = TextBox(self.ax_dropdown1, 'ID 1')
+        self.textbox2 = TextBox(self.ax_dropdown2, 'ID 2')
+        self.textbox1.on_submit(self.set_swap_id1)
+        self.textbox2.on_submit(self.set_swap_id2)
+
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
+
+    def swap_tracklets(self, event):
+        if self.swap_id1 is not None and self.swap_id2 is not None:
+
+            # Get tracklet indices for each individual
+            inds1 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id1]
+            inds2 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id2]
+            
+            print(f'Swapping tracklets {self.swap_id1} and {self.swap_id2}')
+
+            # Frames to swap
+            frames = []
+            if len(self.cuts) == 2:
+                frames = list(range(min(self.cuts), max(self.cuts) + 1))
+            elif len(self.cuts) == 1:
+                frames = [self.cuts[0]] 
+            else:
+                frames = list(range(self.curr_frame, self.manager.nframes))
+
+            # Swap the tracklets
+            for i in range(min(len(inds1), len(inds2))):
+                self.manager.swap_tracklets(inds1[i], inds2[i], frames)
+                self.display_traces()
+                self.slider.set_val(self.curr_frame)    
+
+    def set_swap_id1(self, val):
+        # check that the input is a valid from the list of individuals
+        if int(val) in self.manager.tracklet2id:
+            self.swap_id1 = int(val)
+            print('ID 1 set.')
+        else:
+            print(f'Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}')
+            self.swap_id1 = None
+
+    def set_swap_id2(self, val):
+        # check that the input is a valid from the list of individuals
+        if int(val) in self.manager.tracklet2id:
+            self.swap_id2 = int(val)
+            print('ID 2 set.')
+        else:
+            print(f'Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}')
+            self.swap_id2 = None
+
+    def terminate(self, event):
+        plt.close(self.fig)
+
+
 
     def fill_shaded_areas(self):
         self.clean_collections()
@@ -912,7 +973,6 @@ class TrackletVisualizer:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key="df_with_missing", mode="w")
             df.to_csv(output_path.replace("h5", "csv"))
-
 
 def refine_tracklets(
     config,

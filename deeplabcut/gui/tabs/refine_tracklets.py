@@ -253,6 +253,7 @@ class RefineTracklets(DefaultTab):
         vname = Path(video).stem
         datafile = os.path.join(dest, vname + DLCscorer + f"{method}.h5")
         self.manager, self.viz = deeplabcut.refine_tracklets(
+        #self.manager, self.viz = deeplabcut.refine_tracklets_napari(
             self.root.config,
             datafile,
             video,
@@ -261,3 +262,5 @@ class RefineTracklets(DefaultTab):
             max_gap=self.max_gap_widget.value(),
         )
         self.merge_button.setEnabled(True)
+
+  
