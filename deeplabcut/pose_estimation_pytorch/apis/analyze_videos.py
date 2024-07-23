@@ -380,7 +380,7 @@ def analyze_videos(
                         trainingsetindex=trainingsetindex,
                         overwrite=False,
                         identity_only=identity_only,
-                        destfolder=str(destfolder),
+                        destfolder=str(output_path),
                     )
                     stitch_tracklets(
                         config,
@@ -388,7 +388,7 @@ def analyze_videos(
                         videotype,
                         shuffle,
                         trainingsetindex,
-                        destfolder=str(destfolder),
+                        destfolder=str(output_path),
                     )
 
     print(
@@ -436,14 +436,25 @@ def create_df_from_prediction(
     )
     if pred_unique_bodyparts is not None:
         coordinate_labels_unique = ["x", "y", "likelihood"]
-        results_unique_df_index = pd.MultiIndex.from_product(
-            [
-                [dlc_scorer],
-                auxiliaryfunctions.get_unique_bodyparts(cfg),
-                coordinate_labels_unique,
-            ],
-            names=["scorer", "bodyparts", "coords"],
-        )
+        if n_individuals > 1:
+            results_unique_df_index = pd.MultiIndex.from_product(
+                [
+                    [dlc_scorer],
+                    ['single'],
+                    auxiliaryfunctions.get_unique_bodyparts(cfg),
+                    coordinate_labels_unique,
+                ],
+                names=["scorer", "individuals", "bodyparts", "coords"],
+            )
+        else:
+            results_unique_df_index = pd.MultiIndex.from_product(
+                [
+                    [dlc_scorer],
+                    auxiliaryfunctions.get_unique_bodyparts(cfg),
+                    coordinate_labels_unique,
+                ],
+                names=["scorer", "bodyparts", "coords"],
+            )
         df_u = pd.DataFrame(
             pred_unique_bodyparts.reshape((len(pred_unique_bodyparts), -1)),
             columns=results_unique_df_index,
