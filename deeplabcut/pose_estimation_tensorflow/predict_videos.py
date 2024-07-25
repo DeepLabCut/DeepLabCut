@@ -776,9 +776,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             else:
                 frame = img_as_ubyte(frame)
             pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
-            PredictedData[
-                counter, :
-            ] = (
+            PredictedData[counter, :] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
         elif counter >= nframes:
@@ -821,9 +819,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
             )
             pose[:, [0, 1, 2]] = pose[:, [1, 0, 2]]
             # pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
-            PredictedData[
-                counter, :
-            ] = (
+            PredictedData[counter, :] = (
                 pose.flatten()
             )  # NOTE: thereby cfg['all_joints_names'] should be same order as bodyparts!
         elif counter >= nframes:
@@ -1086,7 +1082,7 @@ def AnalyzeVideo(
             "iteration (active-learning)": cfg["iteration"],
             "training set fraction": trainFraction,
             "cropping": cfg["cropping"],
-            "cropping_parameters": coords
+            "cropping_parameters": coords,
             # "gpu_info": device_lib.list_local_devices()
         }
         metadata = {"data": dictionary}

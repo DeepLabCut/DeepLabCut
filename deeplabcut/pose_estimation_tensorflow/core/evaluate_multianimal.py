@@ -396,9 +396,7 @@ def evaluate_multianimal_full(
                         coords_pred = pred["coordinates"][0]
                         probs_pred = pred["confidence"]
                         for bpt, xy_gt in df.groupby(level="bodyparts"):
-                            inds_gt = np.flatnonzero(
-                                np.all(~np.isnan(xy_gt), axis=1)
-                            )
+                            inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
                             n_joint = joints.index(bpt)
                             xy = coords_pred[n_joint]
                             if inds_gt.size and xy.size:
@@ -422,9 +420,9 @@ def evaluate_multianimal_full(
 
                         if plotting == "bodypart":
                             temp_xy = GT.unstack("bodyparts")[joints].values
-                            gt = temp_xy.reshape(
-                                (-1, 2, temp_xy.shape[1])
-                            ).T.swapaxes(1, 2)
+                            gt = temp_xy.reshape((-1, 2, temp_xy.shape[1])).T.swapaxes(
+                                1, 2
+                            )
                             h, w, _ = np.shape(frame)
                             fig.set_size_inches(w / 100, h / 100)
                             ax.set_xlim(0, w)
@@ -477,8 +475,7 @@ def evaluate_multianimal_full(
                     # Calculate overall prediction error
                     error = df_joint.xs("rmse", level="metrics", axis=1)
                     mask = (
-                        df_joint.xs("conf", level="metrics", axis=1)
-                        >= cfg["pcutoff"]
+                        df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
                     )
                     error_masked = error[mask]
                     error_train = np.nanmean(error.iloc[trainIndices])
@@ -505,9 +502,7 @@ def evaluate_multianimal_full(
                             testIndices,
                         )
                         kpt_filename = DLCscorer + "-keypoint-results.csv"
-                        df_keypoint_error.to_csv(
-                            Path(evaluationfolder) / kpt_filename
-                        )
+                        df_keypoint_error.to_csv(Path(evaluationfolder) / kpt_filename)
 
                     if show_errors:
                         string = (
@@ -666,12 +661,8 @@ def evaluate_multianimal_full(
                 df.loc(axis=0)[("mAR_train", "mean")] = [
                     d[0]["mAR"] for d in results[2]
                 ]
-                df.loc(axis=0)[("mAP_test", "mean")] = [
-                    d[1]["mAP"] for d in results[2]
-                ]
-                df.loc(axis=0)[("mAR_test", "mean")] = [
-                    d[1]["mAR"] for d in results[2]
-                ]
+                df.loc(axis=0)[("mAP_test", "mean")] = [d[1]["mAP"] for d in results[2]]
+                df.loc(axis=0)[("mAR_test", "mean")] = [d[1]["mAR"] for d in results[2]]
                 with open(data_path.replace("_full.", "_map."), "wb") as file:
                     pickle.dump((df, paf_scores), file)
 

@@ -234,9 +234,7 @@ def calc_rmse_from_obj(
             kpts.pop(ind)
 
     test_objects = {
-        k: v
-        for k, v in eval_results_obj.items()
-        if k in gt["annotations"].keys()
+        k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()
     }
     if len(gt["annotations"]) != len(test_objects):
         gt_images = list(gt["annotations"].keys())

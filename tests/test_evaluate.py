@@ -167,7 +167,7 @@ def test_get_available_requested_snapshots_ok():
         requested_snapshots=requested,
         available_snapshots=available,
     )
-    assert snapshots == ['snapshot-2']
+    assert snapshots == ["snapshot-2"]
 
 
 def test_get_available_requested_snapshots_error():
@@ -188,14 +188,14 @@ def test_get_snapshots_by_index_int_ok():
         idx=2,
         available_snapshots=available,
     )
-    assert snapshots == ['snapshot-3']
+    assert snapshots == ["snapshot-3"]
 
     # negative int
     snapshots = get_snapshots_by_index(
         idx=-2,
         available_snapshots=available,
     )
-    assert snapshots == ['snapshot-2']
+    assert snapshots == ["snapshot-2"]
 
     # all snapshots
     snapshots = get_snapshots_by_index(

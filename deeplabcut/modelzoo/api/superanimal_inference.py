@@ -271,7 +271,9 @@ def video_inference(
     customized_test_config="",
 ):
     if superanimal_name not in MODELOPTIONS:
-        raise ValueError(f"{superanimal_name} not available. Available ones are: {MODELOPTIONS}. If you are confident `superanimal_name` is right, try updating `dlclibrary` with `pip install -U dlclibrary`.")
+        raise ValueError(
+            f"{superanimal_name} not available. Available ones are: {MODELOPTIONS}. If you are confident `superanimal_name` is right, try updating `dlclibrary` with `pip install -U dlclibrary`."
+        )
 
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 

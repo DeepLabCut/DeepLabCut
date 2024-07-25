@@ -176,9 +176,9 @@ class TrackletManager:
                             rows, cols = np.nonzero(has_data)
                             for i, j in zip(idx, better):
                                 sl = slice(j * 3, j * 3 + 3)
-                                tracklets_multi[
-                                    i, inds[rows[sl]], cols[sl]
-                                ] = remaining.flat[sl]
+                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = (
+                                    remaining.flat[sl]
+                                )
                     else:
                         rows, cols = np.nonzero(has_data)
                         n = np.argmin(overwrite_risk)

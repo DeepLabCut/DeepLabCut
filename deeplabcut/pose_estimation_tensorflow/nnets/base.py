@@ -21,12 +21,10 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         self.cfg = cfg
 
     @abc.abstractmethod
-    def extract_features(self, inputs):
-        ...
+    def extract_features(self, inputs): ...
 
     @abc.abstractmethod
-    def get_net(self, inputs):
-        ...
+    def get_net(self, inputs): ...
 
     def train(self, batch):
         heads = self.get_net(batch[Batch.inputs])

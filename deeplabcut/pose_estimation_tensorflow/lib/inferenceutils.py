@@ -359,7 +359,7 @@ class Assembler:
         ind = _conv_square_to_condensed_indices(i, j, self.n_multibodyparts)
         mu = self._kde.mean[ind]
         sigma = self._kde.covariance[ind, ind]
-        z = (link.length ** 2 - mu) / sigma
+        z = (link.length**2 - mu) / sigma
         return 2 * (1 - 0.5 * (1 + erf(abs(z) / sqrt(2))))
 
     @staticmethod
