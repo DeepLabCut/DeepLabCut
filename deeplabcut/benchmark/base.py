@@ -132,10 +132,7 @@ class Benchmark(abc.ABC):
                 "individuals were detected in those images."
             )
 
-        return {
-            img: predictions.get(img, tuple())
-            for img in test_images
-        }
+        return {img: predictions.get(img, tuple()) for img in test_images}
 
 
 @dataclasses.dataclass

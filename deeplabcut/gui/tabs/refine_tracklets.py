@@ -261,5 +261,3 @@ class RefineTracklets(DefaultTab):
             max_gap=self.max_gap_widget.value(),
         )
         self.merge_button.setEnabled(True)
-
-  

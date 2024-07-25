@@ -295,6 +295,7 @@ class PointSelector:
         self.lasso.connect_default_events()
         self.is_connected = True
 
+
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
@@ -360,7 +361,7 @@ class TrackletVisualizer:
 
         img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum(
@@ -452,8 +453,8 @@ class TrackletVisualizer:
         # Create dropdowns for selecting tracklets to swap, placing them near the swap button
         self.ax_dropdown1 = self.fig.add_axes([0.9, 0.15, 0.05, 0.03])
         self.ax_dropdown2 = self.fig.add_axes([0.9, 0.20, 0.05, 0.03])
-        self.textbox1 = TextBox(self.ax_dropdown1, 'ID 1')
-        self.textbox2 = TextBox(self.ax_dropdown2, 'ID 2')
+        self.textbox1 = TextBox(self.ax_dropdown1, "ID 1")
+        self.textbox2 = TextBox(self.ax_dropdown2, "ID 2")
         self.textbox1.on_submit(self.set_swap_id1)
         self.textbox2.on_submit(self.set_swap_id2)
 
@@ -464,17 +465,25 @@ class TrackletVisualizer:
         if self.swap_id1 is not None and self.swap_id2 is not None:
 
             # Get tracklet indices for each individual
-            inds1 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id1]
-            inds2 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id2]
-            
-            print(f'Swapping tracklets {self.swap_id1} and {self.swap_id2}')
+            inds1 = [
+                k
+                for k in range(len(self.manager.tracklet2id))
+                if self.manager.tracklet2id[k] == self.swap_id1
+            ]
+            inds2 = [
+                k
+                for k in range(len(self.manager.tracklet2id))
+                if self.manager.tracklet2id[k] == self.swap_id2
+            ]
+
+            print(f"Swapping tracklets {self.swap_id1} and {self.swap_id2}")
 
             # Frames to swap
             frames = []
             if len(self.cuts) == 2:
                 frames = list(range(min(self.cuts), max(self.cuts) + 1))
             elif len(self.cuts) == 1:
-                frames = [self.cuts[0]] 
+                frames = [self.cuts[0]]
             else:
                 frames = list(range(self.curr_frame, self.manager.nframes))
 
@@ -482,31 +491,33 @@ class TrackletVisualizer:
             for i in range(min(len(inds1), len(inds2))):
                 self.manager.swap_tracklets(inds1[i], inds2[i], frames)
                 self.display_traces()
-                self.slider.set_val(self.curr_frame)    
+                self.slider.set_val(self.curr_frame)
 
     def set_swap_id1(self, val):
         # check that the input is a valid from the list of individuals
         if int(val) in self.manager.tracklet2id:
             self.swap_id1 = int(val)
-            print('ID 1 set.')
+            print("ID 1 set.")
         else:
-            print(f'Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}')
+            print(
+                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
+            )
             self.swap_id1 = None
 
     def set_swap_id2(self, val):
         # check that the input is a valid from the list of individuals
         if int(val) in self.manager.tracklet2id:
             self.swap_id2 = int(val)
-            print('ID 2 set.')
+            print("ID 2 set.")
         else:
-            print(f'Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}')
+            print(
+                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
+            )
             self.swap_id2 = None
 
     def terminate(self, event):
         plt.close(self.fig)
         self.player.terminate()
-
-
 
     def fill_shaded_areas(self):
         self.clean_collections()
@@ -651,9 +662,9 @@ class TrackletVisualizer:
             if len(self.cuts) > 1:
                 self.cuts.sort()
                 if self.picked_pair:
-                    self.manager.tracklet_swaps[self.picked_pair][
-                        self.cuts
-                    ] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                    self.manager.tracklet_swaps[self.picked_pair][self.cuts] = (
+                        ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                    )
                     self.fill_shaded_areas()
                     self.cuts = []
                     for line in self.ax_slider.lines:
@@ -871,7 +882,7 @@ class TrackletVisualizer:
 
     def update_dotsize(self, val):
         self.dotsize = val
-        self.scat.set_sizes([self.dotsize ** 2])
+        self.scat.set_sizes([self.dotsize**2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
@@ -976,6 +987,7 @@ class TrackletVisualizer:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key="df_with_missing", mode="w")
             df.to_csv(output_path.replace("h5", "csv"))
+
 
 def refine_tracklets(
     config,

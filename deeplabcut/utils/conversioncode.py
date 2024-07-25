@@ -91,8 +91,11 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
-def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts = False, other_scorer = False,  userfeedback=False):
-    ''' Given the config.yaml file, this function will convert the labels of an ancient project to a new project.
+
+def adapt_labeled_data_to_new_project(
+    config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False
+):
+    """Given the config.yaml file, this function will convert the labels of an ancient project to a new project.
         For this, the labeled data must be in the project folder, under the labeled-data folder and with the same configuration as all deeplabcut projects.
 
     Parameters
@@ -104,57 +107,58 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts = False,
     other_scorer : bool (default = False)
         If True, the labels will be converted to the new scorer.
     userfeedback : bool (default = True)
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.'''
+        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+    """
 
     # Load the config file
     cfg = dlc.auxiliaryfunctions.read_config(config_path)
-    
+
     # Get the Project path
-    project_path = cfg['project_path']
-    
+    project_path = cfg["project_path"]
+
     # Get the bodyparts
-    bodyparts = cfg['multianimalbodyparts']
-    print('New Bodyparts:', bodyparts)
-    
+    bodyparts = cfg["multianimalbodyparts"]
+    print("New Bodyparts:", bodyparts)
+
     # Iterate over each labeled data video
 
     # Use tqdm for a progress bar
-    for video in tqdm.tqdm(cfg['video_sets']):
-        print('Video:', video)
-        
-        video_name = video.split('\\')[-1]
+    for video in tqdm.tqdm(cfg["video_sets"]):
+        print("Video:", video)
+
+        video_name = video.split("\\")[-1]
         # discard the file extension
-        video_name = video_name.split('.')[0]
+        video_name = video_name.split(".")[0]
         # Load the csv file
-        label_path = os.path.join(project_path, 'labeled-data', video_name)
-        csv_files = [file for file in os.listdir(label_path) if file.endswith('.csv')]
+        label_path = os.path.join(project_path, "labeled-data", video_name)
+        csv_files = [file for file in os.listdir(label_path) if file.endswith(".csv")]
         if not csv_files:
-            print('No csv file in the folder:', label_path)
+            print("No csv file in the folder:", label_path)
         else:
             csv_path = os.path.join(label_path, csv_files[0])
             df = pd.read_csv(csv_path, header=None)
-        
+
             # get the scorer
             if other_scorer:
-                scorer = cfg['scorer']
+                scorer = cfg["scorer"]
                 # Change the scorer in the dataframe
-                df.iloc[0, 3:] = pd.Series([scorer]*len(df.columns[3:]))
+                df.iloc[0, 3:] = pd.Series([scorer] * len(df.columns[3:]))
 
             else:
                 scorer = df.iloc[0, 3]
-            
+
             # Get the individuals
             individuals = np.unique(df.iloc[1, 3:])
 
             # Get the old bodyparts
             old_bodyparts = np.unique(df.iloc[2, 3:])
-            print('Old bodyparts:', old_bodyparts)
-            
+            print("Old bodyparts:", old_bodyparts)
+
             # Get the unmber of old bodyparts
             num_of_old_bodyparts = len(old_bodyparts)
 
             # Bodyparts to add
-            print('Bodyparts to add:', set(bodyparts) - set(old_bodyparts))
+            print("Bodyparts to add:", set(bodyparts) - set(old_bodyparts))
 
             # If a bodypart is missing, add it to the dataframe
             for indx, bodypart in enumerate(bodyparts):
@@ -162,25 +166,52 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts = False,
                     num_of_old_bodyparts += 1
                     for i, individual in enumerate(individuals):
                         # create the columns for the bodypart, concatenate, the individual, the bodypart, and nan values
-                        x_column = pd.concat([pd.Series(scorer), pd.Series(individual), pd.Series(bodypart), pd.Series('x'), pd.Series(np.nan, index = df.index)], axis = 0, ignore_index = True)
-                        y_column = pd.concat([pd.Series(scorer), pd.Series(individual), pd.Series(bodypart), pd.Series('y'), pd.Series(np.nan, index = df.index)], axis = 0, ignore_index = True)
+                        x_column = pd.concat(
+                            [
+                                pd.Series(scorer),
+                                pd.Series(individual),
+                                pd.Series(bodypart),
+                                pd.Series("x"),
+                                pd.Series(np.nan, index=df.index),
+                            ],
+                            axis=0,
+                            ignore_index=True,
+                        )
+                        y_column = pd.concat(
+                            [
+                                pd.Series(scorer),
+                                pd.Series(individual),
+                                pd.Series(bodypart),
+                                pd.Series("y"),
+                                pd.Series(np.nan, index=df.index),
+                            ],
+                            axis=0,
+                            ignore_index=True,
+                        )
                         # Insert the columns in the dataframe
-                        df.insert(i*2*num_of_old_bodyparts + indx*2 + 3, 'insert_' + bodypart + '_x' + individual ,x_column)
-                        df.insert(i*2*num_of_old_bodyparts + indx*2 + 4, 'insert' + bodypart + '_y' + individual, y_column)
-                        
+                        df.insert(
+                            i * 2 * num_of_old_bodyparts + indx * 2 + 3,
+                            "insert_" + bodypart + "_x" + individual,
+                            x_column,
+                        )
+                        df.insert(
+                            i * 2 * num_of_old_bodyparts + indx * 2 + 4,
+                            "insert" + bodypart + "_y" + individual,
+                            y_column,
+                        )
 
             # If the old bodyparts are not in the new project, remove them
             if remove_old_bodyparts:
                 for bodypart in old_bodyparts:
                     if bodypart not in bodyparts:
-                        df = df.drop(df.columns[df.iloc[2, :] == bodypart], axis = 1)
-
+                        df = df.drop(df.columns[df.iloc[2, :] == bodypart], axis=1)
 
             # Save the dataframe
-            df.to_csv(csv_path, index = False, header = False)
+            df.to_csv(csv_path, index=False, header=False)
 
     # Create/Update the h5 file
     convertcsv2h5(config_path, userfeedback=userfeedback)
+
 
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """

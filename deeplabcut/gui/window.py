@@ -59,9 +59,7 @@ def _check_for_updates(silent=True):
         _ = msg.addButton("Skip", msg.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
-            subprocess.check_call(
-                [sys.executable, "-m", *command]
-            )
+            subprocess.check_call([sys.executable, "-m", *command])
 
 
 class MainWindow(QMainWindow):
