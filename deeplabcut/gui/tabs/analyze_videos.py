@@ -330,13 +330,13 @@ class AnalyzeVideos(DefaultTab):
         shuffle = self.root.shuffle_value
 
         videos = list(self.files)
-        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
-        save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
-        filter_data = self.filter_predictions.checkState() == Qt.Checked
+        save_as_csv = self.save_as_csv.isChecked()
+        save_as_nwb = self.save_as_nwb.isChecked()
+        filter_data = self.filter_predictions.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
         try:
             create_video_all_detections = (
-                self.create_detections_video_checkbox.checkState() == Qt.Checked
+                self.create_detections_video_checkbox.isChecked()
             )
         except AttributeError:
             create_video_all_detections = False
@@ -361,12 +361,11 @@ class AnalyzeVideos(DefaultTab):
                 track_method=track_method,
             )
 
-        if self.plot_trajectories.checkState() == Qt.Checked:
+        if self.plot_trajectories.isChecked():
             bdpts = self.bodyparts_list_widget.selected_bodyparts
             self.root.logger.debug(
                 f"Selected body parts for plot_trajectories: {bdpts}"
             )
-            showfig = self.show_trajectory_plots.checkState() == Qt.Checked
             deeplabcut.plot_trajectories(
                 config,
                 videos=videos,
@@ -374,7 +373,7 @@ class AnalyzeVideos(DefaultTab):
                 videotype=videotype,
                 shuffle=shuffle,
                 filtered=filter_data,
-                showfigures=showfig,
+                showfigures=self.show_trajectory_plots.isChecked(),
                 track_method=track_method,
             )
 
