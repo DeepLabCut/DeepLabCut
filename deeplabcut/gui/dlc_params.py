@@ -13,6 +13,7 @@ class DLCParams:
         "",
         "avi",
         "mp4",
+        "mkv",
         "mov",
     ]
 

@@ -8,7 +8,7 @@ After training and evaluating your model, the next step is to apply it to your v
 
 1. **Navigate to the 'Analyze Videos' Tab:** Begin applying your trained model to video data here.
 2. **Select Your Video Format and Files:**
-  - **Choose Video Format:** Pick the format of your video (`.mp4`, `.avi`, or `.mov`). 
+  - **Choose Video Format:** Pick the format of your video (`.mp4`, `.avi`, `.mkv`, or `.mov`).
   - **Select Videos:** Click **`Select Videos`** to find and open your video file.
 3. **Start Analysis:** Click **`Analyze`**. The analysis time depends on video length and resolution. Track progress in the terminal or Anaconda prompt.
 

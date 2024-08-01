@@ -120,7 +120,7 @@ When you first launch the GUI, you'll find three primary main options:
    - First, click on **`Browse Videos`** button on the right side of the window, to search for the video contents.
    - Once the media selection tool opens, navigate and select the folder with your videos.
      
-     > **💡 Tip:** DeepLabCut supports **`.mp4`**, **`.avi`**, and **`.mov`** files.
+     > **💡 Tip:** DeepLabCut supports **`.mp4`**, **`.avi`**, **`.mkv`** and **`.mov`** files.
    - A list will be created with all the videos inside this folder.
    - Unselect the videos you wish to remove from the project.
      
