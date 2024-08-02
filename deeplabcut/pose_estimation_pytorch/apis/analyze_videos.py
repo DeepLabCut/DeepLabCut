@@ -336,7 +336,7 @@ def analyze_videos(
                 pytorch_config=model_cfg,
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
-                batch_size=batchsize,
+                batch_size=batch_size,
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
