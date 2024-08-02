@@ -7,7 +7,8 @@ identity:
 
 
 # Project path (change when moving around)
-project_path:
+project_path: 
+  /Users/niels/Documents/upamathis/repos/DeepLabCut/deeplabcut/modelzoo/project_configs
 
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
@@ -44,6 +45,9 @@ bodyparts:
 - right_hip
 - tail_end
 - head_midpoint
+
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement

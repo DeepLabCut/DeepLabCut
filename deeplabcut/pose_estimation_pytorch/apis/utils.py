@@ -372,9 +372,11 @@ def get_inference_runners(
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
+    batch_size: int = 1,
     device: str | None = None,
     with_identity: bool = False,
     transform: A.BaseCompose | None = None,
+    detector_batch_size: int = 1,
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
@@ -386,10 +388,12 @@ def get_inference_runners(
         max_individuals: the maximum number of individuals per image
         num_bodyparts: the number of bodyparts predicted by the model
         num_unique_bodyparts: the number of unique_bodyparts predicted by the model
+        batch_size: the batch size to use for the pose model.
         with_identity: whether the pose model has an identity head
         device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
+        detector_batch_size: the batch size to use for the detector
         detector_path: the path to the detector snapshot from which to load weights,
             for top-down models (if a detector runner is needed)
         detector_transform: the transform for object detection. if None, uses the
@@ -450,6 +454,7 @@ def get_inference_runners(
                 model=DETECTORS.build(detector_config),
                 device=detector_device,
                 snapshot_path=detector_path,
+                batch_size=detector_batch_size,
                 preprocessor=build_bottom_up_preprocessor(
                     color_mode=model_config["detector"]["data"]["colormode"],
                     transform=detector_transform,
@@ -464,6 +469,7 @@ def get_inference_runners(
         model=PoseModel.build(model_config["model"]),
         device=device,
         snapshot_path=snapshot_path,
+        batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
     )

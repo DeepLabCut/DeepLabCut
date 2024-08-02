@@ -861,7 +861,7 @@ def analyze_videos(
             trainingsetindex=trainingsetindex,
             save_as_csv=save_as_csv,
             destfolder=destfolder,
-            batchsize=batchsize,
+            batch_size=batchsize,
             modelprefix=modelprefix,
             auto_track=auto_track,
             identity_only=identity_only,

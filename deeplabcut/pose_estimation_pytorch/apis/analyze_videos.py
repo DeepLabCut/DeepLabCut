@@ -161,7 +161,8 @@ def analyze_videos(
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
     destfolder: str | None = None,
-    batchsize: int | None = None,
+    batch_size: int | None = None,
+    detector_batch_size: int | None = None,
     modelprefix: str = "",
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
@@ -171,7 +172,6 @@ def analyze_videos(
     """Makes prediction based on a trained network.
 
     # TODO:
-        - allow batch size greater than 1
         - other options missing options such as shelve
         - pass detector path or detector runner
 
@@ -206,8 +206,10 @@ def analyze_videos(
             snapshot to use, used in the same way as ``snapshot_index``
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
-        batchsize: the batch size to use for inference. Takes the value from the
-            PyTorch config as a default
+        batch_size: the batch size to use for inference. Takes the value from the
+            PyTorch config as a default.
+        detector_batch_size: the batch size to use for detector inference. Takes the
+            value from the PyTorch config as a default.
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
         auto_track: By default, tracking and stitching are automatically performed,
@@ -261,6 +263,9 @@ def analyze_videos(
     if device is not None:
         model_cfg["device"] = device
 
+    if batch_size is None:
+        batch_size = model_cfg["train_settings"]["batch_size"]
+
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
     detector_path, detector_snapshot = None, None
@@ -271,6 +276,9 @@ def analyze_videos(
                 "snapshot! Please specify your desired detector_snapshotindex in your "
                 "project's configuration file."
             )
+
+        if detector_batch_size is None:
+            detector_batch_size = model_cfg["detector"]["train_settings"]["batch_size"]
 
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
@@ -291,8 +299,10 @@ def analyze_videos(
         max_individuals=max_num_animals,
         num_bodyparts=len(bodyparts),
         num_unique_bodyparts=len(unique_bodyparts),
+        batch_size=batch_size,
         with_identity=with_identity,
         transform=transform,
+        detector_batch_size=detector_batch_size,
         detector_path=detector_path,
         detector_transform=None,
     )
