@@ -56,6 +56,7 @@ def _video_inference_superanimal(
     max_individuals: int,
     pcutoff: float,
     batch_size: int = 1,
+    detector_batch_size: int = 1,
     device: Optional[str] = None,
     dest_folder: Optional[str] = None,
     customized_pose_checkpoint: Optional[str] = None,
@@ -88,6 +89,8 @@ def _video_inference_superanimal(
             automatic device selection.
 
         batch_size: The batch size to use for video inference.
+
+        detector_batch_size: The batch size to use for the detector for video inference.
 
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
@@ -146,6 +149,7 @@ def _video_inference_superanimal(
         num_bodyparts=len(config["bodyparts"]),
         num_unique_bodyparts=0,
         batch_size=batch_size,
+        detector_batch_size=detector_batch_size,
         detector_path=detector_path,
     )
     pose_task = Task(config.get("method", "BU"))

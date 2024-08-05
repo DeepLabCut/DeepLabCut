@@ -41,6 +41,7 @@ def video_inference_superanimal(
     video_adapt: bool = False,
     plot_trajectories: bool = False,
     batch_size: int = 1,
+    detector_batch_size: int = 1,
     pcutoff: float = 0.1,
     adapt_iterations: int = 1000,
     pseudo_threshold: float = 0.1,
@@ -94,6 +95,9 @@ def video_inference_superanimal(
 
     batch_size (int):
         The batch size to use for video inference. Only for PyTorch models.
+
+    detector_batch_size (int):
+        The batch size to use for the detector during video inference. Only for PyTorch.
 
     pcutoff (float):
         The p-value cutoff for the confidence of the prediction. The default is 0.1.
@@ -296,6 +300,7 @@ def video_inference_superanimal(
                 pcutoff,
                 device=device,
                 batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
                 dest_folder=dest_folder,
                 customized_pose_checkpoint=customized_pose_checkpoint,
                 customized_detector_checkpoint=customized_detector_checkpoint,
@@ -437,6 +442,7 @@ video adaptation batch size: {video_adapt_batch_size}"""
             pcutoff,
             device=device,
             batch_size=batch_size,
+            detector_batch_size=detector_batch_size,
             dest_folder=dest_folder,
             customized_pose_checkpoint=customized_pose_checkpoint,
             customized_detector_checkpoint=customized_detector_checkpoint,
