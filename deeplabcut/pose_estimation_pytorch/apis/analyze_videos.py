@@ -118,12 +118,11 @@ def video_inference(
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
 
-        print("Running Detector")
+        print(f"Running detector with batch size {detector_runner.batch_size}")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
-
         video.set_context(bbox_predictions)
 
-    print("Running Pose Prediction")
+    print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     predictions = pose_runner.inference(images=tqdm(video))
 
     if with_identity:
@@ -264,7 +263,7 @@ def analyze_videos(
         model_cfg["device"] = device
 
     if batch_size is None:
-        batch_size = model_cfg["train_settings"]["batch_size"]
+        batch_size = cfg["batch_size"]
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
@@ -278,7 +277,7 @@ def analyze_videos(
             )
 
         if detector_batch_size is None:
-            detector_batch_size = model_cfg["detector"]["train_settings"]["batch_size"]
+            detector_batch_size = cfg.get("detector_batch_size", 1)
 
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT

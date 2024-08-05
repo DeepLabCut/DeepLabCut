@@ -51,6 +51,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             postprocessor: the postprocessor to use on images after inference
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
+        if not isinstance(batch_size, int) or batch_size <= 0:
+            raise ValueError(f"batch_size must be a positive integer; is {batch_size}")
+
         self.batch_size = batch_size
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
