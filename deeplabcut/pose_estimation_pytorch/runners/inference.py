@@ -132,13 +132,17 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         else:
             inputs = torch.as_tensor(inputs)
 
+        self._contexts.append(context)
+        self._image_batch_sizes.append(len(inputs))
+
+        # skip when there are no inputs for an image
+        if len(inputs) == 0:
+            return
+
         if self._batch is None:
             self._batch = inputs
         else:
             self._batch = torch.cat([self._batch, inputs], dim=0)
-
-        self._contexts.append(context)
-        self._image_batch_sizes.append(len(inputs))
 
     def _process_full_batches(self) -> None:
         """Processes prepared inputs in batches of the desired batch size."""

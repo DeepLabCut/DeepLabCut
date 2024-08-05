@@ -78,6 +78,8 @@ def test_mock_bottom_up(batch_size):
     "detections_per_image",
     [
         [1, 1, 1, 1, 1],
+        [0, 1, 0, 1, 1],  # some frames might not have predictions
+        [0, 0, 0, 5, 2],
         [1, 2, 3, 4],
         [3, 4, 2, 1, 4],
         [4, 23, 5, 20, 64, 100]
@@ -87,13 +89,17 @@ def test_mock_top_down(batch_size, detections_per_image):
     h, w = 8, 8
     images = []
     for index, num_detections in enumerate(detections_per_image):
-        detections = np.concatenate(
-            [
-                (1_000_000 * (index + 1) + i) * np.ones((1, 3, h, w))
-                for i in range(num_detections)
-            ],
-            axis=0,
-        )
+        if num_detections == 0:
+            detections = np.zeros((0, 3, 1, 1))  # random shape when no detections
+        else:
+            detections = np.concatenate(
+                [
+                    (1_000_000 * (index + 1) + i) * np.ones((1, 3, h, w))
+                    for i in range(num_detections)
+                ],
+                axis=0,
+            )
+
         images.append(detections)
 
     runner = MockInferenceRunner(batch_size=batch_size)
