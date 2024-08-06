@@ -206,9 +206,9 @@ def analyze_videos(
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
-            PyTorch config as a default.
+            project config as a default.
         detector_batch_size: the batch size to use for detector inference. Takes the
-            value from the PyTorch config as a default.
+            value from the project config as a default.
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
         auto_track: By default, tracking and stitching are automatically performed,
