@@ -112,6 +112,9 @@ class Ellipse:
         max_dist = max(
             self.height, self.width, other_ellipse.height, other_ellipse.width
         )
+        if max_dist == 0:
+            return 0
+
         dist = math.sqrt(
             (self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2
         )
