@@ -141,6 +141,7 @@ default_augmenter:
 snapshotindex:
 detector_snapshotindex:
 batch_size:
+detector_batch_size:
 \n
 # Cropping Parameters (for analysis and outlier frame detection)
 cropping:
@@ -211,6 +212,12 @@ def read_config(configname):
                 if cfg.get("engine") is None:
                     cfg["engine"] = Engine.TF.aliases[0]
                     write_config(configname, cfg)
+
+                if cfg.get("detector_snapshotindex") is None:
+                    cfg["detector_snapshotindex"] = -1
+
+                if cfg.get("detector_batch_size") is None:
+                    cfg["detector_batch_size"] = 1
 
                 if cfg["project_path"] != curr_dir:
                     cfg["project_path"] = curr_dir
