@@ -75,7 +75,7 @@ def find_closest_neighbors(
     dist, inds = tree.query(query, k=k)
     idx = np.argsort(dist[:, 0])
     neighbors = np.full(len(query), -1, dtype=int)
-    picked = set()
+    picked = {tree.n}
     for i, ind in enumerate(inds[idx]):
         for j in ind:
             if j not in picked:
