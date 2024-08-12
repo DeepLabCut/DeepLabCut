@@ -1,0 +1,2 @@
+sphinx
+git+https://github.com/executablebooks/sphinx-ext-mystmd.git
