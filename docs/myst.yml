@@ -69,6 +69,9 @@ project:
         - file: recipes/flip_and_rotate.ipynb
         - file: recipes/pose_cfg_file_breakdown.md
         - file: recipes/publishing_notebooks_into_the_DLC_main_cookbook.md
+    - title: API Documentation
+      children:
+        - pattern: api/generated/**/*.myst.json
     - title: DeepLabCut Benchmark
       children:
         - file: benchmark.md
@@ -78,7 +81,7 @@ project:
         - file: roadmap.md
         - file: Governance.md
 site:
-  template: book-theme
+  template: "https://gist.github.com/agoose77/99f20e235e8c3e92f84a55b4953bc400/raw/7737c6369052e1b2877f86c459b5f68629f68728/book.zip"
   # options:
   #   favicon: favicon.ico
   #   logo: site_logo.png
