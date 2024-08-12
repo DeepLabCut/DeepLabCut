@@ -55,6 +55,8 @@ class HeatmapGenerator(BaseGenerator):
         num_heatmaps: int,
         pos_dist_thresh: int,
         heatmap_mode: str | Mode = Mode.KEYPOINT,
+        gradient_masking: bool = False,
+        background_weight: float = 0.1,
         generate_locref: bool = True,
         locref_std: float = 7.2801,
         **kwargs,
@@ -65,8 +67,10 @@ class HeatmapGenerator(BaseGenerator):
             pos_dist_thresh: 3*std of the gaussian. We think of dist_thresh as a radius
                 and std is a 'diameter'.
             mode: the mode to generate heatmaps for
-            learned_id_target: whether to generate the heatmap for keypoints
-                or for learned IDs
+            gradient_masking: Whether to mask the gradient when a bodypart is undefined
+                (has visibility ``0`` in the dataset). This can work well
+            background_weight: If ``gradient_masking == True`, the weight to apply to
+                the loss for background pixels.
             generate_locref: whether to generate location refinement maps
             locref_std: the STD for the location refinement maps, if defined
 
@@ -85,6 +89,9 @@ class HeatmapGenerator(BaseGenerator):
         if isinstance(heatmap_mode, str):
             heatmap_mode = HeatmapGenerator.Mode(heatmap_mode)
         self.heatmap_mode = heatmap_mode
+
+        self.gradient_masking = gradient_masking
+        self.background_weight = background_weight
 
         self.generate_locref = generate_locref
         self.locref_scale = 1.0 / locref_std
@@ -162,11 +169,12 @@ class HeatmapGenerator(BaseGenerator):
         # coords (batch_size, num_kpts, num_individuals, 3)
         for b in range(batch_size):
             for heatmap_idx, group_keypoints in enumerate(coords[b]):
-                for keypoint in group_keypoints:
+                for keypoint in group_keypoints:  # "bodypart" or "individual" group
                     # FIXME: Gradient masking weights should be parameters
                     if keypoint[-1] == 0:
                         # full gradient masking
-                        weights[b, heatmap_idx] = 0.0
+                        # weights[b, heatmap_idx] = 0.0
+                        pass
                     elif keypoint[-1] == -1:
                         # full gradient masking
                         weights[b, heatmap_idx] = 0.0

@@ -12,7 +12,7 @@ To get started, you can use the GUI, or the terminal. See below.
 **GUI:**
 
 To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`). Then, simply run ``python -m deeplabcut``. The below functions are available to you in an easy-to-use graphical user interface. While most functionality is available, advanced users might want the additional flexibility that command line interface offers. Read more below.
-```{Hint}
+```{hint}
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
@@ -26,7 +26,7 @@ As a reminder, the core functions are described in our [Nature Protocols](https:
 
 To begin, navigate to Aanaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type `import deeplabcut`.
 
-```{Hint}
+```{hint}
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
@@ -218,7 +218,7 @@ Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdi
 - Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained networks weights will be downloaded, as you select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We suggest seeing our [dedicated documentation on models](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more information.
 
 
-```{Hint}
+```{hint}
 🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do so - be sure to open your terminal "as an admin" (This is only something we have seen with some Windows users - see the **[docs for more help!](https://deeplabcut.github.io/DeepLabCut/docs/recipes/nn.html)**).
 ```
 

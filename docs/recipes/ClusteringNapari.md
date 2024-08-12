@@ -9,7 +9,7 @@ User errors can be detrimental to model performance, so beyond just `check_label
 
   <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661886442646-A9JAWGH3JU3WTTTPMNCW/swaps.jpg?format=1000w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 
-```{Hint}
+```{hint}
 **Labeling Pitfalls: How Corruptions Affect Performance**
 (A) Illustration of two types of labeling errors. Top is ground truth, middle is missing a label at the tailbase, and bottom is if the labeler swapped the ear identity (left to right, etc.). (B) Using a small training dataset of 106 frames, how do the corruptions in (A) affect the percent of correct keypoints (PCK) on the test set as the distance to ground truth increases from 0 pixels (perfect prediction) to 20 pixels (larger error)? The x axis denotes the difference in the ground truth to the predicted location (RMSE in pixels), whereas the y axis is the fraction of frames considered accurate (e.g., z80% of frames fall within 9 pixels, even on this small training dataset, for points that are not corrupted, whereas for swapped points this falls to z65%). The fraction of the dataset that is corrupted affects this value. Shown is when missing the tailbase label (top) or swapping the ears in 1%, 5%, 10%, and 20% of frames (of 106 labeled training images). Swapping versus missing labels has a more notable adverse effect on network performance.
 ```
@@ -46,7 +46,7 @@ If you decided to refine that frame (we moved the points to make outliers obviou
 
   <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255421-B9QEUDOJANXWYX4K649G/3.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 
-  ```{Attention}
+  ```{attention}
    When you're done, you need to click `ctl-s` to save it.
 ```
 

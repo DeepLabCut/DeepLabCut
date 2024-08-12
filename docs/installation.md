@@ -31,7 +31,7 @@
 
 - Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine.
 
-```{Hint}
+```{hint}
 Download anaconda for your operating system: https://www.anaconda.com/distribution/.
 ```
 
@@ -50,7 +50,7 @@ conda init zsh
 
 You simply need to have this `.yaml` file anywhere locally on your computer. So, let's download it!
 
-```{Hint}
+```{hint}
 Windows users: Be sure you have `git` installed along with anaconda: https://gitforwindows.org/
 ```
 
@@ -61,11 +61,11 @@ Windows users: Be sure you have `git` installed along with anaconda: https://git
 
 -  **Now, in Terminal (or Anaconda Command Prompt for Windows users)**, if you clicked to download, go to your downloads folder.
 
-```{Hint}
+```{hint}
 Windows users: Be sure to open the program terminal/cmd/anaconda prompt with a RIGHT-click, "open as admin"
 ```
 
-```{Hint}
+```{hint}
 :class: dropdown
 If you cloned the repo onto your Desktop, the command may look like:
 ``cd C:\Users\YourUserName\Desktop\DeepLabCut\conda-environments``
@@ -84,7 +84,7 @@ Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DE
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 #### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
-```{Hint}
+```{hint}
 :class: dropdown
 As of June 2024 we have a PyTorch Engine backend and we will be depreciating the TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you need to run `pip install deeplabcut[tf]` in order to install the correct version of TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.
 ```

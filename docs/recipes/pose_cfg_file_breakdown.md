@@ -5,14 +5,17 @@
 When you train, evaluate, and run inference with a neural network there are hyperparatmeters you must consider. While DLC attempts to set the "globally good for everyone" parameters, you might want to change them. Therefore, in this recipe we will review the pose config parameters related to neural network models' and the related data augmentation!
 
 # 1. What is the *pose_cfg.yml* file?
+
 <a id="whatisposecfg"></a>
 - The `pose_cfg.yaml` file offers easy access to a range of training parameters that the user may want or have to adjust depending on the used dataset and task. 
 - You will find the file in the dlc-models > test and train sub-directories. There is also a button in the GUI to directly open this file.
 - This recipe is aimed at giving an average user an intuition on those hyperparameters and situations in which addressing them can be useful.
 
+(full-parameter-list)=
 # 2. Quick start: full parameter list TOC
+
 <a id="fullparamlist"></a>
-- [2. Full parameter list](#2-full-parameter-list)
+- [2. Full parameter list](#full-parameter-list)
   - [2.1 Training Hyperparameters](#21-training-hyperparameters)
     - [2.1.A `max_input_size` and `min_input_size`](#21a-max_input_size-and-min_input_size)
     - [2.1.B `global_scale`](#21b-global_scale)
@@ -29,8 +32,8 @@ When you train, evaluate, and run inference with a neural network there are hype
     - [2.2.6 `crop_ratio`](#226-crop_ratio)
     - [2.2.7 `max_shift`](#227-max_shift)
     - [2.2.8 `crop_sampling`](#228-crop_sampling)
-    - [Kernel transformations](#kernel-transformations)
-    - [2.2.9 `sharpening` and `sharpenratio`](#229-sharpening-and-sharpenratio)
+    - [Kernel transformations](#kernel)
+    - [2.2.9 `sharpening` and `sharpenratio`](#sharp)
     - [2.2.10 `edge`](#2210-edge)
 - [References](#references)
 
@@ -193,11 +196,11 @@ By default, this parameter is set to `False` especially on poses with mirror sym
  - `uniform` will take out random parts of the image, disregarding the annotations completely
  - 'keypoint' centers on a random keypoint and crops based on that location - might be best in preserving the whole animal (if reasonable `crop_size` is used)
 
- <a id ="kernel"></a>
+(kernel)=
  ### Kernel transformations 
  Kernel filters are very popular in image processing to sharpen and blur images. Intuitively, blurring an image might increase the motion blur resistance during testing. Otherwise, sharpening for data enhancement could result in capturing more detail on objects of interest.
 
- <a id ="sharp"></a>
+(sharp)=
  ### 2.2.9 `sharpening` and `sharpenratio`
  In DeepLabCut *pose_config.yaml* file, by default, `sharpening` is set to `False`, but if we want to use this type of data augmentation, we can set it `True` and specify a value for `sharpenratio`, which by default is set to `0.3`. Blurring is not defined in the *pose_config.yaml*, but if the user finds it convenient, it can be added to the data augmentation pipeline. 
 

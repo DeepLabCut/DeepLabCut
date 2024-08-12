@@ -1,0 +1,84 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: 617fc1f0-e1c5-4cf2-abca-ef626d15d043
+  # title:
+  # description:
+  # keywords: []
+  # authors: []
+  github: https://github.com/DeepLabCut/DeepLabCut
+  toc:
+    - file: ../README.md
+    - title: Getting Started
+      children:
+        - file: UseOverviewGuide.md
+        - file: course.md
+    - title: Installation
+      children:
+        - file: installation.md
+        - file: recipes/installTips.md
+        - file: docker.md
+    - title: Main User Guides
+      children:
+        - file: standardDeepLabCut_UserGuide.md
+        - file: maDLC_UserGuide.md
+        - file: Overviewof3D.md
+        - file: HelperFunctions.md
+    - title: Graphical User Interfaces (GUIs)
+      children:
+        - file: gui/PROJECT_GUI.md
+        - file: gui/napari_GUI.md
+    - title: DLC3 PyTorch Specific Docs
+      children:
+        - file: pytorch/user_guide.md
+        - file: pytorch/pytorch_config.md
+        - file: pytorch/architectures.md
+    - title: Quick Start Tutorials
+      children:
+        - file: quick-start/single_animal_quick_guide.md
+        - file: quick-start/tutorial_maDLC.md
+    - title: "Beginner's Guide to DeepLabCut"
+      children:
+        - file: beginner-guides/beginners-guide.md
+        - file: beginner-guides/manage-project.md
+        - file: beginner-guides/labeling.md
+        - file: beginner-guides/Training-Evaluation.md
+        - file: beginner-guides/video-analysis.md
+    - title: Hardware Tips
+      children:
+        - file: recipes/TechHardware.md
+    - title: DeepLabCut-Live!
+      children:
+        - file: deeplabcutlive.md
+    - title: DeepLabCut Model Zoo
+      children:
+        - file: ModelZoo.md
+        - file: recipes/UsingModelZooPupil.md
+        - file: recipes/MegaDetectorDLCLive.md
+    - title: Cookbook (detailed helper guides)
+      children:
+        - file: quick-start/tutorial_maDLC.md
+        - file: convert_maDLC.md
+        - file: recipes/io.md
+        - file: recipes/nn.md
+        - file: recipes/post.md
+        - file: recipes/BatchProcessing.md
+        - file: recipes/DLCMethods.md
+        - file: recipes/ClusteringNapari.md
+        - file: recipes/OpenVINO.md
+        - file: recipes/flip_and_rotate.ipynb
+        - file: recipes/pose_cfg_file_breakdown.md
+        - file: recipes/publishing_notebooks_into_the_DLC_main_cookbook.md
+    - title: DeepLabCut Benchmark
+      children:
+        - file: benchmark.md
+    - title: Mission & Contribute
+      children:
+        - file: MISSION_AND_VALUES.md
+        - file: roadmap.md
+        - file: Governance.md
+site:
+  template: book-theme
+  # options:
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
