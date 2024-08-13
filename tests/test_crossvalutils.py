@@ -103,8 +103,8 @@ def test_benchmark_paf_graphs_montblanc(evaluation_data_and_metadata_montblanc):
     np.testing.assert_equal(
         results[1].loc["purity"].to_numpy().squeeze(),
         [
-            results_gt[0][6][('purity', 'mean')],
-            results_gt[0][6][('purity', 'std')],
+            results_gt[0][6][("purity", "mean")],
+            results_gt[0][6][("purity", "std")],
         ],
     )
     vals = [
@@ -116,9 +116,9 @@ def test_benchmark_paf_graphs_montblanc(evaluation_data_and_metadata_montblanc):
     np.testing.assert_equal(
         vals,
         [
-            results_gt[0][6][('mAP_train', 'mean')],
-            results_gt[0][6][('mAR_train', 'mean')],
-            results_gt[0][6][('mAP_test', 'mean')],
-            results_gt[0][6][('mAR_test', 'mean')],
+            results_gt[0][6][("mAP_train", "mean")],
+            results_gt[0][6][("mAR_train", "mean")],
+            results_gt[0][6][("mAP_test", "mean")],
+            results_gt[0][6][("mAR_test", "mean")],
         ],
     )

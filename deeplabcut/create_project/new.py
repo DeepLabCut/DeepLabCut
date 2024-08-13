@@ -276,9 +276,9 @@ def create_new_project(
     cfg_file["x2"] = 640
     cfg_file["y1"] = 277
     cfg_file["y2"] = 624
-    cfg_file[
-        "batch_size"
-    ] = 8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    cfg_file["batch_size"] = (
+        8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
+    )
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

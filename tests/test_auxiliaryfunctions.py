@@ -239,13 +239,14 @@ def mock_snapshot_folder(tmp_path):
     folder.mkdir()
 
     # mock files
-    snapshot_files = ["snapshot-4.index",
-                      "snapshot-5.index",
-                      "snapshot-6.index",
-                      "snapshot-3.data-00000-of-00001",
-                      "snapshot-3.index",
-                      "snapshot-3.meta",
-                      ]
+    snapshot_files = [
+        "snapshot-4.index",
+        "snapshot-5.index",
+        "snapshot-6.index",
+        "snapshot-3.data-00000-of-00001",
+        "snapshot-3.index",
+        "snapshot-3.meta",
+    ]
     for file_name in snapshot_files:
         (folder / file_name).touch()
 
