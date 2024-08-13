@@ -213,10 +213,11 @@ class DummyHead(BaseHead):
 
 head_config = dict(
     type="DummyHead",
-    kernel_size=3,
+    num_input_channels=2048,
+    num_bodyparts=5,
     predictor=HeatmapPredictor(location_refinement=True, locref_std= 7.2801),
     target_generator=HeatmapGaussianGenerator(
-        num_heatmaps=1,
+        num_heatmaps=5,
         pos_dist_thresh=17,
         heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
         generate_locref=True,
