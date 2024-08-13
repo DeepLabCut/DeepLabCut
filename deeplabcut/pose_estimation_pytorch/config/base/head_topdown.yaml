@@ -11,6 +11,8 @@ target_generator:
   num_heatmaps: "num_bodyparts"
   pos_dist_thresh: 17
   heatmap_mode: KEYPOINT
+  gradient_masking: true
+  background_weight: 0.0
   generate_locref: true
   locref_std: 7.2801
 criterion:
