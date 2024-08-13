@@ -6,8 +6,11 @@ DLC3.0 PyTorch code.
 ## Structure of the PyTorch DLC code
 
 [API](#API)
+
 [Models](#models)
+
 [Data](#data)
+
 [Runners](#runners)
 
 ### API
