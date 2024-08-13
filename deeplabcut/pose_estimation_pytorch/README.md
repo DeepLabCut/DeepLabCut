@@ -1,7 +1,8 @@
 # PyTorch DeepLabCut API
 
-This is written primarily for maintainers and expert users. It details the logic for the
-DLC3.0 PyTorch code.
+This overview is primarily written for maintainers and expert users. 
+
+Here we detail the logic and structure for the DLC3.* PyTorch code. Furthermore, we provide many practical examples to illustrate the usage of the code for developers. 
 
 ## Structure of the PyTorch DLC code
 
@@ -16,31 +17,17 @@ DLC3.0 PyTorch code.
 ### API
 
 High-level API methods are implemented in `deeplabcut.pose_estimations_pytorch.apis`.
-This includes methods to train and evaluate models on DeepLabCut projects, and analyze 
-videos or folders of images. While some of the methods are implemented to work directly
-from DeepLabCut projects (i.e. by specifying the path to the project config file and the
-shuffle number), internally they call methods that allow more flexibility.
+This folder includes methods to train and evaluate models on DeepLabCut projects, and analyze videos or folders (of images). While some of the methods are implemented to work directly from DeepLabCut projects (i.e. by specifying the path to the project config file and the shuffle number), internally they call methods that allow more flexibility. Thus, they are also ideally suited for developers. 
 
 ### Models
 
-The `deeplabcut.pose_estimations_pytorch.models` package contains all components related
-to building a model with `backbone`, `neck` (optional) and `head`.
-
-We provide state-of-the-art models such as DLCRNet, HRNet, DEKR and more are coming 
-(BUCTD is in the works ;))!
-
-Object detection models are also available (and implemented in 
+We provide state-of-the-art pose estimation models such as DLCRNet, HRNet, DEKR, BUCTD and more are coming! Object detection models are also available (and implemented in 
 `deeplabcut.pose_estimations_pytorch.models.detectors`).
 
-If you want to add a novel model, you'll need the following parts implemented:
-- a backbone (such as a ResNet or HRNet)
-- a head (such as a HeatmapHead)
-- a predictor (transforming model outputs into keypoint locations)
-- a target generator (creating the targets for your head outputs from your labels)
+The `deeplabcut.pose_estimations_pytorch.models` package contains all components related
+to building a model. Models are flexibly build from modular components: `backbone`, `neck` (optional) and `head` (as discussed below). 
 
-Some models can also define a neck. You'll also need some loss criterions, but usually 
-you'll be able to use existing ones. You can either use existing classes and only 
-replace some elements, or rewrite everything you need for your model!
+TODO: how can one check the latest list of models? 
 
 #### Model Configuration Files
 
@@ -76,6 +63,18 @@ model_cfg = make_pytorch_pose_config(
 write_config(pose_config_path, model_cfg)
 ```
 
+#### Adding Models
+
+If you want to add a novel model, you'll ideally build them from the following implemented parts:
+- a backbone (such as a ResNet or HRNet)
+- a head (such as a HeatmapHead)
+- a predictor (transforming model outputs into keypoint locations)
+- a target generator (creating the targets for your head outputs from your labels)
+
+Some models can also define a neck (model components between the backbone and the head). You'll also need some loss criterions, but usually  you'll be able to use existing ones. 
+
+You can either use existing classes and only replace some elements, or rewrite everything you need for your model. We use Model Registries to simplify the process of adding models.
+
 #### Model Registry
 
 Registries are created for all model building blocks to make it easy to add new models.
@@ -110,6 +109,8 @@ class DummyBackbone(BaseBackbone):
 backbone_config = dict(type="DummyBackbone", kernel_size=3)
 backbone = BACKBONES.build(backbone_config)  # will create a DummyBackbone
 ```
+
+TODO: Add a head in example? 
 
 ### Data
 
@@ -301,6 +302,10 @@ train(
 ```
 
 ### Running Video Analysis outside a DeepLabCut Project
+
+DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your data. The usage of this API assumes the existance of a DLC project (with `config.yaml` file, etc.).
+
+Sometimes it might be more convenient to just run a model on your data via a low-level API. We also use this API under the hood, in particular for the Model Zoo. Check out the example below:
 
 ```python
 from pathlib import Path
