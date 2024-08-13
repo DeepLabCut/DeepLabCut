@@ -2,7 +2,8 @@
 
 This overview is primarily written for maintainers and expert users. 
 
-Here we detail the logic and structure for the DLC3.* PyTorch code. Furthermore, we provide many practical examples to illustrate the usage of the code for developers. 
+Here we detail the logic and structure for the DLC3.* PyTorch code. Furthermore, we
+provide many practical examples to illustrate the usage of the code for developers. 
 
 ## Structure of the PyTorch DLC code
 
@@ -17,17 +18,33 @@ Here we detail the logic and structure for the DLC3.* PyTorch code. Furthermore,
 ### API
 
 High-level API methods are implemented in `deeplabcut.pose_estimations_pytorch.apis`.
-This folder includes methods to train and evaluate models on DeepLabCut projects, and analyze videos or folders (of images). While some of the methods are implemented to work directly from DeepLabCut projects (i.e. by specifying the path to the project config file and the shuffle number), internally they call methods that allow more flexibility. Thus, they are also ideally suited for developers. 
+This folder includes methods to train and evaluate models on DeepLabCut projects, and
+analyze videos or folders (of images). While some of the methods are implemented to work
+directly from DeepLabCut projects (i.e. by specifying the path to the project config
+file and the shuffle number), internally they call methods that allow more flexibility.
+Thus, they are also ideally suited for developers.
 
 ### Models
 
-We provide state-of-the-art pose estimation models such as DLCRNet, HRNet, DEKR, BUCTD and more are coming! Object detection models are also available (and implemented in 
+We provide state-of-the-art pose estimation models such as DLCRNet, HRNet, DEKR, BUCTD
+and more are coming! Object detection models are also available (and implemented in 
 `deeplabcut.pose_estimations_pytorch.models.detectors`).
 
 The `deeplabcut.pose_estimations_pytorch.models` package contains all components related
-to building a model. Models are flexibly build from modular components: `backbone`, `neck` (optional) and `head` (as discussed below). 
+to building a model. Models are flexibly build from modular components: `backbone`, 
+`neck` (optional) and `head` (as discussed below). 
 
-TODO: how can one check the latest list of models? 
+You can check available models by running:
+
+```python
+import deeplabcut.pose_estimation_pytorch
+
+# Available pose estimation models
+print(deeplabcut.pose_estimation_pytorch.available_models())
+
+# Available object detection models
+print(deeplabcut.pose_estimation_pytorch.available_detectors())
+```
 
 #### Model Configuration Files
 
@@ -65,15 +82,20 @@ write_config(pose_config_path, model_cfg)
 
 #### Adding Models
 
-If you want to add a novel model, you'll ideally build them from the following implemented parts:
+If you want to add a novel model, you'll ideally build them from the following
+implemented parts:
+
 - a backbone (such as a ResNet or HRNet)
 - a head (such as a HeatmapHead)
 - a predictor (transforming model outputs into keypoint locations)
 - a target generator (creating the targets for your head outputs from your labels)
 
-Some models can also define a neck (model components between the backbone and the head). You'll also need some loss criterions, but usually  you'll be able to use existing ones. 
+Some models can also define a neck (model components between the backbone and the head).
+You'll also need some loss criterions, but usually you'll be able to use existing ones.
 
-You can either use existing classes and only replace some elements, or rewrite everything you need for your model. We use Model Registries to simplify the process of adding models.
+You can either use existing classes and only replace some elements, or rewrite
+everything you need for your model. We use Model Registries to simplify the process of
+adding models.
 
 #### Model Registry
 
@@ -110,7 +132,103 @@ backbone_config = dict(type="DummyBackbone", kernel_size=3)
 backbone = BACKBONES.build(backbone_config)  # will create a DummyBackbone
 ```
 
-TODO: Add a head in example? 
+Another example would be creating a custom head for our model. In this case, let's make
+a head which takes as input the output of a backbone (which has shape `(num_channels,
+H', W')`) and put it through a kernel-size 1 convolution, simply changing the number of
+channels.
+
+Heads can output multiple tensors (such as heatmaps and location refinement fields). 
+Therefore, their `forward(...)` method outputs a dictionary mapping strings to tensors.
+Here, we return the `heatmap` and `locref` tensors.
+
+A head must contain different: a `target_generator` to generate targets for
+its outputs and a `predictor` to convert model outputs to pose. Make sure that the keys
+output by the `target_generator` and the `head` match! Some `criterion` also needs to be
+defined to compute the loss between the outputs and targets. When more than one output 
+is specified (such as in this case, where we're generating heatmaps and location 
+refinement fields), a loss aggregator must also be given to combine all losses into one
+(this should simply be a `WeightedLossAggregator`, indicating the weight for each loss).
+
+```python
+import torch
+import torch.nn as nn
+
+from deeplabcut.pose_estimation_pytorch.models.criterions import (
+    BaseCriterion,
+    BaseLossAggregator,
+    WeightedHuberCriterion,
+    WeightedLossAggregator,
+    WeightedMSECriterion,
+)
+from deeplabcut.pose_estimation_pytorch.models.heads import HEADS, BaseHead
+from deeplabcut.pose_estimation_pytorch.models.predictors import (
+    BasePredictor,
+    HeatmapPredictor,
+)
+from deeplabcut.pose_estimation_pytorch.models.target_generators import (
+    BaseGenerator,
+    HeatmapGaussianGenerator,
+)
+
+
+@HEADS.register_module
+class DummyHead(BaseHead):
+    """A dummy backbone, simply max-pooling the input"""
+    
+    def __init__(
+        self,
+        num_input_channels: int,
+        num_bodyparts: int,
+        predictor: BasePredictor,
+        target_generator: BaseGenerator,
+        criterion: dict[str, BaseCriterion],
+        aggregator: BaseLossAggregator,
+    ):
+        super().__init__(
+            stride=1,
+            predictor=predictor,
+            target_generator=target_generator,
+            criterion=criterion,
+            aggregator=aggregator
+        )
+        self.conv_heatmap = nn.Conv2d(
+            in_channels=num_input_channels,
+            out_channels=num_bodyparts,
+            kernel_size=1,
+            stride=1,
+        )
+        self.locref_heatmap = nn.Conv2d(
+            in_channels=num_input_channels,
+            out_channels=2 * num_bodyparts,
+            kernel_size=1,
+            stride=1,
+        )
+
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+        return {
+            "heatmap": self.conv_heatmap(x),
+            "locref": self.locref_heatmap(x),
+        }
+
+
+head_config = dict(
+    type="DummyHead",
+    kernel_size=3,
+    predictor=HeatmapPredictor(location_refinement=True, locref_std= 7.2801),
+    target_generator=HeatmapGaussianGenerator(
+        num_heatmaps=1,
+        pos_dist_thresh=17,
+        heatmap_mode=HeatmapGaussianGenerator.Mode.KEYPOINT,
+        generate_locref=True,
+    ),
+    criterion={
+        "heatmap": WeightedMSECriterion(),
+        "locref": WeightedHuberCriterion(),
+    },
+    aggregator=WeightedLossAggregator(weights={"heatmap": 1, "locref": 0.05}),
+)
+head = HEADS.build(head_config)
+```
 
 ### Data
 
