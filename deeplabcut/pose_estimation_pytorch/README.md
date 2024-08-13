@@ -259,3 +259,92 @@ valid_dataset = loader.create_dataset(
 
 The `deeplabcut.pose_estimations_pytorch.runners` contains code to get models, load 
 pretrained weights, and either train them or run inference with them.
+
+## Code Examples
+
+### Training a Model on a COCO Dataset
+
+```python
+from pathlib import Path
+
+from deeplabcut.pose_estimation_pytorch.apis.train import train
+from deeplabcut.pose_estimation_pytorch.data import COCOLoader
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+# Specify project paths
+project_root = Path("/path/to/my/COCOProject")
+train_json_filename = "train.json"
+test_json_filename = "test.json"
+
+loader = COCOLoader(
+    project_root=project_root,
+    model_config_path="/path/to/my/project/experiments/pytorch_config.yaml",
+    train_json_filename=train_json_filename,
+    test_json_filename=test_json_filename,
+)
+train(
+    loader=loader,
+    run_config=loader.model_cfg,
+    task=Task(loader.model_cfg["method"]),
+    device="cuda:2",
+    logger_config=dict(
+        type="WandbLogger",
+        project_name="MyWandbProject",
+        tags=["model=hrnet_w32"],
+    ),
+    snapshot_path=None,
+)
+```
+
+### Running Video Analysis outside a DeepLabCut Project
+
+```python
+from pathlib import Path
+
+from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import video_inference
+from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
+from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+
+train_dir = Path("/Users/Jaylen/my-dlc-models/train")
+pytorch_config_path = train_dir / "pytorch_config.yaml"
+snapshot_path = train_dir / "snapshot-100.pt"
+
+# for top-down models, otherwise None
+detector_snapshot_path = train_dir / "detector-snapshot-100.pt"
+
+# video and inference parameters
+video_path = Path("/Users/Jaylen/my-dlc-models/videos/test-video.mp4")
+max_num_animals = 5
+batch_size = 16
+detector_batch_size = 8
+
+# read model configuration
+model_cfg = read_config_as_dict(pytorch_config_path)
+bodyparts = model_cfg["metadata"]["bodyparts"]
+unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
+with_identity = model_cfg["metadata"].get("with_identity", False)
+
+pose_task = Task(model_cfg["method"])
+pose_runner, detector_runner = get_inference_runners(
+    model_config=model_cfg,
+    snapshot_path=snapshot_path,
+    max_individuals=max_num_animals,
+    num_bodyparts=len(bodyparts),
+    num_unique_bodyparts=len(unique_bodyparts),
+    batch_size=batch_size,
+    with_identity=with_identity,
+    transform=None,
+    detector_batch_size=detector_batch_size,
+    detector_path=detector_snapshot_path,
+    detector_transform=None,
+)
+
+predictions = video_inference(
+    video_path=video_path,
+    task=pose_task,
+    pose_runner=pose_runner,
+    detector_runner=detector_runner,
+    with_identity=False,
+)
+```
