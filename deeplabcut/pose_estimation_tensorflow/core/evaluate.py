@@ -867,9 +867,7 @@ def evaluate_network(
                             pose = predict.argmax_pose_predict(
                                 scmap, locref, test_pose_cfg["stride"]
                             )
-                            PredicteData[
-                                imageindex, :
-                            ] = (
+                            PredicteData[imageindex, :] = (
                                 pose.flatten()
                             )  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
 
@@ -971,10 +969,7 @@ def evaluate_network(
                             print("Plotting...")
                             foldername = os.path.join(
                                 str(evaluationfolder),
-                                "LabeledImages_"
-                                + DLCscorer
-                                + "_"
-                                + snapshot_name,
+                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
                             )
                             auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
@@ -997,10 +992,7 @@ def evaluate_network(
                             ).T
                             foldername = os.path.join(
                                 str(evaluationfolder),
-                                "LabeledImages_"
-                                + DLCscorer
-                                + "_"
-                                + snapshot_name,
+                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
                             )
                             if not os.path.exists(foldername):
                                 print(
@@ -1104,14 +1096,14 @@ def get_available_requested_snapshots(
 
 
 def get_snapshots_by_index(
-    idx: Union[int, str], available_snapshots: List[str],
+    idx: Union[int, str],
+    available_snapshots: List[str],
 ) -> List[str]:
     """
     Assume available_snapshots is ordered in ascending order. Returns snapshot names.
     """
-    if (
-        isinstance(idx, int)
-        and -len(available_snapshots) <= idx < len(available_snapshots)
+    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(
+        available_snapshots
     ):
         return [available_snapshots[idx]]
     elif idx == "all":

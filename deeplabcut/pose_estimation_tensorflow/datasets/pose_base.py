@@ -20,12 +20,10 @@ class BasePoseDataset(metaclass=abc.ABCMeta):
         self.cfg = cfg
 
     @abc.abstractmethod
-    def load_dataset(self):
-        ...
+    def load_dataset(self): ...
 
     @abc.abstractmethod
-    def next_batch(self):
-        ...
+    def next_batch(self): ...
 
     def sample_scale(self):
         if self.cfg.get("deterministic", False):

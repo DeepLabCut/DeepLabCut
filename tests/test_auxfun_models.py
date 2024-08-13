@@ -37,7 +37,5 @@ class CheckForWeightsTestCase(unittest.TestCase):
                     )
 
     def test_bad_modeltype(self):
-        actual_path = check_for_weights(
-            "dummymodel", "nonexistentpath"
-        )
+        actual_path = check_for_weights("dummymodel", "nonexistentpath")
         self.assertEqual(actual_path, "nonexistentpath")
