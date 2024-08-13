@@ -34,7 +34,37 @@ head. Often the 'neck' will be just the identity function.
 
 #### Model Configuration Files
 
-TODO
+Model architectures are built according to a configuration specified in a `yaml` file.
+This file (named `pytorch_cfg.yaml`) describes the architecture of the model you want to
+train (but also hyperparameters, optimizer, ...). All code to manipulate PyTorch 
+configuration files is in `deeplabcut.pose_estimations_pytorch.config`.
+
+To generate a model configuration, you can call `make_pytorch_pose_config`. Note that 
+this does not save the configuration to a given filepath - it just returns it as a 
+dictionary. However, you can save it with `write_config`. 
+
+During a typical DeepLabCut project management workflow, these methods don't need to be 
+called, as `create_training_dataset` will create this configuration file and save it to 
+disk.
+
+```python
+from pathlib import Path
+
+from deeplabcut.pose_estimation_pytorch.config import (
+    make_pytorch_pose_config,
+    write_config,
+)
+
+project_cfg = { "Task": "mice", ... }  # the configuration for your DLC project
+pose_config_path = Path("/path/to/my/config/pytorch_cfg.yaml")
+model_cfg = make_pytorch_pose_config(
+    project_config=project_cfg,
+    pose_config_path=pose_config_path,
+    net_type="hrnet_w32",
+    top_down=True,
+)
+write_config(pose_config_path, model_cfg)
+```
 
 #### Model Registry
 
@@ -125,8 +155,7 @@ image will be loaded from the specified path. This allows you to keep data on di
 disks, or reuse the same images in different projects without having to duplicate them.
 
 To train a DeepLabCut model on a COCO-format dataset, you'll need to specify a model 
-configuration file, describing the architecture of the model you want to train (but 
-also hyperparameters, optimizer, ...).
+configuration file (as described in [#model_configuration_files]).
 
 ```python3
 from pathlib import Path
