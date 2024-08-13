@@ -26,11 +26,18 @@ to building a model with `backbone`, `neck` (optional) and `head`.
 We provide state-of-the-art models such as DLCRNet, HRNet, DEKR and more are coming 
 (BUCTD is in the works ;))!
 
-Some object detectors are also available (and implemented in 
+Object detection models are also available (and implemented in 
 `deeplabcut.pose_estimations_pytorch.models.detectors`).
 
-If you want to add a novel model, you need to divide it into a model backbone, neck and
-head. Often the 'neck' will be just the identity function.
+If you want to add a novel model, you'll need the following parts implemented:
+- a backbone (such as a ResNet or HRNet)
+- a head (such as a HeatmapHead)
+- a predictor (transforming model outputs into keypoint locations)
+- a target generator (creating the targets for your head outputs from your labels)
+
+Some models can also define a neck. You'll also need some loss criterions, but usually 
+you'll be able to use existing ones. You can either use existing classes and only 
+replace some elements, or rewrite everything you need for your model!
 
 #### Model Configuration Files
 
@@ -68,7 +75,38 @@ write_config(pose_config_path, model_cfg)
 
 #### Model Registry
 
-TODO
+Registries are created for all model building blocks to make it easy to add new models.
+All you need to do is add the decorator `REGISTRY.register_module` to be able to load 
+your model from a configuration file. Available registries are `BACKBONES`, `NECKS`,
+`HEADS`, `PREDICTORS` and `TARGET_GENERATORS`. Each building block has a base class
+that should be inherited by the class added to the model registry (`BaseBackbone`,
+`BaseNeck`, `BaseHead`, `BasePredictor` and `BaseGenerator` respectively).
+
+Let's illustrate that with a small example. We'll create a dummy backbone, which simply
+applies a max-pool to the input:
+
+```python
+import torch
+import torch.nn.functional as F
+
+from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES, BaseBackbone
+
+
+@BACKBONES.register_module
+class DummyBackbone(BaseBackbone):
+    """A dummy backbone, simply max-pooling the input"""
+    
+    def __init__(self, kernel_size: int = 2):
+        super().__init__(stride=kernel_size)
+        self.kernel_size = kernel_size
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return F.max_pool2d(x, kernel_size=self.kernel_size)
+
+
+backbone_config = dict(type="DummyBackbone", kernel_size=3)
+backbone = BACKBONES.build(backbone_config)  # will create a DummyBackbone
+```
 
 ### Data
 
@@ -219,4 +257,5 @@ valid_dataset = loader.create_dataset(
 
 ### Runners
 
-The `deeplabcut.pose_estimations_pytorch.runners` contains code to get models,
+The `deeplabcut.pose_estimations_pytorch.runners` contains code to get models, load 
+pretrained weights, and either train them or run inference with them.
