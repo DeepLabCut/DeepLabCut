@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+from pathlib import Path
+from typing import Union
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -93,7 +95,8 @@ class ExtractFrames(DefaultTab):
 
         self.main_layout.addWidget(
             _create_label_widget(
-                "Optional: frame extraction from a video subset", "font:bold"
+                "Frame extraction from a video subset (optional for automatic extraction)",
+                "font:bold",
             )
         )
         self.video_selection_widget = VideoSelectionWidget(self.root, self)
@@ -102,6 +105,23 @@ class ExtractFrames(DefaultTab):
         self.ok_button = QtWidgets.QPushButton("Extract Frames")
         self.ok_button.clicked.connect(self.extract_frames)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
+
+        self.help_button = QtWidgets.QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help_dialog)
+        self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
+
+    def show_help_dialog(self):
+        dialog = QtWidgets.QDialog(self)
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel(extract_frames.__doc__, self)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(label)
+        layout.addWidget(scroll)
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def _generate_layout_attributes(self, layout):
         layout.setColumnMinimumWidth(1, 300)
@@ -177,7 +197,21 @@ class ExtractFrames(DefaultTab):
         config = self.root.config
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
-            _ = launch_napari(list(self.video_selection_widget.files)[0])
+            videos = list(self.video_selection_widget.files)
+            if not videos:
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Error",
+                    "Please select exactly one video to extract frames from.",
+                )
+                return
+            first_video = videos[0]
+            if len(videos) > 1:
+                self.root.writer.write(
+                    f"Only the first video ({first_video}) will be opened."
+                )
+            video_path_in_folder = self._check_symlink(first_video)
+            _ = launch_napari(str(video_path_in_folder))
             return
 
         algo = self.extraction_algorithm_widget.currentText()
@@ -220,3 +254,37 @@ class ExtractFrames(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
         self.root.writer.write("Frames successfully extracted.")
+
+    def _check_symlink(self, video_path: Union[str, Path]) -> Path:
+        """Checks that a video is in the DeepLabCut 'videos' folder
+
+        This is required before launching manual frame extraction. When users select
+        a symlink of a video using the VideoSelectionWidget, the path is resolved to the
+        true path of the video (which leads napari-deeplabcut to save the frames in the
+        incorrect folder).
+
+        Args:
+            video_path: the path to a video in a DeepLabCut project or a video that was
+                added to the project
+
+        Returns:
+            the path to the video (or symlink) in the project's 'videos' folder
+
+        Raises:
+            FileNotFoundError if there is no symlink or video in the 'videos' folder for
+                the given video
+        """
+        video_path = Path(video_path).resolve()
+        project_videos = (Path(self.root.config).parent / "videos").resolve()
+        if video_path.parent == project_videos:
+            return video_path
+
+        symlink_path = project_videos / video_path.name
+        if not symlink_path.exists():
+            raise FileNotFoundError(
+                f"Could not find the video {video_path.name} in your project videos. "
+                f"Did you add the video (you can do so in the 'Manage Project' tab)? "
+                f"There should be a file in {symlink_path}."
+            )
+
+        return symlink_path

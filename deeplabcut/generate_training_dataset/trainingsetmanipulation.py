@@ -18,6 +18,7 @@ import warnings
 from functools import lru_cache
 from pathlib import Path
 from PIL import Image
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -464,6 +465,50 @@ def _robust_path_split(path):
     return parent, filename, ext
 
 
+def parse_video_filenames(videos: List[str]) -> List[str]:
+    """Parses the names of all videos listed in a project's ``config.yaml`` file
+
+    Goes through the paths all videos listed for a project, and removes entries with a
+    duplicate video name (e.g. if a video is listed twice, once with the path
+    ``/data/video-1.mov`` and once with the path ``/my-dlc-project/videos/video-1.mov``,
+    then ``video-1`` will only be returned once). The order of videos listed is
+    preserved.
+
+    This prevents the same labeled-data to be added multiple times when merging
+    annotated datasets.
+
+    Prints a warning for each filename with duplicate video paths.
+
+    Args:
+        videos: the videos listed in the project's config.yaml file
+
+    Returns:
+        the filenames of videos listed in the project's config.yaml file, with duplicate
+        entries removed
+    """
+    filenames = []
+    filename_to_videos = {}
+    for video in videos:
+        _, filename, _ = _robust_path_split(video)
+        videos_with_filename = filename_to_videos.get(filename, [])
+        if len(videos_with_filename) == 0:
+            filenames.append(filename)
+
+        videos_with_filename.append(video)
+        filename_to_videos[filename] = videos_with_filename
+
+    for filename, videos in filename_to_videos.items():
+        if len(videos) > 1:
+            video_str = "\n  * " + "\n  * ".join(videos)
+            logging.warning(
+                f"Found multiple videos with the same filename (``{filename}``). To "
+                f"avoid issues, please edit your project's `config.yaml` file to have "
+                f"each video added only once.\nDuplicate entries: {video_str}"
+            )
+
+    return filenames
+
+
 def merge_annotateddatasets(cfg, trainingsetfolder_full):
     """
     Merges all the h5 files for all labeled-datasets (from individual videos).
@@ -475,8 +520,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
     videos = cfg["video_sets"].keys()
-    for video in videos:
-        _, filename, _ = _robust_path_split(video)
+    video_filenames = parse_video_filenames(videos)
+    for filename in video_filenames:
         file_path = os.path.join(
             data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
         )
@@ -943,9 +988,7 @@ def create_training_dataset(
             defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path = auxfun_models.check_for_weights(
-            net_type, Path(dlcparent_path)
-        )
+        model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
 
         if Shuffles is None:
             Shuffles = range(1, num_shuffles + 1)

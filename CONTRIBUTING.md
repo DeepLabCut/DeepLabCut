@@ -53,7 +53,7 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 - How you modified the code and what new functionality it has.
 - DOCSTRING update for your change
 - A working example of how it works for users. 
-- If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) idealy you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org 
+- If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) ideally you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org 
 
 **TestScript outputs:**
 

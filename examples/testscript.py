@@ -71,7 +71,8 @@ if __name__ == "__main__":
     else:
         augmenter_type3 = "tensorpack"  # Does not work on WINDOWS
 
-    N_ITER = 5
+    N_ITER = 6
+    SAVE_ITER = 3
 
     print("CREATING PROJECT")
     path_config_file = deeplabcut.create_new_project(
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     )
 
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config["save_iters"] = N_ITER
+    DLC_config["save_iters"] = SAVE_ITER
     DLC_config["display_iters"] = 2
 
     print("CHANGING training parameters to end quickly!")
@@ -177,7 +178,14 @@ if __name__ == "__main__":
 
     print("EVALUATE")
     deeplabcut.evaluate_network(
-        path_config_file, plotting=True, per_keypoint_evaluation=True
+        path_config_file,
+        plotting=True,
+        per_keypoint_evaluation=True,
+        snapshots_to_evaluate=[
+            "snapshot-3",
+            "snapshot-5",
+            "snapshot-6",
+        ],  # snapshot-5 intentionally missing :)
     )
     # deeplabcut.evaluate_network(path_config_file,plotting=True,trainingsetindex=33)
     print("CUT SHORT VIDEO AND ANALYZE (with dynamic cropping!)")
@@ -301,7 +309,7 @@ if __name__ == "__main__":
         "train/pose_cfg.yaml",
     )
     DLC_config = deeplabcut.auxiliaryfunctions.read_plainconfig(posefile)
-    DLC_config["save_iters"] = N_ITER
+    DLC_config["save_iters"] = SAVE_ITER
     DLC_config["display_iters"] = 1
 
     print("CHANGING training parameters to end quickly!")

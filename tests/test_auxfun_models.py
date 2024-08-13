@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -37,7 +37,5 @@ class CheckForWeightsTestCase(unittest.TestCase):
                     )
 
     def test_bad_modeltype(self):
-        actual_path = check_for_weights(
-            "dummymodel", "nonexistentpath"
-        )
+        actual_path = check_for_weights("dummymodel", "nonexistentpath")
         self.assertEqual(actual_path, "nonexistentpath")
