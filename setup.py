@@ -32,7 +32,7 @@ def pytorch_config_paths() -> list[str]:
 
 setuptools.setup(
     name="deeplabcut",
-    version="3.0.0rc3",
+    version="3.0.0rc4",
     author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",

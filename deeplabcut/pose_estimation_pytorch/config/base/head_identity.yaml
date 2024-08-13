@@ -1,7 +1,7 @@
 type: HeatmapHead
 predictor:
-  type: HeatmapPredictor
-  location_refinement: false
+  type: IdentityPredictor
+  apply_sigmoid: true
 target_generator:
   type: HeatmapPlateauGenerator
   num_heatmaps: "num_individuals"
