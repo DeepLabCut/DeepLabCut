@@ -263,7 +263,7 @@ def analyze_videos(
         model_cfg["device"] = device
 
     if batch_size is None:
-        batch_size = cfg["batch_size"]
+        batch_size = cfg.get("detector_batch_size", 1)
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
