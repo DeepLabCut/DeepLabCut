@@ -82,7 +82,7 @@ def find_closest_neighbors(
                 picked.add(j)
                 neighbors[idx[i]] = j
                 break
-        if len(picked) == n_preds:
+        if len(picked) == (n_preds + 1):
             break
     return neighbors
 
