@@ -1461,7 +1461,7 @@ def _convert_detections_to_tracklets(
         greedy=greedy,
         pcutoff=inference_cfg.get("pcutoff", 0.1),
         min_affinity=inference_cfg.get("pafthreshold", 0.05),
-        min_n_links=inference_cfg.get("minimalnumberofconnections", 2)
+        min_n_links=inference_cfg["minimalnumberofconnections"]
     )
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
@@ -1754,6 +1754,7 @@ def convert_detections2tracklets(
                     min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
+                    min_n_links=inferencecfg["minimalnumberofconnections"]
                 )
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
                 if not os.path.exists(assemblies_filename) or overwrite:
