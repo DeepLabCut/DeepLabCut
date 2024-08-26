@@ -1,10 +1,10 @@
-# DLC Benchmarking - User Guide
+# DeepLabCut Benchmarking - User Guide
 
 ## Reasoning for benchmarking models in DLC (across DLC versions and architectures)
 
-DLC 3.0 runs on PyTorch as the engine rather than TensorFlow. It is of importance for
-replicability of data analysis to benchmark existing models created using DLC versions
-prior to 3.0 against new models created in DLC 3.0 and later versions.
+DeepLabCut 3.0+ introduced using PyTorch 🔥 as a deep learning engine (and TensorFlow will be depreciated). 
+It is of importance for replicability of data analysis to benchmark existing models created using DeepLabCut versions
+prior to 3.0 against new models created in DeepLabCut 3.0+ and later versions.
 
 When comparing different models, it's important to use the same train-test data 
 split to ensure fair comparisons. If the models are trained on different datasets, 
@@ -42,7 +42,7 @@ dlc-project
 ### Creating a shuffle
 
 Creating a new shuffle with the same train/test split as an existing one:
-#### In the DLC GUI
+#### In the DeepLabCut GUI
 1. Front page > Load project > Open project folder > choose *config.yaml*
 2. Select *'Create training dataset'* tab
 3. Tick *Use an existing data split* option    
@@ -119,7 +119,7 @@ deeplabcut.evaluate_network(config, Shuffles=[4], snapshotindex="all")
 ```
 Now, we can compare performances with peace of mind!
 
-#### Good practice: naming shuffles created from existing ones
+#### Good practices: naming shuffles created from existing ones
 
 In a setting where one has multiple TensorFlow models and intends to benchmark 
 their performances against new PyTorch models, it is good practice to follow 
@@ -131,3 +131,5 @@ recognize that the shuffles belonging to the 100x range are PyTorch shuffles
 and that shuffle 1001, for example, has the same data split as TensorFlow 
 shuffle 1. This way, the comparison can be more straightforward and guaranteed 
 to be correct!
+
+This was contributed by the [2024 DLC AI Residents](https://www.deeplabcutairesidency.org/our-team)!
