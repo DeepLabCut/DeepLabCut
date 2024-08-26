@@ -150,13 +150,7 @@ def train(
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
-    valid_dataloader = DataLoader(
-        valid_dataset,
-        batch_size=1,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-    )
+    valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
 
     if (
         loader.model_cfg["model"].get("freeze_bn_stats", False)

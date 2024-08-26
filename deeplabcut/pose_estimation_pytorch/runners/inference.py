@@ -96,7 +96,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             [
                 {
                     "bodypart": {"poses": np.array},
-                    "unique_bodypart": "poses": np.array},
+                    "unique_bodypart": {"poses": np.array},
                 }
             ]
         """
@@ -208,7 +208,8 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             [
                 {
                     "bodypart": {"poses": np.ndarray},
-                    "unique_bodypart": "poses": np.ndarray},
+                    "unique_bodypart": {"poses": np.ndarray},
+                }
             ]
         """
         outputs = self.model(inputs.to(self.device))
