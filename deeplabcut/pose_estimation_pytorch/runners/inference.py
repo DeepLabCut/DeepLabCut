@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Generic, Iterable
 
