@@ -34,12 +34,11 @@ if __name__ == "__main__":
     scorer = "Alex"  # Enter the name of the experimenter/labeler
     num_cameras = 2  # Enter the number of cameras
 
-    basepath = str(Path(os.path.realpath(__file__)).parents[1])
+    basepath = str(Path(os.path.realpath(__file__)).parents[0])
     videoname = "reachingvideo1"
     video = [
         os.path.join(
             basepath,
-            "examples",
             "Reaching-Mackenzie-2018-08-30",
             "videos",
             videoname + ".avi",
@@ -138,11 +137,8 @@ if __name__ == "__main__":
     project_name = path_config_file.split(os.sep)[-2]
 
     os.chdir(os.path.join(project_name, "calibration_images"))
-    # Downloading the calibration images
-    url = "http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/stereo_example.zip"
-    file_name = "stereo_example.zip"
-    with urllib.request.urlopen(url) as response, open(file_name, "wb") as out_file:
-        shutil.copyfileobj(response, out_file)
+
+    file_name = os.path.join(basepath,"stereo_example.zip")
     with zipfile.ZipFile(file_name) as zf:
         zf.extractall()
 
@@ -186,7 +182,7 @@ if __name__ == "__main__":
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
     print("CREATING LABELED VIDEO 3-D")
-    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10)
+    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, videotype=".avi")
 
     # output_path = [os.path.join(basepath,folder)]
     # deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)
