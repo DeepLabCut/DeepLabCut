@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -15,13 +15,14 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
+
+# from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.core.trackingutils import TRACK_METHODS
 
-matplotlib_axes_logger.setLevel("ERROR")
+# matplotlib_axes_logger.setLevel("ERROR")
 
 
 def triangulate(
@@ -88,7 +89,7 @@ def triangulate(
     To analyze only a few pair of videos:
     >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
-    from deeplabcut.pose_estimation_tensorflow import predict_videos
+    from deeplabcut.pose_estimation_pytorch import analyze_videos
     from deeplabcut.post_processing import filtering
 
     cfg_3d = auxiliaryfunctions.read_config(config)
@@ -263,13 +264,12 @@ def triangulate(
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
                         # Analyze video if score name is different
-                        DLCscorer = predict_videos.analyze_videos(
+                        DLCscorer = analyze_videos(
                             config_2d,
                             [video],
                             videotype=videotype,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
-                            gputouse=gputouse,
                             destfolder=destfolder,
                         )
                         scorer_name[cam_names[j]] = DLCscorer
@@ -293,13 +293,12 @@ def triangulate(
                         )
 
                 else:  # need to do the whole jam.
-                    DLCscorer = predict_videos.analyze_videos(
+                    DLCscorer = analyze_videos(
                         config_2d,
                         [video],
                         videotype=videotype,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
-                        gputouse=gputouse,
                         destfolder=destfolder,
                     )
                     scorer_name[cam_names[j]] = DLCscorer
@@ -446,18 +445,32 @@ def triangulate(
             }
 
             # Create 3D DataFrame column and row indices
-            axis_labels = ("x", "y", "z")
+            cols = [
+                [scorer_3d],
+                list(auxiliaryfunctions.get_bodyparts(cfg)),
+                ["x", "y", "z"],
+            ]
+            cols_names = ["scorer", "bodyparts", "coords"]
+            flag_indiv_single = False
             if cfg.get("multianimalproject"):
-                columns = pd.MultiIndex.from_product(
-                    [[scorer_3d], individuals, bodyparts, axis_labels],
-                    names=["scorer", "individuals", "bodyparts", "coords"],
-                )
-
-            else:
-                columns = pd.MultiIndex.from_product(
-                    [[scorer_3d], bodyparts, axis_labels],
-                    names=["scorer", "bodyparts", "coords"],
-                )
+                cols_names.insert(1, "individuals")
+                if "single" == individuals[-1]:
+                    individuals = individuals[:-1]
+                    columns_unique = pd.MultiIndex.from_product(
+                        [
+                            [scorer_3d],
+                            ["single"],
+                            auxiliaryfunctions.get_unique_bodyparts(cfg),
+                            ["x", "y", "z"],
+                        ],
+                        names=cols_names,
+                    )
+                    flag_indiv_single = True
+                cols.insert(1, individuals)
+            columns = pd.MultiIndex.from_product(cols, names=cols_names)
+            if flag_indiv_single:
+                columns = columns.append(columns_unique)
+                individuals.append("single")
 
             inds = range(num_frames)
 
@@ -468,10 +481,10 @@ def triangulate(
             df_3d = pd.DataFrame(triangulate, columns=columns, index=inds)
 
             df_3d.to_hdf(
-                str(output_filename + ".h5"),
-                "df_with_missing",
-                format="table",
+                str(output_filename) + ".h5",
+                key="df_with_missing",
                 mode="w",
+                format="table",
             )
 
             # Reorder 2D dataframe in view 2 to match order of view 1
@@ -483,19 +496,19 @@ def triangulate(
                 )
                 df_2d_view2.to_hdf(
                     dataname[1],
-                    "tracks",
+                    key="tracks",
                     format="table",
                     mode="w",
                 )
 
             auxiliaryfunctions_3d.SaveMetadata3d(
-                str(output_filename + "_meta.pickle"), metadata
+                str(output_filename) + "_meta.pickle", metadata
             )
 
             if save_as_csv:
-                df_3d.to_csv(str(output_filename + ".csv"))
+                df_3d.to_csv(str(output_filename) + ".csv")
 
-            print("Triangulated data for video", video_list[i])
+            print("Triangulated data for video", video)
             print("Results are saved under: ", destfolder)
             # have to make the dest folder none so that it can be updated for a new pair of videos
             if destfolder == str(Path(video).parents[0]):
