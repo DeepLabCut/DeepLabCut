@@ -29,7 +29,7 @@ parts:
   chapters:
   - file: docs/quick-start/single_animal_quick_guide
   - file: docs/quick-start/tutorial_maDLC
-- caption: Beginner's Guide to DeepLabCut
+- caption: 🚀 Beginner's Guide to DeepLabCut
   chapters:
   - file: docs/beginner-guides/beginners-guide
   - file: docs/beginner-guides/manage-project
@@ -42,12 +42,12 @@ parts:
 - caption: DeepLabCut-Live!
   chapters:
   - file: docs/deeplabcutlive
-- caption: DeepLabCut Model Zoo
+- caption: 🦄 DeepLabCut Model Zoo
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
   - file: docs/recipes/MegaDetectorDLCLive
-- caption: Cookbook (detailed helper guides)
+- caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC
@@ -61,9 +61,10 @@ parts:
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
-- caption: DeepLabCut Benchmark
+- caption: DeepLabCut Benchmarking
   chapters:
   - file: docs/benchmark
+  - file: docs/pytorch/Benchmarking_shuffle_guide
 - caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
