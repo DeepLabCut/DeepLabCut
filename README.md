@@ -48,8 +48,7 @@
 [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 [![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-
-
+[![CZI's Essential Open Source Software for Science](https://chanzuckerberg.github.io/open-science/badges/CZI-EOSS.svg)](https://czi.co/EOSS)
 
 </div>
 
@@ -276,3 +275,7 @@ importing a project into the new data format for DLC 2.0
 - August 2018: NVIDIA AI Developer News: [AI Enables Markerless Animal Tracking](https://news.developer.nvidia.com/ai-enables-markerless-animal-tracking/)
 - July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338).
 - April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
+
+  ## Funding
+
+  We are grateful for the follow support over the years! This software project was supported in part by the Essential Open Source Software for Science (EOSS) program at Chan Zuckerberg Initiative (cycles 1, 3, 3-DEI, 6). We also thank the Rowland Institute at Harvard for funding from 2017-2020, and EPFL from 2020-present.
