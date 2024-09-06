@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Technical (Hardware) Considerations &#8212; DeepLabCut</title>
+    <title>DeepLabCut Benchmarking - User Guide &#8212; DeepLabCut</title>
   
   
   
@@ -57,11 +57,11 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/TechHardware';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/pytorch/Benchmarking_shuffle_guide';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="DeepLabCut-Live!" href="../deeplabcutlive.html" />
-    <link rel="prev" title="Video Analysis with DeepLabCut" href="../beginner-guides/video-analysis.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="DeepLabCut benchmark" href="../benchmark.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -191,7 +191,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
@@ -209,9 +209,9 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -227,8 +227,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Technical (Hardware) Considerations</a></li>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
 <ul class="nav bd-sidenav">
@@ -237,33 +237,33 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
 
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
 
 
-<li class="toctree-l1"><a class="reference internal" href="pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
 
 
 
-<li class="toctree-l1"><a class="reference internal" href="publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut Benchmarking - User Guide</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
 <ul class="nav bd-sidenav">
@@ -341,7 +341,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/recipes/TechHardware.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/pytorch/Benchmarking_shuffle_guide.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -371,7 +371,7 @@
       
       
       
-      <li><a href="../../_sources/docs/recipes/TechHardware.md" target="_blank"
+      <li><a href="../../_sources/docs/pytorch/Benchmarking_shuffle_guide.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -455,7 +455,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Technical (Hardware) Considerations</h1>
+    <h1>DeepLabCut Benchmarking - User Guide</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -465,11 +465,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-summary">Quick summary:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computer-hardware">Computer Hardware:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-hardware">Camera Hardware:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#software">Software:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reasoning-for-benchmarking-models-in-dlc-across-dlc-versions-and-architectures">Reasoning for benchmarking models in DLC (across DLC versions and architectures)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-files-folders">Important files &amp; folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking-a-tensorflow-model-against-a-pytorch-model">Benchmarking a TensorFlow model against a PyTorch model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-shuffle">Creating a shuffle</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#in-code">In Code</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#good-practices-naming-shuffles-created-from-existing-ones">Good practices: naming shuffles created from existing ones</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -483,33 +487,142 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="technical-hardware-considerations">
-<h1>Technical (Hardware) Considerations<a class="headerlink" href="#technical-hardware-considerations" title="Link to this heading">#</a></h1>
-<section id="quick-summary">
-<h2>Quick summary:<a class="headerlink" href="#quick-summary" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../installation.html#tech-considerations-during-install"><span class="std std-ref">On our install page</span></a>
-we highlight that for GPU computing through standard installation you need a NVIDIA GPU, with at least 8 GB of memory. If you have an Intel or AMD GPU, and are on windows, there is an alternative method of installation available which is shown on the <a class="reference internal" href="installTips.html#installation-tips"><span class="std std-ref">installation tips page</span></a> under “How to install Deeplabcut for Intel and AMD GPUs”.
-Note, some info is repeated here, and will be updated as systems and hardware changes.</p>
-<section id="computer">
-<h3>Computer:<a class="headerlink" href="#computer" title="Link to this heading">#</a></h3>
-<p>For reference, we use e.g. Dell workstations (79xx series) with <strong>Ubuntu 16.04 LTS, 18.04 LTS, or 20.04 LTS</strong> and run a Docker container that has TensorFlow, etc. installed (<a class="github reference external" href="https://github.com/DeepLabCut/Docker4DeepLabCut2.0">DeepLabCut/Docker4DeepLabCut2.0</a>).</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-benchmarking-user-guide">
+<h1>DeepLabCut Benchmarking - User Guide<a class="headerlink" href="#deeplabcut-benchmarking-user-guide" title="Link to this heading">#</a></h1>
+<section id="reasoning-for-benchmarking-models-in-dlc-across-dlc-versions-and-architectures">
+<h2>Reasoning for benchmarking models in DLC (across DLC versions and architectures)<a class="headerlink" href="#reasoning-for-benchmarking-models-in-dlc-across-dlc-versions-and-architectures" title="Link to this heading">#</a></h2>
+<p>DeepLabCut 3.0+ introduced using PyTorch 🔥 as a deep learning engine (and TensorFlow will be depreciated).
+It is of importance for replicability of data analysis to benchmark existing models created using DeepLabCut versions
+prior to 3.0 against new models created in DeepLabCut 3.0+ and later versions.</p>
+<p>When comparing different models, it’s important to use the same train-test data
+split to ensure fair comparisons. If the models are trained on different datasets,
+their performance metrics can’t be accurately compared. This is crucial when
+comparing the performance of models with different architectures or different
+sets of hyperparameters. For example, if we compare the RMSE of a model on an
+“easy” test image with the RMSE of another model on a “hard” test image, it
+doesn’t determine whether a model is better than the other because the
+architecture performs better or because the training images were “better” to
+learn from. Thus, we not only need to compare the models based on metrics
+computed on the same test images, but also train them on an identical fixed
+training set in order to “decouple” the dataset from the model architecture.</p>
+<p>Creating a model using the same data split can be carried out using a GUI or
+using code, and this guide outlines the steps for both.</p>
 </section>
-<section id="computer-hardware">
-<h3>Computer Hardware:<a class="headerlink" href="#computer-hardware" title="Link to this heading">#</a></h3>
-<p>Ideally, you will use a strong GPU with <em>at least</em> 8GB memory such as the <a class="reference external" href="https://www.nvidia.com/en-us/shop/geforce/?page=1&amp;amp;limit=9&amp;amp;locale=en-us">NVIDIA GeForce 1080 Ti,  2080 Ti, or 3090</a>.  A GPU is not strictly necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets and EfficientNets are slightly faster. Still, a GPU will give you a massive speed boost. You might also consider using cloud computing services like <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/47">Google cloud/amazon web services</a> or Google Colaboratory.</p>
+<section id="important-files-folders">
+<h2>Important files &amp; folders<a class="headerlink" href="#important-files-folders" title="Link to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dlc</span><span class="o">-</span><span class="n">project</span>
+<span class="o">|</span>
+<span class="o">|</span><span class="n">___dlc</span><span class="o">-</span><span class="n">models</span><span class="o">-</span><span class="n">pytorch</span>
+<span class="o">|</span>   <span class="o">|</span><span class="n">__</span> <span class="n">iterationX</span>
+<span class="o">|</span>       <span class="o">|</span><span class="n">__</span> <span class="n">shuffleX</span>
+<span class="o">|</span>           <span class="o">|</span><span class="n">__</span> <span class="n">pytorch_config</span><span class="o">.</span><span class="n">yaml</span>
+<span class="o">|</span>  
+<span class="o">|</span><span class="n">___training</span><span class="o">-</span><span class="n">datasets</span>
+<span class="o">|</span>   <span class="o">|</span><span class="n">__</span> <span class="n">metadata</span><span class="o">.</span><span class="n">yaml</span>
+<span class="o">|</span>
+<span class="o">|</span><span class="n">___config</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
 </section>
-<section id="camera-hardware">
-<h3>Camera Hardware:<a class="headerlink" href="#camera-hardware" title="Link to this heading">#</a></h3>
-<p>The software is very robust to track data from any camera (cell phone cameras, grayscale, color; captured under infrared light, different manufacturers, etc.). See demos on our <a class="reference external" href="https://www.mousemotorlab.org/deeplabcut/">website</a>.</p>
+<section id="benchmarking-a-tensorflow-model-against-a-pytorch-model">
+<h2>Benchmarking a TensorFlow model against a PyTorch model<a class="headerlink" href="#benchmarking-a-tensorflow-model-against-a-pytorch-model" title="Link to this heading">#</a></h2>
+<section id="creating-a-shuffle">
+<h3>Creating a shuffle<a class="headerlink" href="#creating-a-shuffle" title="Link to this heading">#</a></h3>
+<p>Creating a new shuffle with the same train/test split as an existing one:</p>
+<section id="in-the-deeplabcut-gui">
+<h4>In the DeepLabCut GUI<a class="headerlink" href="#in-the-deeplabcut-gui" title="Link to this heading">#</a></h4>
+<ol class="arabic">
+<li><p>Front page &gt; Load project &gt; Open project folder &gt; choose <em>config.yaml</em></p></li>
+<li><p>Select <em>‘Create training dataset’</em> tab</p></li>
+<li><p>Tick <em>Use an existing data split</em> option</p>
+<p><img alt="create_from_existing" src="../../_images/img1.png" /></p>
+</li>
+<li><p>Click ‘View existing shuffles’:</p>
+<ul>
+<li><p>This is used to view the indices of shuffles created for a project to determine which index is available to assign to a new shuffle.</p></li>
+<li><p>The elements described in this window are:</p>
+<ul>
+<li><p>train_fraction: The fraction of the dataset used for training.</p></li>
+<li><p>index: The index of the shuffle.</p></li>
+<li><p>split: The data split for the shuffle. The integer value on its own does not
+hold any meaning, but this “split” value indicates which shuffles have the same split
+(as their results can then be compared)</p></li>
+<li><p>engine: Whether it is a PyTorch or TensorFlow shuffle</p>
+<p><img alt="view_existing_sh" src="../../_images/img2.png" /></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Choose the index of the training shuffle to replicate. Let us assume we want
+to replicate the train-test split from OpenfieldOct30-trainset95shuffle3, in which
+<code class="docutils literal notranslate"><span class="pre">split:</span> <span class="pre">3</span></code>. In this case, we insert in the <em>‘From shuffle’</em> menu</p>
+<p><img alt="choose_existing_index" src="../../_images/img3.png" /></p>
+</li>
+<li><p>To create this new dataset, set the shuffle option to an un-used shuffle
+(here 4)</p>
+<p><img alt="choose_new_index" src="../../_images/img4.png" /></p>
+</li>
+<li><p>Click <em>‘Create training dataset’</em> and move on to <em>‘train network’</em>. Shuffle should be
+set to the new shuffle entered at the previous step (in this case, 4)</p>
+<p><img alt="create_from_existing" src="../../_images/img5.png" /></p>
+</li>
+<li><p>To view/edit the specifications of the model you created, you can go to <code class="docutils literal notranslate"><span class="pre">pytoch_config.yaml</span></code> file at:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dlc</span><span class="o">-</span><span class="n">project</span>
+<span class="o">|</span>
+<span class="o">|</span><span class="n">___</span> <span class="n">dlc</span><span class="o">-</span><span class="n">models</span><span class="o">-</span><span class="n">pytorch</span>
+    <span class="o">|</span><span class="n">__</span> <span class="n">iterationX</span>
+        <span class="o">|</span><span class="n">__</span> <span class="n">shuffleX</span>
+            <span class="o">|</span><span class="n">__</span> <span class="n">pytorch_config</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+</li>
+</ol>
 </section>
-<section id="software">
-<h3>Software:<a class="headerlink" href="#software" title="Link to this heading">#</a></h3>
-<p><strong>Operating System:</strong> Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.</p>
-<p><strong>Anaconda/Python3:</strong> Anaconda: a free and open source distribution of the Python programming language (download from <a class="reference external" href="https://www.anaconda.com/">https://www.anaconda.com/</a>). DeepLabCut is written in Python 3 (<a class="reference external" href="https://www.python.org/">https://www.python.org/</a>) and not compatible with Python 2.</p>
-<p><strong>TensorFlow</strong> You will need <a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a> (we used version 1.0 in the paper, later versions also work with the provided code (we tested <strong>TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5</strong>; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.</p>
-<p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: <a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.</p>
-<p>Docker: We highly recommend advaced users use the supplied <a class="reference external" href="https://github.com/MMathisLab/Docker4DeepLabCut2.0">Docker container</a>.
-NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker/issues/43">this container does not work on windows hosts!</a></p>
+<section id="in-code">
+<h4>In Code<a class="headerlink" href="#in-code" title="Link to this heading">#</a></h4>
+<p>With the <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> module in Python, use the
+<code class="docutils literal notranslate"><span class="pre">create_training_dataset_from_existing_split()</span></code> method to create new shuffles from
+existing ones (e.g. TensorFlow shuffles).</p>
+<p>Similarly, here, we create a new shuffle ‘4’ from the existing shuffle ‘3’.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deeplabcut</span>
+<span class="kn">from</span> <span class="nn">deeplabcut.core.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="s2">&quot;path/to/project/config.yaml&quot;</span>
+
+<span class="n">training_dataset</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset_from_existing_split</span><span class="p">(</span>
+   <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+   <span class="n">from_shuffle</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+   <span class="n">from_trainsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+   <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+   <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We can then train our new PyTorch model with the same data split as the
+TensorFlow model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once trained we can evaluate our model using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">snapshotindex</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we can compare performances with peace of mind!</p>
+</section>
+<section id="good-practices-naming-shuffles-created-from-existing-ones">
+<h4>Good practices: naming shuffles created from existing ones<a class="headerlink" href="#good-practices-naming-shuffles-created-from-existing-ones" title="Link to this heading">#</a></h4>
+<p>In a setting where one has multiple TensorFlow models and intends to benchmark
+their performances against new PyTorch models, it is good practice to follow
+a naming pattern for the shuffles we create.</p>
+<p>Say we have TensorFlow shuffles 0, 1, and 2. We can create new PyTorch shuffles
+from them by naming them 1000, 1001, and 1002. This allows us to quickly
+recognize that the shuffles belonging to the 100x range are PyTorch shuffles
+and that shuffle 1001, for example, has the same data split as TensorFlow
+shuffle 1. This way, the comparison can be more straightforward and guaranteed
+to be correct!</p>
+<p>This was contributed by the <a class="reference external" href="https://www.deeplabcutairesidency.org/our-team">2024 DLC AI Residents</a>!</p>
+</section>
 </section>
 </section>
 </section>
@@ -527,7 +640,7 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
         },
         kernelOptions: {
             name: "python3",
-            path: "./docs/recipes"
+            path: "./docs/pytorch"
         },
         predefinedOutput: true
     }
@@ -545,20 +658,20 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../beginner-guides/video-analysis.html"
+       href="../benchmark.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Video Analysis with DeepLabCut</p>
+        <p class="prev-next-title">DeepLabCut benchmark</p>
       </div>
     </a>
     <a class="right-next"
-       href="../deeplabcutlive.html"
+       href="../MISSION_AND_VALUES.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">DeepLabCut-Live!</p>
+        <p class="prev-next-title">Mission and Values of DeepLabCut</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -578,11 +691,15 @@ NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docke
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-summary">Quick summary:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computer-hardware">Computer Hardware:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-hardware">Camera Hardware:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#software">Software:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reasoning-for-benchmarking-models-in-dlc-across-dlc-versions-and-architectures">Reasoning for benchmarking models in DLC (across DLC versions and architectures)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-files-folders">Important files &amp; folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking-a-tensorflow-model-against-a-pytorch-model">Benchmarking a TensorFlow model against a PyTorch model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-shuffle">Creating a shuffle</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#in-code">In Code</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#good-practices-naming-shuffles-created-from-existing-ones">Good practices: naming shuffles created from existing ones</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
