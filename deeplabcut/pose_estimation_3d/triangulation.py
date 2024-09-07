@@ -89,7 +89,7 @@ def triangulate(
     To analyze only a few pair of videos:
     >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
-    from deeplabcut.pose_estimation_pytorch import analyze_videos
+    from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
 
     cfg_3d = auxiliaryfunctions.read_config(config)
@@ -270,6 +270,7 @@ def triangulate(
                             videotype=videotype,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
+                            gputouse=gputouse,
                             destfolder=destfolder,
                         )
                         scorer_name[cam_names[j]] = DLCscorer
@@ -299,6 +300,7 @@ def triangulate(
                         videotype=videotype,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
+                        gputouse=gputouse,
                         destfolder=destfolder,
                     )
                     scorer_name[cam_names[j]] = DLCscorer
