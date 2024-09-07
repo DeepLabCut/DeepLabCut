@@ -11,18 +11,13 @@
 
 import os
 from pathlib import Path
-
 import cv2
 import numpy as np
 import pandas as pd
 
-# from matplotlib.axes._axes import _log as matplotlib_axes_logger
-
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.core.trackingutils import TRACK_METHODS
-
-# matplotlib_axes_logger.setLevel("ERROR")
 
 
 def triangulate(
