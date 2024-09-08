@@ -51,6 +51,7 @@ parts:
   chapters:
   - file: docs/tutorial
   - file: docs/convert_maDLC
+  - file: docs/recipes/OtherData
   - file: docs/recipes/io
   - file: docs/recipes/nn
   - file: docs/recipes/post
