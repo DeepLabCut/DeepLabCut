@@ -225,6 +225,11 @@ def analyze_videos(
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
+        cropping: list or None, optional, default=None
+            List of cropping coordinates as [x1, x2, y1, y2].
+            Note that the same cropping parameters will then be used for all videos.
+            If different video crops are desired, run ``analyze_videos`` on individual
+            videos with the corresponding cropping coordinates.
 
     Returns:
         The scorer used to analyze the videos
@@ -256,6 +261,9 @@ def analyze_videos(
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
         cfg, model_cfg, snapshot_index, detector_snapshot_index,
     )
+
+    if cropping is None and cfg.get("cropping", False):
+        cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
 
     # Get general project parameters
     bodyparts = model_cfg["metadata"]["bodyparts"]
