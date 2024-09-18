@@ -117,12 +117,6 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        if weight_init is not None:
-            # FIXME(niels): We only have fasterrcnn_resnet50_fpn_v2 SuperAnimal weights.
-            #  This should be updated once more SuperAnimal detectors are uploaded,
-            #  so that users can choose which pre-trained detector they use.
-            detector_type = "fasterrcnn_resnet50_fpn_v2"
-
         model_cfg = add_detector(
             configs_dir,
             model_cfg,

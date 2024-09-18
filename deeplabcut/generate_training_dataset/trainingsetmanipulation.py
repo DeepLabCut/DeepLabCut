@@ -1275,7 +1275,8 @@ def create_training_dataset(
                         pytorch_cfg = make_super_animal_finetune_config(
                             project_config=cfg,
                             pose_config_path=path_train_config,
-                            net_type=net_type,
+                            model_name=net_type,
+                            detector_name=detector_type,
                             weight_init=weight_init,
                         )
                     else:

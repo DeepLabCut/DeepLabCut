@@ -16,42 +16,6 @@ data:
     auto_padding:
       pad_width_divisor: 32
       pad_height_divisor: 32
-detector:
-  data:
-    colormode: RGB
-    inference:
-      normalize_images: true
-    train:
-      hflip: true
-      normalize_images: true
-  device: auto
-  model:
-    type: FasterRCNN
-    variant: fasterrcnn_resnet50_fpn_v2
-    box_score_thresh: 0.6
-    pretrained: false
-  runner:
-    type: DetectorTrainingRunner
-    eval_interval: 50
-    optimizer:
-      type: AdamW
-      params:
-        lr: 1e-5
-    scheduler:
-      type: LRListScheduler
-      params:
-        milestones: [ 90 ]
-        lr_list: [ [ 1e-6 ] ]
-    snapshots:
-      max_snapshots: 5
-      save_epochs: 50
-      save_optimizer_state: false
-  train_settings:
-    batch_size: 1
-    dataloader_workers: 0
-    dataloader_pin_memory: true
-    display_iters: 500
-    epochs: 250
 device: auto
 method: td
 model:

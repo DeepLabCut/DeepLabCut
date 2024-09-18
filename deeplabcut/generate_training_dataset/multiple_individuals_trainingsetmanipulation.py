@@ -587,7 +587,8 @@ def create_multianimaltraining_dataset(
                     pytorch_cfg = make_super_animal_finetune_config(
                         project_config=cfg,
                         pose_config_path=path_train_config,
-                        net_type=net_type,
+                        model_name=net_type,
+                        detector_name=detector_type,
                         weight_init=weight_init,
                     )
                 else:
@@ -603,7 +604,8 @@ def create_multianimaltraining_dataset(
                 auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
             print(
-                "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
+                "The training dataset is successfully created. Use the function "
+                "'train_network' to start training. Happy training!"
             )
         else:
             pass

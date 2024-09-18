@@ -32,6 +32,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
 )
 from deeplabcut.gui.widgets import launch_napari
+from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -179,7 +180,6 @@ class CreateTrainingDataset(DefaultTab):
 
     def edit_conversion_table(self):
         # Test beforehand whether a conversion table exists
-        weight_init = self.weight_init_selector.get_weight_init()
         memory_replay_folder = Path(self.root.project_folder) / "memory_replay"
         conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
         files = [self.root.config]
@@ -213,12 +213,6 @@ class CreateTrainingDataset(DefaultTab):
                 self.root.writer.write("Training dataset creation failed.")
                 return
 
-        try:
-            weight_init = self.weight_init_selector.get_weight_init()
-        except ValueError as err:
-            print(f"The training dataset could not be created: {err}.")
-            return
-
         if self.model_comparison:
             raise NotImplementedError
             # TODO: finish model_comparison
@@ -239,6 +233,14 @@ class CreateTrainingDataset(DefaultTab):
                     # don't have it installed
                 elif engine == Engine.PYTORCH and "top_down" in net_type:
                     detector_type = self.detector_choice.currentText()
+
+                try:
+                    weight_init = self.weight_init_selector.get_super_animal_weight_init(
+                        net_type, detector_type,
+                    )
+                except ValueError as err:
+                    print(f"The training dataset could not be created: {err}.")
+                    return
 
                 if self.data_split_selection.selected:
                     deeplabcut.create_training_dataset_from_existing_split(
@@ -551,8 +553,16 @@ class WeightInitializationSelector(QtWidgets.QWidget):
             self.weight_init_choice.removeItem(0)
         self.weight_init_choice.addItems(choices)
 
-    def get_weight_init(self) -> WeightInitialization | None:
+    def get_super_animal_weight_init(
+        self, net_type: str, detector_type: str,
+    ) -> WeightInitialization | None:
         """
+        Args:
+            net_type: The architecture of the pose model from which to fine-tune a
+                SuperAnimal model.
+            detector_type: The architecture of the detector from which to fine-tune a
+                SuperAnimal model.
+
         Raises:
             ValueError if WeightInitialization should be defined but could not be
                 created (e.g. if there's no conversion table).
@@ -567,8 +577,10 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
         super_animal = weight_init_data["super_animal"]
         try:
-            weight_init = WeightInitialization.build(
+            weight_init = build_weight_init(
                 self.root.cfg,
+                model_name=net_type,
+                detector_name=detector_type,
                 super_animal=super_animal,
                 with_decoder=self.with_decoder,
                 memory_replay=self.memory_replay,

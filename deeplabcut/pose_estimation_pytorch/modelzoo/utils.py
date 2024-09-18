@@ -22,6 +22,97 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metad
 from deeplabcut.utils import auxiliaryfunctions
 
 
+def get_model_configs_folder_path() -> Path:
+    """Returns: the folder containing the SuperAnimal model configuration files"""
+    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "model_configs"
+
+
+def get_project_configs_folder_path() -> Path:
+    """Returns: the folder containing the SuperAnimal project configuration files"""
+    return (
+        Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "project_configs"
+    )
+
+
+def get_snapshot_folder_path() -> Path:
+    """Returns: the path to the folder containing the SuperAnimal model snapshots"""
+    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
+
+
+def get_super_animal_model_config_path(model_name: str) -> Path:
+    """Gets the path to the configuration file for a SuperAnimal model.
+
+    Args:
+        model_name: The name of the model for which to get the path.
+
+    Returns:
+        The path to the config file for a SuperAnimal model.
+    """
+    return get_model_configs_folder_path() / f"{model_name}.yaml"
+
+
+def get_super_animal_project_config_path(super_animal: str) -> Path:
+    """Gets the path to a SuperAnimal project configuration file.
+
+    Args:
+        super_animal: The name of the SuperAnimal for which to get the config path.
+
+    Returns:
+        The path to the config file for a SuperAnimal project.
+    """
+    return get_project_configs_folder_path() / f"{super_animal}.yaml"
+
+
+def get_super_animal_snapshot_path(
+    dataset: str,
+    model_name: str,
+    download: bool = True,
+) -> Path:
+    """Gets the path to the snapshot containing SuperAnimal model weights.
+
+    Args:
+        dataset: The name of the SuperAnimal dataset.
+        model_name: The name of the model.
+        download: Whether to download the weights if they aren't already there.
+
+    Returns:
+        The path to the weights for a SuperAnimal model.
+    """
+    model_path = get_snapshot_folder_path() / f"{dataset}_{model_name}.pt"
+    if download and not model_path.exists():
+        download_super_animal_snapshot(dataset, model_name)
+
+    return model_path
+
+
+def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
+    """Downloads a SuperAnimal snapshot
+
+    Args:
+        dataset: The name of the SuperAnimal dataset for which to download a snapshot.
+        model_name: The name of the model for which to download a snapshot.
+
+    Returns:
+        The path to the downloaded snapshot.
+
+    Raises:
+        RuntimeError if the model fails to download.
+    """
+    snapshot_dir = get_snapshot_folder_path()
+    model_name = f"{dataset}_{model_name}"
+    model_path = snapshot_dir / f"{model_name}.pt"
+    download_huggingface_model(
+        model_name,
+        target_dir=str(snapshot_dir),
+        rename_mapping=None,
+    )
+
+    if not model_path.exists():
+        raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+
+    return snapshot_dir / f"{model_name}.pt"
+
+
 def get_config_model_paths(
     project_name: str,
     pose_model_type: str,
