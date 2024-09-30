@@ -45,11 +45,14 @@ class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str | Path, context: list[dict[str, Any]] | None = None
+        self, video_path: str | Path, context: list[dict[str, Any]] | None = None, cropping: list[int] | None = None
     ) -> None:
         super().__init__(str(video_path))
         self._context = context
         self._index = 0
+        self._crop = cropping is not None
+        if self._crop:
+            self.set_bbox(*cropping)
 
     def get_context(self) -> list[dict[str, Any]] | None:
         if self._context is None:
@@ -68,7 +71,7 @@ class VideoIterator(VideoReader):
         return self
 
     def __next__(self) -> np.ndarray | tuple[str, dict[str, Any]]:
-        frame = self.read_frame()
+        frame = self.read_frame(crop=self._crop)
         if frame is None:
             self._index = 0
             self.reset()
@@ -94,9 +97,10 @@ def video_inference(
     detector_runner: InferenceRunner | None = None,
     with_identity: bool = False,
     return_video_metadata: bool = False,
+    cropping: list[int] | None = None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video"""
-    video = VideoIterator(str(video_path))
+    video = VideoIterator(str(video_path), cropping=cropping)
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
     print(f"Starting to analyze {video_path}")
@@ -167,6 +171,7 @@ def analyze_videos(
     auto_track: bool | None = True,
     identity_only: bool | None = False,
     overwrite: bool = False,
+    cropping: list[int] | None = None,
 ) -> str:
     """Makes prediction based on a trained network.
 
@@ -220,6 +225,11 @@ def analyze_videos(
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
+        cropping: list or None, optional, default=None
+            List of cropping coordinates as [x1, x2, y1, y2].
+            Note that the same cropping parameters will then be used for all videos.
+            If different video crops are desired, run ``analyze_videos`` on individual
+            videos with the corresponding cropping coordinates.
 
     Returns:
         The scorer used to analyze the videos
@@ -251,6 +261,9 @@ def analyze_videos(
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
         cfg, model_cfg, snapshot_index, detector_snapshot_index,
     )
+
+    if cropping is None and cfg.get("cropping", False):
+        cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
 
     # Get general project parameters
     bodyparts = model_cfg["metadata"]["bodyparts"]
@@ -328,6 +341,7 @@ def analyze_videos(
                 pose_runner=pose_runner,
                 task=pose_task,
                 detector_runner=detector_runner,
+                cropping=cropping,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(

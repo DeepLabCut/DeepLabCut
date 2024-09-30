@@ -874,6 +874,7 @@ def analyze_videos(
             auto_track=auto_track,
             identity_only=identity_only,
             overwrite=False,
+            cropping=cropping,
             **torch_kwargs,
         )
 
