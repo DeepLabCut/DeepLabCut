@@ -969,6 +969,7 @@ def create_training_dataset(
             num_shuffles,
             Shuffles,
             net_type=net_type,
+            detector_type=detector_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
             userfeedback=userfeedback,
