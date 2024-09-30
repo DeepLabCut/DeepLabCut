@@ -55,14 +55,21 @@ class MockImageLogger(logging.ImageLoggerMixin):
 )
 @pytest.mark.parametrize("denormalize", [True, False])
 def test_prepare_image(keypoints: list[list[float]], denormalize: bool) -> None:
+    image = torch.ones((3, 256, 256))
+    keypoints = torch.tensor(keypoints)
+
     print()
-    print(torch.tensor(keypoints).shape)
+    print(f"IMAGE: {image.shape}")
+    print(f"KEYPOINTS: {keypoints.shape}")
+    for k in keypoints:
+        print(k)
+    print()
     print()
 
     logger = MockImageLogger()
     logger._prepare_image(
-        image=torch.zeros((3, 256, 256)),
+        image=image,
         denormalize=denormalize,
-        keypoints=torch.tensor(keypoints),
+        keypoints=keypoints,
         bboxes=None,
     )

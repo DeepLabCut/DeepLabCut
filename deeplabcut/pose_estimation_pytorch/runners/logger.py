@@ -194,7 +194,10 @@ class ImageLoggerMixin(ABC):
         image = F.convert_image_dtype(image.detach().cpu(), dtype=torch.uint8)
         if keypoints is not None and len(keypoints) > 0:
             assert len(keypoints.shape) == 3
-            keypoints[keypoints < 0] = np.nan
+            # Use visibility and force torchvision >= 0.18
+            # pytorch.org/vision/0.18/generated/torchvision.utils.draw_keypoints.html
+            # pytorch.org/vision/0.17/generated/torchvision.utils.draw_keypoints.html
+            keypoints[torch.any(torch.isnan(keypoints), dim=-1)] = -1
             image = draw_keypoints(
                 image, keypoints=keypoints[..., :2], colors="red", radius=5
             )
