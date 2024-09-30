@@ -350,6 +350,7 @@ def analyze_videos(
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
                 batch_size=batch_size,
+                cropping=cropping,
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
@@ -543,15 +544,20 @@ def _generate_metadata(
     dlc_scorer: str,
     train_fraction: int,
     batch_size: int,
+    cropping: list[int] | None,
     runtime: tuple[float, float],
     video: VideoReader,
 ) -> dict:
     w, h = video.dimensions
-    cropping = cfg.get("cropping", False)
-    if cropping:
-        cropping_parameters = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
-    else:
+    if cropping is None:
         cropping_parameters = [0, w, 0, h]
+    else:
+        if not len(cropping) == 4:
+            raise ValueError(
+                "The cropping parameters should be exactly 4 values: [x_min, x_max, "
+                f"y_min, y_max]. Found {cropping}"
+            )
+        cropping_parameters = cropping
 
     metadata = {
         "start": runtime[0],
@@ -565,7 +571,7 @@ def _generate_metadata(
         "nframes": video.get_n_frames(),
         "iteration (active-learning)": cfg["iteration"],
         "training set fraction": train_fraction,
-        "cropping": cropping,
+        "cropping": cropping is not None,
         "cropping_parameters": cropping_parameters,
     }
     return {"data": metadata}
