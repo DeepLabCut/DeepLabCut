@@ -27,7 +27,7 @@ detector:
     variant: fasterrcnn_mobilenet_v3_large_fpn
   runner:
     type: DetectorTrainingRunner
-    eval_interval: 1
+    eval_interval: 10
     optimizer:
       type: AdamW
       params:
