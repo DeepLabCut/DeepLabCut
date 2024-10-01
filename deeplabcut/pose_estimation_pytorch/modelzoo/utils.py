@@ -195,6 +195,9 @@ def update_config(config, max_individuals, device):
         backbone_output_channels=config["model"]["backbone_output_channels"],
     )
     config["device"] = device
+    if "detector" in config:
+        config["detector"]["device"] = device
+
     config_utils.pretty_print(config)
     return config
 
@@ -230,13 +233,3 @@ def _parse_snapshot(snapshot: Path, device: str, print_keys: bool = False) -> No
         ),
         snapshot,
     )
-
-
-def get_pose_model_type(backbone: str) -> str:
-    """Temporary fix: pose_model_types for SuperAnimal models do not match net types"""
-    if backbone.startswith("resnet"):
-        return backbone
-    elif backbone.startswith("hrnet"):
-        return backbone.replace("_", "")
-
-    raise ValueError(f"Unknown backbone for SuperAnimal Weights")
