@@ -28,7 +28,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 def make_pytorch_pose_config(
     project_config: dict,
-    pose_config_path: str,
+    pose_config_path: str | Path,
     net_type: str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
@@ -180,7 +180,9 @@ def make_pytorch_pose_config(
     return dict(sorted(pose_config.items()))
 
 
-def add_metadata(project_config: dict, config: dict, pose_config_path: str) -> dict:
+def add_metadata(
+    project_config: dict, config: dict, pose_config_path: str | Path
+) -> dict:
     """Adds metadata to a pytorch pose configuration
 
     Args:
@@ -194,7 +196,7 @@ def add_metadata(project_config: dict, config: dict, pose_config_path: str) -> d
     config = copy.deepcopy(config)
     config["metadata"] = {
         "project_path": project_config["project_path"],
-        "pose_config_path": pose_config_path,
+        "pose_config_path": str(pose_config_path),
         "bodyparts": auxiliaryfunctions.get_bodyparts(project_config),
         "unique_bodyparts": auxiliaryfunctions.get_unique_bodyparts(project_config),
         "individuals": project_config.get("individuals", ["animal"]),

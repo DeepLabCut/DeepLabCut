@@ -45,11 +45,14 @@ class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str | Path, context: list[dict[str, Any]] | None = None
+        self, video_path: str | Path, context: list[dict[str, Any]] | None = None, cropping: list[int] | None = None
     ) -> None:
         super().__init__(str(video_path))
         self._context = context
         self._index = 0
+        self._crop = cropping is not None
+        if self._crop:
+            self.set_bbox(*cropping)
 
     def get_context(self) -> list[dict[str, Any]] | None:
         if self._context is None:
@@ -68,7 +71,7 @@ class VideoIterator(VideoReader):
         return self
 
     def __next__(self) -> np.ndarray | tuple[str, dict[str, Any]]:
-        frame = self.read_frame()
+        frame = self.read_frame(crop=self._crop)
         if frame is None:
             self._index = 0
             self.reset()
@@ -94,9 +97,10 @@ def video_inference(
     detector_runner: InferenceRunner | None = None,
     with_identity: bool = False,
     return_video_metadata: bool = False,
+    cropping: list[int] | None = None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video"""
-    video = VideoIterator(str(video_path))
+    video = VideoIterator(str(video_path), cropping=cropping)
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
     print(f"Starting to analyze {video_path}")
@@ -118,12 +122,11 @@ def video_inference(
         if detector_runner is None:
             raise ValueError("Must use a detector for top-down video analysis")
 
-        print("Running Detector")
+        print(f"Running detector with batch size {detector_runner.batch_size}")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
-
         video.set_context(bbox_predictions)
 
-    print("Running Pose Prediction")
+    print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     predictions = pose_runner.inference(images=tqdm(video))
 
     if with_identity:
@@ -161,17 +164,18 @@ def analyze_videos(
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
     destfolder: str | None = None,
-    batchsize: int | None = None,
+    batch_size: int | None = None,
+    detector_batch_size: int | None = None,
     modelprefix: str = "",
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
     identity_only: bool | None = False,
     overwrite: bool = False,
+    cropping: list[int] | None = None,
 ) -> str:
     """Makes prediction based on a trained network.
 
     # TODO:
-        - allow batch size greater than 1
         - other options missing options such as shelve
         - pass detector path or detector runner
 
@@ -206,8 +210,10 @@ def analyze_videos(
             snapshot to use, used in the same way as ``snapshot_index``
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
-        batchsize: the batch size to use for inference. Takes the value from the
-            PyTorch config as a default
+        batch_size: the batch size to use for inference. Takes the value from the
+            project config as a default.
+        detector_batch_size: the batch size to use for detector inference. Takes the
+            value from the project config as a default.
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
         auto_track: By default, tracking and stitching are automatically performed,
@@ -219,6 +225,11 @@ def analyze_videos(
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
+        cropping: list or None, optional, default=None
+            List of cropping coordinates as [x1, x2, y1, y2].
+            Note that the same cropping parameters will then be used for all videos.
+            If different video crops are desired, run ``analyze_videos`` on individual
+            videos with the corresponding cropping coordinates.
 
     Returns:
         The scorer used to analyze the videos
@@ -251,6 +262,9 @@ def analyze_videos(
         cfg, model_cfg, snapshot_index, detector_snapshot_index,
     )
 
+    if cropping is None and cfg.get("cropping", False):
+        cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
+
     # Get general project parameters
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
@@ -260,6 +274,9 @@ def analyze_videos(
 
     if device is not None:
         model_cfg["device"] = device
+
+    if batch_size is None:
+        batch_size = cfg.get("batch_size", 1)
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
@@ -271,6 +288,9 @@ def analyze_videos(
                 "snapshot! Please specify your desired detector_snapshotindex in your "
                 "project's configuration file."
             )
+
+        if detector_batch_size is None:
+            detector_batch_size = cfg.get("detector_batch_size", 1)
 
         detector_snapshot = get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
@@ -291,8 +311,10 @@ def analyze_videos(
         max_individuals=max_num_animals,
         num_bodyparts=len(bodyparts),
         num_unique_bodyparts=len(unique_bodyparts),
+        batch_size=batch_size,
         with_identity=with_identity,
         transform=transform,
+        detector_batch_size=detector_batch_size,
         detector_path=detector_path,
         detector_transform=None,
     )
@@ -319,6 +341,7 @@ def analyze_videos(
                 pose_runner=pose_runner,
                 task=pose_task,
                 detector_runner=detector_runner,
+                cropping=cropping,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
@@ -326,7 +349,8 @@ def analyze_videos(
                 pytorch_config=model_cfg,
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
-                batch_size=batchsize,
+                batch_size=batch_size,
+                cropping=cropping,
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
@@ -520,15 +544,20 @@ def _generate_metadata(
     dlc_scorer: str,
     train_fraction: int,
     batch_size: int,
+    cropping: list[int] | None,
     runtime: tuple[float, float],
     video: VideoReader,
 ) -> dict:
     w, h = video.dimensions
-    cropping = cfg.get("cropping", False)
-    if cropping:
-        cropping_parameters = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
-    else:
+    if cropping is None:
         cropping_parameters = [0, w, 0, h]
+    else:
+        if not len(cropping) == 4:
+            raise ValueError(
+                "The cropping parameters should be exactly 4 values: [x_min, x_max, "
+                f"y_min, y_max]. Found {cropping}"
+            )
+        cropping_parameters = cropping
 
     metadata = {
         "start": runtime[0],
@@ -542,7 +571,7 @@ def _generate_metadata(
         "nframes": video.get_n_frames(),
         "iteration (active-learning)": cfg["iteration"],
         "training set fraction": train_fraction,
-        "cropping": cropping,
+        "cropping": cropping is not None,
         "cropping_parameters": cropping_parameters,
     }
     return {"data": metadata}

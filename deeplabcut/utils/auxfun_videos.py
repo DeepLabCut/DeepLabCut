@@ -159,6 +159,24 @@ class VideoReader:
             y2 = int(self._height * y2)
         return x1, x2, y1, y2
 
+    def set_bbox(self, x1, x2, y1, y2, relative=False):
+        if x2 <= x1 or y2 <= y1:
+            raise ValueError(
+                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
+            )
+        if not relative:
+            x1 /= self._width
+            x2 /= self._width
+            y1 /= self._height
+            y2 /= self._height
+        bbox = x1, x2, y1, y2
+        if any(coord > 1 for coord in bbox):
+            warnings.warn(
+                "Bounding box larger than the video... " "Clipping to video dimensions."
+            )
+            bbox = tuple(map(lambda x: min(x, 1), bbox))
+        self._bbox = bbox
+
     @property
     def fps(self):
         return self._fps
@@ -204,24 +222,6 @@ class VideoWriter(VideoReader):
         self.dpi = dpi
         if fps:
             self.fps = fps
-
-    def set_bbox(self, x1, x2, y1, y2, relative=False):
-        if x2 <= x1 or y2 <= y1:
-            raise ValueError(
-                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
-            )
-        if not relative:
-            x1 /= self._width
-            x2 /= self._width
-            y1 /= self._height
-            y2 /= self._height
-        bbox = x1, x2, y1, y2
-        if any(coord > 1 for coord in bbox):
-            warnings.warn(
-                "Bounding box larger than the video... " "Clipping to video dimensions."
-            )
-            bbox = tuple(map(lambda x: min(x, 1), bbox))
-        self._bbox = bbox
 
     def shorten(
         self, start, end, suffix="short", dest_folder=None, validate_inputs=True

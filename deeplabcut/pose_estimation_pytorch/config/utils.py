@@ -258,7 +258,7 @@ def available_models() -> list[str]:
     other_architectures = [
         p
         for p in configs_folder_path.iterdir()
-        if p.is_dir() and not p.name in ("backbones", "base")
+        if p.is_dir() and not p.name in ("backbones", "base", "detectors")
     ]
     for folder in other_architectures:
         variants = [p.stem for p in folder.iterdir() if p.suffix == ".yaml"]

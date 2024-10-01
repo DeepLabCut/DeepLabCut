@@ -29,17 +29,11 @@ class PartAffinityFieldGenerator(BaseGenerator):
     """
 
     def __init__(self, graph: list[list[int, int]], width: float):
-        """Summary:
-        Constructor of the PartAffinityFieldGenerator class.
-        Loads the data.
-
+        """
         Args:
             graph: list of pairs of keypoint indices forming
                 the graph edges
             width: width of the vector field in pixels
-
-        Returns:
-            None
 
         Examples:
             input:
@@ -58,7 +52,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
         batch_size, _, height, width = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
 
-        partaffinityfield_map = np.zeros(
+        paf_map = np.zeros(
             (batch_size, height, width, self.num_limbs * 2), dtype=np.float32
         )
         grid = np.mgrid[:height, :width].transpose((1, 2, 0))
@@ -102,14 +96,14 @@ class PartAffinityFieldGenerator(BaseGenerator):
                         mask2 = distance_across_abs <= 1
                         mask = mask1 & mask2
                         temp = 1 - distance_across_abs[mask]
-                        partaffinityfield_map[b, mask, l * 2 + 0] = vec_x_norm * temp
-                        partaffinityfield_map[b, mask, l * 2 + 1] = vec_y_norm * temp
+                        paf_map[b, mask, l * 2 + 0] = vec_x_norm * temp
+                        paf_map[b, mask, l * 2 + 1] = vec_y_norm * temp
 
-        partaffinityfield_map = partaffinityfield_map.transpose((0, 3, 1, 2))
+        paf_map = paf_map.transpose((0, 3, 1, 2))
         return {
             "paf": {
                 "target": torch.tensor(
-                    partaffinityfield_map, device=outputs["paf"].device
+                    paf_map, device=outputs["paf"].device
                 )
             }
         }

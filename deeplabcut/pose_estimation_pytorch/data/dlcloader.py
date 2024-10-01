@@ -81,6 +81,16 @@ class DLCLoader(Loader):
         """Returns: The ground truth dataframe. Should not be modified."""
         return self._dfs["full"]
 
+    @property
+    def df_test(self) -> pd.DataFrame:
+        """Returns: A copy of the DataFrame containing the test data."""
+        return self._dfs["test"].copy()
+
+    @property
+    def df_train(self) -> pd.DataFrame:
+        """Returns: A copy of the DataFrame containing the training data."""
+        return self._dfs["train"].copy()
+
     def image_resolutions(self) -> set[tuple[int, int]]:
         """Returns: The collection of image resolutions present in the dataset"""
         return self._resolutions

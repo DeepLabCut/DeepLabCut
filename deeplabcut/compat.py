@@ -853,6 +853,15 @@ def analyze_videos(
                 f"The 'use_shelve' option is not yet implemented with {engine}"
             )
 
+        if batchsize is not None:
+            if "batch_size" in torch_kwargs:
+                print(
+                    f"You called analyze_videos with parameters ``batchsize={batchsize}"
+                    f"`` and batch_size={torch_kwargs['batch_size']}. Only one is "
+                    f"needed/used. Using batch size {torch_kwargs['batch_size']}")
+            else:
+                torch_kwargs["batch_size"] = batchsize
+
         return analyze_videos(
             config,
             videos=videos,
@@ -861,11 +870,11 @@ def analyze_videos(
             trainingsetindex=trainingsetindex,
             save_as_csv=save_as_csv,
             destfolder=destfolder,
-            batchsize=batchsize,
             modelprefix=modelprefix,
             auto_track=auto_track,
             identity_only=identity_only,
             overwrite=False,
+            cropping=cropping,
             **torch_kwargs,
         )
 

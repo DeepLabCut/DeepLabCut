@@ -96,6 +96,16 @@ class ParentingMouseBenchmark(deeplabcut.benchmark.base.Benchmark):
             symmetric_kpts=[(0, 4), (1, 3)],
         )
 
+    def _validate_predictions(self, name: str, predictions: dict) -> dict:
+        """Fixes filenames for predictions made on old versions of the dataset"""
+        return super()._validate_predictions(
+            name,
+            {
+                k.replace("Dummy", "D").replace("Dead pup", "DP"): v
+                for k, v in predictions.items()
+            },
+        )
+
 
 class MarmosetBenchmark(deeplabcut.benchmark.base.Benchmark):
     """Dataset with two marmosets.

@@ -177,9 +177,10 @@ class PartAffinityFieldPredictor(BasePredictor):
         poses_unique = -torch.ones((batch_size, 1, self.num_uniquebodyparts, 4))
         for i, data_dict in enumerate(preds):
             assemblies, unique = self.assembler._assemble(data_dict, ind_frame=0)
-            for j, assembly in enumerate(assemblies):
-                poses[i, j, :, :4] = torch.from_numpy(assembly.data)
-                poses[i, j, :, 4] = assembly.affinity
+            if assemblies is not None:
+                for j, assembly in enumerate(assemblies):
+                    poses[i, j, :, :4] = torch.from_numpy(assembly.data)
+                    poses[i, j, :, 4] = assembly.affinity
             if unique is not None:
                 poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
 

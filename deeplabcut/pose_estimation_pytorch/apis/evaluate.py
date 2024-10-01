@@ -391,7 +391,7 @@ def evaluate_network(
     for train_set_index in train_set_indices:
         for shuffle in shuffles:
             loader = DLCLoader(
-                config=Path(cfg["project_path"]) / "config.yaml",
+                config=config,
                 shuffle=shuffle,
                 trainset_index=train_set_index,
                 modelprefix=modelprefix,
