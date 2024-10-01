@@ -22,14 +22,10 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
     raise_warning_if_called_directly,
-    select_device,
-    update_config,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.make_labeled_video import _create_labeled_video
-from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -51,17 +47,16 @@ def construct_bodypart_names(max_individuals, bodyparts):
 
 def _video_inference_superanimal(
     video_paths: Union[str, list],
-    project_name: str,
-    model_name: str,
+    superanimal_name: str,
+    model_cfg: dict,
+    model_snapshot_path: str | Path,
+    detector_snapshot_path: str | Path | None,
     max_individuals: int,
     pcutoff: float,
     batch_size: int = 1,
     detector_batch_size: int = 1,
-    device: Optional[str] = None,
     dest_folder: Optional[str] = None,
-    customized_pose_checkpoint: Optional[str] = None,
-    customized_detector_checkpoint: Optional[str] = None,
-    customized_model_config: Optional[str] = None,
+    output_suffix: str = "",
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -74,32 +69,17 @@ def _video_inference_superanimal(
 
     Args:
         video_paths: Path to the video to be analyzed or list of paths to videos to be analyzed
-
-        project_name: Name of the superanimal project (e.g. superanimal_quadruped)
-
-        model_name: Name of the model (e.g. hrnetw32)
-
+        superanimal_name: Name of the SuperAnimal project (e.g. superanimal_quadruped)
+        model_cfg: TODO
+        model_snapshot_path: TODO
+        detector_snapshot_path: TODO
         max_individuals: Maximum number of individuals in the video
-
         pcutoff: Cutoff for cutting off the predicted keypoints with probability lower than pcutoff
-
-        device: The device on which to perform the operation.
-            If not specified, the device is automatically determined by the
-            `select_device` function. Defaults to None, which triggers
-            automatic device selection.
-
         batch_size: The batch size to use for video inference.
-
         detector_batch_size: The batch size to use for the detector for video inference.
-
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
-
-        customized_pose_checkpoint: A customized checkpoint to replace the default
-            SuperAnimal pose checkpoint
-
-        customized_detector_checkpoint: A customized checkpoint to replace the default
-            SuperAnimal detector checkpoint
+        output_suffix: TODO
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
@@ -108,51 +88,17 @@ def _video_inference_superanimal(
         Warning: If the function is called directly.
     """
     raise_warning_if_called_directly()
-
-    if device is None:
-        device = select_device()
-
-    pose_model_path = None
-    detector_path = None
-    if customized_model_config is None:
-        (
-            model_config,
-            project_config,
-            pose_model_path,
-            detector_path,
-        ) = get_config_model_paths(project_name, model_name)
-
-        config = {**project_config, **model_config}
-        config = update_config(config, max_individuals, device)
-    else:
-        config = read_config(customized_model_config)
-        config["bodyparts"] = config["metadata"]["bodyparts"]
-
-        if customized_pose_checkpoint is None:
-            raise ValueError(
-                "When specifying a `customized_model_config`, you must also specify "
-                "the `customized_pose_checkpoint` that goes with it."
-            )
-
-    if customized_pose_checkpoint is not None:
-        pose_model_path = customized_pose_checkpoint
-    if customized_detector_checkpoint is not None:
-        detector_path = customized_detector_checkpoint
-
-    individuals = [f"animal{i}" for i in range(max_individuals)]
-    config["individuals"] = individuals
-
     pose_runner, detector_runner = get_inference_runners(
-        config,
-        snapshot_path=pose_model_path,
+        model_config=model_cfg,
+        snapshot_path=model_snapshot_path,
         max_individuals=max_individuals,
-        num_bodyparts=len(config["bodyparts"]),
+        num_bodyparts=len(model_cfg["metadata"]["bodyparts"]),
         num_unique_bodyparts=0,
         batch_size=batch_size,
         detector_batch_size=detector_batch_size,
-        detector_path=detector_path,
+        detector_path=detector_snapshot_path,
     )
-    pose_task = Task(config.get("method", "BU"))
+    pose_task = Task(model_cfg.get("method", "BU"))
     results = {}
 
     if isinstance(video_paths, str):
@@ -167,21 +113,20 @@ def _video_inference_superanimal(
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
-        dlc_scorer = f"{project_name}_{model_name}"
+        dlc_scorer = f"{superanimal_name}"
+        if detector_snapshot_path is not None:
+            dlc_scorer += f"_{detector_snapshot_path.stem}"
+        dlc_scorer += f"_{model_snapshot_path.stem}"
 
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"
         output_path = Path(dest_folder)
         output_h5 = Path(output_path) / f"{output_prefix}.h5"
 
-        # if there are no customized checkpoints passed, it's before adaptation
-        if (
-            customized_pose_checkpoint is None
-            and customized_detector_checkpoint is None
-        ):
-            output_json = str(output_h5).replace(".h5", "_before_adapt.json")
-        else:
-            output_json = str(output_h5).replace(".h5", "_after_adapt.json")
-        # also output json file so it's easier for video adaptation to handle
+        output_json = output_h5.with_suffix(".json")
+        if len(output_suffix) > 0:
+            # str(output_h5).replace(".h5", "_before_adapt.json")
+            # str(output_h5).replace(".h5", "_after_adapt.json")
+            output_json = output_json.with_stem(output_h5.stem + output_suffix)
 
         predictions, video_metadata = video_inference(
             video_path,
@@ -195,35 +140,31 @@ def _video_inference_superanimal(
 
         bbox = (0, video_metadata["resolution"][0], 0, video_metadata["resolution"][1])
         print(f"Saving results to {dest_folder}")
-        config["uniquebodyparts"] = []
-        config["multianimalbodyparts"] = config["bodyparts"]
 
         df = create_df_from_prediction(
             pred_bodyparts=pred_bodyparts,
             pred_unique_bodyparts=pred_unique_bodyparts,
             dlc_scorer=dlc_scorer,
-            cfg=config,
+            cfg=dict(
+                bodyparts=model_cfg["metadata"]["bodyparts"],
+                individuals=model_cfg["metadata"]["individuals"],
+                multianimalbodyparts=model_cfg["metadata"]["bodyparts"],
+                uniquebodyparts=[],
+            ),
             output_path=output_path,
             output_prefix=output_prefix,
         )
 
         results[video_path] = df
-
         with open(output_json, "w") as f:
             json.dump(predictions, f, cls=NumpyEncoder)
 
-        if (
-            customized_pose_checkpoint is not None
-            and customized_detector_checkpoint is not None
-        ):
-            # FIXME: customized pose and customized detector passed does not mean it's adapted anymore
-            output_video = output_path / f"{output_prefix}_labeled_after_adapt.mp4"
-        else:
-            output_video = output_path / f"{output_prefix}_labeled.mp4"
+        output_video = output_path / f"{output_prefix}_labeled.mp4"
+        if len(output_suffix) > 0:
+            output_video = output_video.with_stem(output_video.stem + output_suffix)
 
         superanimal_colormaps = get_superanimal_colormaps()
-        colormap = superanimal_colormaps[project_name]
-
+        colormap = superanimal_colormaps[superanimal_name]
         _create_labeled_video(
             video_path,
             output_h5,
@@ -233,7 +174,6 @@ def _video_inference_superanimal(
             cmap=colormap,
             output_path=str(output_video),
         )
-
         print(f"Video with predictions was saved as {output_path}")
 
     return results

@@ -238,6 +238,9 @@ class CreateTrainingDataset(DefaultTab):
                     weight_init = self.weight_init_selector.get_super_animal_weight_init(
                         net_type, detector_type,
                     )
+                    print("WEIGHT INIT")
+                    print(weight_init)
+                    print()
                 except ValueError as err:
                     print(f"The training dataset could not be created: {err}.")
                     return
@@ -576,12 +579,14 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
         weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
         super_animal = weight_init_data["super_animal"]
+        if net_type.startswith("top_down_"):
+            net_type = net_type[len("top_down_"):]
         try:
             weight_init = build_weight_init(
                 self.root.cfg,
+                super_animal=super_animal,
                 model_name=net_type,
                 detector_name=detector_type,
-                super_animal=super_animal,
                 with_decoder=self.with_decoder,
                 memory_replay=self.memory_replay,
             )

@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import inspect
-import os
 import subprocess
 import warnings
 from pathlib import Path
@@ -85,6 +84,38 @@ def get_super_animal_snapshot_path(
     return model_path
 
 
+def load_super_animal_config(
+    super_animal: str,
+    model_name: str,
+    detector_name: str | None = None,
+) -> dict:
+    """Loads the model configuration file for a model, detector and SuperAnimal
+
+    Args:
+        super_animal: The name of the SuperAnimal for which to create the model config.
+        model_name: The name of the model for which to create the model config.
+        detector_name: The name of the detector for which to create the model config.
+
+    Returns:
+        The model configuration for a SuperAnimal-pretrained model.
+    """
+    project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
+    project_config = config_utils.read_config_as_dict(project_cfg_path)
+
+    model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
+    model_config = config_utils.read_config_as_dict(model_cfg_path)
+    model_config = add_metadata(project_config, model_config, model_cfg_path)
+
+    if detector_name is None:
+        model_config["method"] = "BU"
+    else:
+        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
+        detector_cfg = config_utils.read_config_as_dict(detector_cfg_path)
+        model_config["method"] = "TD"
+        model_config["detector"] = detector_cfg
+    return model_config
+
+
 def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     """Downloads a SuperAnimal snapshot
 
@@ -101,75 +132,28 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     snapshot_dir = get_snapshot_folder_path()
     model_name = f"{dataset}_{model_name}"
     model_path = snapshot_dir / f"{model_name}.pt"
+
+    # FIXME(niels) - Temporary fix, update the filenames on HuggingFace
+    rename_mapping = None
+    if "hrnet_w32" in model_name:
+        rename_mapping = {"pose_model.pth": f"{model_name}.pt"}
+    elif "fasterrcnn_resnet50_fpn_v2" in model_name:
+        rename_mapping = {"detector.pt": f"{model_name}.pt"}
+
     download_huggingface_model(
         model_name,
         target_dir=str(snapshot_dir),
-        rename_mapping=None,
+        rename_mapping=rename_mapping,
     )
 
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
+    # FIXME(niels) - Temporary fix, upload parsed checkpoints to HuggingFace
+    if "hrnet_w32" in model_name or "fasterrcnn_resnet50_fpn_v2" in model_name:
+        _parse_snapshot(model_path, device="cpu")
+
     return snapshot_dir / f"{model_name}.pt"
-
-
-def get_config_model_paths(
-    project_name: str,
-    pose_model_type: str,
-    detector_type: str = "fasterrcnn",
-    weight_folder: str = None,
-):
-    """Get the paths to the model and project configs
-
-    Args:
-        project_name: the name of the project
-        pose_model_type: the name of the pose model
-        detector_type: the type of the detector
-        weight_folder: the folder containing the weights
-
-    Returns:
-        the paths to the models and project configs
-    """
-    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-    modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
-
-    model_cfg_path = os.path.join(
-        modelzoo_path, "model_configs", f"{pose_model_type}.yaml"
-    )
-    model_config = auxiliaryfunctions.read_plainconfig(model_cfg_path)
-    project_config = auxiliaryfunctions.read_config(
-        os.path.join(modelzoo_path, "project_configs", f"{project_name}.yaml")
-    )
-
-    model_config = add_metadata(project_config, model_config, model_cfg_path)
-    if weight_folder is None:
-        weight_folder = os.path.join(modelzoo_path, "checkpoints")
-
-    # FIXME - DO NOT DOWNLOAD HERE
-    pose_model_name = f"{project_name}_{pose_model_type}.pth"
-    pose_model_path = os.path.join(weight_folder, pose_model_name)
-    detector_name = f"{project_name}_{detector_type}.pt"
-    detector_model_path = os.path.join(weight_folder, detector_name)
-    if not (Path(pose_model_path).exists() and Path(detector_model_path).exists()):
-        download_huggingface_model(
-            f"{project_name}_{pose_model_type}",
-            target_dir=str(weight_folder),
-            rename_mapping={
-                "pose_model.pth": pose_model_name,
-                "detector.pt": detector_name,
-            },
-        )
-
-    # FIXME: Needed due to changes in code - remove when new snapshots are uploaded
-    pose_model_path = _parse_model_snapshot(Path(pose_model_path), device="cpu")
-    detector_model_path = _parse_model_snapshot(Path(detector_model_path), device="cpu")
-
-    return (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_model_path,
-    )
 
 
 def get_gpu_memory_map():
@@ -215,9 +199,8 @@ def update_config(config, max_individuals, device):
     return config
 
 
-def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> Path:
+def _parse_snapshot(snapshot: Path, device: str, print_keys: bool = False) -> None:
     """FIXME: A new snapshot should be uploaded and used"""
-
     def _map_model_keys(state_dict: dict) -> dict:
         updated_dict = {}
         for k, v in state_dict.items():
@@ -232,22 +215,21 @@ def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> 
                 updated_dict[".".join(parts)] = v
         return updated_dict
 
-    parsed = base.with_stem(base.stem + "_parsed")
-    if not parsed.exists():
-        snapshot = torch.load(base, map_location=device)
-        if print_keys:
-            print(5 * "-----\n")
-            print(base.stem + " keys")
-            for name, _ in snapshot["model_state_dict"].items():
-                print(f"  * {name}")
-            print()
+    snapshot = torch.load(snapshot, map_location=device)
+    if print_keys:
+        print(5 * "-----\n")
+        print(snapshot.stem + " keys")
+        for name, _ in snapshot["model_state_dict"].items():
+            print(f"  * {name}")
+        print()
 
-        parsed_model_snapshot = {
-            "model": _map_model_keys(snapshot["model_state_dict"]),
-            "metadata": {"epoch": 0},
-        }
-        torch.save(parsed_model_snapshot, parsed)
-    return parsed
+    torch.save(
+        dict(
+            model=_map_model_keys(snapshot["model_state_dict"]),
+            metadata=dict(epoch=0),
+        ),
+        snapshot,
+    )
 
 
 def get_pose_model_type(backbone: str) -> str:

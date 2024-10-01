@@ -233,7 +233,8 @@ def train_network(
         display_iters: overrides the number of iterations between each log of the loss
             within an epoch
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
-        pose_threshold: used for memory-replay. pseudo predictions that are below this are discarded for memory-replay
+        pose_threshold: Used for memory-replay. Pseudo-predictions with confidence lower
+            than this threshold are discarded for memory-replay
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
     """
@@ -248,23 +249,18 @@ def train_network(
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
 
         if weight_init.memory_replay:
-            dataset_params = loader.get_dataset_parameters()
-            backbone_name = loader.model_cfg["model"]["backbone"]["model_name"]
-            model_name = modelzoo_utils.get_pose_model_type(backbone_name)
-            # at some point train_network should support a different train_file passing
-            # so memory replay can also take the same train file
-
             print("Preparing data for memory replay (this can take some time)")
+            dataset_params = loader.get_dataset_parameters()
             prepare_memory_replay(
-                loader.project_path,
-                shuffle,
+                config,
+                loader,
                 weight_init.dataset,
-                model_name,
+                weight_init.snapshot_path,
+                weight_init.detector_snapshot_path,
                 device,
                 train_file="train.json",
                 max_individuals=dataset_params.max_num_animals,
                 pose_threshold=pose_threshold,
-                customized_pose_checkpoint=weight_init.customized_pose_checkpoint,
             )
 
             print("Loading memory replay data")
@@ -305,7 +301,6 @@ def train_network(
 
     # get the pose task
     pose_task = Task(loader.model_cfg.get("method", "bu"))
-    # We should allow people to set detector epochs to 0 if it was already trained. because they will most likely tune the pose estimator
     if (
         pose_task == Task.TOP_DOWN
         and loader.model_cfg["detector"]["train_settings"]["epochs"] > 0

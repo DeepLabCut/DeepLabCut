@@ -2,9 +2,13 @@
 Task: openfield
 scorer: Pranav
 date: Oct30
+multianimalproject:
+identity:
+
 
 # Project path (change when moving around)
-project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
+project_path: 
+  /Users/niels/Documents/upamathis/repos/DeepLabCut/examples/openfield-Pranav-2018-10-30
 
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
@@ -20,6 +24,9 @@ bodyparts:
 - leftear
 - rightear
 - tailbase
+
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
@@ -44,7 +51,9 @@ iteration: 0
 default_net_type: resnet_50
 default_augmenter: imgaug
 snapshotindex: -1
+detector_snapshotindex: -1
 batch_size: 4
+detector_batch_size: 1
 
 
 # Cropping Parameters (for analysis and outlier frame detection)

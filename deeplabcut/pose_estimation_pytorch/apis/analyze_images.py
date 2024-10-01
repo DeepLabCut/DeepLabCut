@@ -22,6 +22,7 @@ import numpy as np
 from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -31,28 +32,22 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
-    update_config,
-)
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
-from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 def superanimal_analyze_images(
     superanimal_name: str,
     model_name: str,
+    detector_name: str,
     images: str | Path | list[str] | list[Path],
     max_individuals: int,
     out_folder: str,
     bbox_threshold: float = 0.6,
     progress_bar: bool = True,
     device: str | None = None,
-    customized_pose_checkpoint: str | None = None,
-    customized_detector_checkpoint: str | None = None,
-    customized_model_config: str | None = None,
 ):
     """
     This funciton inferences a superanimal model on a set of images and saves the
@@ -67,6 +62,8 @@ def superanimal_analyze_images(
     model_name: str
         The name of the model to use for inference. Supported list:
             - "hrnetw32"
+    detector_name: str
+
     images: str | Path | list[str] | list[Path]
         The images to analyze. Can either be a directory containing images, or
         a list of paths of images.
@@ -82,14 +79,6 @@ def superanimal_analyze_images(
         Whether to display a progress bar when running inference.
     device: str | None
         The device to use to run image analysis.
-    customized_pose_checkpoint: str | None
-        A customized SuperAnimal pose checkpoint, as an alternative to the Hugging Face
-        model SuperAnimal models.
-    customized_detector_checkpoint: str | None
-        A customized SuperAnimal detector checkpoint, as an alternative to the Hugging
-        Face SuperAnimal models.
-    customized_model_config: str | None
-        A customized SuperAnimal model config. This is for internal dev/testing use
 
     Returns
     -------
@@ -113,36 +102,25 @@ def superanimal_analyze_images(
     >>>     out_images_folder
     >>> )
     """
+    out_folder = Path(out_folder)
+    out_folder.mkdir(exist_ok=True, parents=True)
 
-    os.makedirs(out_folder, exist_ok=True)
+    snapshot_path = modelzoo.get_super_animal_snapshot_path(
+        dataset=superanimal_name, model_name=model_name,
+    )
+    detector_path = modelzoo.get_super_animal_snapshot_path(
+        dataset=superanimal_name, model_name=detector_name,
+    )
 
-    snapshot_path = None
-    detector_path = None
-    if customized_model_config is None:    
-        (
-            model_cfg,
-            project_config,
-            snapshot_path,
-            detector_path,
-        ) = get_config_model_paths(superanimal_name, model_name)
-
-        if "detector" in model_cfg:
-            model_cfg["detector"]["model"]["box_score_thresh"] = bbox_threshold
-
-        config = {**project_config, **model_cfg}
-        config = update_config(config, max_individuals, device)        
-    else:
-        config = read_config(customized_model_config)
-        if customized_pose_checkpoint is None:
-            raise ValueError(f"You must pass a custom checkpoint")
-
-    if customized_pose_checkpoint is not None:
-        snapshot_path = customized_pose_checkpoint
-    if customized_detector_checkpoint is not None:
-        detector_path = customized_detector_checkpoint
-
-    individuals = [f"animal{i}" for i in range(max_individuals)]
-    config["individuals"] = individuals
+    config = modelzoo.load_super_animal_config(
+        super_animal=superanimal_name,
+        model_name=model_name,
+        detector_name=detector_name,
+    )
+    config = update_config(config, max_individuals, device)
+    config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
+    if "detector" in config:
+        config["detector"]["model"]["box_score_thresh"] = bbox_threshold
 
     predictions = analyze_image_folder(
         model_cfg=config,
@@ -352,13 +330,10 @@ def analyze_image_folder(
 
 
 def create_labeled_images_from_predictions(predictions, out_folder, cmap):
-
     for image_path, prediction in predictions.items():
-
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
         fig, ax = plt.subplots()
         ax.imshow(frame)
-
         for idx, pose in enumerate(prediction["bodyparts"]):
             x, y, confidence = pose[:, 0], pose[:, 1], pose[:, 2]
             if np.sum(pose) < 0:

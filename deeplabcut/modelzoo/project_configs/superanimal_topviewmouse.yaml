@@ -7,7 +7,8 @@ identity:
 
 
 # Project path (change when moving around)
-project_path:
+project_path: 
+  /Users/niels/Documents/upamathis/repos/DeepLabCut/deeplabcut/modelzoo/project_configs
 
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
@@ -47,6 +48,9 @@ bodyparts:
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 start:
 stop:
 numframes2pick:
@@ -67,8 +71,9 @@ iteration:
 default_net_type:
 default_augmenter:
 snapshotindex:
-detector_snapshotindex:
+detector_snapshotindex: -1
 batch_size: 1
+detector_batch_size: 1
 
 
 # Cropping Parameters (for analysis and outlier frame detection)

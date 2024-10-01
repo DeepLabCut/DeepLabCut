@@ -23,18 +23,14 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 
+import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.generalized_data_converter.datasets import (
-    COCOPoseDataset,
     MaDLCDataFrame,
-    MaDLCPoseDataset,
     SingleDLCDataFrame,
-    SingleDLCPoseDataset,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
     select_device,
     update_config,
 )
@@ -186,20 +182,24 @@ def keypoint_matching(
         str(memory_replay_folder), framework="coco", deepcopy=copy_images
     )
 
-    # inferencing the train set
-    (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_path,
-    ) = get_config_model_paths(superanimal_name, model_name)
-
+    # run inference on the train set
+    config = modelzoo.load_super_animal_config(
+        super_animal=superanimal_name,
+        model_name=model_name,
+        detector_name=detector_name,
+    )
     if device is None:
         device = select_device()
 
-    config = {**project_config, **model_config}
-    config = update_config(config, max_individuals, device)
+    # get the SuperAnimal detector and pose model snapshot paths
+    pose_model_path = modelzoo.get_super_animal_snapshot_path(
+        dataset=superanimal_name, model_name=model_name,
+    )
+    detector_path = modelzoo.get_super_animal_snapshot_path(
+        dataset=superanimal_name, model_name=detector_name,
+    )
 
+    config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["individuals"] = individuals
     train_file_path = os.path.join(memory_replay_folder, "annotations", train_file)
@@ -208,7 +208,7 @@ def keypoint_matching(
         config,
         snapshot_path=pose_model_path,
         max_individuals=max_individuals,
-        num_bodyparts=len(model_config["metadata"]["bodyparts"]),
+        num_bodyparts=len(config["metadata"]["bodyparts"]),
         num_unique_bodyparts=0,
         detector_path=detector_path,
     )
