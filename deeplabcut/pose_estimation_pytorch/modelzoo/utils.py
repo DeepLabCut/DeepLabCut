@@ -190,7 +190,7 @@ def raise_warning_if_called_directly():
 def update_config(config, max_individuals, device):
     config = config_utils.replace_default_values(
         config,
-        num_bodyparts=len(config["bodyparts"]),
+        num_bodyparts=len(config["metadata"]["bodyparts"]),
         num_individuals=max_individuals,
         backbone_output_channels=config["model"]["backbone_output_channels"],
     )
