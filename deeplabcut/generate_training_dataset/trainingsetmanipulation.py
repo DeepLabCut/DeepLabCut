@@ -398,19 +398,26 @@ def ParseYaml(configfile):
 
 
 def MakeTrain_pose_yaml(
-    itemstochange, saveasconfigfile, defaultconfigfile, items2drop={}
+    itemstochange,
+    saveasconfigfile,
+    defaultconfigfile,
+    items2drop: dict | None = None,
+    save: bool = True,
 ):
+    if items2drop is None:
+        items2drop = {}
+
     docs = ParseYaml(defaultconfigfile)
     for key in items2drop.keys():
-        # print(key, "dropping?")
         if key in docs[0].keys():
             docs[0].pop(key)
 
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
-    with open(saveasconfigfile, "w") as f:
-        yaml.dump(docs[0], f)
+    if save:
+        with open(saveasconfigfile, "w") as f:
+            yaml.dump(docs[0], f)
 
     return docs[0]
 
@@ -1240,7 +1247,11 @@ def create_training_dataset(
                     items2drop[key] = None
 
                 trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile, items2drop
+                    items2change,
+                    path_train_config,
+                    defaultconfigfile,
+                    items2drop,
+                    save=(engine == Engine.TF),
                 )
 
                 keys2save = [

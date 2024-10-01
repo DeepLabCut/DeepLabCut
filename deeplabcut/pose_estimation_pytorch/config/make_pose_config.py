@@ -21,6 +21,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     read_config_as_dict,
     replace_default_values,
     update_config,
+    write_config,
 )
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
@@ -33,6 +34,7 @@ def make_pytorch_pose_config(
     top_down: bool = False,
     detector_type: str | None = None,
     weight_init: WeightInitialization | None = None,
+    save: bool = False,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -64,6 +66,7 @@ def make_pytorch_pose_config(
             detection model
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
+        save: Whether to save the model configuration to disk.
 
     Returns:
         the PyTorch pose configuration file
@@ -171,7 +174,12 @@ def make_pytorch_pose_config(
         )
 
     # sort first-level keys to make it prettier
-    return dict(sorted(pose_config.items()))
+    pose_config = dict(sorted(pose_config.items()))
+
+    if save:
+        write_config(pose_config_path, pose_config, overwrite=True)
+
+    return pose_config
 
 
 def add_metadata(

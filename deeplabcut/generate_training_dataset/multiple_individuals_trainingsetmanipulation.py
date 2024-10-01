@@ -528,7 +528,10 @@ def create_multianimaltraining_dataset(
             }
 
             trainingdata = MakeTrain_pose_yaml(
-                items2change, path_train_config, defaultconfigfile
+                items2change,
+                path_train_config,
+                defaultconfigfile,
+                save=(engine == Engine.TF),
             )
             keys2save = [
                 "dataset",
@@ -582,26 +585,26 @@ def create_multianimaltraining_dataset(
                 if net_type == "dlcrnet_ms5":
                     net_type = "dlcrnet_stride16_ms5"
 
-                pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
+                config_path = Path(path_train_config).with_name(engine.pose_cfg_name)
                 if weight_init is not None and weight_init.with_decoder:
-                    pytorch_cfg = make_super_animal_finetune_config(
+                    make_super_animal_finetune_config(
                         project_config=cfg,
-                        pose_config_path=path_train_config,
+                        pose_config_path=config_path,
                         model_name=net_type,
                         detector_name=detector_type,
                         weight_init=weight_init,
+                        save=True,
                     )
                 else:
-                    pytorch_cfg = make_pytorch_pose_config(
+                    make_pytorch_pose_config(
                         project_config=cfg,
-                        pose_config_path=path_train_config,
+                        pose_config_path=config_path,
                         net_type=net_type,
                         top_down=top_down,
                         detector_type=detector_type,
                         weight_init=weight_init,
+                        save=True,
                     )
-
-                auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
 
             print(
                 "The training dataset is successfully created. Use the function "

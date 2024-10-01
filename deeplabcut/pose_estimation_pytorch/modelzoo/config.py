@@ -30,9 +30,10 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
     project_config: dict,
-    pose_config_path: str,
+    pose_config_path: str | Path,
     model_name: str,
     detector_name: str | None,
+    save: bool = False,
 ) -> dict:
     """
     Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
@@ -86,7 +87,7 @@ def make_super_animal_finetune_config(
         )
 
     # Load the exact pose configuration file for the model to fine-tune
-    return create_config_from_modelzoo(
+    pose_config = create_config_from_modelzoo(
         super_animal=weight_init.dataset,
         model_name=model_name,
         detector_name=detector_name,
@@ -95,6 +96,10 @@ def make_super_animal_finetune_config(
         project_config=project_config,
         pose_config_path=pose_config_path,
     )
+    if save:
+        config_utils.write_config(pose_config_path, pose_config, overwrite=True)
+
+    return pose_config
 
 
 def create_config_from_modelzoo(
@@ -104,7 +109,7 @@ def create_config_from_modelzoo(
     converted_bodyparts: list[str],
     weight_init: WeightInitialization,
     project_config: dict,
-    pose_config_path: str,
+    pose_config_path: str | Path,
 ) -> dict:
     """Creates a model configuration file to fine-tune a SuperAnimal model
 
@@ -143,7 +148,7 @@ def create_config_from_modelzoo(
     model_cfg["net_type"] = model_name
     model_cfg["metadata"] = {
         "project_path": project_config["project_path"],
-        "pose_config_path": pose_config_path,
+        "pose_config_path": str(pose_config_path),
         "bodyparts": converted_bodyparts,
         "unique_bodyparts": [],
         "individuals": project_config.get("individuals", ["animal"]),
