@@ -201,7 +201,7 @@ def keypoint_matching(
 
     config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
-    config["individuals"] = individuals
+    config["metadata"]["individuals"] = individuals
     train_file_path = os.path.join(memory_replay_folder, "annotations", train_file)
 
     pose_runner, detector_runner = get_inference_runners(
@@ -279,7 +279,7 @@ def keypoint_matching(
         name = image_path.split(os.sep)[-1]
         image_name_to_pred[name] = prediction
 
-    pred_keypoint_names = config["bodyparts"]
+    pred_keypoint_names = config["metadata"]["bodyparts"]
     num_pred_keypoints = len(pred_keypoint_names)
     gt_keypoint_names = categories[0]["keypoints"]
     num_gt_keypoints = len(gt_keypoint_names)
