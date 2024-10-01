@@ -24,14 +24,15 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_model_config_path,
     get_super_animal_project_config_path,
 )
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
     project_config: dict,
     pose_config_path: str,
-    model_name: str | None = None,
-    detector_name: str | None = None,
+    model_name: str,
+    detector_name: str | None,
 ) -> dict:
     """
     Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
@@ -42,7 +43,8 @@ def make_super_animal_finetune_config(
         project_config: The project configuration.
         pose_config_path: The path where the pose configuration file will be saved
         model_name: The type of neural net to finetune.
-        detector_name: The type of detector to use for the SuperAnimal model.
+        detector_name: The type of detector to use for the SuperAnimal model. If None is
+            given, the model will be set to a Bottom-Up framework.
 
     Returns:
         The generated pose configuration file.
@@ -98,7 +100,7 @@ def make_super_animal_finetune_config(
 def create_config_from_modelzoo(
     super_animal: str,
     model_name: str,
-    detector_name: str,
+    detector_name: str | None,
     converted_bodyparts: list[str],
     weight_init: WeightInitialization,
     project_config: dict,
@@ -109,7 +111,8 @@ def create_config_from_modelzoo(
     Args:
         super_animal: The SuperAnimal dataset on which the model was trained.
         model_name: The type of neural net to finetune.
-        detector_name: The type of detector to use for the SuperAnimal model.
+        detector_name: The type of detector to use for the SuperAnimal model. If None is
+            given, the model will be set to a Bottom-Up framework.
         converted_bodyparts: The project bodyparts that the model will learn.
         weight_init: The weight initialization to use.
         project_config: The project configuration.
@@ -122,9 +125,13 @@ def create_config_from_modelzoo(
     model_cfg = config_utils.read_config_as_dict(
         get_super_animal_model_config_path(model_name)
     )
-    model_cfg["detector"] = config_utils.read_config_as_dict(
-        get_super_animal_model_config_path(detector_name)
-    )
+    if detector_name is None:
+        model_cfg["method"] = str(Task.BOTTOM_UP)
+    else:
+        model_cfg["method"] = str(Task.TOP_DOWN)
+        model_cfg["detector"] = config_utils.read_config_as_dict(
+            get_super_animal_model_config_path(detector_name)
+        )
 
     # use SuperAnimal bodyparts
     if weight_init.memory_replay:

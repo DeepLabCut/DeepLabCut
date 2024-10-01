@@ -202,7 +202,7 @@ def update_config(config, max_individuals, device):
     return config
 
 
-def _parse_snapshot(snapshot: Path, device: str, print_keys: bool = False) -> None:
+def _parse_snapshot(snapshot_path: Path, device: str, print_keys: bool = False) -> None:
     """FIXME: A new snapshot should be uploaded and used"""
     def _map_model_keys(state_dict: dict) -> dict:
         updated_dict = {}
@@ -218,7 +218,7 @@ def _parse_snapshot(snapshot: Path, device: str, print_keys: bool = False) -> No
                 updated_dict[".".join(parts)] = v
         return updated_dict
 
-    snapshot = torch.load(snapshot, map_location=device)
+    snapshot = torch.load(snapshot_path, map_location=device)
     if print_keys:
         print(5 * "-----\n")
         print(snapshot.stem + " keys")
@@ -231,5 +231,5 @@ def _parse_snapshot(snapshot: Path, device: str, print_keys: bool = False) -> No
             model=_map_model_keys(snapshot["model_state_dict"]),
             metadata=dict(epoch=0),
         ),
-        snapshot,
+        snapshot_path,
     )

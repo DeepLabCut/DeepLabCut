@@ -85,7 +85,9 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
             return
 
         if not pose_cfg_path.exists():
-            self._set_text_error()
+            self._set_text_error(
+                f"The model configuration file {pose_cfg_path} was not created"
+            )
             return
 
         self._read_pose_config(pose_cfg_path)

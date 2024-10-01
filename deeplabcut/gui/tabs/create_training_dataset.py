@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
@@ -441,7 +442,10 @@ class CreateTrainingDataset(DefaultTab):
             self.detector_choice.removeItem(0)
 
         self.detector_choice.addItems(detectors)
-        if "ssdlite" in detectors:
+        default_detector = self.get_default_detector()
+        if default_detector in detectors:
+            self.detector_choice.setCurrentIndex(detectors.index(default_detector))
+        elif "ssdlite" in detectors:
             self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
 
         if net_choice is None:
@@ -483,7 +487,10 @@ class CreateTrainingDataset(DefaultTab):
             return None
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
-        return weight_init_cfg["model_filter"]
+        if "super_animal" in weight_init_cfg:
+            return dlclibrary.get_available_models(weight_init_cfg["super_animal"])
+
+        return None
 
     def get_detector_filter(self) -> list[str] | None:
         """Returns: the detectors that can be used based on weight initialization"""
@@ -494,7 +501,10 @@ class CreateTrainingDataset(DefaultTab):
             return None
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
-        return weight_init_cfg["detector_filter"]
+        if "super_animal" in weight_init_cfg:
+            return dlclibrary.get_available_detectors(weight_init_cfg["super_animal"])
+
+        return None
 
     def get_default_net(self) -> str | None:
         """Returns: the net type that can be used based on weight initialization"""
@@ -506,6 +516,17 @@ class CreateTrainingDataset(DefaultTab):
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_net")
+
+    def get_default_detector(self) -> str | None:
+        """Returns: the detector type that can be used based on weight initialization"""
+        if self.root.engine != Engine.PYTORCH:
+            return None
+
+        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+            return None
+
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        return weight_init_cfg.get("default_detector")
 
     def view_shuffles(self) -> None:
         viewer = ShuffleMetadataViewer(root=self.root, parent=self)
@@ -712,34 +733,34 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "model_filter": None,
         "detector_filter": None,
     },
+    "Transfer Learning - SuperAnimal Bird": {
+        "default_net": "top_down_resnet_50",
+        "default_detector": "ssdlite",
+        "super_animal": "superanimal_bird",
+    },
     "Transfer Learning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": [
-            "dekr_w32",
-            "hrnet_w32",
-        ],
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_resnet50_fpn_v2",
         "super_animal": "superanimal_quadruped",
     },
     "Transfer Learning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": [
-            "dekr_w32",
-            "hrnet_w32",
-        ],
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_resnet50_fpn_v2",
         "super_animal": "superanimal_topviewmouse",
+    },
+    "Fine-tuning - SuperAnimal Bird": {
+        "default_net": "top_down_resnet_50",
+        "default_detector": "ssdlite",
+        "super_animal": "superanimal_bird",
     },
     "Fine-tuning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_resnet50_fpn_v2",
         "super_animal": "superanimal_quadruped",
     },
     "Fine-tuning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_resnet50_fpn_v2",
         "super_animal": "superanimal_topviewmouse",
     },
 }

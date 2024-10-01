@@ -90,7 +90,7 @@ class WeightInitialization:
             data["dataset"] = self.dataset
 
         if self.detector_snapshot_path is not None:
-            data["detector_snapshot_path"] = self.detector_snapshot_path
+            data["detector_snapshot_path"] = str(self.detector_snapshot_path)
 
         if self.conversion_array is not None:
             data["conversion_array"] = self.conversion_array.tolist()
