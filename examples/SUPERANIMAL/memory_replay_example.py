@@ -27,7 +27,7 @@ from deeplabcut.utils.pseudo_label import keypoint_matching
 def main(
     dlc_proj_root: Path,
     super_animal_name: str,
-    super_animal_model: str = "hrnetw32",
+    super_animal_model: str = "hrnet_w32",
     super_animal_detector: str = "fasterrcnn_resnet50_fpn_v2",
 ):
     config_path = str(dlc_proj_root / "config.yaml")

@@ -29,7 +29,7 @@ def main(
     super_animal: str,
     shuffle_index: int,
     device: str,
-    super_animal_model: str = "hrnetw32",
+    super_animal_model: str = "hrnet_w32",
     super_animal_detector: str = "fasterrcnn_resnet50_fpn_v2",
 ):
     metadata = TrainingDatasetMetadata.load(config_path, load_splits=True)

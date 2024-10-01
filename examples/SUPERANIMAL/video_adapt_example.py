@@ -15,7 +15,9 @@ import deeplabcut.modelzoo.video_inference as modelzoo
 def main():
     modelzoo.video_inference_superanimal(
         videos=["/mnt/md0/shaokai/tom_video.mp4"],
-        superanimal_name="superanimal_topviewmouse_hrnetw32",
+        superanimal_name="superanimal_topviewmouse",
+        model_name="hrnet_w32",
+        detector_name="fasterrcnn_resnet50_fpn_v2",
         video_adapt=True,
         max_individuals=3,
         pseudo_threshold=0.1,
