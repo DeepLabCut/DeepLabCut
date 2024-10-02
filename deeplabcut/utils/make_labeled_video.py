@@ -44,6 +44,7 @@ from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
@@ -591,15 +592,30 @@ def create_labeled_video(
     if isinstance(confidence_to_alpha, bool):
         confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, pcutoff)
 
+    # Only for PyTorch engine - check if the shuffle was fine-tuned from a SuperAnimal
+    #   model with memory replay -> then SuperAnimal bodyparts must be used
+    model_folder = auxiliaryfunctions.get_model_folder(
+        trainFraction, shuffle, cfg, modelprefix, engine=Engine.PYTORCH,
+    )
+    model_config_path = (
+        Path(config).parent /
+        model_folder /
+        "train" /
+        Engine.PYTORCH.pose_cfg_name
+    )
+    if model_config_path.exists():
+        model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
+        if model_config["train_settings"].get("weight_init", {}).get("memory_replay", False):
+            superanimal_name = model_config["train_settings"]["weight_init"]["dataset"]
+
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-        dataset_name = "_".join(superanimal_name.split("_")[:-1])
         test_cfg = auxiliaryfunctions.read_plainconfig(
             os.path.join(
                 dlc_root_path,
                 "modelzoo",
                 "project_configs",
-                f"{dataset_name}.yaml",
+                f"{superanimal_name}.yaml",
             )
         )
 

@@ -144,12 +144,8 @@ def _video_inference_superanimal(
             pred_bodyparts=pred_bodyparts,
             pred_unique_bodyparts=pred_unique_bodyparts,
             dlc_scorer=dlc_scorer,
-            cfg=dict(
-                bodyparts=model_cfg["metadata"]["bodyparts"],
-                individuals=model_cfg["metadata"]["individuals"],
-                multianimalbodyparts=model_cfg["metadata"]["bodyparts"],
-                uniquebodyparts=[],
-            ),
+            cfg=dict(multianimalproject=True),
+            model_cfg=model_cfg,
             output_path=output_path,
             output_prefix=output_prefix,
         )

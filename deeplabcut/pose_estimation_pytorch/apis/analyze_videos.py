@@ -370,6 +370,7 @@ def analyze_videos(
                 pred_bodyparts=pred_bodyparts,
                 pred_unique_bodyparts=pred_unique_bodyparts,
                 cfg=cfg,
+                model_cfg=model_cfg,
                 dlc_scorer=dlc_scorer,
                 output_path=output_path,
                 output_prefix=output_prefix,
@@ -431,6 +432,7 @@ def create_df_from_prediction(
     pred_unique_bodyparts: np.ndarray | None,
     dlc_scorer: str,
     cfg: dict,
+    model_cfg: dict,
     output_path: str | Path,
     output_prefix: str | Path,
     save_as_csv: bool = False,
@@ -438,16 +440,18 @@ def create_df_from_prediction(
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
-    print(f"Saving results in {output_h5} and {output_pkl}")
-    cols = [
-        [dlc_scorer],
-        list(auxiliaryfunctions.get_bodyparts(cfg)),
-        ["x", "y", "likelihood"],
-    ]
-    cols_names = ["scorer", "bodyparts", "coords"]
-    individuals = cfg.get("individuals", ["animal"])
+    bodyparts = model_cfg["metadata"]["bodyparts"]
+    unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
+    individuals = model_cfg["metadata"]["individuals"]
     n_individuals = len(individuals)
-    if n_individuals > 1:
+    multianimal_project = cfg.get("multianimalproject")
+
+    print(f"Saving results in {output_h5} and {output_pkl}")
+    coords = ["x", "y", "likelihood"]
+    cols = [[dlc_scorer], bodyparts, coords]
+    cols_names = ["scorer", "bodyparts", "coords"]
+
+    if multianimal_project:
         cols.insert(1, individuals)
         cols_names.insert(1, "individuals")
 
@@ -459,29 +463,10 @@ def create_df_from_prediction(
         index=range(len(pred_bodyparts)),
     )
     if pred_unique_bodyparts is not None:
-        coordinate_labels_unique = ["x", "y", "likelihood"]
-        if n_individuals > 1:
-            results_unique_df_index = pd.MultiIndex.from_product(
-                [
-                    [dlc_scorer],
-                    ['single'],
-                    auxiliaryfunctions.get_unique_bodyparts(cfg),
-                    coordinate_labels_unique,
-                ],
-                names=["scorer", "individuals", "bodyparts", "coords"],
-            )
-        else:
-            results_unique_df_index = pd.MultiIndex.from_product(
-                [
-                    [dlc_scorer],
-                    auxiliaryfunctions.get_unique_bodyparts(cfg),
-                    coordinate_labels_unique,
-                ],
-                names=["scorer", "bodyparts", "coords"],
-            )
+        unique_columns = [dlc_scorer], ['single'], unique_bodyparts, coords
         df_u = pd.DataFrame(
             pred_unique_bodyparts.reshape((len(pred_unique_bodyparts), -1)),
-            columns=results_unique_df_index,
+            columns=pd.MultiIndex.from_product(unique_columns, names=cols_names),
             index=range(len(pred_unique_bodyparts)),
         )
         df = df.join(df_u, how="outer")
