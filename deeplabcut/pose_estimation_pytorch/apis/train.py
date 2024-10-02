@@ -265,7 +265,7 @@ def train_network(
 
             print("Loading memory replay data")
             loader = COCOLoader(
-                project_root=Path(loader.model_folder).parent / "memory_replay",
+                project_root=loader.model_folder / "memory_replay",
                 model_config_path=loader.model_config_path,
                 train_json_filename="memory_replay_train.json",
             )

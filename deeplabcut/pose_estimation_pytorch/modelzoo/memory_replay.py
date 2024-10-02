@@ -28,6 +28,9 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets import (
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.pose_estimation_pytorch.modelzoo import (
+    get_super_animal_project_config_path,
+)
 from deeplabcut.utils.pseudo_label import calculate_iou
 
 
@@ -285,6 +288,10 @@ def prepare_memory_replay(
 
     """
     cfg = af.read_config(config)
+    super_animal_cfg = af.read_plainconfig(
+        get_super_animal_project_config_path(super_animal=superanimal_name)
+    )
+
     if "individuals" in cfg:
         temp_dataset = MaDLCPoseDataset(
             str(loader.project_path), "temp_dataset", shuffle=loader.shuffle
@@ -321,13 +328,23 @@ def prepare_memory_replay(
         )
 
     dataset = COCOPoseDataset(memory_replay_folder, "memory_replay_dataset")
-    conversion_table_path = (
-        loader.project_path / "memory_replay" / "conversion_table.csv"
-    )
 
     # here we project the original DLC projects to superanimal space and save them into
     # a coco project format
-    dataset.project_with_conversion_table(str(conversion_table_path))
+    bodyparts = af.get_bodyparts(cfg)
+    sa_bodyparts = af.get_bodyparts(super_animal_cfg)
+    conversion_table = {}
+    for idx, bpt in enumerate(bodyparts):
+        conversion_table[bpt] = sa_bodyparts[weight_init.conversion_array[idx]]
+
+    dataset.project_with_conversion_table(
+        table_path=None,
+        table_dict=dict(
+            master_keypoints=sa_bodyparts,
+            conversion_table=conversion_table,
+        ),
+    )
+
     dataset.materialize(
         memory_replay_folder, framework="coco", deepcopy=False, no_image_copy=True,
     )
