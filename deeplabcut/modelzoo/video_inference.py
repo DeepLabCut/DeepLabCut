@@ -356,7 +356,10 @@ def video_inference_superanimal(
                 video_to_frames(video_path, pseudo_dataset_folder)
 
             anno_folder = pseudo_dataset_folder / "annotations"
-            if anno_folder.exists():
+            if (
+                (anno_folder / "train.json").exists()
+                and (anno_folder / "test.json").exists()
+            ):
                 print(
                     f"{anno_folder} exists, skipping the annotation construction. "
                     f"Delete the folder if you want to re-construct pseudo annotations"
@@ -387,10 +390,6 @@ def video_inference_superanimal(
                     pose_threshold=pseudo_threshold,
                     bbox_threshold=bbox_threshold,
                 )
-
-            # this is probably needed for video generation
-            individuals = [f"animal{i}" for i in range(max_individuals)]
-            config["metadata"]["individuals"] = individuals
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
