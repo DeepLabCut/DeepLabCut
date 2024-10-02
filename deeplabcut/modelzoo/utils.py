@@ -80,12 +80,12 @@ def get_super_animal_scorer(
         detector_name = detector_snapshot_path.stem
         if detector_name.startswith(super_animal_prefix):
             detector_name = detector_name[len(super_animal_prefix):]
-        dlc_scorer += f"_{detector_name}"
+        dlc_scorer += f"{detector_name}_"
 
     model_name = model_snapshot_path.stem
     if model_name.startswith(super_animal_prefix):
         model_name = model_name[len(super_animal_prefix):]
-    dlc_scorer += f"_{model_name}"
+    dlc_scorer += f"{model_name}"
 
     return dlc_scorer
 
