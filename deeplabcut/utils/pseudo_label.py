@@ -403,39 +403,24 @@ def dlc3predictions_2_annotation_from_video(
 
     num_kpts = len(bodyparts)
 
-    # superquadruped
-    if num_kpts == 39 and superanimal_name is not None:
-        categories = [
-            {
-                "name": "superquadruped",
-                "id": 1,
-                "supercategory": "animal",
-                "keypoints": bodyparts,
-            }
-        ]
-    # supertopviewmouse
-    elif num_kpts == 27 and superanimal_name is not None:
-        categories = [
-            {
-                "name": "supertopviewmouse",
-                "id": 1,
-                "supercategory": "animal",
-                "keypoints": bodyparts,
-            }
-        ]
-
-    else:
+    if not superanimal_name.startswith("superanimal_"):
         raise ValueError("not supporting non superanimal model video adaptation yet")
 
-    assert len(predictions) == len(image_paths)
+    category_name = superanimal_name[len("superanimal_"):]
+    categories = [
+        {
+            "name": category_name,
+            "id": 1,
+            "supercategory": "animal",
+            "keypoints": bodyparts,
+        }
+    ]
 
+    assert len(predictions) == len(image_paths)
     imageid2annotations = defaultdict(list)
     for image_id, (prediction, image_path) in enumerate(zip(predictions, image_paths)):
-
         image_obj = cv2.imread(image_path)
-
         height, width, channels = image_obj.shape
-
         imagename = image_path.split(os.sep)[-1]
         image = {
             "id": image_id,
