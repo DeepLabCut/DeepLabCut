@@ -152,7 +152,7 @@ def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> Conversio
         cfg = read_config(str(cfg))
 
     conversion_tables = cfg.get("SuperAnimalConversionTables", {})
-    if super_animal not in conversion_tables:
+    if conversion_tables is None or super_animal not in conversion_tables:
         raise ValueError(
             f"No conversion table defined in the project config for {super_animal}."
             "Call deeplabcut.modelzoo.create_conversion_table to create one."
