@@ -314,6 +314,10 @@ def video_inference_superanimal(
                 model_name=detector_name,
             )
 
+        dlc_scorer = get_super_animal_scorer(
+            superanimal_name, pose_model_path, detector_path
+        )
+
         config = update_config(config, max_individuals, device)
         output_suffix = "_before_adapt"
         if video_adapt:
@@ -372,9 +376,6 @@ def video_inference_superanimal(
                 else:
                     pseudo_anno_dir = Path(dest_folder)
 
-                dlc_scorer = get_super_animal_scorer(
-                    superanimal_name, pose_model_path, detector_path
-                )
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
                 with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
                     predictions = json.load(f)
