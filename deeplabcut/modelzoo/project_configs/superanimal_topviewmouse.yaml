@@ -1,0 +1,89 @@
+# Project definitions (do not edit)
+Task:
+scorer:
+date:
+multianimalproject:
+identity:
+
+
+# Project path (change when moving around)
+project_path:
+
+
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+
+
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+bodyparts:
+- nose
+- left_ear
+- right_ear
+- left_ear_tip
+- right_ear_tip
+- left_eye
+- right_eye
+- neck
+- mid_back
+- mouse_center
+- mid_backend
+- mid_backend2
+- mid_backend3
+- tail_base
+- tail1
+- tail2
+- tail3
+- tail4
+- tail5
+- left_shoulder
+- left_midside
+- left_hip
+- right_shoulder
+- right_midside
+- right_hip
+- tail_end
+- head_midpoint
+
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
+start:
+stop:
+numframes2pick:
+
+
+# Plotting configuration
+skeleton: []
+skeleton_color: black
+pcutoff:
+dotsize:
+alphavalue:
+colormap: rainbow
+
+
+# Training,Evaluation and Analysis configuration
+TrainingFraction:
+iteration:
+default_net_type:
+default_augmenter:
+snapshotindex:
+detector_snapshotindex:
+batch_size: 1
+
+
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping:
+#if cropping is true for analysis, then set the values here:
+x1:
+x2:
+y1:
+y2:
+
+
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+move2corner:
+
+
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:

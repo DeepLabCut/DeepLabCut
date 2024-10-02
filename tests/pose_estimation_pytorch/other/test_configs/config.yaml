@@ -1,0 +1,106 @@
+    # Project definitions (do not edit)
+Task: openfield
+scorer: Pranav
+date: Aug20
+multianimalproject: false
+identity:
+
+    # Project path (change when moving around)
+project_path: /home/quentin/datasets/Openfield_pytorch
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  /Data/openfield-Pranav-2018-08-20/videos/m1s1.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m1s2.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m2s1.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m3s1.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m3s2.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m4s1.mp4:
+    crop: 0, 640, 0, 480
+  /Data/openfield-Pranav-2018-08-20/videos/m5s1.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m6s1.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m6s2.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m7s1.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m7s2.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m7s3.mp4:
+    crop: 0, 800, 0, 800
+  /Data/openfield-Pranav-2018-08-20/videos/m8s1.mp4:
+    crop: 0, 800, 0, 800
+
+  /Users/mwmathis/Downloads/ARCricket1.avi:
+    crop: 0, 720, 0, 540
+bodyparts:
+- snout
+- leftear
+- rightear
+- tailbase
+
+flipped_keypoints:
+- 0
+- 2
+- 1
+- 3
+
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+start: 0
+stop: 1
+numframes2pick: 20
+
+    # Plotting configuration
+skeleton: []
+skeleton_color: black
+pcutoff: 0.4
+dotsize: 8
+alphavalue: 0.7
+colormap: jet
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.95
+iteration: 1
+default_net_type: resnet_50
+default_augmenter: default
+snapshotindex: -1
+batch_size: 1
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true
+croppedtraining:

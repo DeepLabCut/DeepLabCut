@@ -322,12 +322,17 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
             _t1 = np.c_[_t1, np.ones((*_t1.shape[:2], 1))]
             _t2 = np.c_[_t2, np.ones((*_t2.shape[:2], 1))]
 
-            # cost for any point in time of t1 being the same
-            # any point in time of t2
-            cost = np.abs(np.nansum(np.matmul(_t1, F) * _t2, axis=2))
+            try:
+                # cost for any point in time of t1 being the same
+                # any point in time of t2
+                cost = np.abs(np.nansum(np.matmul(_t1, F) * _t2, axis=2))
 
-            # Get average cost of the entire track
-            cost = cost.mean()
+                # Get average cost of the entire track
+                cost = cost.mean()
+            except:
+                # typically when dim 2 differs, with uniquebodyparts
+                cost = 100000.0
+
             costs[i, j] = cost
 
     match_inds = linear_sum_assignment(np.abs(costs))

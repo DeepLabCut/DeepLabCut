@@ -272,6 +272,7 @@ def create_new_project(
     cfg_file["TrainingFraction"] = [0.95]
     cfg_file["iteration"] = 0
     cfg_file["snapshotindex"] = -1
+    cfg_file["detector_snapshotindex"] = -1
     cfg_file["x1"] = 0
     cfg_file["x2"] = 640
     cfg_file["y1"] = 277
@@ -279,6 +280,7 @@ def create_new_project(
     cfg_file["batch_size"] = (
         8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     )
+    cfg_file["detector_batch_size"] = 1
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

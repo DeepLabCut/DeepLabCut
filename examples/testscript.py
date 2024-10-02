@@ -23,18 +23,17 @@ It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights
 It produces nothing of interest scientifically.
 """
 import os
-import deeplabcut
 import platform
-import scipy.io as sio
-import subprocess
+import random
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import scipy.io as sio
 
+import deeplabcut
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
-
-import random
 
 USE_SHELVE = random.choice([True, False])
 MODELS = ["resnet_50", "efficientnet-b0", "mobilenet_v2_0.35"]
@@ -43,6 +42,7 @@ MODELS = ["resnet_50", "efficientnet-b0", "mobilenet_v2_0.35"]
 if __name__ == "__main__":
     task = "TEST"  # Enter the name of your experiment Task
     scorer = "Alex"  # Enter the name of the experimenter/labeler
+    engine = Engine.TF
 
     print("Imported DLC!")
     basepath = os.path.dirname(os.path.realpath(__file__))
@@ -92,6 +92,7 @@ if __name__ == "__main__":
 
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
+    frames = [fn for fn in frames if fn.endswith(".png")]
     # As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
     for index, bodypart in enumerate(cfg["bodyparts"]):
         columnindex = pd.MultiIndex.from_product(
@@ -134,7 +135,7 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type
+        path_config_file, net_type=NET, augmenter_type=augmenter_type, engine=engine,
     )
 
     # Check the training image paths are correctly stored as arrays of strings
@@ -204,7 +205,7 @@ if __name__ == "__main__":
     except:  # if ffmpeg is broken/missing
         print("using alternative method")
         newvideo = os.path.join(cfg["project_path"], "videos", videoname + "short.mp4")
-        from moviepy.editor import VideoFileClip, VideoClip
+        from moviepy.editor import VideoClip, VideoFileClip
 
         clip = VideoFileClip(video[0])
         clip.reader.initialize()
@@ -291,7 +292,7 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type2
+        path_config_file, net_type=NET, augmenter_type=augmenter_type2, engine=engine
     )
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
@@ -332,7 +333,7 @@ if __name__ == "__main__":
         newvideo2 = os.path.join(
             cfg["project_path"], "videos", videoname + "short2.mp4"
         )
-        from moviepy.editor import VideoFileClip, VideoClip
+        from moviepy.editor import VideoClip, VideoFileClip
 
         clip = VideoFileClip(video[0])
         clip.reader.initialize()
@@ -389,6 +390,7 @@ if __name__ == "__main__":
         Shuffles=[2],
         net_type=NET,
         augmenter_type=augmenter_type3,
+        engine=engine,
     )
 
     posefile = os.path.join(
@@ -438,6 +440,7 @@ if __name__ == "__main__":
         Shuffles=[4, 5],
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
+        engine=engine,
     )
 
     print("ALL DONE!!! - default cases are functional.")

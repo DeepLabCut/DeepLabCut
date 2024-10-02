@@ -12,6 +12,9 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+# Suppress tensorflow warning messages
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 from deeplabcut.pose_estimation_tensorflow.config import *
 from deeplabcut.pose_estimation_tensorflow.datasets import *
@@ -26,6 +29,3 @@ from deeplabcut.pose_estimation_tensorflow.predict_videos import *
 from deeplabcut.pose_estimation_tensorflow.training import *
 from deeplabcut.pose_estimation_tensorflow.util import *
 from deeplabcut.pose_estimation_tensorflow.visualizemaps import *
-from deeplabcut.pose_estimation_tensorflow.predict_supermodel import (
-    video_inference_superanimal,
-)

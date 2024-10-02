@@ -1,0 +1,117 @@
+data:
+  colormode: RGB
+  inference:
+    auto_padding:
+      pad_width_divisor: 32
+      pad_height_divisor: 32
+    normalize_images: true
+  train:
+    affine:
+      p: 0.5
+      scaling: [1.0, 1.0]
+      rotation: 30
+      translation: 0
+    gaussian_noise: 12.75
+    normalize_images: true
+    auto_padding:
+      pad_width_divisor: 32
+      pad_height_divisor: 32
+detector:
+  data:
+    colormode: RGB
+    inference:
+      normalize_images: true
+    train:
+      hflip: true
+      normalize_images: true
+  device: auto
+  model:
+    type: FasterRCNN
+    variant: fasterrcnn_resnet50_fpn_v2
+    box_score_thresh: 0.6
+    pretrained: false
+  runner:
+    type: DetectorTrainingRunner
+    eval_interval: 50
+    optimizer:
+      type: AdamW
+      params:
+        lr: 1e-5
+    scheduler:
+      type: LRListScheduler
+      params:
+        milestones: [ 90 ]
+        lr_list: [ [ 1e-6 ] ]
+    snapshots:
+      max_snapshots: 5
+      save_epochs: 50
+      save_optimizer_state: false
+  train_settings:
+    batch_size: 1
+    dataloader_workers: 0
+    dataloader_pin_memory: true
+    display_iters: 500
+    epochs: 250
+device: auto
+method: td
+model:
+  backbone:
+    type: HRNet
+    model_name: hrnet_w32
+    pretrained: false
+    freeze_bn_stats: True
+    freeze_bn_weights: False
+    interpolate_branches: false
+    increased_channel_count: false
+  backbone_output_channels: 32
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: "normal"
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: false
+        clip_scores: true
+        location_refinement: false
+        locref_std: 7.2801
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+        locref_std: 7.2801
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+      heatmap_config:
+        channels: [32, "num_bodyparts"]
+        kernel_size: [1]
+        strides: [1]
+runner:
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-5
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-6 ], [ 1e-7 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: true
+  display_iters: 500
+  epochs: 200
+  pretrained_weights: null
+  seed: 42
