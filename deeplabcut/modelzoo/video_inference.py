@@ -18,6 +18,7 @@ from typing import Optional, Union
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
+from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
@@ -367,7 +368,10 @@ def video_inference_superanimal(
                     pseudo_anno_dir = video_path.parent
                 else:
                     pseudo_anno_dir = Path(dest_folder)
-                dlc_scorer = f"{superanimal_name}_{model_name}"
+
+                dlc_scorer = get_super_animal_scorer(
+                    superanimal_name, pose_model_path, detector_path
+                )
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
                 with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
                     predictions = json.load(f)

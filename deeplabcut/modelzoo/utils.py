@@ -58,6 +58,38 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
     return read_config(str(super_animal_projects[super_animal]))
 
 
+def get_super_animal_scorer(
+    super_animal: str,
+    model_snapshot_path: Path,
+    detector_snapshot_path: Path | None,
+) -> str:
+    """
+    Args:
+        super_animal: The SuperAnimal dataset on which the models were trained
+        model_snapshot_path: The path for the SuperAnimal pose model snapshot
+        detector_snapshot_path: The path for the SuperAnimal detector snapshot, if a
+            detector is being used.
+
+    Returns:
+        The DLC scorer name to use for the given SuperAnimal models.
+    """
+    super_animal_prefix = super_animal + "_"
+    dlc_scorer = super_animal_prefix
+
+    if detector_snapshot_path is not None:
+        detector_name = detector_snapshot_path.stem
+        if detector_name.startswith(super_animal_prefix):
+            detector_name = detector_name[len(super_animal_prefix):]
+        dlc_scorer += f"_{detector_name}"
+
+    model_name = model_snapshot_path.stem
+    if model_name.startswith(super_animal_prefix):
+        model_name = model_name[len(super_animal_prefix):]
+    dlc_scorer += f"_{model_name}"
+
+    return dlc_scorer
+
+
 def create_conversion_table(
     config: str | Path,
     super_animal: str,

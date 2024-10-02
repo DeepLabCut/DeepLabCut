@@ -44,7 +44,7 @@ def superanimal_analyze_images(
     detector_name: str,
     images: str | Path | list[str] | list[Path],
     max_individuals: int,
-    out_folder: str,
+    out_folder: str | Path,
     bbox_threshold: float = 0.6,
     progress_bar: bool = True,
     device: str | None = None,

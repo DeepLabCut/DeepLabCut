@@ -15,7 +15,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from deeplabcut.modelzoo.utils import get_superanimal_colormaps
+from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
     create_df_from_prediction,
     video_inference,
@@ -113,10 +113,9 @@ def _video_inference_superanimal(
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
-        dlc_scorer = f"{superanimal_name}"
-        if detector_snapshot_path is not None:
-            dlc_scorer += f"_{detector_snapshot_path.stem}"
-        dlc_scorer += f"_{model_snapshot_path.stem}"
+        dlc_scorer = get_super_animal_scorer(
+            superanimal_name, model_snapshot_path, detector_snapshot_path
+        )
 
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"
         output_path = Path(dest_folder)
