@@ -201,10 +201,11 @@ def evaluate_snapshot(
     if "weight_init" in loader.model_cfg["train_settings"]:
         weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
         if weight_init_cfg["memory_replay"]:
-            conversion_array = weight_init_cfg["conversion_array"]
-            bodyparts = list(np.array(parameters.bodyparts)[conversion_array])
+            # need to update the bodyparts to reflect the labeled ground truth
             parameters = PoseDatasetParameters(
-                bodyparts, parameters.unique_bpts, parameters.individuals
+                bodyparts=auxiliaryfunctions.get_bodyparts(cfg),
+                unique_bpts=parameters.unique_bpts,
+                individuals=parameters.individuals
             )
 
     pcutoff = cfg.get("pcutoff")
