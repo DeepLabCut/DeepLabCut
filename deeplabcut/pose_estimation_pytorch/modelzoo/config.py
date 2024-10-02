@@ -131,9 +131,9 @@ def create_config_from_modelzoo(
         get_super_animal_model_config_path(model_name)
     )
     if detector_name is None:
-        model_cfg["method"] = str(Task.BOTTOM_UP)
+        model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
     else:
-        model_cfg["method"] = str(Task.TOP_DOWN)
+        model_cfg["method"] = Task.TOP_DOWN.aliases[0].lower()
         model_cfg["detector"] = config_utils.read_config_as_dict(
             get_super_animal_model_config_path(detector_name)
         )
