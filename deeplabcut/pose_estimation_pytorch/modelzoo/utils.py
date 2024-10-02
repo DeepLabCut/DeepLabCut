@@ -194,6 +194,8 @@ def update_config(config, max_individuals, device):
         num_individuals=max_individuals,
         backbone_output_channels=config["model"]["backbone_output_channels"],
     )
+    config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
+
     config["device"] = device
     if "detector" in config:
         config["detector"]["device"] = device
