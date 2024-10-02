@@ -308,7 +308,7 @@ def evaluate_snapshot(
 
 
 def evaluate_network(
-    config: str,
+    config: str | Path,
     shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
     snapshotindex: int | str | None = None,

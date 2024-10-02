@@ -58,7 +58,7 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
 
 
 def train_network(
-    config: str,
+    config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     max_snapshots_to_keep: int | None = None,
@@ -221,7 +221,7 @@ def train_network(
             max_snapshots_to_keep = 5
 
         return train_network(
-            config,
+            str(config),
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             max_snapshots_to_keep=max_snapshots_to_keep,
@@ -317,7 +317,7 @@ def return_train_network_path(
 
 
 def evaluate_network(
-    config,
+    config: str | Path,
     Shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
     plotting: bool | str = False,
@@ -458,7 +458,7 @@ def evaluate_network(
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import evaluate_network
         return evaluate_network(
-            config,
+            str(config),
             Shuffles=Shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,

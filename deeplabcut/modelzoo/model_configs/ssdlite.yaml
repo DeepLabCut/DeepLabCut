@@ -20,8 +20,7 @@ data:
     normalize_images: true
 device: auto
 model:
-  type: FasterRCNN
-  variant: fasterrcnn_resnet50_fpn_v2
+  type: SSDLite
   box_score_thresh: 0.6
   freeze_bn_stats: true
   freeze_bn_weights: false
@@ -42,7 +41,7 @@ runner:
     save_epochs: 25
     save_optimizer_state: false
 train_settings:
-  batch_size: 1
+  batch_size: 8
   dataloader_workers: 0
   dataloader_pin_memory: false
   display_iters: 500

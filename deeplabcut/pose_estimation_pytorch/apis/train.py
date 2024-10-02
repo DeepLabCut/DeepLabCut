@@ -189,7 +189,7 @@ def train(
 
 
 def train_network(
-    config: str,
+    config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     modelprefix: str = "",

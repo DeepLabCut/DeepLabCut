@@ -20,40 +20,53 @@ device: auto
 method: td
 model:
   backbone:
-    type: HRNet
-    model_name: hrnet_w32
-    pretrained: false
-    freeze_bn_stats: True
-    freeze_bn_weights: False
-    interpolate_branches: false
-    increased_channel_count: false
-  backbone_output_channels: 32
+    type: ResNet
+    model_name: resnet50_gn
+    output_stride: 16
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+  backbone_output_channels: 2048
   heads:
     bodypart:
       type: HeatmapHead
-      weight_init: "normal"
+      weight_init: normal
       predictor:
         type: HeatmapPredictor
         apply_sigmoid: false
         clip_scores: true
-        location_refinement: false
+        location_refinement: true
         locref_std: 7.2801
       target_generator:
         type: HeatmapGaussianGenerator
         num_heatmaps: "num_bodyparts"
         pos_dist_thresh: 17
         heatmap_mode: KEYPOINT
-        generate_locref: false
+        generate_locref: true
         locref_std: 7.2801
       criterion:
         heatmap:
           type: WeightedMSECriterion
           weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
       heatmap_config:
-        channels: [32, "num_bodyparts"]
-        kernel_size: [1]
-        strides: [1]
-net_type: hrnet_w32
+        channels:
+        - 2048
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts"
+          kernel_size: 1
+      locref_config:
+        channels:
+        - 2048
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts x 2"
+          kernel_size: 1
+net_type: resnet_50
 runner:
   type: PoseTrainingRunner
   key_metric: "test.mAP"
@@ -77,5 +90,5 @@ train_settings:
   dataloader_workers: 0
   dataloader_pin_memory: false
   display_iters: 500
-  epochs: 200
+  epochs: 100
   seed: 42
