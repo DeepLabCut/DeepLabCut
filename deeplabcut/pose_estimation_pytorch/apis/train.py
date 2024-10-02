@@ -247,8 +247,15 @@ def train_network(
 
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
-
         if weight_init.memory_replay:
+            if weight_init.detector_snapshot_path is None:
+                raise ValueError(
+                    "When fine-tuning a SuperAnimal model with memory replay, a "
+                    "detector must be given as well so animals can be detected in "
+                    "images to obtain pseudo-labels. Please update your weight "
+                    "initialization so that `detector_snapshot_path` is not None."
+                )
+
             print("Preparing data for memory replay (this can take some time)")
             dataset_params = loader.get_dataset_parameters()
             prepare_memory_replay(
