@@ -158,8 +158,10 @@ def keypoint_matching(
     Args:
         config_path: The path of the DeepLabCut project configuration file.
         superanimal_name: SuperAnimal dataset with which to run keypoint matching.
-        model_name: SuperAnimal model with which to run keypoint matching
-        detector_name: TODO SuperAnimal detector with which to run keypoint matching
+        model_name: Name of the SuperAnimal pose model architecture with which to run
+            keypoint matching
+        detector_name: Name of the SuperAnimal detector architecture with which to run
+            keypoint matching
         copy_images: When False, symlinks are created for the dataset used for keypoint
             matching. Otherwise, images are copied from the `labeled-data` folder to the
             folder used for keypoint matching.
