@@ -19,6 +19,7 @@ from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_c
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
     create_df_from_prediction,
     video_inference,
+    VideoIterator,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
@@ -127,17 +128,19 @@ def _video_inference_superanimal(
             # str(output_h5).replace(".h5", "_after_adapt.json")
             output_json = output_json.with_stem(output_h5.stem + output_suffix)
 
-        predictions, video_metadata = video_inference(
-            video_path,
+        video = VideoIterator(video_path)
+        predictions = video_inference(
+            video,
             task=pose_task,
             pose_runner=pose_runner,
             detector_runner=detector_runner,
-            return_video_metadata=True,
         )
+
         pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
         pred_unique_bodyparts = None
 
-        bbox = (0, video_metadata["resolution"][0], 0, video_metadata["resolution"][1])
+        vid_w, vid_h = video.dimensions
+        bbox = (0, vid_w, 0, vid_h)
         print(f"Saving results to {dest_folder}")
 
         df = create_df_from_prediction(
@@ -164,7 +167,7 @@ def _video_inference_superanimal(
             video_path,
             output_h5,
             pcutoff=pcutoff,
-            fps=video_metadata["fps"],
+            fps=video.fps,
             bbox=bbox,
             cmap=colormap,
             output_path=str(output_video),

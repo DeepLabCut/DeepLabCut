@@ -91,19 +91,35 @@ class VideoIterator(VideoReader):
 
 
 def video_inference(
-    video_path: str | Path,
+    video: str | Path | VideoIterator,
     task: Task,
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     with_identity: bool = False,
-    return_video_metadata: bool = False,
     cropping: list[int] | None = None,
 ) -> list[dict[str, np.ndarray]]:
-    """Runs inference on a video"""
-    video = VideoIterator(str(video_path), cropping=cropping)
+    """Runs inference on a video
+
+    Args:
+        video: The video to analyze
+        task: The pose task to run (bottom-up or top-down)
+        pose_runner: The pose runner to run inference with
+        detector_runner: When ``task==Task.TOP_DOWN``, the detector runner to obtain
+            bounding boxes for the video.
+        with_identity: Whether identity predictions should be made with the model.
+        cropping: Optionally, video inference can be run on a cropped version of the
+            video. To do so, pass a list containing 4 elements to specify which area
+            of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
+
+    Returns:
+        Predictions for each frame in the video.
+    """
+    if not isinstance(video, VideoIterator):
+        video = VideoIterator(str(video), cropping=cropping)
+
     n_frames = video.get_n_frames()
     vid_w, vid_h = video.dimensions
-    print(f"Starting to analyze {video_path}")
+    print(f"Starting to analyze {video.video_path}")
     print(
         f"Video metadata: \n"
         f"  Overall # of frames:    {n_frames}\n"
@@ -111,11 +127,6 @@ def video_inference(
         f"  fps:                    {video.fps}\n"
         f"  resolution:             w={vid_w}, h={vid_h}\n"
     )
-    video_metadata = {
-        "n_frames": n_frames,
-        "fps": video.fps,
-        "resolution": (vid_w, vid_h),
-    }
 
     if task == Task.TOP_DOWN:
         # Get bounding boxes for context
@@ -146,9 +157,6 @@ def video_inference(
             "the video is corrupted. You can try to fix the issue by re-encoding your "
             f"video (tips on how to do that: {tip_url}{header})"
         )
-
-    if return_video_metadata:
-        return predictions, video_metadata
 
     return predictions
 
@@ -337,7 +345,7 @@ def analyze_videos(
         else:
             runtime = [time.time()]
             predictions = video_inference(
-                video_path=video,
+                video=video,
                 pose_runner=pose_runner,
                 task=pose_task,
                 detector_runner=detector_runner,
@@ -558,6 +566,9 @@ def _generate_metadata(
         "training set fraction": train_fraction,
         "cropping": cropping is not None,
         "cropping_parameters": cropping_parameters,
+        "individuals": pytorch_config["metadata"]["individuals"],
+        "bodyparts": pytorch_config["metadata"]["bodyparts"],
+        "unique_bodyparts": pytorch_config["metadata"]["unique_bodyparts"],
     }
     return {"data": metadata}
 
