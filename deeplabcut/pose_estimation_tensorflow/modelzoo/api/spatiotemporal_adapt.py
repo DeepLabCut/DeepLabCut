@@ -155,7 +155,7 @@ class SpatiotemporalAdaptation:
                 filtered=False,
                 init_weights=self.init_weights,
                 draw_skeleton=True,
-                superanimal_name=self.supermodel_name,
+                superanimal_name=self.project_name,
                 **kwargs,
             )
 
@@ -245,6 +245,6 @@ class SpatiotemporalAdaptation:
             filtered=False,
             init_weights=adapt_weights,
             draw_skeleton=True,
-            superanimal_name=self.supermodel_name,
+            superanimal_name=self.project_name,
             **kwargs,
         )
