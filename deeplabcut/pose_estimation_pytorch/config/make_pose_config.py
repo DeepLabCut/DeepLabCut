@@ -200,6 +200,7 @@ def make_pytorch_test_config(
     bodyparts = model_config["metadata"]["bodyparts"]
     test_config = dict(
         dataset=model_config["metadata"]["project_path"],
+        dataset_type="multi-animal-imgaug",  # required for downstream tracking
         num_joints=len(bodyparts),
         all_joints=[[i] for i in range(len(bodyparts))],
         all_joints_names=bodyparts,
