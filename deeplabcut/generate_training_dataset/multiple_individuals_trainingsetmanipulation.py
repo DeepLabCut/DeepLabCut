@@ -293,10 +293,7 @@ def create_multianimaltraining_dataset(
     multi_stage = False
     ### dlcnet_ms5: backbone resnet50 + multi-fusion & multi-stage module
     ### dlcr101_ms5/dlcr152_ms5: backbone resnet101/152 + multi-fusion & multi-stage module
-    if (
-        all(net in net_type for net in ("dlcr", "_ms5"))
-        and engine != Engine.PYTORCH
-    ):
+    if all(net in net_type for net in ("dlcr", "_ms5")) and engine != Engine.PYTORCH:
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
@@ -394,7 +391,7 @@ def create_multianimaltraining_dataset(
     top_down = False
     if engine == Engine.PYTORCH and net_type.startswith("top_down_"):
         top_down = True
-        net_type = net_type[len("top_down_"):]
+        net_type = net_type[len("top_down_") :]
 
     for trainFraction, shuffle, (trainIndices, testIndices) in splits:
         ####################################################
@@ -455,7 +452,10 @@ def create_multianimaltraining_dataset(
             #################################################################################
 
             modelfoldername = auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, engine=engine,
+                trainFraction,
+                shuffle,
+                cfg,
+                engine=engine,
             )
             auxiliaryfunctions.attempt_to_make_folder(
                 Path(config).parents[0] / modelfoldername, recursive=True
@@ -492,94 +492,86 @@ def create_multianimaltraining_dataset(
                 )
             )
 
-            jointnames = [str(bpt) for bpt in multianimalbodyparts]
-            jointnames.extend([str(bpt) for bpt in uniquebodyparts])
-            items2change = {
-                "dataset": datafilename,
-                "engine": engine.aliases[0],
-                "metadataset": metadatafilename,
-                "num_joints": len(multianimalbodyparts)
-                + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
-                "all_joints": [
-                    [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
-                ],  # cfg["uniquebodyparts"]))],
-                "all_joints_names": jointnames,
-                "init_weights": str(model_path),
-                "project_path": str(cfg["project_path"]),
-                "net_type": net_type,
-                "multi_stage": multi_stage,
-                "pairwise_loss_weight": 0.1,
-                "pafwidth": 20,
-                "partaffinityfield_graph": partaffinityfield_graph,
-                "partaffinityfield_predict": partaffinityfield_predict,
-                "weigh_only_present_joints": False,
-                "num_limbs": len(partaffinityfield_graph),
-                "dataset_type": dataset_type,
-                "optimizer": "adam",
-                "batch_size": 8,
-                "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
-                "save_iters": 10000,
-                "display_iters": 500,
-                "num_idchannel": (
-                    len(cfg["individuals"]) if cfg.get("identity", False) else 0
-                ),
-                "crop_size": list(crop_size),
-                "crop_sampling": crop_sampling,
-            }
+            if engine == Engine.TF:
+                jointnames = [str(bpt) for bpt in multianimalbodyparts]
+                jointnames.extend([str(bpt) for bpt in uniquebodyparts])
+                items2change = {
+                    "dataset": datafilename,
+                    "engine": engine.aliases[0],
+                    "metadataset": metadatafilename,
+                    "num_joints": len(multianimalbodyparts)
+                    + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
+                    "all_joints": [
+                        [i]
+                        for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
+                    ],  # cfg["uniquebodyparts"]))],
+                    "all_joints_names": jointnames,
+                    "init_weights": str(model_path),
+                    "project_path": str(cfg["project_path"]),
+                    "net_type": net_type,
+                    "multi_stage": multi_stage,
+                    "pairwise_loss_weight": 0.1,
+                    "pafwidth": 20,
+                    "partaffinityfield_graph": partaffinityfield_graph,
+                    "partaffinityfield_predict": partaffinityfield_predict,
+                    "weigh_only_present_joints": False,
+                    "num_limbs": len(partaffinityfield_graph),
+                    "dataset_type": dataset_type,
+                    "optimizer": "adam",
+                    "batch_size": 8,
+                    "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
+                    "save_iters": 10000,
+                    "display_iters": 500,
+                    "num_idchannel": (
+                        len(cfg["individuals"]) if cfg.get("identity", False) else 0
+                    ),
+                    "crop_size": list(crop_size),
+                    "crop_sampling": crop_sampling,
+                }
 
-            trainingdata = MakeTrain_pose_yaml(
-                items2change,
-                path_train_config,
-                defaultconfigfile,
-                save=(engine == Engine.TF),
-            )
-            keys2save = [
-                "dataset",
-                "num_joints",
-                "all_joints",
-                "all_joints_names",
-                "net_type",
-                "multi_stage",
-                "init_weights",
-                "global_scale",
-                "location_refinement",
-                "locref_stdev",
-                "dataset_type",
-                "partaffinityfield_predict",
-                "pairwise_predict",
-                "partaffinityfield_graph",
-                "num_limbs",
-                "dataset_type",
-                "num_idchannel",
-            ]
+                trainingdata = MakeTrain_pose_yaml(
+                    items2change,
+                    path_train_config,
+                    defaultconfigfile,
+                    save=(engine == Engine.TF),
+                )
+                keys2save = [
+                    "dataset",
+                    "num_joints",
+                    "all_joints",
+                    "all_joints_names",
+                    "net_type",
+                    "multi_stage",
+                    "init_weights",
+                    "global_scale",
+                    "location_refinement",
+                    "locref_stdev",
+                    "dataset_type",
+                    "partaffinityfield_predict",
+                    "pairwise_predict",
+                    "partaffinityfield_graph",
+                    "num_limbs",
+                    "dataset_type",
+                    "num_idchannel",
+                ]
 
-            MakeTest_pose_yaml(
-                trainingdata,
-                keys2save,
-                path_test_config,
-                nmsradius=5.0,
-                minconfidence=0.01,
-                sigma=1,
-                locref_smooth=False,
-            )  # setting important def. values for inference
-
-            # Setting inference cfg file:
-            defaultinference_configfile = os.path.join(
-                dlcparent_path, "inference_cfg.yaml"
-            )
-            items2change = {
-                "minimalnumberofconnections": int(len(cfg["multianimalbodyparts"]) / 2),
-                "topktoretain": len(cfg["individuals"]),
-                "withid": cfg.get("identity", False),
-            }
-            MakeInference_yaml(
-                items2change, path_inference_config, defaultinference_configfile
-            )
-
-            # Populate the pytorch config yaml file
-            if engine == Engine.PYTORCH:
-                from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
-                from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
+                MakeTest_pose_yaml(
+                    trainingdata,
+                    keys2save,
+                    path_test_config,
+                    nmsradius=5.0,
+                    minconfidence=0.01,
+                    sigma=1,
+                    locref_smooth=False,
+                )  # setting important def. values for inference
+            elif engine == Engine.PYTORCH:
+                from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+                    make_pytorch_pose_config,
+                    make_pytorch_test_config,
+                )
+                from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
+                    make_super_animal_finetune_config,
+                )
 
                 # backwards compatibility with version 2.X
                 if net_type == "dlcrnet_ms5":
@@ -587,7 +579,7 @@ def create_multianimaltraining_dataset(
 
                 config_path = Path(path_train_config).with_name(engine.pose_cfg_name)
                 if weight_init is not None and weight_init.with_decoder:
-                    make_super_animal_finetune_config(
+                    pytorch_cfg = make_super_animal_finetune_config(
                         project_config=cfg,
                         pose_config_path=config_path,
                         model_name=net_type,
@@ -596,7 +588,7 @@ def create_multianimaltraining_dataset(
                         save=True,
                     )
                 else:
-                    make_pytorch_pose_config(
+                    pytorch_cfg = make_pytorch_pose_config(
                         project_config=cfg,
                         pose_config_path=config_path,
                         net_type=net_type,
@@ -605,6 +597,17 @@ def create_multianimaltraining_dataset(
                         weight_init=weight_init,
                         save=True,
                     )
+
+                make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
+
+            # Setting inference cfg file:
+            default_inf_path = Path(dlcparent_path) / "inference_cfg.yaml"
+            inf_updates = dict(
+                minimalnumberofconnections=int(len(cfg["multianimalbodyparts"]) / 2),
+                topktoretain=len(cfg["individuals"]),
+                withid=cfg.get("identity", False),
+            )
+            MakeInference_yaml(inf_updates, path_inference_config, default_inf_path)
 
             print(
                 "The training dataset is successfully created. Use the function "

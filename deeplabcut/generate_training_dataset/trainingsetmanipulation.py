@@ -1212,7 +1212,7 @@ def create_training_dataset(
                         cfg["project_path"],
                         Path(modelfoldername),
                         "train",
-                        "pose_cfg.yaml",
+                        engine.pose_cfg_name,
                     )
                 )
                 path_test_config = str(
@@ -1223,65 +1223,67 @@ def create_training_dataset(
                         "pose_cfg.yaml",
                     )
                 )
-                # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-                items2change = {
-                    "dataset": datafilename,
-                    "engine": engine.aliases[0],
-                    "metadataset": metadatafilename,
-                    "num_joints": len(bodyparts),
-                    "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": model_path,
-                    "project_path": str(cfg["project_path"]),
-                    "net_type": net_type,
-                    "dataset_type": augmenter_type,
-                }
+                if engine == Engine.TF:
+                    items2change = {
+                        "dataset": datafilename,
+                        "engine": engine.aliases[0],
+                        "metadataset": metadatafilename,
+                        "num_joints": len(bodyparts),
+                        "all_joints": [[i] for i in range(len(bodyparts))],
+                        "all_joints_names": [str(bpt) for bpt in bodyparts],
+                        "init_weights": model_path,
+                        "project_path": str(cfg["project_path"]),
+                        "net_type": net_type,
+                        "dataset_type": augmenter_type,
+                    }
 
-                items2drop = {}
-                if augmenter_type == "scalecrop":
-                    # these values are dropped as scalecrop
-                    # doesn't have rotation implemented
-                    items2drop = {"rotation": 0, "rotratio": 0.0}
-                # Also drop maDLC smart cropping augmentation parameters
-                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
-                    items2drop[key] = None
+                    items2drop = {}
+                    if augmenter_type == "scalecrop":
+                        # these values are dropped as scalecrop
+                        # doesn't have rotation implemented
+                        items2drop = {"rotation": 0, "rotratio": 0.0}
+                    # Also drop maDLC smart cropping augmentation parameters
+                    for key in [
+                        "pre_resize",
+                        "crop_size",
+                        "max_shift",
+                        "crop_sampling",
+                    ]:
+                        items2drop[key] = None
 
-                trainingdata = MakeTrain_pose_yaml(
-                    items2change,
-                    path_train_config,
-                    defaultconfigfile,
-                    items2drop,
-                    save=(engine == Engine.TF),
-                )
+                    trainingdata = MakeTrain_pose_yaml(
+                        items2change,
+                        path_train_config,
+                        defaultconfigfile,
+                        items2drop,
+                        save=(engine == Engine.TF),
+                    )
 
-                keys2save = [
-                    "dataset",
-                    "num_joints",
-                    "all_joints",
-                    "all_joints_names",
-                    "net_type",
-                    "init_weights",
-                    "global_scale",
-                    "location_refinement",
-                    "locref_stdev",
-                ]
-                MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
-                print(
-                    "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
-                )
-
-                # Populate the pytorch config yaml file
-                if engine == Engine.PYTORCH:
+                    keys2save = [
+                        "dataset",
+                        "num_joints",
+                        "all_joints",
+                        "all_joints_names",
+                        "net_type",
+                        "init_weights",
+                        "global_scale",
+                        "location_refinement",
+                        "locref_stdev",
+                    ]
+                    MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
+                    print(
+                        "The training dataset is successfully created. Use the function"
+                        "'train_network' to start training. Happy training!"
+                    )
+                elif engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
                         make_pytorch_pose_config,
+                        make_pytorch_test_config,
                     )
                     from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
                         make_super_animal_finetune_config,
                     )
 
-                    pose_cfg_path = path_train_config.replace(
-                        "pose_cfg.yaml", "pytorch_config.yaml"
-                    )
                     if weight_init is not None and weight_init.with_decoder:
                         pytorch_cfg = make_super_animal_finetune_config(
                             project_config=cfg,
@@ -1289,6 +1291,7 @@ def create_training_dataset(
                             model_name=net_type,
                             detector_name=detector_type,
                             weight_init=weight_init,
+                            save=True,
                         )
                     else:
                         pytorch_cfg = make_pytorch_pose_config(
@@ -1298,9 +1301,10 @@ def create_training_dataset(
                             top_down=top_down,
                             detector_type=detector_type,
                             weight_init=weight_init,
+                            save=True,
                         )
 
-                    auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
+                    make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
 
         return splits
 

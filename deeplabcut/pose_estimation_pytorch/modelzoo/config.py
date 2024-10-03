@@ -46,6 +46,7 @@ def make_super_animal_finetune_config(
         model_name: The type of neural net to finetune.
         detector_name: The type of detector to use for the SuperAnimal model. If None is
             given, the model will be set to a Bottom-Up framework.
+        save: Whether to save the model configuration file to the ``pose_config_path``.
 
     Returns:
         The generated pose configuration file.

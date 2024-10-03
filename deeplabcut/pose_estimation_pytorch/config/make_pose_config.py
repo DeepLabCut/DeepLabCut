@@ -66,7 +66,7 @@ def make_pytorch_pose_config(
             detection model
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
-        save: Whether to save the model configuration to disk.
+        save: Whether to save the model configuration file to the ``pose_config_path``.
 
     Returns:
         the PyTorch pose configuration file
@@ -180,6 +180,37 @@ def make_pytorch_pose_config(
         write_config(pose_config_path, pose_config, overwrite=True)
 
     return pose_config
+
+
+def make_pytorch_test_config(
+    model_config: dict,
+    test_config_path: str | Path,
+    save: bool = False,
+) -> dict:
+    """Creates the test configuration for a model
+
+    Args:
+        model_config: The PyTorch config for the model.
+        test_config_path: The path of the test config
+        save: Whether to save the test config to ``test_config_path``.
+
+    Returns:
+        The test configuration file.
+    """
+    bodyparts = model_config["metadata"]["bodyparts"]
+    test_config = dict(
+        dataset=model_config["metadata"]["project_path"],
+        num_joints=len(bodyparts),
+        all_joints=[[i] for i in range(bodyparts)],
+        all_joints_names=bodyparts,
+        net_type=model_config["net_type"],
+        global_scale=1,
+        scoremap_dir="test",
+    )
+    if save:
+        write_config(test_config_path, test_config)
+
+    return test_config
 
 
 def add_metadata(
