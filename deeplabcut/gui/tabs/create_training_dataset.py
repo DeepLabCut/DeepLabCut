@@ -72,10 +72,14 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
     def set_edit_table_visibility(self) -> None:
-        has_conversion_tables = bool(self.root.cfg.get("SuperAnimalConversionTables", {}))
+        has_conversion_tables = bool(
+            self.root.cfg.get("SuperAnimalConversionTables", {})
+        )
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
         is_finetuning = self.weight_init_selector.with_decoder
-        self.mapping_button.setVisible(has_conversion_tables & is_pytorch_engine & is_finetuning)
+        self.mapping_button.setVisible(
+            has_conversion_tables & is_pytorch_engine & is_finetuning
+        )
 
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
@@ -230,18 +234,19 @@ class CreateTrainingDataset(DefaultTab):
                 detector_type = None
                 if engine == Engine.TF:
                     import tensorflow
+
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed
                 elif engine == Engine.PYTORCH and "top_down" in net_type:
                     detector_type = self.detector_choice.currentText()
 
                 try:
-                    weight_init = self.weight_init_selector.get_super_animal_weight_init(
-                        net_type, detector_type,
+                    weight_init = (
+                        self.weight_init_selector.get_super_animal_weight_init(
+                            net_type,
+                            detector_type,
+                        )
                     )
-                    print("WEIGHT INIT")
-                    print(weight_init)
-                    print()
                 except ValueError as err:
                     print(f"The training dataset could not be created: {err}.")
                     return
@@ -433,6 +438,7 @@ class CreateTrainingDataset(DefaultTab):
         else:
             # FIXME: Circular imports make it impossible to import this at the top
             from deeplabcut.pose_estimation_pytorch import available_detectors
+
             detectors = available_detectors()
             det_filter = self.get_detector_filter()
             if det_filter is not None:
@@ -578,7 +584,9 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         self.weight_init_choice.addItems(choices)
 
     def get_super_animal_weight_init(
-        self, net_type: str, detector_type: str,
+        self,
+        net_type: str,
+        detector_type: str,
     ) -> WeightInitialization | None:
         """
         Args:
@@ -601,7 +609,7 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
         super_animal = weight_init_data["super_animal"]
         if net_type.startswith("top_down_"):
-            net_type = net_type[len("top_down_"):]
+            net_type = net_type[len("top_down_") :]
         try:
             weight_init = build_weight_init(
                 self.root.cfg,

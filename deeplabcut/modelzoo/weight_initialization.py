@@ -60,8 +60,10 @@ def build_weight_init(
         weight_init = build_weight_init(
             cfg=project_cfg,
             super_animal="superanimal_quadruped",
+            model_name="hrnet_w32",
+            detector_name="fasterrcnn_resnet50_fpn_v2",
             with_decoder=True,
-            memory_replay=True,
+            memory_replay=False,
         )
         ```
 
