@@ -201,7 +201,7 @@ def make_pytorch_test_config(
     test_config = dict(
         dataset=model_config["metadata"]["project_path"],
         num_joints=len(bodyparts),
-        all_joints=[[i] for i in range(bodyparts)],
+        all_joints=[[i] for i in range(len(bodyparts))],
         all_joints_names=bodyparts,
         net_type=model_config["net_type"],
         global_scale=1,
