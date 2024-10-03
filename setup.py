@@ -56,7 +56,7 @@ setuptools.setup(
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
         "albumentations<=1.4.3",
-        "dlclibrary>=0.0.8",
+        "dlclibrary>=0.0.7",
         "einops",
         "dlclibrary>=0.0.6",
         "filterpy>=1.4.4",
