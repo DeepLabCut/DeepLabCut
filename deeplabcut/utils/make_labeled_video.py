@@ -592,6 +592,10 @@ def create_labeled_video(
     if isinstance(confidence_to_alpha, bool):
         confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, pcutoff)
 
+    # Get individuals from the config for SuperAnimal video inference
+    individuals = cfg.get("individuals", ["animal"])
+    uniquebodyparts = cfg.get("uniquebodyparts", [])
+
     # Only for PyTorch engine - check if the shuffle was fine-tuned from a SuperAnimal
     #   model with memory replay -> then SuperAnimal bodyparts must be used
     model_folder = auxiliaryfunctions.get_model_folder(
@@ -627,6 +631,10 @@ def create_labeled_video(
             "dotsize": dotsize,
             "alphavalue": alphavalue,
             "colormap": colormap,
+            "bodyparts": bodyparts,
+            "multianimalbodyparts": bodyparts,
+            "individuals": individuals,
+            "uniquebodyparts": uniquebodyparts,
         }
     else:
         bodyparts = (
@@ -786,6 +794,9 @@ def proc_video(
             if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
+
+            # FIXME - could be different than the project individuals
+            metadata["individuals"]
 
             if all(individuals):
                 df = df.loc(axis=1)[:, individuals]
