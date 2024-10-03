@@ -80,17 +80,16 @@ class WeightInitialization:
 
     def to_dict(self) -> dict:
         """Returns: the weight initialization as a dict"""
-        data = {
-            "snapshot_path": str(self.snapshot_path),
-            "with_decoder": self.with_decoder,
-            "memory_replay": self.memory_replay,
-        }
-
+        data = dict()
         if self.dataset is not None:
             data["dataset"] = self.dataset
 
+        data["snapshot_path"] = self.snapshot_path
         if self.detector_snapshot_path is not None:
             data["detector_snapshot_path"] = str(self.detector_snapshot_path)
+
+        data["with_decoder"] = self.with_decoder
+        data["memory_replay"] = self.memory_replay
 
         if self.conversion_array is not None:
             data["conversion_array"] = self.conversion_array.tolist()
@@ -135,7 +134,7 @@ class WeightInitialization:
         return WeightInitialization(
             snapshot_path=utils.get_super_animal_snapshot_path(
                 dataset=data["dataset"],
-                model_name="hrnetw32",
+                model_name="hrnet_w32",
             ),
             detector_snapshot_path=utils.get_super_animal_snapshot_path(
                 dataset=data["dataset"],
@@ -151,7 +150,7 @@ class WeightInitialization:
     def build(
         cfg: dict,
         super_animal: str,
-        model_name: str = "hrnetw32",
+        model_name: str = "hrnet_w32",
         detector_name: str = "fasterrcnn_resnet50_fpn_v2",
         with_decoder: bool = False,
         memory_replay: bool = False,
@@ -168,7 +167,7 @@ class WeightInitialization:
             cfg: The project's configuration.
             super_animal: The SuperAnimal model with which to initialize weights.
             model_name: The name of the model architecture for which to load the weights
-                (defaults to "hrnetw32" for backwards compatibility).
+                (defaults to "hrnet_w32" for backwards compatibility).
             detector_name: The name of the detector architecture for which to load the
                 weights (defaults to "fasterrcnn_resnet50_fpn_v2" for backwards
                 compatibility).
