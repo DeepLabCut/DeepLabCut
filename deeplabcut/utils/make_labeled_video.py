@@ -795,9 +795,6 @@ def proc_video(
                 print("Labeled video already created. Skipping...")
                 return
 
-            # FIXME - could be different than the project individuals
-            metadata["individuals"]
-
             if all(individuals):
                 df = df.loc(axis=1)[:, individuals]
             cropping = metadata["data"]["cropping"]
