@@ -48,59 +48,48 @@ def superanimal_analyze_images(
     bbox_threshold: float = 0.6,
     progress_bar: bool = True,
     device: str | None = None,
-):
+) -> dict[str, dict]:
     """
     This funciton inferences a superanimal model on a set of images and saves the
     results as labeled images.
 
-    Parameters
-    ----------
-    superanimal_name: str
-        The name of the superanimal to analyze. Supported list:
+    Args:
+        superanimal_name: The name of the superanimal to analyze. Supported list:
+            - "superanimal_bird"
             - "superanimal_topviewmouse"
             - "superanimal_quadruped"
-    model_name: str
-        The name of the model to use for inference. Supported list:
-            - "hrnetw32"
-    detector_name: str
+        model_name: The name of the pose model architecture to use for inference.
+        detector_name: The name of the detector architecture to use for inference.
+        images: The images to analyze. Can either be a directory containing images, or
+            a list of paths of images.
+        max_individuals: The maximum number of individuals to detect in each image.
+        out_folder: The directory where the labeled images will be saved.
+        bbox_threshold: The minimum confidence score to keep bounding box detections.
+            Must be in (0, 1).
+        progress_bar: Whether to display a progress bar when running inference.
+        device: The device to use to run image analysis.
 
-    images: str | Path | list[str] | list[Path]
-        The images to analyze. Can either be a directory containing images, or
-        a list of paths of images.
-    max_individuals: int
-        The maximum number of individuals to detect in each image.
-    out_folder: str
-        The directory where the labeled images will be saved.
-    bbox_threshold: float, default=0.1
-        The minimum confidence score to keep bounding box detections. Must be in (0, 1).
-        Only used when `customized_model_config=None` (otherwise, edit your
-        `customized_model_config` with the desired bbox_threshold).
-    progress_bar: bool
-        Whether to display a progress bar when running inference.
-    device: str | None
-        The device to use to run image analysis.
+    Returns:
+        The predictions for each image
 
-    Returns
-    -------
-    The predictions over the images
-
-    Examples
-    --------
-    >>> import deeplabcut
-    >>> from deeplabcut.pose_estimation_pytorch.apis.analyze_images import superanimal_analyze_images
-    >>> superanimal_name = "superanimal_quadruped"
-    >>> model_name = "hrnetw32"
-    >>> device = "cuda"
-    >>> max_individuals = 3
-    >>> test_images_folder = "test_rodent_images"
-    >>> out_images_folder = "vis_test_rodent_images"
-    >>> ret = superanimal_analyze_images(
-    >>>     superanimal_name,
-    >>>     model_name,
-    >>>     test_images_folder,
-    >>>     max_individuals,
-    >>>     out_images_folder
-    >>> )
+    Examples:
+        >>> import deeplabcut
+        >>> from deeplabcut.pose_estimation_pytorch.apis.analyze_images import (
+        >>>     superanimal_analyze_images
+        >>> )
+        >>> superanimal_name = "superanimal_quadruped"
+        >>> model_name = "hrnetw32"
+        >>> device = "cuda:0"
+        >>> max_individuals = 3
+        >>> test_images_folder = "test_rodent_images"
+        >>> out_images_folder = "vis_test_rodent_images"
+        >>> ret = superanimal_analyze_images(
+        >>>     superanimal_name,
+        >>>     model_name,
+        >>>     test_images_folder,
+        >>>     max_individuals,
+        >>>     out_images_folder
+        >>> )
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True, parents=True)

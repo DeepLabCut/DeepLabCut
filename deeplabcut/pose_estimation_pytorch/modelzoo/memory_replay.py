@@ -271,21 +271,27 @@ def prepare_memory_replay(
     max_individuals: int = 3,
     train_file: str = "train.json",
     pose_threshold: float = 0.1,
-):
-    """
+) -> None:
+    """Prepares a shuffle to be trained with memory replay.
+
+    To be trained using memory replay, predictions must be made on all images in the
+    dataset using the SuperAnimal model. Predictions for bodyparts that aren't labeled
+    in the DeepLabCut project are then used as pseudo-labels during training.
+
+    This method will create a COCO-format dataset in the same folder as the
+    ``pytorch_config.yaml`` (the model folder).
+
     Args:
-        config:
-        loader:
-        superanimal_name:
-        model_snapshot_path:
-        detector_snapshot_path:
-        device:
-        max_individuals:
-        train_file:
-        pose_threshold:
-
-    Returns:
-
+        config: Path to the DeepLabCut project configuration file.
+        loader: The loader used to load the training/test data on which a model will
+            be fine-tuned with memory replay.
+        superanimal_name: The name of the SuperAnimal model that is being fine-tuned.
+        model_snapshot_path: Path to the SuperAnimal pose snapshot to fine-tune.
+        detector_snapshot_path: Path to the SuperAnimal detector snapshot to fine-tune.
+        device: Device to use to run inference using the SuperAnimal model.
+        max_individuals: Maximum number of animals that can be present in a frame.
+        train_file: Name of the file containing train annotations (e.g. `train.json`).
+        pose_threshold: The minimum score for a prediction to be used as a pseudo-label.
     """
     cfg = af.read_config(config)
     super_animal_cfg = af.read_plainconfig(

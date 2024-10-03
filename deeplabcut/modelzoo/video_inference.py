@@ -198,6 +198,9 @@ def video_inference_superanimal(
             This is a FasterRCNN model with a ResNet backbone, see
             https://pytorch.org/vision/stable/models/faster_rcnn.html
 
+    (Model Explanation) SuperAnimal-Bird:
+    TODO(shaokai)
+
     Examples (PyTorch Engine)
     --------
     >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal

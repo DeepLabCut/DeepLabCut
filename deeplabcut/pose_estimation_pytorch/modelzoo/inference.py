@@ -71,16 +71,16 @@ def _video_inference_superanimal(
     Args:
         video_paths: Path to the video to be analyzed or list of paths to videos to be analyzed
         superanimal_name: Name of the SuperAnimal project (e.g. superanimal_quadruped)
-        model_cfg: TODO
-        model_snapshot_path: TODO
-        detector_snapshot_path: TODO
+        model_cfg: The name of the pose model architecture to use for inference.
+        model_snapshot_path: The path to the pose model snapshot to use for inference.
+        detector_snapshot_path: The path to the detector snapshot to use for inference.
         max_individuals: Maximum number of individuals in the video
         pcutoff: Cutoff for cutting off the predicted keypoints with probability lower than pcutoff
         batch_size: The batch size to use for video inference.
         detector_batch_size: The batch size to use for the detector for video inference.
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
-        output_suffix: TODO
+        output_suffix: The suffix to add to output file names (e.g. _before_adapt)
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
