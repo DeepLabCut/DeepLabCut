@@ -133,11 +133,11 @@ def create_config_from_modelzoo(
     )
     if detector_name is None:
         model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
-        # Use default bottom-up image augmentation if no detector is given
-        # Needed as the collate function might be needed
-        model_cfg["data"] = config_utils.read_config_as_dict(
-            config_utils.get_config_folder_path() / "base" / "aug_default.yaml"
-        )
+        # Use default bottom-up image augmentation if no detector is given (the collate
+        # function might be needed).
+        config_dir = config_utils.get_config_folder_path()
+        aug = config_utils.read_config_as_dict(config_dir / "base" / "aug_default.yaml")
+        model_cfg["data"]["train"] = aug["train"]
     else:
         model_cfg["method"] = Task.TOP_DOWN.aliases[0].lower()
         model_cfg["detector"] = config_utils.read_config_as_dict(
