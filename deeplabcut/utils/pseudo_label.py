@@ -96,7 +96,7 @@ def calculate_iou(box1, box2):
     return iou
 
 
-def video_to_frames(input_video, output_folder):
+def video_to_frames(input_video, output_folder, cropping: list[int] | None = None):
     # Create the output folder if it doesn't exist
     video = cv2.VideoCapture(str(input_video))
     # Get the frames per second (fps) of the video
@@ -109,6 +109,11 @@ def video_to_frames(input_video, output_folder):
         # Break the loop if we have reached the end of the video
         if not ret:
             break
+        # Crop the frame if desired
+        if cropping is not None:
+            x1, x2, y1, y2 = cropping
+            frame = frame[y1:y2, x1:x2]
+
         # Save the frame as an image file.
         frame_str = str(frame_count).zfill(5)
         frame_file = os.path.join(output_folder, "images", f"frame_{frame_str}.png")

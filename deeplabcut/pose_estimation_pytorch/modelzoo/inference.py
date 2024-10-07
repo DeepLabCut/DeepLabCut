@@ -56,6 +56,7 @@ def _video_inference_superanimal(
     pcutoff: float,
     batch_size: int = 1,
     detector_batch_size: int = 1,
+    cropping: list[int] | None = None,
     dest_folder: Optional[str] = None,
     output_suffix: str = "",
 ) -> dict:
@@ -69,14 +70,20 @@ def _video_inference_superanimal(
     called directly. It is designed to be used by deeplabcut.modelzoo.api.video_inference.py
 
     Args:
-        video_paths: Path to the video to be analyzed or list of paths to videos to be analyzed
+        video_paths: Path to the video to be analyzed or list of paths to videos to be
+            analyzed
         superanimal_name: Name of the SuperAnimal project (e.g. superanimal_quadruped)
         model_cfg: The name of the pose model architecture to use for inference.
         model_snapshot_path: The path to the pose model snapshot to use for inference.
         detector_snapshot_path: The path to the detector snapshot to use for inference.
         max_individuals: Maximum number of individuals in the video
-        pcutoff: Cutoff for cutting off the predicted keypoints with probability lower than pcutoff
+        pcutoff: Cutoff for cutting off the predicted keypoints with probability lower
+            than pcutoff
         batch_size: The batch size to use for video inference.
+        cropping: List of cropping coordinates as [x1, x2, y1, y2]. Note that the same
+            cropping parameters will then be used for all videos. If different video
+            crops are desired, run ``video_inference_superanimal`` on individual videos
+            with the corresponding cropping coordinates.
         detector_batch_size: The batch size to use for the detector for video inference.
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
@@ -128,7 +135,7 @@ def _video_inference_superanimal(
             # str(output_h5).replace(".h5", "_after_adapt.json")
             output_json = output_json.with_stem(output_h5.stem + output_suffix)
 
-        video = VideoIterator(video_path)
+        video = VideoIterator(video_path, cropping=cropping)
         predictions = video_inference(
             video,
             task=pose_task,
@@ -139,8 +146,11 @@ def _video_inference_superanimal(
         pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
         pred_unique_bodyparts = None
 
-        vid_w, vid_h = video.dimensions
-        bbox = (0, vid_w, 0, vid_h)
+        bbox = cropping
+        if cropping is None:
+            vid_w, vid_h = video.dimensions
+            bbox = (0, vid_w, 0, vid_h)
+
         print(f"Saving results to {dest_folder}")
 
         df = create_df_from_prediction(

@@ -42,6 +42,7 @@ def video_inference_superanimal(
     scale_list: Optional[list] = None,
     videotype: str = ".mp4",
     dest_folder: Optional[str] = None,
+    cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
     batch_size: int = 1,
@@ -90,7 +91,15 @@ def video_inference_superanimal(
     videotype (str):
         Checks for the extension of the video in case the input to the video is a directory.
         Only videos with this extension are analyzed. The default is ``.mp4``.
+
     dest_folder (str): The path to the folder where the results should be saved.
+
+    cropping: list or None, optional, default=None
+        Only for SuperAnimal models running with the PyTorch engine.
+        List of cropping coordinates as [x1, x2, y1, y2].
+        Note that the same cropping parameters will then be used for all videos.
+        If different video crops are desired, run ``video_inference_superanimal`` on
+        individual videos with the corresponding cropping coordinates.
 
     video_adapt (bool):
         Whether to perform video adaptation. The default is False.
@@ -341,6 +350,7 @@ def video_inference_superanimal(
                 pcutoff=pcutoff,
                 batch_size=batch_size,
                 detector_batch_size=detector_batch_size,
+                cropping=cropping,
                 dest_folder=dest_folder,
                 output_suffix=output_suffix,
             )
@@ -360,7 +370,7 @@ def video_inference_superanimal(
                     f"Video frames being extracted to {image_folder} for video "
                     f"adaptation."
                 )
-                video_to_frames(video_path, pseudo_dataset_folder)
+                video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
             anno_folder = pseudo_dataset_folder / "annotations"
             if (
@@ -470,6 +480,7 @@ def video_inference_superanimal(
             pcutoff=pcutoff,
             batch_size=batch_size,
             detector_batch_size=detector_batch_size,
+            cropping=cropping,
             dest_folder=dest_folder,
             output_suffix=output_suffix,
         )
