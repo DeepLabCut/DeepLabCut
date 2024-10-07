@@ -62,9 +62,6 @@ bodyparts:
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
-
-
-# Fraction of video to start/stop when extracting frames for labeling/refinement
 start:
 stop:
 numframes2pick:
