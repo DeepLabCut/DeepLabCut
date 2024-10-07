@@ -386,7 +386,7 @@ def analyze_videos(
             )
             results.append((str(video), df))
 
-            if cfg["multianimalproject"] and len(individuals) > 1:
+            if cfg["multianimalproject"]:
                 pred_bodypart_ids = None
                 if with_identity:
                     # reshape from (num_assemblies, num_bpts, num_individuals)
