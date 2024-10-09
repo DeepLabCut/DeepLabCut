@@ -580,7 +580,7 @@ def create_labeled_video(
             pcutoff = cfg["pcutoff"]
 
         # Get individuals from the config
-        individuals = cfg.get("individuals", ["animal"])
+        individuals = cfg.get("individuals", [""])
         uniquebodyparts = cfg.get("uniquebodyparts", [])
 
         # Only for PyTorch engine - check if the shuffle was fine-tuned from a
