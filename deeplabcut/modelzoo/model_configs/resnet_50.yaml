@@ -1,9 +1,6 @@
 data:
   colormode: RGB
   inference:
-    auto_padding:
-      pad_width_divisor: 32
-      pad_height_divisor: 32
     normalize_images: true
   train:
     affine:
@@ -13,9 +10,6 @@ data:
       translation: 0
     gaussian_noise: 12.75
     normalize_images: true
-    auto_padding:
-      pad_width_divisor: 32
-      pad_height_divisor: 32
 device: auto
 method: td
 model:
@@ -53,19 +47,19 @@ model:
       heatmap_config:
         channels:
         - 2048
-        kernel_size: []
-        strides: []
-        final_conv:
-          out_channels: "num_bodyparts"
-          kernel_size: 1
+        - "num_bodyparts"
+        kernel_size:
+        - 3
+        strides:
+        - 2
       locref_config:
         channels:
         - 2048
-        kernel_size: []
-        strides: []
-        final_conv:
-          out_channels: "num_bodyparts x 2"
-          kernel_size: 1
+        - "num_bodyparts x 2"
+        kernel_size:
+        - 3
+        strides:
+        - 2
 net_type: resnet_50
 runner:
   type: PoseTrainingRunner
