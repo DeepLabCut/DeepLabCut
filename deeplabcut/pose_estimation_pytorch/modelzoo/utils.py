@@ -133,25 +133,9 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     model_name = f"{dataset}_{model_name}"
     model_path = snapshot_dir / f"{model_name}.pt"
 
-    # FIXME(niels) - Temporary fix, update the filenames on HuggingFace
-    rename_mapping = None
-    if "hrnet_w32" in model_name:
-        rename_mapping = {"pose_model.pth": f"{model_name}.pt"}
-    elif "fasterrcnn_resnet50_fpn_v2" in model_name:
-        rename_mapping = {"detector.pt": f"{model_name}.pt"}
-
-    download_huggingface_model(
-        model_name,
-        target_dir=str(snapshot_dir),
-        rename_mapping=rename_mapping,
-    )
-
+    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
-
-    # FIXME(niels) - Temporary fix, upload parsed checkpoints to HuggingFace
-    if "hrnet_w32" in model_name or "fasterrcnn_resnet50_fpn_v2" in model_name:
-        _parse_snapshot(model_path, device="cpu")
 
     return snapshot_dir / f"{model_name}.pt"
 
@@ -202,36 +186,3 @@ def update_config(config, max_individuals, device):
 
     config_utils.pretty_print(config)
     return config
-
-
-def _parse_snapshot(snapshot_path: Path, device: str, print_keys: bool = False) -> None:
-    """FIXME: A new snapshot should be uploaded and used"""
-    def _map_model_keys(state_dict: dict) -> dict:
-        updated_dict = {}
-        for k, v in state_dict.items():
-            if not (
-                k.startswith("backbone.model.downsamp_modules.")
-                or k.startswith("backbone.model.final_layer")
-                or k.startswith("backbone.model.classifier")
-            ):
-                parts = k.split(".")
-                if parts[:4] == ["heads", "bodypart", "heatmap_head", "model"]:
-                    parts[3] = "deconv_layers.0"
-                updated_dict[".".join(parts)] = v
-        return updated_dict
-
-    snapshot = torch.load(snapshot_path, map_location=device)
-    if print_keys:
-        print(5 * "-----\n")
-        print(snapshot.stem + " keys")
-        for name, _ in snapshot["model_state_dict"].items():
-            print(f"  * {name}")
-        print()
-
-    torch.save(
-        dict(
-            model=_map_model_keys(snapshot["model_state_dict"]),
-            metadata=dict(epoch=0),
-        ),
-        snapshot_path,
-    )

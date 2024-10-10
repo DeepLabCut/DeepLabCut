@@ -743,32 +743,32 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
     },
     "Transfer Learning - SuperAnimal Bird": {
         "default_net": "top_down_resnet_50",
-        "default_detector": "ssdlite",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_bird",
     },
     "Transfer Learning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "default_detector": "fasterrcnn_resnet50_fpn_v2",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_quadruped",
     },
     "Transfer Learning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "default_detector": "fasterrcnn_resnet50_fpn_v2",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
     },
     "Fine-tuning - SuperAnimal Bird": {
         "default_net": "top_down_resnet_50",
-        "default_detector": "ssdlite",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_bird",
     },
     "Fine-tuning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "default_detector": "fasterrcnn_resnet50_fpn_v2",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_quadruped",
     },
     "Fine-tuning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "default_detector": "fasterrcnn_resnet50_fpn_v2",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
     },
 }
