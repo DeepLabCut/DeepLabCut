@@ -12,6 +12,7 @@
 from pathlib import Path
 
 import deeplabcut.modelzoo.utils as utils
+from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_snapshot_path
 )
@@ -19,7 +20,7 @@ from deeplabcut.core.weight_init import WeightInitialization
 
 
 def build_weight_init(
-    cfg: dict,
+    cfg: dict | str | Path,
     super_animal: str,
     model_name: str,
     detector_name: str | None,
@@ -31,7 +32,7 @@ def build_weight_init(
     """Builds the WeightInitialization from a SuperAnimal model for a project
 
     Args:
-        cfg: The project's configuration.
+        cfg: The project's configuration, or the path to the project configuration file.
         super_animal: The SuperAnimal model with which to initialize weights.
         model_name: The type of the model architecture for which to load the weights.
         detector_name: The type of detector architecture for which to load the weights.
@@ -70,6 +71,9 @@ def build_weight_init(
     Returns:
         The built WeightInitialization.
     """
+    if isinstance(cfg, (str, Path)):
+        cfg = read_config_as_dict(cfg)
+
     conversion_array = None
     bodyparts = None
     if with_decoder:
