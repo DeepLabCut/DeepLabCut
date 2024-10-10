@@ -18,12 +18,19 @@ from deeplabcut.modelzoo.utils import (
     create_conversion_table,
     read_conversion_table_from_csv,
 )
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    get_super_animal_snapshot_path,
+)
 from deeplabcut.utils.pseudo_label import keypoint_matching
 
 
-def main(dlc_proj_root: Path, super_animal_name: str):
+def main(
+    dlc_proj_root: Path,
+    super_animal_name: str,
+    super_animal_model: str = "hrnet_w32",
+    super_animal_detector: str = "fasterrcnn_resnet50_fpn_v2",
+):
     config_path = str(dlc_proj_root / "config.yaml")
-    model_name = "hrnetw32"
     shuffle = 0
     device = "cuda"
 
@@ -32,7 +39,8 @@ def main(dlc_proj_root: Path, super_animal_name: str):
     keypoint_matching(
         config_path,
         super_animal_name,
-        model_name,
+        super_animal_model,
+        super_animal_detector,
     )
 
     # keypoint matching creates a memory_replay folder in the root. The conversion table
@@ -47,9 +55,18 @@ def main(dlc_proj_root: Path, super_animal_name: str):
 
     weight_init = WeightInitialization(
         dataset=super_animal_name,
+        snapshot_path=get_super_animal_snapshot_path(
+            dataset=super_animal_name,
+            model_name=super_animal_model,
+            download=True,
+        ),
+        detector_snapshot_path=get_super_animal_snapshot_path(
+            dataset=super_animal_name,
+            model_name=super_animal_detector,
+            download=True,
+        ),
         conversion_array=table.to_array(),
         with_decoder=True,
-        memory_replay=True,
     )
 
     deeplabcut.create_training_dataset(

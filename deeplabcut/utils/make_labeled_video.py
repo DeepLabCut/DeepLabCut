@@ -44,6 +44,7 @@ from skimage.draw import disk, line_aa, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
@@ -566,18 +567,48 @@ def create_labeled_video(
     if config == "":
         if pcutoff is None:
             pcutoff = 0.6
+
+        individuals = [""]
+        uniquebodyparts = []
     else:
         cfg = auxiliaryfunctions.read_config(config)
-        trainFraction = cfg["TrainingFraction"][trainingsetindex]
+        train_fraction = cfg["TrainingFraction"][trainingsetindex]
         track_method = auxfun_multianimal.get_track_method(
             cfg, track_method=track_method
         )
         if pcutoff is None:
             pcutoff = cfg["pcutoff"]
 
+        # Get individuals from the config
+        individuals = cfg.get("individuals", [""])
+        uniquebodyparts = cfg.get("uniquebodyparts", [])
+
+        # Only for PyTorch engine - check if the shuffle was fine-tuned from a
+        #  SuperAnimal model with memory replay -> SuperAnimal bodyparts must be used
+        model_folder = auxiliaryfunctions.get_model_folder(
+            train_fraction,
+            shuffle,
+            cfg,
+            modelprefix,
+            engine=Engine.PYTORCH,
+        )
+        model_config_path = (
+            Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
+        )
+        if model_config_path.exists():
+            model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
+            if (
+                model_config["train_settings"]
+                .get("weight_init", {})
+                .get("memory_replay", False)
+            ):
+                superanimal_name = model_config["train_settings"]["weight_init"][
+                    "dataset"
+                ]
+
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, trainFraction, modelprefix=modelprefix
+            cfg, shuffle, train_fraction, modelprefix=modelprefix
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
         DLCscorer = "DLC_" + Path(init_weights).stem
@@ -593,13 +624,12 @@ def create_labeled_video(
 
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-        dataset_name = "_".join(superanimal_name.split("_")[:-1])
         test_cfg = auxiliaryfunctions.read_plainconfig(
             os.path.join(
                 dlc_root_path,
                 "modelzoo",
                 "project_configs",
-                f"{dataset_name}.yaml",
+                f"{superanimal_name}.yaml",
             )
         )
 
@@ -611,6 +641,10 @@ def create_labeled_video(
             "dotsize": dotsize,
             "alphavalue": alphavalue,
             "colormap": colormap,
+            "bodyparts": bodyparts,
+            "multianimalbodyparts": bodyparts,
+            "individuals": individuals,
+            "uniquebodyparts": uniquebodyparts,
         }
     else:
         bodyparts = (

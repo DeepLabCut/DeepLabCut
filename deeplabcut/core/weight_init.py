@@ -11,63 +11,46 @@
 """Classes to configure how to initialize model weights"""
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
-
-import deeplabcut.modelzoo.utils as modelzoo_utils
 
 
 @dataclass
 class WeightInitialization:
-    """The dataset from which to initialize weights
-
-    To build a WeightInitialization instance for a project using the conversion table
-    specified in the project configuration file, use:
-
-        ```
-        from pathlib import Path
-        from deeplabcut.utils.auxiliaryfunctions import read_config
-
-        project_cfg = read_config("/path/to/my/project/config.yaml")
-        super_animal = "superanimal_quadruped"
-        weight_init = WeightInitialization.build(
-            cfg=project_cfg,
-            super_animal="superanimal_quadruped",
-            with_decoder=True,
-            memory_replay=True,
-        )
-        ```
+    """Configures weights initialization when transfer learning or fine-tuning models
 
     Args:
-        dataset: The dataset on which the model weights were trained. Must be one of the
-            SuperAnimal weights.
+        snapshot_path: The path to the snapshot used to initialize pose model weights
+            when training a model.
+        detector_snapshot_path: The path to the snapshot used to initialize detector
+            weights when training a model.
+        dataset: Optionally, the dataset on which the snapshots were trained. Required
+            when fine-tuning SuperAnimal models.
         with_decoder: Whether to load the decoder weights as well.
         memory_replay: Only when ``with_decoder=True``. Whether to train the model with
-            memory replay, so that it predicts all SuperAnimal bodyparts.
-        conversion_array: The mapping from SuperAnimal to project bodyparts. Required
-            when `with_decoder=True`.
+            memory replay, so that it predicts all SuperAnimal (or previous project)
+            bodyparts.
+        conversion_array: The mapping from SuperAnimal (or other project, on which the
+            weights were trained) to project bodyparts. Required when
+            `with_decoder=True`.
             An array [7, 0, 1] means the project has 3 bodyparts, where the 1st bodypart
             corresponds to the 8th bodypart in the pretrained model, the 2nd to the 1st
             and the 3rd to the 2nd (as arrays are 0-indexed).
         bodyparts: Optionally, the name of each bodypart entry in the conversion array.
-        customized_pose_checkpoint: A customized SuperAnimal pose checkpoint, as an
-            alternative to the Hugging Face one
-        customized_detector_checkpoint: A customized SuperAnimal detector
-            checkpoint, as an alternative to the Hugging Face one
     """
 
-    dataset: str
+    snapshot_path: Path
+    detector_snapshot_path: Path | None = None
+    dataset: str | None = None
     with_decoder: bool = False
     memory_replay: bool = False
     conversion_array: np.ndarray | None = None
     bodyparts: list[str] | None = None
-    customized_pose_checkpoint: str | None = None
-    customized_detector_checkpoint: str | None = None
 
     def __post_init__(self):
-        # check that the dataset exists; raises a ValueError if it doesn't
-        _ = modelzoo_utils.get_super_animal_project_cfg(self.dataset)
         if self.memory_replay and not self.with_decoder:
             raise ValueError(
                 "You cannot train a model with memory replay if you do not keep the "
@@ -97,41 +80,78 @@ class WeightInitialization:
 
     def to_dict(self) -> dict:
         """Returns: the weight initialization as a dict"""
-        data = {
-            "dataset": self.dataset,
-            "with_decoder": self.with_decoder,
-            "memory_replay": self.memory_replay,
-        }
+        data = dict()
+        if self.dataset is not None:
+            data["dataset"] = self.dataset
+
+        data["snapshot_path"] = str(self.snapshot_path)
+        if self.detector_snapshot_path is not None:
+            data["detector_snapshot_path"] = str(self.detector_snapshot_path)
+
+        data["with_decoder"] = self.with_decoder
+        data["memory_replay"] = self.memory_replay
 
         if self.conversion_array is not None:
             data["conversion_array"] = self.conversion_array.tolist()
-        if self.customized_pose_checkpoint is not None:
-            data["customized_pose_checkpoint"] = self.customized_pose_checkpoint
-        if self.customized_detector_checkpoint is not None:
-            data["customized_detector_checkpoint"] = self.customized_detector_checkpoint
+
+        if self.bodyparts is not None:
+            data["bodyparts"] = self.bodyparts
 
         return data
 
     @staticmethod
     def from_dict(data: dict) -> "WeightInitialization":
+        if "snapshot_path" not in data:
+            return WeightInitialization.from_dict_legacy(data)
+
+        detector_snapshot_path = data.get("detector_snapshot_path")
+        if detector_snapshot_path is not None:
+            detector_snapshot_path = Path(detector_snapshot_path)
+
         conversion_array = data.get("conversion_array")
         if conversion_array is not None:
-
             conversion_array = np.array(conversion_array, dtype=int)
 
         return WeightInitialization(
-            dataset=data["dataset"],
+            snapshot_path=Path(data["snapshot_path"]),
+            detector_snapshot_path=detector_snapshot_path,
+            dataset=data.get("dataset"),
             with_decoder=data["with_decoder"],
             memory_replay=data["memory_replay"],
             conversion_array=conversion_array,
-            customized_pose_checkpoint=data.get("customized_pose_checkpoint"),
-            customized_detector_checkpoint=data.get("customized_detector_checkpoint"),
+            bodyparts=data.get("bodyparts"),
+        )
+
+    @staticmethod
+    def from_dict_legacy(data: dict) -> "WeightInitialization":
+        """Deals with weight initialization that were created before 3.0.0rc5"""
+        import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
+
+        conversion_array = data.get("conversion_array")
+        if conversion_array is not None:
+            conversion_array = np.array(conversion_array, dtype=int)
+
+        return WeightInitialization(
+            snapshot_path=utils.get_super_animal_snapshot_path(
+                dataset=data["dataset"],
+                model_name="hrnet_w32",
+            ),
+            detector_snapshot_path=utils.get_super_animal_snapshot_path(
+                dataset=data["dataset"],
+                model_name="fasterrcnn_resnet50_fpn_v2",
+            ),
+            with_decoder=data["with_decoder"],
+            memory_replay=data["memory_replay"],
+            conversion_array=conversion_array,
+            bodyparts=data.get("bodyparts"),
         )
 
     @staticmethod
     def build(
         cfg: dict,
         super_animal: str,
+        model_name: str = "hrnet_w32",
+        detector_name: str = "fasterrcnn_resnet50_fpn_v2",
         with_decoder: bool = False,
         memory_replay: bool = False,
         customized_pose_checkpoint: str | None = None,
@@ -139,9 +159,18 @@ class WeightInitialization:
     ) -> "WeightInitialization":
         """Builds a WeightInitialization for a project
 
+        `WeightInitialization.build` is deprecated and will be removed in a future
+        version of DeepLabCut. Please use `build_weight_init` from `deeplabcut.modelzoo`
+        instead.
+
         Args:
             cfg: The project's configuration.
             super_animal: The SuperAnimal model with which to initialize weights.
+            model_name: The name of the model architecture for which to load the weights
+                (defaults to "hrnet_w32" for backwards compatibility).
+            detector_name: The name of the detector architecture for which to load the
+                weights (defaults to "fasterrcnn_resnet50_fpn_v2" for backwards
+                compatibility).
             with_decoder: Whether to load the decoder weights as well. If this is true,
                 a conversion table must be specified for the given SuperAnimal in the
                 project configuration file. See
@@ -157,19 +186,21 @@ class WeightInitialization:
         Returns:
             The built WeightInitialization.
         """
-        conversion_array = None
-        bodyparts = None
-        if with_decoder:
-            conversion_table = modelzoo_utils.get_conversion_table(cfg, super_animal)
-            conversion_array = conversion_table.to_array()
-            bodyparts = conversion_table.converted_bodyparts()
+        from deeplabcut.modelzoo import build_weight_init
+        deprecation_warning = (
+            "The `WeightInitialization.build` is deprecated and will be removed in a "
+            "future version of DeepLabCut. Please use `build_weight_init` from "
+            "`deeplabcut.modelzoo` instead."
+        )
+        warnings.warn(deprecation_warning, DeprecationWarning)
 
-        return WeightInitialization(
-            dataset=super_animal,
-            with_decoder=with_decoder,
-            memory_replay=memory_replay,
-            conversion_array=conversion_array,
-            bodyparts=bodyparts,
-            customized_pose_checkpoint=customized_pose_checkpoint,
-            customized_detector_checkpoint=customized_detector_checkpoint,
+        return build_weight_init(
+            cfg,
+            super_animal,
+            model_name,
+            detector_name,
+            with_decoder,
+            memory_replay,
+            customized_pose_checkpoint,
+            customized_detector_checkpoint,
         )

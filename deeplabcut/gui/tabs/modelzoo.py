@@ -12,6 +12,7 @@ import os
 import webbrowser
 from functools import partial
 
+import dlclibrary
 from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
@@ -47,6 +48,8 @@ class ModelZoo(DefaultTab):
         self._set_page()
         self.root.engine_change.connect(self._on_engine_change)
         self.root.engine_change.connect(self._update_available_models)
+        self._update_pose_models(self.model_combo.currentText())
+        self._update_detectors(self.model_combo.currentText())
         self._destfolder = None
 
     @property
@@ -94,9 +97,20 @@ class ModelZoo(DefaultTab):
         self.model_combo = QtWidgets.QComboBox()
         self.model_combo.setMinimumWidth(250)
 
+        net_type_text = QtWidgets.QLabel("Net Type")
+        net_type_text.setMinimumWidth(300)
+        self.net_type_selector = QtWidgets.QComboBox()
+
+        self.detector_type_text = QtWidgets.QLabel("Detector Type")
+        self.detector_type_text.setMinimumWidth(300)
+        self.detector_type_selector = QtWidgets.QComboBox()
+
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
-        self.loc_line = QtWidgets.QLineEdit(self.root.project_folder, self)
+        self.loc_line = QtWidgets.QLineEdit(
+            "<Select a folder - Default: store in same folder as video>",
+            self,
+        )
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
             QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
@@ -107,12 +121,19 @@ class ModelZoo(DefaultTab):
         settings_layout.addWidget(section_title, 0, 0)
         settings_layout.addWidget(model_combo_text, 1, 0)
         settings_layout.addWidget(self.model_combo, 1, 1)
-        settings_layout.addWidget(loc_label, 2, 0)
-        settings_layout.addWidget(self.loc_line, 2, 1)
+        settings_layout.addWidget(net_type_text, 2, 0)
+        settings_layout.addWidget(self.net_type_selector, 2, 1)
+        settings_layout.addWidget(self.detector_type_text, 3, 0)
+        settings_layout.addWidget(self.detector_type_selector, 3, 1)
+
+        settings_layout.addWidget(loc_label, 4, 0)
+        settings_layout.addWidget(self.loc_line, 4, 1)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
         self.main_layout.addWidget(self.settings_widget)
+        self.model_combo.currentTextChanged.connect(self._update_pose_models)
+        self.model_combo.currentTextChanged.connect(self._update_detectors)
 
     def _build_tf_attributes(self) -> None:
         model_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
@@ -302,7 +323,7 @@ class ModelZoo(DefaultTab):
         msg.exec_()
 
     def _gather_kwargs(self) -> dict:
-        kwargs = {}
+        kwargs = dict(model_name=self.net_type_selector.currentText())
         if self.root.engine == Engine.TF:
             scales = []
             scales_ = self.scales_line.text()
@@ -317,6 +338,7 @@ class ModelZoo(DefaultTab):
             kwargs["pseudo_threshold"] = self.pseudo_threshold_spinbox.value()
             kwargs["adapt_iterations"] = self.adapt_iter_spinbox.value()
         else:
+            kwargs["detector_name"] = self.detector_type_selector.currentText()
             kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
             kwargs["pseudo_threshold"] = self.torch_pseudo_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
@@ -325,29 +347,58 @@ class ModelZoo(DefaultTab):
         return kwargs
 
     def _update_available_models(self, engine: Engine) -> None:
+        current_dataset = self.model_combo.currentText()
+
         while self.model_combo.count() > 0:
             self.model_combo.removeItem(0)
 
-        supermodels = [
-            model
-            for model in MODELOPTIONS
-            if (
-                "superanimal" in model
-                and model not in ("superanimal_topviewmouse", "superanimal_quadruped")
-                and (
-                    (engine == Engine.TF and "dlcrnet" in model)
-                    or (engine == Engine.PYTORCH and "dlcrnet" not in model)
-                )
-            )
-        ]
+        if engine == Engine.TF:
+            supermodels = ["superanimal_topviewmouse", "superanimal_quadruped"]
+        else:
+            supermodels = [model for model in MODELOPTIONS if "superanimal" in model]
+
         self.model_combo.addItems(supermodels)
+        if current_dataset in supermodels:
+            self.model_combo.setCurrentIndex(supermodels.index(current_dataset))
+
+    def _update_pose_models(self, super_animal: str) -> None:
+        while self.net_type_selector.count() > 0:
+            self.net_type_selector.removeItem(0)
+
+        if len(super_animal) == 0:
+            return
+
+        if self.root.engine == Engine.TF:
+            self.net_type_selector.addItems(["dlcrnet"])
+        else:
+            self.net_type_selector.addItems(
+                dlclibrary.get_available_models(super_animal)
+            )
+
+    def _update_detectors(self, super_animal: str) -> None:
+        while self.detector_type_selector.count() > 0:
+            self.detector_type_selector.removeItem(0)
+
+        if len(super_animal) == 0:
+            return
+
+        if self.root.engine == Engine.TF:
+            self.detector_type_selector.addItems(["dlcrnet"])
+        else:
+            self.detector_type_selector.addItems(
+                dlclibrary.get_available_detectors(super_animal)
+            )
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
         self._update_available_models(engine)
         if engine == Engine.PYTORCH:
             self.tf_widget.hide()
+            self.detector_type_text.show()
+            self.detector_type_selector.show()
             self.torch_widget.show()
         else:
             self.torch_widget.hide()
+            self.detector_type_text.hide()
+            self.detector_type_selector.hide()
             self.tf_widget.show()

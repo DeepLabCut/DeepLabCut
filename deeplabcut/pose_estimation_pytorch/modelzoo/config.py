@@ -11,20 +11,29 @@
 """Methods to create the configuration files to fine-tune SuperAnimal models"""
 from __future__ import annotations
 
-import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
-import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
-import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.core.weight_init import WeightInitialization
-from pathlib import Path
-from deeplabcut.core.engine import Engine
-from ruamel.yaml import YAML
 import os
+from pathlib import Path
+
+from ruamel.yaml import YAML
+
+import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.core.engine import Engine
+from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    get_super_animal_model_config_path,
+    get_super_animal_project_config_path,
+)
+from deeplabcut.pose_estimation_pytorch.task import Task
+
 
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
     project_config: dict,
-    pose_config_path: str,
-    net_type: str | None = None,
+    pose_config_path: str | Path,
+    model_name: str,
+    detector_name: str | None,
+    save: bool = False,
 ) -> dict:
     """
     Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
@@ -34,7 +43,10 @@ def make_super_animal_finetune_config(
         weight_init: The weight initialization configuration.
         project_config: The project configuration.
         pose_config_path: The path where the pose configuration file will be saved
-        net_type: The type of neural net to finetune.
+        model_name: The type of neural net to finetune.
+        detector_name: The type of detector to use for the SuperAnimal model. If None is
+            given, the model will be set to a Bottom-Up framework.
+        save: Whether to save the model configuration file to the ``pose_config_path``.
 
     Returns:
         The generated pose configuration file.
@@ -45,11 +57,18 @@ def make_super_animal_finetune_config(
             to create configuration files for transfer learning.
     """
     bodyparts = af.get_bodyparts(project_config)
+    if weight_init.dataset is None:
+        raise ValueError(
+            "You must set the ``WeightInitialization.dataset`` when fine-tuning "
+            "SuperAnimal models."
+        )
+
     if not weight_init.with_decoder:
         raise ValueError(
-            "Can call ``make_super_animal_finetune_config`` when `with_decoder=True`, "
-            f" but you had {weight_init}. Please set `with_decoder=True` to fine-tune "
-            "a model or call `make_pytorch_pose_config` to create a transfer learning "
+            "Can only call ``make_super_animal_finetune_config`` when "
+            f" `with_decoder=True`, but you had {weight_init}. Please set "
+            "`with_decoder=True` to fine-tune a model or call "
+            "`make_pytorch_pose_config` to create a transfer learning "
             "pose configuration file."
         )
 
@@ -69,29 +88,37 @@ def make_super_animal_finetune_config(
         )
 
     # Load the exact pose configuration file for the model to fine-tune
-    return create_config_from_modelzoo(
-        net_type=net_type,
+    pose_config = create_config_from_modelzoo(
         super_animal=weight_init.dataset,
+        model_name=model_name,
+        detector_name=detector_name,
         converted_bodyparts=converted_bodyparts,
         weight_init=weight_init,
         project_config=project_config,
         pose_config_path=pose_config_path,
     )
+    if save:
+        config_utils.write_config(pose_config_path, pose_config, overwrite=True)
+
+    return pose_config
 
 
 def create_config_from_modelzoo(
-    net_type: str,
     super_animal: str,
+    model_name: str,
+    detector_name: str | None,
     converted_bodyparts: list[str],
     weight_init: WeightInitialization,
     project_config: dict,
-    pose_config_path: str,
+    pose_config_path: str | Path,
 ) -> dict:
     """Creates a model configuration file to fine-tune a SuperAnimal model
 
     Args:
-        net_type: The type of neural net to finetune.
-        super_animal: The SuperAnimal model to finetune.
+        super_animal: The SuperAnimal dataset on which the model was trained.
+        model_name: The type of neural net to finetune.
+        detector_name: The type of detector to use for the SuperAnimal model. If None is
+            given, the model will be set to a Bottom-Up framework.
         converted_bodyparts: The project bodyparts that the model will learn.
         weight_init: The weight initialization to use.
         project_config: The project configuration.
@@ -100,54 +127,58 @@ def create_config_from_modelzoo(
     Returns:
         The generated pose configuration file.
     """
-    # load the SuperAnimal model config
-    pose_config, project_cfg, _, _ = modelzoo_utils.get_config_model_paths(
-        project_name=super_animal,
-        pose_model_type=modelzoo_utils.get_pose_model_type(net_type),
+    # load the model configuration
+    model_cfg = config_utils.read_config_as_dict(
+        get_super_animal_model_config_path(model_name)
     )
+    if detector_name is None:
+        model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
+        # Use default bottom-up image augmentation if no detector is given (the collate
+        # function might be needed).
+        config_dir = config_utils.get_config_folder_path()
+        aug = config_utils.read_config_as_dict(config_dir / "base" / "aug_default.yaml")
+        model_cfg["data"]["train"] = aug["train"]
+    else:
+        model_cfg["method"] = Task.TOP_DOWN.aliases[0].lower()
+        model_cfg["detector"] = config_utils.read_config_as_dict(
+            get_super_animal_model_config_path(detector_name)
+        )
 
     # use SuperAnimal bodyparts
     if weight_init.memory_replay:
-        converted_bodyparts = project_cfg["bodyparts"]
+        super_animal_project_config = config_utils.read_config_as_dict(
+            get_super_animal_project_config_path(super_animal)
+        )
+        converted_bodyparts = super_animal_project_config["bodyparts"]
 
-    pose_config["net_type"] = net_type
-    pose_config["metadata"] = {
+    model_cfg["net_type"] = model_name
+    model_cfg["metadata"] = {
         "project_path": project_config["project_path"],
-        "pose_config_path": pose_config_path,
+        "pose_config_path": str(pose_config_path),
         "bodyparts": converted_bodyparts,
         "unique_bodyparts": [],
         "individuals": project_config.get("individuals", ["animal"]),
         "with_identity": False,
     }
 
-    pose_config["model"] = config_utils.replace_default_values(
-        pose_config["model"], num_bodyparts=len(converted_bodyparts)
+    model_cfg["model"] = config_utils.replace_default_values(
+        model_cfg["model"], num_bodyparts=len(converted_bodyparts)
     )
-    pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
+    model_cfg["train_settings"]["weight_init"] = weight_init.to_dict()
 
     # sort first-level keys to make it prettier
-    return dict(sorted(pose_config.items()))
+    return dict(sorted(model_cfg.items()))
 
-def write_pytorch_config_for_memory_replay(config_path,
-                                           shuffle,
-                                           pytorch_config):
 
+def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config):
     cfg = af.read_config(config_path)
-
-    trainIndex = 0    
-
+    trainIndex = 0
     dlc_proj_root = Path(config_path).parent
-    
     model_folder = dlc_proj_root / af.get_model_folder(
-        cfg['TrainingFraction'][trainIndex], shuffle, cfg, engine=Engine.PYTORCH)
-    
-
-    os.makedirs(model_folder / 'train', exist_ok = True)
-    
-    out_path = model_folder / 'train' / 'pytorch_config.yaml'
-
-
-    
-    with open(str(out_path), 'w') as f:
+        cfg["TrainingFraction"][trainIndex], shuffle, cfg, engine=Engine.PYTORCH
+    )
+    os.makedirs(model_folder / "train", exist_ok=True)
+    out_path = model_folder / "train" / "pytorch_config.yaml"
+    with open(str(out_path), "w") as f:
         yaml = YAML()
         yaml.dump(pytorch_config, f)

@@ -1,4 +1,5 @@
 {
-    "hrnetw32": "pytorch",
-    "dlcrnet": "tensorflow"
+    "dlcrnet": "tensorflow",
+    "hrnet_w32": "pytorch",
+    "resnet_50": "pytorch"
 }
