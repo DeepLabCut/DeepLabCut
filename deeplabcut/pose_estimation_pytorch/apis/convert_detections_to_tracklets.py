@@ -195,7 +195,7 @@ def convert_detections2tracklets(
                     if single_detection is None:
                         continue
                     imindex = int(re.findall(r"\d+", image_name)[0])
-                    _single[imindex] = single_detection
+                    _single[imindex] = np.asarray(single_detection)
                 tracklets["single"].update(_single)
 
             if inference_cfg["topktoretain"] == 1:
@@ -204,7 +204,7 @@ def convert_detections2tracklets(
                     assemblies = ass.get(index)
                     if assemblies is None:
                         continue
-                    tracklets[0][image_name] = assemblies[0].data
+                    tracklets[0][image_name] = np.asarray(assemblies[0].data)
             else:
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)

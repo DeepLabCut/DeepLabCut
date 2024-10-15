@@ -437,15 +437,15 @@ detector:
     ...
 ```
 
-Currently, the only detector available is a `FasterRCNN`. However, multiple variants are
-available (you can view the different variants on [torchvision's object detection page](
-https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to
-use the fastest detector that brings enough performance. The recommended variants
-are the following (from fastest to most powerful, taken from torchvision's
-documentation):
+Currently, the only detectors available are `FasterRCNN` and `SSDLite`. However, multiple variants of
+`FasterRCNN` are available (you can view the different variants on 
+[torchvision's object detection page](https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to use the fastest 
+detector that brings enough performance. The recommended variants are the following 
+(from fastest to most powerful, taken from torchvision's documentation):
 
-| name                              |  Box MAP (larger = more powerful) | Params (larger = more powerful) |    GFLOPS (larger = slower) |
-|-----------------------------------|----------------------------------:|--------------------------------:|----------------------------:|
-| fasterrcnn_mobilenet_v3_large_fpn |                              32.8 |                           19.4M |                        4.49 |
-| fasterrcnn_resnet50_fpn           |                                37 |                           41.8M |                      134.38 |
-| fasterrcnn_resnet50_fpn_v2        |                              46.7 |                           43.7M |                      280.37 |
+| name                              | Box MAP (larger = more powerful) | Params (larger = more powerful) | GFLOPS (larger = slower) |
+|-----------------------------------|---------------------------------:|--------------------------------:|-------------------------:|
+| SSDLite                           |                             21.3 |                            3.4M |                     0.58 |
+| fasterrcnn_mobilenet_v3_large_fpn |                             32.8 |                           19.4M |                     4.49 |
+| fasterrcnn_resnet50_fpn           |                               37 |                           41.8M |                   134.38 |
+| fasterrcnn_resnet50_fpn_v2        |                             46.7 |                           43.7M |                   280.37 |

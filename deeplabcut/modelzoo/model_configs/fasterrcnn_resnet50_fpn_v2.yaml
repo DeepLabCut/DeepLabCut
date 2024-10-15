@@ -21,21 +21,22 @@ data:
 device: auto
 model:
   type: FasterRCNN
+  variant: fasterrcnn_resnet50_fpn_v2
+  box_score_thresh: 0.6
   freeze_bn_stats: true
   freeze_bn_weights: false
-  variant: fasterrcnn_mobilenet_v3_large_fpn
 runner:
   type: DetectorTrainingRunner
-  eval_interval: 1
+  eval_interval: 10
   optimizer:
     type: AdamW
     params:
-      lr: 1e-4
+      lr: 1e-5
   scheduler:
     type: LRListScheduler
     params:
-      milestones: [ 160 ]
-      lr_list: [ [ 1e-5 ] ]
+      milestones: [ 90 ]
+      lr_list: [ [ 1e-6 ] ]
   snapshots:
     max_snapshots: 5
     save_epochs: 25

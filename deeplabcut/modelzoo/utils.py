@@ -58,6 +58,38 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
     return read_config(str(super_animal_projects[super_animal]))
 
 
+def get_super_animal_scorer(
+    super_animal: str,
+    model_snapshot_path: Path,
+    detector_snapshot_path: Path | None,
+) -> str:
+    """
+    Args:
+        super_animal: The SuperAnimal dataset on which the models were trained
+        model_snapshot_path: The path for the SuperAnimal pose model snapshot
+        detector_snapshot_path: The path for the SuperAnimal detector snapshot, if a
+            detector is being used.
+
+    Returns:
+        The DLC scorer name to use for the given SuperAnimal models.
+    """
+    super_animal_prefix = super_animal + "_"
+    dlc_scorer = super_animal_prefix
+
+    if detector_snapshot_path is not None:
+        detector_name = detector_snapshot_path.stem
+        if detector_name.startswith(super_animal_prefix):
+            detector_name = detector_name[len(super_animal_prefix) :]
+        dlc_scorer += f"{detector_name}_"
+
+    model_name = model_snapshot_path.stem
+    if model_name.startswith(super_animal_prefix):
+        model_name = model_name[len(super_animal_prefix) :]
+    dlc_scorer += f"{model_name}"
+
+    return dlc_scorer
+
+
 def create_conversion_table(
     config: str | Path,
     super_animal: str,
@@ -120,7 +152,7 @@ def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> Conversio
         cfg = read_config(str(cfg))
 
     conversion_tables = cfg.get("SuperAnimalConversionTables", {})
-    if super_animal not in conversion_tables:
+    if conversion_tables is None or super_animal not in conversion_tables:
         raise ValueError(
             f"No conversion table defined in the project config for {super_animal}."
             "Call deeplabcut.modelzoo.create_conversion_table to create one."
@@ -200,6 +232,56 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
 
 
 def get_superanimal_colormaps():
+    # FIXME(shaokai) - Add colormaps for the SuperBird dataset
+    superanimal_bird_colors = (
+        np.array(
+            [
+                (127, 0, 255),
+                (115, 18, 254),
+                (103, 37, 254),
+                (91, 56, 253),
+                (79, 74, 252),
+                (65, 95, 250),
+                (53, 112, 248),
+                (41, 128, 246),
+                (29, 144, 243),
+                (15, 162, 239),
+                (3, 176, 236),
+                (8, 189, 232),
+                (20, 201, 228),
+                (34, 214, 223),
+                (46, 223, 219),
+                (58, 232, 214),
+                (70, 239, 209),
+                (84, 246, 202),
+                (96, 250, 196),
+                (108, 253, 190),
+                (120, 254, 184),
+                (134, 254, 176),
+                (146, 253, 169),
+                (158, 250, 162),
+                (170, 246, 154),
+                (184, 239, 146),
+                (196, 232, 138),
+                (208, 223, 130),
+                (220, 214, 122),
+                (234, 201, 112),
+                (246, 189, 103),
+                (255, 176, 95),
+                (255, 162, 86),
+                (255, 144, 75),
+                (255, 128, 66),
+                (255, 112, 57),
+                (255, 95, 48),
+                (255, 74, 37),
+                (255, 56, 28),
+                (255, 37, 18),
+                (255, 18, 9),
+                (255, 0, 0),
+            ]
+        )
+        / 255
+    )
     superanimal_topviewmouse_colors = (
         np.array(
             [
@@ -282,6 +364,9 @@ def get_superanimal_colormaps():
     )
 
     superanimal_colormaps = {
+        "superanimal_bird": ListedColormap(
+            list(superanimal_bird_colors), name="superanimal_bird"
+        ),
         "superanimal_topviewmouse": ListedColormap(
             list(superanimal_topviewmouse_colors), name="superanimal_topviewmouse"
         ),

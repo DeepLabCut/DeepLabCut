@@ -8,3 +8,4 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from deeplabcut.modelzoo.weight_initialization import build_weight_init

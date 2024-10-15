@@ -8,33 +8,28 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import get_config_model_paths
+import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 
 
-@pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
+    "super_animal", ["superanimal_quadruped", "superanimal_topviewmouse"]
 )
-def test_get_config_model_paths(project_name):
-    (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_model_path,
-    ) = get_config_model_paths(
-        project_name,
-        "hrnetw32",
-        detector_type="fasterrcnn",
-        weight_folder=None,
+@pytest.mark.parametrize("model_name", ["hrnet_w32"])
+@pytest.mark.parametrize("detector_name", [None, "fasterrcnn_resnet50_fpn_v2"])
+def test_get_config_model_paths(super_animal, model_name, detector_name):
+    model_config = modelzoo.load_super_animal_config(
+        super_animal=super_animal,
+        model_name=model_name,
+        detector_name=detector_name,
     )
 
     assert isinstance(model_config, dict)
-    assert isinstance(project_config, dict)
-    assert isinstance(pose_model_path, str)
-    assert isinstance(detector_model_path, str)
-    assert os.path.exists(pose_model_path)
-    assert os.path.exists(detector_model_path)
+    if detector_name is None:
+        assert model_config["method"].lower() == "bu"
+        assert "detector" not in model_config
+    else:
+        assert model_config["method"].lower() == "td"
+        assert "detector" in model_config

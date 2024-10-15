@@ -15,13 +15,15 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_images import (
 
 if __name__ == "__main__":
     superanimal_name = "superanimal_quadruped"
-    model_name = "hrnetw32"
+    model_name = "hrnet_w32"
+    detector_name = "fasterrcnn_resnet50_fpn_v2"
     device = "cuda"
     max_individuals = 3
 
     ret = superanimal_analyze_images(
         superanimal_name,
         model_name,
+        detector_name,
         "test_rodent_images",
         max_individuals,
         "vis_test_rodent_images",
