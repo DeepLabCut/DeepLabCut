@@ -13,7 +13,6 @@ import webbrowser
 from functools import partial
 
 import dlclibrary
-from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
@@ -29,7 +28,6 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
-from dlclibrary.dlcmodelzoo.modelzoo_download import MODELOPTIONS
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -355,7 +353,7 @@ class ModelZoo(DefaultTab):
         if engine == Engine.TF:
             supermodels = ["superanimal_topviewmouse", "superanimal_quadruped"]
         else:
-            supermodels = [model for model in MODELOPTIONS if "superanimal" in model]
+            supermodels = dlclibrary.get_available_datasets()
 
         self.model_combo.addItems(supermodels)
         if current_dataset in supermodels:
