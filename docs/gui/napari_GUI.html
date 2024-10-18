@@ -57,8 +57,14 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/napari_GUI';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -600,8 +606,8 @@ Note that masks can be reloaded and edited at a later stage by dropping the <cod
 </ol>
 <section id="workflow-flowchart">
 <h3>Workflow flowchart<a class="headerlink" href="#workflow-flowchart" title="Link to this heading">#</a></h3>
-<div class="mermaid">
-            graph TD
+<pre  class="mermaid">
+        graph TD
   id1[What stage of labeling?]
   id2[deeplabcut.label_frames]
   id3[deeplabcut.refine_labels]
@@ -625,7 +631,7 @@ Note that masks can be reloaded and edited at a later stage by dropping the <cod
   id3 ----&gt;|I have both `machinelabels` and `CollectedData` files|id6
   id6 --&gt;|yes|id7
   id6 ----&gt;|no, I just extracted outliers|id8
-        </div></section>
+    </pre></section>
 <section id="labeling-multiple-image-folders">
 <h3>Labeling multiple image folders<a class="headerlink" href="#labeling-multiple-image-folders" title="Link to this heading">#</a></h3>
 <p>Labeling multiple image folders has to be done in sequence; i.e., only one image folder can be opened at a time.
