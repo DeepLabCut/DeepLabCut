@@ -88,6 +88,8 @@ def load_super_animal_config(
     super_animal: str,
     model_name: str,
     detector_name: str | None = None,
+    max_individuals: int = 30,
+    device: str | None = None,
 ) -> dict:
     """Loads the model configuration file for a model, detector and SuperAnimal
 
@@ -95,6 +97,8 @@ def load_super_animal_config(
         super_animal: The name of the SuperAnimal for which to create the model config.
         model_name: The name of the model for which to create the model config.
         detector_name: The name of the detector for which to create the model config.
+        max_individuals: The maximum number of detections to make in an image
+        device: The device to use to train/run inference on the model
 
     Returns:
         The model configuration for a SuperAnimal-pretrained model.
@@ -105,6 +109,7 @@ def load_super_animal_config(
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
     model_config = config_utils.read_config_as_dict(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
+    model_config = update_config(model_config, max_individuals, device)
 
     if detector_name is None:
         model_config["method"] = "BU"
@@ -171,7 +176,17 @@ def raise_warning_if_called_directly():
         )
 
 
-def update_config(config, max_individuals, device):
+def update_config(config: dict, max_individuals: int, device: str):
+    """Loads the model configuration file for a model, detector and SuperAnimal
+
+    Args:
+        config: The default model configuration file.
+        max_individuals: The maximum number of detections to make in an image
+        device: The device to use to train/run inference on the model
+
+    Returns:
+        The model configuration for a SuperAnimal-pretrained model.
+    """
     config = config_utils.replace_default_values(
         config,
         num_bodyparts=len(config["metadata"]["bodyparts"]),
@@ -184,5 +199,4 @@ def update_config(config, max_individuals, device):
     if "detector" in config:
         config["detector"]["device"] = device
 
-    config_utils.pretty_print(config)
     return config
