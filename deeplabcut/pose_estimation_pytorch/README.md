@@ -469,7 +469,7 @@ pose_runner, detector_runner = get_inference_runners(
 )
 
 predictions = video_inference(
-    video_path=video_path,
+    video=video_path,
     task=pose_task,
     pose_runner=pose_runner,
     detector_runner=detector_runner,

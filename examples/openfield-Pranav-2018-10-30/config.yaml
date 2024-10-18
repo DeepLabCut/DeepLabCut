@@ -2,6 +2,9 @@
 Task: openfield
 scorer: Pranav
 date: Oct30
+multianimalproject:
+identity:
+
 
 # Project path (change when moving around)
 project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
@@ -44,7 +47,9 @@ iteration: 0
 default_net_type: resnet_50
 default_augmenter: imgaug
 snapshotindex: -1
+detector_snapshotindex: -1
 batch_size: 4
+detector_batch_size: 1
 
 
 # Cropping Parameters (for analysis and outlier frame detection)

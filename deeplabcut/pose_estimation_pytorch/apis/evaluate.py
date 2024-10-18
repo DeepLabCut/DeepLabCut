@@ -20,6 +20,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
@@ -119,12 +120,11 @@ def evaluate(
         mode=mode,
         detector_runner=detector_runner,
     )
-    if "weight_init" in loader.model_cfg["train_settings"]:
-        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
-        if weight_init_cfg["memory_replay"]:
-            conversion_array = weight_init_cfg["conversion_array"]
-            for filename, pred in predictions.items():
-                pred["bodyparts"] = pred["bodyparts"][:, conversion_array]
+    if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
+        weight_init = WeightInitialization.from_dict(weight_init_cfg)
+        if weight_init.memory_replay:
+            for _, pred in predictions.items():
+                pred["bodyparts"] = pred["bodyparts"][:, weight_init.conversion_array]
 
     poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
 
@@ -197,17 +197,7 @@ def evaluate_snapshot(
     """
     pose_task = Task(loader.model_cfg.get("method", "bu"))
     parameters = loader.get_dataset_parameters()
-
-    if "weight_init" in loader.model_cfg["train_settings"]:
-        weight_init_cfg = loader.model_cfg["train_settings"]["weight_init"]
-        if weight_init_cfg["memory_replay"]:
-            conversion_array = weight_init_cfg["conversion_array"]
-            bodyparts = list(np.array(parameters.bodyparts)[conversion_array])
-            parameters = PoseDatasetParameters(
-                bodyparts, parameters.unique_bpts, parameters.individuals
-            )
-
-    pcutoff = cfg.get("pcutoff")
+    pcutoff = cfg.get("pcutoff", 0.6)
 
     detector_path = None
     if detector_snapshot is not None:
@@ -223,6 +213,16 @@ def evaluate_snapshot(
         transform=transform,
         detector_path=detector_path,
         detector_transform=None,
+    )
+
+    # The project bodyparts might be different to the bodyparts the model was trained to
+    #  output, if the model is fine-tuned from SuperAnimal with memory replay.
+    #  For evaluation, we want to only use the project bodyparts
+    project_bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
+    parameters = PoseDatasetParameters(
+        bodyparts=project_bodyparts,
+        unique_bpts=parameters.unique_bpts,
+        individuals=parameters.individuals
     )
 
     predictions = {}
@@ -308,7 +308,7 @@ def evaluate_snapshot(
 
 
 def evaluate_network(
-    config: str,
+    config: str | Path,
     shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
     snapshotindex: int | str | None = None,

@@ -15,14 +15,16 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
-import numpy as np
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
-from deeplabcut.modelzoo.utils import parse_project_model_name
+from deeplabcut.modelzoo.utils import get_super_animal_scorer
+from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
+    get_snapshot_folder_path,
+    get_super_animal_snapshot_path,
+    load_super_animal_config,
     update_config,
 )
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
@@ -35,9 +37,12 @@ from deeplabcut.utils.pseudo_label import (
 def video_inference_superanimal(
     videos: Union[str, list],
     superanimal_name: str,
+    model_name: str,
+    detector_name: str | None = None,
     scale_list: Optional[list] = None,
     videotype: str = ".mp4",
     dest_folder: Optional[str] = None,
+    cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
     batch_size: int = 1,
@@ -59,12 +64,10 @@ def video_inference_superanimal(
     This function performs inference on videos using a pretrained SuperAnimal model.
 
     IMPORTANT: Note that since we have both TensorFlow and PyTorch Engines, we will
-    route the engine based on the model you select.
+    route the engine based on the model you select:
 
-    * superanimal_topviewmouse_hrnetw32 - > PyTorch
-    * superanimal_quadruped_hrnetw32 -> PyTorch
-    * superanimal_topviewmouse_dlcrnet -> TensorFlow
-    * superanimal_quadruped_dlcrnet -> TensorFlow
+        * dlcrnet -> TensorFlow
+        * all others - > PyTorch
 
     Parameters
     ----------
@@ -73,10 +76,14 @@ def video_inference_superanimal(
         The path to the video or a list of paths to videos.
 
     superanimal_name (str):
-        The name of the SuperAnimal model.
-        The name should be in the format: {project_name}_{modelname}.
-        For example: `superanimal_topviewmouse_dlcrnet` or `superanimal_quadruped_hrnetw32`.
-        See (model explanation section below).
+        The name of the SuperAnimal dataset for which to load a pre-trained model.
+
+    model_name (str):
+        The model architecture to use for inference.
+
+    detector_name (str):
+        For top-down models (only available with the PyTorch framework), the type of
+        object detector to use for inference.
 
     scale_list (list):
         A list of different resolutions for the spatial pyramid. Used only for bottom up models.
@@ -84,7 +91,15 @@ def video_inference_superanimal(
     videotype (str):
         Checks for the extension of the video in case the input to the video is a directory.
         Only videos with this extension are analyzed. The default is ``.mp4``.
+
     dest_folder (str): The path to the folder where the results should be saved.
+
+    cropping: list or None, optional, default=None
+        Only for SuperAnimal models running with the PyTorch engine.
+        List of cropping coordinates as [x1, x2, y1, y2].
+        Note that the same cropping parameters will then be used for all videos.
+        If different video crops are desired, run ``video_inference_superanimal`` on
+        individual videos with the corresponding cropping coordinates.
 
     video_adapt (bool):
         Whether to perform video adaptation. The default is False.
@@ -140,38 +155,69 @@ def video_inference_superanimal(
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
     
-   (Model Explanation) SuperAnimal-Quadruped: 
+    (Model Explanation) SuperAnimal-Quadruped:
+    `superanimal_quadruped` models aim to work across a large range of quadruped
+    animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is
+    orthogonal to the animal ("side view"), and most of the data includes the animals
+    face (thus the front and side of the animal). You will note we have several variants
+    that differ in speed vs. performance, so please do test them out on your data to see
+    which is best suited for your application. Also note we have a "video adaptation"
+    feature, which lets you adapt your data to the model in a self-supervised way.
+    No labeling needed!
 
-    - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
+    All model snapshots are automatically downloaded to modelzoo/checkpoints when used.
+
     - PLEASE SEE THE FULL DATASHEET: https://zenodo.org/records/10619173
-    - MORE DETAILS ON THE MODELS (detector, pose estimators): https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped
+    - MORE DETAILS ON THE MODELS (detector, pose estimators):
+        https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped
     - We provide several models:
-        - `superanimal_quadruped_hrnetw32` (pytorch engine)
-            - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
-        - `superanimal_quadruped_dlcrnet` (tensorflow engine)
-            - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
-        - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
-        - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+        - `hrnet_w32` (Top-Down pose estimation model, PyTorch engine)
+            An `hrnet_w32` is a top-down model that is paired with a detector. That
+            means it takes a cropped image from an object detector and predicts the
+            keypoints. When selecting this variant, a `detector_name` must be set with
+            one of the provided object detectors.
+        - `dlcrnet` (TensorFlow engine)
+            This is a bottom-up model that predicts all keypoints then groups them into
+            individuals. This can be faster, but more error prone.
+    - We provide one object detector (only for the PyTorch engine):
+        - `fasterrcnn_resnet50_fpn_v2`
+            This is a FasterRCNN model with a ResNet backbone, see
+            https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     (Model Explanation) SuperAnimal-TopViewMouse:
+    `superanimal_topviewmouse` aims to work across lab mice in different lab settings
+    from a top-view perspective; this is very polar in many behavioral assays in freely
+    moving mice.
 
-    -  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
+    All model snapshots are automatically downloaded to modelzoo/checkpoints when used.
+
     - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
     - [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
     - We provide several models:
-        - `superanimal_topviewmouse_hrnetw32` (pytorch engine)
-            - `superanimal_topviewmouse_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
-        - `superanimal_topviewmouse_dlcrnet` (tensorflow engine)
-            - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
-        - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
-        - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+        - `hrnet_w32` (Top-Down pose estimation model, PyTorch engine)
+            An `hrnet_w32` is a top-down model that is paired with a detector. That
+            means it takes a cropped image from an object detector and predicts the
+            keypoints. When selecting this variant, a `detector_name` must be set with
+            one of the provided object detectors.
+        - `dlcrnet` (TensorFlow engine)
+            This is a bottom-up model that predicts all keypoints then groups them into
+            individuals. This can be faster, but more error prone.
+    - We provide one object detector (only for the PyTorch engine):
+        - `fasterrcnn_resnet50_fpn_v2`
+            This is a FasterRCNN model with a ResNet backbone, see
+            https://pytorch.org/vision/stable/models/faster_rcnn.html
+
+    (Model Explanation) SuperAnimal-Bird:
+    TODO(shaokai)
 
     Examples (PyTorch Engine)
     --------
     >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
     >>> video_inference_superanimal(
         videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
-        superanimal_name="superanimal_topviewmouse_hrnetw32",
+        superanimal_name="superanimal_topviewmouse",
+        model_name="hrnet_w32",
+        detector_name="fasterrcnn_resnet50_fpn_v2",
         video_adapt=True,
         max_individuals=3,
         pseudo_threshold=0.1,
@@ -213,16 +259,11 @@ def video_inference_superanimal(
     are sensitive to the scales of the image.
     If you find your predictions not good without scale_list or it's too hard to find
     the right scale_list, you can try to use the PyTorch engine.
-
-
     """
     if scale_list is None:
         scale_list = []
 
-    project_name, model_name = parse_project_model_name(superanimal_name)
-
-    print(f"running video inference on {videos} with {project_name}_{model_name}")
-
+    print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
     available_architectures = json.load(
@@ -230,46 +271,24 @@ def video_inference_superanimal(
     )
     framework = available_architectures[model_name]
     print(f"Using {framework} for model {model_name}")
-
-    weight_folder = os.path.join(modelzoo_path, "checkpoints")
-
-    redownload = False
-    if framework == "pytorch":
-        pose_model_name = f"{project_name}_{model_name}.pth"
-        detector_name = f"{project_name}_fasterrcnn.pt"
-        rename_mapping = {
-            "pose_model.pth": pose_model_name,
-            "detector.pt": detector_name,
-        }
-        if customized_pose_checkpoint is None:
-            pose_model_path = os.path.join(weight_folder, pose_model_name)
-        else:
-            pose_model_path = customized_pose_checkpoint
-        detector_model_path = os.path.join(weight_folder, detector_name)
-        if not (
-            os.path.exists(pose_model_path) and os.path.exists(detector_model_path)
-        ):
-            redownload = True
-    elif framework == "tensorflow":
-        weight_folder = os.path.join(weight_folder, f"{project_name}_{model_name}")
-        redownload = not os.path.isdir(weight_folder)
-        rename_mapping = {}
-
-    if redownload:
-        download_huggingface_model(
-            superanimal_name, target_dir=weight_folder, rename_mapping=rename_mapping
-        )
-
     if framework == "tensorflow":
         from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
             _video_inference_superanimal,
         )
 
+        weight_folder = (
+            get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
+        )
+        if not weight_folder.exists():
+            download_huggingface_model(
+                superanimal_name, target_dir=str(weight_folder), rename_mapping=None
+            )
+
         if isinstance(videos, str):
             videos = [videos]
         _video_inference_superanimal(
             videos,
-            project_name,
+            superanimal_name,
             model_name,
             scale_list,
             videotype,
@@ -284,40 +303,57 @@ def video_inference_superanimal(
             _video_inference_superanimal,
         )
 
+        if customized_model_config is not None:
+            config = read_config_as_dict(customized_model_config)
+        else:
+            config = load_super_animal_config(
+                super_animal=superanimal_name,
+                model_name=model_name,
+                detector_name=detector_name,
+            )
+
+        pose_model_path = customized_pose_checkpoint
+        if pose_model_path is None:
+            pose_model_path = get_super_animal_snapshot_path(
+                dataset=superanimal_name,
+                model_name=model_name,
+            )
+
+        detector_path = customized_detector_checkpoint
+        if detector_path is None:
+            detector_path = get_super_animal_snapshot_path(
+                dataset=superanimal_name,
+                model_name=detector_name,
+            )
+
+        dlc_scorer = get_super_animal_scorer(
+            superanimal_name, pose_model_path, detector_path
+        )
+
+        config = update_config(config, max_individuals, device)
+        output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
             # video adaptation. As reported in Ye et al. 2024, one video should be
             # sufficient for video adaptation.
             video_path = Path(videos[0])
-            print(f"using {video_path} for video adaptation training")
+            print(f"Using {video_path} for video adaptation training")
 
             # video inference to get pseudo label
             _video_inference_superanimal(
                 [str(video_path)],
-                project_name,
-                model_name,
-                max_individuals,
-                pcutoff,
-                device=device,
+                superanimal_name,
+                model_cfg=config,
+                model_snapshot_path=pose_model_path,
+                detector_snapshot_path=detector_path,
+                max_individuals=max_individuals,
+                pcutoff=pcutoff,
                 batch_size=batch_size,
                 detector_batch_size=detector_batch_size,
+                cropping=cropping,
                 dest_folder=dest_folder,
-                customized_pose_checkpoint=customized_pose_checkpoint,
-                customized_detector_checkpoint=customized_detector_checkpoint,
-                customized_model_config=customized_model_config,
+                output_suffix=output_suffix,
             )
-
-            (
-                model_config,
-                project_config,
-                pose_model_path,
-                detector_path,
-            ) = get_config_model_paths(project_name, model_name)
-            config = {**project_config, **model_config}
-            config = update_config(config, max_individuals, device)
-
-            # we need config to fetch the correct keypoints to dlc3predictions_2_annotation_from_video
-            bodyparts = config["metadata"]["bodyparts"]
 
             # we prepare the pseudo dataset in the same folder of the target video
             pseudo_dataset_folder = video_path.with_name(f"pseudo_{video_path.stem}")
@@ -331,14 +367,19 @@ def video_inference_superanimal(
             else:
                 image_folder.mkdir()
                 print(
-                    f"Video frames being extracted to {image_folder} for video adaptation."
+                    f"Video frames being extracted to {image_folder} for video "
+                    f"adaptation."
                 )
-                video_to_frames(video_path, pseudo_dataset_folder)
+                video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
             anno_folder = pseudo_dataset_folder / "annotations"
-            if anno_folder.exists():
+            if (
+                (anno_folder / "train.json").exists()
+                and (anno_folder / "test.json").exists()
+            ):
                 print(
-                    f"{anno_folder} exists, skipping the annotation construction. Delete the folder if you want to re-construct pseudo annotations"
+                    f"{anno_folder} exists, skipping the annotation construction. "
+                    f"Delete the folder if you want to re-construct pseudo annotations"
                 )
             else:
                 anno_folder.mkdir()
@@ -347,7 +388,7 @@ def video_inference_superanimal(
                     pseudo_anno_dir = video_path.parent
                 else:
                     pseudo_anno_dir = Path(dest_folder)
-                dlc_scorer = f"{project_name}_{model_name}"
+
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
                 with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
                     predictions = json.load(f)
@@ -358,15 +399,11 @@ def video_inference_superanimal(
                 dlc3predictions_2_annotation_from_video(
                     predictions,
                     pseudo_dataset_folder,
-                    bodyparts,
+                    config["metadata"]["bodyparts"],
                     superanimal_name,
                     pose_threshold=pseudo_threshold,
                     bbox_threshold=bbox_threshold,
                 )
-
-            # this is probably needed for video generation
-            individuals = [f"animal{i}" for i in range(max_individuals)]
-            config["metadata"]["individuals"] = individuals
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
@@ -391,27 +428,25 @@ def video_inference_superanimal(
                     "existing checkpoints."
                 )
             else:
-
                 print(
-                    f"""
-Running video adaptation with following parameters: 
-(pose training) pose_epochs: {pose_epochs}
-(pose) save_epochs: 1
-detector_epochs: {detector_epochs}
-detector_save_epochs: 1
-video adaptation batch size: {video_adapt_batch_size}"""
+                    "Running video adaptation with following parameters:\n"
+                    f"  (pose training) pose_epochs: {pose_epochs}\n"
+                    "  (pose) save_epochs: 1\n"
+                    f"  detector_epochs: {detector_epochs}\n"
+                    "  detector_save_epochs: 1\n"
+                    f"  video adaptation batch size: {video_adapt_batch_size}\n"
                 )
-                with open(
-                    os.path.join(pseudo_dataset_folder, "annotations", "train.json"),
-                    "r",
-                ) as f:
+                train_file = pseudo_dataset_folder / "annotations" / "train.json"
+                with open(train_file, "r") as f:
                     temp_obj = json.load(f)
-                    annotations = temp_obj["annotations"]
-                    if len(annotations) == 0:
-                        print(
-                            f"No valid predictions from {str(video_path)}. Check the quality of the video"
-                        )
-                        return
+
+                annotations = temp_obj["annotations"]
+                if len(annotations) == 0:
+                    print(
+                        f"No valid predictions from {str(video_path)}. Check the "
+                        "quality of the video"
+                    )
+                    return
 
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
@@ -430,21 +465,22 @@ video adaptation batch size: {video_adapt_batch_size}"""
                     detector_batch_size=video_adapt_batch_size,
                 )
 
-            # Set the customized checkpoint paths
-            customized_pose_checkpoint = str(adapted_pose_checkpoint)
-            customized_detector_checkpoint = str(adapted_detector_checkpoint)
+            # Set the customized checkpoint paths and
+            output_suffix = "_after_adapt"
+            detector_path = adapted_detector_checkpoint
+            pose_model_path = adapted_pose_checkpoint
 
         return _video_inference_superanimal(
             videos,
-            project_name,
-            model_name,
-            max_individuals,
-            pcutoff,
-            device=device,
+            superanimal_name,
+            model_cfg=config,
+            model_snapshot_path=pose_model_path,
+            detector_snapshot_path=detector_path,
+            max_individuals=max_individuals,
+            pcutoff=pcutoff,
             batch_size=batch_size,
             detector_batch_size=detector_batch_size,
+            cropping=cropping,
             dest_folder=dest_folder,
-            customized_pose_checkpoint=customized_pose_checkpoint,
-            customized_detector_checkpoint=customized_detector_checkpoint,
-            customized_model_config=customized_model_config,
+            output_suffix=output_suffix,
         )

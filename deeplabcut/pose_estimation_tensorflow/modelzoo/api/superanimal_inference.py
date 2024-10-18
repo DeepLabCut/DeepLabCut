@@ -19,10 +19,6 @@ from pathlib import Path
 import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
-from dlclibrary.dlcmodelzoo.modelzoo_download import (
-    download_huggingface_model,
-    MODELOPTIONS,
-)
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 

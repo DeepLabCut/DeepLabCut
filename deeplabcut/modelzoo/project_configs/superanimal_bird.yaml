@@ -17,33 +17,48 @@ engine: pytorch
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
 bodyparts:
-- nose
-- left_ear
-- right_ear
-- left_ear_tip
-- right_ear_tip
+- back
+- bill
+- belly
+- breast
+- crown
+- forehead
 - left_eye
+- left_leg
+- left_wing_tip
+- left_wrist
+- nape
 - right_eye
+- right_leg
+- right_wing_tip
+- right_wrist
+- tail_tip
+- throat
 - neck
-- mid_back
-- mouse_center
-- mid_backend
-- mid_backend2
-- mid_backend3
-- tail_base
-- tail1
-- tail2
-- tail3
-- tail4
-- tail5
-- left_shoulder
-- left_midside
-- left_hip
-- right_shoulder
-- right_midside
-- right_hip
-- tail_end
-- head_midpoint
+- tail_left
+- tail_right
+- upper_spine
+- upper_half_spine
+- lower_half_spine
+- right_foot
+- left_foot
+- left_half_chest
+- right_half_chest
+- chin
+- left_tibia
+- right_tibia
+- lower_spine
+- upper_half_neck
+- lower_half_neck
+- left_chest
+- right_chest
+- upper_neck
+- left_wing_shoulder
+- left_wing_elbow
+- right_wing_shoulder
+- right_wing_elbow
+- upper_cere
+- lower_cere
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement

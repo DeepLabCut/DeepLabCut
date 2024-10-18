@@ -1,0 +1,88 @@
+data:
+  colormode: RGB
+  inference:
+    normalize_images: true
+  train:
+    affine:
+      p: 0.5
+      scaling: [1.0, 1.0]
+      rotation: 30
+      translation: 0
+    gaussian_noise: 12.75
+    normalize_images: true
+device: auto
+method: td
+model:
+  backbone:
+    type: ResNet
+    model_name: resnet50_gn
+    output_stride: 16
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+  backbone_output_channels: 2048
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: normal
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: false
+        clip_scores: true
+        location_refinement: true
+        locref_std: 7.2801
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: true
+        locref_std: 7.2801
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
+      heatmap_config:
+        channels:
+        - 2048
+        - "num_bodyparts"
+        kernel_size:
+        - 3
+        strides:
+        - 2
+      locref_config:
+        channels:
+        - 2048
+        - "num_bodyparts x 2"
+        kernel_size:
+        - 3
+        strides:
+        - 2
+net_type: resnet_50
+runner:
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-5
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-6 ], [ 1e-7 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: false
+  display_iters: 500
+  epochs: 100
+  seed: 42

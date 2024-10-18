@@ -16,7 +16,6 @@ import logging
 import torch
 import torch.nn as nn
 
-import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES, BaseBackbone
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
@@ -189,22 +188,8 @@ class PoseModel(nn.Module):
 
         if weight_init is not None:
             logging.info(f"Loading pretrained model weights: {weight_init}")
-
-            # TODO: Should we specify the pose_model_type in WeightInitialization?
-            backbone_name = cfg["backbone"]["model_name"]
-            pose_model_type = modelzoo_utils.get_pose_model_type(backbone_name)
-
-            # load pretrained weights
-            if weight_init.customized_pose_checkpoint is None:
-                _, _, snapshot_path, _ = modelzoo_utils.get_config_model_paths(
-                    project_name=weight_init.dataset,
-                    pose_model_type=pose_model_type,
-                )
-            else:
-                snapshot_path = weight_init.customized_pose_checkpoint
-
-            logging.info(f"The pose model is loading from {snapshot_path}")
-            snapshot = torch.load(snapshot_path, map_location="cpu")
+            logging.info(f"The pose model is loading from {weight_init.snapshot_path}")
+            snapshot = torch.load(weight_init.snapshot_path, map_location="cpu")
             state_dict = snapshot["model"]
 
             # load backbone state dict

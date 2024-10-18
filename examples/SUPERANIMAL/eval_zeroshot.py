@@ -16,8 +16,8 @@ from pathlib import Path
 import torch
 
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import TrainingDatasetMetadata
+from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.pose_estimation_pytorch import DLCLoader
 from deeplabcut.pose_estimation_pytorch.apis.evaluate import evaluate_snapshot
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
@@ -29,6 +29,8 @@ def main(
     super_animal: str,
     shuffle_index: int,
     device: str,
+    super_animal_model: str = "hrnet_w32",
+    super_animal_detector: str = "fasterrcnn_resnet50_fpn_v2",
 ):
     metadata = TrainingDatasetMetadata.load(config_path, load_splits=True)
     shuffles = [s for s in metadata.shuffles if s.index == shuffle_index]
@@ -64,11 +66,13 @@ def main(
     # Build the pose model
     model = PoseModel.build(
         loader.model_cfg["model"],
-        weight_init=WeightInitialization.build(
+        weight_init=build_weight_init(
             cfg=cfg,
             super_animal=super_animal,
+            model_name=super_animal_model,
+            detector_name=super_animal_detector,
             with_decoder=True,
-        )
+        ),
     )
 
     # Save the zero-shot snapshot

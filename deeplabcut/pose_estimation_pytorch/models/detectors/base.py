@@ -16,7 +16,6 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn as nn
 
-import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
@@ -41,16 +40,11 @@ def _build_detector(
     cfg["pretrained"] = pretrained
     detector: BaseDetector = build_from_cfg(cfg, **kwargs)
 
-    if weight_init is not None:
-        _, _, _, snapshot_path = modelzoo_utils.get_config_model_paths(
-            project_name=weight_init.dataset,
-            pose_model_type="hrnetw32",  # pose model does not matter here
-            detector_type="fasterrcnn",  # TODO: include variant
+    if weight_init is not None and weight_init.detector_snapshot_path is not None:
+        logging.info(
+            f"Loading detector checkpoint from {weight_init.detector_snapshot_path}"
         )
-        if weight_init.customized_detector_checkpoint is not None:
-            snapshot_path = weight_init.customized_detector_checkpoint
-        logging.info(f"Loading detector checkpoint from {snapshot_path}")
-        snapshot = torch.load(snapshot_path, map_location="cpu")
+        snapshot = torch.load(weight_init.detector_snapshot_path, map_location="cpu")
         detector.load_state_dict(snapshot["model"])
 
     return detector

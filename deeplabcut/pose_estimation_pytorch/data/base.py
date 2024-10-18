@@ -27,7 +27,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxiliaryfunctions
 
 
 class Loader(ABC):

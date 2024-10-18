@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
@@ -32,6 +33,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
 )
 from deeplabcut.gui.widgets import launch_napari
+from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -70,10 +72,14 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
     def set_edit_table_visibility(self) -> None:
-        has_conversion_tables = bool(self.root.cfg.get("SuperAnimalConversionTables", {}))
+        has_conversion_tables = bool(
+            self.root.cfg.get("SuperAnimalConversionTables", {})
+        )
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
         is_finetuning = self.weight_init_selector.with_decoder
-        self.mapping_button.setVisible(has_conversion_tables & is_pytorch_engine & is_finetuning)
+        self.mapping_button.setVisible(
+            has_conversion_tables & is_pytorch_engine & is_finetuning
+        )
 
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
@@ -179,7 +185,6 @@ class CreateTrainingDataset(DefaultTab):
 
     def edit_conversion_table(self):
         # Test beforehand whether a conversion table exists
-        weight_init = self.weight_init_selector.get_weight_init()
         memory_replay_folder = Path(self.root.project_folder) / "memory_replay"
         conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
         files = [self.root.config]
@@ -213,12 +218,6 @@ class CreateTrainingDataset(DefaultTab):
                 self.root.writer.write("Training dataset creation failed.")
                 return
 
-        try:
-            weight_init = self.weight_init_selector.get_weight_init()
-        except ValueError as err:
-            print(f"The training dataset could not be created: {err}.")
-            return
-
         if self.model_comparison:
             raise NotImplementedError
             # TODO: finish model_comparison
@@ -235,10 +234,22 @@ class CreateTrainingDataset(DefaultTab):
                 detector_type = None
                 if engine == Engine.TF:
                     import tensorflow
+
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed
                 elif engine == Engine.PYTORCH and "top_down" in net_type:
                     detector_type = self.detector_choice.currentText()
+
+                try:
+                    weight_init = (
+                        self.weight_init_selector.get_super_animal_weight_init(
+                            net_type,
+                            detector_type,
+                        )
+                    )
+                except ValueError as err:
+                    print(f"The training dataset could not be created: {err}.")
+                    return
 
                 if self.data_split_selection.selected:
                     deeplabcut.create_training_dataset_from_existing_split(
@@ -427,6 +438,7 @@ class CreateTrainingDataset(DefaultTab):
         else:
             # FIXME: Circular imports make it impossible to import this at the top
             from deeplabcut.pose_estimation_pytorch import available_detectors
+
             detectors = available_detectors()
             det_filter = self.get_detector_filter()
             if det_filter is not None:
@@ -436,7 +448,10 @@ class CreateTrainingDataset(DefaultTab):
             self.detector_choice.removeItem(0)
 
         self.detector_choice.addItems(detectors)
-        if "ssdlite" in detectors:
+        default_detector = self.get_default_detector()
+        if default_detector in detectors:
+            self.detector_choice.setCurrentIndex(detectors.index(default_detector))
+        elif "ssdlite" in detectors:
             self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
 
         if net_choice is None:
@@ -478,7 +493,10 @@ class CreateTrainingDataset(DefaultTab):
             return None
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
-        return weight_init_cfg["model_filter"]
+        if "super_animal" in weight_init_cfg:
+            return dlclibrary.get_available_models(weight_init_cfg["super_animal"])
+
+        return None
 
     def get_detector_filter(self) -> list[str] | None:
         """Returns: the detectors that can be used based on weight initialization"""
@@ -489,7 +507,10 @@ class CreateTrainingDataset(DefaultTab):
             return None
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
-        return weight_init_cfg["detector_filter"]
+        if "super_animal" in weight_init_cfg:
+            return dlclibrary.get_available_detectors(weight_init_cfg["super_animal"])
+
+        return None
 
     def get_default_net(self) -> str | None:
         """Returns: the net type that can be used based on weight initialization"""
@@ -501,6 +522,17 @@ class CreateTrainingDataset(DefaultTab):
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_net")
+
+    def get_default_detector(self) -> str | None:
+        """Returns: the detector type that can be used based on weight initialization"""
+        if self.root.engine != Engine.PYTORCH:
+            return None
+
+        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+            return None
+
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        return weight_init_cfg.get("default_detector")
 
     def view_shuffles(self) -> None:
         viewer = ShuffleMetadataViewer(root=self.root, parent=self)
@@ -551,8 +583,18 @@ class WeightInitializationSelector(QtWidgets.QWidget):
             self.weight_init_choice.removeItem(0)
         self.weight_init_choice.addItems(choices)
 
-    def get_weight_init(self) -> WeightInitialization | None:
+    def get_super_animal_weight_init(
+        self,
+        net_type: str,
+        detector_type: str,
+    ) -> WeightInitialization | None:
         """
+        Args:
+            net_type: The architecture of the pose model from which to fine-tune a
+                SuperAnimal model.
+            detector_type: The architecture of the detector from which to fine-tune a
+                SuperAnimal model.
+
         Raises:
             ValueError if WeightInitialization should be defined but could not be
                 created (e.g. if there's no conversion table).
@@ -566,10 +608,14 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
         weight_init_data = _WEIGHT_INIT_OPTIONS[weight_init_choice]
         super_animal = weight_init_data["super_animal"]
+        if net_type.startswith("top_down_"):
+            net_type = net_type[len("top_down_") :]
         try:
-            weight_init = WeightInitialization.build(
+            weight_init = build_weight_init(
                 self.root.cfg,
                 super_animal=super_animal,
+                model_name=net_type,
+                detector_name=detector_type,
                 with_decoder=self.with_decoder,
                 memory_replay=self.memory_replay,
             )
@@ -695,34 +741,34 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "model_filter": None,
         "detector_filter": None,
     },
+    "Transfer Learning - SuperAnimal Bird": {
+        "default_net": "top_down_resnet_50",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
+        "super_animal": "superanimal_bird",
+    },
     "Transfer Learning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": [
-            "dekr_w32",
-            "hrnet_w32",
-        ],
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_quadruped",
     },
     "Transfer Learning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": [
-            "dekr_w32",
-            "hrnet_w32",
-        ],
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
+    },
+    "Fine-tuning - SuperAnimal Bird": {
+        "default_net": "top_down_resnet_50",
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
+        "super_animal": "superanimal_bird",
     },
     "Fine-tuning - SuperAnimal Quadruped": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_quadruped",
     },
     "Fine-tuning - SuperAnimal TopViewMouse": {
         "default_net": "top_down_hrnet_w32",
-        "model_filter": ["hrnet_w32"],  # FIXME - Add ResNet
-        "detector_filter": ["fasterrcnn_resnet50_fpn_v2"],
+        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
     },
 }
