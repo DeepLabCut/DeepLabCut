@@ -1,0 +1,45 @@
+project_root: /home/quentin/datasets/Openfield_pytorch
+pose_cfg_path: /home/quentin/datasets/Openfield_pytorch/dlc-models/iteration-1/openfieldAug20-trainset95shuffle1/train/pose_cfg.yaml
+cfg_path: /home/quentin/datasets/Openfield_pytorch/config.yaml
+
+seed: 42
+device: 'cuda:2' #needs to be updated dynamically; some users might have CPUs
+model:
+  backbone:
+    type: 'ResNet'
+    pretrained: 'https://download.pytorch.org/models/resnet50-19c8e357.pth'
+  heatmap_head:
+    type: 'SimpleHead'
+    channels: [ 2048, 1024, 4 ]
+    kernel_size: [ 2, 2 ]
+    strides: [ 2, 2 ]
+  locref_head:
+    type: 'SimpleHead'
+    channels: [ 2048, 1024, 8 ]
+    kernel_size: [ 2, 2 ]
+    strides: [ 2, 2 ]
+  pose_model:
+    stride: 8
+    heatmap_type: 'plateau'
+optimizer:
+  type: 'SGD'
+  params:
+    lr: 0.005
+scheduler:
+  type: "LRListScheduler"
+  params:
+    milestones : [10, 430]
+    lr_list : [[0.02], [0.002]]
+criterion:
+  type: 'PoseLoss'
+  loss_weight_locref: 0.1
+  locref_huber_loss: True
+#logger:
+#  type: 'WandbLogger'
+#  project_name: 'deeplabcut'
+#  run_name: 'tmp'
+solver:
+  type: 'BottomUpSingleAnimalSolver'
+pos_dist_thresh : 17
+batch_size: 1
+epochs: 600

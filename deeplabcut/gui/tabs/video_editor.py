@@ -48,6 +48,11 @@ class VideoEditor(DefaultTab):
         self.down_button.clicked.connect(self.downsample_videos)
         self.main_layout.addWidget(self.down_button, alignment=Qt.AlignRight)
 
+        self.rotate_button = QtWidgets.QPushButton("Rotate")
+        self.rotate_button.setMinimumWidth(150)
+        self.rotate_button.clicked.connect(self.rotate_videos)
+        self.main_layout.addWidget(self.rotate_button, alignment=Qt.AlignRight)
+
         self.trim_button = QtWidgets.QPushButton("Trim")
         self.trim_button.setMinimumWidth(150)
         self.trim_button.clicked.connect(self.trim_videos)
@@ -129,6 +134,21 @@ class VideoEditor(DefaultTab):
 
     def log_rotation_angle(self, value):
         self.root.logger.info(f"Rotation angle set to {value}")
+
+    def rotate_videos(self):
+        if self.files:
+            for video in self.files:
+                if self.video_rotation.currentText() == "specific angle":
+                    auxfun_videos.rotate_video(
+                        video, self.rotation_angle.value(), "Arbitrary"
+                    )
+                elif self.video_rotation.currentText() == "clockwise":
+                    auxfun_videos.rotate_video(
+                        video, 0, "Yes"
+                    )
+        else:
+            self.root.logger.error("No videos selected...")
+
 
     def trim_videos(self):
         start = time.strftime("%H:%M:%S", time.gmtime(self.video_start.value()))

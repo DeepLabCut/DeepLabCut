@@ -379,10 +379,7 @@ default.
 Additionally, you can log results to [Weights and Biases](https://wandb.ai/site), by adding a
 `WandbLogger`. Just make sure you're logged in to your `wandb` account before starting 
 your training run (with `wandb login` from your shell). For more information, see their
-[tutorials](https://docs.wandb.ai/tutorials) and their documentation for 
-[`wandb.init`](https://docs.wandb.ai/ref/python/init). You can also log images as they are seen by the model to `wandb` 
-with the `image_log_interval`. This logs a random train and test image, as well as the 
-targets and heatmaps for that image.
+[tutorials](https://docs.wandb.ai/tutorials) and their documentation for [`wandb.init`](https://docs.wandb.ai/ref/python/init).
 
 Logging to `wandb` is a good way to keep track of what you've run, including performance
 and metrics.
@@ -390,11 +387,14 @@ and metrics.
 ```yaml
 logger:
  type: WandbLogger
- image_log_interval: 5  # how often images are logged to wandb (in epochs)
  project_name: my-dlc3-project  # the name of the project where the run should be logged
  run_name: dekr-w32-shuffle0  # the name of the run to log
  ...  # any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`
 ```
+
+You can also log images as they are seen by the model to `wandb` 
+with the `image_log_interval`. This logs a random train and test image, as well as the 
+targets and heatmaps for that image.
 
 ## Training Top-Down Models
 
@@ -437,15 +437,15 @@ detector:
     ...
 ```
 
-Currently, the only detector available is a `FasterRCNN`. However, multiple variants are
-available (you can view the different variants on [torchvision's object detection page](
-https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to
-use the fastest detector that brings enough performance. The recommended variants
-are the following (from fastest to most powerful, taken from torchvision's
-documentation):
+Currently, the only detectors available are `FasterRCNN` and `SSDLite`. However, multiple variants of
+`FasterRCNN` are available (you can view the different variants on 
+[torchvision's object detection page](https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to use the fastest 
+detector that brings enough performance. The recommended variants are the following 
+(from fastest to most powerful, taken from torchvision's documentation):
 
-| name                              |  Box MAP (larger = more powerful) | Params (larger = more powerful) |    GFLOPS (larger = slower) |
-|-----------------------------------|----------------------------------:|--------------------------------:|----------------------------:|
-| fasterrcnn_mobilenet_v3_large_fpn |                              32.8 |                           19.4M |                        4.49 |
-| fasterrcnn_resnet50_fpn           |                                37 |                           41.8M |                      134.38 |
-| fasterrcnn_resnet50_fpn_v2        |                              46.7 |                           43.7M |                      280.37 |
+| name                              | Box MAP (larger = more powerful) | Params (larger = more powerful) | GFLOPS (larger = slower) |
+|-----------------------------------|---------------------------------:|--------------------------------:|-------------------------:|
+| SSDLite                           |                             21.3 |                            3.4M |                     0.58 |
+| fasterrcnn_mobilenet_v3_large_fpn |                             32.8 |                           19.4M |                     4.49 |
+| fasterrcnn_resnet50_fpn           |                               37 |                           41.8M |                   134.38 |
+| fasterrcnn_resnet50_fpn_v2        |                             46.7 |                           43.7M |                   280.37 |
