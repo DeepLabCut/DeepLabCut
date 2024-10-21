@@ -143,7 +143,9 @@ def create_new_project(
         # Check if it is a folder
         if os.path.isdir(i):
             vids_in_dir = [
-                os.path.join(i, vp) for vp in os.listdir(i) if vp.endswith(videotype)
+                os.path.join(i, vp)
+                for vp in os.listdir(i)
+                if vp.lower().endswith(videotype)
             ]
             vids = vids + vids_in_dir
             if len(vids_in_dir) == 0:
