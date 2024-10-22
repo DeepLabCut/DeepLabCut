@@ -164,7 +164,7 @@ class CSPConvModule(nn.Module):
         # https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_normal_
         # https://mmengine.readthedocs.io/en/stable/_modules/mmengine/model/weight_init.html#KaimingInit
         # https://github.com/open-mmlab/mmcv/blob/c39e9ebbc451dc89e0eedaa58a856806fff1c9b2/mmcv/cnn/bricks/conv_module.py#L69
-        nn.init.kaiming_normal(self.conv.weight, a=0, nonlinearity="relu")
+        nn.init.kaiming_normal_(self.conv.weight, a=0, nonlinearity="relu")
         if self.with_bias:
             nn.init.constant_(self.conv.bias, 0)
 
