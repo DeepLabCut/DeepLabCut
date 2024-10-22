@@ -131,7 +131,7 @@ class ProjectCreator(QtWidgets.QDialog):
             folder,
             relative=False,
         ):
-            if os.path.splitext(video)[1][1:] in DLCParams.VIDEOTYPES[1:]:
+            if os.path.splitext(video)[1][1:].lower() in DLCParams.VIDEOTYPES[1:]:
                 self.video_frame.fancy_list.add_item(video)
 
     def finalize_project(self):
