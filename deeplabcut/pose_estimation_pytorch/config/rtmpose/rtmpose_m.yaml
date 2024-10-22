@@ -11,7 +11,7 @@ model:
     channel_attention: true
     norm_layer: SyncBN
     activation_fn: SiLU
-  backbone_output_channels: 1024
+  backbone_output_channels: 768
   heads:
     bodypart:
       type: RTMCCHead
@@ -39,7 +39,7 @@ model:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
       input_size: [256, 256]
-      in_channels: 1024
+      in_channels: 768
       out_channels: "num_bodyparts"
       in_featuremap_size: [8, 8]  # input_size / backbone stride
       simcc_split_ratio: 2.0

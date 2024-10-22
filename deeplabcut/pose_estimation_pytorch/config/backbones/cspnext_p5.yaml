@@ -10,4 +10,4 @@ model:
     channel_attention: true
     norm_layer: SyncBN
     activation_fn: SiLU
-  backbone_output_channels: 1024
+  backbone_output_channels: 768
