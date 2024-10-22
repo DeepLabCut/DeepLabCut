@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from dataclasses import dataclass
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -73,6 +74,7 @@ class CSPNeXt(BaseBackbone):
         channel_attention: bool = True,
         norm_layer: str = "SyncBN",
         activation_fn: str = "SiLU",
+        pretrained_weights: str | Path | None = None,
         **kwargs,
     ) -> None:
         """
@@ -84,9 +86,6 @@ class CSPNeXt(BaseBackbone):
         https://github.com/open-mmlab/mmdetection/blob/main/configs/rtmdet/rtmdet_l_8xb32-300e_coco.py
         """
         super().__init__(stride=32, **kwargs)
-        if pretrained:
-            raise NotImplementedError()
-
         if model_name not in self.CONFIGS:
             raise ValueError(
                 f"Unknown `CSPNeXT` variant: {model_name}. Must be one of "
@@ -170,6 +169,13 @@ class CSPNeXt(BaseBackbone):
             self.add_module(f'stage{i + 1}', nn.Sequential(*stage))
             self.layers.append(f'stage{i + 1}')
 
+        if pretrained:
+            # FIXME(niels): upload CSPNext weights somewhere and download them
+            if pretrained_weights is None:
+                raise ValueError("When pretrained=True, pretrained_weights must be set")
+
+            self._from_pretrained(pretrained_weights)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Original code: x: tuple[tensor] -> torch.Tensor
@@ -192,3 +198,8 @@ class CSPNeXt(BaseBackbone):
 
         # TODO(niels): choose which layer we output
         return outs[-1]
+
+    def _from_pretrained(self, weight_path: str | Path) -> None:
+        """FIXME(niels): download weights from somewhere"""
+        snapshot = torch.load(weight_path, map_location="cpu", weights_only=False)
+        self.load_state_dict(snapshot["state_dict"])
