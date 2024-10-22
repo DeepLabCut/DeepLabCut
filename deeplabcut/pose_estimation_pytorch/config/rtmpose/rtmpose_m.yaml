@@ -1,12 +1,17 @@
 method: td  # Need to add a detector
 model:
-  backbone:  # FIXME(niels) - implement the CSPNext backbone
-    type: ResNet
-    model_name: resnet50_gn
-    output_stride: 16
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_p5
     freeze_bn_stats: false
     freeze_bn_weights: false
-  backbone_output_channels: 2048
+    expand_ratio: 0.5
+    deepen_factor: 0.67
+    widen_factor: 0.75
+    channel_attention: true
+    norm_layer: SyncBN
+    activation_fn: SiLU
+  backbone_output_channels: 1024
   heads:
     bodypart:
       type: RTMCCHead
@@ -34,9 +39,9 @@ model:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
       input_size: [256, 256]
-      in_channels: 2048  # update when changing backbone
+      in_channels: 1024
       out_channels: "num_bodyparts"
-      in_featuremap_size: [16, 16]  # input_size / backbone stride
+      in_featuremap_size: [8, 8]  # input_size / backbone stride
       simcc_split_ratio: 2.0
       final_layer_kernel_size: 7
       gau_cfg:
