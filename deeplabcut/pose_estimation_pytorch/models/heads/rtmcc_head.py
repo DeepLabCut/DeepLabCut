@@ -113,7 +113,7 @@ class RTMCCHead(BaseHead):
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         feats = self.final_layer(x)  # -> B, K, H, W
-        feats = torch.flatten(feats, 2)  # -> B, K, hidden
+        feats = torch.flatten(feats, start_dim=2)  # -> B, K, hidden=HxW
         feats = self.mlp(feats)  # -> B, K, hidden
         feats = self.gau(feats)
         x, y = self.cls_x(feats), self.cls_y(feats)

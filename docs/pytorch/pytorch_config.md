@@ -350,6 +350,45 @@ milestone to the corresponding values in `lr_list`. Examples:
       gamma: 0.1
 ```
 
+You can also use schedulers that use other schedulers as parameters, such as a 
+[`ChainedScheduler`](
+https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html)
+or a [`SequentialLR`](
+https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html).
+
+The `SequentialLR` can be particularly useful, such as to use a first scheduler for some
+warmup epochs, and a second scheduler later. An example usage would be:
+
+```yaml
+  # Multiply the learning rate by `factor` for the first `total_iters` epochs
+  # After 5 epochs, start decaying the learning rate by `gamma` every `step_size` epochs
+  # If the initial learning rate is set to 1, the learning rates will be:
+  #   epoch 0: 0.01  - using ConstantLR
+  #   epoch 1: 0.01  - using ConstantLR
+  #   epoch 2: 1.0   - using ConstantLR
+  #   epoch 3: 1.0   - using ConstantLR
+  #   epoch 4: 1.0   - using ConstantLR
+  #   epoch 5: 1.0   - using StepLR
+  #   epoch 6: 1.0   - using StepLR
+  #   epoch 7: 0.1   - using StepLR
+  #   epoch 8: 0.1   - using StepLR
+  scheduler:
+    type: SequentialLR
+    params:
+      schedulers:
+      - type: ConstantLR
+        params:
+          factor: 0.01
+          total_iters: 2
+      - type: StepLR
+        params:
+          step_size: 2
+          gamma: 0.1
+      milestones:
+      - 5
+```
+
+
 ### Train Settings
 
 The `train_settings` key contains parameters that are specific to training. For more 

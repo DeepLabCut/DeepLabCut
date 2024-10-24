@@ -53,3 +53,22 @@ model:
         act_fn: "SiLU"
         use_rel_bias: false
         pos_enc: False
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 5e-4
+  scheduler:
+    type: SequentialLR
+    params:
+      schedulers:
+      - type: ConstantLR
+        params:
+          factor: 0.001
+          total_iters: 5
+      - type: CosineAnnealingLR
+        params:
+          T_max: 250     # max_epochs // 2
+          eta_min: 1e-5  # ~ .05 * base_lr
+      milestones:
+      - 100
