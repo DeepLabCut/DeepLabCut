@@ -8,46 +8,69 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
-from pathlib import Path
+from dataclasses import dataclass
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 
+import deeplabcut.compat as compat
+from deeplabcut.core.engine import Engine
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.widgets import ConfigEditor
 
-import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
+
+@dataclass
+class IntTrainAttribute:
+    label: str
+    fn_key: str
+    default: int
+    min: int
+    max: int
+    tooltip: str | None = None
+
+
+@dataclass
+class TrainAttributeRow:
+    attributes: list[IntTrainAttribute]
+    description: str | None = None
+    show_when_cfg: tuple[str, str] | None = None
 
 
 class TrainNetwork(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(TrainNetwork, self).__init__(root, parent, h1_description)
+        self._shuffle: ShuffleSpinBox = ShuffleSpinBox(root=self.root, parent=self)
+        self._shuffle_display = SelectedShuffleDisplay(self.root)
 
-        # use the default pose_cfg file for default values
-        default_pose_cfg_path = os.path.join(
-            Path(deeplabcut.__file__).parent, "pose_cfg.yaml"
-        )
-        pose_cfg = auxiliaryfunctions.read_plainconfig(default_pose_cfg_path)
-        self.display_iters = str(pose_cfg["display_iters"])
-        self.save_iters = str(pose_cfg["save_iters"])
-        self.max_iters = str(pose_cfg["multi_step"][-1][-1])
-
+        self._attribute_layouts: dict[Engine, QtWidgets.QWidget] = {}
+        self._attribute_kwargs: dict[Engine, dict] = {}
+        self._rows_with_requirements: list = []
         self._set_page()
+
+        self.root.engine_change.connect(self._on_engine_change)
+        self._shuffle_display.pose_cfg_signal.connect(self._pose_cfg_change)
+
+    @Slot(Engine)
+    def _on_engine_change(self, engine: Engine) -> None:
+        for e, layout in self._attribute_layouts.items():
+            if e == engine:
+                layout.show()
+            else:
+                layout.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
-        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
-        self._generate_layout_attributes(self.layout_attributes)
-        self.main_layout.addLayout(self.layout_attributes)
-
+        self._generate_layout_attributes()
         self.main_layout.addWidget(_create_label_widget(""))  # dummy label
 
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
@@ -68,7 +91,7 @@ class TrainNetwork(DefaultTab):
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
-        label = QtWidgets.QLabel(deeplabcut.train_network.__doc__, self)
+        label = QtWidgets.QLabel(compat.train_network.__doc__, self)
         scroll = QtWidgets.QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -78,66 +101,80 @@ class TrainNetwork(DefaultTab):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def _generate_layout_attributes(self, layout):
-        # Shuffle
+    def _generate_layout_attributes(self) -> None:
+        row_margin = 25
+
+        # top layout
         shuffle_label = QtWidgets.QLabel("Shuffle")
-        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        shuffle_label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+        self._shuffle.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+        self._shuffle_display.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
 
-        # Display iterations
-        dispiters_label = QtWidgets.QLabel("Display iterations")
-        self.display_iters_spin = QtWidgets.QSpinBox()
-        self.display_iters_spin.setMinimum(1)
-        self.display_iters_spin.setMaximum(int(self.max_iters))
-        self.display_iters_spin.setValue(1000)
-        self.display_iters_spin.valueChanged.connect(self.log_display_iters)
+        base_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+        base_layout.addWidget(shuffle_label, 0, 0)
+        base_layout.addWidget(self._shuffle, 0, 1)
+        base_layout.addWidget(self._shuffle_display, 0, 2)
+        base_layout_widget = QtWidgets.QWidget()
+        base_layout_widget.setLayout(base_layout)
+        self.main_layout.addWidget(base_layout_widget)
 
-        # Save iterations
-        saveiters_label = QtWidgets.QLabel("Save iterations")
-        self.save_iters_spin = QtWidgets.QSpinBox()
-        self.save_iters_spin.setMinimum(1)
-        self.save_iters_spin.setMaximum(int(self.max_iters))
-        self.save_iters_spin.setValue(50000)
-        self.save_iters_spin.valueChanged.connect(self.log_save_iters)
+        for engine in Engine:
+            train_attributes = get_train_attributes(engine)
 
-        # Max iterations
-        maxiters_label = QtWidgets.QLabel("Maximum iterations")
-        self.max_iters_spin = QtWidgets.QSpinBox()
-        self.max_iters_spin.setMinimum(1)
-        self.max_iters_spin.setMaximum(int(self.max_iters))
-        self.max_iters_spin.setValue(100000)
-        self.max_iters_spin.valueChanged.connect(self.log_max_iters)
+            # Other parameters
+            param_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+            param_layout.setVerticalSpacing(0)
 
-        # Max number snapshots to keep
-        snapkeep_label = QtWidgets.QLabel("Number of snapshots to keep")
-        self.snapshots = QtWidgets.QSpinBox()
-        self.snapshots.setMinimum(1)
-        self.snapshots.setMaximum(100)
-        self.snapshots.setValue(5)
-        self.snapshots.valueChanged.connect(self.log_snapshots)
+            self._attribute_kwargs[engine] = {}
+            row_index = 1
+            for row in train_attributes:
+                row_elements = []
+                if row.description is not None:
+                    row_label = QtWidgets.QLabel(row.description)
+                    row_label.setStyleSheet("font-weight: bold")
+                    row_elements.append(row_label)
+                    param_layout.addWidget(row_label, row_index, 0)
+                    row_index += 1
 
-        layout.addWidget(shuffle_label, 0, 0)
-        layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(dispiters_label, 0, 2)
-        layout.addWidget(self.display_iters_spin, 0, 3)
-        layout.addWidget(saveiters_label, 0, 4)
-        layout.addWidget(self.save_iters_spin, 0, 5)
-        layout.addWidget(maxiters_label, 0, 6)
-        layout.addWidget(self.max_iters_spin, 0, 7)
-        layout.addWidget(snapkeep_label, 0, 8)
-        layout.addWidget(self.snapshots, 0, 9)
-        # layout.addWidget()
+                for j, attribute in enumerate(row.attributes):
+                    label = QtWidgets.QLabel(attribute.label)
+                    spin_box = QtWidgets.QSpinBox()
+                    spin_box.setMinimum(attribute.min)
+                    spin_box.setMaximum(attribute.max)
+                    spin_box.setValue(attribute.default)
+                    spin_box.valueChanged.connect(
+                        lambda new_val: self.log_attribute_change(attribute, new_val)
+                    )
+                    self._attribute_kwargs[engine][attribute.fn_key] = spin_box
 
-    def log_display_iters(self, value):
-        self.root.logger.info(f"Display iters set to {value}")
+                    # Pad below to create spacing with other rows
+                    label.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
+                    spin_box.setStyleSheet(f"margin: 0px 0px {row_margin}px 0px")
 
-    def log_save_iters(self, value):
-        self.root.logger.info(f"Save iters set to {value}")
+                    row_elements.append(label)
+                    row_elements.append(spin_box)
 
-    def log_max_iters(self, value):
-        self.root.logger.info(f"Max iters set to {value}")
+                    param_layout.addWidget(label, row_index, 2 * j)
+                    param_layout.addWidget(spin_box, row_index, 2 * j + 1)
 
-    def log_snapshots(self, value):
-        self.root.logger.info(f"Max snapshots to keep set to {value}")
+                if row.show_when_cfg is not None:
+                    self._rows_with_requirements.append(
+                        (row.show_when_cfg, row_elements)
+                    )
+
+                row_index += 1
+
+            layout_widget = QtWidgets.QWidget()
+            layout_widget.setLayout(param_layout)
+            self._attribute_layouts[engine] = layout_widget
+            if engine != self.root.engine:
+                layout_widget.hide()
+
+            self.main_layout.addWidget(layout_widget)
+            self._pose_cfg_change(self._shuffle_display.pose_cfg)
+
+    def log_attribute_change(self, attribute: IntTrainAttribute, value: int) -> None:
+        self.root.logger.info(f"{attribute.label} set to {value}")
 
     def open_posecfg_editor(self):
         editor = ConfigEditor(self.root.pose_cfg_path)
@@ -145,22 +182,12 @@ class TrainNetwork(DefaultTab):
 
     def train_network(self):
         config = self.root.config
-        shuffle = int(self.shuffle.value())
-        max_snapshots_to_keep = int(self.snapshots.value())
-        displayiters = int(self.display_iters_spin.value())
-        saveiters = int(self.save_iters_spin.value())
-        maxiters = int(self.max_iters_spin.value())
+        shuffle = int(self._shuffle.value())
+        kwargs = dict(gputouse=None, autotune=False)
+        for k, spin_box in self._attribute_kwargs[self.root.engine].items():
+            kwargs[k] = int(spin_box.value())
 
-        deeplabcut.train_network(
-            config,
-            shuffle,
-            gputouse=None,
-            max_snapshots_to_keep=max_snapshots_to_keep,
-            autotune=None,
-            displayiters=displayiters,
-            saveiters=saveiters,
-            maxiters=maxiters,
-        )
+        compat.train_network(config, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")
@@ -175,3 +202,122 @@ class TrainNetwork(DefaultTab):
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
+
+    @Slot(dict)
+    def _pose_cfg_change(self, pose_cfg: dict | None) -> None:
+        if pose_cfg is None:
+            return
+
+        for requirement, widgets in self._rows_with_requirements:
+            key, value = requirement
+            show = pose_cfg.get(key) == value
+            for w in widgets:
+                if show:
+                    w.show()
+                else:
+                    w.hide()
+
+
+def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
+    if engine == Engine.TF:
+        return [
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Display iterations",
+                        fn_key="displayiters",
+                        default=1000,
+                        min=1,
+                        max=1000,
+                    ),
+                    IntTrainAttribute(
+                        label="Number of snapshots to keep",
+                        fn_key="max_snapshots_to_keep",
+                        default=5,
+                        min=1,
+                        max=100,
+                    ),
+                ],
+            ),
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Maximum iterations",
+                        fn_key="maxiters",
+                        default=100_000,
+                        min=1,
+                        max=1_030_000,
+                    ),
+                    IntTrainAttribute(
+                        label="Save iterations",
+                        fn_key="saveiters",
+                        default=50_000,
+                        min=1,
+                        max=50_000,
+                    ),
+                ],
+            ),
+        ]
+    elif engine == Engine.PYTORCH:
+        return [
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Display iterations",
+                        fn_key="display_iters",
+                        default=1_000,
+                        min=1,
+                        max=100_000,
+                    ),
+                    IntTrainAttribute(
+                        label="Number of snapshots to keep",
+                        fn_key="max_snapshots_to_keep",
+                        default=5,
+                        min=1,
+                        max=100,
+                    ),
+                ],
+            ),
+            TrainAttributeRow(
+                attributes=[
+                    IntTrainAttribute(
+                        label="Maximum epochs",
+                        fn_key="epochs",
+                        default=200,
+                        min=1,
+                        max=1000,
+                    ),
+                    IntTrainAttribute(
+                        label="Save epochs",
+                        fn_key="save_epochs",
+                        default=50,
+                        min=1,
+                        max=250,
+                    ),
+                ],
+            ),
+            TrainAttributeRow(
+                description="Detector parameters",
+                show_when_cfg=("method", "td"),
+                attributes=[
+                    IntTrainAttribute(
+                        label="Detector max epochs",
+                        fn_key="detector_epochs",
+                        default=200,
+                        min=0,
+                        max=1000,
+                        tooltip="",
+                    ),
+                    IntTrainAttribute(
+                        label="Detector save epochs",
+                        fn_key="detector_save_epochs",
+                        default=50,
+                        min=1,
+                        max=250,
+                        tooltip="",
+                    ),
+                ],
+            ),
+        ]
+
+    raise NotImplementedError(f"Unknown engine: {engine}")
