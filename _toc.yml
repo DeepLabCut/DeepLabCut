@@ -71,3 +71,6 @@ parts:
   - file: docs/MISSION_AND_VALUES
   - file: docs/roadmap
   - file: docs/Governance
+- caption: Citations for DeepLabCut
+  chapters:
+  - file: docs/citation
