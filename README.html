@@ -16,17 +16,19 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
@@ -36,10 +38,11 @@
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
@@ -65,6 +68,7 @@
     <link rel="next" title="🥳 Get started with DeepLabCut: our key recommendations" href="docs/UseOverviewGuide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -80,19 +84,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -100,7 +93,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -108,8 +100,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -127,7 +119,8 @@
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -157,21 +150,17 @@
     
     
     <img src="_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
-    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="DeepLabCut - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -274,6 +263,10 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/roadmap.html">A development roadmap for DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/Governance.html">Governance Model of DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="docs/citation.html">How to Cite DeepLabCut</a></li>
 </ul>
 
     </div>
@@ -428,24 +421,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 <button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
@@ -478,7 +463,7 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#get-assistance-be-part-of-the-dlc-community">Get Assistance &amp; be part of the DLC Community✨:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references-citations">References &amp; Citations:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-versions">Major Versions:</a></li>
 </ul>
@@ -638,83 +623,9 @@ DeepLabCut is an open-source tool and has benefited from suggestions and edits b
 </tbody>
 </table>
 </div>
-<section id="references">
-<h2>References:<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
-<p>If you use this code or data we kindly ask that you please <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">cite Mathis et al, 2018</a> and, if you use the Python package (DeepLabCut2.x) please also cite <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath, Mathis et al, 2019</a>. If you utilize the MobileNetV2s or EfficientNets please cite <a class="reference external" href="https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf">Mathis, Biasi et al. 2021</a>. If you use versions 2.2beta+ or 2.2rc1+, please cite <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
-<p>DOIs (#ProTip, for helping you find citations for software, check out <a class="reference external" href="http://citeas.org/">CiteAs.org</a>!):</p>
-<ul class="simple">
-<li><p>Mathis et al 2018: <a class="reference external" href="https://doi.org/10.1038/s41593-018-0209-y">10.1038/s41593-018-0209-y</a></p></li>
-<li><p>Nath, Mathis et al 2019: <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">10.1038/s41596-019-0176-0</a></p></li>
-<li><p>Lauer et al 2022: <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">10.1038/s41592-022-01443-0</a></p></li>
-</ul>
-<p>Please check out the following references for more details:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>@article{Mathisetal2018,
-    title = {DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
-    author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-    journal = {Nature Neuroscience},
-    year = {2018},
-    url = {https://www.nature.com/articles/s41593-018-0209-y}}
-
- @article{NathMathisetal2019,
-    title = {Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
-    author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
-    journal = {Nature Protocols},
-    year = {2019},
-    url = {https://doi.org/10.1038/s41596-019-0176-0}}
-    
-@InProceedings{Mathis_2021_WACV,
-    author    = {Mathis, Alexander and Biasi, Thomas and Schneider, Steffen and Yuksekgonul, Mert and Rogers, Byron and Bethge, Matthias and Mathis, Mackenzie W.},
-    title     = {Pretraining Boosts Out-of-Domain Robustness for Pose Estimation},
-    booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-    month     = {January},
-    year      = {2021},
-    pages     = {1859-1868}}
-    
-@article{Lauer2022MultianimalPE,
-    title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
-    author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
-    journal={Nature Methods},
-    year={2022},
-    volume={19},
-    pages={496 - 504}}
-
-@article{insafutdinov2016eccv,
-    title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
-    author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
-    booktitle = {ECCV&#39;16},
-    url = {http://arxiv.org/abs/1605.03170}}
-</pre></div>
-</div>
-<p>Review &amp; Educational articles:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>@article{Mathis2020DeepLT,
-    title={Deep learning tools for the measurement of animal behavior in neuroscience},
-    author={Mackenzie W. Mathis and Alexander Mathis},
-    journal={Current Opinion in Neurobiology},
-    year={2020},
-    volume={60},
-    pages={1-11}}
-
-@article{Mathis2020Primer,
-    title={A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives},
-    author={Alexander Mathis and Steffen Schneider and Jessy Lauer and Mackenzie W. Mathis},
-    journal={Neuron},
-    year={2020},
-    volume={108},
-    pages={44-65}}
-</pre></div>
-</div>
-<p>Other open-access pre-prints related to our work on DeepLabCut:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>@article{MathisWarren2018speed,
-    author = {Mathis, Alexander and Warren, Richard A.},
-    title = {On the inference speed and video-compression robustness of DeepLabCut},
-    year = {2018},
-    doi = {10.1101/457242},
-    publisher = {Cold Spring Harbor Laboratory},
-    URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
-    eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
-    journal = {bioRxiv}}
-</pre></div>
-</div>
+<section id="references-citations">
+<h2>References &amp; Citations:<a class="headerlink" href="#references-citations" title="Link to this heading">#</a></h2>
+<p>Please see our <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/citation.html">dedicated page</a> on how to <strong>cite DeepLabCut</strong> 🙏 and our sugestions for your Methods section!</p>
 </section>
 <section id="license">
 <h2>License:<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
@@ -777,9 +688,11 @@ importing a project into the new data format for DLC 2.0</p></li>
 <li><p>July 2018: Ed Yong covered DeepLabCut and interviewed several users for the <a class="reference external" href="https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338">Atlantic</a>.</p></li>
 <li><p>April 2018: first DeepLabCut preprint on <a class="reference external" href="https://arxiv.org/abs/1804.03142">arXiv.org</a></p>
 <h2 class="rubric" id="funding">Funding</h2>
-<p>We are grateful for the follow support over the years! This software project was supported in part by the Essential Open Source Software for Science (EOSS) program at Chan Zuckerberg Initiative (cycles 1, 3, 3-DEI, 6). We also thank the Rowland Institute at Harvard for funding from 2017-2020, and EPFL from 2020-present.</p>
+<p>We are grateful for the follow support over the years! This software project was supported in part by the Essential Open Source Software for Science (EOSS) program at Chan Zuckerberg Initiative (cycles 1, 3, 3-DEI, 4), and jointly with the Kavli Foundation for EOSS Cycle 6!  We also thank the Rowland Institute at Harvard for funding from 2017-2020, and EPFL from 2020-present.</p>
 </li>
 </ul>
+<div class="toctree-wrapper compound">
+</div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
@@ -854,7 +767,8 @@ importing a project into the new data format for DLC 2.0</p></li>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
   <div class="sidebar-secondary-item">
@@ -872,7 +786,7 @@ importing a project into the new data format for DLC 2.0</p></li>
 </ul>
 </li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#get-assistance-be-part-of-the-dlc-community">Get Assistance &amp; be part of the DLC Community✨:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references-citations">References &amp; Citations:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-versions">Major Versions:</a></li>
 </ul>
@@ -933,8 +847,8 @@ By The DeepLabCut Team
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
 
   <footer class="bd-footer">
   </footer>
