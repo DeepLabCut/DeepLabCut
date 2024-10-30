@@ -369,9 +369,9 @@ def build_predictions_dataframe(
 def get_inference_runners(
     model_config: dict,
     snapshot_path: str | Path,
-    max_individuals: int,
-    num_bodyparts: int,
-    num_unique_bodyparts: int,
+    max_individuals: int | None = None,
+    num_bodyparts: int | None = None,
+    num_unique_bodyparts: int | None = None,
     batch_size: int = 1,
     device: str | None = None,
     with_identity: bool = False,
@@ -385,9 +385,12 @@ def get_inference_runners(
     Args:
         model_config: the pytorch configuration file
         snapshot_path: the path of the snapshot from which to load the weights
-        max_individuals: the maximum number of individuals per image
-        num_bodyparts: the number of bodyparts predicted by the model
-        num_unique_bodyparts: the number of unique_bodyparts predicted by the model
+        max_individuals: the maximum number of individuals per image (if None, uses the
+            individuals defined in the model_config metadata)
+        num_bodyparts: the number of bodyparts predicted by the model (if None, uses the
+            bodyparts defined in the model_config metadata)
+        num_unique_bodyparts: the number of unique_bodyparts predicted by the model (if
+            None, uses the unique bodyparts defined in the model_config metadata)
         batch_size: the batch size to use for the pose model.
         with_identity: whether the pose model has an identity head
         device: if defined, overwrites the device selection from the model config
@@ -403,6 +406,13 @@ def get_inference_runners(
         a runner for pose estimation
         a runner for detection, if detector_path is not None
     """
+    if max_individuals is None:
+        max_individuals = len(model_config["metadata"]["individuals"])
+    if num_bodyparts is None:
+        num_bodyparts = len(model_config["metadata"]["bodyparts"])
+    if num_unique_bodyparts is None:
+        num_unique_bodyparts = len(model_config["metadata"]["unique_bodyparts"])
+
     pose_task = Task(model_config["method"])
     if device is None:
         device = resolve_device(model_config)
