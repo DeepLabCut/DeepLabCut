@@ -488,9 +488,9 @@ You can easily do so by writing a bit of custom code, as shown in the example be
 from pathlib import Path
 
 import numpy as np
-from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import VideoIterator
+from deeplabcut.pose_estimation_pytorch import get_inference_runners
+from deeplabcut.pose_estimation_pytorch.apis import VideoIterator
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from tqdm import tqdm
 
 # create an iterator for your video
