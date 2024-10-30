@@ -121,13 +121,18 @@ class DLCLoader(Loader):
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
+        crop_cfg = self.model_cfg["data"]["train"].get("top_down_crop", {})
+        crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+        crop_margin = crop_cfg.get("margin", 0)
+
         return PoseDatasetParameters(
             bodyparts=self.model_cfg["metadata"]["bodyparts"],
             unique_bpts=self.model_cfg["metadata"]["unique_bodyparts"],
             individuals=self.model_cfg["metadata"]["individuals"],
             with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
             color_mode=self.model_cfg.get("color_mode", "RGB"),
-            cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
+            top_down_crop_size=(crop_w, crop_h),
+            top_down_crop_margin=crop_margin,
         )
 
     def load_data(self, mode: str = "train") -> dict:

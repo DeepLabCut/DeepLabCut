@@ -25,4 +25,5 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDatasetParameters,
 )
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import fix_seeds
