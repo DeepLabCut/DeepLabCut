@@ -184,22 +184,29 @@ class PoseDataset(Dataset):
                 )
             bboxes = bboxes.astype(int)
 
-            image, offsets, scales = top_down_crop(
-                image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
-            )
-            keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
-            keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-            bboxes = bboxes[:1]
-            bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
-            bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
-            bboxes[..., 2] = bboxes[..., 2] / scales[0]
-            bboxes[..., 3] = bboxes[..., 3] / scales[1]
+            if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
+                # bbox was augmented out of the image; blank image, no keypoints
+                keypoints[..., 2] = 0.0
+                image = np.zeros(
+                    (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1])
+                )
+            else:
+                image, offsets, scales = top_down_crop(
+                    image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
+                )
+                keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
+                keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+                bboxes = bboxes[:1]
+                bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
+                bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
+                bboxes[..., 2] = bboxes[..., 2] / scales[0]
+                bboxes[..., 3] = bboxes[..., 3] / scales[1]
 
-            # as a RandomBBoxTransform can be added, keypoints may be outside of the
-            #   image after the crop
-            oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
-            if np.sum(oob_mask) > 0:
-                keypoints[oob_mask, 2] = 0.0
+                # as a RandomBBoxTransform can be added, keypoints may be outside of the
+                #   image after the crop
+                oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
+                if np.sum(oob_mask) > 0:
+                    keypoints[oob_mask, 2] = 0.0
 
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
