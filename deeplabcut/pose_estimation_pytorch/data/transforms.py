@@ -652,6 +652,9 @@ class RandomBBoxTransform(A.DualTransform):
         # done for albumentations<=1.4.3
         return [tuple(bbox) for bbox in bbox_xyxy]
 
+    def get_transform_init_args_names(self):
+        return "shift_factor", "shift_prob", "scale_factor", "scale_prob", "sampling"
+
     def _sample(
         self,
         size: tuple[int, ...],
