@@ -188,7 +188,8 @@ class PoseDataset(Dataset):
                 # bbox was augmented out of the image; blank image, no keypoints
                 keypoints[..., 2] = 0.0
                 image = np.zeros(
-                    (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1])
+                    (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1]),
+                    dtype=image.dtype,
                 )
             else:
                 image, offsets, scales = top_down_crop(
