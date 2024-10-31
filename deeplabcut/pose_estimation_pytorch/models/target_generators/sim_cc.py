@@ -160,7 +160,7 @@ class SimCCGenerator(BaseGenerator):
         keypoints_split = keypoints.copy()
         keypoints_split = np.around(keypoints_split * self.simcc_split_ratio)
         keypoints_split = keypoints_split.astype(np.int64)
-        keypoint_weights = keypoints_visible.copy()
+        keypoint_weights = (keypoints_visible > 0).astype(keypoints_split.dtype)
         return keypoints_split, keypoint_weights
 
     def _generate_gaussian(
