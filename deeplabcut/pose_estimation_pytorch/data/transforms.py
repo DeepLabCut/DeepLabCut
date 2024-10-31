@@ -606,7 +606,8 @@ class RandomBBoxTransform(A.DualTransform):
         bboxes_xyxy = np.asarray(bboxes)
         bboxes_extra = None
         if bboxes_xyxy.shape[1] > 4:
-            bboxes_extra = bboxes_xyxy[:, 4:]
+            # can't take from array - may have different dtype
+            bboxes_extra = [bbox[4:] for bbox in bboxes]
             bboxes_xyxy = bboxes_xyxy[:, :4]
 
         # TODO(niels): should bboxes width and height be scaled with same value?
@@ -645,12 +646,11 @@ class RandomBBoxTransform(A.DualTransform):
         bbox_xyxy[:, 2:] = bbox_cxcy + bbox_half_wh
         bbox_xyxy = np.clip(bbox_xyxy, 0, 1)
 
-        # convert back to xywh
+        # add the extra information back; tuples for albumentations<=1.4.3
+        bboxes_out = [tuple(bbox) for bbox in bbox_xyxy]
         if bboxes_extra is not None:
-            bbox_xyxy = np.concatenate([bbox_xyxy, bboxes_extra], axis=-1)
-
-        # done for albumentations<=1.4.3
-        return [tuple(bbox) for bbox in bbox_xyxy]
+            bboxes_out = [bbox + extra for bbox, extra in zip(bboxes_out, bboxes_extra)]
+        return bboxes_out
 
     def get_transform_init_args_names(self):
         return "shift_factor", "shift_prob", "scale_factor", "scale_prob", "sampling"
