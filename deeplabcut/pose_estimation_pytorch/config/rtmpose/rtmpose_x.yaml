@@ -84,6 +84,11 @@ runner:
       - type: CosineAnnealingLR
         params:
           T_max: 250     # max_epochs // 2
-          eta_min: 1e-5  # ~ .05 * base_lr
+          eta_min: 2e-5  # ~base_lr / 20
       milestones:
-      - 100
+      - 250              # max_epochs // 2
+train_settings:
+  batch_size: 32
+  dataloader_workers: 4
+  dataloader_pin_memory: false
+  epochs: 500
