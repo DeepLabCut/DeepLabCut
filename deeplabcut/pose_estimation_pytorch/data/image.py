@@ -170,6 +170,7 @@ def top_down_crop(
     bbox: np.ndarray,
     output_size: tuple[int, int],
     margin: int = 0,
+    center_padding: bool = False,
 ) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
     """
     Crops images around bounding boxes for top-down pose estimation. Computes offsets so
@@ -185,6 +186,7 @@ def top_down_crop(
         bbox: (4,) the bounding box to crop around
         output_size: the (width, height) of the output cropped image
         margin: a margin to add around the bounding box before cropping
+        center_padding: whether to center the image in the padding if any is needed
 
     Returns:
         cropped_image, (offset_x, offset_y), (scale_x, scale_y)
@@ -210,34 +212,35 @@ def top_down_crop(
     x2, y2 = int(round(cx + (w / 2))), int(round(cy + (h / 2)))
 
     # pad symmetrically - compute total padding across axis
-    pad_x, pad_y = 0, 0
+    pad_left, pad_right, pad_top, pad_bottom = 0, 0, 0, 0
     if x1 < 0:
-        pad_x += -x1
+        pad_left = -x1
         x1 = 0
     if x2 > image_w:
-        pad_x += x2 - image_w
+        pad_right = x2 - image_w
         x2 = image_w
     if y1 < 0:
-        pad_y += -y1
+        pad_top = -y1
         y1 = 0
     if y2 > image_h:
-        pad_y += y2 - image_h
+        pad_bottom = y2 - image_h
         y2 = image_h
 
     w, h = x2 - x1, y2 - y1
-    x_start = pad_x // 2
-    x_end = x_start + w
-    y_start = pad_y // 2
-    y_end = y_start + h
+    pad_x = pad_left + pad_right
+    pad_y = pad_top + pad_bottom
+    if center_padding:
+        pad_left = pad_x // 2
+        pad_top = pad_y // 2
 
     # crop the pixels we care about
     image_crop = np.zeros((h + pad_y, w + pad_x, c), dtype=image.dtype)
-    image_crop[y_start:y_end, x_start:x_end] = image[y1:y2, x1:x2]
+    image_crop[pad_top:pad_top + h, pad_left:pad_left + w] = image[y1:y2, x1:x2]
 
     # resize the cropped image
     image = cv2.resize(image_crop, (out_w, out_h), interpolation=cv2.INTER_LINEAR)
 
     # compute scale and offset
-    offset = x1 - x_start, y1 - y_start
+    offset = x1 - pad_left, y1 - pad_top
     scale = (w + pad_x) / out_w, (h + pad_y) / out_h
     return image, offset, scale

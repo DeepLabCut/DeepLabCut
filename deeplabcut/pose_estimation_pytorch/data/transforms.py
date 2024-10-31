@@ -19,6 +19,7 @@ import numpy as np
 from albumentations.augmentations.geometric import functional as F
 from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
+from scipy.stats import truncnorm
 
 
 def build_transforms(augmentations: dict) -> A.BaseCompose:
@@ -87,6 +88,17 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
                 translate_px=translation,
                 p=affine.get("p", 0.9),
                 keep_ratio=True,
+            )
+        )
+
+    if bbox_tfm := augmentations.get("random_bbox_transform", False):
+        transforms.append(
+            RandomBBoxTransform(
+                shift_factor=bbox_tfm.get("shift_factor", 0.1),
+                shift_prob=bbox_tfm.get("shift_prob", 0.25),
+                scale_factor=bbox_tfm.get("scale_factor", (0.75, 1.25)),
+                scale_prob=bbox_tfm.get("scale_prob", 1.0),
+                p=bbox_tfm.get("p", 1.0),
             )
         )
 
@@ -555,3 +567,101 @@ class CoarseDropout(A.CoarseDropout):
         x1, y1, x2, y2 = hole
         x, y = keypoint[:2]
         return x1 <= x < x2 and y1 <= y < y2
+
+
+class RandomBBoxTransform(A.DualTransform):
+    """TODO(niels) - docs
+
+    Implementation based on the mmpose `RandomBBoxTransform`. No rotation is done
+    as rotated bounding boxes are not used in DLC.
+    """
+
+    def __init__(
+        self,
+        shift_factor: float = 0.1,
+        shift_prob: float = 0.25,
+        scale_factor: tuple[float, float] = (0.5, 1.5),
+        scale_prob: float = 1.0,
+        sampling: str = "truncnorm",
+        p: float = 1.0,
+    ):
+        super().__init__(p=p)
+        self.shift_factor = shift_factor
+        self.shift_prob = shift_prob
+        self.scale_factor = scale_factor
+        self.scale_prob = scale_prob
+        self.sampling = sampling
+
+    def apply(self, img: np.ndarray, **params) -> np.ndarray:
+        return img
+
+    def apply_to_keypoints(self, keypoints: np.ndarray, **params) -> np.ndarray:
+        return keypoints
+
+    def apply_to_bboxes(self, bboxes, **params):
+        if len(bboxes) == 0:
+            return bboxes
+
+        # Albumentations provides bounding boxes in normalized xyxy format internally
+        bboxes_xyxy = np.asarray(bboxes)
+        bboxes_extra = None
+        if bboxes_xyxy.shape[1] > 4:
+            bboxes_extra = bboxes_xyxy[:, 4:]
+            bboxes_xyxy = bboxes_xyxy[:, :4]
+
+        # TODO(niels): should bboxes width and height be scaled with same value?
+        # sample parameters
+        bboxes_to_scale = np.random.random(len(bboxes)) < self.scale_prob
+        num_bboxes_to_scale = np.sum(bboxes_to_scale).item()
+        scale_factors = np.ones((len(bboxes), 2))
+        if num_bboxes_to_scale > 0:
+            scale_factors[bboxes_to_scale] = self._sample(
+                (num_bboxes_to_scale, 2),
+                low=self.scale_factor[0],
+                high=self.scale_factor[1],
+            )
+
+        bboxes_to_shift = np.random.random(len(bboxes)) < self.shift_prob
+        num_bboxes_to_shift = np.sum(bboxes_to_shift).item()
+        shift_factors = np.zeros((len(bboxes), 2))
+        if num_bboxes_to_shift > 0:
+            shift_factors[bboxes_to_shift] = self._sample(
+                (num_bboxes_to_shift, 2),
+                low=-self.shift_factor,
+                high=self.shift_factor,
+            )
+
+        bbox_wh = bboxes_xyxy[:, 2:] - bboxes_xyxy[:, :2]
+        bbox_cxcy = bboxes_xyxy[:, :2] + (0.5 * bbox_wh)
+
+        # scale + shift bounding boxes
+        bbox_cxcy = bbox_cxcy + (shift_factors * bbox_wh)
+        bbox_wh = bbox_wh * scale_factors
+
+        # convert to xyxy, clip so all bounding boxes are in the image
+        bbox_half_wh = 0.5 * bbox_wh
+        bbox_xyxy = np.empty((len(bboxes), 4))
+        bbox_xyxy[:, :2] = bbox_cxcy - bbox_half_wh
+        bbox_xyxy[:, 2:] = bbox_cxcy + bbox_half_wh
+        bbox_xyxy = np.clip(bbox_xyxy, 0, 1)
+
+        # convert back to xywh
+        if bboxes_extra is not None:
+            bbox_xyxy = np.concatenate([bbox_xyxy, bboxes_extra], axis=-1)
+
+        # done for albumentations<=1.4.3
+        return [tuple(bbox) for bbox in bbox_xyxy]
+
+    def _sample(
+        self,
+        size: tuple[int, ...],
+        low: float = -1.0,
+        high: float = 1.0,
+    ) -> np.ndarray:
+        if self.sampling == "truncnorm":
+            return truncnorm.rvs(low, high, size=size).astype(np.float32)
+        elif self.sampling == "uniform":
+            delta = high - low
+            return low + (delta * np.random.random(size))
+
+        raise ValueError(f"Unknown sampling: {self.sampling}")

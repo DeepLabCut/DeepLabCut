@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     apply_transform,
     map_id_to_annotations,
     map_image_path_to_id,
+    out_of_bounds_keypoints,
     pad_to_length,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -183,7 +184,6 @@ class PoseDataset(Dataset):
                 )
             bboxes = bboxes.astype(int)
 
-            # TODO: The following code should be replaced by a numpy version
             image, offsets, scales = top_down_crop(
                 image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
             )
@@ -194,6 +194,12 @@ class PoseDataset(Dataset):
             bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
             bboxes[..., 2] = bboxes[..., 2] / scales[0]
             bboxes[..., 3] = bboxes[..., 3] / scales[1]
+
+            # as a RandomBBoxTransform can be added, keypoints may be outside of the
+            #   image after the crop
+            oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
+            if np.sum(oob_mask) > 0:
+                keypoints[oob_mask, 2] = 0.0
 
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)

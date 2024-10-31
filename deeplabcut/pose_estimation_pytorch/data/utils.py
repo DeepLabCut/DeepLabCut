@@ -410,7 +410,7 @@ def apply_transform(
     """
 
     if transform:
-        oob_mask = _out_of_bounds_keypoints(keypoints, image.shape)
+        oob_mask = out_of_bounds_keypoints(keypoints, image.shape)
         transformed = _apply_transform(
             transform, image, keypoints, bboxes, class_labels
         )
@@ -423,7 +423,7 @@ def apply_transform(
 
         out_shape = transformed["image"].shape
         if len(transformed["keypoints"]) > 0:
-            oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
+            oob_mask = out_of_bounds_keypoints(transformed["keypoints"], out_shape)
             # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
             if np.sum(oob_mask) > 0:
                 transformed["keypoints"][oob_mask, 2] = 0.0
@@ -481,7 +481,7 @@ def _apply_transform(
     return transformed
 
 
-def _out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
+def out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
     """Computes which visible keypoints are outside an image
 
     Args:
