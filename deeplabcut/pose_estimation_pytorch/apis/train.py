@@ -106,7 +106,7 @@ def train(
         device = utils.resolve_device(run_config)
 
     if gpus is None:
-        gpus = run_config["runner"]["gpus"]
+        gpus = run_config["runner"].get("gpus")
 
     if device == "mps" and task == Task.DETECT:
         device = "cpu"  # FIXME: Cannot train detectors on MPS
