@@ -174,7 +174,7 @@ class PoseDataset(Dataset):
         keypoints_unique = transformed["keypoints_unique"]
         bboxes = transformed["bboxes"]
         offsets = (0, 0)
-        scales = (1, 1)
+        scales = (1.0, 1.0)
 
         if self.task == Task.TOP_DOWN:
             if len(bboxes) > 1:
@@ -242,8 +242,8 @@ class PoseDataset(Dataset):
             "image_id": image_id,
             "path": image_path,
             "original_size": np.array(original_size),
-            "offsets": np.array(offsets),
-            "scales": np.array(scales),
+            "offsets": np.array(offsets, dtype=int),
+            "scales": np.array(scales, dtype=float),
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
