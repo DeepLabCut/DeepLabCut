@@ -84,7 +84,7 @@ runner:
       - type: CosineAnnealingLR
         params:
           T_max: 250     # max_epochs // 2
-          eta_min: 1e-5  # ~base_lr / 20
+          eta_min: 2e-5  # ~base_lr / 20
       milestones:
       - 250              # max_epochs // 2
 train_settings:
