@@ -8,6 +8,11 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+"""Modified SimCC target generator for the RTMPose model
+
+Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
+information, see <https://github.com/open-mmlab/mmpose>.
+"""
 from __future__ import annotations
 
 from itertools import product
@@ -23,9 +28,22 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
 
 @TARGET_GENERATORS.register_module
 class SimCCGenerator(BaseGenerator):
-    """Abstract class to generate target Simple Coordinate Classification targets
+    """Class used generate targets from RTMPose head outputs
 
-    TODO: https://github.com/open-mmlab/mmpose/blob/71ec36ebd63c475ab589afc817868e749a61491f/mmpose/codecs/simcc_label.py
+    The RTMPose model uses coordinate classification for pose estimation. For more
+    information, see "SimCC: a Simple Coordinate Classification Perspective for Human
+    Pose Estimation" (<https://arxiv.org/pdf/2107.03332>) and "RTMPose: Real-Time
+    Multi-Person Pose Estimation based on MMPose" (<https://arxiv.org/pdf/2303.07399>).
+
+    Args:
+        input_size: The size of images given to the pose estimation model.
+        smoothing_type: Smoothing strategy ("gaussian" or "standard")
+        sigma: The sigma value in the Gaussian SimCC label. If a single value, used for
+            both x and y. If two values, the sigmas for (x, y).
+        simcc_split_ratio: The split ratio of pixels, as described in SimCC.
+        label_smooth_weight: Label Smoothing weight.
+        normalize: Normalize the heatmaps before returning.
+        **kwargs,
     """
 
     def __init__(
@@ -79,8 +97,6 @@ class SimCCGenerator(BaseGenerator):
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
-        # FIXME(niels): do we not need the stride here?
-        # stride_y, stride_x = stride, stride
         device = outputs["x"].device
         keypoints = labels[self.label_keypoint_key].cpu().numpy()
         batch_size = len(keypoints)
@@ -114,8 +130,7 @@ class SimCCGenerator(BaseGenerator):
     def _generate_standard(
         self, keypoints: np.ndarray, keypoints_visible: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Encoding keypoints into SimCC labels with Standard Label Smoothing
-        strategy.
+        """Encoding keypoints into SimCC labels with Standard Label Smoothing.
 
         Labels will be one-hot vectors if self.label_smooth_weight==0.0
         """
@@ -156,7 +171,7 @@ class SimCCGenerator(BaseGenerator):
     def _map_coordinates(
         self, keypoints: np.ndarray, keypoints_visible: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Mapping keypoint coordinates into SimCC space."""
+        """Mapping keypoint coordinates into SimCC space"""
         keypoints_split = keypoints.copy()
         keypoints_split = np.around(keypoints_split * self.simcc_split_ratio)
         keypoints_split = keypoints_split.astype(np.int64)
@@ -166,8 +181,7 @@ class SimCCGenerator(BaseGenerator):
     def _generate_gaussian(
         self, keypoints: np.ndarray, keypoints_visible: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Encoding keypoints into SimCC labels with Gaussian Label Smoothing
-        strategy."""
+        """Encoding keypoints into SimCC labels with Gaussian Label Smoothing"""
         N, K, _ = keypoints.shape
         w, h = self.input_size
         W = np.around(w * self.simcc_split_ratio).astype(int)

@@ -8,6 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+"""Implementation of the CSPNeXt Backbone
+
+Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
+<https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/backbones/cspnext.py>
+
+For more details about this architecture, see `RTMDet: An Empirical Study of Designing
+Real-Time Object Detectors`: https://arxiv.org/abs/1711.05101.
+"""
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,6 +35,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.csp import (
 
 @dataclass(frozen=True)
 class CSPNeXtLayerConfig:
+    """Configuration for a CSPNeXt layer"""
     in_channels: int
     out_channels: int
     num_blocks: int
@@ -36,15 +45,23 @@ class CSPNeXtLayerConfig:
 
 @BACKBONES.register_module
 class CSPNeXt(BaseBackbone):
-    """TODO: Documentation
+    """CSPNeXt Backbone
 
-    Init weights from AP10k:
-    https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#animal-2d-17-keypoints
-
-    Pretrained backbones:
-    https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#pretrained-models
-
-    https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/backbones/cspnext.py#L18
+    Args:
+        model_name: The model variant to build. Must be one of the keys of the
+            ``CSPNeXt.CONFIGS`` attribute (e.g. `cspnext_p5`, `cspnext_p6`, ...).
+        pretrained: Whether to load pre-trained weights for the model.
+        expand_ratio: Ratio used to adjust the number of channels of the hidden layer.
+        deepen_factor: Number of blocks in each CSP layer is multiplied by this value.
+        widen_factor: Number of channels in each layer is multiplied by this value.
+        out_indices: The branch indices to output. If a tuple of integers, the outputs
+            are returned as a list of tensors. If a single integer, a tensor is returned
+            containing the configured index.
+        channel_attention: Add chanel attention to all stages
+        norm_layer: The type of normalization layer to use.
+        activation_fn: The type of activation function to use.
+        pretrained_weights: TODO(niels) load the pretrained weights automatically
+        **kwargs: BaseBackbone kwargs.
     """
 
     CONFIGS: dict[str, list[CSPNeXtLayerConfig]] = {
@@ -70,21 +87,13 @@ class CSPNeXt(BaseBackbone):
         expand_ratio: float = 0.5,
         deepen_factor: float = 0.67,
         widen_factor: float = 0.75,
-        out_indices: tuple[int, ...] = (4,),
+        out_indices: int | tuple[int, ...] = -1,
         channel_attention: bool = True,
         norm_layer: str = "SyncBN",
         activation_fn: str = "SiLU",
         pretrained_weights: str | Path | None = None,
         **kwargs,
     ) -> None:
-        """
-
-        AP10K config
-        https://github.com/open-mmlab/mmpose/blob/main/projects/rtmpose/rtmpose/animal_2d_keypoint/rtmpose-m_8xb64-210e_ap10k-256x256.py#L63
-
-        COCO object detection config
-        https://github.com/open-mmlab/mmdetection/blob/main/configs/rtmdet/rtmdet_l_8xb32-300e_coco.py
-        """
         super().__init__(stride=32, **kwargs)
         if model_name not in self.CONFIGS:
             raise ValueError(
@@ -95,6 +104,10 @@ class CSPNeXt(BaseBackbone):
         self.layer_configs = self.CONFIGS[model_name]
         self.stem_out_channels = self.layer_configs[0].in_channels
         self.spp_kernel_sizes = (5, 9, 13)
+
+        self.single_output = isinstance(out_indices, int)
+        if self.single_output:
+            out_indices = (out_indices,)
 
         self.out_indices = out_indices
         # stem has stride 2
@@ -176,28 +189,18 @@ class CSPNeXt(BaseBackbone):
 
             self._from_pretrained(pretrained_weights)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Original code: x: tuple[tensor] -> torch.Tensor
-
+    def forward(self, x: torch.Tensor) -> torch.Tensor | tuple[torch.Tensor]:
         outs = []
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
             x = layer(x)
             if i in self.out_indices:
                 outs.append(x)
+
+        if self.single_output:
+            return outs[-1]
+
         return tuple(outs)
-
-        """
-        outs = []
-        for i, layer_name in enumerate(self.layers):
-            layer = getattr(self, layer_name)
-            x = layer(x)
-            if i in self.out_indices:
-                outs.append(x)
-
-        # TODO(niels): choose which layer we output
-        return outs[-1]
 
     def _from_pretrained(self, weight_path: str | Path) -> None:
         """FIXME(niels): download weights from somewhere"""

@@ -570,10 +570,10 @@ class CoarseDropout(A.CoarseDropout):
 
 
 class RandomBBoxTransform(A.DualTransform):
-    """TODO(niels) - docs
+    """Random jittering for bounding boxes for top-down pose estimation models.
 
-    Implementation based on the mmpose `RandomBBoxTransform`. No rotation is done
-    as rotated bounding boxes are not used in DLC.
+    Implementation based on the mmpose `RandomBBoxTransform`. For more information,
+    see <https://github.com/open-mmlab/mmpose>.
     """
 
     def __init__(

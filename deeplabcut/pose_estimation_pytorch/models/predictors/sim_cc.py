@@ -8,7 +8,11 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""TODO: Source"""
+"""SimCC predictor for the RTMPose model
+
+Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
+information, see <https://github.com/open-mmlab/mmpose>.
+"""
 from __future__ import annotations
 
 import numpy as np
@@ -22,24 +26,24 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 
 @PREDICTORS.register_module
 class SimCCPredictor(BasePredictor):
-    """Abstract class to generate target Simple Coordinate Classification targets
+    """Class used to make pose predictions from RTMPose head outputs
 
-    TODO: https://github.com/open-mmlab/mmpose/blob/71ec36ebd63c475ab589afc817868e749a61491f/mmpose/codecs/simcc_label.py
+    The RTMPose model uses coordinate classification for pose estimation. For more
+    information, see "SimCC: a Simple Coordinate Classification Perspective for Human
+    Pose Estimation" (<https://arxiv.org/pdf/2107.03332>) and "RTMPose: Real-Time
+    Multi-Person Pose Estimation based on MMPose" (<https://arxiv.org/pdf/2303.07399>).
+
+    Args:
+        simcc_split_ratio: The split ratio of pixels, as described in SimCC.
     """
 
-    def __init__(
-        self,
-        simcc_split_ratio: float = 2.0,
-        use_dark: bool = False,
-    ) -> None:
+    def __init__(self, simcc_split_ratio: float = 2.0) -> None:
         super().__init__()
         self.simcc_split_ratio = simcc_split_ratio
-        self.use_dark = use_dark
 
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
-        # FIXME(niels) - process in PyTorch?
         simcc_x = outputs["x"].detach().cpu().numpy()
         simcc_y = outputs["y"].detach().cpu().numpy()
         keypoints, scores = get_simcc_maximum(simcc_x, simcc_y)
@@ -47,9 +51,6 @@ class SimCCPredictor(BasePredictor):
         if keypoints.ndim == 2:
             keypoints = keypoints[None, :]
             scores = scores[None, :]
-
-        if self.use_dark:
-            raise NotImplementedError()
 
         keypoints /= self.simcc_split_ratio
         scores = scores.reshape((*scores.shape, -1))
@@ -63,7 +64,7 @@ def get_simcc_maximum(
     simcc_y: np.ndarray,
     apply_softmax: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Get maximum response location and value from simcc representations.
+    """Get maximum response location and value from SimCC representations.
 
     Note:
         instance number: N

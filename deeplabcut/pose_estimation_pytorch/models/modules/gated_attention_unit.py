@@ -10,9 +10,8 @@
 #
 """Gated Attention Unit
 
-Implementation needed for the RTMCC head.
-
-TODO: github.com/open-mmlab/mmpose/blob/main/mmpose/models/utils/rtmcc_block.py#L82
+Based on the building blocks used for the ``mmdetection`` CSPNeXt implementation. For
+more information, see <https://github.com/open-mmlab/mmdetection>.
 """
 from __future__ import annotations
 
@@ -27,23 +26,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.norm import ScaleNorm
 
 
 def rope(x, dim):
-    """Applies Rotary Position Embedding to input tensor.
-
-    TODO: github.com/open-mmlab/mmpose/blob/main/mmpose/models/utils/rtmcc_block.py#L82
-
-    Args:
-        x (torch.Tensor): Input tensor.
-        dim (int | list[int]): The spatial dimension(s) to apply
-            rotary position embedding.
-
-    Returns:
-        torch.Tensor: The tensor after applying rotary position
-            embedding.
-
-    Reference:
-        `RoFormer: Enhanced Transformer with Rotary
-        Position Embedding <https://arxiv.org/abs/2104.09864>`_
-    """
+    """Applies Rotary Position Embedding to input tensor."""
     shape = x.shape
     if isinstance(dim, int):
         dim = [dim]
@@ -78,14 +61,10 @@ def rope(x, dim):
 class Scale(nn.Module):
     """Scale vector by element multiplications.
 
-    TODO: github.com/open-mmlab/mmpose/blob/main/mmpose/models/utils/rtmcc_block.py#L82
-
     Args:
-        dim (int): The dimension of the scale vector.
-        init_value (float, optional): The initial value of the scale vector.
-            Defaults to 1.0.
-        trainable (bool, optional): Whether the scale vector is trainable.
-            Defaults to True.
+        dim: The dimension of the scale vector.
+        init_value: The initial value of the scale vector.
+        trainable: Whether the scale vector is trainable.
     """
 
     def __init__(self, dim, init_value=1.0, trainable=True):
@@ -97,10 +76,7 @@ class Scale(nn.Module):
 
 
 class GatedAttentionUnit(nn.Module):
-    """Gated Attention Unit (GAU) in RTMBlock.
-
-    TODO: github.com/open-mmlab/mmpose/blob/main/mmpose/models/utils/rtmcc_block.py#L82
-    """
+    """Gated Attention Unit (GAU) in RTMBlock"""
 
     def __init__(
         self,

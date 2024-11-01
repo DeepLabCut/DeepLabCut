@@ -8,7 +8,11 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""TODO: Source"""
+"""SimCC Discrete KL Divergence loss with Gaussian Label Smoothing.
+
+Can be used for SimCC-type heads. Modified from the `mmpose` implementation. For more
+details, see <https://github.com/open-mmlab/mmpose>.
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,18 +25,25 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
 
 @CRITERIONS.register_module
 class KLDiscreteLoss(BaseCriterion):
-    """
-    TODO: https://github.com/open-mmlab/mmpose/blob/71ec36ebd63c475ab589afc817868e749a61491f/mmpose/models/losses/classification_loss.py#L142
+    """KLDiscrete loss
+
+    Args:
+        beta: Temperature for the softmax.
+        label_softmax: Use softmax on the labels.
+        label_beta: Temperature for the softmax on the labels.
+        use_target_weight: Allows the use a weighted loss for different joints.
+        mask: Indices of masked keypoints.
+        mask_weight: Weight for masked keypoints.
     """
 
     def __init__(
         self,
-        beta=1.0,
-        label_softmax=False,
-        label_beta=10.0,
-        use_target_weight=True,
-        mask=None,
-        mask_weight=1.0,
+        beta: float = 1.0,
+        label_softmax: bool = False,
+        label_beta: float = 10.0,
+        use_target_weight: bool = True,
+        mask: list[int] | None = None,
+        mask_weight: float = 1.0,
     ):
         super().__init__()
         self.beta = beta

@@ -8,10 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Simple Coordinate Classification Head Implementation
+"""Modified SimCC head for the RTMPose model
 
-From the paper "SimCC: a Simple Coordinate Classification Perspective for Human Pose
-Estimation".
+Based on the official ``mmpose`` RTMCC head implementation. For more information, see
+<https://github.com/open-mmlab/mmpose>.
 """
 from __future__ import annotations
 
@@ -39,7 +39,27 @@ from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInit
 class RTMCCHead(BaseHead):
     """RTMPose Coordinate Classification head
 
-    TODO: github.com/open-mmlab/mmpose/blob/main/mmpose/models/utils/rtmcc_block.py#L82
+    The RTMCC head is itself adapted from the SimCC head. For more information, see
+    "SimCC: a Simple Coordinate Classification Perspective for Human Pose Estimation"
+    (<https://arxiv.org/pdf/2107.03332>) and "RTMPose: Real-Time Multi-Person Pose
+    Estimation based on MMPose" (<https://arxiv.org/pdf/2303.07399>).
+
+    Args:
+        input_size: The size of images given to the pose estimation model.
+        in_channels: The number of input channels for the head.
+        out_channels: Number of channels output by the head (number of bodyparts).
+        in_featuremap_size: The size of the input feature map for the head. This is
+            equal to the input_size divided by the backbone stride.
+        simcc_split_ratio: The split ratio of pixels, as described in SimCC.
+        final_layer_kernel_size: Kernel size of the final convolutional layer.
+        gau_cfg: Configuration for the GatedAttentionUnit.
+        predictor: The predictor for the head. Should usually be a `SimCCPredictor`.
+        target_generator: The target generator for the head. Should usually be a
+            `SimCCGenerator`.
+        criterion: The loss criterions for the RTMCC outputs. There should be a
+            criterion for "x" and a criterion for "y".
+        aggregator: The loss aggregator to combine the losses.
+        weight_init: The weight initializer to use for the head.
     """
 
     def __init__(
@@ -53,8 +73,8 @@ class RTMCCHead(BaseHead):
         gau_cfg: dict,
         predictor: BasePredictor,
         target_generator: BaseGenerator,
-        criterion: dict[str, BaseCriterion] | BaseCriterion,
-        aggregator: BaseLossAggregator | None,
+        criterion: dict[str, BaseCriterion],
+        aggregator: BaseLossAggregator,
         weight_init: str | dict | BaseWeightInitializer | None = None,
     ) -> None:
         super().__init__(
@@ -69,10 +89,6 @@ class RTMCCHead(BaseHead):
         self.input_size = input_size
         self.in_channels = in_channels
         self.out_channels = out_channels
-
-        # from https://github.com/open-mmlab/mmpose/blob/71ec36ebd63c475ab589afc817868e749a61491f/projects/rtmpose/rtmpose/animal_2d_keypoint/rtmpose-m_8xb64-210e_ap10k-256x256.py#L85C9-L85C74
-        # input size divided by scale
-        # in_featuremap_size = tuple([s // 16 for s in input_size]),
 
         self.in_featuremap_size = in_featuremap_size
         self.simcc_split_ratio = simcc_split_ratio

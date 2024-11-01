@@ -91,18 +91,7 @@ class Dekr(BaseWeightInitializer):
 
 @WEIGHT_INIT.register_module
 class Rtmpose(BaseWeightInitializer):
-    """Class to used to initialize head weights in the same way as RTMPose
-
-    init_cfg = [
-        dict(type='Normal', layer=['Conv2d'], std=0.001),
-        dict(type='Constant', layer='BatchNorm2d', val=1),
-        dict(type='Normal', layer=['Linear'], std=0.01, bias=0),
-    ]
-
-    init_weights: https://github.com/open-mmlab/mmengine/blob/c9b59962d679484245d4b867da57326602904bcf/mmengine/model/base_module.py#L66
-    initialize: https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/weight_init.py#L551
-    normal init: https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/weight_init.py#L245
-    """
+    """Class to used to initialize head weights in the same way as RTMPose"""
 
     def init_weights(self, model: nn.Module) -> None:
         for module in model.modules():

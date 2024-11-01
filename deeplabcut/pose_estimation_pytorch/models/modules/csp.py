@@ -8,9 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""TODO: Documentation
+"""Implementation of modules needed for the CSPNeXt Backbone. Used in CSP-style models.
 
-Blocks used in CSP-style models, such as CSPNext.
+Based on the building blocks used for the ``mmdetection`` CSPNeXt implementation. For
+more information, see <https://github.com/open-mmlab/mmdetection>.
 """
 import torch
 import torch.nn as nn
@@ -39,9 +40,14 @@ def build_norm(norm: str, *args, **kwargs) -> nn.Module:
 
 
 class SPPBottleneck(nn.Module):
-    """TODO: docs
+    """Spatial pyramid pooling layer used in YOLOv3-SPP and (among others) CSPNeXt
 
-    https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/backbones/csp_darknet.py#L67
+    Args:
+        in_channels: input channels to the bottleneck
+        out_channels: output channels of the bottleneck
+        kernel_sizes: kernel sizes for the pooling layers
+        norm_layer: norm layer for the bottleneck
+        activation_fn: activation function for the bottleneck
     """
 
     def __init__(
@@ -87,9 +93,10 @@ class SPPBottleneck(nn.Module):
 
 
 class ChannelAttention(nn.Module):
-    """TODO: Docs
+    """Channel attention Module.
 
-    https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/layers/se_layer.py#L138C1-L162C23
+    Args:
+        channels: Number of input/output channels of the layer.
     """
 
     def __init__(self, channels: int) -> None:
@@ -107,9 +114,23 @@ class ChannelAttention(nn.Module):
 
 
 class CSPConvModule(nn.Module):
-    """TODO: docs
+    """Configurable convolution module used for CSPNeXT.
 
-    https://github.com/open-mmlab/mmcv/blob/c39e9ebbc451dc89e0eedaa58a856806fff1c9b2/mmcv/cnn/bricks/conv_module.py#L69
+    Applies sequentially
+      - a convolution
+      - (optional) a norm layer
+      - (optional) an activation function
+
+    Args:
+        in_channels: Input channels of the convolution.
+        out_channels: Output channels of the convolution.
+        kernel_size: Convolution kernel size.
+        stride: Convolution stride.
+        padding: Convolution padding.
+        dilation: Convolution dilation.
+        groups: Number of blocked connections from input to output channels.
+        norm_layer: Norm layer to apply, if any.
+        activation_fn: Activation function to apply, if any.
     """
 
     def __init__(
@@ -161,9 +182,7 @@ class CSPConvModule(nn.Module):
         return x
 
     def _init_weights(self) -> None:
-        # https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_normal_
-        # https://mmengine.readthedocs.io/en/stable/_modules/mmengine/model/weight_init.html#KaimingInit
-        # https://github.com/open-mmlab/mmcv/blob/c39e9ebbc451dc89e0eedaa58a856806fff1c9b2/mmcv/cnn/bricks/conv_module.py#L69
+        """Same init as in <mmcv> convolutions"""
         nn.init.kaiming_normal_(self.conv.weight, a=0, nonlinearity="relu")
         if self.with_bias:
             nn.init.constant_(self.conv.bias, 0)
@@ -174,10 +193,21 @@ class CSPConvModule(nn.Module):
 
 
 class DepthwiseSeparableConv(nn.Module):
-    """Depth-wise separable convolution module.
+    """Depth-wise separable convolution module used for CSPNeXT.
 
-    TODO: Docs
-    https://github.com/open-mmlab/mmcv/blob/c39e9ebbc451dc89e0eedaa58a856806fff1c9b2/mmcv/cnn/bricks/depthwise_separable_conv_module.py#L10
+    Applies sequentially
+      - a depth-wise conv
+      - a point-wise conv
+
+    Args:
+        in_channels: Input channels of the convolution.
+        out_channels: Output channels of the convolution.
+        kernel_size: Convolution kernel size.
+        stride: Convolution stride.
+        padding: Convolution padding.
+        dilation: Convolution dilation.
+        norm_layer: Norm layer to apply, if any.
+        activation_fn: Activation function to apply, if any.
     """
 
     def __init__(
@@ -221,10 +251,16 @@ class DepthwiseSeparableConv(nn.Module):
 
 
 class CSPNeXtBlock(nn.Module):
-    """The basic bottleneck block used in CSPNeXt.
+    """Basic bottleneck block used in CSPNeXt.
 
-    TODO: Docs
-    https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/layers/csp_layer.py#L82
+    Args:
+        in_channels: input channels for the block
+        out_channels: output channels for the block
+        expansion: expansion factor for the hidden channels
+        add_identity: add a skip-connection to the block
+        kernel_size: kernel size for the DepthwiseSeparableConv
+        norm_layer: Norm layer to apply, if any.
+        activation_fn: Activation function to apply, if any.
     """
 
     def __init__(
@@ -272,9 +308,17 @@ class CSPNeXtBlock(nn.Module):
 
 
 class CSPLayer(nn.Module):
-    """TODO: documentation
+    """Cross Stage Partial Layer.
 
-    https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/layers/csp_layer.py#L153
+    Args:
+        in_channels: input channels for the layer
+        out_channels: output channels for the block
+        expand_ratio: expansion factor for the mid-channels
+        num_blocks: the number of blocks to use
+        add_identity: add a skip-connection to the blocks
+        channel_attention: whether to apply channel attention
+        norm_layer: Norm layer to apply, if any.
+        activation_fn: Activation function to apply, if any.
     """
 
     def __init__(
