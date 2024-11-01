@@ -51,8 +51,7 @@ def bbox_from_keypoints(
     squeeze = False
 
     # we do not estimate bbox on keypoints that have 0 or -1 flag
-    mask = keypoints[..., -1] > 0
-    keypoints = keypoints[mask]
+    keypoints[keypoints[..., -1] <= 0] = np.nan
 
     if len(keypoints.shape) == 2:
         squeeze = True
@@ -61,6 +60,10 @@ def bbox_from_keypoints(
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
     bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
     bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+
+    # can have NaNs if some individuals have no visible keypoints
+    bboxes = np.nan_to_num(bboxes, nan=0)
+
     bboxes = np.clip(
         bboxes,
         a_min=[0, 0, 0, 0],
