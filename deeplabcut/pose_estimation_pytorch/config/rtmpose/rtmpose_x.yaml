@@ -33,7 +33,7 @@ model:  # https://github.com/open-mmlab/mmpose/blob/main/projects/rtmpose/rtmpos
       weight_init: RTMPose
       target_generator:
         type: SimCCGenerator
-        input_size: [288, 384]
+        input_size: [384, 384]
         smoothing_type: gaussian
         sigma: [6.93, 6.93]
         simcc_split_ratio: 2.0
