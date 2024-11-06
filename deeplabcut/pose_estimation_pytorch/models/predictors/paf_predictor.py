@@ -212,14 +212,13 @@ class PartAffinityFieldPredictor(BasePredictor):
         locrefs: torch.Tensor,
         peak_inds_in_batch: torch.Tensor,
         strides: tuple[float, float],
-        n_decimals: int = 3,
     ) -> torch.Tensor:
         s, b, r, c = peak_inds_in_batch.T
         stride_y, stride_x = strides
         strides = torch.Tensor((stride_x, stride_y)).to(locrefs.device)
         off = locrefs[s, b, :, r, c]
         loc = strides * peak_inds_in_batch[:, [3, 2]] + strides // 2 + off
-        return torch.round(loc, decimals=n_decimals)
+        return loc
 
     @staticmethod
     def compute_edge_costs(
@@ -331,8 +330,8 @@ class PartAffinityFieldPredictor(BasePredictor):
     ) -> list[dict[str, NDArray]]:
         n_samples, n_channels = heatmaps.shape[:2]
         n_bodyparts = n_channels - n_id_channels
-        pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides, n_decimals)
-        pos = pos.detach().cpu().numpy()
+        pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides)
+        pos = np.round(pos.detach().cpu().numpy(), decimals=n_decimals)
         heatmaps = heatmaps.detach().cpu().numpy()
         pafs = pafs.detach().cpu().numpy()
         peak_inds_in_batch = peak_inds_in_batch.detach().cpu().numpy()
