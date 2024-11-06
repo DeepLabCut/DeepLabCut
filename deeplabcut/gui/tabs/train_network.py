@@ -74,9 +74,15 @@ class TrainNetwork(DefaultTab):
         if self.root.engine == Engine.PYTORCH:
             self.resume_from_snapshot_label.show()
             self.snapshot_selection_widget.show()
+            # Display detector snapshot selection widget only if in Top-Down mode
+            if self._shuffle_display.pose_cfg.get("method").lower() == "td":
+                self.detector_snapshot_selection_widget.show()
+            else:
+                self.detector_snapshot_selection_widget.hide()
         else:
             self.resume_from_snapshot_label.hide()
             self.snapshot_selection_widget.hide()
+            self.detector_snapshot_selection_widget.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
@@ -88,7 +94,7 @@ class TrainNetwork(DefaultTab):
         self.resume_from_snapshot_label.setToolTip(
             "<span style='font-weight:normal; white-space:nowrap;'>"
             "If you've already trained a model on this shuffle, you can continue training it instead of starting "
-            "from scratch again."
+            "from scratch again. <br>When using top-down models, you can also choose a detector to resume training from."
             "</span>"
         )
         self.main_layout.addWidget(self.resume_from_snapshot_label)
@@ -97,6 +103,14 @@ class TrainNetwork(DefaultTab):
             self.root, self, margins=(30, 0, 0, 0), select_button_text="Select snapshot"
         )
         self.main_layout.addWidget(self.snapshot_selection_widget)
+
+        self.detector_snapshot_selection_widget = SnapshotSelectionWidget(
+            self.root,
+            self,
+            margins=(30, 0, 0, 0),
+            select_button_text="Select detector snapshot",
+        )
+        self.main_layout.addWidget(self.detector_snapshot_selection_widget)
 
         self._pose_cfg_change(
             self._shuffle_display.pose_cfg
@@ -221,6 +235,11 @@ class TrainNetwork(DefaultTab):
             )
             if snapshot_to_start_training_from is not None:
                 kwargs["snapshot_path"] = snapshot_to_start_training_from
+            detector_to_start_training_from = (
+                self.detector_snapshot_selection_widget.selected_snapshot
+            )
+            if detector_to_start_training_from is not None:
+                kwargs["detector_path"] = detector_to_start_training_from
 
         compat.train_network(config, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
@@ -251,6 +270,8 @@ class TrainNetwork(DefaultTab):
                     w.show()
                 else:
                     w.hide()
+
+        self._update_snapshot_selection_widgets_visibility()
 
 
 def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
