@@ -363,8 +363,9 @@ def add_detector(
 
     detector_type = detector_type.lower()
     config = copy.deepcopy(config)
-    detector_config = read_config_as_dict(
-        configs_dir / "detectors" / f"{detector_type}.yaml"
+    detector_config = update_config(
+        read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
+        read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
     )
     detector_config = replace_default_values(
         detector_config,
