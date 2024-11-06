@@ -111,6 +111,9 @@ def train(
     if device == "mps" and task == Task.DETECT:
         device = "cpu"  # FIXME: Cannot train detectors on MPS
 
+    if snapshot_path is None:
+        snapshot_path = run_config.get("resume_training_from")
+
     model.to(device)  # Move model before giving its parameters to the optimizer
     runner = build_training_runner(
         runner_config=run_config["runner"],

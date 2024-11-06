@@ -368,10 +368,9 @@ def add_detector(
         read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
     )
     detector_config = replace_default_values(
-        detector_config,
-        num_individuals=num_individuals,
+        detector_config, num_individuals=num_individuals,
     )
-    config["detector"] = detector_config
+    config["detector"] = dict(sorted(detector_config.items()))
     return config
 
 
