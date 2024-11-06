@@ -78,7 +78,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.snapshot_manager = snapshot_manager
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
         self.csv_logger = CSVLogger(
-            train_folder=snapshot_manager.model_folder, log_filename=log_filename,
+            train_folder=snapshot_manager.model_folder,
+            log_filename=log_filename,
         )
         self.logger = logger
         self.starting_epoch = 0
@@ -192,7 +193,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             logging.info(msg)
 
             epoch_metrics = self._metadata.get("metrics")
-            if epoch_metrics is not None and len(epoch_metrics) > 0:
+            if (
+                e % self.eval_interval == 0
+                and epoch_metrics is not None
+                and len(epoch_metrics) > 0
+            ):
                 logging.info(f"Model performance:")
                 line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
                 for name, score in epoch_metrics.items():
