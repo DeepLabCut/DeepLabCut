@@ -248,6 +248,20 @@ class MainWindow(QMainWindow):
             return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
 
     @property
+    def models_folder(self) -> str:
+        try:
+            return str(
+                compat.return_train_network_path(
+                    self.config,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                )[2]
+            )
+        except FileNotFoundError:
+            return self.project_folder()
+
+    @property
     def inference_cfg_path(self) -> str:
         return os.path.join(
             self.cfg["project_path"],
