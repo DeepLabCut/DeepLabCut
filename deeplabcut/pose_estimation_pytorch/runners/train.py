@@ -100,9 +100,13 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._epoch_predictions = {}
 
     def state_dict(self) -> dict:
+        model = self.model
+        if self._data_parallel:
+            model = self.model.module
+
         return {
             "metadata": self._metadata,
-            "model": self.model.state_dict(),
+            "model": model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
 
@@ -152,8 +156,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner = Runner(model, optimizer, cfg, device='cuda')
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
-        if self.gpus:
-            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+        if self._data_parallel:
+            self.model = DataParallel(self.model, device_ids=self._gpus).cuda()
         else:
             self.model.to(self.device)
 
@@ -314,7 +318,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         inputs = inputs.to(self.device).float()
         outputs = self.model(inputs)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
@@ -460,7 +464,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
