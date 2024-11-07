@@ -73,6 +73,8 @@ class TrainNetwork(DefaultTab):
         self._generate_layout_attributes()
         self.main_layout.addWidget(_create_label_widget(""))  # dummy label
 
+        self._pose_cfg_change(self._shuffle_display.pose_cfg)
+
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
         self.edit_posecfg_btn.setMinimumWidth(150)
         self.edit_posecfg_btn.clicked.connect(self.open_posecfg_editor)
@@ -171,7 +173,6 @@ class TrainNetwork(DefaultTab):
                 layout_widget.hide()
 
             self.main_layout.addWidget(layout_widget)
-            self._pose_cfg_change(self._shuffle_display.pose_cfg)
 
     def log_attribute_change(self, attribute: IntTrainAttribute, value: int) -> None:
         self.root.logger.info(f"{attribute.label} set to {value}")
