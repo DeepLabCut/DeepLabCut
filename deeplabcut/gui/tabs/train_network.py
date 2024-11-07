@@ -22,6 +22,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
+    SnapshotSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
@@ -67,13 +68,39 @@ class TrainNetwork(DefaultTab):
                 layout.show()
             else:
                 layout.hide()
+        self._update_snapshot_selection_widgets_visibility()
+
+    def _update_snapshot_selection_widgets_visibility(self):
+        if self.root.engine == Engine.PYTORCH:
+            self.resume_from_snapshot_label.show()
+            self.snapshot_selection_widget.show()
+        else:
+            self.resume_from_snapshot_label.hide()
+            self.snapshot_selection_widget.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         self._generate_layout_attributes()
-        self.main_layout.addWidget(_create_label_widget(""))  # dummy label
 
-        self._pose_cfg_change(self._shuffle_display.pose_cfg)
+        self.resume_from_snapshot_label = _create_label_widget(
+            "[Optional]: Select a snapshot to resume training from", "font:bold"
+        )
+        self.resume_from_snapshot_label.setToolTip(
+            "<span style='font-weight:normal; white-space:nowrap;'>"
+            "If you've already trained a model on this shuffle, you can continue training it instead of starting "
+            "from scratch again."
+            "</span>"
+        )
+        self.main_layout.addWidget(self.resume_from_snapshot_label)
+
+        self.snapshot_selection_widget = SnapshotSelectionWidget(
+            self.root, self, margins=(30, 0, 0, 0), select_button_text="Select snapshot"
+        )
+        self.main_layout.addWidget(self.snapshot_selection_widget)
+
+        self._pose_cfg_change(
+            self._shuffle_display.pose_cfg
+        )  # also calls _update_snapshot_selection_widgets_visibility
 
         self.edit_posecfg_btn = QtWidgets.QPushButton("Edit pose_cfg.yaml")
         self.edit_posecfg_btn.setMinimumWidth(150)
@@ -184,9 +211,16 @@ class TrainNetwork(DefaultTab):
     def train_network(self):
         config = self.root.config
         shuffle = int(self._shuffle.value())
+
         kwargs = dict(gputouse=None, autotune=False)
         for k, spin_box in self._attribute_kwargs[self.root.engine].items():
             kwargs[k] = int(spin_box.value())
+        if self.root.engine == Engine.PYTORCH:
+            snapshot_to_start_training_from = (
+                self.snapshot_selection_widget.selected_snapshot
+            )
+            if snapshot_to_start_training_from is not None:
+                kwargs["snapshot_path"] = snapshot_to_start_training_from
 
         compat.train_network(config, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
