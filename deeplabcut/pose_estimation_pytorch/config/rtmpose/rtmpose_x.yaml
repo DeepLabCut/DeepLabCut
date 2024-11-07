@@ -17,15 +17,11 @@ method: td  # Need to add a detector
 model:  # https://github.com/open-mmlab/mmpose/blob/main/projects/rtmpose/rtmpose/body_2d_keypoint/rtmpose-x_8xb256-700e_coco-384x288.py
   backbone:
     type: CSPNeXt
-    model_name: cspnext_p5
+    model_name: cspnext_x
     freeze_bn_stats: false
     freeze_bn_weights: false
-    expand_ratio: 0.5
     deepen_factor: 1.33
     widen_factor: 1.25
-    channel_attention: true
-    norm_layer: SyncBN
-    activation_fn: SiLU
   backbone_output_channels: 1280
   heads:
     bodypart:

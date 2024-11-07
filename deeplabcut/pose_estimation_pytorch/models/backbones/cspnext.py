@@ -17,7 +17,6 @@ For more details about this architecture, see `RTMDet: An Empirical Study of Des
 Real-Time Object Detectors`: https://arxiv.org/abs/1711.05101.
 """
 from dataclasses import dataclass
-from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -25,6 +24,7 @@ import torch.nn as nn
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BACKBONES,
     BaseBackbone,
+    HuggingFaceWeightsMixin,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules.csp import (
     CSPConvModule,
@@ -44,13 +44,16 @@ class CSPNeXtLayerConfig:
 
 
 @BACKBONES.register_module
-class CSPNeXt(BaseBackbone):
+class CSPNeXt(BaseBackbone, HuggingFaceWeightsMixin):
     """CSPNeXt Backbone
 
     Args:
-        model_name: The model variant to build. Must be one of the keys of the
-            ``CSPNeXt.CONFIGS`` attribute (e.g. `cspnext_p5`, `cspnext_p6`, ...).
-        pretrained: Whether to load pre-trained weights for the model.
+        model_name: The model variant to build. If ``pretrained==True``, must be one of
+            the variants for which weights are available on HuggingFace (in the
+            `DeepLabCut/DeepLabCut-Backbones` hub, e.g. `cspnext_m`).
+        pretrained: Whether to load pretrained weights for the model.
+        arch: The model architecture to build. Must be one of the keys of the
+            ``CSPNeXt.ARCH`` attribute (e.g. `P5`, `P6`, ...).
         expand_ratio: Ratio used to adjust the number of channels of the hidden layer.
         deepen_factor: Number of blocks in each CSP layer is multiplied by this value.
         widen_factor: Number of channels in each layer is multiplied by this value.
@@ -60,18 +63,17 @@ class CSPNeXt(BaseBackbone):
         channel_attention: Add chanel attention to all stages
         norm_layer: The type of normalization layer to use.
         activation_fn: The type of activation function to use.
-        pretrained_weights: TODO(niels) load the pretrained weights automatically
         **kwargs: BaseBackbone kwargs.
     """
 
-    CONFIGS: dict[str, list[CSPNeXtLayerConfig]] = {
-        "cspnext_p5": [
+    ARCH: dict[str, list[CSPNeXtLayerConfig]] = {
+        "P5": [
             CSPNeXtLayerConfig(64, 128, 3, True, False),
             CSPNeXtLayerConfig(128, 256, 6, True, False),
             CSPNeXtLayerConfig(256, 512, 6, True, False),
             CSPNeXtLayerConfig(512, 1024, 3, False, True),
         ],
-        "cspnext_p6": [
+        "P6": [
             CSPNeXtLayerConfig(64, 128, 3, True, False),
             CSPNeXtLayerConfig(128, 256, 6, True, False),
             CSPNeXtLayerConfig(256, 512, 6, True, False),
@@ -82,8 +84,9 @@ class CSPNeXt(BaseBackbone):
 
     def __init__(
         self,
-        model_name: str = "cspnext_p5",
+        model_name: str = "cspnext_m",
         pretrained: bool = False,
+        arch: str = "P5",
         expand_ratio: float = 0.5,
         deepen_factor: float = 0.67,
         widen_factor: float = 0.75,
@@ -91,17 +94,17 @@ class CSPNeXt(BaseBackbone):
         channel_attention: bool = True,
         norm_layer: str = "SyncBN",
         activation_fn: str = "SiLU",
-        pretrained_weights: str | Path | None = None,
         **kwargs,
     ) -> None:
         super().__init__(stride=32, **kwargs)
-        if model_name not in self.CONFIGS:
+        if arch not in self.ARCH:
             raise ValueError(
-                f"Unknown `CSPNeXT` variant: {model_name}. Must be one of "
-                f"{self.CONFIGS.keys()}"
+                f"Unknown `CSPNeXT` architecture: {arch}. Must be one of "
+                f"{self.ARCH.keys()}"
             )
 
-        self.layer_configs = self.CONFIGS[model_name]
+        self.model_name = model_name
+        self.layer_configs = self.ARCH[arch]
         self.stem_out_channels = self.layer_configs[0].in_channels
         self.spp_kernel_sizes = (5, 9, 13)
 
@@ -183,11 +186,10 @@ class CSPNeXt(BaseBackbone):
             self.layers.append(f'stage{i + 1}')
 
         if pretrained:
-            # FIXME(niels): upload CSPNext weights somewhere and download them
-            if pretrained_weights is None:
-                raise ValueError("When pretrained=True, pretrained_weights must be set")
-
-            self._from_pretrained(pretrained_weights)
+            weights_filename = f"{model_name}.pt"
+            weights_path = self.download_weights(weights_filename, force=False)
+            snapshot = torch.load(weights_path, map_location="cpu", weights_only=True)
+            self.load_state_dict(snapshot["state_dict"])
 
     def forward(self, x: torch.Tensor) -> torch.Tensor | tuple[torch.Tensor]:
         outs = []
@@ -201,8 +203,3 @@ class CSPNeXt(BaseBackbone):
             return outs[-1]
 
         return tuple(outs)
-
-    def _from_pretrained(self, weight_path: str | Path) -> None:
-        """FIXME(niels): download weights from somewhere"""
-        snapshot = torch.load(weight_path, map_location="cpu", weights_only=False)
-        self.load_state_dict(snapshot["state_dict"])

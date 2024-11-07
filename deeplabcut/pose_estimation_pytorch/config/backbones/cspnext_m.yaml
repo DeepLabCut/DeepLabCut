@@ -1,13 +1,9 @@
 model:
   backbone:
     type: CSPNeXt
-    model_name: cspnext_p5
+    model_name: cspnext_m
     freeze_bn_stats: false
     freeze_bn_weights: false
-    expand_ratio: 0.5
     deepen_factor: 0.67
     widen_factor: 0.75
-    channel_attention: true
-    norm_layer: SyncBN
-    activation_fn: SiLU
   backbone_output_channels: 768
