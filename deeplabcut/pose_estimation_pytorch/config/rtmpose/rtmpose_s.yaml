@@ -68,7 +68,7 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 5e-3
+      lr: 1e-3
   scheduler:
     type: SequentialLR
     params:
@@ -87,7 +87,7 @@ runner:
           milestones:
             - 0
           lr_list:
-            - - 5e-05
+            - - 5e-5
       milestones:
       - 250              # max_epochs // 2
       - 500
