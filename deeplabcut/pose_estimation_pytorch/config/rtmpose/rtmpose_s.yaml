@@ -68,7 +68,7 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 1e-3
+      lr: 5e-3
   scheduler:
     type: SequentialLR
     params:
