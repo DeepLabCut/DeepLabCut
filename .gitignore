@@ -124,7 +124,10 @@ ENV/
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# IDEs configurations
 .vscode/*
+.idea/*
 
 # Rope project settings
 .ropeproject

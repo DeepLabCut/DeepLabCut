@@ -184,6 +184,81 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.logger.info(f"Cleared selected videos")
 
 
+class SnapshotSelectionWidget(QtWidgets.QWidget):
+    def __init__(
+        self,
+        root: QtWidgets.QMainWindow,
+        parent: QtWidgets.QWidget,
+        margins: tuple,
+        select_button_text: str,
+    ):
+        super(SnapshotSelectionWidget, self).__init__(parent)
+
+        self.root = root
+        self.parent = parent
+
+        self.selected_snapshot = None
+
+        self._init_layout(margins, select_button_text)
+
+    def _init_layout(self, margins, select_button_text):
+        layout = _create_horizontal_layout(margins=margins)
+
+        # Select videos
+        self.select_snapshot_button = QtWidgets.QPushButton(select_button_text)
+        self.select_snapshot_button.setMaximumWidth(200)
+        self.select_snapshot_button.clicked.connect(self.select_snapshot)
+
+        # Selected snapshot text
+        self.selected_snapshot_text = QtWidgets.QLabel(
+            ""
+        )  # updated when snapshot is selected
+
+        # Clear snapshot selection
+        self.clear_snapshot_button = QtWidgets.QPushButton("Clear selection")
+        self.clear_snapshot_button.clicked.connect(self.clear_selected_snapshot)
+        self.clear_snapshot_button.hide()
+
+        layout.addWidget(self.select_snapshot_button)
+        layout.addWidget(self.selected_snapshot_text)
+        layout.addWidget(self.clear_snapshot_button, alignment=Qt.AlignRight)
+
+        self.setLayout(layout)
+
+    def _update_selected_snapshot_display(self):
+        if self.selected_snapshot is None:
+            self.selected_snapshot_text.setText("")
+            self.clear_snapshot_button.hide()
+        else:
+            self.selected_snapshot_text.setText(
+                f"{os.path.basename(self.selected_snapshot)}"
+            )
+            self.clear_snapshot_button.show()
+
+    def select_snapshot(self):
+        # Create a filter string with both lowercase and uppercase extensions
+        snapshot_types = ["*.pt", "*.PT"]
+        snapshot_files = f"Snapshots ({' '.join(snapshot_types)})"
+
+        directory_to_open = self.root.models_folder
+
+        selected_snapshot, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select snapshot to start training from",
+            directory_to_open,
+            snapshot_files,
+        )
+        # When Canceling a file selection, Qt returns an empty string as selected file
+        if selected_snapshot:
+            self.selected_snapshot = os.path.abspath(selected_snapshot)
+
+        self._update_selected_snapshot_display()
+
+    def clear_selected_snapshot(self):
+        self.selected_snapshot = None
+        self._update_selected_snapshot_display()
+
+
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
         super(TrainingSetSpinBox, self).__init__(parent)
