@@ -82,8 +82,15 @@ runner:
         params:
           T_max: 250     # max_epochs // 2
           eta_min: 2e-5  # ~base_lr / 20
+      - type: LRListScheduler
+        params:
+          milestones:
+          - 0
+          lr_list:
+          - - 5e-05
       milestones:
       - 250              # max_epochs // 2
+      - 500
 train_settings:
   batch_size: 32
   dataloader_workers: 4
