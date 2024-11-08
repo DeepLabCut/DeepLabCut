@@ -248,6 +248,20 @@ class MainWindow(QMainWindow):
             return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
 
     @property
+    def models_folder(self) -> str:
+        try:
+            return str(
+                compat.return_train_network_path(
+                    self.config,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                )[2]
+            )
+        except FileNotFoundError:
+            return self.project_folder()
+
+    @property
     def inference_cfg_path(self) -> str:
         return os.path.join(
             self.cfg["project_path"],
@@ -648,7 +662,9 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
-            self.tab_widget.removeTab(self.tab_widget.indexOf(self.unsupervised_id_tracking))
+            self.tab_widget.removeTab(
+                self.tab_widget.indexOf(self.unsupervised_id_tracking)
+            )
             self.tab_widget.removeTab(self.tab_widget.indexOf(self.refine_tracklets))
 
         self.setCentralWidget(self.tab_widget)
