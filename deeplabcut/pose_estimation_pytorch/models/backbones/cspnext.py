@@ -44,7 +44,7 @@ class CSPNeXtLayerConfig:
 
 
 @BACKBONES.register_module
-class CSPNeXt(BaseBackbone, HuggingFaceWeightsMixin):
+class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
     """CSPNeXt Backbone
 
     Args:
@@ -108,11 +108,6 @@ class CSPNeXt(BaseBackbone, HuggingFaceWeightsMixin):
         self.stem_out_channels = self.layer_configs[0].in_channels
         self.spp_kernel_sizes = (5, 9, 13)
 
-        self.single_output = isinstance(out_indices, int)
-        if self.single_output:
-            out_indices = (out_indices,)
-
-        self.out_indices = out_indices
         # stem has stride 2
         self.stem = nn.Sequential(
             CSPConvModule(
@@ -184,6 +179,13 @@ class CSPNeXt(BaseBackbone, HuggingFaceWeightsMixin):
             stage.append(csp_layer)
             self.add_module(f'stage{i + 1}', nn.Sequential(*stage))
             self.layers.append(f'stage{i + 1}')
+
+        self.single_output = isinstance(out_indices, int)
+        if self.single_output:
+            if out_indices == -1:
+                out_indices = len(self.layers) - 1
+            out_indices = (out_indices,)
+        self.out_indices = out_indices
 
         if pretrained:
             weights_filename = f"{model_name}.pt"

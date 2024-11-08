@@ -91,10 +91,12 @@ class HuggingFaceWeightsMixin:
         self,
         backbone_weight_folder: str | Path | None = None,
         repo_id: str = "DeepLabCut/DeepLabCut-Backbones",
+        *args,
+        **kwargs,
     ) -> None:
-        super().__init__()
+        super().__init__(*args, **kwargs)
         if backbone_weight_folder is None:
-            backbone_weight_folder = Path(__file__) / "pretrained_weights"
+            backbone_weight_folder = Path(__file__).parent / "pretrained_weights"
         else:
             backbone_weight_folder = Path(backbone_weight_folder).resolve()
 

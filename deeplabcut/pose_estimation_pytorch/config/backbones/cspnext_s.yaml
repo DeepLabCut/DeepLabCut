@@ -1,0 +1,9 @@
+model:
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_m
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    deepen_factor: 0.33
+    widen_factor: 0.5
+  backbone_output_channels: 512

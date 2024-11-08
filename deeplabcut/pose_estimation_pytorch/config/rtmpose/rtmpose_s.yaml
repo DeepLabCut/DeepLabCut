@@ -20,9 +20,9 @@ model:
     model_name: cspnext_m
     freeze_bn_stats: false
     freeze_bn_weights: false
-    deepen_factor: 0.67
-    widen_factor: 0.75
-  backbone_output_channels: 768
+    deepen_factor: 0.33
+    widen_factor: 0.5
+  backbone_output_channels: 512
   heads:
     bodypart:
       type: RTMCCHead
@@ -50,7 +50,7 @@ model:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
       input_size: [256, 256]
-      in_channels: 768
+      in_channels: 512
       out_channels: "num_bodyparts"
       in_featuremap_size: [8, 8]  # input_size / backbone stride
       simcc_split_ratio: 2.0
