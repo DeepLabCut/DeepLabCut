@@ -605,14 +605,12 @@ def _generate_output_data(
         #    loaded using them
 
         key = "frame" + str(frame_num).zfill(str_width)
-        bodyparts = frame_predictions[
-            "bodyparts"
-        ]  # shape (num_assemblies, num_bpts, 3)
-        bodyparts = bodyparts.transpose(
-            (1, 0, 2)
-        )  # shape (num_bpts, num_assemblies, 3)
+        # shape (num_assemblies, num_bpts, 3)
+        bodyparts = frame_predictions["bodyparts"]
+        # shape (num_bpts, num_assemblies, 3)
+        bodyparts = bodyparts.transpose((1, 0, 2))
         coordinates = [bpt[:, :2] for bpt in bodyparts]
-        scores = [bpt[:, 2:] for bpt in bodyparts]
+        scores = [bpt[:, 2:3] for bpt in bodyparts]
 
         # full pickle has bodyparts and unique bodyparts in same array
         if "unique_bodyparts" in frame_predictions:
