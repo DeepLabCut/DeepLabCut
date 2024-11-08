@@ -41,10 +41,22 @@ class Runner(ABC, Generic[ModelType]):
             gpus: the list of GPU indices to use for multi-GPU training
             snapshot_path: the path of a snapshot from which to load model weights
         """
+        if gpus is None:
+            gpus = []
+
+        if len(gpus) == 1:
+            if device != "cuda":
+                raise ValueError(
+                    "When specifying a GPU index to train on, the device must be set "
+                    f"to 'cuda'. Found {device}"
+                )
+            device = f"cuda:{gpus[0]}"
+
         self.model = model
         self.device = device
-        self.gpus = gpus
         self.snapshot_path = snapshot_path
+        self._gpus = gpus
+        self._data_parallel = len(gpus) > 1
 
     @staticmethod
     def load_snapshot(

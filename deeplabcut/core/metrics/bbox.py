@@ -15,6 +15,8 @@ Metrics are currently computed using pycocotools, which can be installed with `p
 """
 from __future__ import annotations
 
+from unittest.mock import Mock, patch
+
 import numpy as np
 
 try:
@@ -26,6 +28,8 @@ except ModuleNotFoundError as err:
     with_pycocotools = False
 
 
+@patch("pycocotools.coco.print", Mock())
+@patch("pycocotools.cocoeval.print", Mock())
 def compute_bbox_metrics(
     ground_truth: dict[str, dict],
     detections: dict[str, dict],
@@ -150,6 +154,6 @@ def _get_metric(
     if len(s[s > -1]) == 0:
         mean_s = -1
     else:
-        mean_s = np.mean(s[s > -1])
+        mean_s = 100 * np.mean(s[s > -1])
 
     return f"{metric_name}@{thresh}", mean_s

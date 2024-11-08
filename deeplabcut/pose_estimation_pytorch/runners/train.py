@@ -50,9 +50,10 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         device: str = "cpu",
         gpus: list[int] | None = None,
         eval_interval: int = 1,
-        snapshot_path: Path | None = None,
+        snapshot_path: str | Path | None = None,
         scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
         logger: BaseLogger | None = None,
+        log_filename: str = "learning_stats.csv",
     ):
         """
         Args:
@@ -66,6 +67,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 pretrained weights
             scheduler: scheduler for adjusting the lr of the optimizer
             logger: logger to monitor training (e.g WandB logger)
+            log_filename: name of the file in which to store training stats
         """
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -75,7 +77,10 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.scheduler = scheduler
         self.snapshot_manager = snapshot_manager
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
-        self.csv_logger = CSVLogger(train_folder=snapshot_manager.model_folder)
+        self.csv_logger = CSVLogger(
+            train_folder=snapshot_manager.model_folder,
+            log_filename=log_filename,
+        )
         self.logger = logger
         self.starting_epoch = 0
         self.current_epoch = 0
@@ -96,9 +101,13 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._epoch_predictions = {}
 
     def state_dict(self) -> dict:
+        model = self.model
+        if self._data_parallel:
+            model = self.model.module
+
         return {
             "metadata": self._metadata,
-            "model": self.model.state_dict(),
+            "model": model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
 
@@ -148,8 +157,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner = Runner(model, optimizer, cfg, device='cuda')
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
-        if self.gpus:
-            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+        if self._data_parallel:
+            self.model = DataParallel(self.model, device_ids=self._gpus).cuda()
         else:
             self.model.to(self.device)
 
@@ -157,7 +166,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self.logger.select_images_to_log(train_loader, valid_loader)
 
         # continuing to train a model: either total epochs or extra epochs
-        if self.starting_epoch > epochs:
+        if self.starting_epoch > 0:
             epochs = self.starting_epoch + epochs
 
         for e in range(self.starting_epoch + 1, epochs + 1):
@@ -182,6 +191,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
+
+            epoch_metrics = self._metadata.get("metrics")
+            if (
+                e % self.eval_interval == 0
+                and epoch_metrics is not None
+                and len(epoch_metrics) > 0
+            ):
+                logging.info(f"Model performance:")
+                line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
+                for name, score in epoch_metrics.items():
+                    logging.info(f"  {(name + ':').ljust(line_length)}{score:6.2f}")
 
     def _epoch(
         self,
@@ -215,17 +235,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         loss_metrics = defaultdict(list)
         for i, batch in enumerate(loader):
             losses_dict = self.step(batch, mode)
-            epoch_loss.append(losses_dict["total_loss"])
+            if "total_loss" in losses_dict:
+                epoch_loss.append(losses_dict["total_loss"])
+                if (i + 1) % display_iters == 0 and mode != "eval":
+                    logging.info(
+                        f"Number of iterations: {i + 1}, "
+                        f"loss: {losses_dict['total_loss']:.5f}, "
+                        f"lr: {self.optimizer.param_groups[0]['lr']}"
+                    )
 
             for key in losses_dict.keys():
                 loss_metrics[key].append(losses_dict[key])
-
-            if (i + 1) % display_iters == 0:
-                logging.info(
-                    f"Number of iterations: {i + 1}, "
-                    f"loss: {losses_dict['total_loss']:.5f}, "
-                    f"lr: {self.optimizer.param_groups[0]['lr']}"
-                )
 
         perf_metrics = None
         if mode == "eval":
@@ -233,13 +253,10 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._metadata["metrics"] = perf_metrics
             self._epoch_predictions = {}
             self._epoch_ground_truth = {}
-            if perf_metrics is not None and len(perf_metrics) > 0:
-                logging.info(f"Epoch {self.current_epoch} performance:")
-                for name, score in perf_metrics.items():
-                    logging.info(f"{name + ':': <20}{score:.3f}")
 
-        epoch_loss = np.mean(epoch_loss).item()
-        self.history[f"{mode}_loss"].append(epoch_loss)
+        if len(epoch_loss) > 0:
+            epoch_loss = np.mean(epoch_loss).item()
+            self.history[f"{mode}_loss"].append(epoch_loss)
 
         metrics_to_log = {}
         if perf_metrics:
@@ -306,7 +323,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         inputs = inputs.to(self.device).float()
         outputs = self.model(inputs)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
@@ -411,7 +428,11 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             optimizer: The optimizer to use to train the model.
             **kwargs: TrainingRunner kwargs
         """
-        super().__init__(model, optimizer, **kwargs)
+        log_filename = "learning_stats_detector.csv"
+        if "log_filename" in kwargs:
+            log_filename = kwargs.pop("log_filename")
+
+        super().__init__(model, optimizer, log_filename=log_filename, **kwargs)
         self._pycoco_warning_displayed = False
         self._print_valid_loss = False
 
@@ -448,7 +469,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
@@ -553,7 +574,7 @@ def build_training_runner(
     model: nn.Module,
     device: str,
     gpus: list[int] | None = None,
-    snapshot_path: str | None = None,
+    snapshot_path: str | Path | None = None,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
     """

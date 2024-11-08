@@ -163,9 +163,9 @@ def get_model_snapshots(
             raise ValueError(f"No best snapshot found in {model_folder}")
         snapshots = [best_snapshot]
     elif isinstance(index, str) and index.lower() == "all":
-        snapshots = snapshot_manager.snapshots(include_best=True)
+        snapshots = snapshot_manager.snapshots()
     elif isinstance(index, int):
-        all_snapshots = snapshot_manager.snapshots(include_best=True)
+        all_snapshots = snapshot_manager.snapshots()
         if (
             len(all_snapshots) == 0
             or len(all_snapshots) <= index
