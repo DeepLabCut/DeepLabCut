@@ -399,7 +399,7 @@ targets and heatmaps for that image.
 ### Restarting Training at a Specific Checkpoint
 
 If you wish to restart the training at a specific checkpoint, you can specify the
-full path of the checkpoint to the `init_weights` variable, as shown below. In this 
+full path of the checkpoint to the `resume_training_from` variable, as shown below. In this 
 example, `snapshot-010.pt` will be loaded before training starts, and the model will 
 continue to train from the 10th epoch on.
 
@@ -468,7 +468,7 @@ detector that brings enough performance. The recommended variants are the follow
 ### Restarting Training of an Object Detector at a Specific Checkpoint
 
 If you wish to restart the training of a detector at a specific checkpoint, you can
-specify the full path of the checkpoint to the detector's `init_weights` variable, as
+specify the full path of the checkpoint to the detector's `resume_training_from` variable, as
 shown below. In this example, `snapshot-detector-020.pt` will be loaded before training
 starts, and the model will continue to train from the 20th epoch on.
 
