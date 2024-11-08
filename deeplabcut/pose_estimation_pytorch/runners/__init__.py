@@ -17,6 +17,7 @@ from deeplabcut.pose_estimation_pytorch.runners.inference import (
     InferenceRunner,
     PoseInferenceRunner,
 )
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.runners.train import (
     build_training_runner,
     DetectorTrainingRunner,

@@ -396,6 +396,20 @@ You can also log images as they are seen by the model to `wandb`
 with the `image_log_interval`. This logs a random train and test image, as well as the 
 targets and heatmaps for that image.
 
+### Restarting Training at a Specific Checkpoint
+
+If you wish to restart the training at a specific checkpoint, you can specify the
+full path of the checkpoint to the `resume_training_from` variable, as shown below. In this 
+example, `snapshot-010.pt` will be loaded before training starts, and the model will 
+continue to train from the 10th epoch on.
+
+```yaml
+# model configuration
+...
+# weights from which to resume training
+resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-010.pt
+```
+
 ## Training Top-Down Models
 
 Top-down models are split into two main elements: a detector (localizing individuals in
@@ -449,3 +463,19 @@ detector that brings enough performance. The recommended variants are the follow
 | fasterrcnn_mobilenet_v3_large_fpn |                             32.8 |                           19.4M |                     4.49 |
 | fasterrcnn_resnet50_fpn           |                               37 |                           41.8M |                   134.38 |
 | fasterrcnn_resnet50_fpn_v2        |                             46.7 |                           43.7M |                   280.37 |
+
+
+### Restarting Training of an Object Detector at a Specific Checkpoint
+
+If you wish to restart the training of a detector at a specific checkpoint, you can
+specify the full path of the checkpoint to the detector's `resume_training_from` variable, as
+shown below. In this example, `snapshot-detector-020.pt` will be loaded before training
+starts, and the model will continue to train from the 20th epoch on.
+
+```yaml
+detector:
+  # detector configuration
+  ...
+  # weights from which to resume training
+  resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt
+```

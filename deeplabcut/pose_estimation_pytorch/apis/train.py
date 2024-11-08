@@ -49,7 +49,7 @@ def train(
     device: str | None = "cpu",
     gpus: list[int] | None = None,
     logger_config: dict | None = None,
-    snapshot_path: str | None = None,
+    snapshot_path: str | Path | None = None,
     transform: A.BaseCompose | None = None,
     inference_transform: A.BaseCompose | None = None,
     max_snapshots_to_keep: int | None = None,
@@ -110,6 +110,9 @@ def train(
 
     if device == "mps" and task == Task.DETECT:
         device = "cpu"  # FIXME: Cannot train detectors on MPS
+
+    if snapshot_path is None:
+        snapshot_path = run_config.get("resume_training_from")
 
     model.to(device)  # Move model before giving its parameters to the optimizer
     runner = build_training_runner(
@@ -197,8 +200,8 @@ def train_network(
     trainingsetindex: int = 0,
     modelprefix: str = "",
     device: str | None = None,
-    snapshot_path: str | None = None,
-    detector_path: str | None = None,
+    snapshot_path: str | Path | None = None,
+    detector_path: str | Path | None = None,
     batch_size: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,

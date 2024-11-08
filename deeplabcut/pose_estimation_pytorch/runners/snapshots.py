@@ -12,7 +12,8 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+import warnings
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +30,12 @@ class Snapshot:
 
     def uid(self) -> str:
         return self.path.stem.split("-")[-1]
+
+    @staticmethod
+    def from_path(path: Path) -> "Snapshot":
+        best = "-best" in path.stem
+        epochs = int(path.stem.split("-")[-1])
+        return Snapshot(best=best, epochs=epochs, path=path)
 
 
 @dataclass
@@ -68,6 +75,7 @@ class TorchSnapshotManager:
                 "optimizer": optimizer.state_dict()
             })
     """
+
     task: Task
     model_folder: Path
     key_metric: str | None = None
@@ -75,11 +83,13 @@ class TorchSnapshotManager:
     max_snapshots: int = 5
     save_epochs: int = 25
     save_optimizer_state: bool = False
+    _best_model_epochs: int = -1
+    _best_metric: float | None = None
+    _key: str = field(init=False)
 
     def __post_init__(self):
         assert self.max_snapshots > 0, f"max_snapshots must be a positive integer"
-        self._best_model_epochs = -1
-        self._best_metric = None
+        self._key = f"metrics/{self.key_metric}"
 
     def update(self, epoch: int, state_dict: dict, last: bool = False) -> None:
         """Saves the model state dict if the epoch is one that requires a save
@@ -95,16 +105,17 @@ class TorchSnapshotManager:
         """
         metrics = state_dict["metadata"]["metrics"]
         if (
-            self.key_metric in metrics and
-            not np.isnan(metrics[self.key_metric]) and (
-                self._best_metric is None or
-                (self.key_metric_asc and self._best_metric < metrics[self.key_metric]) or
-                (not self.key_metric_asc and self._best_metric > metrics[self.key_metric])
+            self._key in metrics
+            and not np.isnan(metrics[self._key])
+            and (
+                self._best_metric is None
+                or (self.key_metric_asc and self._best_metric < metrics[self._key])
+                or (not self.key_metric_asc and self._best_metric > metrics[self._key])
             )
         ):
-            print(f"Saving best snapshot at epoch={epoch}")
-            self._best_metric = metrics[self.key_metric]
-            save_path = self.snapshot_path(best=True)
+            current_best = self.best()
+            self._best_metric = metrics[self._key]
+            save_path = self.snapshot_path(epoch, best=True)
             parsed_state_dict = {
                 k: v
                 for k, v in state_dict.items()
@@ -112,10 +123,19 @@ class TorchSnapshotManager:
             }
             torch.save(parsed_state_dict, save_path)
 
+            if current_best is not None:
+                # rename if the current best should have been saved, otherwise delete
+                if current_best.epochs % self.save_epochs == 0:
+                    new_name = self.snapshot_path(epoch=current_best.epochs)
+                    current_best.path.rename(new_name)
+                else:
+                    current_best.path.unlink(missing_ok=False)
+            return
+
         if not (last or epoch % self.save_epochs == 0):
             return
 
-        existing_snapshots = self.snapshots(include_best=False)
+        existing_snapshots = [s for s in self.snapshots() if not s.best]
         if len(existing_snapshots) >= self.max_snapshots:
             num_to_delete = 1 + len(existing_snapshots) - self.max_snapshots
             to_delete = existing_snapshots[:num_to_delete]
@@ -132,34 +152,59 @@ class TorchSnapshotManager:
 
     def best(self) -> Snapshot | None:
         """Returns: the path to the best snapshot, if it exists"""
-        best_path = self.snapshot_path(best=True)
-        if not best_path.exists():
+        snapshots = self.snapshots()
+        best_snapshots = [s for s in snapshots if s.best]
+        if len(best_snapshots) == 0:
             return None
-        return Snapshot(best=True, epochs=None, path=best_path)
 
-    def snapshots(self, include_best: bool = True) -> list[Snapshot]:
+        if len(best_snapshots) > 1:
+            warnings.warn(
+                f"TorchSnapshotManager.best(): found multiple best snapshots ("
+                f"{best_snapshots}), returning the last one."
+            )
+
+        best_snapshot = best_snapshots[-1]
+        return best_snapshot
+
+    def last(self) -> Snapshot | None:
+        """Returns: path to the last snapshot that was saved, if any snapshot exists"""
+        snapshots = self.snapshots(best_in_last=False)
+        if len(snapshots) == 0:
+            return None
+        return snapshots[-1]
+
+    def snapshots(self, best_in_last: bool = True) -> list[Snapshot]:
         """
         Args:
-            include_best: whether to return the path to the best snapshot as well
+            best_in_last: Whether to place the snapshot with the best performance in the
+                last position in the list, even if it wasn't the last epoch.
 
         Returns:
-            The paths to snapshots for a training run, sorted by the number of epochs
-            they were trained for. If the best_snapshot is returned, it's the last one
-            in the list.
+            The snapshots for a training run, sorted by the number of epochs they were
+            trained for. If ``best_in_last=True`` and a best snapshot exists, it will be
+            the last one in the list.
         """
-        pattern = r"^(" + self.task.snapshot_prefix + r"-\d+\.pt)$"
+
+        def _sort_key(snapshot: Snapshot) -> int:
+            return snapshot.epochs
+
+        def _sort_key_best_as_last(snapshot: Snapshot) -> tuple[int, int]:
+            return 1 if snapshot.best else 0, snapshot.epochs
+
+        pattern = r"^(" + self.task.snapshot_prefix + r"(-best)?-\d+\.pt)$"
         snapshots = [
-            Snapshot(best=False, epochs=int(f.stem.split("-")[-1]), path=f)
-            for f in self.model_folder.iterdir() if re.match(pattern, f.name)
+            Snapshot.from_path(f)
+            for f in self.model_folder.iterdir()
+            if re.match(pattern, f.name)
         ]
-        snapshots.sort(key=lambda s: s.epochs)
 
-        if include_best and (best_snapshot := self.best()) is not None:
-            snapshots.append(best_snapshot)
-
+        sort_key = _sort_key
+        if best_in_last:
+            sort_key = _sort_key_best_as_last
+        snapshots.sort(key=sort_key)
         return snapshots
 
-    def snapshot_path(self, epoch: int | None = None, best: bool = False) -> Path:
+    def snapshot_path(self, epoch: int, best: bool = False) -> Path:
         """
         Args:
             epoch: the number of epochs for which a snapshot was trained
@@ -168,7 +213,7 @@ class TorchSnapshotManager:
         Returns:
             the path where the model should be stored
         """
-        if epoch is None and not best:
-            raise ValueError(f"For non-best models, the epochs must be specified")
-        uid = "best" if best else f"{epoch:03}"
+        uid = f"{epoch:03}"
+        if best:
+            uid = f"best-{uid}"
         return self.model_folder / f"{self.task.snapshot_prefix}-{uid}.pt"
