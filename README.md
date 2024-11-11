@@ -48,8 +48,7 @@
 [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 [![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-
-
+[![CZI's Essential Open Source Software for Science](https://chanzuckerberg.github.io/open-science/badges/CZI-EOSS.svg)](https://czi.co/EOSS)
 
 </div>
 
@@ -128,84 +127,9 @@ This is an actively developed package and we welcome community development and i
 | The DeepLabCut [AI Residency Program](https://www.deeplabcutairesidency.org/)                        | To come and work with us next summer👏                                       | Annually                  | DLC Team                               |
 
 
-## References:
+## References \& Citations:
 
-If you use this code or data we kindly ask that you please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNetV2s or EfficientNets please cite [Mathis, Biasi et al. 2021](https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf). If you use versions 2.2beta+ or 2.2rc1+, please cite [Lauer et al. 2022](https://www.nature.com/articles/s41592-022-01443-0).
-
-DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.org](http://citeas.org/)!):
-
-- Mathis et al 2018: [10.1038/s41593-018-0209-y](https://doi.org/10.1038/s41593-018-0209-y)
-- Nath, Mathis et al 2019: [10.1038/s41596-019-0176-0](https://doi.org/10.1038/s41596-019-0176-0)
-- Lauer et al 2022: [10.1038/s41592-022-01443-0](https://doi.org/10.1038/s41592-022-01443-0)
-
-
-Please check out the following references for more details:
-
-    @article{Mathisetal2018,
-        title = {DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
-        author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-        journal = {Nature Neuroscience},
-        year = {2018},
-        url = {https://www.nature.com/articles/s41593-018-0209-y}}
-
-     @article{NathMathisetal2019,
-        title = {Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
-        author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
-        journal = {Nature Protocols},
-        year = {2019},
-        url = {https://doi.org/10.1038/s41596-019-0176-0}}
-        
-    @InProceedings{Mathis_2021_WACV,
-        author    = {Mathis, Alexander and Biasi, Thomas and Schneider, Steffen and Yuksekgonul, Mert and Rogers, Byron and Bethge, Matthias and Mathis, Mackenzie W.},
-        title     = {Pretraining Boosts Out-of-Domain Robustness for Pose Estimation},
-        booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-        month     = {January},
-        year      = {2021},
-        pages     = {1859-1868}}
-        
-    @article{Lauer2022MultianimalPE,
-        title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
-        author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
-        journal={Nature Methods},
-        year={2022},
-        volume={19},
-        pages={496 - 504}}
-
-    @article{insafutdinov2016eccv,
-        title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
-        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
-        booktitle = {ECCV'16},
-        url = {http://arxiv.org/abs/1605.03170}}
-        
-Review & Educational articles:
-
-    @article{Mathis2020DeepLT,
-        title={Deep learning tools for the measurement of animal behavior in neuroscience},
-        author={Mackenzie W. Mathis and Alexander Mathis},
-        journal={Current Opinion in Neurobiology},
-        year={2020},
-        volume={60},
-        pages={1-11}}
-
-    @article{Mathis2020Primer,
-        title={A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives},
-        author={Alexander Mathis and Steffen Schneider and Jessy Lauer and Mackenzie W. Mathis},
-        journal={Neuron},
-        year={2020},
-        volume={108},
-        pages={44-65}}
-
-Other open-access pre-prints related to our work on DeepLabCut:
-
-    @article{MathisWarren2018speed,
-        author = {Mathis, Alexander and Warren, Richard A.},
-        title = {On the inference speed and video-compression robustness of DeepLabCut},
-        year = {2018},
-        doi = {10.1101/457242},
-        publisher = {Cold Spring Harbor Laboratory},
-        URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
-        eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
-        journal = {bioRxiv}}
+Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our sugestions for your Methods section!
 
 ## License:
 
@@ -276,3 +200,7 @@ importing a project into the new data format for DLC 2.0
 - August 2018: NVIDIA AI Developer News: [AI Enables Markerless Animal Tracking](https://news.developer.nvidia.com/ai-enables-markerless-animal-tracking/)
 - July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338).
 - April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
+
+  ## Funding
+
+  We are grateful for the follow support over the years! This software project was supported in part by the Essential Open Source Software for Science (EOSS) program at Chan Zuckerberg Initiative (cycles 1, 3, 3-DEI, 4), and jointly with the Kavli Foundation for EOSS Cycle 6!  We also thank the Rowland Institute at Harvard for funding from 2017-2020, and EPFL from 2020-present.
