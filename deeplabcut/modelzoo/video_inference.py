@@ -410,6 +410,12 @@ def video_inference_superanimal(
                     bbox_threshold=bbox_threshold,
                 )
 
+            model_snapshot_prefix = f"snapshot-{model_name}"
+            detector_snapshot_prefix = f"snapshot-{detector_name}"
+
+            config["runner"]["snapshot_prefix"] = model_snapshot_prefix
+            config["detector"]["runner"]["snapshot_prefix"] = detector_snapshot_prefix
+
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
             with open(model_config_path, "w") as f:
@@ -417,9 +423,11 @@ def video_inference_superanimal(
                 yaml.dump(config, f)
 
             adapted_detector_checkpoint = (
-                model_folder / f"snapshot-detector-{detector_epochs:03}.pt"
+                model_folder / f"{detector_snapshot_prefix}-{detector_epochs:03}.pt"
             )
-            adapted_pose_checkpoint = model_folder / f"snapshot-{pose_epochs:03}.pt"
+            adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-{pose_epochs:03}.pt"
+            )
 
             if (
                 adapted_detector_checkpoint.exists()
