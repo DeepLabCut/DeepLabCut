@@ -299,6 +299,11 @@ def video_inference_superanimal(
             pseudo_threshold,
         )
     elif framework == "pytorch":
+        if detector_name is None:
+            raise ValueError(
+                "You have to specify a detector_name when using the Pytorch framework."
+            )
+
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
