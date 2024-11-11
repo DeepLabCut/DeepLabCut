@@ -67,7 +67,6 @@ def build_bottom_up_postprocessor(
         keys_to_rescale.append("unique_bodyparts")
 
     if with_identity:
-        # TODO: do we really want to return the heatmaps?
         keys_to_concatenate["identity_heatmap"] = ("identity", "heatmap")
         empty_shapes["identity_heatmap"] = (1, 1, max_individuals)
 
@@ -85,6 +84,7 @@ def build_bottom_up_postprocessor(
                 identity_key="identity_scores",
                 identity_map_key="identity_heatmap",
                 pose_key="bodyparts",
+                pop_identity_maps=True,
             )
         )
 
@@ -404,10 +404,16 @@ class AddContextToOutput(Postprocessor):
 class PredictKeypointIdentities(Postprocessor):
     """Assigns predicted identities to keypoints
 
+    The identity maps have shape (h, w, num_ids).
+
     Attributes:
-        identity_key:
-        identity_map_key: shape (h, w, num_ids)
-        pose_key:
+        identity_key: The key with which to add predicted identities in the predictions
+        identity_map_key: The key for the identity maps in the predictions dict
+        pose_key: The key for the bodyparts in the predictions dict
+        pop_identity_maps: When True, identity heatmaps will be removed from the
+            predictions once identities have been assigned to individuals. Setting this
+            value to False can be useful for debugging, but can lead to memory issues
+            on long videos.
     """
 
     def __init__(
@@ -415,10 +421,12 @@ class PredictKeypointIdentities(Postprocessor):
         identity_key: str,
         identity_map_key: str,
         pose_key: str,
+        pop_identity_maps: bool = True,
     ) -> None:
         self.identity_key = identity_key
         self.identity_map_key = identity_map_key
         self.pose_key = pose_key
+        self.pop_identity_maps = pop_identity_maps
 
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
@@ -439,4 +447,8 @@ class PredictKeypointIdentities(Postprocessor):
             assembly_id_scores.append(np.stack(id_scores))
 
         predictions[self.identity_key] = np.stack(assembly_id_scores)
+
+        if self.pop_identity_maps:
+            predictions.pop(self.identity_map_key)
+
         return predictions, context
