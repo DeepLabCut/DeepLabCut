@@ -689,6 +689,10 @@ def _generate_output_data(
             "costs": None,
         }
 
+        if "bboxes" in frame_predictions:
+            output[key]["bboxes"]      = frame_predictions["bboxes"]
+            output[key]["bbox_scores"] = frame_predictions["bbox_scores"]
+
         if "identity_scores" in frame_predictions:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)
             # to the original DLC full pickle format: (num_bpts, num_assem, num_ind)
