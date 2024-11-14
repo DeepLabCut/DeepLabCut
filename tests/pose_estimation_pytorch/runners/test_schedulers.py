@@ -146,11 +146,37 @@ def test_resume_scheduler_after_each_epoch(test_cfg: SchedulerTestConfig) -> Non
         optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
         new_scheduler = schedulers.build_scheduler(test_cfg.cfg, optimizer)
         schedulers.load_scheduler_state(new_scheduler, s.state_dict())
-
-        # new_scheduler.load_state_dict(s.state_dict())
-        #
-        # # Update the learning rate for the optimizer based on the scheduler
-        # resume_lrs = new_scheduler.get_last_lr()
-        # for group, resume_lr in zip(optimizer.param_groups, resume_lrs):
-        #     group['lr'] = resume_lr
         s = new_scheduler
+
+
+@pytest.mark.parametrize(
+    "test_cfg, middle_epoch",
+    [
+        (TEST_SCHEDULERS[0], 3),
+        (TEST_SCHEDULERS[1], 5),
+        (TEST_SCHEDULERS[2], 2),
+    ],
+)
+def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) -> None:
+    num_epochs = len(test_cfg.expected_lrs)
+    optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
+    s = schedulers.build_scheduler(test_cfg.cfg, optimizer)
+    for e in range(middle_epoch):
+        current_lrs = s.get_lr()
+        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
+        for lr in current_lrs:
+            assert lr == test_cfg.expected_lrs[e]
+            assert isinstance(lr, float)
+        s.step()
+
+    optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
+    new_scheduler = schedulers.build_scheduler(test_cfg.cfg, optimizer)
+    schedulers.load_scheduler_state(new_scheduler, s.state_dict())
+    s = new_scheduler
+    for e in range(middle_epoch, num_epochs):
+        current_lrs = s.get_lr()
+        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
+        for lr in current_lrs:
+            assert lr == test_cfg.expected_lrs[e]
+            assert isinstance(lr, float)
+        s.step()
