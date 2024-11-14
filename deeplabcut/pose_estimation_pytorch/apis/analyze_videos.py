@@ -378,7 +378,10 @@ def analyze_videos(
                 video=VideoReader(str(video)),
             )
 
-            if not use_shelve:
+            if use_shelve:
+                with open(output_path / f"{output_prefix}_meta.pickle", "wb") as f:
+                    pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+            else:
                 output_data = _generate_output_data(pose_cfg, predictions)
                 _ = auxfun_multianimal.SaveFullMultiAnimalData(
                     output_data, metadata, str(output_h5)
@@ -408,7 +411,7 @@ def analyze_videos(
                 pred_bodypart_ids = None
 
                 # FIXME(niels): this should be done in the _save_assemblies
-                if with_identity:
+                if with_identity and not use_shelve:
                     # reshape from (num_assemblies, num_bpts, num_individuals)
                     # to (num_assemblies, num_bpts) by taking the maximum
                     # likelihood individual for each bodypart
