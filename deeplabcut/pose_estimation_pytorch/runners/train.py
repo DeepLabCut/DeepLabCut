@@ -52,22 +52,27 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         eval_interval: int = 1,
         snapshot_path: str | Path | None = None,
         scheduler: dict | torch.optim.lr_scheduler.LRScheduler | None = None,
+        load_scheduler_state_dict: bool = True,
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
     ):
         """
         Args:
-            model: the model to run actions on
-            optimizer: the optimizer (or optimizer config) to use when fitting the model
-            snapshot_manager: the module to use to manage snapshots
-            device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            gpus: the list of GPU indices to use for multi-GPU training
-            eval_interval: how often evaluation is run on the test set (in epochs)
-            snapshot_path: if defined, the path of a snapshot from which to load
-                pretrained weights
-            scheduler: scheduler (or scheduler config) to use for training
-            logger: logger to monitor training (e.g WandB logger)
-            log_filename: name of the file in which to store training stats
+            model: The model to train.
+            optimizer: The optimizer (or optimizer config) to fit the model.
+            snapshot_manager: The module to use to manage snapshots.
+            device: The device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            gpus: The list of GPU indices to use for multi-GPU training.
+            eval_interval: How often evaluation is run on the test set (in epochs).
+            snapshot_path: If defined, the path of a snapshot from which to load
+                pretrained weights.
+            scheduler: The scheduler (or scheduler config) to use.
+            load_scheduler_state_dict: When resuming training (snapshot_path is not
+                None), attempts to load the scheduler state dict from the snapshot. If
+                you've modified your scheduler, set this to False or the old scheduler
+                parameters might be used.
+            logger: Logger to monitor training (e.g WandB logger).
+            log_filename: Name of the file in which to store training stats.
         """
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -100,7 +105,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if "optimizer" in snapshot:
                 self.optimizer.load_state_dict(snapshot["optimizer"])
 
-            if self.scheduler is not None and "scheduler" in snapshot:
+            if (
+                load_scheduler_state_dict
+                and self.scheduler is not None
+                and "scheduler" in snapshot
+            ):
                 try:
                     schedulers.load_scheduler_state(
                         self.scheduler, snapshot["scheduler"]
@@ -642,6 +651,7 @@ def build_training_runner(
         eval_interval=runner_config.get("eval_interval"),
         snapshot_path=snapshot_path,
         scheduler=scheduler,
+        load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", False),
         logger=logger,
     )
     if task == Task.DETECT:
