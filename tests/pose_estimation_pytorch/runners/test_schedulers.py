@@ -130,7 +130,7 @@ def test_build_scheduler(test_cfg: SchedulerTestConfig) -> None:
     print(f"Scheduler: {s}")
     num_epochs = len(test_cfg.expected_lrs)
     for e in range(num_epochs):
-        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
+        _assert_learning_rates_match(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
 
@@ -142,7 +142,7 @@ def test_resume_scheduler_after_each_epoch(test_cfg: SchedulerTestConfig) -> Non
     print(f"Scheduler: {s}")
     num_epochs = len(test_cfg.expected_lrs)
     for e in range(num_epochs):
-        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
+        _assert_learning_rates_match(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
         optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
@@ -170,7 +170,7 @@ def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) ->
     print()
     print(f"Scheduler: {s}")
     for e in range(middle_epoch):
-        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
+        _assert_learning_rates_match(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
     optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
@@ -178,11 +178,11 @@ def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) ->
     schedulers.load_scheduler_state(new_scheduler, s.state_dict())
     s = new_scheduler
     for e in range(middle_epoch, num_epochs):
-        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
+        _assert_learning_rates_match(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
 
-def _assert_learning_rates(e, optimizer, expected):
+def _assert_learning_rates_match(e, optimizer, expected):
     current_lrs = [g["lr"] for g in optimizer.param_groups]
     print(f"Epoch {e}: LR={current_lrs}, expected={expected}")
     for lr in current_lrs:

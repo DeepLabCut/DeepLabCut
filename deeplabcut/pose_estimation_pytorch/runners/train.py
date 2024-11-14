@@ -121,6 +121,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         "configuration was edited since the original snapshot was "
                         f"trained. Error: {err}"
                     )
+            elif self.scheduler is not None and self.starting_epoch > 0:
+                # set the current epoch
+                self.scheduler.last_epoch = self.starting_epoch
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
@@ -287,7 +290,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         if len(epoch_loss) > 0:
             epoch_loss = np.mean(epoch_loss).item()
-            self.history[f"{mode}_loss"].append(epoch_loss)
+        else:
+            epoch_loss = 0
+        self.history[f"{mode}_loss"].append(epoch_loss)
 
         metrics_to_log = {}
         if perf_metrics:
