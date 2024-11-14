@@ -19,8 +19,6 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.task import Task
-
 
 @dataclass(frozen=True)
 class Snapshot:
@@ -43,7 +41,7 @@ class TorchSnapshotManager:
     """Class handling model checkpoint I/O
 
     Attributes:
-        task: The task that the model is performing.
+        snapshot_prefix: The prefix to use when saving snapshots.
         model_folder: The path to the directory where model snapshots should be stored.
         key_metric: If defined, the metric is used to save the best model. Otherwise no
             best model is used.
@@ -60,7 +58,7 @@ class TorchSnapshotManager:
         model: nn.Module
         loader = DLCLoader(...)
         snapshot_manager = TorchSnapshotManager(
-            Task.BOTTOM_UP,
+            "snapshot",
             loader.model_folder,
             key_metric="test.mAP",
         )
@@ -76,7 +74,7 @@ class TorchSnapshotManager:
             })
     """
 
-    task: Task
+    snapshot_prefix: str
     model_folder: Path
     key_metric: str | None = None
     key_metric_asc: bool = True
@@ -191,7 +189,7 @@ class TorchSnapshotManager:
         def _sort_key_best_as_last(snapshot: Snapshot) -> tuple[int, int]:
             return 1 if snapshot.best else 0, snapshot.epochs
 
-        pattern = r"^(" + self.task.snapshot_prefix + r"(-best)?-\d+\.pt)$"
+        pattern = r"^(" + self.snapshot_prefix + r"(-best)?-\d+\.pt)$"
         snapshots = [
             Snapshot.from_path(f)
             for f in self.model_folder.iterdir()
@@ -216,4 +214,4 @@ class TorchSnapshotManager:
         uid = f"{epoch:03}"
         if best:
             uid = f"best-{uid}"
-        return self.model_folder / f"{self.task.snapshot_prefix}-{uid}.pt"
+        return self.model_folder / f"{self.snapshot_prefix}-{uid}.pt"

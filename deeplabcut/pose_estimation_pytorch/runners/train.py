@@ -597,11 +597,15 @@ def build_training_runner(
     optim_cls = getattr(torch.optim, optim_cfg["type"])
     optimizer = optim_cls(params=model.parameters(), **optim_cfg["params"])
     scheduler = build_scheduler(runner_config.get("scheduler"), optimizer)
+    # if no custom snapshot prefix is defined, use the default one
+    snapshot_prefix = runner_config.get("snapshot_prefix")
+    if snapshot_prefix is None or len(snapshot_prefix) == 0:
+        snapshot_prefix = task.snapshot_prefix
     kwargs = dict(
         model=model,
         optimizer=optimizer,
         snapshot_manager=TorchSnapshotManager(
-            task=task,
+            snapshot_prefix=snapshot_prefix,
             model_folder=model_folder,
             key_metric=runner_config.get("key_metric"),
             key_metric_asc=runner_config.get("key_metric_asc"),
