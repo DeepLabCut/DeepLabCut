@@ -23,6 +23,7 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
 
 import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
@@ -31,7 +32,6 @@ from deeplabcut.pose_estimation_pytorch.runners.logger import (
     CSVLogger,
     ImageLoggerMixin,
 )
-from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.task import Task
 
@@ -45,33 +45,38 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     def __init__(
         self,
         model: ModelType,
-        optimizer: torch.optim.Optimizer,
+        optimizer: dict | torch.optim.Optimizer,
         snapshot_manager: TorchSnapshotManager,
         device: str = "cpu",
         gpus: list[int] | None = None,
         eval_interval: int = 1,
         snapshot_path: str | Path | None = None,
-        scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+        scheduler: dict | torch.optim.lr_scheduler.LRScheduler | None = None,
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
     ):
         """
         Args:
             model: the model to run actions on
-            optimizer: the optimizer to use when fitting the model
+            optimizer: the optimizer (or optimizer config) to use when fitting the model
             snapshot_manager: the module to use to manage snapshots
             device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
             gpus: the list of GPU indices to use for multi-GPU training
             eval_interval: how often evaluation is run on the test set (in epochs)
             snapshot_path: if defined, the path of a snapshot from which to load
                 pretrained weights
-            scheduler: scheduler for adjusting the lr of the optimizer
+            scheduler: scheduler (or scheduler config) to use for training
             logger: logger to monitor training (e.g WandB logger)
             log_filename: name of the file in which to store training stats
         """
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
         )
+        if isinstance(optimizer, dict):
+            optimizer = build_optimizer(model, optimizer)
+        if isinstance(scheduler, dict):
+            scheduler = schedulers.build_scheduler(scheduler, optimizer)
+
         self.eval_interval = eval_interval
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -89,27 +94,44 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._print_valid_loss = True
 
         if self.snapshot_path is not None and self.snapshot_path != "":
-            self.starting_epoch = self.load_snapshot(
-                self.snapshot_path,
-                self.device,
-                self.model,
-                self.optimizer,
-            )
+            snapshot = self.load_snapshot(self.snapshot_path, self.device, self.model)
+            self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
+
+            if "optimizer" in snapshot:
+                self.optimizer.load_state_dict(snapshot["optimizer"])
+
+            if self.scheduler is not None and "scheduler" in snapshot:
+                try:
+                    schedulers.load_scheduler_state(
+                        self.scheduler, snapshot["scheduler"]
+                    )
+                except ValueError as err:
+                    logging.warning(
+                        "Failed to load the scheduler state_dict. The scheduler will "
+                        "restart at epoch 0. This is expected if the scheduler "
+                        "configuration was edited since the original snapshot was "
+                        f"trained. Error: {err}"
+                    )
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
         self._epoch_predictions = {}
 
     def state_dict(self) -> dict:
+        """Returns: the state dict for the runner"""
         model = self.model
         if self._data_parallel:
             model = self.model.module
 
-        return {
-            "metadata": self._metadata,
-            "model": model.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-        }
+        state_dict_ = dict(
+            metadata=self._metadata,
+            model=model.state_dict(),
+            optimizer=self.optimizer.state_dict(),
+        )
+        if self.scheduler is not None:
+            state_dict_["scheduler"] = self.scheduler.state_dict()
+
+        return state_dict_
 
     @abstractmethod
     def step(
@@ -596,11 +618,13 @@ def build_training_runner(
     optim_cfg = runner_config["optimizer"]
     optim_cls = getattr(torch.optim, optim_cfg["type"])
     optimizer = optim_cls(params=model.parameters(), **optim_cfg["params"])
-    scheduler = build_scheduler(runner_config.get("scheduler"), optimizer)
+    scheduler = schedulers.build_scheduler(runner_config.get("scheduler"), optimizer)
+
     # if no custom snapshot prefix is defined, use the default one
     snapshot_prefix = runner_config.get("snapshot_prefix")
     if snapshot_prefix is None or len(snapshot_prefix) == 0:
         snapshot_prefix = task.snapshot_prefix
+
     kwargs = dict(
         model=model,
         optimizer=optimizer,
@@ -624,3 +648,21 @@ def build_training_runner(
         return DetectorTrainingRunner(**kwargs)
 
     return PoseTrainingRunner(**kwargs)
+
+
+def build_optimizer(
+    model: nn.Module,
+    optimizer_config: dict,
+) -> torch.optim.Optimizer:
+    """Builds an optimizer from a configuration.
+
+    Args:
+        model: The model to optimize.
+        optimizer_config: The configuration for the optimizer.
+
+    Returns:
+        The optimizer for the model built according to the given configuration.
+    """
+    optim_cls = getattr(torch.optim, optimizer_config["type"])
+    optimizer = optim_cls(params=model.parameters(), **optimizer_config["params"])
+    return optimizer
