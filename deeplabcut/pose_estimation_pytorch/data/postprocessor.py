@@ -18,6 +18,7 @@ from typing import Any
 import numpy as np
 
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Context
+from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 
 
 class Postprocessor(ABC):
@@ -101,6 +102,14 @@ def build_bottom_up_postprocessor(
             pad_value=-1,
         ),
     ]
+
+    if with_identity:
+        components.append(
+            AssignIndividualIdentities(
+                identity_key="identity_scores", pose_key="bodyparts",
+            )
+        )
+
     return ComposePostprocessor(components=components)
 
 
@@ -452,4 +461,26 @@ class PredictKeypointIdentities(Postprocessor):
             id_heatmaps = predictions.pop(self.identity_map_key)
             del id_heatmaps
 
+        return predictions, context
+
+
+class AssignIndividualIdentities(Postprocessor):
+    """Assigns predicted identities to individuals
+
+    Attributes:
+        identity_key: Key with which to add predicted identities in the predictions dict
+        pose_key: Key for the bodyparts in the predictions dict
+    """
+
+    def __init__(self, identity_key: str, pose_key: str) -> None:
+        self.identity_key = identity_key
+        self.pose_key = pose_key
+
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        bodypart_predictions = assign_identity(
+            predictions["bodyparts"], predictions["identity_scores"],
+        )
+        predictions["bodyparts"] = bodypart_predictions
         return predictions, context

@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     list_videos_in_folder,
     parse_snapshot_index_for_analysis,
 )
-from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
+import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
@@ -95,8 +95,8 @@ def video_inference(
     task: Task,
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
-    with_identity: bool = False,
     cropping: list[int] | None = None,
+    shelf: shelving.ShelfManager | None = None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -106,13 +106,19 @@ def video_inference(
         pose_runner: The pose runner to run inference with
         detector_runner: When ``task==Task.TOP_DOWN``, the detector runner to obtain
             bounding boxes for the video.
-        with_identity: Whether identity predictions should be made with the model.
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
+        shelf: By default, data are dumped in a pickle file at the end of the video
+            analysis. To write data to disk on-the-fly using a "shelf" (a pickle-based,
+            persistent, database-like object by default, resulting in constant memory
+            footprint), use this parameter to pass the shelf as an attribute to this
+            method.
 
     Returns:
-        Predictions for each frame in the video.
+        Predictions for each frame in the video. If shelf is not None, this list will be
+        empty and the predictions will exclusively be stored in the file written by the
+        shelf.
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
@@ -138,17 +144,9 @@ def video_inference(
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
-    predictions = pose_runner.inference(images=tqdm(video))
+    predictions = pose_runner.inference(images=tqdm(video), shelf=shelf)
 
-    if with_identity:
-        bodypart_predictions = assign_identity(
-            [p["bodyparts"] for p in predictions],
-            [p["identity_scores"] for p in predictions],
-        )
-        for i, p_with_id in enumerate(bodypart_predictions):
-            predictions[i]["bodyparts"] = p_with_id
-
-    if len(predictions) != n_frames:
+    if shelf is None and len(predictions) != n_frames:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
         logging.warning(
@@ -175,6 +173,7 @@ def analyze_videos(
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     modelprefix: str = "",
+    use_shelve: bool = False,
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
     identity_only: bool | None = False,
@@ -184,7 +183,7 @@ def analyze_videos(
     """Makes prediction based on a trained network.
 
     # TODO:
-        - other options missing options such as shelve
+        - other options missing options such as calibrate
         - pass detector path or detector runner
 
     The index of the trained network is specified by parameters in the config file
@@ -224,6 +223,10 @@ def analyze_videos(
             value from the project config as a default.
         transform: Optional custom transforms to apply to the video
         overwrite: Overwrite any existing videos
+        use_shelve: By default, data are dumped in a pickle file at the end of the video
+            analysis. Otherwise, data are written to disk on the fly using a "shelf";
+            i.e., a pickle-based, persistent, database-like object by default, resulting
+            in constant memory footprint.
         auto_track: By default, tracking and stitching are automatically performed,
             producing the final h5 data file. This is equivalent to the behavior for
             single-animal projects.
@@ -329,7 +332,6 @@ def analyze_videos(
 
     # Reading video and init variables
     videos = list_videos_in_folder(videos, videotype)
-    results = []
     for video in videos:
         if destfolder is None:
             output_path = video.parent
@@ -340,16 +342,27 @@ def analyze_videos(
         output_h5 = output_path / f"{output_prefix}.h5"
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
+        video_iterator = VideoIterator(video)
+
+        shelf = None
+        if use_shelve:
+            shelf = shelving.ShelfManager(
+                pose_cfg=pose_cfg,
+                filepath=output_pkl,
+                num_frames=video_iterator.get_n_frames(),
+            )
+
         if not overwrite and output_pkl.exists():
             print(f"Video {video} already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
             predictions = video_inference(
-                video=video,
+                video=video_iterator,
                 pose_runner=pose_runner,
                 task=pose_task,
                 detector_runner=detector_runner,
                 cropping=cropping,
+                shelf=shelf,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
@@ -362,32 +375,37 @@ def analyze_videos(
                 runtime=(runtime[0], runtime[1]),
                 video=VideoReader(str(video)),
             )
-            output_data = _generate_output_data(pose_cfg, predictions)
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                output_data, metadata, str(output_h5)
-            )
 
-            pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-            pred_unique_bodyparts = None
-            if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-                pred_unique_bodyparts = np.stack(
-                    [p["unique_bodyparts"] for p in predictions]
+            if not use_shelve:
+                output_data = _generate_output_data(pose_cfg, predictions)
+                _ = auxfun_multianimal.SaveFullMultiAnimalData(
+                    output_data, metadata, str(output_h5)
                 )
 
-            df = create_df_from_prediction(
-                pred_bodyparts=pred_bodyparts,
-                pred_unique_bodyparts=pred_unique_bodyparts,
-                cfg=cfg,
-                model_cfg=model_cfg,
-                dlc_scorer=dlc_scorer,
-                output_path=output_path,
-                output_prefix=output_prefix,
-                save_as_csv=save_as_csv,
-            )
-            results.append((str(video), df))
+                pred_bodyparts = np.stack(
+                    [p["bodyparts"][..., :3] for p in predictions]
+                )
+                pred_unique_bodyparts = None
+                if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
+                    pred_unique_bodyparts = np.stack(
+                        [p["unique_bodyparts"] for p in predictions]
+                    )
+
+                create_df_from_prediction(
+                    pred_bodyparts=pred_bodyparts,
+                    pred_unique_bodyparts=pred_unique_bodyparts,
+                    cfg=cfg,
+                    model_cfg=model_cfg,
+                    dlc_scorer=dlc_scorer,
+                    output_path=output_path,
+                    output_prefix=output_prefix,
+                    save_as_csv=save_as_csv,
+                )
 
             if cfg["multianimalproject"]:
                 pred_bodypart_ids = None
+
+                # FIXME(niels): this should be done in the _save_assemblies
                 if with_identity:
                     # reshape from (num_assemblies, num_bpts, num_individuals)
                     # to (num_assemblies, num_bpts) by taking the maximum
@@ -396,6 +414,9 @@ def analyze_videos(
                         [np.argmax(p["identity_scores"], axis=2) for p in predictions]
                     )
 
+                # FIXME(niels): read predictions from _full.pickle file
+                pred_bodyparts = np.zeros((0, 4, 3))
+                pred_unique_bodyparts = None
                 _save_assemblies(
                     output_path,
                     output_prefix,
@@ -504,6 +525,7 @@ def _save_assemblies(
                 -1.0,
                 dtype=np.float32,
             )
+
         ass = np.concatenate((bpt, extra_column), axis=-1)
         assemblies[i] = ass
 

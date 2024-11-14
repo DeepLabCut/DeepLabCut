@@ -15,14 +15,13 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 
-def assign_identity(
-    predictions: list[np.ndarray],
-    identity_scores: list[np.ndarray],
-) -> list[np.ndarray]:
+def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.ndarray:
     """
     Args:
-        predictions: shape (num_individuals, num_bodyparts, 3)
-        identity_scores: shape (num_individuals, num_bodyparts, num_individuals)
+        predictions: Pose predictions for an image, with shape (num_individuals,
+            num_bodyparts, 3)
+        identity_scores: Identity predictions for keypoints in an image, of shape
+            (num_individuals, num_bodyparts, num_individuals).
 
     Returns:
         predictions with assigned identity, of shape (num_individuals, num_bodyparts, 3)
@@ -33,17 +32,13 @@ def assign_identity(
             f" ({len(predictions)} != {len(identity_scores)}"
         )
 
-    predictions_with_identity = []
-    for pred, scores in zip(predictions, identity_scores):
-        # average of ID scores, weighted by keypoint confidence
-        pose_conf = pred[:, :, 2:3]
-        cost_matrix = np.mean(pose_conf * scores, axis=1)
+    # average of ID scores, weighted by keypoint confidence
+    pose_conf = predictions[:, :, 2:3]
+    cost_matrix = np.mean(pose_conf * identity_scores, axis=1)
 
-        row_ind, col_ind = linear_sum_assignment(cost_matrix, maximize=True)
-        new_order = np.zeros_like(row_ind)
-        for old_pos, new_pos in zip(row_ind, col_ind):
-            new_order[new_pos] = old_pos
+    row_ind, col_ind = linear_sum_assignment(cost_matrix, maximize=True)
+    new_order = np.zeros_like(row_ind)
+    for old_pos, new_pos in zip(row_ind, col_ind):
+        new_order[new_pos] = old_pos
 
-        predictions_with_identity.append(pred[new_order])
-
-    return predictions_with_identity
+    return predictions[new_order]
