@@ -35,7 +35,10 @@ def assign_identity(
 
     predictions_with_identity = []
     for pred, scores in zip(predictions, identity_scores):
-        cost_matrix = np.product(scores, axis=1)
+        # average of ID scores, weighted by keypoint confidence
+        pose_conf = pred[:, :, 2:3]
+        cost_matrix = np.mean(pose_conf * scores, axis=1)
+
         row_ind, col_ind = linear_sum_assignment(cost_matrix, maximize=True)
         new_order = np.zeros_like(row_ind)
         for old_pos, new_pos in zip(row_ind, col_ind):
