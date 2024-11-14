@@ -16,6 +16,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import List
 from urllib.error import URLError
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import qdarkstyle
 
 import deeplabcut
@@ -40,11 +41,21 @@ from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt, QTimer
 
 
+def call_with_timeout(func, timeout, *args, **kwargs):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        return future.result(timeout=timeout)
+
+
 def _check_for_updates(silent=True):
     try:
-        is_latest, latest_version = utils.is_latest_deeplabcut_version()
-        is_latest_plugin, latest_plugin_version = misc.is_latest_version()
-    except URLError:  # Handle internet connectivity issues
+        is_latest, latest_version = call_with_timeout(
+            utils.is_latest_deeplabcut_version, 1
+        )
+        is_latest_plugin, latest_plugin_version = call_with_timeout(
+            misc.is_latest_version, 1
+        )
+    except (URLError, TimeoutError):  # Handle internet connectivity issues
         is_latest = is_latest_plugin = True
 
     if is_latest and is_latest_plugin:
