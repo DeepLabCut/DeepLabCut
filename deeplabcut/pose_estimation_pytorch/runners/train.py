@@ -105,8 +105,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if "optimizer" in snapshot:
                 self.optimizer.load_state_dict(snapshot["optimizer"])
 
-            if load_scheduler_state_dict:
-                self._load_scheduler_state_dict(snapshot)
+            self._load_scheduler_state_dict(load_scheduler_state_dict, snapshot)
+
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
@@ -298,15 +298,15 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         return epoch_loss
 
-    def _load_scheduler_state_dict(self, snapshot: dict) -> None:
+    def _load_scheduler_state_dict(self, load_state_dict: bool, snapshot: dict) -> None:
         if self.scheduler is None:
             return
 
-        failed_to_load = True
-        if "scheduler" in snapshot:
+        loaded_state_dict = False
+        if load_state_dict and "scheduler" in snapshot:
             try:
                 schedulers.load_scheduler_state(self.scheduler, snapshot["scheduler"])
-                failed_to_load = False
+                loaded_state_dict = True
             except ValueError as err:
                 logging.warning(
                     "Failed to load the scheduler state_dict. The scheduler will "
@@ -315,7 +315,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     f"trained. Error: {err}"
                 )
 
-        if failed_to_load and self.starting_epoch > 0:
+        if not loaded_state_dict and self.starting_epoch > 0:
             logging.info(
                 f"Setting the scheduler starting epoch to {self.starting_epoch}"
             )
