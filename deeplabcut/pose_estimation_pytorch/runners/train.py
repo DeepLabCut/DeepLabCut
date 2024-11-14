@@ -105,25 +105,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if "optimizer" in snapshot:
                 self.optimizer.load_state_dict(snapshot["optimizer"])
 
-            if (
-                load_scheduler_state_dict
-                and self.scheduler is not None
-                and "scheduler" in snapshot
-            ):
-                try:
-                    schedulers.load_scheduler_state(
-                        self.scheduler, snapshot["scheduler"]
-                    )
-                except ValueError as err:
-                    logging.warning(
-                        "Failed to load the scheduler state_dict. The scheduler will "
-                        "restart at epoch 0. This is expected if the scheduler "
-                        "configuration was edited since the original snapshot was "
-                        f"trained. Error: {err}"
-                    )
-            elif self.scheduler is not None and self.starting_epoch > 0:
-                # set the current epoch
-                self.scheduler.last_epoch = self.starting_epoch
+            if load_scheduler_state_dict:
+                self._load_scheduler_state_dict(snapshot)
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
@@ -314,6 +297,29 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self.logger.log(metrics_to_log, step=self.current_epoch)
 
         return epoch_loss
+
+    def _load_scheduler_state_dict(self, snapshot: dict) -> None:
+        if self.scheduler is None:
+            return
+
+        failed_to_load = True
+        if "scheduler" in snapshot:
+            try:
+                schedulers.load_scheduler_state(self.scheduler, snapshot["scheduler"])
+                failed_to_load = False
+            except ValueError as err:
+                logging.warning(
+                    "Failed to load the scheduler state_dict. The scheduler will "
+                    "restart at epoch 0. This is expected if the scheduler "
+                    "configuration was edited since the original snapshot was "
+                    f"trained. Error: {err}"
+                )
+
+        if failed_to_load and self.starting_epoch > 0:
+            logging.info(
+                f"Setting the scheduler starting epoch to {self.starting_epoch}"
+            )
+            self.scheduler.last_epoch = self.starting_epoch
 
 
 class PoseTrainingRunner(TrainingRunner[PoseModel]):

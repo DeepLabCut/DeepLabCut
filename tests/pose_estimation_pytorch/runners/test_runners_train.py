@@ -193,6 +193,7 @@ def _fit_runner_and_check_lrs(
             total_epoch = (runner.current_epoch - 1)
             epoch = total_epoch - runner.starting_epoch
             _assert_learning_rates_match(total_epoch, optimizer, expected_lrs[epoch])
+            optimizer.step()
             return dict(total_loss=0)
 
         train_loader, val_loader = [Mock()], [Mock()]
