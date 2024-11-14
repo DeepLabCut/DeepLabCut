@@ -407,9 +407,9 @@ class PredictKeypointIdentities(Postprocessor):
     The identity maps have shape (h, w, num_ids).
 
     Attributes:
-        identity_key: The key with which to add predicted identities in the predictions
-        identity_map_key: The key for the identity maps in the predictions dict
-        pose_key: The key for the bodyparts in the predictions dict
+        identity_key: Key with which to add predicted identities in the predictions dict
+        identity_map_key: Key for the identity maps in the predictions dict
+        pose_key: Key for the bodyparts in the predictions dict
         keep_id_maps: Whether to keep identity heatmaps in the output dictionary.
             Setting this value to True can be useful for debugging, but can lead to
             memory issues when running video analysis on long videos.
