@@ -12,6 +12,7 @@
 import random
 from dataclasses import dataclass
 
+import numpy as np
 import pytest
 import torch
 
@@ -113,6 +114,11 @@ TEST_SCHEDULERS = [
         init_lr=0.1,
         expected_lrs=[0.1, 0.5, 0.5, 0.5],
     ),
+    SchedulerTestConfig(
+        cfg=dict(type="StepLR", params=dict(step_size=3, gamma=0.1)),
+        init_lr=1.0,
+        expected_lrs=[1.0, 1.0, 1.0, 0.1, 0.1, 0.1, 0.01, 0.01, 0.01, 0.001],
+    ),
 ]
 
 
@@ -120,13 +126,11 @@ TEST_SCHEDULERS = [
 def test_build_scheduler(test_cfg: SchedulerTestConfig) -> None:
     optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
     s = schedulers.build_scheduler(test_cfg.cfg, optimizer)
+    print()
+    print(f"Scheduler: {s}")
     num_epochs = len(test_cfg.expected_lrs)
     for e in range(num_epochs):
-        current_lrs = s.get_lr()
-        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
-        for lr in current_lrs:
-            assert lr == test_cfg.expected_lrs[e]
-            assert isinstance(lr, float)
+        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
 
@@ -134,13 +138,11 @@ def test_build_scheduler(test_cfg: SchedulerTestConfig) -> None:
 def test_resume_scheduler_after_each_epoch(test_cfg: SchedulerTestConfig) -> None:
     optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
     s = schedulers.build_scheduler(test_cfg.cfg, optimizer)
+    print()
+    print(f"Scheduler: {s}")
     num_epochs = len(test_cfg.expected_lrs)
     for e in range(num_epochs):
-        current_lrs = s.get_lr()
-        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
-        for lr in current_lrs:
-            assert lr == test_cfg.expected_lrs[e]
-            assert isinstance(lr, float)
+        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
         optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
@@ -155,18 +157,20 @@ def test_resume_scheduler_after_each_epoch(test_cfg: SchedulerTestConfig) -> Non
         (TEST_SCHEDULERS[0], 3),
         (TEST_SCHEDULERS[1], 5),
         (TEST_SCHEDULERS[2], 2),
+        (TEST_SCHEDULERS[3], 2),
+        (TEST_SCHEDULERS[3], 3),
+        (TEST_SCHEDULERS[3], 4),
     ],
 )
 def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) -> None:
     num_epochs = len(test_cfg.expected_lrs)
     optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
     s = schedulers.build_scheduler(test_cfg.cfg, optimizer)
+
+    print()
+    print(f"Scheduler: {s}")
     for e in range(middle_epoch):
-        current_lrs = s.get_lr()
-        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
-        for lr in current_lrs:
-            assert lr == test_cfg.expected_lrs[e]
-            assert isinstance(lr, float)
+        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
 
     optimizer = torch.optim.SGD([torch.randn(2, 2)], lr=test_cfg.init_lr)
@@ -174,9 +178,13 @@ def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) ->
     schedulers.load_scheduler_state(new_scheduler, s.state_dict())
     s = new_scheduler
     for e in range(middle_epoch, num_epochs):
-        current_lrs = s.get_lr()
-        print(f"Epoch {e}: LR={current_lrs}, expected={test_cfg.expected_lrs[e]}")
-        for lr in current_lrs:
-            assert lr == test_cfg.expected_lrs[e]
-            assert isinstance(lr, float)
+        _assert_learning_rates(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
+
+
+def _assert_learning_rates(e, optimizer, expected):
+    current_lrs = [g["lr"] for g in optimizer.param_groups]
+    print(f"Epoch {e}: LR={current_lrs}, expected={expected}")
+    for lr in current_lrs:
+        assert isinstance(lr, float)
+        np.testing.assert_almost_equal(lr, expected)
