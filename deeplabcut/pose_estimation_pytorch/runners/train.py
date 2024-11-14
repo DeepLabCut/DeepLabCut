@@ -651,7 +651,7 @@ def build_training_runner(
         eval_interval=runner_config.get("eval_interval"),
         snapshot_path=snapshot_path,
         scheduler=scheduler,
-        load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", False),
+        load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
     )
     if task == Task.DETECT:
