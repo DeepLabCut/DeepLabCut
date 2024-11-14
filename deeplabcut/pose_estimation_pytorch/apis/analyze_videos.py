@@ -96,7 +96,7 @@ def video_inference(
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     cropping: list[int] | None = None,
-    shelf: shelving.ShelfManager | None = None,
+    shelf_manager: shelving.ShelfManager | None = None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -109,16 +109,16 @@ def video_inference(
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
-        shelf: By default, data are dumped in a pickle file at the end of the video
-            analysis. To write data to disk on-the-fly using a "shelf" (a pickle-based,
-            persistent, database-like object by default, resulting in constant memory
-            footprint), use this parameter to pass the shelf as an attribute to this
-            method.
+        shelf_manager: By default, data are dumped in a pickle file at the end of the
+            video analysis. Passing a shelf manager writes data to disk on-the-fly
+            using a "shelf" (a pickle-based, persistent, database-like object by
+            default, resulting in constant memory footprint). The returned list is
+            then empty.
 
     Returns:
-        Predictions for each frame in the video. If shelf is not None, this list will be
-        empty and the predictions will exclusively be stored in the file written by the
-        shelf.
+        Predictions for each frame in the video. If a shelf_manager is given, this list
+        will be empty and the predictions will exclusively be stored in the file written
+        by the shelf.
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
@@ -144,9 +144,9 @@ def video_inference(
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
-    predictions = pose_runner.inference(images=tqdm(video), shelf=shelf)
+    predictions = pose_runner.inference(images=tqdm(video), shelf_manager=shelf_manager)
 
-    if shelf is None and len(predictions) != n_frames:
+    if shelf_manager is None and len(predictions) != n_frames:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
         logging.warning(
@@ -344,9 +344,9 @@ def analyze_videos(
 
         video_iterator = VideoIterator(video)
 
-        shelf = None
+        shelf_manager = None
         if use_shelve:
-            shelf = shelving.ShelfManager(
+            shelf_manager = shelving.ShelfManager(
                 pose_cfg=pose_cfg,
                 filepath=output_pkl,
                 num_frames=video_iterator.get_n_frames(),
@@ -362,7 +362,7 @@ def analyze_videos(
                 task=pose_task,
                 detector_runner=detector_runner,
                 cropping=cropping,
-                shelf=shelf,
+                shelf_manager=shelf_manager,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
