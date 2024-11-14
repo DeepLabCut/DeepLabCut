@@ -144,7 +144,9 @@ def video_inference(
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
+    shelf_manager.open()
     predictions = pose_runner.inference(images=tqdm(video), shelf_manager=shelf_manager)
+    shelf_manager.close()
 
     if shelf_manager is None and len(predictions) != n_frames:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
