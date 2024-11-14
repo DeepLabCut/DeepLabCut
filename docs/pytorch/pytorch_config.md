@@ -486,3 +486,9 @@ detector:
   # weights from which to resume training
   resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt
 ```
+
+When continuing to train a detector, you may want to modify the learning rate scheduling 
+that was being used (by editing the configuration under the `scheduler` key). When doing
+so, you *must set `load_scheduler_state_dict: false`* in your `detector`: `runner`
+config! Otherwise, the parameters for the scheduler your started training with will be
+loaded from the state dictionary, and your edits might not be kept!
