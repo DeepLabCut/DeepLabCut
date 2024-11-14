@@ -154,7 +154,7 @@ def video_inference_superanimal(
         NotImplementedError:
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
-    
+
     (Model Explanation) SuperAnimal-Quadruped:
     `superanimal_quadruped` models aim to work across a large range of quadruped
     animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is
@@ -276,9 +276,7 @@ def video_inference_superanimal(
             _video_inference_superanimal,
         )
 
-        weight_folder = (
-            get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
-        )
+        weight_folder = get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
         if not weight_folder.exists():
             download_huggingface_model(
                 superanimal_name, target_dir=str(weight_folder), rename_mapping=None
@@ -378,10 +376,9 @@ def video_inference_superanimal(
                 video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
             anno_folder = pseudo_dataset_folder / "annotations"
-            if (
-                (anno_folder / "train.json").exists()
-                and (anno_folder / "test.json").exists()
-            ):
+            if (anno_folder / "train.json").exists() and (
+                anno_folder / "test.json"
+            ).exists():
                 print(
                     f"{anno_folder} exists, skipping the annotation construction. "
                     f"Delete the folder if you want to re-construct pseudo annotations"
