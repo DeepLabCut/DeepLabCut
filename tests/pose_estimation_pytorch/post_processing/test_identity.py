@@ -49,7 +49,8 @@ from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_i
 def test_single_identity_assignment(prediction, identity_scores, output_order):
     predictions = np.array(prediction)
     identity_scores = np.array(identity_scores)
-    predictions_with_id = assign_identity(predictions, identity_scores)
+    new_order = assign_identity(predictions, identity_scores)
+    predictions_with_id = predictions[new_order]
 
     print()
     print(predictions.shape)

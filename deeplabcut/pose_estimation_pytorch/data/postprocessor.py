@@ -479,8 +479,7 @@ class AssignIndividualIdentities(Postprocessor):
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
-        bodypart_predictions = assign_identity(
-            predictions["bodyparts"], predictions["identity_scores"],
-        )
-        predictions["bodyparts"] = bodypart_predictions
+        map_ = assign_identity(predictions["bodyparts"], predictions["identity_scores"])
+        predictions["bodyparts"] = predictions["bodyparts"][map_]
+        predictions["identity_scores"] = predictions["identity_scores"][map_]
         return predictions, context

@@ -15,7 +15,9 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 
-def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.ndarray:
+def assign_identity(
+    predictions: np.ndarray, identity_scores: np.ndarray
+) -> np.ndarray:
     """
     Args:
         predictions: Pose predictions for an image, with shape (num_individuals,
@@ -24,7 +26,7 @@ def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.
             (num_individuals, num_bodyparts, num_individuals).
 
     Returns:
-        predictions with assigned identity, of shape (num_individuals, num_bodyparts, 3)
+        The ordering to use to match predictions to identities.
     """
     if not len(predictions) == len(identity_scores):
         raise ValueError(
@@ -41,4 +43,4 @@ def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.
     for old_pos, new_pos in zip(row_ind, col_ind):
         new_order[new_pos] = old_pos
 
-    return predictions[new_order]
+    return new_order
