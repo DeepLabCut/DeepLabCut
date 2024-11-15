@@ -25,15 +25,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
+from matplotlib.colors import Colormap
+import matplotlib.patches as patches
 from skimage import io, color
 from tqdm import trange
 
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
 
-def get_cmap(n, name="hsv"):
-    """Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
-    RGB color; the keyword argument name must be a standard mpl colormap name."""
+def get_cmap(
+        n: int,
+        name: str = "hsv"
+) -> Colormap:
+    """
+    Args:
+        n: number of distinct colors
+        name: name of matplotlib colormap
+
+    Returns:
+         A function that maps each index in 0, 1, ..., n-1 to a distinct
+         RGB color; the keyword argument name must be a standard mpl colormap name.
+    """
     return plt.cm.get_cmap(name, n)
 
 
@@ -105,21 +117,61 @@ def make_labeled_image(
 
 
 def make_multianimal_labeled_image(
-    frame,
-    coords_truth,
-    coords_pred,
-    probs_pred,
-    colors,
-    dotsize=12,
-    alphavalue=0.7,
-    pcutoff=0.6,
-    labels=["+", ".", "x"],
-    ax=None,
-):
+    frame: np.ndarray,
+    coords_truth: np.ndarray | list,
+    coords_pred: np.ndarray | list,
+    probs_pred: np.ndarray | list,
+    colors: Colormap,
+    dotsize: float | int = 12,
+    alphavalue: float = 0.7,
+    pcutoff: float = 0.6,
+    labels: list = ["+", ".", "x"],
+    ax: plt.Axes | None = None,
+    bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
+    bounding_boxes_color='k',
+    bboxes_cutoff: float = 0.6,
+) -> plt.Axes:
+    """
+    Plots groundtruth labels and predictions onto the matplotlib's axes, with the specified graphical parameters.
+
+    Args:
+        frame: image
+        coords_truth: groundtruth labels
+        coords_pred: predictions
+        probs_pred: prediction probabilities
+        colors: colors for poses
+        dotsize: size of dot
+        alphavalue:
+        pcutoff: cut-off confidence value
+        labels: labels to use for ground truth, reliable predictions, and not reliable predictions (confidence below cut-off value)
+        ax: matplotlib plot's axes object
+        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confice levels,
+        bounding_boxes_color: If bounding_boxes is not None, this is the color that will be used for plotting them
+        bboxes_cutoff: bounding boxes confidence cutoff threshold.
+
+    Returns:
+        matplotlib Axes object with plotted labels and predictions.
+    """
+
     if ax is None:
         h, w, _ = np.shape(frame)
         _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
+
+    if bounding_boxes is not None:
+        for bbox, bbox_score in zip(bounding_boxes[0], bounding_boxes[1]):
+            bbox_origin = (bbox[0], bbox[1])
+            (bbox_width, bbox_height) = (bbox[2], bbox[3])
+            rectangle = patches.Rectangle(
+                bbox_origin,
+                bbox_width,
+                bbox_height,
+                linewidth=1,
+                edgecolor=bounding_boxes_color,
+                facecolor='none',
+                linestyle = '--' if bbox_score < bboxes_cutoff else '-')
+            ax.add_patch(rectangle)
+
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
         color = colors(n)
         coord_gt, coord_pred, prob_pred = data
@@ -394,6 +446,8 @@ def plot_evaluation_results(
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
+    bounding_boxes: dict = {},
+    bboxes_cutoff: float = 0.6,
 ) -> None:
     """
     Creates labeled images using the results of inference, and saves them to an output
@@ -415,6 +469,8 @@ def plot_evaluation_results(
         dot_size: the dot size to use for keypoints
         alpha_value: the alpha value to use for keypoints
         p_cutoff: the p-cutoff for "confident" keypoints
+        bounding_boxes: dictionary with df_combined rows as keys and bounding boxes (np array for coordinates and np array for confidence)
+        bboxes_cutoff: bounding boxes confidence cutoff threshold.
     """
     for row_index, row in df_combined.iterrows():
         if isinstance(row_index, str):
@@ -439,6 +495,8 @@ def plot_evaluation_results(
         # Shape (num_individuals, num_bodyparts, xy)
         ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
         predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+
+        bboxes = bounding_boxes.get(row_index)
 
         if plot_unique_bodyparts:
             row_unique = row.loc[
@@ -480,28 +538,30 @@ def plot_evaluation_results(
             colors = []
 
         ax = make_multianimal_labeled_image(
-            frame,
-            ground_truth,
-            predictions[:, :, :2],
-            predictions[:, :, 2:],
-            colors,
-            dot_size,
-            alpha_value,
-            p_cutoff,
+            frame=frame,
+            coords_truth=ground_truth,
+            coords_pred=predictions[:, :, :2],
+            probs_pred=predictions[:, :, 2:],
+            colors=colors,
+            dotsize=dot_size,
+            alphavalue=alpha_value,
+            pcutoff=p_cutoff,
             ax=ax,
+            bounding_boxes=bboxes,
+            bboxes_cutoff=bboxes_cutoff,
         )
         if plot_unique_bodyparts:
             unique_predictions = unique_predictions.swapaxes(0, 1)
             unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
             ax = make_multianimal_labeled_image(
-                frame,
-                unique_ground_truth,
-                unique_predictions[:, :, :2],
-                unique_predictions[:, :, 2:],
-                colors,
-                dot_size,
-                alpha_value,
-                p_cutoff,
+                frame=frame,
+                coords_truth=unique_ground_truth,
+                coords_pred=unique_predictions[:, :, :2],
+                probs_pred=unique_predictions[:, :, 2:],
+                colors=colors,
+                dotsize=dot_size,
+                alphavalue=alpha_value,
+                pcutoff=p_cutoff,
                 ax=ax,
             )
 

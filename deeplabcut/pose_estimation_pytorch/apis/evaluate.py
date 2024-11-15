@@ -30,6 +30,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
+    build_bboxes_dict_for_dataframe,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -428,6 +429,7 @@ def evaluate_snapshot(
     )
 
     predictions = {}
+    bounding_boxes = {}
     scores = {
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
@@ -452,7 +454,12 @@ def evaluate_snapshot(
             parameters=parameters,
             image_name_to_index=image_to_dlc_df_index,
         )
+        split_bounding_boxes = build_bboxes_dict_for_dataframe(
+            predictions=predictions_for_split,
+            image_name_to_index=image_to_dlc_df_index,
+        )
         predictions[split] = df_split_predictions
+        bounding_boxes[split] = split_bounding_boxes
         for k, v in results.items():
             scores[f"{split} {k}"] = round(v, 2)
 
@@ -486,11 +493,15 @@ def evaluate_snapshot(
             plot_mode = "bodypart"
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
+
+        bboxes_cutoff = loader.model_cfg.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
+
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
             unique_bodyparts = loader.get_dataset_parameters().unique_bpts
+            bboxes_split = bounding_boxes[mode]
 
             plot_evaluation_results(
                 df_combined=df_combined,
@@ -505,6 +516,8 @@ def evaluate_snapshot(
                 dot_size=cfg["dotsize"],
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
+                bounding_boxes=bboxes_split,
+                bboxes_cutoff=bboxes_cutoff
             )
 
     return df_predictions
