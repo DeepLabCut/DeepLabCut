@@ -222,7 +222,7 @@ def AnalyzeMultiAnimalVideo(
             with open(metadata_path, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
         else:
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
+            _ = auxfun_multianimal.save_full_multianimal_data(
                 PredicteData, metadata, dataname
             )
 

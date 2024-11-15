@@ -653,7 +653,7 @@ def create_labeled_video(
             )
         )
 
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
+    individuals = auxfun_multianimal.filter_individuals_from_config(
         cfg, displayedindividuals
     )
     if draw_skeleton:
@@ -1137,7 +1137,7 @@ def create_video_with_all_detections(
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
             h5file = full_pickle.replace("_full.pickle", ".h5")
-            data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
+            data, metadata = auxfun_multianimal.load_full_multianimal_data(h5file)
             data = dict(
                 data
             )  # Cast to dict (making a copy) so items can safely be popped

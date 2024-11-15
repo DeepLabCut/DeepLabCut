@@ -44,7 +44,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             self.main_cfg = auxiliaryfunctions.read_config(
                 os.path.join(self.cfg["project_path"], "config.yaml")
             )
-            animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(
+            animals, unique, multi = auxfun_multianimal.get_individuals_and_bodyparts(
                 self.main_cfg
             )
             self._n_kpts = len(multi) + len(unique)

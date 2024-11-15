@@ -313,7 +313,7 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
             _,
             _,
             multianimal_bodyparts,
-        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
         return multianimal_bodyparts
 
     return cfg["bodyparts"]
@@ -331,7 +331,7 @@ def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
             _,
             unique_bodyparts,
             _,
-        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
         return unique_bodyparts
 
     return []

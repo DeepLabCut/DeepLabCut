@@ -547,7 +547,7 @@ def evaluate_multianimal_full(
                         "trainFraction": trainFraction,
                     }
                     metadata = {"data": dictionary}
-                    _ = auxfun_multianimal.SaveFullMultiAnimalData(
+                    _ = auxfun_multianimal.save_full_multianimal_data(
                         PredicteData, metadata, resultsfilename
                     )
 

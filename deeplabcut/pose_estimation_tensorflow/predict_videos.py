@@ -1637,9 +1637,9 @@ def convert_detections2tracklets(
 
     path_inference_config = Path(modelfolder) / "test" / "inference_cfg.yaml"
     if inferencecfg is None:  # then load or initialize
-        inferencecfg = auxfun_multianimal.read_inferencecfg(path_inference_config, cfg)
+        inferencecfg = auxfun_multianimal.read_inference_cfg(path_inference_config, cfg)
     else:
-        auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
+        auxfun_multianimal.verify_inference_cfg(cfg, inferencecfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...")
@@ -1688,7 +1688,7 @@ def convert_detections2tracklets(
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
             vname = Path(video).stem
             dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
-            data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
+            data, metadata = auxfun_multianimal.load_full_multianimal_data(dataname)
             if track_method == "ellipse":
                 method = "el"
             elif track_method == "box":

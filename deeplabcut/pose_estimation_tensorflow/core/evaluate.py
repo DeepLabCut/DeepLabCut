@@ -75,7 +75,7 @@ def calculatepafdistancebounds(
             individuals,
             uniquebodyparts,
             multianimalbodyparts,
-        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
 
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)

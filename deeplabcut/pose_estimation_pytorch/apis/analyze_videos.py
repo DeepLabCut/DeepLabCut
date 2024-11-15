@@ -363,7 +363,7 @@ def analyze_videos(
                 video=VideoReader(str(video)),
             )
             output_data = _generate_output_data(pose_cfg, predictions)
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
+            _ = auxfun_multianimal.save_full_multianimal_data(
                 output_data, metadata, str(output_h5)
             )
 

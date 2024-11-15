@@ -71,7 +71,7 @@ def merge_annotateddatasets(cfg):
             _,
             uniquebodyparts,
             multianimalbodyparts,
-        ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+        ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
         bodyparts = multianimalbodyparts + uniquebodyparts
     else:
         bodyparts = cfg["bodyparts"]

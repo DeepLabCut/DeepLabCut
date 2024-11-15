@@ -78,7 +78,7 @@ if __name__ == "__main__":
         animals,
         bodyparts_single,
         bodyparts_multi,
-    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+    ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
     animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [
         n_animals
     ] * len(bodyparts_single)

@@ -305,7 +305,7 @@ def create_multianimaltraining_dataset(
         individuals,
         uniquebodyparts,
         multianimalbodyparts,
-    ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
+    ) = auxfun_multianimal.get_individuals_and_bodyparts(cfg)
 
     if paf_graph is None:  # Automatically form a complete PAF graph
         n_bpts = len(multianimalbodyparts)

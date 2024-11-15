@@ -284,7 +284,7 @@ def plot_trajectories(
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts
     )
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
+    individuals = auxfun_multianimal.filter_individuals_from_config(
         cfg, displayedindividuals
     )
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)

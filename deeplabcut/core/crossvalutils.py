@@ -202,7 +202,7 @@ def _benchmark_paf_graphs(
     split_inds=None,
 ):
     metadata = data.pop("metadata")
-    multi_bpts_orig = auxfun_multianimal.extractindividualsandbodyparts(config)[2]
+    multi_bpts_orig = auxfun_multianimal.get_individuals_and_bodyparts(config)[2]
     multi_bpts = [j for j in metadata["all_joints_names"] if j in multi_bpts_orig]
     n_multi = len(multi_bpts)
     data_ = {"metadata": metadata}
