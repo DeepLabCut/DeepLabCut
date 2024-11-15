@@ -327,7 +327,7 @@ def build_predictions_dataframe(
     predictions: dict[str, dict[str, np.ndarray]],
     parameters: PoseDatasetParameters,
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, dict]:
     """
 
     Args:
@@ -341,23 +341,25 @@ def build_predictions_dataframe(
     """
     prediction_data = []
     index_data = []
+    bboxes_data = []
     for image, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
             image_data = np.concatenate(
                 [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
             )
-
         prediction_data.append(image_data)
         if image_name_to_index is not None:
             index_data.append(image_name_to_index(image))
+        if "bboxes" in image_predictions:
+            bboxes_data.append((image_predictions["bboxes"], image_predictions["bbox_scores"]))
 
     if len(index_data) > 0:
         index = pd.MultiIndex.from_tuples(index_data)
     else:
         index = list(predictions.keys())
 
-    return pd.DataFrame(
+    return (pd.DataFrame(
         prediction_data,
         index=index,
         columns=build_dlc_dataframe_columns(
@@ -365,7 +367,7 @@ def build_predictions_dataframe(
             parameters=parameters,
             with_likelihood=True,
         ),
-    )
+    ), dict(zip(index, bboxes_data)))
 
 
 def get_inference_runners(

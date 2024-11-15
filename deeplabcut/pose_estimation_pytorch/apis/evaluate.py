@@ -226,6 +226,7 @@ def evaluate_snapshot(
     )
 
     predictions = {}
+    bounding_boxes = {}
     scores = {
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
@@ -244,13 +245,14 @@ def evaluate_snapshot(
             pcutoff=pcutoff,
             detector_runner=detector_runner,
         )
-        df_split_predictions = build_predictions_dataframe(
+        df_split_predictions, split_bounding_boxes = build_predictions_dataframe(
             scorer=scorer,
             predictions=predictions_for_split,
             parameters=parameters,
             image_name_to_index=image_to_dlc_df_index,
         )
         predictions[split] = df_split_predictions
+        bounding_boxes[split] = split_bounding_boxes
         for k, v in results.items():
             scores[f"{split} {k}"] = round(v, 2)
 
@@ -284,11 +286,17 @@ def evaluate_snapshot(
             plot_mode = "bodypart"
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
+
+        bboxes_cutoff = None
+        if pose_task == Task.TOP_DOWN:
+            bboxes_cutoff = loader.model_cfg["detector"]["model"]["box_score_thresh"]
+
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
             unique_bodyparts = loader.get_dataset_parameters().unique_bpts
+            bboxes_split = bounding_boxes[mode]
             plot_evaluation_results(
                 df_combined=df_combined,
                 project_root=cfg["project_path"],
@@ -296,12 +304,14 @@ def evaluate_snapshot(
                 model_name=scorer,
                 output_folder=str(folder_path),
                 in_train_set=mode == "train",
+                bounding_boxes=bboxes_split,
                 plot_unique_bodyparts=len(unique_bodyparts) > 0,
                 mode=plot_mode,
                 colormap=cfg["colormap"],
                 dot_size=cfg["dotsize"],
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
+                bboxes_cutoff=bboxes_cutoff
             )
 
     return df_predictions

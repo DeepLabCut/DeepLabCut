@@ -411,14 +411,14 @@ def evaluate_multianimal_full(
                             ax.set_ylim(0, h)
                             ax.invert_yaxis()
                             ax = visualization.make_multianimal_labeled_image(
-                                frame,
-                                gt,
-                                coords_pred,
-                                probs_pred,
-                                colors,
-                                cfg["dotsize"],
-                                cfg["alphavalue"],
-                                cfg["pcutoff"],
+                                frame=frame,
+                                coords_truth=gt,
+                                coords_pred=coords_pred,
+                                probs_pred=probs_pred,
+                                colors=colors,
+                                bounding_boxes=cfg["dotsize"],
+                                alphavalue=cfg["alphavalue"],
+                                pcutoff=cfg["pcutoff"],
                                 ax=ax,
                             )
                             visualization.save_labeled_frame(
@@ -618,14 +618,14 @@ def evaluate_multianimal_full(
                             coords_pred.append(np.full((1, 2), np.nan))
                             probs_pred.append(np.full((1, 2), np.nan))
                         ax = visualization.make_multianimal_labeled_image(
-                            frame,
-                            gt,
-                            coords_pred,
-                            probs_pred,
-                            colors,
-                            cfg["dotsize"],
-                            cfg["alphavalue"],
-                            cfg["pcutoff"],
+                            frame=frame,
+                            coords_truth=gt,
+                            coords_pred=coords_pred,
+                            probs_pred=probs_pred,
+                            colors=colors,
+                            dotsize=cfg["dotsize"],
+                            alphavalue=cfg["alphavalue"],
+                            pcutoff=cfg["pcutoff"],
                             ax=ax,
                         )
                         visualization.save_labeled_frame(
