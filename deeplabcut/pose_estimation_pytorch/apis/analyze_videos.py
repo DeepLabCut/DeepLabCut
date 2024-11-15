@@ -96,7 +96,7 @@ def video_inference(
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     cropping: list[int] | None = None,
-    shelf_manager: shelving.ShelfManager | None = None,
+    shelf_writer: shelving.ShelfWriter | None = None,
     robust_nframes: bool = False,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
@@ -110,7 +110,7 @@ def video_inference(
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
-        shelf_manager: By default, data are dumped in a pickle file at the end of the
+        shelf_writer: By default, data are dumped in a pickle file at the end of the
             video analysis. Passing a shelf manager writes data to disk on-the-fly
             using a "shelf" (a pickle-based, persistent, database-like object by
             default, resulting in constant memory footprint). The returned list is
@@ -148,11 +148,14 @@ def video_inference(
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
-    shelf_manager.open()
-    predictions = pose_runner.inference(images=tqdm(video), shelf_manager=shelf_manager)
-    shelf_manager.close()
+    if shelf_writer is not None:
+        shelf_writer.open()
 
-    if shelf_manager is None and len(predictions) != n_frames:
+    predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
+    if shelf_writer is not None:
+        shelf_writer.close()
+
+    if shelf_writer is None and len(predictions) != n_frames:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
         logging.warning(
@@ -186,6 +189,7 @@ def analyze_videos(
     identity_only: bool | None = False,
     overwrite: bool = False,
     cropping: list[int] | None = None,
+    save_as_df: bool = False,
 ) -> str:
     """Makes prediction based on a trained network.
 
@@ -207,7 +211,8 @@ def analyze_videos(
         shuffle: An integer specifying the shuffle index of the training dataset used for
             training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
-        save_as_csv: Saves the predictions in a .csv file.
+        save_as_csv: For multi-animal projects and when `auto_track=True`, passed
+            along to the `stitch_tracklets` method to save tracks as CSV.
         device: the device to use for video analysis
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
@@ -246,11 +251,13 @@ def analyze_videos(
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
-        cropping: list or None, optional, default=None
-            List of cropping coordinates as [x1, x2, y1, y2].
-            Note that the same cropping parameters will then be used for all videos.
-            If different video crops are desired, run ``analyze_videos`` on individual
-            videos with the corresponding cropping coordinates.
+        cropping: List of cropping coordinates as [x1, x2, y1, y2]. Note that the same
+            cropping parameters will then be used for all videos. If different video
+            crops are desired, run ``analyze_videos`` on individual videos with the
+            corresponding cropping coordinates.
+        save_as_df: Cannot be used when `use_shelve` is True. Saves the video
+            predictions (before tracking results) to an H5 file containing a pandas
+            DataFrame.
 
     Returns:
         The scorer used to analyze the videos
@@ -349,14 +356,13 @@ def analyze_videos(
             output_path = Path(destfolder)
 
         output_prefix = video.stem + dlc_scorer
-        output_h5 = output_path / f"{output_prefix}.h5"
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
         video_iterator = VideoIterator(video)
 
-        shelf_manager = None
+        shelf_writer = None
         if use_shelve:
-            shelf_manager = shelving.ShelfManager(
+            shelf_writer = shelving.ShelfWriter(
                 pose_cfg=pose_cfg,
                 filepath=output_pkl,
                 num_frames=video_iterator.get_n_frames(robust=robust_nframes),
@@ -372,7 +378,8 @@ def analyze_videos(
                 task=pose_task,
                 detector_runner=detector_runner,
                 cropping=cropping,
-                shelf_manager=shelf_manager,
+                shelf_writer=shelf_writer,
+                robust_nframes=robust_nframes,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
@@ -383,61 +390,40 @@ def analyze_videos(
                 batch_size=batch_size,
                 cropping=cropping,
                 runtime=(runtime[0], runtime[1]),
-                video=VideoReader(str(video)),
+                video=video_iterator,
+                robust_nframes=robust_nframes,
             )
 
-            if use_shelve:
-                with open(output_path / f"{output_prefix}_meta.pickle", "wb") as f:
-                    pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
-            else:
+            with open(output_path / f"{output_prefix}_meta.pickle", "wb") as f:
+                pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+
+            if use_shelve and save_as_df:
+                print("Can't `save_as_df` as `use_shelve=True`. Skipping.")
+
+            if not use_shelve:
                 output_data = _generate_output_data(pose_cfg, predictions)
-                _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                    output_data, metadata, str(output_h5)
-                )
+                with open(output_pkl, "wb") as f:
+                    pickle.dump(output_data, f, pickle.HIGHEST_PROTOCOL)
 
-                pred_bodyparts = np.stack(
-                    [p["bodyparts"][..., :3] for p in predictions]
-                )
-                pred_unique_bodyparts = None
-                if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-                    pred_unique_bodyparts = np.stack(
-                        [p["unique_bodyparts"] for p in predictions]
+                if save_as_df:
+                    create_df_from_prediction(
+                        predictions=predictions,
+                        cfg=cfg,
+                        model_cfg=model_cfg,
+                        dlc_scorer=dlc_scorer,
+                        output_path=output_path,
+                        output_prefix=output_prefix,
+                        save_as_csv=save_as_csv,
                     )
-
-                create_df_from_prediction(
-                    pred_bodyparts=pred_bodyparts,
-                    pred_unique_bodyparts=pred_unique_bodyparts,
-                    cfg=cfg,
-                    model_cfg=model_cfg,
-                    dlc_scorer=dlc_scorer,
-                    output_path=output_path,
-                    output_prefix=output_prefix,
-                    save_as_csv=save_as_csv,
-                )
 
             if cfg["multianimalproject"]:
-                pred_bodypart_ids = None
-
-                # FIXME(niels): this should be done in the _save_assemblies
-                if with_identity and not use_shelve:
-                    # reshape from (num_assemblies, num_bpts, num_individuals)
-                    # to (num_assemblies, num_bpts) by taking the maximum
-                    # likelihood individual for each bodypart
-                    pred_bodypart_ids = np.stack(
-                        [np.argmax(p["identity_scores"], axis=2) for p in predictions]
-                    )
-
-                # FIXME(niels): read predictions from _full.pickle file
-                pred_bodyparts = np.zeros((0, 4, 3))
-                pred_unique_bodyparts = None
-                _save_assemblies(
-                    output_path,
-                    output_prefix,
-                    pred_bodyparts,
-                    pred_bodypart_ids,
-                    pred_unique_bodyparts,
-                    with_identity,
+                _generate_assemblies_file(
+                    full_data_path=output_pkl,
+                    output_path=output_path / f"{output_prefix}_assemblies.pickle",
+                    num_bodyparts=len(bodyparts),
+                    num_unique_bodyparts=len(unique_bodyparts),
                 )
+
                 if auto_track:
                     convert_detections2tracklets(
                         config=config,
@@ -456,6 +442,7 @@ def analyze_videos(
                         shuffle,
                         trainingsetindex,
                         destfolder=str(output_path),
+                        save_as_csv=save_as_csv,
                     )
 
     print(
@@ -470,8 +457,7 @@ def analyze_videos(
 
 
 def create_df_from_prediction(
-    pred_bodyparts: np.ndarray,
-    pred_unique_bodyparts: np.ndarray | None,
+    predictions: list[dict[str, np.ndarray]],
     dlc_scorer: str,
     cfg: dict,
     model_cfg: dict,
@@ -479,6 +465,15 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
+    pred_bodyparts = np.stack(
+        [p["bodyparts"][..., :3] for p in predictions]
+    )
+    pred_unique_bodyparts = None
+    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
+        pred_unique_bodyparts = np.stack(
+            [p["unique_bodyparts"] for p in predictions]
+        )
+
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
@@ -519,38 +514,62 @@ def create_df_from_prediction(
     return df
 
 
-def _save_assemblies(
+def _generate_assemblies_file(
+    full_data_path: Path,
     output_path: Path,
-    output_prefix: str,
-    pred_bodyparts: np.ndarray,
-    pred_bodypart_ids: np.ndarray,
-    pred_unique_bodyparts: np.ndarray,
-    with_identity: bool,
+    num_bodyparts: int,
+    num_unique_bodyparts: int,
 ) -> None:
-    output_ass = output_path / f"{output_prefix}_assemblies.pickle"
-    assemblies = {}
-    for i, bpt in enumerate(pred_bodyparts):
-        if with_identity:
-            extra_column = np.expand_dims(pred_bodypart_ids[i], axis=-1)
+    """Generates the assemblies file from predictions"""
+    if full_data_path.exists():
+        with open(full_data_path, "rb") as f:
+            data = pickle.load(f)
+        keys = [k for k in data if k != "metadata"]
+    else:
+        data = shelving.ShelfReader(full_data_path)
+        data.open()
+        # keys = [k for k in data.keys() if k != "metadata"]
+        keys = list(sorted([k for k in data.keys() if k != "metadata"]))
+
+    assemblies = dict(single=dict())
+    prefix_len = len("frame")
+    for k in keys:
+        frame_index = int(k[prefix_len:])
+
+        predictions = data[k]
+        keypoint_preds = predictions["coordinates"][0]
+        keypoint_scores = predictions["confidence"]
+
+        bpts = np.stack(keypoint_preds[:num_bodyparts])
+        scores = np.stack(keypoint_scores[:num_bodyparts])
+        preds = np.concatenate([bpts, scores], axis=-1)
+
+        keypoint_id_scores = predictions.get("identity")
+        if keypoint_id_scores is not None:
+            keypoint_id_scores = np.stack(keypoint_id_scores[:num_bodyparts])
+            keypoint_pred_ids = np.argmax(keypoint_id_scores, axis=2)
+            keypoint_pred_ids = np.expand_dims(keypoint_pred_ids, axis=-1)
         else:
-            extra_column = np.full(
-                (bpt.shape[0], bpt.shape[1], 1),
-                -1.0,
-                dtype=np.float32,
-            )
+            num_bpts, num_preds = preds.shape[:2]
+            keypoint_pred_ids = -np.ones((num_bpts, num_preds, 1))
 
-        ass = np.concatenate((bpt, extra_column), axis=-1)
-        assemblies[i] = ass
+        # reshape to (num_preds, num_bpts, 4)
+        preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
+        preds = preds.transpose((1, 0, 2))
+        assemblies[frame_index] = preds
 
-    if pred_unique_bodyparts is not None:
-        assemblies["single"] = {}
-        for i, unique_bpt in enumerate(pred_unique_bodyparts):
-            extra_column = np.full((unique_bpt.shape[1], 1), -1.0, dtype=np.float32)
-            ass = np.concatenate((unique_bpt[0], extra_column), axis=-1)
-            assemblies["single"][i] = ass
+        if num_unique_bodyparts > 0:
+            unique_bpts = np.stack(keypoint_preds[num_bodyparts:])
+            unique_scores = np.stack(keypoint_scores[num_bodyparts:])
+            unique_preds = np.concatenate([unique_bpts, unique_scores], axis=-1)
+            unique_preds = unique_preds.transpose((1, 0, 2))
+            assemblies["single"][frame_index] = unique_preds[0]  # single prediction
 
-    with open(output_ass, "wb") as handle:
-        pickle.dump(assemblies, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(output_path, "wb") as file:
+        pickle.dump(assemblies, file, pickle.HIGHEST_PROTOCOL)
+
+    if isinstance(data, shelving.ShelfReader):
+        data.close()
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
@@ -574,7 +593,8 @@ def _generate_metadata(
     batch_size: int,
     cropping: list[int] | None,
     runtime: tuple[float, float],
-    video: VideoReader,
+    video: VideoIterator,
+    robust_nframes: bool = False,
 ) -> dict:
     w, h = video.dimensions
     if cropping is None:
@@ -596,7 +616,7 @@ def _generate_metadata(
         "fps": video.fps,
         "batch_size": batch_size,
         "frame_dimensions": (w, h),
-        "nframes": video.get_n_frames(),
+        "nframes": video.get_n_frames(robust=robust_nframes),
         "iteration (active-learning)": cfg["iteration"],
         "training set fraction": train_fraction,
         "cropping": cropping is not None,
@@ -648,10 +668,12 @@ def _generate_output_data(
         scores = [bpt[:, 2:3] for bpt in bodyparts]
 
         # full pickle has bodyparts and unique bodyparts in same array
+        num_unique = 0
         if "unique_bodyparts" in frame_predictions:
             unique_bpts = frame_predictions["unique_bodyparts"].transpose((1, 0, 2))
             coordinates += [bpt[:, :2] for bpt in unique_bpts]
             scores += [bpt[:, 2:] for bpt in unique_bpts]
+            num_unique = len(unique_bpts)
 
         output[key] = {
             "coordinates": (coordinates,),
@@ -665,5 +687,12 @@ def _generate_output_data(
             id_scores = frame_predictions["identity_scores"]
             id_scores = id_scores.transpose((1, 0, 2))
             output[key]["identity"] = [bpt_id_scores for bpt_id_scores in id_scores]
+
+            if num_unique > 0:
+                # needed for create_video_with_all_detections to display unique bpts
+                num_assem, num_ind = id_scores.shape[1:]
+                output[key]["identity"] += [
+                    -1 * np.ones((num_assem, num_ind)) for i in range(num_unique)
+                ]
 
     return output

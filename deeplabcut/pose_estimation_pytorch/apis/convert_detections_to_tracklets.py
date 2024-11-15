@@ -149,6 +149,8 @@ def convert_detections2tracklets(
                 names=["scorer", "bodyparts", "coords"],
             )
             image_names = [fn for fn in data if fn != "metadata"]
+            # FIXME(niels) - sorting should not be needed here; iter based on frame idx
+            image_names = list(sorted(image_names))
 
             if track_method == "box":
                 mot_tracker = trackingutils.SORTBox(

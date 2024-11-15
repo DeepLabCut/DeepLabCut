@@ -8,16 +8,73 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Module used to shelve data during video analysis in DeepLabCut 3.0"""
+"""Modules used to read/write shelve data during video analysis in DeepLabCut 3.0"""
 import pickle
 import shelve
+from abc import ABC
 from pathlib import Path
 
 import numpy as np
 
 
-class ShelfManager:
-    """Manages shelve predictions
+class ShelfManager(ABC):
+    """Class to manage shelf data"""
+
+    def __init__(self, filepath: str | Path, flag: str = "r") -> None:
+        self.filepath = Path(filepath)
+        self.flag = flag
+
+        self._db: shelve.Shelf | None = None
+        self._open: bool = False
+
+    def open(self) -> None:
+        """Opens the shelf"""
+        self._db = shelve.open(
+            str(self.filepath),
+            flag=self.flag,
+            protocol=pickle.DEFAULT_PROTOCOL,
+        )
+        self._open = True
+
+    def close(self) -> None:
+        """Closes the shelf"""
+        if not self._open:
+            return
+
+        try:
+            self._db.close()
+        except AttributeError:
+            pass
+
+        self._open = False
+
+    def keys(self) -> list[str]:
+        if not self._open:
+            raise ValueError(f"You must call open() before reading keys!")
+
+        return [k for k in self._db]
+
+
+class ShelfReader(ShelfManager):
+    """Reads data from a shelf"""
+
+    def __getitem__(self, item: str) -> dict:
+        """Reads an item from the shelf.
+
+        Args:
+            item: The key of the item to read.
+
+        Returns:
+            The item.
+        """
+        if not self._open:
+            raise ValueError(f"You must call open() before reading data!")
+
+        return self._db[item]
+
+
+class ShelfWriter(ShelfManager):
+    """Writes data to a shelf on-the-fly during video analysis.
 
     Args:
         pose_cfg: The test pose config for the model.
@@ -32,21 +89,16 @@ class ShelfManager:
     """
 
     def __init__(
-        self,
-        pose_cfg: dict,
-        filepath: str | Path,
-        num_frames: int | None = None,
+        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
     ):
-        self.filepath = filepath
+        super().__init__(filepath, flag="c")
         self._pose_cfg = pose_cfg
         self._num_frames = num_frames
+        self._frame_index = 0
+
         self.str_width = 5
         if num_frames is not None:
             self.str_width = int(np.ceil(np.log10(num_frames)))
-
-        self._db = None
-        self._open = False
-        self._frame_index = 0
 
     def add_prediction(
         self,
@@ -84,25 +136,20 @@ class ShelfManager:
             id_scores = identity_scores.transpose((1, 0, 2))
             output["identity"] = [bpt_id_scores for bpt_id_scores in id_scores]
 
+            if unique_bodyparts is not None:
+                # needed for create_video_with_all_detections to display unique bpts
+                num_unique = unique_bodyparts.shape[1]
+                num_assem, num_ind = id_scores.shape[1:]
+                output["identity"] += [
+                    -1 * np.ones((num_assem, num_ind)) for i in range(num_unique)
+                ]
+
         self._db[key] = output
         self._frame_index += 1
 
-    def close(self) -> None:
-        """Closes the shelf"""
-        if not self._open:
-            return
-
-        try:
-            self._db.close()
-        except AttributeError:
-            pass
-
-        self._open = False
-
     def open(self) -> None:
         """Opens the shelf"""
-        self._db = shelve.open(self.filepath, protocol=pickle.DEFAULT_PROTOCOL)
-        self._open = True
+        super().open()
         self._frame_index = 0
 
         all_joints = self._pose_cfg["all_joints"]
