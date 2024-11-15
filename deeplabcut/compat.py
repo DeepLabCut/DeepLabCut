@@ -867,6 +867,7 @@ def analyze_videos(
             destfolder=destfolder,
             modelprefix=modelprefix,
             use_shelve=use_shelve,
+            robust_nframes=robust_nframes,
             auto_track=auto_track,
             identity_only=identity_only,
             overwrite=False,

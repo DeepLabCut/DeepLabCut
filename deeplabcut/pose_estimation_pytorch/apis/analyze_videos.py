@@ -97,6 +97,7 @@ def video_inference(
     detector_runner: InferenceRunner | None = None,
     cropping: list[int] | None = None,
     shelf_manager: shelving.ShelfManager | None = None,
+    robust_nframes: bool = False,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -114,6 +115,9 @@ def video_inference(
             using a "shelf" (a pickle-based, persistent, database-like object by
             default, resulting in constant memory footprint). The returned list is
             then empty.
+        robust_nframes: Evaluate a video's number of frames in a robust manner. This
+            option is slower (as the whole video is read frame-by-frame), but does not
+            rely on metadata, hence its robustness against file corruption.
 
     Returns:
         Predictions for each frame in the video. If a shelf_manager is given, this list
@@ -123,7 +127,7 @@ def video_inference(
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
 
-    n_frames = video.get_n_frames()
+    n_frames = video.get_n_frames(robust=robust_nframes)
     vid_w, vid_h = video.dimensions
     print(f"Starting to analyze {video.video_path}")
     print(
@@ -176,6 +180,7 @@ def analyze_videos(
     detector_batch_size: int | None = None,
     modelprefix: str = "",
     use_shelve: bool = False,
+    robust_nframes: bool = False,
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
     identity_only: bool | None = False,
@@ -229,6 +234,9 @@ def analyze_videos(
             analysis. Otherwise, data are written to disk on the fly using a "shelf";
             i.e., a pickle-based, persistent, database-like object by default, resulting
             in constant memory footprint.
+        robust_nframes: Evaluate a video's number of frames in a robust manner. This
+            option is slower (as the whole video is read frame-by-frame), but does not
+            rely on metadata, hence its robustness against file corruption.
         auto_track: By default, tracking and stitching are automatically performed,
             producing the final h5 data file. This is equivalent to the behavior for
             single-animal projects.
@@ -351,7 +359,7 @@ def analyze_videos(
             shelf_manager = shelving.ShelfManager(
                 pose_cfg=pose_cfg,
                 filepath=output_pkl,
-                num_frames=video_iterator.get_n_frames(),
+                num_frames=video_iterator.get_n_frames(robust=robust_nframes),
             )
 
         if not overwrite and output_pkl.exists():
