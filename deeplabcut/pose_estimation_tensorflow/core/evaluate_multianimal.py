@@ -282,7 +282,11 @@ def evaluate_multianimal_full(
                     snapshot_name,
                 )
 
-                data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
+                output_path = Path(evaluationfolder)
+                output_name_basis = Path(resultsfilename).stem
+                output_pkl = output_path / f"{output_name_basis}_full.pickle"
+                meta_pkl = output_path / f"{output_name_basis}_meta.pickle"
+                map_pkl = output_path / f"{output_name_basis}_map.pickle"
 
                 if plotting:
                     foldername = os.path.join(
@@ -293,7 +297,7 @@ def evaluate_multianimal_full(
                     if plotting == "bodypart":
                         fig, ax = visualization.create_minimal_figure()
 
-                if os.path.isfile(data_path):
+                if os.path.isfile(output_pkl):
                     print("Model already evaluated.", resultsfilename)
                 else:
                     (
@@ -302,7 +306,7 @@ def evaluate_multianimal_full(
                         outputs,
                     ) = predict.setup_pose_prediction(test_pose_cfg)
 
-                    PredicteData = {}
+                    predicted_data = {}
                     dist = np.full((len(Data), len(all_bpts)), np.nan)
                     conf = np.full_like(dist, np.nan)
                     print("Network Evaluation underway...")
@@ -366,10 +370,10 @@ def evaluate_multianimal_full(
                         else:
                             pred = pred[0]
 
-                        PredicteData[imagename] = {}
-                        PredicteData[imagename]["index"] = imageindex
-                        PredicteData[imagename]["prediction"] = pred
-                        PredicteData[imagename]["groundtruth"] = [
+                        predicted_data[imagename] = {}
+                        predicted_data[imagename]["index"] = imageindex
+                        predicted_data[imagename]["prediction"] = pred
+                        predicted_data[imagename]["groundtruth"] = [
                             groundtruthidentity,
                             groundtruthcoordinates,
                             GT,
@@ -517,7 +521,7 @@ def evaluate_multianimal_full(
                             .to_string()
                         )
 
-                    PredicteData["metadata"] = {
+                    predicted_data["metadata"] = {
                         "nms radius": test_pose_cfg["nmsradius"],
                         "minimal confidence": test_pose_cfg["minconfidence"],
                         "sigma": test_pose_cfg.get("sigma", 1),
@@ -547,10 +551,12 @@ def evaluate_multianimal_full(
                         "trainFraction": trainFraction,
                     }
                     metadata = {"data": dictionary}
-                    _ = auxfun_multianimal.save_full_multianimal_data(
-                        PredicteData, metadata, resultsfilename
+                    _ = auxfun_multianimal.save_multianimal_full_meta_data(
+                        data=predicted_data,
+                        metadata=metadata,
+                        dir_path=output_path,
+                        name_basis=output_name_basis
                     )
-
                     tf.compat.v1.reset_default_graph()
 
                 n_multibpts = len(cfg["multianimalbodyparts"])
@@ -575,8 +581,8 @@ def evaluate_multianimal_full(
                 ) = crossvalutils.cross_validate_paf_graphs(
                     config,
                     str(path_test_config).replace("pose_", "inference_"),
-                    data_path,
-                    data_path.replace("_full.", "_meta."),
+                    output_pkl,
+                    meta_pkl,
                     n_graphs=n_graphs,
                     paf_inds=paf_inds,
                     oks_sigma=test_pose_cfg.get("oks_sigma", 0.1),
@@ -645,7 +651,7 @@ def evaluate_multianimal_full(
                 ]
                 df.loc(axis=0)[("mAP_test", "mean")] = [d[1]["mAP"] for d in results[2]]
                 df.loc(axis=0)[("mAR_test", "mean")] = [d[1]["mAR"] for d in results[2]]
-                with open(data_path.replace("_full.", "_map."), "wb") as file:
+                with open(map_pkl, "wb") as file:
                     pickle.dump((df, paf_scores), file)
 
             if len(final_result) > 0:  # Only append if results were calculated

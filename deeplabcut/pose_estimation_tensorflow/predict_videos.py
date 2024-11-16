@@ -1686,25 +1686,24 @@ def convert_detections2tracklets(
             if destfolder is None:
                 destfolder = videofolder
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
-            vname = Path(video).stem
-            dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
-            data, metadata = auxfun_multianimal.load_full_multianimal_data(dataname)
+            video_name = Path(video).stem
+            output_name_basis = video_name + DLCscorer
+            output_path = Path(destfolder)
+            data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(output_path, output_name_basis)
             if track_method == "ellipse":
                 method = "el"
             elif track_method == "box":
                 method = "bx"
             else:
                 method = "sk"
-            trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
-            # NOTE: If dataname line above is changed then line below is obsolete?
-            # trackname = trackname.replace(videofolder, destfolder)
+            trackname = output_path / (output_name_basis + f"_{method}.pickle")
             if (
                 os.path.isfile(trackname) and not overwrite
             ):  # TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
                 print("Set overwrite = True to overwrite.")
             else:
-                print("Analyzing", dataname)
+                print("Analyzing", output_path / (output_name_basis + ".h5"))
                 DLCscorer = metadata["data"]["Scorer"]
                 all_jointnames = data["metadata"]["all_joints_names"]
 
@@ -1756,7 +1755,7 @@ def convert_detections2tracklets(
                     identity_only=identity_only,
                     min_n_links=inferencecfg["minimalnumberofconnections"]
                 )
-                assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
+                assemblies_filename = output_path / (output_name_basis + "_assemblies.pickle")
                 if not os.path.exists(assemblies_filename) or overwrite:
                     if calibrate:
                         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(

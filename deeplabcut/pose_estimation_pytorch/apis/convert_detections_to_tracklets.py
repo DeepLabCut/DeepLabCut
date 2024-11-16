@@ -117,10 +117,9 @@ def convert_detections2tracklets(
 
         video_name = video.stem
 
-        data_prefix = video_name + dlc_scorer
-        data_filename = output_path / (data_prefix + ".h5")
-        print(f"Loading From {data_filename}")
-        data, metadata = auxfun_multianimal.load_full_multianimal_data(str(data_filename))
+        output_name_basis = video_name + dlc_scorer
+        print(f"Loading From {output_path / output_name_basis} full and meta pickles")
+        data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(output_path, output_name_basis)
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":
@@ -128,7 +127,7 @@ def convert_detections2tracklets(
         else:
             method = "sk"
 
-        track_filename = output_path / (data_prefix + f"_{method}.pickle")
+        track_filename = output_path / (output_name_basis + f"_{method}.pickle")
         if not overwrite and track_filename.exists():
             # TODO: check if metadata are identical (same parameters!)
             print(f"Tracklets already computed at {track_filename}")
@@ -173,9 +172,7 @@ def convert_detections2tracklets(
             tracklets = {}
             multi_bpts = cfg["multianimalbodyparts"]
 
-            ass_filename = data_filename.with_stem(
-                data_filename.stem + "_assemblies"
-            ).with_suffix(".pickle")
+            ass_filename = output_path / (output_name_basis + "_assemblies.pickle")
             if not ass_filename.exists():
                 raise FileNotFoundError(
                     f"Could not find the assembles file {ass_filename}. You're "

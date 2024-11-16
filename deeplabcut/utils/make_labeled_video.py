@@ -1119,25 +1119,22 @@ def create_video_with_all_detections(
         confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, 0)
 
     for video in videos:
-        videofolder = os.path.splitext(video)[0]
+        video_dir = Path(video).parent
+        name_basis = Path(video).stem + DLCscorername
+        output_video_name = name_basis + "_full.mp4"
 
         if destfolder is None:
-            outputname = "{}_full.mp4".format(videofolder + DLCscorername)
-            full_pickle = os.path.join(videofolder + DLCscorername + "_full.pickle")
+            data_dir_path = video_dir
         else:
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
-            outputname = os.path.join(
-                destfolder, str(Path(video).stem) + DLCscorername + "_full.mp4"
-            )
-            full_pickle = os.path.join(
-                destfolder, str(Path(video).stem) + DLCscorername + "_full.pickle"
-            )
+            data_dir_path = Path(destfolder)
+
+        outputname = data_dir_path / output_video_name
 
         if not (os.path.isfile(outputname)):
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
-            h5file = full_pickle.replace("_full.pickle", ".h5")
-            data, metadata = auxfun_multianimal.load_full_multianimal_data(h5file)
+            data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(data_dir_path, name_basis)
             data = dict(
                 data
             )  # Cast to dict (making a copy) so items can safely be popped
@@ -1168,7 +1165,7 @@ def create_video_with_all_detections(
 
             pcutoff = cfg["pcutoff"]
             dotsize = cfg["dotsize"]
-            clip = vp(fname=video, sname=outputname, codec="mp4v")
+            clip = vp(fname=video, sname=str(outputname), codec="mp4v")
             ny, nx = clip.height(), clip.width()
 
             for n in trange(clip.nframes):

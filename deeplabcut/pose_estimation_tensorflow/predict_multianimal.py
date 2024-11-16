@@ -127,10 +127,14 @@ def AnalyzeMultiAnimalVideo(
     if destfolder is None:
         destfolder = videofolder
     auxiliaryfunctions.attempt_to_make_folder(destfolder)
-    dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
 
-    if os.path.isfile(dataname.split(".h5")[0] + "_full.pickle"):
-        print("Video already analyzed!", dataname)
+    output_name_basis = vname + DLCscorer
+    output_path = Path(destfolder)
+    output_pkl = output_path / (output_name_basis + "_full.pickle")
+    meta_pkl = output_path / (output_name_basis + "_meta.pickle")
+
+    if os.path.isfile(output_pkl):
+        print("Video already analyzed!", output_pkl)
     else:
         print("Loading ", video)
         vid = VideoWriter(video)
@@ -164,12 +168,9 @@ def AnalyzeMultiAnimalVideo(
             "Starting to extract posture from the video(s) with batchsize:",
             dlc_cfg["batch_size"],
         )
-        if use_shelve:
-            shelf_path = dataname.split(".h5")[0] + "_full.pickle"
-        else:
-            shelf_path = ""
+        shelf_path = str(output_pkl) if use_shelve else ""
         if int(dlc_cfg["batch_size"]) > 1:
-            PredicteData, nframes = GetPoseandCostsF(
+            predicted_data, nframes = GetPoseandCostsF(
                 cfg,
                 dlc_cfg,
                 sess,
@@ -181,7 +182,7 @@ def AnalyzeMultiAnimalVideo(
                 shelf_path,
             )
         else:
-            PredicteData, nframes = GetPoseandCostsS(
+            predicted_data, nframes = GetPoseandCostsS(
                 cfg,
                 dlc_cfg,
                 sess,
@@ -218,12 +219,14 @@ def AnalyzeMultiAnimalVideo(
         print("Video Analyzed. Saving results in %s..." % (destfolder))
 
         if use_shelve:
-            metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
-            with open(metadata_path, "wb") as f:
+            with open(meta_pkl, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
         else:
-            _ = auxfun_multianimal.save_full_multianimal_data(
-                PredicteData, metadata, dataname
+            _ = auxfun_multianimal.save_multianimal_full_meta_data(
+                data=predicted_data,
+                metadata=metadata,
+                dir_path=output_path,
+                name_basis=output_name_basis
             )
 
 

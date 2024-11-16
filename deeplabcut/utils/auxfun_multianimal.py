@@ -26,6 +26,7 @@ import shelve
 import warnings
 from itertools import combinations
 from pathlib import Path
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -154,12 +155,29 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
     return [sorted(edge) for edge in g.edges]
 
 
-def save_full_multianimal_data(data, metadata, dataname, suffix="_full"):
+def save_multianimal_full_meta_data(
+    data,
+    metadata,
+    dir_path: Path,
+    name_basis : str
+) -> (Path, Path):
     """
-    Save predicted data as .pickle file and metadata as pickle file;
+    Save predicted data as .pickle file and metadata as pickle file.
+    Args:
+        data: full data to save,
+        metadata: metadata to save,
+        dir_path: path to directory for saving,
+        name_basis : name basis, to which "_full.pickle" and "_meta.pickle" suffixes will be concatenated
+
+    Returns:
+        path to full and meta pickle files
     """
-    data_path = dataname.split(".h5")[0] + suffix + ".pickle"
-    metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+
+    data_filename = name_basis + "_full.pickle"
+    meta_filename = name_basis + "_meta.pickle"
+
+    data_path = dir_path / data_filename
+    metadata_path = dir_path / meta_filename
 
     with open(data_path, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
@@ -168,15 +186,29 @@ def save_full_multianimal_data(data, metadata, dataname, suffix="_full"):
     return data_path, metadata_path
 
 
-def load_full_multianimal_data(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
-    data_file = dataname.split(".h5")[0] + "_full.pickle"
+def load_multianimal_full_meta_data(
+    dir_path: Path,
+    name_basis: str
+) -> tuple[Any, Any]:
+    """
+    Read full and meta data from respective pickle files.
+    Args:
+        dir_path: path to directory with full and meta pickle files
+        name_basis: basis of name (the method will load name_basis+"_full.pickle" and name_basis+"_meta.pickle")
+    """
+
+    data_filename = name_basis + "_full.pickle"
+    meta_filename = name_basis + "_meta.pickle"
+
+    data_path = dir_path / data_filename
+    metadata_path = dir_path / meta_filename
+
     try:
-        with open(data_file, "rb") as handle:
+        with open(data_path, "rb") as handle:
             data = pickle.load(handle)
     except (pickle.UnpicklingError, FileNotFoundError):
-        data = shelve.open(data_file, flag="r")
-    with open(data_file.replace("_full.", "_meta."), "rb") as handle:
+        data = shelve.open(str(data_path), flag="r")
+    with open(metadata_path, "rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 

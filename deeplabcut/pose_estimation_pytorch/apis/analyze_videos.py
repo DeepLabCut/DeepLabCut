@@ -336,10 +336,9 @@ def analyze_videos(
         else:
             output_path = Path(destfolder)
 
-        output_prefix = video.stem + dlc_scorer
-        output_h5 = output_path / f"{output_prefix}.h5"
-        output_pkl = output_path / f"{output_prefix}_full.pickle"
+        output_name_basis = video.stem + dlc_scorer
 
+        output_pkl = output_path / f"{output_name_basis}_full.pickle"
         if not overwrite and output_pkl.exists():
             print(f"Video {video} already analyzed at {output_pkl}!")
         else:
@@ -363,8 +362,11 @@ def analyze_videos(
                 video=VideoReader(str(video)),
             )
             output_data = _generate_output_data(pose_cfg, predictions)
-            _ = auxfun_multianimal.save_full_multianimal_data(
-                output_data, metadata, str(output_h5)
+            _ = auxfun_multianimal.save_multianimal_full_meta_data(
+                data=output_data,
+                metadata=metadata,
+                dir_path=output_path,
+                name_basis=output_name_basis
             )
 
             pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
@@ -381,7 +383,7 @@ def analyze_videos(
                 model_cfg=model_cfg,
                 dlc_scorer=dlc_scorer,
                 output_path=output_path,
-                output_prefix=output_prefix,
+                output_prefix=output_name_basis,
                 save_as_csv=save_as_csv,
             )
             results.append((str(video), df))
@@ -398,7 +400,7 @@ def analyze_videos(
 
                 _save_assemblies(
                     output_path,
-                    output_prefix,
+                    output_name_basis,
                     pred_bodyparts,
                     pred_bodypart_ids,
                     pred_unique_bodyparts,
