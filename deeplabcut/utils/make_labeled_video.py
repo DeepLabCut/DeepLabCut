@@ -67,9 +67,9 @@ def get_segment_indices(bodyparts2connect, all_bpts):
     return bpts2connect
 
 
-def CreateVideo(
+def create_video(
     clip,
-    Dataframe,
+    dataframe,
     pcutoff,
     dotsize,
     colormap,
@@ -88,7 +88,7 @@ def CreateVideo(
     confidence_to_alpha=None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
-    bpts = Dataframe.columns.get_level_values("bodyparts")
+    bpts = dataframe.columns.get_level_values("bodyparts")
     all_bpts = bpts.values[::3]
     if draw_skeleton:
         color_for_skeleton = (
@@ -121,7 +121,7 @@ def CreateVideo(
     )
     print("Generating frames and creating video.")
 
-    df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
+    df_x, df_y, df_likelihood = dataframe.values.reshape((len(dataframe), -1, 3)).T
 
     if cropping and not displaycropped:
         df_x += x1
@@ -130,15 +130,15 @@ def CreateVideo(
 
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
-    if Dataframe.columns.nlevels == 3:
+    if dataframe.columns.nlevels == 3:
         nindividuals = int(len(all_bpts) / len(set(all_bpts)))
         map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
         map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
-        nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
+        nindividuals = len(dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
         nbpts_per_ind = (
-            Dataframe.groupby(level="individuals", axis=1).size().values // 3
+            dataframe.groupby(level="individuals", axis=1).size().values // 3
         )
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
@@ -153,7 +153,7 @@ def CreateVideo(
     colors = (C[:, :3] * 255).astype(np.uint8)
 
     with np.errstate(invalid="ignore"):
-        for index in trange(min(nframes, len(Dataframe))):
+        for index in trange(min(nframes, len(dataframe))):
             image = clip.load_frame()
             if displaycropped:
                 image = image[y1:y2, x1:x2]
@@ -201,10 +201,10 @@ def CreateVideo(
     clip.close()
 
 
-def CreateVideoSlow(
-    videooutname,
+def create_video_slow(
+    video_out_name,
     clip,
-    Dataframe,
+    dataframe,
     tmpfolder,
     dotsize,
     colormap,
@@ -218,26 +218,26 @@ def CreateVideoSlow(
     y2,
     save_frames,
     bodyparts2plot,
-    outputframerate,
-    Frames2plot,
+    output_frame_rate,
+    frames2plot,
     bodyparts2connect,
     skeleton_color,
     draw_skeleton,
-    displaycropped,
+    display_cropped,
     color_by,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     # scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
     # bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
 
-    if displaycropped:
+    if display_cropped:
         ny, nx = y2 - y1, x2 - x1
     else:
         ny, nx = clip.height(), clip.width()
 
     fps = clip.fps()
-    if outputframerate is None:  # by def. same as input rate.
-        outputframerate = fps
+    if output_frame_rate is None:  # by def. same as input rate.
+        output_frame_rate = fps
 
     nframes = clip.nframes
     duration = nframes / fps
@@ -253,27 +253,27 @@ def CreateVideoSlow(
         )
     )
     print("Generating frames and creating video.")
-    df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
-    if cropping and not displaycropped:
+    df_x, df_y, df_likelihood = dataframe.values.reshape((len(dataframe), -1, 3)).T
+    if cropping and not display_cropped:
         df_x += x1
         df_y += y1
 
-    bpts = Dataframe.columns.get_level_values("bodyparts")
+    bpts = dataframe.columns.get_level_values("bodyparts")
     all_bpts = bpts.values[::3]
     if draw_skeleton:
         bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
     bplist = bpts.unique().to_list()
     nbodyparts = len(bplist)
-    if Dataframe.columns.nlevels == 3:
+    if dataframe.columns.nlevels == 3:
         nindividuals = int(len(all_bpts) / len(set(all_bpts)))
         map2bp = list(np.repeat(list(range(len(set(all_bpts)))), nindividuals))
         map2id = list(range(nindividuals)) * len(set(all_bpts))
     else:
-        nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
+        nindividuals = len(dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
         nbpts_per_ind = (
-            Dataframe.groupby(level="individuals", axis=1).size().values // 3
+            dataframe.groupby(level="individuals", axis=1).size().values // 3
         )
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
@@ -291,10 +291,10 @@ def CreateVideoSlow(
             "Your video has more than 10**9 frames, we recommend chopping it up."
         )
 
-    if Frames2plot is None:
+    if frames2plot is None:
         Index = set(range(nframes))
     else:
-        Index = {int(k) for k in Frames2plot if 0 <= k < nframes}
+        Index = {int(k) for k in frames2plot if 0 <= k < nframes}
 
     # Prepare figure
     prev_backend = plt.get_backend()
@@ -303,13 +303,13 @@ def CreateVideoSlow(
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
 
-    writer = FFMpegWriter(fps=outputframerate, codec="h264")
-    with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
-        for index in trange(min(nframes, len(Dataframe))):
+    writer = FFMpegWriter(fps=output_frame_rate, codec="h264")
+    with writer.saving(fig, video_out_name, dpi=dpi), np.errstate(invalid="ignore"):
+        for index in trange(min(nframes, len(dataframe))):
             imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index:  # then extract the frame!
-                if cropping and displaycropped:
+                if cropping and display_cropped:
                     image = image[y1:y2, x1:x2]
                 ax.imshow(image)
 
@@ -356,7 +356,7 @@ def CreateVideoSlow(
                 writer.grab_frame()
                 ax.clear()
 
-    print("Labeled video {} successfully created.".format(videooutname))
+    print("Labeled video {} successfully created.".format(video_out_name))
     plt.switch_backend(prev_backend)
 
 
@@ -677,28 +677,27 @@ def create_labeled_video(
 
     func = partial(
         proc_video,
-        videos,
-        destfolder,
-        filtered,
-        DLCscorer,
-        DLCscorerlegacy,
-        track_method,
-        cfg,
-        individuals,
-        color_by,
-        bodyparts,
-        codec,
-        bodyparts2connect,
-        trailpoints,
-        save_frames,
-        outputframerate,
-        Frames2plot,
-        draw_skeleton,
-        skeleton_color,
-        displaycropped,
-        fastmode,
-        keypoints_only,
-        overwrite,
+        destfolder=destfolder,
+        filtered=filtered,
+        DLCscorer=DLCscorer,
+        DLCscorerlegacy=DLCscorerlegacy,
+        track_method=track_method,
+        cfg=cfg,
+        individuals=individuals,
+        color_by=color_by,
+        bodyparts=bodyparts,
+        codec=codec,
+        bodyparts2connect=bodyparts2connect,
+        trailpoints=trailpoints,
+        save_frames=save_frames,
+        output_frame_rate=outputframerate,
+        frames2plot=Frames2plot,
+        draw_skeleton=draw_skeleton,
+        skeleton_color=skeleton_color,
+        displaycropped=displaycropped,
+        fastmode=fastmode,
+        keypoints_only=keypoints_only,
+        overwrite=overwrite,
         init_weights=init_weights,
         pcutoff=pcutoff,
         confidence_to_alpha=confidence_to_alpha,
@@ -717,7 +716,7 @@ def create_labeled_video(
 
 
 def proc_video(
-    videos,
+    video,
     destfolder,
     filtered,
     DLCscorer,
@@ -731,15 +730,14 @@ def proc_video(
     bodyparts2connect,
     trailpoints,
     save_frames,
-    outputframerate,
-    Frames2plot,
+    output_frame_rate,
+    frames2plot,
     draw_skeleton,
     skeleton_color,
     displaycropped,
     fastmode,
     keypoints_only,
     overwrite,
-    video,
     init_weights="",
     pcutoff: float | None = None,
     confidence_to_alpha: Optional[Callable[[float], float]] = None,
@@ -798,10 +796,10 @@ def proc_video(
             else:
                 s = ""
 
-            videooutname = filepath.replace(
+            video_out_name = filepath.replace(
                 ".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
             )
-            if os.path.isfile(videooutname) and not overwrite:
+            if os.path.isfile(video_out_name) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
 
@@ -823,14 +821,14 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
-                clip = vp(fname=video, fps=outputframerate)
+                clip = vp(fname=video, fps=output_frame_rate)
                 create_video_with_keypoints_only(
-                    df,
-                    videooutname,
-                    inds,
-                    pcutoff,
-                    cfg["dotsize"],
-                    cfg["alphavalue"],
+                    df=df,
+                    output_name=video_out_name,
+                    ind_links=inds,
+                    pcutoff=pcutoff,
+                    dotsize=cfg["dotsize"],
+                    alpha=cfg["alphavalue"],
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
@@ -842,41 +840,41 @@ def proc_video(
                 if save_frames:
                     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
                 clip = vp(video)
-                CreateVideoSlow(
-                    videooutname,
-                    clip,
-                    df,
-                    tmpfolder,
-                    cfg["dotsize"],
-                    cfg["colormap"],
-                    cfg["alphavalue"],
-                    pcutoff,
-                    trailpoints,
-                    cropping,
-                    x1,
-                    x2,
-                    y1,
-                    y2,
-                    save_frames,
-                    labeled_bpts,
-                    outputframerate,
-                    Frames2plot,
-                    bodyparts2connect,
-                    skeleton_color,
-                    draw_skeleton,
-                    displaycropped,
-                    color_by,
+                create_video_slow(
+                    video_out_name=video_out_name,
+                    clip=clip,
+                    dataframe=df,
+                    tmpfolder=tmpfolder,
+                    dotsize=cfg["dotsize"],
+                    colormap=cfg["colormap"],
+                    alphavalue=cfg["alphavalue"],
+                    pcutoff=pcutoff,
+                    trailpoints=trailpoints,
+                    cropping=cropping,
+                    x1=x1,
+                    x2=x2,
+                    y1=y1,
+                    y2=y2,
+                    save_frames=save_frames,
+                    bodyparts2plot=labeled_bpts,
+                    output_frame_rate=output_frame_rate,
+                    frames2plot=frames2plot,
+                    bodyparts2connect=bodyparts2connect,
+                    skeleton_color=skeleton_color,
+                    draw_skeleton=draw_skeleton,
+                    display_cropped=displaycropped,
+                    color_by=color_by,
                 )
                 clip.close()
             else:
                 _create_labeled_video(
-                    video,
-                    filepath,
+                    video=video,
+                    h5file=filepath,
                     keypoints2show=labeled_bpts,
                     animals2show=individuals,
                     bbox=(x1, x2, y1, y2),
                     codec=codec,
-                    output_path=videooutname,
+                    output_path=video_out_name,
                     pcutoff=pcutoff,
                     dotsize=cfg["dotsize"],
                     cmap=cfg["colormap"],
@@ -884,7 +882,7 @@ def proc_video(
                     skeleton_edges=bodyparts2connect,
                     skeleton_color=skeleton_color,
                     trailpoints=trailpoints,
-                    fps=outputframerate,
+                    fps=output_frame_rate,
                     display_cropped=displaycropped,
                     confidence_to_alpha=confidence_to_alpha,
                 )
@@ -948,24 +946,24 @@ def _create_labeled_video(
     kpts = df.columns.get_level_values("bodyparts").unique().to_list()
     if keypoints2show != "all" and isinstance(keypoints2show, Iterable):
         kpts = [kpt for kpt in kpts if kpt in keypoints2show]
-    CreateVideo(
-        clip,
-        df,
-        pcutoff,
-        dotsize,
-        cmap,
-        kpts,
-        trailpoints,
-        cropping,
-        x1,
-        x2,
-        y1,
-        y2,
-        skeleton_edges,
-        skeleton_color,
-        bool(skeleton_edges),
-        display_cropped,
-        color_by,
+    create_video(
+        clip=clip,
+        dataframe=df,
+        pcutoff=pcutoff,
+        dotsize=dotsize,
+        colormap=cmap,
+        bodyparts2plot=kpts,
+        trailpoints=trailpoints,
+        cropping=cropping,
+        x1=x1,
+        x2=x2,
+        y1=y1,
+        y2=y2,
+        bodyparts2connect=skeleton_edges,
+        skeleton_color=skeleton_color,
+        draw_skeleton=bool(skeleton_edges),
+        displaycropped=display_cropped,
+        color_by=color_by,
         confidence_to_alpha=confidence_to_alpha,
     )
 
