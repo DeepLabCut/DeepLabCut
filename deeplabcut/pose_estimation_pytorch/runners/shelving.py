@@ -85,7 +85,6 @@ class ShelfWriter(ShelfManager):
 
     Attributes:
         filepath: The path to the shelf.
-        str_width: The number of leading 0s in frame index in the keys.
     """
 
     def __init__(
@@ -96,9 +95,9 @@ class ShelfWriter(ShelfManager):
         self._num_frames = num_frames
         self._frame_index = 0
 
-        self.str_width = 5
+        self._str_width = 5
         if num_frames is not None:
-            self.str_width = int(np.ceil(np.log10(num_frames)))
+            self._str_width = int(np.ceil(np.log10(num_frames)))
 
     def add_prediction(
         self,
@@ -116,7 +115,7 @@ class ShelfWriter(ShelfManager):
         if not self._open:
             raise ValueError(f"You must call open() before adding data!")
 
-        key = "frame" + str(self._frame_index).zfill(self.str_width)
+        key = "frame" + str(self._frame_index).zfill(self._str_width)
 
         # convert bodyparts to shape (num_bpts, num_assemblies, 3)
         bodyparts = bodyparts.transpose((1, 0, 2))
@@ -147,6 +146,13 @@ class ShelfWriter(ShelfManager):
         self._db[key] = output
         self._frame_index += 1
 
+    def close(self) -> None:
+        """Opens the shelf"""
+        if self._open and self._frame_index > 0:
+            self._db["metadata"]["nframes"] = self._frame_index
+
+        super().close()
+
     def open(self) -> None:
         """Opens the shelf"""
         super().open()
@@ -166,4 +172,5 @@ class ShelfWriter(ShelfManager):
                 self._pose_cfg["all_joints_names"][i] for i in range(len(all_joints))
             ],
             "nframes": self._num_frames,
+            "key_str_width": self._str_width,
         }

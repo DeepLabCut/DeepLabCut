@@ -524,19 +524,22 @@ def _generate_assemblies_file(
     if full_data_path.exists():
         with open(full_data_path, "rb") as f:
             data = pickle.load(f)
-        keys = [k for k in data if k != "metadata"]
+
     else:
         data = shelving.ShelfReader(full_data_path)
         data.open()
-        # keys = [k for k in data.keys() if k != "metadata"]
-        keys = list(sorted([k for k in data.keys() if k != "metadata"]))
+
+    num_frames = data["metadata"]["nframes"]
+    str_width = data["metadata"].get("key_str_width")
+    if str_width is None:
+        keys = [k for k in data.keys() if k != "metadata"]
+        str_width = len(keys[0]) - len("frame")
 
     assemblies = dict(single=dict())
-    prefix_len = len("frame")
-    for k in keys:
-        frame_index = int(k[prefix_len:])
+    for frame_index in range(num_frames):
+        frame_key = "frame" + str(frame_index).zfill(str_width)
+        predictions = data[frame_key]
 
-        predictions = data[k]
         keypoint_preds = predictions["coordinates"][0]
         keypoint_scores = predictions["confidence"]
 
@@ -632,6 +635,7 @@ def _generate_output_data(
     pose_config: dict,
     predictions: list[dict[str, np.ndarray]],
 ) -> dict:
+    str_width = int(np.ceil(np.log10(len(predictions))))
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),
@@ -648,17 +652,11 @@ def _generate_output_data(
                 for i in range(len(pose_config["all_joints"]))
             ],
             "nframes": len(predictions),
+            "key_str_width": str_width,
         }
     }
 
-    str_width = int(np.ceil(np.log10(len(predictions))))
     for frame_num, frame_predictions in enumerate(predictions):
-        # TODO: Do we want to keep the same format as in the TensorFlow version?
-        #  On the one hand, it's "more" backwards compatible.
-        #  On the other, might as well simplify the code. These files should only be loaded
-        #    by the PyTorch version, and only predictions made by PyTorch models should be
-        #    loaded using them
-
         key = "frame" + str(frame_num).zfill(str_width)
         # shape (num_assemblies, num_bpts, 3)
         bodyparts = frame_predictions["bodyparts"]
