@@ -668,7 +668,7 @@ def get_deeplabcut_path():
     return os.path.split(importlib.util.find_spec("deeplabcut").origin)[0]
 
 
-def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
+def filter_bodyparts_from_config(cfg, comparisonbodyparts):
     """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts"""
     # if "MULTI!" in allbpts:
     if cfg["multianimalproject"]:
@@ -1010,7 +1010,7 @@ GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
 IntersectionofBodyPartsandOnesGivenbyUser = (
-    intersection_of_body_parts_and_ones_given_by_user
+    filter_bodyparts_from_config
 )
 GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing

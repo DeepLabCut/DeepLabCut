@@ -360,7 +360,7 @@ def extract_outlier_frames(
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
         cfg, comparisonbodyparts
     )
     if not len(bodyparts):
@@ -708,7 +708,7 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
         cfg, "all"
     )
 

@@ -146,7 +146,7 @@ def evaluate_multianimal_full(
 
     # Get list of body parts to evaluate network for
     comparisonbodyparts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        auxiliaryfunctions.filter_bodyparts_from_config(
             cfg, comparisonbodyparts
         )
     )

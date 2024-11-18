@@ -648,7 +648,7 @@ def create_labeled_video(
         }
     else:
         bodyparts = (
-            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            auxiliaryfunctions.filter_bodyparts_from_config(
                 cfg, displayedbodyparts
             )
         )

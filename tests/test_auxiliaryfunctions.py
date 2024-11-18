@@ -166,7 +166,7 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
         all_bodyparts = bodyparts
 
     filtered_bpts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        auxiliaryfunctions.filter_bodyparts_from_config(
             cfg, comparisonbodyparts="all"
         )
     )
@@ -176,7 +176,7 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
     assert all([bpt in all_bodyparts for bpt in filtered_bpts])
 
     filtered_bpts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        auxiliaryfunctions.filter_bodyparts_from_config(
             cfg,
             comparisonbodyparts=comparison_bpts,
         )

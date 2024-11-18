@@ -277,7 +277,7 @@ def return_evaluate_network_data(
 
     # Get list of body parts to evaluate network for
     comparisonbodyparts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        auxiliaryfunctions.filter_bodyparts_from_config(
             cfg, comparisonbodyparts
         )
     )
@@ -708,7 +708,7 @@ def evaluate_network(
 
         # Get list of body parts to evaluate network for
         comparisonbodyparts = (
-            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            auxiliaryfunctions.filter_bodyparts_from_config(
                 cfg, comparisonbodyparts
             )
         )
