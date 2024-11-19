@@ -59,6 +59,8 @@ def _video_inference_superanimal(
     cropping: list[int] | None = None,
     dest_folder: Optional[str] = None,
     output_suffix: str = "",
+    plot_bboxes: bool = True,
+    bboxes_pcutoff: float = 0.9,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -131,8 +133,6 @@ def _video_inference_superanimal(
 
         output_json = output_h5.with_suffix(".json")
         if len(output_suffix) > 0:
-            # str(output_h5).replace(".h5", "_before_adapt.json")
-            # str(output_h5).replace(".h5", "_after_adapt.json")
             output_json = output_json.with_stem(output_h5.stem + output_suffix)
 
         video = VideoIterator(video_path, cropping=cropping)
@@ -145,6 +145,12 @@ def _video_inference_superanimal(
 
         pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
         pred_unique_bodyparts = None
+
+        bbox_keys_in_predictions = {"bboxes", "bbox_scores"}
+        bboxes_list = [{key: value
+                        for key, value in p.items()
+                        if key in bbox_keys_in_predictions}
+                       for i, p in enumerate(predictions)]
 
         bbox = cropping
         if cropping is None:
@@ -181,6 +187,9 @@ def _video_inference_superanimal(
             bbox=bbox,
             cmap=colormap,
             output_path=str(output_video),
+            plot_bboxes=plot_bboxes,
+            bboxes_list=bboxes_list,
+            bboxes_pcutoff=bboxes_pcutoff,
         )
         print(f"Video with predictions was saved as {output_path}")
 

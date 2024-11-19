@@ -864,28 +864,40 @@ def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
             return True, dataname, DLCscorer
 
 
-def find_video_metadata(folder, videoname, scorer):
+def find_video_full_meta_data(folder, videoname, scorer):
     """For backward compatibility, let us search the substring 'meta'"""
     scorer_legacy = scorer.replace("DLC", "DeepCut")
-    meta = [
+
+    pickles_in_folder_for_video_and_scorer = [
         file
         for file in grab_files_in_folder(folder, "pickle")
-        if "meta" in file
-        and (
+        if (
             file.startswith(videoname + scorer)
             or file.startswith(videoname + scorer_legacy)
         )
     ]
-    if not len(meta):
+
+    full_files = [file for file in pickles_in_folder_for_video_and_scorer if "full" in file]
+    meta_files = [file for file in pickles_in_folder_for_video_and_scorer if "meta" in file]
+
+    zipped_files = list(zip(full_files, meta_files))
+    if not len(zipped_files):
         raise FileNotFoundError(
-            f"No metadata found in {folder} "
+            f"No data found in {folder} "
             f"for video {videoname} and scorer {scorer}."
         )
-    return os.path.join(folder, meta[0])
+    full_data_file_name, meta_data_file_name = zipped_files[0]
+    return os.path.join(folder, full_data_file_name), os.path.join(folder, meta_data_file_name)
 
 
 def load_video_metadata(folder, videoname, scorer):
-    return read_pickle(find_video_metadata(folder, videoname, scorer))
+    _, meta_data_path = find_video_full_meta_data(folder, videoname, scorer)
+    return read_pickle(meta_data_path)
+
+
+def load_video_full_data(folder, videoname, scorer):
+    full_data_path, _ = find_video_full_meta_data(folder, videoname, scorer)
+    return read_pickle(full_data_path)
 
 
 def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):

@@ -38,6 +38,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib import patches
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
 from skimage.draw import disk, line_aa, set_color, rectangle_perimeter
@@ -86,6 +87,9 @@ def create_video(
     displaycropped,
     color_by,
     confidence_to_alpha=None,
+    plot_bboxes=True,
+    bboxes_list=None,
+    bboxes_pcutoff=0.6,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = dataframe.columns.get_level_values("bodyparts")
@@ -152,11 +156,35 @@ def create_video(
         C = colorclass.to_rgba(np.linspace(0, 1, nindividuals))
     colors = (C[:, :3] * 255).astype(np.uint8)
 
+    bboxes_color = (0, 0, 0)
+
     with np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(dataframe))):
             image = clip.load_frame()
             if displaycropped:
                 image = image[y1:y2, x1:x2]
+
+            # Draw bounding boxes if required and present
+            if plot_bboxes and bboxes_list:
+                bboxes      = bboxes_list[index]["bboxes"]
+                bbox_scores = bboxes_list[index]["bbox_scores"]
+                n_bboxes = bboxes.shape[0]
+                for i in range(n_bboxes):
+                    bbox = bboxes[i, :]
+                    x, y = bbox[0], bbox[1]
+                    x += x1
+                    y += y1
+                    w, h = bbox[2], bbox[3]
+                    confidence = bbox_scores[i]
+                    if confidence < bboxes_pcutoff:
+                        continue
+                    rect_coords = rectangle_perimeter(start=(y, x), extent=(h, w))
+
+                    set_color(
+                        image,
+                        rect_coords,
+                        bboxes_color,
+                    )
 
             # Draw the skeleton for specific bodyparts to be connected as
             # specified in the config file
@@ -225,10 +253,11 @@ def create_video_slow(
     draw_skeleton,
     display_cropped,
     color_by,
+    plot_bboxes=True,
+    bboxes_list=None,
+    bboxes_pcutoff=0.6,
 ):
     """Creating individual frames with labeled body parts and making a video"""
-    # scorer=np.unique(Dataframe.columns.get_level_values(0))[0]
-    # bodyparts2plot = list(np.unique(Dataframe.columns.get_level_values(1)))
 
     if display_cropped:
         ny, nx = y2 - y1, x2 - x1
@@ -285,6 +314,8 @@ def create_video_slow(
     else:
         colors = visualization.get_cmap(nbodyparts, name=colormap)
 
+    bounding_boxes_color = "k"
+
     nframes_digits = int(np.ceil(np.log10(nframes)))
     if nframes_digits > 9:
         raise Exception(
@@ -313,6 +344,28 @@ def create_video_slow(
                     image = image[y1:y2, x1:x2]
                 ax.imshow(image)
 
+                # Draw bounding boxes of required and present
+                if plot_bboxes and bboxes_list:
+                    bboxes      = bboxes_list[index]["bboxes"]
+                    bbox_scores = bboxes_list[index]["bbox_scores"]
+                    n_bboxes = bboxes.shape[0]
+                    for i in range(n_bboxes):
+                        bbox = bboxes[i, :]
+                        bbox_origin = (bbox[0], bbox[1])
+                        (bbox_width, bbox_height) = (bbox[2], bbox[3])
+                        bbox_confidence = bbox_scores[i]
+                        if bbox_confidence < bboxes_pcutoff:
+                            continue
+                        rectangle = patches.Rectangle(
+                            bbox_origin,
+                            bbox_width,
+                            bbox_height,
+                            linewidth = 1,
+                            edgecolor = bounding_boxes_color,
+                            facecolor = 'none')
+                        ax.add_patch(rectangle)
+
+                # Draw skeleton
                 if draw_skeleton:
                     for bpt1, bpt2 in bpts2connect:
                         if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff):
@@ -323,6 +376,7 @@ def create_video_slow(
                                 alpha=alphavalue,
                             )
 
+                # Draw bodyparts
                 for ind, num_bp, num_ind in bpts2color:
                     if df_likelihood[ind, index] > pcutoff:
                         if color_by == "bodypart":
@@ -392,6 +446,8 @@ def create_labeled_video(
     alphavalue=0.5,
     overwrite=False,
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
+    plot_bboxes=True,
+    bboxes_pcutoff=None,
 ):
     """Labels the bodyparts in a video.
 
@@ -515,6 +571,12 @@ def create_labeled_video(
         keypoint will be set as a function of its score: alpha = f(score). The default
         function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
 
+    plot_bboxes: bool, optional, default=True
+        If using Pytorch and in Top-Down mode, setting this to true will also plot the bounding boxes
+
+    bboxes_pcutoff, float, optional, default=None:
+        If plotting bounding boxes, this overrides the bboxes_pcutoff set in the model configuration.
+
     Returns
     -------
         results : list[bool]
@@ -567,6 +629,8 @@ def create_labeled_video(
     if config == "":
         if pcutoff is None:
             pcutoff = 0.6
+        if bboxes_pcutoff is None:
+            bboxes_pcutoff = 0.6
 
         individuals = [""]
         uniquebodyparts = []
@@ -605,6 +669,11 @@ def create_labeled_video(
                 superanimal_name = model_config["train_settings"]["weight_init"][
                     "dataset"
                 ]
+            if bboxes_pcutoff is None:
+                bboxes_pcutoff = model_config.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
+        else:
+            if bboxes_pcutoff is None:
+                bboxes_pcutoff = 0.6
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
@@ -701,6 +770,8 @@ def create_labeled_video(
         init_weights=init_weights,
         pcutoff=pcutoff,
         confidence_to_alpha=confidence_to_alpha,
+        plot_bboxes=plot_bboxes,
+        bboxes_pcutoff=bboxes_pcutoff,
     )
 
     if get_start_method() == "fork":
@@ -741,6 +812,8 @@ def proc_video(
     init_weights="",
     pcutoff: float | None = None,
     confidence_to_alpha: Optional[Callable[[float], float]] = None,
+    plot_bboxes: bool = True,
+    bboxes_pcutoff: float = 0.6,
 ):
     """Helper function for create_videos
 
@@ -788,6 +861,9 @@ def proc_video(
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, filtered, track_method
             )
+            full_data = auxiliaryfunctions.load_video_full_data(
+                destfolder, vname, DLCscorer
+            )
             metadata = auxiliaryfunctions.load_video_metadata(
                 destfolder, vname, DLCscorer
             )
@@ -812,6 +888,15 @@ def proc_video(
                 for bp in df.columns.get_level_values("bodyparts").unique()
                 if bp in bodyparts
             ]
+
+            frames_dict = {
+                int(key.replace("frame", "")): value
+                for key, value in full_data.items()
+                if key.startswith("frame") and key[5:].isdigit()
+            }
+            bboxes_list = None
+            if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
+                bboxes_list = [frames_dict[key] for key in sorted(frames_dict.keys())]
 
             if keypoints_only:
                 # Mask rather than drop unwanted bodyparts to ensure consistent coloring
@@ -864,6 +949,9 @@ def proc_video(
                     draw_skeleton=draw_skeleton,
                     display_cropped=displaycropped,
                     color_by=color_by,
+                    plot_bboxes=plot_bboxes,
+                    bboxes_list=bboxes_list,
+                    bboxes_pcutoff=bboxes_pcutoff,
                 )
                 clip.close()
             else:
@@ -885,7 +973,11 @@ def proc_video(
                     fps=output_frame_rate,
                     display_cropped=displaycropped,
                     confidence_to_alpha=confidence_to_alpha,
+                    plot_bboxes=plot_bboxes,
+                    bboxes_list=bboxes_list,
+                    bboxes_pcutoff=bboxes_pcutoff,
                 )
+
             return True
 
         except FileNotFoundError as e:
@@ -911,6 +1003,9 @@ def _create_labeled_video(
     fps=None,
     output_path="",
     confidence_to_alpha=None,
+    plot_bboxes=True,
+    bboxes_list=None,
+    bboxes_pcutoff=0.6,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -965,6 +1060,9 @@ def _create_labeled_video(
         displaycropped=display_cropped,
         color_by=color_by,
         confidence_to_alpha=confidence_to_alpha,
+        plot_bboxes=plot_bboxes,
+        bboxes_list=bboxes_list,
+        bboxes_pcutoff=bboxes_pcutoff,
     )
 
 

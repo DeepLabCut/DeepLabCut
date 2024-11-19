@@ -45,6 +45,7 @@ def video_inference_superanimal(
     cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
+    plot_bboxes: bool = True,
     batch_size: int = 1,
     detector_batch_size: int = 1,
     pcutoff: float = 0.1,
@@ -107,6 +108,9 @@ def video_inference_superanimal(
 
     plot_trajectories (bool):
         Whether to plot the trajectories. The default is False.
+
+    plot_bboxes (bool):
+        If using Top-Down approach, whether to plot the detector's bounding boxes. The default is True.
 
     batch_size (int):
         The batch size to use for video inference. Only for PyTorch models.
@@ -356,6 +360,8 @@ def video_inference_superanimal(
                 cropping=cropping,
                 dest_folder=dest_folder,
                 output_suffix=output_suffix,
+                plot_bboxes=plot_bboxes,
+                bboxes_pcutoff=bbox_threshold,
             )
 
             # we prepare the pseudo dataset in the same folder of the target video
@@ -493,4 +499,6 @@ def video_inference_superanimal(
             cropping=cropping,
             dest_folder=dest_folder,
             output_suffix=output_suffix,
+            plot_bboxes=plot_bboxes,
+            bboxes_pcutoff=bbox_threshold,
         )
