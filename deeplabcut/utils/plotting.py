@@ -281,9 +281,7 @@ def plot_trajectories(
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
         cfg, shuffle, trainFraction, modelprefix=modelprefix
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
-    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
-        cfg, displayedbodyparts
-    )
+    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.filter_individuals_from_config(
         cfg, displayedindividuals
     )

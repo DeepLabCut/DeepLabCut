@@ -226,7 +226,7 @@ def AnalyzeMultiAnimalVideo(
                 data=predicted_data,
                 metadata=metadata,
                 dir_path=output_path,
-                name_basis=output_name_basis
+                name_basis=output_name_basis,
             )
 
 

@@ -166,7 +166,7 @@ def create_video(
 
             # Draw bounding boxes if required and present
             if plot_bboxes and bboxes_list:
-                bboxes      = bboxes_list[index]["bboxes"]
+                bboxes = bboxes_list[index]["bboxes"]
                 bbox_scores = bboxes_list[index]["bbox_scores"]
                 n_bboxes = bboxes.shape[0]
                 for i in range(n_bboxes):
@@ -346,7 +346,7 @@ def create_video_slow(
 
                 # Draw bounding boxes of required and present
                 if plot_bboxes and bboxes_list:
-                    bboxes      = bboxes_list[index]["bboxes"]
+                    bboxes = bboxes_list[index]["bboxes"]
                     bbox_scores = bboxes_list[index]["bbox_scores"]
                     n_bboxes = bboxes.shape[0]
                     for i in range(n_bboxes):
@@ -360,9 +360,10 @@ def create_video_slow(
                             bbox_origin,
                             bbox_width,
                             bbox_height,
-                            linewidth = 1,
-                            edgecolor = bounding_boxes_color,
-                            facecolor = 'none')
+                            linewidth=1,
+                            edgecolor=bounding_boxes_color,
+                            facecolor="none",
+                        )
                         ax.add_patch(rectangle)
 
                 # Draw skeleton
@@ -670,7 +671,11 @@ def create_labeled_video(
                     "dataset"
                 ]
             if bboxes_pcutoff is None:
-                bboxes_pcutoff = model_config.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
+                bboxes_pcutoff = (
+                    model_config.get("detector", {})
+                    .get("model", {})
+                    .get("box_score_thresh", 0.6)
+                )
         else:
             if bboxes_pcutoff is None:
                 bboxes_pcutoff = 0.6
@@ -716,10 +721,8 @@ def create_labeled_video(
             "uniquebodyparts": uniquebodyparts,
         }
     else:
-        bodyparts = (
-            auxiliaryfunctions.filter_bodyparts_from_config(
-                cfg, displayedbodyparts
-            )
+        bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
+            cfg, displayedbodyparts
         )
 
     individuals = auxfun_multianimal.filter_individuals_from_config(
@@ -1157,7 +1160,7 @@ def create_video_with_all_detections(
     destfolder=None,
     modelprefix="",
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
-    plot_bboxes: bool = True
+    plot_bboxes: bool = True,
 ):
     """
     Create a video labeled with all the detections stored in a '*_full.pickle' file.
@@ -1235,7 +1238,9 @@ def create_video_with_all_detections(
         if not (os.path.isfile(outputname)):
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
-            data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(data_dir_path, name_basis)
+            data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(
+                data_dir_path, name_basis
+            )
             data = dict(
                 data
             )  # Cast to dict (making a copy) so items can safely be popped
@@ -1269,7 +1274,13 @@ def create_video_with_all_detections(
             clip = vp(fname=video, sname=str(outputname), codec="mp4v")
             ny, nx = clip.height(), clip.width()
 
-            bboxes_pcutoff = metadata.get("data", {}).get("pytorch-config", {}).get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
+            bboxes_pcutoff = (
+                metadata.get("data", {})
+                .get("pytorch-config", {})
+                .get("detector", {})
+                .get("model", {})
+                .get("box_score_thresh", 0.6)
+            )
             bboxes_color = (0, 0, 0)
 
             for n in trange(clip.nframes):
@@ -1285,7 +1296,7 @@ def create_video_with_all_detections(
                         bbox_scores = data[frame_names[ind]]["bbox_scores"]
                         n_bboxes = bboxes.shape[0]
                         for i in range(n_bboxes):
-                            bbox = bboxes[i,:]
+                            bbox = bboxes[i, :]
                             x, y = bbox[0], bbox[1]
                             x += x1
                             y += y1
@@ -1293,7 +1304,9 @@ def create_video_with_all_detections(
                             confidence = bbox_scores[i]
                             if confidence < bboxes_pcutoff:
                                 continue
-                            rect_coords = rectangle_perimeter(start=(y, x), extent=(h, w))
+                            rect_coords = rectangle_perimeter(
+                                start=(y, x), extent=(h, w)
+                            )
 
                             set_color(
                                 frame,

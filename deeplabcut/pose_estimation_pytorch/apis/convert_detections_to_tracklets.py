@@ -70,7 +70,11 @@ def convert_detections2tracklets(
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
     rel_model_dir = auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
+        train_fraction,
+        shuffle,
+        cfg,
+        modelprefix=modelprefix,
+        engine=Engine.PYTORCH,
     )
     model_dir = Path(cfg["project_path"]) / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
@@ -119,7 +123,9 @@ def convert_detections2tracklets(
 
         output_name_basis = video_name + dlc_scorer
         print(f"Loading From {output_path / output_name_basis} full and meta pickles")
-        data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(output_path, output_name_basis)
+        data, metadata = auxfun_multianimal.load_multianimal_full_meta_data(
+            output_path, output_name_basis
+        )
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":

@@ -165,21 +165,17 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
     else:
         all_bodyparts = bodyparts
 
-    filtered_bpts = (
-        auxiliaryfunctions.filter_bodyparts_from_config(
-            cfg, comparisonbodyparts="all"
-        )
+    filtered_bpts = auxiliaryfunctions.filter_bodyparts_from_config(
+        cfg, comparisonbodyparts="all"
     )
     print(all_bodyparts)
     print(filtered_bpts)
     assert len(all_bodyparts) == len(filtered_bpts)
     assert all([bpt in all_bodyparts for bpt in filtered_bpts])
 
-    filtered_bpts = (
-        auxiliaryfunctions.filter_bodyparts_from_config(
-            cfg,
-            comparisonbodyparts=comparison_bpts,
-        )
+    filtered_bpts = auxiliaryfunctions.filter_bodyparts_from_config(
+        cfg,
+        comparisonbodyparts=comparison_bpts,
     )
     print(filtered_bpts)
     assert len(expected_bpts) == len(filtered_bpts)

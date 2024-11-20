@@ -319,7 +319,7 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
     return cfg["bodyparts"]
 
 
-def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+def get_unique_bodyparts(cfg: dict) -> typing.List[str]:
     """
     Args:
         cfg: a project configuration file
@@ -611,6 +611,7 @@ def get_evaluation_folder(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -712,6 +713,7 @@ def get_scorer_name(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -721,6 +723,7 @@ def get_scorer_name(
 
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
+
         snapshot_index = None
         if isinstance(trainingsiterations, int):
             snapshot_index = trainingsiterations
@@ -753,7 +756,11 @@ def get_scorer_name(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
+            str(
+                get_model_folder(
+                    trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
+                )
+            ),
             "train",
             engine.pose_cfg_name,
         )
@@ -877,17 +884,22 @@ def find_video_full_meta_data(folder, videoname, scorer):
         )
     ]
 
-    full_files = [file for file in pickles_in_folder_for_video_and_scorer if "full" in file]
-    meta_files = [file for file in pickles_in_folder_for_video_and_scorer if "meta" in file]
+    full_files = [
+        file for file in pickles_in_folder_for_video_and_scorer if "full" in file
+    ]
+    meta_files = [
+        file for file in pickles_in_folder_for_video_and_scorer if "meta" in file
+    ]
 
     zipped_files = list(zip(full_files, meta_files))
     if not len(zipped_files):
         raise FileNotFoundError(
-            f"No data found in {folder} "
-            f"for video {videoname} and scorer {scorer}."
+            f"No data found in {folder} " f"for video {videoname} and scorer {scorer}."
         )
     full_data_file_name, meta_data_file_name = zipped_files[0]
-    return os.path.join(folder, full_data_file_name), os.path.join(folder, meta_data_file_name)
+    return os.path.join(folder, full_data_file_name), os.path.join(
+        folder, meta_data_file_name
+    )
 
 
 def load_video_metadata(folder, videoname, scorer):
@@ -1021,9 +1033,7 @@ LoadMetadata = load_metadata
 GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
-IntersectionofBodyPartsandOnesGivenbyUser = (
-    filter_bodyparts_from_config
-)
+IntersectionofBodyPartsandOnesGivenbyUser = filter_bodyparts_from_config
 GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed

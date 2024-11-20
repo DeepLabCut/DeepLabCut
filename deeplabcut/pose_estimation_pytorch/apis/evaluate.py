@@ -222,7 +222,7 @@ def evaluate_snapshot(
     parameters = PoseDatasetParameters(
         bodyparts=project_bodyparts,
         unique_bpts=parameters.unique_bpts,
-        individuals=parameters.individuals
+        individuals=parameters.individuals,
     )
 
     predictions = {}
@@ -311,7 +311,7 @@ def evaluate_snapshot(
                 dot_size=cfg["dotsize"],
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
-                bboxes_cutoff=bboxes_cutoff
+                bboxes_cutoff=bboxes_cutoff,
             )
 
     return df_predictions

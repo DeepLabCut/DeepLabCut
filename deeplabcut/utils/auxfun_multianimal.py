@@ -156,10 +156,7 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
 
 
 def save_multianimal_full_meta_data(
-    data,
-    metadata,
-    dir_path: Path,
-    name_basis : str
+    data, metadata, dir_path: Path, name_basis: str
 ) -> (Path, Path):
     """
     Save predicted data as .pickle file and metadata as pickle file.
@@ -186,10 +183,7 @@ def save_multianimal_full_meta_data(
     return data_path, metadata_path
 
 
-def load_multianimal_full_meta_data(
-    dir_path: Path,
-    name_basis: str
-) -> tuple[Any, Any]:
+def load_multianimal_full_meta_data(dir_path: Path, name_basis: str) -> tuple[Any, Any]:
     """
     Read full and meta data from respective pickle files.
     Args:

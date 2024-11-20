@@ -708,9 +708,7 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
-        cfg, "all"
-    )
+    bodyparts = auxiliaryfunctions.filter_bodyparts_from_config(cfg, "all")
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)

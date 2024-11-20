@@ -276,10 +276,8 @@ def return_evaluate_network_data(
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = (
-        auxiliaryfunctions.filter_bodyparts_from_config(
-            cfg, comparisonbodyparts
-        )
+    comparisonbodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
+        cfg, comparisonbodyparts
     )
     ##################################################
     # Load data...
@@ -707,10 +705,8 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = (
-            auxiliaryfunctions.filter_bodyparts_from_config(
-                cfg, comparisonbodyparts
-            )
+        comparisonbodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
+            cfg, comparisonbodyparts
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempt_to_make_folder(

@@ -414,9 +414,7 @@ def extract_save_all_maps(
         config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
     )
 
-    comparisonbodyparts = filter_bodyparts_from_config(
-        cfg, comparisonbodyparts
-    )
+    comparisonbodyparts = filter_bodyparts_from_config(cfg, comparisonbodyparts)
 
     print("Saving plots...")
     for frac, values in data.items():

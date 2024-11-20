@@ -145,10 +145,8 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = (
-        auxiliaryfunctions.filter_bodyparts_from_config(
-            cfg, comparisonbodyparts
-        )
+    comparisonbodyparts = auxiliaryfunctions.filter_bodyparts_from_config(
+        cfg, comparisonbodyparts
     )
     all_bpts = np.asarray(
         len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -555,7 +553,7 @@ def evaluate_multianimal_full(
                         data=predicted_data,
                         metadata=metadata,
                         dir_path=output_path,
-                        name_basis=output_name_basis
+                        name_basis=output_name_basis,
                     )
                     tf.compat.v1.reset_default_graph()
 

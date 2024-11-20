@@ -352,22 +352,27 @@ def build_predictions_dataframe(
         if image_name_to_index is not None:
             index_data.append(image_name_to_index(image))
         if "bboxes" in image_predictions:
-            bboxes_data.append((image_predictions["bboxes"], image_predictions["bbox_scores"]))
+            bboxes_data.append(
+                (image_predictions["bboxes"], image_predictions["bbox_scores"])
+            )
 
     if len(index_data) > 0:
         index = pd.MultiIndex.from_tuples(index_data)
     else:
         index = list(predictions.keys())
 
-    return (pd.DataFrame(
-        prediction_data,
-        index=index,
-        columns=build_dlc_dataframe_columns(
-            scorer=scorer,
-            parameters=parameters,
-            with_likelihood=True,
+    return (
+        pd.DataFrame(
+            prediction_data,
+            index=index,
+            columns=build_dlc_dataframe_columns(
+                scorer=scorer,
+                parameters=parameters,
+                with_likelihood=True,
+            ),
         ),
-    ), dict(zip(index, bboxes_data)))
+        dict(zip(index, bboxes_data)),
+    )
 
 
 def get_inference_runners(
