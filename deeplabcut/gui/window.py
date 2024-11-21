@@ -289,6 +289,7 @@ class MainWindow(QMainWindow):
         self.root.config = text
         self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
+    # When changing the shuffle, this function is called 8 times!
     def update_shuffle(self, value):
         self.shuffle_value = value
         self.shuffle_change.emit(value)

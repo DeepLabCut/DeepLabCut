@@ -351,7 +351,7 @@ def build_predictions_dataframe(
         prediction_data.append(image_data)
         if image_name_to_index is not None:
             index_data.append(image_name_to_index(image))
-        if "bboxes" in image_predictions:
+        if "bboxes" in image_predictions: # todo move this out into its separate function
             bboxes_data.append(
                 (image_predictions["bboxes"], image_predictions["bbox_scores"])
             )
