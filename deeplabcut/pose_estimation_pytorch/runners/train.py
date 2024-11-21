@@ -37,9 +37,32 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
-    """Runner base class
+    """Base TrainingRunner class.
 
-    A runner takes a model and runs actions on it, such as training or inference
+    A TrainingRunner is used to fit models to datasets. Subclasses must implement the
+    ``step(self, batch, mode)`` method, which performs a single training or validation
+    step on a batch of data. The step is different depending on the model type (e.g.
+    a pose model step vs. an object detector step).
+
+    Args:
+        model: The model to fit.
+        optimizer: The optimizer to use to fit the model.
+        snapshot_manager: Manages how snapshots are saved to disk during training.
+        device: The device on which to run training (e.g. 'cpu', 'cuda', 'cuda:0').
+        gpus: Used to specify the GPU indices for multi-GPU training (e.g. [0, 1, 2, 3]
+            to train on 4 GPUs). When a GPUs list is given, the device must be 'cuda'.
+        eval_interval: The interval at which the model will be evaluated while training
+            (e.g. `eval_interva=5` means the model will be evaluated every 5 epochs).
+        snapshot_path: If continuing to train a model, the path to the snapshot to
+            resume training from.
+        scheduler: The learning rate scheduler (or it's configuration), if one should be
+            used.
+        load_scheduler_state_dict: When resuming training (snapshot_path is not None),
+            attempts to load the scheduler state dict from the snapshot. If you've
+            modified your scheduler, set this to False or the old scheduler parameters
+            might be used.
+        logger: Logger to monitor training (e.g. a WandBLogger).
+        log_filename: Name of the file in which to store training stats.
     """
 
     def __init__(
@@ -56,24 +79,6 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
     ):
-        """
-        Args:
-            model: The model to train.
-            optimizer: The optimizer (or optimizer config) to fit the model.
-            snapshot_manager: The module to use to manage snapshots.
-            device: The device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            gpus: The list of GPU indices to use for multi-GPU training.
-            eval_interval: How often evaluation is run on the test set (in epochs).
-            snapshot_path: If defined, the path of a snapshot from which to load
-                pretrained weights.
-            scheduler: The scheduler (or scheduler config) to use.
-            load_scheduler_state_dict: When resuming training (snapshot_path is not
-                None), attempts to load the scheduler state dict from the snapshot. If
-                you've modified your scheduler, set this to False or the old scheduler
-                parameters might be used.
-            logger: Logger to monitor training (e.g WandB logger).
-            log_filename: Name of the file in which to store training stats.
-        """
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
         )
@@ -106,7 +111,6 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 self.optimizer.load_state_dict(snapshot["optimizer"])
 
             self._load_scheduler_state_dict(load_scheduler_state_dict, snapshot)
-
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
