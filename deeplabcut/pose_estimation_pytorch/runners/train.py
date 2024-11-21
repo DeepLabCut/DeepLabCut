@@ -103,7 +103,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         # some models cannot compute a validation loss (e.g. detectors)
         self._print_valid_loss = True
 
-        if self.snapshot_path is not None and self.snapshot_path != "":
+        if self.snapshot_path:
             snapshot = self.load_snapshot(self.snapshot_path, self.device, self.model)
             self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
 
