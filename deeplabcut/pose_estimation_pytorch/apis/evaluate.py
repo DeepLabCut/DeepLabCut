@@ -18,6 +18,7 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import deeplabcut.core.metrics as metrics
 from deeplabcut.core.weight_init import WeightInitialization
@@ -37,6 +38,14 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.visualization import plot_evaluation_results
+from deeplabcut.utils import auxfun_videos
+from deeplabcut.utils.visualization import (
+    create_minimal_figure,
+    get_cmap,
+    make_multianimal_labeled_image,
+    save_labeled_frame,
+    erase_artists,
+)
 
 
 def predict(
@@ -167,6 +176,224 @@ def evaluate(
     return results, predictions
 
 
+import random
+# def plot_predictions(
+#     loader: Loader,
+#     predictions: dict[str, dict[str, np.ndarray]],
+#     plotting: str = "bodypart",
+#     sample: int | None = None,
+#     sample_random: bool = False,
+# ) -> None:
+
+def plot_predictions(
+    loader: Loader,
+    predictions: dict[str, dict[str, np.ndarray]],
+    plotting: str = "bodypart",
+    sample: int | None = None,
+    sample_random: bool = False,
+) -> None:
+    """
+    Process COCO format data and visualize using plot_evaluation_results
+    
+    Args:
+        loader: COCOLoader instance containing dataset info
+        predictions: Model predictions dictionary
+        plotting: How to color the points ("bodypart" or "individual")
+        sample: Number of images to visualize (None for all)
+        sample_random: Whether to sample images randomly
+    """
+    
+    # Get paths and create output folder
+    project_root = loader.project_root
+    output_folder = Path(project_root) / "labeled_frames"
+    output_folder.mkdir(exist_ok=True)
+    
+    # 2. Get ground truth data
+    ground_truth = loader.load_data(mode="test")
+    
+    # 3. Create image list for sampling
+    image_ids = [img['id'] for img in ground_truth['images']]
+    if sample is not None:
+        if sample_random:
+            image_ids = random.sample(image_ids, min(sample, len(image_ids)))
+        else:
+            image_ids = image_ids[:sample]
+    
+    # 4. Create DataFrame structure
+    data = []
+    
+    # Process ground truth
+    for img_id in image_ids:
+        img_info = next(img for img in ground_truth['images'] if img['id'] == img_id)
+        img_name = img_info['file_name']
+        
+        # Get ground truth annotations
+        gt_anns = [ann for ann in ground_truth['annotations'] if ann['image_id'] == img_id]
+        
+        # Get predictions for this image
+        pred_anns = [pred for pred in predictions if pred['image_id'] == img_id]
+        
+        # Process each keypoint
+        for gt_ann, pred_ann in zip(gt_anns, pred_anns):
+            gt_kpts = np.array(gt_ann['keypoints']).reshape(-1, 3)
+            pred_kpts = np.array(pred_ann['keypoints']).reshape(-1, 3)
+            
+            # Get keypoint names
+            keypoint_names = ground_truth['categories'][0]['keypoints']
+            
+            # Add ground truth points
+            for idx, (x, y, v) in enumerate(gt_kpts):
+                if v > 0:  # visible keypoint
+                    data.append({
+                        'image': img_name,
+                        'scorer': 'ground_truth',
+                        'individual': f"instance_{gt_ann['id']}",
+                        'bodypart': keypoint_names[idx],
+                        'x': x,
+                        'y': y,
+                        'likelihood': 1.0
+                    })
+            
+            # Add predictions
+            for idx, (x, y, score) in enumerate(pred_kpts):
+                if score > 0:  # detected keypoint
+                    data.append({
+                        'image': img_name,
+                        'scorer': 'dlc_model',
+                        'individual': f"instance_{pred_ann['id']}",
+                        'bodypart': keypoint_names[idx],
+                        'x': x,
+                        'y': y,
+                        'likelihood': score
+                    })
+    
+    # 5. Create MultiIndex DataFrame
+    df = pd.DataFrame(data)
+    df_combined = df.set_index(['image', 'scorer', 'individual', 'bodypart'])
+    df_combined = df_combined.unstack(['scorer', 'individual', 'bodypart'])
+    
+    # 6. Call plot_evaluation_results
+    plot_evaluation_results(
+        df_combined=df_combined,
+        project_root=project_root,
+        scorer='ground_truth',
+        model_name='dlc_model',
+        output_folder=str(output_folder),
+        in_train_set=False,  # Since we're using test data
+        mode=plotting,
+        plot_unique_bodyparts=False, # whether we should plot unique bodyparts
+        colormap='rainbow', # default values
+        dot_size=12, # default values
+        alpha_value=0.7, # default values
+        p_cutoff=0.6 # default values
+    )
+    
+def plot_gt_and_predictions(
+    image_path: str | Path,
+    output_dir: str | Path,
+    gt_bodyparts: np.ndarray,
+    pred_bodyparts: np.ndarray,  # (num_predicted_animals, num_keypoints, 3)
+    gt_unique_bodyparts: np.ndarray | None = None,
+    pred_unique_bodyparts: np.ndarray | None = None,
+    mode: str = "bodypart",
+    colormap: str = "rainbow",
+    dot_size: int = 12,
+    alpha_value: float = 0.7,
+    p_cutoff: float = 0.6,
+):
+    """Plot ground truth and predictions on an image.
+    
+    Args:
+        image_path: Path to the image
+        gt_bodyparts: Ground truth keypoints array (num_animals, num_keypoints, 3)
+        pred_bodyparts: Predicted keypoints array (num_animals, num_keypoints, 3)
+        output_dir: Directory where labeled images will be saved
+        gt_unique_bodyparts: Ground truth unique bodyparts if any
+        pred_unique_bodyparts: Predicted unique bodyparts if any
+        mode: How to color the points ("bodypart" or "individual")
+        colormap: Matplotlib colormap name
+        dot_size: Size of the plotted points
+        alpha_value: Transparency of the points
+        p_cutoff: Confidence threshold for showing predictions
+    """
+    # Ensure output directory exists
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Read the image
+    frame = auxfun_videos.imread(str(image_path), mode="skimage")
+    num_pred, num_keypoints = pred_bodyparts.shape[:2]
+
+    # Create figure and set dimensions
+    fig, ax = create_minimal_figure()
+    h, w, _ = np.shape(frame)
+    fig.set_size_inches(w / 100, h / 100)
+    ax.set_xlim(0, w)
+    ax.set_ylim(0, h)
+    ax.invert_yaxis()
+    ax.imshow(frame, "gray")
+
+    # Set up colors based on mode
+    if mode == "bodypart":
+        num_colors = num_keypoints
+        if pred_unique_bodyparts is not None:
+            num_colors += pred_unique_bodyparts.shape[1]
+        colors = get_cmap(num_colors, name=colormap)
+        
+        predictions = pred_bodyparts.swapaxes(0, 1)
+        ground_truth = gt_bodyparts.swapaxes(0, 1)
+    elif mode == "individual":
+        colors = get_cmap(num_pred + 1, name=colormap)
+        predictions = pred_bodyparts
+        ground_truth = gt_bodyparts
+    else:
+        raise ValueError(f"Invalid mode: {mode}")
+
+    # Plot regular bodyparts
+    ax = make_multianimal_labeled_image(
+        frame,
+        ground_truth,
+        predictions[:, :, :2],
+        predictions[:, :, 2:],
+        colors,
+        dot_size,
+        alpha_value,
+        p_cutoff,
+        ax=ax,
+    )
+
+    # Plot unique bodyparts if present
+    if pred_unique_bodyparts is not None and gt_unique_bodyparts is not None:
+        if mode == "bodypart":
+            unique_predictions = pred_unique_bodyparts.swapaxes(0, 1)
+            unique_ground_truth = gt_unique_bodyparts.swapaxes(0, 1)
+        else:
+            unique_predictions = pred_unique_bodyparts
+            unique_ground_truth = gt_unique_bodyparts
+            
+        ax = make_multianimal_labeled_image(
+            frame,
+            unique_ground_truth,
+            unique_predictions[:, :, :2],
+            unique_predictions[:, :, 2:],
+            colors[num_keypoints:],
+            dot_size,
+            alpha_value,
+            p_cutoff,
+            ax=ax,
+        )
+                
+    # Save the labeled image
+    save_labeled_frame(
+        fig,
+        str(image_path),
+        str(output_dir),
+        belongs_to_train=False,
+    )
+    erase_artists(ax)
+    plt.close()
+    
+    
 def evaluate_snapshot(
     cfg: dict,
     loader: DLCLoader,
@@ -289,6 +516,7 @@ def evaluate_snapshot(
                 df_ground_truth, left_index=True, right_index=True
             )
             unique_bodyparts = loader.get_dataset_parameters().unique_bpts
+
             plot_evaluation_results(
                 df_combined=df_combined,
                 project_root=cfg["project_path"],
@@ -500,6 +728,7 @@ def save_evaluation_results(
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
+
 
 
 if __name__ == "__main__":
