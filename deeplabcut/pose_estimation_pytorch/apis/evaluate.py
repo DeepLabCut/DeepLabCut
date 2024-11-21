@@ -22,7 +22,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-
+import json
+import os
 import deeplabcut.core.metrics as metrics
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
@@ -176,92 +177,7 @@ def evaluate(
         predictions[image]["bodyparts"] = pose
 
     return results, predictions
-
-
-def visualize_coco_predictions(
-    predictions: dict,
-    num_samples: int = 1,
-    test_file_json: str | Path = "test.json",
-    output_dir: str | Path | None = None,
-    draw_skeleton: bool = True,
-) -> None:
-    """
-    Visualize predictions using DeepLabCut's plot_gt_and_predictions function
-
-    Args:
-        predictions: Dictionary with image paths as keys and prediction data as values.
-                    Each prediction contains:
-                    - bodyparts: numpy array of shape (1, 37, 3)
-                    - bboxes: numpy array of shape (1, 4)
-                    - bbox_scores: numpy array of shape (1,)
-        num_samples: Number of samples to visualize
-        test_file_json: Path to test set JSON file
-        output_dir: Directory to save visualization outputs. If None, will create
-                   a directory next to test_file_json
-        draw_skeleton: Whether to draw skeleton connections between keypoints
-    """
-    # Load ground truth data
-    with open(test_file_json, "r") as f:
-        ground_truth = json.load(f)
-
-    if output_dir is None:
-        output_dir = os.path.join(
-            os.path.dirname(test_file_json), "predictions_visualizations"
-        )
-    os.makedirs(output_dir, exist_ok=True)
-
-    image_paths = list(predictions.keys())
-    if num_samples:
-        image_paths = image_paths[:num_samples]
-
-    # Process each image
-    for image_path in image_paths:
-        pred_data = predictions[image_path]
-        img_info = next(
-            (
-                img
-                for img in ground_truth["images"]
-                if img["file_name"] == os.path.basename(image_path)
-            ),
-            None,
-        )
-        if img_info is None:
-            print(f"Warning: Could not find image info for {image_path}")
-            continue
-
-        gt_anns = [
-            ann
-            for ann in ground_truth["annotations"]
-            if ann["image_id"] == img_info["id"]
-        ]
-
-        if not gt_anns:
-            print(f"Warning: No ground truth annotations found for {image_path}")
-            continue
-
-        gt_keypoints = np.array(gt_anns[0]["keypoints"]).reshape(1, -1, 3)
-        vis_mask = gt_keypoints[:, :, 2] != -1
-
-        visible_gt = gt_keypoints[vis_mask]
-        visible_gt = visible_gt[None, :, :2]
-
-        pred_keypoints = pred_data["bodyparts"]  # Keep batch dimension
-        visible_pred = pred_keypoints
-        visible_pred = pred_keypoints[vis_mask].copy()
-        visible_pred = np.expand_dims(visible_pred, axis=0)
-
-        try:
-            plot_gt_and_predictions(
-                image_path=image_path,
-                output_dir=output_dir,
-                gt_bodyparts=visible_gt,
-                pred_bodyparts=visible_pred,
-            )
-            print(f"Successfully plotted predictions for {image_path}")
-        except Exception as e:
-            print(f"Error plotting predictions for {image_path}: {str(e)}")
-
-
+    
 def plot_gt_and_predictions(
     image_path: str | Path,
     output_dir: str | Path,
