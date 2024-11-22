@@ -696,7 +696,6 @@ def analyze_videos(
         See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
 
     use_shelve: bool, optional, default=False
-        Currently not supported by the PyTorch engine.
         By default, data are dumped in a pickle file at the end of the video analysis.
         Otherwise, data are written to disk on the fly using a "shelf"; i.e., a
         pickle-based, persistent, database-like object by default, resulting in
@@ -848,17 +847,13 @@ def analyze_videos(
         from deeplabcut.pose_estimation_pytorch.apis import analyze_videos
         _update_device(gputouse, torch_kwargs)
 
-        if use_shelve:
-            raise NotImplementedError(
-                f"The 'use_shelve' option is not yet implemented with {engine}"
-            )
-
         if batchsize is not None:
             if "batch_size" in torch_kwargs:
                 print(
                     f"You called analyze_videos with parameters ``batchsize={batchsize}"
                     f"`` and batch_size={torch_kwargs['batch_size']}. Only one is "
-                    f"needed/used. Using batch size {torch_kwargs['batch_size']}")
+                    f"needed/used. Using batch size {torch_kwargs['batch_size']}"
+                )
             else:
                 torch_kwargs["batch_size"] = batchsize
 
@@ -871,6 +866,8 @@ def analyze_videos(
             save_as_csv=save_as_csv,
             destfolder=destfolder,
             modelprefix=modelprefix,
+            use_shelve=use_shelve,
+            robust_nframes=robust_nframes,
             auto_track=auto_track,
             identity_only=identity_only,
             overwrite=False,
