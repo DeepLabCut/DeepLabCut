@@ -198,12 +198,15 @@ def make_pytorch_test_config(
         The test configuration file.
     """
     bodyparts = model_config["metadata"]["bodyparts"]
+    unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
+    all_joint_names = bodyparts + unique_bodyparts
+
     test_config = dict(
         dataset=model_config["metadata"]["project_path"],
         dataset_type="multi-animal-imgaug",  # required for downstream tracking
-        num_joints=len(bodyparts),
-        all_joints=[[i] for i in range(len(bodyparts))],
-        all_joints_names=bodyparts,
+        num_joints=len(all_joint_names),
+        all_joints=[[i] for i in range(len(all_joint_names))],
+        all_joints_names=all_joint_names,
         net_type=model_config["net_type"],
         global_scale=1,
         scoremap_dir="test",

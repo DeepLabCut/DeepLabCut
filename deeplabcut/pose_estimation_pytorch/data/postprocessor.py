@@ -18,6 +18,7 @@ from typing import Any
 import numpy as np
 
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Context
+from deeplabcut.pose_estimation_pytorch.post_processing.identity import assign_identity
 
 
 class Postprocessor(ABC):
@@ -67,7 +68,6 @@ def build_bottom_up_postprocessor(
         keys_to_rescale.append("unique_bodyparts")
 
     if with_identity:
-        # TODO: do we really want to return the heatmaps?
         keys_to_concatenate["identity_heatmap"] = ("identity", "heatmap")
         empty_shapes["identity_heatmap"] = (1, 1, max_individuals)
 
@@ -85,6 +85,7 @@ def build_bottom_up_postprocessor(
                 identity_key="identity_scores",
                 identity_map_key="identity_heatmap",
                 pose_key="bodyparts",
+                keep_id_maps=False,
             )
         )
 
@@ -96,13 +97,19 @@ def build_bottom_up_postprocessor(
         PadOutputs(
             max_individuals={
                 "bodyparts": max_individuals,
-                "unique_bodyparts": 0,  # no need to pad
-                "identity_heatmap": 0,  # no need to pad
                 "identity_scores": max_individuals,
             },
             pad_value=-1,
         ),
     ]
+
+    if with_identity:
+        components.append(
+            AssignIndividualIdentities(
+                identity_key="identity_scores", pose_key="bodyparts",
+            )
+        )
+
     return ComposePostprocessor(components=components)
 
 
@@ -146,7 +153,6 @@ def build_top_down_postprocessor(
                     "bodyparts": max_individuals,
                     "bboxes": max_individuals,
                     "bbox_scores": max_individuals,
-                    "unique_bodyparts": 0,  # no need to pad
                 },
                 pad_value=-1,
             ),
@@ -257,7 +263,10 @@ class PadOutputs(Postprocessor):
     ) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
-            if len(output) < self.max_individuals[name]:
+            if (
+                name in self.max_individuals
+                and len(output) < self.max_individuals[name]
+            ):
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
                 padding = self.pad_value * np.ones((pad_size, *tail_shape))
@@ -404,10 +413,15 @@ class AddContextToOutput(Postprocessor):
 class PredictKeypointIdentities(Postprocessor):
     """Assigns predicted identities to keypoints
 
+    The identity maps have shape (h, w, num_ids).
+
     Attributes:
-        identity_key:
-        identity_map_key: shape (h, w, num_ids)
-        pose_key:
+        identity_key: Key with which to add predicted identities in the predictions dict
+        identity_map_key: Key for the identity maps in the predictions dict
+        pose_key: Key for the bodyparts in the predictions dict
+        keep_id_maps: Whether to keep identity heatmaps in the output dictionary.
+            Setting this value to True can be useful for debugging, but can lead to
+            memory issues when running video analysis on long videos.
     """
 
     def __init__(
@@ -415,28 +429,57 @@ class PredictKeypointIdentities(Postprocessor):
         identity_key: str,
         identity_map_key: str,
         pose_key: str,
+        keep_id_maps: bool = False,
     ) -> None:
         self.identity_key = identity_key
         self.identity_map_key = identity_map_key
+        self.pose_key = pose_key
+        self.keep_id_maps = keep_id_maps
+
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        pose = predictions[self.pose_key]
+        num_preds, num_keypoints, _ = pose.shape
+
+        identity_heatmap = predictions[self.identity_map_key]  # (h, w, num_ids)
+        h, w, num_ids = identity_heatmap.shape
+
+        id_score_matrix = np.zeros((num_preds, num_keypoints, num_ids))
+        for pred_idx, individual_keypoints in enumerate(pose):
+            heatmap_indices = np.rint(individual_keypoints).astype(int)
+            xs = np.clip(heatmap_indices[:, 0], 0, w - 1)
+            ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
+
+            # get the score from each identity heatmap at each predicted keypoint
+            for kpt_idx, (x, y) in enumerate(zip(xs, ys)):
+                id_score_matrix[pred_idx, kpt_idx] = identity_heatmap[y, x, :]
+
+        predictions[self.identity_key] = id_score_matrix
+        if not self.keep_id_maps:
+            # delete the heatmaps as this saves memory
+            id_heatmaps = predictions.pop(self.identity_map_key)
+            del id_heatmaps
+
+        return predictions, context
+
+
+class AssignIndividualIdentities(Postprocessor):
+    """Assigns predicted identities to individuals
+
+    Attributes:
+        identity_key: Key with which to add predicted identities in the predictions dict
+        pose_key: Key for the bodyparts in the predictions dict
+    """
+
+    def __init__(self, identity_key: str, pose_key: str) -> None:
+        self.identity_key = identity_key
         self.pose_key = pose_key
 
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
-        individuals = predictions[self.pose_key]
-        identity_heatmap = predictions[self.identity_map_key]  # (h, w, num_ids)
-        h, w, num_ids = identity_heatmap.shape
-        num_individuals, num_keypoints, _ = individuals.shape
-
-        assembly_id_scores = []
-        for individual_keypoints in individuals:
-            heatmap_indices = np.rint(individual_keypoints).astype(int)
-            xs = np.clip(heatmap_indices[:, 0], 0, w - 1)
-            ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
-            id_scores = []
-            for x, y in zip(xs, ys):
-                id_scores.append(identity_heatmap[y, x, :])
-            assembly_id_scores.append(np.stack(id_scores))
-
-        predictions[self.identity_key] = np.stack(assembly_id_scores)
+        map_ = assign_identity(predictions["bodyparts"], predictions["identity_scores"])
+        predictions["bodyparts"] = predictions["bodyparts"][map_]
+        predictions["identity_scores"] = predictions["identity_scores"][map_]
         return predictions, context

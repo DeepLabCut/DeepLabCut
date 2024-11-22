@@ -203,6 +203,7 @@ def test_assign_id_scores(data):
         identity_key="keypoint_identity",
         identity_map_key="identity_map",
         pose_key="bodyparts",
+        keep_id_maps=True,
     )
     bodyparts = np.array(data["bodyparts"])
     id_heatmap = np.array(data["id_heatmap"])

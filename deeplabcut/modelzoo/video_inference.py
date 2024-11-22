@@ -154,7 +154,7 @@ def video_inference_superanimal(
         NotImplementedError:
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
-    
+
     (Model Explanation) SuperAnimal-Quadruped:
     `superanimal_quadruped` models aim to work across a large range of quadruped
     animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is
@@ -276,9 +276,7 @@ def video_inference_superanimal(
             _video_inference_superanimal,
         )
 
-        weight_folder = (
-            get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
-        )
+        weight_folder = get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
         if not weight_folder.exists():
             download_huggingface_model(
                 superanimal_name, target_dir=str(weight_folder), rename_mapping=None
@@ -299,6 +297,11 @@ def video_inference_superanimal(
             pseudo_threshold,
         )
     elif framework == "pytorch":
+        if detector_name is None:
+            raise ValueError(
+                "You have to specify a detector_name when using the Pytorch framework."
+            )
+
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -373,10 +376,9 @@ def video_inference_superanimal(
                 video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
             anno_folder = pseudo_dataset_folder / "annotations"
-            if (
-                (anno_folder / "train.json").exists()
-                and (anno_folder / "test.json").exists()
-            ):
+            if (anno_folder / "train.json").exists() and (
+                anno_folder / "test.json"
+            ).exists():
                 print(
                     f"{anno_folder} exists, skipping the annotation construction. "
                     f"Delete the folder if you want to re-construct pseudo annotations"
@@ -405,6 +407,12 @@ def video_inference_superanimal(
                     bbox_threshold=bbox_threshold,
                 )
 
+            model_snapshot_prefix = f"snapshot-{model_name}"
+            detector_snapshot_prefix = f"snapshot-{detector_name}"
+
+            config["runner"]["snapshot_prefix"] = model_snapshot_prefix
+            config["detector"]["runner"]["snapshot_prefix"] = detector_snapshot_prefix
+
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
             with open(model_config_path, "w") as f:
@@ -412,9 +420,11 @@ def video_inference_superanimal(
                 yaml.dump(config, f)
 
             adapted_detector_checkpoint = (
-                model_folder / f"snapshot-detector-{detector_epochs:03}.pt"
+                model_folder / f"{detector_snapshot_prefix}-{detector_epochs:03}.pt"
             )
-            adapted_pose_checkpoint = model_folder / f"snapshot-{pose_epochs:03}.pt"
+            adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-{pose_epochs:03}.pt"
+            )
 
             if (
                 adapted_detector_checkpoint.exists()

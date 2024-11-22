@@ -156,7 +156,9 @@ def get_model_snapshots(
         ValueError: If the index given is not valid
         ValueError: If index=="best" but there is no saved best model
     """
-    snapshot_manager = TorchSnapshotManager(model_folder=model_folder, task=task)
+    snapshot_manager = TorchSnapshotManager(
+        model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
+    )
     if isinstance(index, str) and index.lower() == "best":
         best_snapshot = snapshot_manager.best()
         if best_snapshot is None:

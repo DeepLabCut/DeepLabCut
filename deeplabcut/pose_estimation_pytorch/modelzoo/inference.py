@@ -143,19 +143,14 @@ def _video_inference_superanimal(
             detector_runner=detector_runner,
         )
 
-        pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-        pred_unique_bodyparts = None
-
         bbox = cropping
         if cropping is None:
             vid_w, vid_h = video.dimensions
             bbox = (0, vid_w, 0, vid_h)
 
         print(f"Saving results to {dest_folder}")
-
         df = create_df_from_prediction(
-            pred_bodyparts=pred_bodyparts,
-            pred_unique_bodyparts=pred_unique_bodyparts,
+            predictions=predictions,
             dlc_scorer=dlc_scorer,
             cfg=dict(multianimalproject=True),
             model_cfg=model_cfg,

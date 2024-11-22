@@ -18,10 +18,10 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 class LRListScheduler(_LRScheduler):
     """
-    Definition of the class object Scheduler.
-    You can achieve increased performance and faster training by using a learning rate that changes
-    during training. A scheduler makes the learning rate adaptative. Given a list of learning rates
-    and milestones modifies the learning rate accordingly during training
+    You can achieve increased performance and faster training by using a learning rate
+    that changes during training. A scheduler makes the learning rate adaptive. Given a
+    list of learning rates and milestones modifies the learning rate accordingly during
+    training.
     """
 
     def __init__(self, optimizer, milestones, lr_list, last_epoch=-1) -> None:
@@ -97,3 +97,34 @@ def _parse_scheduler_param(param: Any, optimizer: torch.optim.Optimizer) -> Any:
         param = build_scheduler(param, optimizer)
 
     return param
+
+
+def load_scheduler_state(
+    scheduler: torch.optim.lr_scheduler.LRScheduler,
+    state_dict: dict,
+) -> None:
+    """
+    Args:
+        scheduler: The scheduler for which to load the state dict.
+        state_dict: The state dict to load
+
+    Raises:
+        ValueError: if the state dict fails to load.
+    """
+    try:
+        scheduler.load_state_dict(state_dict)
+    except Exception as err:
+        raise ValueError(f"Failed to load state dict: {err}")
+
+    param_groups = scheduler.optimizer.param_groups
+    resume_lrs = scheduler.get_last_lr()
+
+    if len(param_groups) != len(resume_lrs):
+        raise ValueError(
+            f"Number of optimizer parameter groups ({len(param_groups)}) did not match "
+            f"number of learning rates to resume from ({len(scheduler.get_last_lr())})."
+        )
+
+    # Update the learning rate for the optimizer based on the scheduler
+    for group, resume_lr in zip(param_groups, resume_lrs):
+        group['lr'] = resume_lr
