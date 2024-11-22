@@ -130,17 +130,15 @@ class TorchSnapshotManager:
                     current_best.path.rename(new_name)
                 else:
                     current_best.path.unlink(missing_ok=False)
-        else:
+        elif last or epoch % self.save_epochs == 0:
             # Save regular snapshot if needed
-            should_save = last or epoch % self.save_epochs == 0
-            if should_save:
-                save_path = self.snapshot_path(epoch=epoch)
-                parsed_state_dict = {
-                    k: v
-                    for k, v in state_dict.items()
-                    if self.save_optimizer_state or k != "optimizer"
-                }
-                torch.save(parsed_state_dict, save_path)
+            save_path = self.snapshot_path(epoch=epoch)
+            parsed_state_dict = {
+                k: v
+                for k, v in state_dict.items()
+                if self.save_optimizer_state or k != "optimizer"
+            }
+            torch.save(parsed_state_dict, save_path)
 
         # Clean up old snapshots if needed
         existing_snapshots = [s for s in self.snapshots() if not s.best]
