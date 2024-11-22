@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from collections import defaultdict
 from pathlib import Path
 from typing import Any, Generic, Iterable
 
@@ -19,6 +18,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -82,6 +82,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self,
         images: Iterable[str | np.ndarray]
         | Iterable[tuple[str | np.ndarray, dict[str, Any]]],
+        shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
 
@@ -90,6 +91,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         Args:
             images: the images to run inference on, optionally with context
+            shelf_writer: by default, data are saved in a list and returned at the end
+                of inference. Passing a shelf manager writes data to disk on-the-fly
+                using a "shelf" (a pickle-based, persistent, database-like object by
+                default, resulting in constant memory footprint). The returned list is
+                then empty.
 
         Returns:
             a dict containing head predictions for each image
@@ -107,12 +113,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         for data in images:
             self._prepare_inputs(data)
             self._process_full_batches()
-            results += self._extract_results()
+            results += self._extract_results(shelf_writer)
 
         # Process the last batch even if not full
         if self._inputs_waiting_for_processing():
             self._process_batch()
-            results += self._extract_results()
+            results += self._extract_results(shelf_writer)
 
         return results
 
@@ -149,7 +155,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         while self._batch is not None and len(self._batch) >= self.batch_size:
             self._process_batch()
 
-    def _extract_results(self) -> list:
+    def _extract_results(self, shelf_writer: shelving.ShelfWriter) -> list:
         """Obtains results that were obtained from processing a batch."""
         results = []
         while (
@@ -165,10 +171,18 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 # TODO: typing update - the post-processor can remove a dict level
                 image_predictions, _ = self.postprocessor(image_predictions, context)
 
+            if shelf_writer is not None:
+                shelf_writer.add_prediction(
+                    bodyparts=image_predictions["bodyparts"],
+                    unique_bodyparts=image_predictions.get("unique_bodyparts"),
+                    identity_scores=image_predictions.get("identity_scores"),
+                )
+            else:
+                results.append(image_predictions)
+
             self._contexts = self._contexts[1:]
             self._image_batch_sizes = self._image_batch_sizes[1:]
             self._predictions = self._predictions[num_predictions:]
-            results.append(image_predictions)
 
         return results
 
