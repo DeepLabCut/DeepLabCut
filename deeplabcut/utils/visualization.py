@@ -33,10 +33,7 @@ from tqdm import trange
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
 
-def get_cmap(
-        n: int,
-        name: str = "hsv"
-) -> Colormap:
+def get_cmap(n: int, name: str = "hsv") -> Colormap:
     """
     Args:
         n: number of distinct colors
@@ -128,7 +125,7 @@ def make_multianimal_labeled_image(
     labels: list = ["+", ".", "x"],
     ax: plt.Axes | None = None,
     bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
-    bounding_boxes_color='k',
+    bounding_boxes_color="k",
     bboxes_cutoff: float = 0.6,
 ) -> plt.Axes:
     """
@@ -168,8 +165,9 @@ def make_multianimal_labeled_image(
                 bbox_height,
                 linewidth=1,
                 edgecolor=bounding_boxes_color,
-                facecolor='none',
-                linestyle = '--' if bbox_score < bboxes_cutoff else '-')
+                facecolor="none",
+                linestyle="--" if bbox_score < bboxes_cutoff else "-",
+            )
             ax.add_patch(rectangle)
 
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):

@@ -339,7 +339,9 @@ def _image_names_to_df_index(
     """
 
     if image_name_to_index is not None:
-        return pd.MultiIndex.from_tuples([image_name_to_index(image_name) for image_name in image_names])
+        return pd.MultiIndex.from_tuples(
+            [image_name_to_index(image_name) for image_name in image_names]
+        )
     else:
         return image_names
 
@@ -409,7 +411,9 @@ def build_bboxes_dict_for_dataframe(
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
         if "bboxes" in image_predictions:
-            bboxes_data.append((image_predictions["bboxes"], image_predictions["bbox_scores"]))
+            bboxes_data.append(
+                (image_predictions["bboxes"], image_predictions["bbox_scores"])
+            )
 
     index = _image_names_to_df_index(image_names, image_name_to_index)
 
