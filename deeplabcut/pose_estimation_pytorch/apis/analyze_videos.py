@@ -257,7 +257,8 @@ def analyze_videos(
             corresponding cropping coordinates.
         save_as_df: Cannot be used when `use_shelve` is True. Saves the video
             predictions (before tracking results) to an H5 file containing a pandas
-            DataFrame.
+            DataFrame. If ``save_as_csv==True`` than the full predictions will also be
+            saved in a CSV file.
 
     Returns:
         The scorer used to analyze the videos
