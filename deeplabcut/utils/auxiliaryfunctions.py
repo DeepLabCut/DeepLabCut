@@ -319,7 +319,7 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
     return cfg["bodyparts"]
 
 
-def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+def get_unique_bodyparts(cfg: dict) -> typing.List[str]:
     """
     Args:
         cfg: a project configuration file
@@ -507,10 +507,10 @@ def grab_files_in_folder(folder, ext="", relative=True):
 
 
 def filter_files_by_patterns(
-        folder: str | Path,
-        start_patterns: set[str] | None = None,
-        contain_patterns: set[str] | None = None,
-        end_patterns: set[str] | None = None
+    folder: str | Path,
+    start_patterns: set[str] | None = None,
+    contain_patterns: set[str] | None = None,
+    end_patterns: set[str] | None = None,
 ) -> List[Path]:
     """
     Filters files in a folder based on start, contain, and end patterns.
@@ -542,13 +542,12 @@ def filter_files_by_patterns(
         and (
             not start_patterns
             or any(file.name.startswith(start) for start in start_patterns)
-        ) and (
+        )
+        and (
             not contain_patterns
             or any(contain in file.name for contain in contain_patterns)
-        ) and (
-            not end_patterns
-            or any(file.name.endswith(end) for end in end_patterns)
         )
+        and (not end_patterns or any(file.name.endswith(end) for end in end_patterns))
     ]
 
     return matching_files
@@ -659,6 +658,7 @@ def get_evaluation_folder(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -760,6 +760,7 @@ def get_scorer_name(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -769,6 +770,7 @@ def get_scorer_name(
 
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
+
         snapshot_index = None
         if isinstance(trainingsiterations, int):
             snapshot_index = trainingsiterations
@@ -801,7 +803,11 @@ def get_scorer_name(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
+            str(
+                get_model_folder(
+                    trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
+                )
+            ),
             "train",
             engine.pose_cfg_name,
         )
@@ -916,7 +922,7 @@ def find_video_full_data(folder, videoname, scorer):
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     full_files = filter_files_by_patterns(
         folder=folder,
-        start_patterns={videoname+scorer, videoname+scorer_legacy},
+        start_patterns={videoname + scorer, videoname + scorer_legacy},
         contain_patterns={"full"},
         end_patterns={"pickle"},
     )
@@ -933,7 +939,7 @@ def find_video_metadata(folder, videoname, scorer):
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
-        start_patterns={videoname+scorer, videoname+scorer_legacy},
+        start_patterns={videoname + scorer, videoname + scorer_legacy},
         contain_patterns={"meta"},
         end_patterns={"pickle"},
     )
