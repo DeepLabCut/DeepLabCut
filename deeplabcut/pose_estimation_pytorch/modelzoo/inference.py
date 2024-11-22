@@ -144,10 +144,10 @@ def _video_inference_superanimal(
         )
 
         bbox_keys_in_predictions = {"bboxes", "bbox_scores"}
-        bboxes_list = [{key: value
-                        for key, value in p.items()
-                        if key in bbox_keys_in_predictions}
-                       for i, p in enumerate(predictions)]
+        bboxes_list = [
+            {key: value for key, value in p.items() if key in bbox_keys_in_predictions}
+            for i, p in enumerate(predictions)
+        ]
 
         bbox = cropping
         if cropping is None:
