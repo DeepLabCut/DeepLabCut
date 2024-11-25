@@ -113,42 +113,40 @@ class TorchSnapshotManager:
         ):
             current_best = self.best()
             self._best_metric = metrics[self._key]
-            
-            # Save the new best model
             save_path = self.snapshot_path(epoch, best=True)
             parsed_state_dict = {
-                k: v 
+                k: v
                 for k, v in state_dict.items()
                 if self.save_optimizer_state or k != "optimizer"
             }
             torch.save(parsed_state_dict, save_path)
 
-            # Handle previous best model
             if current_best is not None:
+                # rename if the current best should have been saved, otherwise delete
                 if current_best.epochs % self.save_epochs == 0:
                     new_name = self.snapshot_path(epoch=current_best.epochs)
                     current_best.path.rename(new_name)
                 else:
                     current_best.path.unlink(missing_ok=False)
-        else:
-            # Save regular snapshot if needed
-            should_save = last or epoch % self.save_epochs == 0
-            if should_save:
-                save_path = self.snapshot_path(epoch=epoch)
-                parsed_state_dict = {
-                    k: v
-                    for k, v in state_dict.items()
-                    if self.save_optimizer_state or k != "optimizer"
-                }
-                torch.save(parsed_state_dict, save_path)
+            return
 
-        # Clean up old snapshots if needed
+        if not (last or epoch % self.save_epochs == 0):
+            return
+
         existing_snapshots = [s for s in self.snapshots() if not s.best]
         if len(existing_snapshots) >= self.max_snapshots:
-            num_to_delete = len(existing_snapshots) - self.max_snapshots
+            num_to_delete = 1 + len(existing_snapshots) - self.max_snapshots
             to_delete = existing_snapshots[:num_to_delete]
             for snapshot in to_delete:
                 snapshot.path.unlink(missing_ok=False)
+
+        save_path = self.snapshot_path(epoch=epoch)
+        parsed_state_dict = {
+            k: v
+            for k, v in state_dict.items()
+            if self.save_optimizer_state or k != "optimizer"
+        }
+        torch.save(parsed_state_dict, save_path)
 
     def best(self) -> Snapshot | None:
         """Returns: the path to the best snapshot, if it exists"""
