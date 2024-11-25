@@ -17,7 +17,7 @@ method: td  # Need to add a detector
 model:
   backbone:
     type: CSPNeXt
-    model_name: cspnext_m
+    model_name: cspnext_s
     freeze_bn_stats: false
     freeze_bn_weights: false
     deepen_factor: 0.33
