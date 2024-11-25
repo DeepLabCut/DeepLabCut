@@ -11,16 +11,17 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from pathlib import Path
 from typing import Iterable
 
 import albumentations as A
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-import json
-import os
+
 import deeplabcut.core.metrics as metrics
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
@@ -37,15 +38,14 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameter
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.visualization import plot_evaluation_results
-from deeplabcut.utils import auxfun_videos
+from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 from deeplabcut.utils.visualization import (
     create_minimal_figure,
+    erase_artists,
     get_cmap,
     make_multianimal_labeled_image,
+    plot_evaluation_results,
     save_labeled_frame,
-    erase_artists,
 )
 
 
@@ -176,6 +176,7 @@ def evaluate(
 
     return results, predictions
 
+
 def visualize_coco_predictions(
     predictions: dict,
     num_samples: int = 1,
@@ -185,12 +186,12 @@ def visualize_coco_predictions(
 ) -> None:
     """
     Visualize predictions using DeepLabCut's plot_gt_and_predictions function
-    
+
     Args:
         predictions: Dictionary with image paths as keys and prediction data as values.
                     Each prediction contains:
                     - bodyparts: numpy array of shape (1, 37, 3)
-                    - bboxes: numpy array of shape (1, 4) 
+                    - bboxes: numpy array of shape (1, 4)
                     - bbox_scores: numpy array of shape (1,)
         num_samples: Number of samples to visualize
         test_file_json: Path to test set JSON file
@@ -203,7 +204,9 @@ def visualize_coco_predictions(
         ground_truth = json.load(f)
 
     if output_dir is None:
-        output_dir = os.path.join(os.path.dirname(test_file_json), "predictions_visualizations")
+        output_dir = os.path.join(
+            os.path.dirname(test_file_json), "predictions_visualizations"
+        )
     os.makedirs(output_dir, exist_ok=True)
 
     image_paths = list(predictions.keys())
@@ -212,42 +215,52 @@ def visualize_coco_predictions(
 
     # Process each image
     for image_path in image_paths:
-        pred_data = predictions[image_path]        
-        img_info = next((img for img in ground_truth['images'] 
-                        if img['file_name'] == os.path.basename(image_path)), None)
+        pred_data = predictions[image_path]
+        img_info = next(
+            (
+                img
+                for img in ground_truth["images"]
+                if img["file_name"] == os.path.basename(image_path)
+            ),
+            None,
+        )
         if img_info is None:
             print(f"Warning: Could not find image info for {image_path}")
             continue
-        
-        gt_anns = [ann for ann in ground_truth['annotations'] 
-                   if ann['image_id'] == img_info['id']]
-        
+
+        gt_anns = [
+            ann
+            for ann in ground_truth["annotations"]
+            if ann["image_id"] == img_info["id"]
+        ]
+
         if not gt_anns:
             print(f"Warning: No ground truth annotations found for {image_path}")
             continue
 
-        gt_keypoints = np.array(gt_anns[0]['keypoints']).reshape(1, -1, 3)
+        gt_keypoints = np.array(gt_anns[0]["keypoints"]).reshape(1, -1, 3)
         vis_mask = gt_keypoints[:, :, 2] != -1
-        
+
         visible_gt = gt_keypoints[vis_mask]
         visible_gt = visible_gt[None, :, :2]
-                        
-        pred_keypoints = pred_data['bodyparts']  # Keep batch dimension
-        visible_pred = pred_keypoints 
+
+        pred_keypoints = pred_data["bodyparts"]  # Keep batch dimension
+        visible_pred = pred_keypoints
         visible_pred = pred_keypoints[vis_mask].copy()
         visible_pred = np.expand_dims(visible_pred, axis=0)
-        
+
         try:
             plot_gt_and_predictions(
                 image_path=image_path,
                 output_dir=output_dir,
                 gt_bodyparts=visible_gt,
-                pred_bodyparts=visible_pred
+                pred_bodyparts=visible_pred,
             )
             print(f"Successfully plotted predictions for {image_path}")
         except Exception as e:
             print(f"Error plotting predictions for {image_path}: {str(e)}")
-            
+
+
 def plot_gt_and_predictions(
     image_path: str | Path,
     output_dir: str | Path,
@@ -262,7 +275,7 @@ def plot_gt_and_predictions(
     p_cutoff: float = 0.6,
 ):
     """Plot ground truth and predictions on an image.
-    
+
     Args:
         image_path: Path to the image
         gt_bodyparts: Ground truth keypoints array (num_animals, num_keypoints, 3)
@@ -299,7 +312,7 @@ def plot_gt_and_predictions(
         if pred_unique_bodyparts is not None:
             num_colors += pred_unique_bodyparts.shape[1]
         colors = get_cmap(num_colors, name=colormap)
-        
+
         predictions = pred_bodyparts.swapaxes(0, 1)
         ground_truth = gt_bodyparts.swapaxes(0, 1)
     elif mode == "individual":
@@ -330,7 +343,7 @@ def plot_gt_and_predictions(
         else:
             unique_predictions = pred_unique_bodyparts
             unique_ground_truth = gt_unique_bodyparts
-            
+
         ax = make_multianimal_labeled_image(
             frame,
             unique_ground_truth,
@@ -342,7 +355,7 @@ def plot_gt_and_predictions(
             p_cutoff,
             ax=ax,
         )
-                
+
     # Save the labeled image
     save_labeled_frame(
         fig,
@@ -352,8 +365,8 @@ def plot_gt_and_predictions(
     )
     erase_artists(ax)
     plt.close()
-    
-    
+
+
 def evaluate_snapshot(
     cfg: dict,
     loader: DLCLoader,
@@ -409,7 +422,7 @@ def evaluate_snapshot(
     parameters = PoseDatasetParameters(
         bodyparts=project_bodyparts,
         unique_bpts=parameters.unique_bpts,
-        individuals=parameters.individuals
+        individuals=parameters.individuals,
     )
 
     predictions = {}
@@ -688,7 +701,6 @@ def save_evaluation_results(
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
-
 
 
 if __name__ == "__main__":
