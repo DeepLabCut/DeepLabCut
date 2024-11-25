@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import deeplabcut.core.metrics as metrics
 from deeplabcut.core.weight_init import WeightInitialization
@@ -701,6 +702,7 @@ def save_evaluation_results(
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
+
 
 
 if __name__ == "__main__":
