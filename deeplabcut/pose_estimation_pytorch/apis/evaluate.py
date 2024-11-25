@@ -21,7 +21,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+import matplotlib.pyplot as plt
+import json
+import os
 import deeplabcut.core.metrics as metrics
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
@@ -38,15 +40,8 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameter
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
-from deeplabcut.utils.visualization import (
-    create_minimal_figure,
-    erase_artists,
-    get_cmap,
-    make_multianimal_labeled_image,
-    plot_evaluation_results,
-    save_labeled_frame,
-)
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.visualization import plot_evaluation_results
 
 
 def predict(
@@ -175,196 +170,6 @@ def evaluate(
         predictions[image]["bodyparts"] = pose
 
     return results, predictions
-
-
-def visualize_coco_predictions(
-    predictions: dict,
-    num_samples: int = 1,
-    test_file_json: str | Path = "test.json",
-    output_dir: str | Path | None = None,
-    draw_skeleton: bool = True,
-) -> None:
-    """
-    Visualize predictions using DeepLabCut's plot_gt_and_predictions function
-
-    Args:
-        predictions: Dictionary with image paths as keys and prediction data as values.
-                    Each prediction contains:
-                    - bodyparts: numpy array of shape (1, 37, 3)
-                    - bboxes: numpy array of shape (1, 4)
-                    - bbox_scores: numpy array of shape (1,)
-        num_samples: Number of samples to visualize
-        test_file_json: Path to test set JSON file
-        output_dir: Directory to save visualization outputs. If None, will create
-                   a directory next to test_file_json
-        draw_skeleton: Whether to draw skeleton connections between keypoints
-    """
-    # Load ground truth data
-    with open(test_file_json, "r") as f:
-        ground_truth = json.load(f)
-
-    if output_dir is None:
-        output_dir = os.path.join(
-            os.path.dirname(test_file_json), "predictions_visualizations"
-        )
-    os.makedirs(output_dir, exist_ok=True)
-
-    image_paths = list(predictions.keys())
-    if num_samples:
-        image_paths = image_paths[:num_samples]
-
-    # Process each image
-    for image_path in image_paths:
-        pred_data = predictions[image_path]
-        img_info = next(
-            (
-                img
-                for img in ground_truth["images"]
-                if img["file_name"] == os.path.basename(image_path)
-            ),
-            None,
-        )
-        if img_info is None:
-            print(f"Warning: Could not find image info for {image_path}")
-            continue
-
-        gt_anns = [
-            ann
-            for ann in ground_truth["annotations"]
-            if ann["image_id"] == img_info["id"]
-        ]
-
-        if not gt_anns:
-            print(f"Warning: No ground truth annotations found for {image_path}")
-            continue
-
-        gt_keypoints = np.array(gt_anns[0]["keypoints"]).reshape(1, -1, 3)
-        vis_mask = gt_keypoints[:, :, 2] != -1
-
-        visible_gt = gt_keypoints[vis_mask]
-        visible_gt = visible_gt[None, :, :2]
-
-        pred_keypoints = pred_data["bodyparts"]  # Keep batch dimension
-        visible_pred = pred_keypoints
-        visible_pred = pred_keypoints[vis_mask].copy()
-        visible_pred = np.expand_dims(visible_pred, axis=0)
-
-        try:
-            plot_gt_and_predictions(
-                image_path=image_path,
-                output_dir=output_dir,
-                gt_bodyparts=visible_gt,
-                pred_bodyparts=visible_pred,
-            )
-            print(f"Successfully plotted predictions for {image_path}")
-        except Exception as e:
-            print(f"Error plotting predictions for {image_path}: {str(e)}")
-
-
-def plot_gt_and_predictions(
-    image_path: str | Path,
-    output_dir: str | Path,
-    gt_bodyparts: np.ndarray,
-    pred_bodyparts: np.ndarray,  # (num_predicted_animals, num_keypoints, 3)
-    gt_unique_bodyparts: np.ndarray | None = None,
-    pred_unique_bodyparts: np.ndarray | None = None,
-    mode: str = "bodypart",
-    colormap: str = "rainbow",
-    dot_size: int = 12,
-    alpha_value: float = 0.7,
-    p_cutoff: float = 0.6,
-):
-    """Plot ground truth and predictions on an image.
-
-    Args:
-        image_path: Path to the image
-        gt_bodyparts: Ground truth keypoints array (num_animals, num_keypoints, 3)
-        pred_bodyparts: Predicted keypoints array (num_animals, num_keypoints, 3)
-        output_dir: Directory where labeled images will be saved
-        gt_unique_bodyparts: Ground truth unique bodyparts if any
-        pred_unique_bodyparts: Predicted unique bodyparts if any
-        mode: How to color the points ("bodypart" or "individual")
-        colormap: Matplotlib colormap name
-        dot_size: Size of the plotted points
-        alpha_value: Transparency of the points
-        p_cutoff: Confidence threshold for showing predictions
-    """
-    # Ensure output directory exists
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Read the image
-    frame = auxfun_videos.imread(str(image_path), mode="skimage")
-    num_pred, num_keypoints = pred_bodyparts.shape[:2]
-
-    # Create figure and set dimensions
-    fig, ax = create_minimal_figure()
-    h, w, _ = np.shape(frame)
-    fig.set_size_inches(w / 100, h / 100)
-    ax.set_xlim(0, w)
-    ax.set_ylim(0, h)
-    ax.invert_yaxis()
-    ax.imshow(frame, "gray")
-
-    # Set up colors based on mode
-    if mode == "bodypart":
-        num_colors = num_keypoints
-        if pred_unique_bodyparts is not None:
-            num_colors += pred_unique_bodyparts.shape[1]
-        colors = get_cmap(num_colors, name=colormap)
-
-        predictions = pred_bodyparts.swapaxes(0, 1)
-        ground_truth = gt_bodyparts.swapaxes(0, 1)
-    elif mode == "individual":
-        colors = get_cmap(num_pred + 1, name=colormap)
-        predictions = pred_bodyparts
-        ground_truth = gt_bodyparts
-    else:
-        raise ValueError(f"Invalid mode: {mode}")
-
-    # Plot regular bodyparts
-    ax = make_multianimal_labeled_image(
-        frame,
-        ground_truth,
-        predictions[:, :, :2],
-        predictions[:, :, 2:],
-        colors,
-        dot_size,
-        alpha_value,
-        p_cutoff,
-        ax=ax,
-    )
-
-    # Plot unique bodyparts if present
-    if pred_unique_bodyparts is not None and gt_unique_bodyparts is not None:
-        if mode == "bodypart":
-            unique_predictions = pred_unique_bodyparts.swapaxes(0, 1)
-            unique_ground_truth = gt_unique_bodyparts.swapaxes(0, 1)
-        else:
-            unique_predictions = pred_unique_bodyparts
-            unique_ground_truth = gt_unique_bodyparts
-
-        ax = make_multianimal_labeled_image(
-            frame,
-            unique_ground_truth,
-            unique_predictions[:, :, :2],
-            unique_predictions[:, :, 2:],
-            colors[num_keypoints:],
-            dot_size,
-            alpha_value,
-            p_cutoff,
-            ax=ax,
-        )
-
-    # Save the labeled image
-    save_labeled_frame(
-        fig,
-        str(image_path),
-        str(output_dir),
-        belongs_to_train=False,
-    )
-    erase_artists(ax)
-    plt.close()
 
 
 def evaluate_snapshot(
@@ -701,6 +506,7 @@ def save_evaluation_results(
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
+
 
 
 if __name__ == "__main__":

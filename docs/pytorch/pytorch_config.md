@@ -288,6 +288,7 @@ runner:
     ...
   scheduler:  # optional: a learning rate scheduler
     ...
+  load_scheduler_state_dict: true/false # whether to load scheduler state when resuming training from a snapshot,
   snapshots:  # parameters for the TorchSnapshotManager
     max_snapshots: 5  # the maximum number of snapshots to save (the "best" model does not count as one of them)
     save_epochs: 25  # the interval between each snapshot save  
@@ -327,7 +328,7 @@ https://pytorch.org/docs/stable/optim.html). Examples:
       lr: 1e-4
 ```
 
-**Scheduler**: YYou can use [any scheduler](
+**Scheduler**: You can use [any scheduler](
 https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate) defined in
 `torch.optim.lr_scheduler`, where the arguments given are arguments of the scheduler. 
 The default scheduler is an LRListScheduler, which changes the learning rates at each 
@@ -410,6 +411,12 @@ continue to train from the 10th epoch on.
 resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-010.pt
 ```
 
+When continuing to train a model, you may want to modify the learning rate scheduling 
+that was being used (by editing the configuration under the `scheduler` key). When doing
+so, you *must set `load_scheduler_state_dict: false`* in your `runner` config! 
+Otherwise, the parameters for the scheduler your started training with will be loaded 
+from the state dictionary, and your edits might not be kept!
+
 ## Training Top-Down Models
 
 Top-down models are split into two main elements: a detector (localizing individuals in
@@ -479,3 +486,9 @@ detector:
   # weights from which to resume training
   resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt
 ```
+
+When continuing to train a detector, you may want to modify the learning rate scheduling 
+that was being used (by editing the configuration under the `scheduler` key). When doing
+so, you *must set `load_scheduler_state_dict: false`* in your `detector`: `runner`
+config! Otherwise, the parameters for the scheduler your started training with will be
+loaded from the state dictionary, and your edits might not be kept!
