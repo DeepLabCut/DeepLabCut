@@ -176,7 +176,6 @@ def evaluate(
 
     return results, predictions
 
-
 def visualize_predictions(
     predictions: dict,
     ground_truth: dict,
@@ -184,6 +183,7 @@ def visualize_predictions(
     draw_skeleton: bool = True,
     num_samples: int | None = None,
     random_select: bool = False,
+    show_ground_truth: bool = True,
 ) -> None:
     """Visualize model predictions alongside ground truth keypoints.
 
@@ -209,6 +209,9 @@ def visualize_predictions(
         num_samples: Number of images to visualize. If None, processes all images
 
         random_select: If True, randomly samples images; if False, uses first N images
+
+        show_ground_truth: If True, displays ground truth poses alongside predictions.
+                          If False, only shows predictions but uses GT visibility mask
     """
     # Setup output directory
     output_dir = Path(output_dir or "predictions_visualizations")
@@ -230,16 +233,18 @@ def visualize_predictions(
         pred_data = predictions[image_path]
         gt_keypoints = ground_truth[image_path]  # Shape: [N, num_keypoints, 3]
 
-        # Create visibility mask from first GT sample
-        # This mask will be applied to all samples for consistency
-        vis_mask = gt_keypoints[0, :, 2] > 0  # Shape: [num_keypoints]
+        # Create visibility mask from first GT sample. This mask will be applied to all samples for consistency
+        vis_mask = gt_keypoints[0, :, 2] > 0
 
-        # Process ground truth keypoints
-        visible_gt = []
-        for gt in gt_keypoints:
-            visible_points = gt[vis_mask, :2]  # Keep only x,y for visible joints
-            visible_gt.append(visible_points)
-        visible_gt = np.stack(visible_gt)  # Shape: [N, num_visible_joints, 2]
+        # Process ground truth keypoints if showing GT
+        if show_ground_truth:
+            visible_gt = []
+            for gt in gt_keypoints:
+                visible_points = gt[vis_mask, :2]  # Keep only x,y for visible joints
+                visible_gt.append(visible_points)
+            visible_gt = np.stack(visible_gt)  # Shape: [N, num_visible_joints, 2]
+        else:
+            visible_gt = None  
 
         # Process predicted keypoints
         pred_keypoints = pred_data["bodyparts"]  # Shape: [N, num_keypoints, 3]
