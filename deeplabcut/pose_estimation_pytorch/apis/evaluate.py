@@ -179,70 +179,77 @@ def evaluate(
 
 def visualize_predictions(
     predictions: dict,
-    ground_truth: dict,  # Dictionary mapping image paths to keypoints
+    ground_truth: dict,
     output_dir: str | Path | None = None,
     draw_skeleton: bool = True,
     num_samples: int | None = None,
-    random_select: bool = False, 
+    random_select: bool = False,
 ) -> None:
-    """
-    Visualize predictions using DeepLabCut's plot_gt_and_predictions function
+    """Visualize model predictions alongside ground truth keypoints.
+
+    This function processes keypoint predictions and ground truth data, applies visibility
+    masks, and generates visualization plots. It supports random or sequential sampling
+    of images for visualization.
 
     Args:
-        predictions: Dictionary with image paths as keys and prediction data as values.
-                    Each prediction contains:
-                    - bodyparts: numpy array of shape (num_individuals, num_keypoints, 3)
-                    - bboxes: numpy array of shape (num_individuals, 4)
-                    - bbox_scores: numpy array of shape (num_individuals,)
-        ground_truth: Dictionary containing ground truth 2D keypoints in format (x, y, vis_label)
-        num_samples: Number of samples to visualize
-        output_dir: Directory to save visualization outputs
-        draw_skeleton: Whether to draw skeleton connections between keypoints
-        num_samples: Number of samples to visualize. If None, visualize all samples
-        random_select: If True, randomly select samples; if False, use first N samples
-    """
-    if output_dir is None:
-        output_dir = Path("predictions_visualizations")
-    else:
-        output_dir = Path(output_dir)
+        predictions: Dictionary mapping image paths to prediction data.
+            Each prediction contains:
+            - bodyparts: array of shape [N, num_keypoints, 3] where 3 represents (x, y, confidence)
+            - bboxes: array of shape [N, 4] for bounding boxes (optional)
+            - bbox_scores: array of shape [N,] for bbox confidences (optional)
 
+        ground_truth: Dictionary mapping image paths to ground truth keypoints.
+            Each value has shape [N, num_keypoints, 3] where 3 represents (x, y, visibility)
+
+        output_dir: Path to save visualization outputs.
+            Defaults to "predictions_visualizations"
+
+        draw_skeleton: Whether to draw skeleton connections between keypoints
+
+        num_samples: Number of images to visualize. If None, processes all images
+
+        random_select: If True, randomly samples images; if False, uses first N images
+    """
+    # Setup output directory
+    output_dir = Path(output_dir or "predictions_visualizations")
     output_dir.mkdir(exist_ok=True)
 
+    # Select images to process
     image_paths = list(predictions.keys())
-    
-    # Sample selection
-    if num_samples is not None and num_samples < len(image_paths):
+    if num_samples and num_samples < len(image_paths):
         if random_select:
-            image_paths = np.random.choice(image_paths, num_samples, replace=False).tolist()
+            image_paths = np.random.choice(
+                image_paths, num_samples, replace=False
+            ).tolist()
         else:
             image_paths = image_paths[:num_samples]
 
-    # Process each image
+    # Process each selected image
     for image_path in image_paths:
+        # Get prediction and ground truth data
         pred_data = predictions[image_path]
-        
-        # Get ground truth keypoints for this image [N, num_joints, 3]
-        gt_keypoints = ground_truth[image_path]
-        
-        # Create visibility mask from the first GT sample
-        vis_mask = gt_keypoints[0, :, 2] > 0  # [num_joints]
+        gt_keypoints = ground_truth[image_path]  # Shape: [N, num_keypoints, 3]
 
-        # Get visible ground truth points for all samples
+        # Create visibility mask from first GT sample
+        # This mask will be applied to all samples for consistency
+        vis_mask = gt_keypoints[0, :, 2] > 0  # Shape: [num_keypoints]
+
+        # Process ground truth keypoints
         visible_gt = []
         for gt in gt_keypoints:
-            visible_points = gt[vis_mask, :2]  # Keep only x,y coordinates for visible joints
+            visible_points = gt[vis_mask, :2]  # Keep only x,y for visible joints
             visible_gt.append(visible_points)
-        visible_gt = np.stack(visible_gt)  # [N, num_visible_joints, 2]
-        
-        pred_keypoints = pred_data["bodyparts"]  # [N, num_visible_joints, 3]
-        
-        # Apply same visibility mask to all predictions
+        visible_gt = np.stack(visible_gt)  # Shape: [N, num_visible_joints, 2]
+
+        # Process predicted keypoints
+        pred_keypoints = pred_data["bodyparts"]  # Shape: [N, num_keypoints, 3]
         visible_pred = []
         for pred in pred_keypoints:
-            visible_points = pred[vis_mask]  # Keep points corresponding to visible joints
+            visible_points = pred[vis_mask]  # Keep only visible joint predictions
             visible_pred.append(visible_points)
-        visible_pred = np.stack(visible_pred)  # [13, num_visible_joints, 3]
+        visible_pred = np.stack(visible_pred)  # Shape: [N, num_visible_joints, 3]
 
+        # Generate and save visualization
         try:
             plot_gt_and_predictions(
                 image_path=image_path,
@@ -259,7 +266,7 @@ def plot_gt_and_predictions(
     image_path: str | Path,
     output_dir: str | Path,
     gt_bodyparts: np.ndarray,
-    pred_bodyparts: np.ndarray,  # (num_predicted_animals, num_keypoints, 3)
+    pred_bodyparts: np.ndarray,
     gt_unique_bodyparts: np.ndarray | None = None,
     pred_unique_bodyparts: np.ndarray | None = None,
     mode: str = "bodypart",
