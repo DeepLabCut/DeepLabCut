@@ -204,10 +204,11 @@ def visualize_coco_predictions(
         ground_truth = json.load(f)
 
     if output_dir is None:
-        output_dir = os.path.join(
-            os.path.dirname(test_file_json), "predictions_visualizations"
-        )
-    os.makedirs(output_dir, exist_ok=True)
+        output_dir = Path(test_file_json).parent / "predictions_visualizations"
+    else:
+        output_dir = Path(output_dir)
+
+    output_dir.mkdir(exist_ok=True)
 
     image_paths = list(predictions.keys())
     if num_samples:
