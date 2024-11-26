@@ -191,9 +191,9 @@ def visualize_predictions(
     Args:
         predictions: Dictionary with image paths as keys and prediction data as values.
                     Each prediction contains:
-                    - bodyparts: numpy array of shape (1, 37, 3)
-                    - bboxes: numpy array of shape (1, 4)
-                    - bbox_scores: numpy array of shape (1,)
+                    - bodyparts: numpy array of shape (num_individuals, num_keypoints, 3)
+                    - bboxes: numpy array of shape (num_individuals, 4)
+                    - bbox_scores: numpy array of shape (num_individuals,)
         ground_truth: Dictionary containing ground truth 2D keypoints in format (x, y, vis_label)
         num_samples: Number of samples to visualize
         output_dir: Directory to save visualization outputs
@@ -225,7 +225,6 @@ def visualize_predictions(
         gt_keypoints = ground_truth[image_path]
         
         # Create visibility mask from the first GT sample
-        # This will be used for all GT samples
         vis_mask = gt_keypoints[0, :, 2] > 0  # [num_joints]
 
         # Get visible ground truth points for all samples
