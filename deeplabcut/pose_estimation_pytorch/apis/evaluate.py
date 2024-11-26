@@ -176,6 +176,7 @@ def evaluate(
 
     return results, predictions
 
+
 def visualize_predictions(
     predictions: dict,
     ground_truth: dict,
@@ -244,7 +245,7 @@ def visualize_predictions(
                 visible_gt.append(visible_points)
             visible_gt = np.stack(visible_gt)  # Shape: [N, num_visible_joints, 2]
         else:
-            visible_gt = None  
+            visible_gt = None
 
         # Process predicted keypoints
         pred_keypoints = pred_data["bodyparts"]  # Shape: [N, num_keypoints, 3]
