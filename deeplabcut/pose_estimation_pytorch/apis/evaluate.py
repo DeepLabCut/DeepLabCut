@@ -177,7 +177,7 @@ def evaluate(
     return results, predictions
 
 
-def visualize_coco_predictions(
+def visualize_predictions(
     predictions: dict,
     ground_truth: dict,  # Dictionary mapping image paths to keypoints
     output_dir: str | Path | None = None,
@@ -221,23 +221,28 @@ def visualize_coco_predictions(
     for image_path in image_paths:
         pred_data = predictions[image_path]
         
-        # Get ground truth keypoints for this image
-        gt_keypoints = ground_truth[image_path]  # Get GT keypoints for this specific image
+        # Get ground truth keypoints for this image [N, num_joints, 3]
+        gt_keypoints = ground_truth[image_path]
         
-        # Create visibility mask from ground truth
-        vis_mask = gt_keypoints[:, :, 2] > 0  # Use visibility label
+        # Create visibility mask from the first GT sample
+        # This will be used for all GT samples
+        vis_mask = gt_keypoints[0, :, 2] > 0  # [num_joints]
 
-        # Get visible ground truth points
-        visible_gt = gt_keypoints[vis_mask]
-        visible_gt = visible_gt[None, :, :2]  # Keep only x,y coordinates
-
-        pred_keypoints = pred_data["bodyparts"]  # Keep batch dimension
-        print(pred_keypoints.shape) # (13,37,3)
-        print(vis_mask.shape) # (1,37)
+        # Get visible ground truth points for all samples
+        visible_gt = []
+        for gt in gt_keypoints:
+            visible_points = gt[vis_mask, :2]  # Keep only x,y coordinates for visible joints
+            visible_gt.append(visible_points)
+        visible_gt = np.stack(visible_gt)  # [N, num_visible_joints, 2]
         
-        # Handle dimension mismatch
-        expanded_vis_mask = np.tile(vis_mask, (pred_keypoints.shape[0], 1))
-        visible_pred = pred_keypoints[expanded_vis_mask].reshape(pred_keypoints.shape[0], -1, 3)
+        pred_keypoints = pred_data["bodyparts"]  # [N, num_visible_joints, 3]
+        
+        # Apply same visibility mask to all predictions
+        visible_pred = []
+        for pred in pred_keypoints:
+            visible_points = pred[vis_mask]  # Keep points corresponding to visible joints
+            visible_pred.append(visible_points)
+        visible_pred = np.stack(visible_pred)  # [13, num_visible_joints, 3]
 
         try:
             plot_gt_and_predictions(
