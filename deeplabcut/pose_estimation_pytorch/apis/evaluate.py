@@ -179,10 +179,11 @@ def evaluate(
 
 def visualize_coco_predictions(
     predictions: dict,
-    num_samples: int = 1,
-    test_file_json: str | Path = "test.json",
+    ground_truth: dict,  # Dictionary mapping image paths to keypoints
     output_dir: str | Path | None = None,
     draw_skeleton: bool = True,
+    num_samples: int | None = None,
+    random_select: bool = False, 
 ) -> None:
     """
     Visualize predictions using DeepLabCut's plot_gt_and_predictions function
@@ -193,62 +194,50 @@ def visualize_coco_predictions(
                     - bodyparts: numpy array of shape (1, 37, 3)
                     - bboxes: numpy array of shape (1, 4)
                     - bbox_scores: numpy array of shape (1,)
+        ground_truth: Dictionary containing ground truth 2D keypoints in format (x, y, vis_label)
         num_samples: Number of samples to visualize
-        test_file_json: Path to test set JSON file
-        output_dir: Directory to save visualization outputs. If None, will create
-                   a directory next to test_file_json
+        output_dir: Directory to save visualization outputs
         draw_skeleton: Whether to draw skeleton connections between keypoints
+        num_samples: Number of samples to visualize. If None, visualize all samples
+        random_select: If True, randomly select samples; if False, use first N samples
     """
-    # Load ground truth data
-    with open(test_file_json, "r") as f:
-        ground_truth = json.load(f)
-
     if output_dir is None:
-        output_dir = Path(test_file_json).parent / "predictions_visualizations"
+        output_dir = Path("predictions_visualizations")
     else:
         output_dir = Path(output_dir)
 
     output_dir.mkdir(exist_ok=True)
 
     image_paths = list(predictions.keys())
-    if num_samples:
-        image_paths = image_paths[:num_samples]
+    
+    # Sample selection
+    if num_samples is not None and num_samples < len(image_paths):
+        if random_select:
+            image_paths = np.random.choice(image_paths, num_samples, replace=False).tolist()
+        else:
+            image_paths = image_paths[:num_samples]
 
     # Process each image
     for image_path in image_paths:
         pred_data = predictions[image_path]
-        img_info = next(
-            (
-                img
-                for img in ground_truth["images"]
-                if img["file_name"] == os.path.basename(image_path)
-            ),
-            None,
-        )
-        if img_info is None:
-            print(f"Warning: Could not find image info for {image_path}")
-            continue
+        
+        # Get ground truth keypoints for this image
+        gt_keypoints = ground_truth[image_path]  # Get GT keypoints for this specific image
+        
+        # Create visibility mask from ground truth
+        vis_mask = gt_keypoints[:, :, 2] > 0  # Use visibility label
 
-        gt_anns = [
-            ann
-            for ann in ground_truth["annotations"]
-            if ann["image_id"] == img_info["id"]
-        ]
-
-        if not gt_anns:
-            print(f"Warning: No ground truth annotations found for {image_path}")
-            continue
-
-        gt_keypoints = np.array(gt_anns[0]["keypoints"]).reshape(1, -1, 3)
-        vis_mask = gt_keypoints[:, :, 2] != -1
-
+        # Get visible ground truth points
         visible_gt = gt_keypoints[vis_mask]
-        visible_gt = visible_gt[None, :, :2]
+        visible_gt = visible_gt[None, :, :2]  # Keep only x,y coordinates
 
         pred_keypoints = pred_data["bodyparts"]  # Keep batch dimension
-        visible_pred = pred_keypoints
-        visible_pred = pred_keypoints[vis_mask].copy()
-        visible_pred = np.expand_dims(visible_pred, axis=0)
+        print(pred_keypoints.shape) # (13,37,3)
+        print(vis_mask.shape) # (1,37)
+        
+        # Handle dimension mismatch
+        expanded_vis_mask = np.tile(vis_mask, (pred_keypoints.shape[0], 1))
+        visible_pred = pred_keypoints[expanded_vis_mask].reshape(pred_keypoints.shape[0], -1, 3)
 
         try:
             plot_gt_and_predictions(
