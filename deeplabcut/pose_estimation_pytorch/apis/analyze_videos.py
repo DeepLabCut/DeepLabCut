@@ -295,6 +295,7 @@ def analyze_videos(
         cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
 
     # Get general project parameters
+    multi_animal = cfg["multianimalproject"]
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
@@ -306,6 +307,15 @@ def analyze_videos(
 
     if batch_size is None:
         batch_size = cfg.get("batch_size", 1)
+
+    if multi_animal:
+        save_as_df = True
+        if use_shelve:
+            print(
+                "The ``use_shelve`` parameter cannot be used for single animal "
+                "projects. Setting ``use_shelve=False``."
+            )
+            use_shelve = False
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
@@ -399,7 +409,7 @@ def analyze_videos(
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             if use_shelve and save_as_df:
-                print("Can't `save_as_df` as `use_shelve=True`. Skipping.")
+                print("Can't ``save_as_df`` as ``use_shelve=True``. Skipping.")
 
             if not use_shelve:
                 output_data = _generate_output_data(pose_cfg, predictions)
@@ -409,7 +419,7 @@ def analyze_videos(
                 if save_as_df:
                     create_df_from_prediction(
                         predictions=predictions,
-                        cfg=cfg,
+                        multi_animal=multi_animal,
                         model_cfg=model_cfg,
                         dlc_scorer=dlc_scorer,
                         output_path=output_path,
@@ -417,7 +427,7 @@ def analyze_videos(
                         save_as_csv=save_as_csv,
                     )
 
-            if cfg["multianimalproject"]:
+            if multi_animal:
                 _generate_assemblies_file(
                     full_data_path=output_pkl,
                     output_path=output_path / f"{output_prefix}_assemblies.pickle",
@@ -460,7 +470,7 @@ def analyze_videos(
 def create_df_from_prediction(
     predictions: list[dict[str, np.ndarray]],
     dlc_scorer: str,
-    cfg: dict,
+    multi_animal: bool,
     model_cfg: dict,
     output_path: str | Path,
     output_prefix: str | Path,
@@ -482,14 +492,13 @@ def create_df_from_prediction(
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
     n_individuals = len(individuals)
-    multianimal_project = cfg.get("multianimalproject")
 
     print(f"Saving results in {output_h5} and {output_pkl}")
     coords = ["x", "y", "likelihood"]
     cols = [[dlc_scorer], bodyparts, coords]
     cols_names = ["scorer", "bodyparts", "coords"]
 
-    if multianimal_project:
+    if multi_animal:
         cols.insert(1, individuals)
         cols_names.insert(1, "individuals")
 
