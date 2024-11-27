@@ -17,6 +17,7 @@ from typing import Iterable
 import numpy as np
 from ruamel.yaml import YAML
 
+import deeplabcut.core.visualization as visualization
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
@@ -1223,19 +1224,12 @@ def extract_maps(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
-def visualize_scoremaps(
-    image: np.ndarray, scmap: np.ndarray, engine: Engine = DEFAULT_ENGINE,
-):
+def visualize_scoremaps(image: np.ndarray, scmap: np.ndarray):
     """
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
     """
-    if engine == Engine.TF:
-        # TODO: also works for Pytorch, but should not import as then requires TF
-        from deeplabcut.pose_estimation_tensorflow import visualize_scoremaps
-        return visualize_scoremaps(image, scmap)
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return visualization.visualize_scoremaps(image, scmap)
 
 
 def visualize_locrefs(
@@ -1245,17 +1239,14 @@ def visualize_locrefs(
     locref_y: np.ndarray,
     step: int = 5,
     zoom_width: int = 0,
-    engine: Engine = DEFAULT_ENGINE,
 ):
     """
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
     """
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import visualize_locrefs
-        return visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return visualization.visualize_locrefs(
+        image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width
+    )
 
 
 def visualize_paf(
@@ -1263,17 +1254,12 @@ def visualize_paf(
     paf: np.ndarray,
     step: int = 5,
     colors: list | None = None,
-    engine: Engine = DEFAULT_ENGINE,
 ):
     """
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
     """
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import visualize_paf
-        return visualize_paf(image, paf, step=step, colors=colors)
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
 def extract_save_all_maps(
