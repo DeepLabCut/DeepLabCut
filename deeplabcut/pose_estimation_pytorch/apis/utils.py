@@ -176,7 +176,7 @@ def get_model_snapshots(
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
-                f"{names}) with prefix {snapshot_manager.task.snapshot_prefix}. Could "
+                f"{names}) with prefix {snapshot_manager.snapshot_prefix}. Could "
                 f"not return snapshot with index {index}."
             )
 
