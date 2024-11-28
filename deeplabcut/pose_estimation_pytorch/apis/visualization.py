@@ -229,34 +229,10 @@ def extract_maps(
                 if indices is not None:
                     image_idx = indices[idx]
 
-                keys = []
-                images = []
-                outputs = []
-                if loader.pose_task == Task.TOP_DOWN:
-                    # parse each input individually
-                    num_bboxes = len(result["inputs"])
-                    for bbox_idx in range(num_bboxes):
-                        keys.append((image_idx, bbox_idx))
-                        images.append(result["inputs"][bbox_idx])
-                        outputs.append(
-                            {
-                                head: {k: v[bbox_idx] for k, v in head_outputs.items()}
-                                for head, head_outputs in result["outputs"].items()
-                            }
-                        )
-
-                else:
-                    # remove batch dimension
-                    keys.append(image_idx)
-                    images.append(result["inputs"][0])
-                    outputs.append(
-                        {
-                            head: {k: v[0] for k, v in head_outputs.items()}
-                            for head, head_outputs in result["outputs"].items()
-                        }
-                    )
-
-                for key, image, output in zip(keys, images, outputs):
+                # key can be just image_idx, or (image_idx, bbox_idx) for TD models
+                for key, image, output in _collect_model_outputs(
+                    loader.pose_task, result, image_idx
+                ):
                     parsed = _parse_model_outputs(
                         image,
                         output,
@@ -266,9 +242,10 @@ def extract_maps(
                         },
                         denormalize_image=True,
                     )
+                    img_name = image_paths[idx].stem
                     is_train = image_idx in train_idx
                     extracted_maps[loader.train_fraction][snapshot_id][key] = (
-                        *parsed, None, bpt_names, paf_graph, image_paths[idx].stem, is_train
+                        *parsed, None, bpt_names, paf_graph, img_name, is_train
                     )
 
     # img, scmap, locref, paf, peaks, bpt_names, paf_graph, img_name, is_train
@@ -417,6 +394,50 @@ def _get_context(
         device=device,
     )
     return detector_runner.inference(image_paths)
+
+
+def _collect_model_outputs(
+    task: Task,
+    result: dict,
+    image_idx: int,
+) -> tuple[list, list, list]:
+    """Collects the model outputs into data that can be processed.
+
+    Args:
+        task:
+        result:
+        image_idx:
+
+    Returns: keys, images, outputs
+        keys:
+    """
+    if task == Task.TOP_DOWN:
+        keys, images, outputs = [], [], []
+
+        # parse each input individually
+        num_bboxes = len(result["inputs"])
+        for bbox_idx in range(num_bboxes):
+            keys.append((image_idx, bbox_idx))
+            images.append(result["inputs"][bbox_idx])
+            outputs.append(
+                {
+                    head: {k: v[bbox_idx] for k, v in head_outputs.items()}
+                    for head, head_outputs in result["outputs"].items()
+                }
+            )
+        return keys, images, outputs
+
+    # remove batch dimension
+    return (
+        [image_idx],
+        [result["inputs"][0]],
+        [
+            {
+                head: {k: v[0] for k, v in head_outputs.items()}
+                for head, head_outputs in result["outputs"].items()
+            }
+        ],
+    )
 
 
 def _parse_model_outputs(
