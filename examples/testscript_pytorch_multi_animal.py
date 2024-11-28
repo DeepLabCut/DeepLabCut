@@ -25,6 +25,8 @@ def main(
     net_types: list[str],
     params: SyntheticProjectParameters,
     epochs: int = 1,
+    top_down_epochs: int = 1,
+    detector_epochs: int = 1,
     save_epochs: int = 1,
     batch_size: int = 1,
     detector_batch_size: int = 1,
@@ -34,7 +36,7 @@ def main(
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,
 ) -> None:
-    project_path = Path("../synthetic-data-niels-multi-animal").resolve()
+    project_path = Path("synthetic-data-niels-multi-animal").resolve()
     config_path = project_path / "config.yaml"
     create_fake_project(path=project_path, params=params)
 
@@ -44,18 +46,21 @@ def main(
     train_frac = cfg["TrainingFraction"][trainset_index]
     try:
         for net_type in net_types:
+            epochs_ = epochs
+            if "top_down" in net_type:
+                epochs_ = top_down_epochs
             try:
                 run(
                     config_path=config_path,
                     train_fraction=train_frac,
                     trainset_index=trainset_index,
                     net_type=net_type,
-                    videos=[],
+                    videos=[str(project_path / "videos" / "video.mp4")],
                     device=device,
                     train_kwargs=dict(
                         train_settings=dict(
                             display_iters=50,
-                            epochs=epochs,
+                            epochs=epochs_,
                             batch_size=batch_size,
                         ),
                         runner=dict(
@@ -68,7 +73,7 @@ def main(
                         detector=dict(
                             train_settings=dict(
                                 display_iters=1,
-                                epochs=epochs,
+                                epochs=detector_epochs,
                                 batch_size=detector_batch_size,
                             ),
                             runner=dict(
@@ -95,27 +100,30 @@ def main(
 
 
 if __name__ == "__main__":
+    wandb_logger = {
+        "type": "WandbLogger",
+        "project_name": "testscript-dev",
+        "run_name": "test-logging",
+    }
     main(
-        net_types=["top_down_resnet_50", "resnet_50", "dekr_w18"],
+        net_types=["top_down_resnet_50", "resnet_50", "dekr_w32"],
         params=SyntheticProjectParameters(
             multianimal=True,
-            num_bodyparts=5,
+            num_bodyparts=4,
             num_individuals=3,
             num_unique=0,
-            num_frames=10,
-            frame_shape=(128, 256),
+            num_frames=25,
+            frame_shape=(256, 256),
         ),
-        batch_size=8,
+        batch_size=2,
         detector_batch_size=2,
-        epochs=3,
-        save_epochs=1,
+        epochs=8,
+        top_down_epochs=2,
+        detector_epochs=10,
+        save_epochs=4,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
-        logger={
-            "type": "WandbLogger",
-            "project_name": "testscript-dev",
-            "run_name": "test-logging",
-        },
-        create_labeled_videos=False,
+        logger=None,
+        create_labeled_videos=True,
         delete_after_test_run=True,
     )

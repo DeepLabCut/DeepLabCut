@@ -33,8 +33,8 @@ def main(
 ) -> None:
     engine = Engine.PYTORCH
     if synthetic_data:
-        project_path = Path("../synthetic-data-niels-single-animal").resolve()
-        videos = []
+        project_path = Path("synthetic-data-niels-single-animal").resolve()
+        videos = [str(project_path / "videos" / "video.mp4")]
         create_fake_project(path=project_path, params=synthetic_data_params)
 
     else:
@@ -85,27 +85,28 @@ def main(
 
 
 if __name__ == "__main__":
+    wandb_logger = {
+        "type": "WandbLogger",
+        "project_name": "testscript-dev",
+        "run_name": "test-logging",
+    }
     main(
-        synthetic_data=False,
-        net_types=["resnet_50", "hrnet_w18", "hrnet_w32", "hrnet_w48"],
-        batch_size=8,
-        epochs=20,
-        save_epochs=10,
+        synthetic_data=True,
+        net_types=["resnet_50", "hrnet_w32"],
+        batch_size=4,
+        epochs=8,
+        save_epochs=2,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
-        logger={
-            "type": "WandbLogger",
-            "project_name": "testscript-dev",
-            "run_name": "test-logging",
-        },
+        logger=None,
         synthetic_data_params=SyntheticProjectParameters(
             multianimal=False,
             num_bodyparts=4,
             num_individuals=1,
             num_unique=0,
-            num_frames=20,
-            frame_shape=(128, 256),
+            num_frames=12,
+            frame_shape=(128, 128),
         ),
-        create_labeled_videos=False,
+        create_labeled_videos=True,
         delete_after_test_run=True,
     )

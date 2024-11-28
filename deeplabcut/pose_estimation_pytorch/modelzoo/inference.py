@@ -152,7 +152,7 @@ def _video_inference_superanimal(
         df = create_df_from_prediction(
             predictions=predictions,
             dlc_scorer=dlc_scorer,
-            cfg=dict(multianimalproject=True),
+            multi_animal=True,
             model_cfg=model_cfg,
             output_path=output_path,
             output_prefix=output_prefix,
