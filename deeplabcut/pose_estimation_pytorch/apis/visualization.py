@@ -16,14 +16,17 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+import torch.nn.functional as F
 from tqdm import tqdm
 
+import deeplabcut.core.visualization as visualization
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as preprocessor
 import deeplabcut.pose_estimation_pytorch.models as models
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.utils import auxiliaryfunctions
 
 
 @torch.no_grad()
@@ -31,7 +34,7 @@ def extract_model_outputs(
     images: list[str] | list[Path],
     model: models.PoseModel,
     pre_processor: preprocessor.Preprocessor,
-    device: str | None = None,
+    device: str = "auto",
     context: list[dict[str, np.ndarray]] | None = None,
 ) -> list[dict[str, np.ndarray]]:
     """Obtains the outputs for a model for a list of images
@@ -68,9 +71,6 @@ def extract_model_outputs(
             f"{len(context)} contexts."
         )
 
-    if device is None:
-        device = utils.resolve_device(model.cfg)
-
     model = model.to(device)
     model = model.eval()
 
@@ -82,6 +82,12 @@ def extract_model_outputs(
 
         inputs, image_context = pre_processor(image, image_context)
         output = model(inputs.to(device))
+
+        for head, head_cfg in model.cfg["heads"].items():
+            if head_cfg["predictor"].get("apply_sigmoid"):
+                if "heatmap" in output[head]:
+                    output[head]["heatmap"] = F.sigmoid(output[head]["heatmap"])
+
         output = {
             head: {
                 name: output.cpu().numpy()
@@ -173,15 +179,21 @@ def extract_maps(
         # (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
         metadata = loader.model_cfg["metadata"]
         bpt_names = metadata["bodyparts"] + metadata["unique_bodyparts"]
-        test_config_path = loader.model_folder.parent / "test" / "pose_cfg.yaml"
-        test_config = read_config_as_dict(test_config_path)
-        paf_graph = None  # FIXME(niels): get the paf graph from test_config
+        # FIXME(niels): get the paf graph from test_config
+        # test_config_path = loader.model_folder.parent / "test" / "pose_cfg.yaml"
+        # test_config = read_config_as_dict(test_config_path)
+        paf_graph = []
+        bpt_head_cfg = loader.model_cfg["model"]["heads"]["bodypart"]
+        if bpt_head_cfg["type"] == "DLCRNetHead":
+            paf_graph = bpt_head_cfg.get("predictor", {}).get("graph")
 
         if device is not None:
             loader.model_cfg["device"] = device
         loader.model_cfg["device"] = utils.resolve_device(loader.model_cfg)
 
         task = Task(loader.model_cfg["method"])
+        if snapshot_index is None:
+            snapshot_index = -1
         snapshots = utils.get_model_snapshots(snapshot_index, loader.model_folder, task)
 
         image_paths = loader.df.index
@@ -189,31 +201,53 @@ def extract_maps(
             image_paths = [image_paths[idx] for idx in indices]
         if len(image_paths) > 0 and isinstance(image_paths[0], tuple):
             image_paths = [Path(*img_path) for img_path in image_paths]
-        image_paths = [loader.project_path / img_path for img_path in image_paths]
+
+        image_paths = [
+            (loader.project_path / img_path).resolve() for img_path in image_paths
+        ]
 
         context = None
         if task == Task.TOP_DOWN:
-            if detector_snapshot_index is None:
-                # FIXME(niels) - use ground truth bounding boxes
-                detector_snapshot_index = -1
-            elif isinstance(detector_snapshot_index, str):
-                detector_snapshot_index = -1
-
-            # FIXME(niels) - get context from detector
             det_snapshots = utils.get_model_snapshots(
                 detector_snapshot_index, loader.model_folder, Task.DETECT
             )
-            detector_path = det_snapshots[-1].path
-            detector_runner = detector_path
+            if detector_snapshot_index is None or len(det_snapshots) == 0:
+                if detector_snapshot_index is None:
+                    print("No ``detector_snapshot_index`` given.")
+                else:
+                    print(f"No detector snapshots found in {loader.model_folder}")
+                print("Using GT bboxes to extract maps for this top-down model")
 
-        # FIXME(niels): not correct snapshot_idx
-        for snapshot_idx, snapshot in enumerate(snapshots):
-            extracted_maps[loader.train_fraction][snapshot_idx] = {}
+                bboxes_train = loader.ground_truth_bboxes(mode="train")
+                bboxes_test = loader.ground_truth_bboxes(mode="test")
+                bboxes = {**bboxes_train, **bboxes_test}
+                context = [
+                    dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths
+                ]
+            else:
+                if isinstance(detector_snapshot_index, str):
+                    detector_snapshot_index = -1
+
+                detector_runner = utils.get_detector_inference_runner(
+                    model_config=loader.model_cfg,
+                    snapshot_path=det_snapshots[-1].path,
+                    device=device,
+                )
+                context = detector_runner.inference(image_paths)
+
+        train_idx = set(loader.split["train"])
+        for snapshot in snapshots:
+            snapshot_id = snapshot.path.stem
+            extracted_maps[loader.train_fraction][snapshot_id] = {}
             runner = utils.get_pose_inference_runner(
                 model_config=loader.model_cfg, snapshot_path=snapshot.path,
             )
             results = extract_model_outputs(
-                image_paths, runner.model, runner.preprocessor, device, context=context,
+                image_paths,
+                runner.model,
+                runner.preprocessor,
+                runner.device,
+                context=context,
             )
             for idx, result in enumerate(results):
                 image_idx = idx
@@ -248,14 +282,21 @@ def extract_maps(
                     )
 
                 for key, image, output in zip(keys, images, outputs):
-                    image, heatmaps, locrefs, paf = _parse_model_outputs(
-                        image, output, denormalize_image=True,
+                    parsed = _parse_model_outputs(
+                        image,
+                        output,
+                        strides={
+                            k: runner.model.get_stride(k)
+                            for k in runner.model.heads.keys()
+                        },
+                        denormalize_image=True,
                     )
-                    extracted_maps[loader.train_fraction][snapshot_idx][key] = (
-                        image, heatmaps, locrefs, paf
+                    is_train = image_idx in train_idx
+                    extracted_maps[loader.train_fraction][snapshot_id][key] = (
+                        *parsed, None, bpt_names, paf_graph, image_paths[idx].stem, is_train
                     )
 
-    # (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
+    # img, scmap, locref, paf, peaks, bpt_names, paf_graph, img_name, is_train
     return extracted_maps
 
 
@@ -325,120 +366,58 @@ def extract_save_all_maps(
         detector_snapshot_index=detector_snapshot_index,
         modelprefix=modelprefix,
     )
-
-    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(
+    bpts_to_plot = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, comparison_bodyparts
     )
 
     print("Saving plots...")
-    for frac, values in data.items():
-        if not dest_folder:
-            dest_folder = os.path.join(
-                cfg["project_path"],
-                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix)),
-                "maps",
+    for frac, values in maps.items():
+        if dest_folder is None:
+            trainset_index = cfg["TrainingFraction"].index(frac)
+            loader = data.DLCLoader(
+                config, trainset_index, shuffle, modelprefix=modelprefix
             )
+            dest_folder = loader.project_path / loader.evaluation_folder / "maps"
+        else:
+            dest_folder = Path(dest_folder)
 
-        attempt_to_make_folder(dest_folder)
-        filepath = "{imname}_{map}_{label}_{shuffle}_{frac}_{snap}.png"
-        dest_path = os.path.join(dest_folder, filepath)
+        dest_folder.mkdir(exist_ok=True)
         for snap, maps in values.items():
-            for imagenr in tqdm(maps):
+            for image_idx, image_maps in tqdm(maps.items()):
                 (
                     image,
                     scmap,
                     locref,
                     paf,
                     peaks,
-                    bptnames,
-                    pafgraph,
-                    impath,
-                    trainingframe,
-                ) = maps[imagenr]
+                    bpt_names,
+                    paf_graph,
+                    image_path,
+                    training_image,
+                ) = image_maps
                 if not extract_paf:
                     paf = None
-                label = "train" if trainingframe else "test"
-                imname = impath[-1]
-                scmap, (locref_x, locref_y), paf = resize_all_maps(
-                    image, scmap, locref, paf
+                label = "train" if training_image else "test"
+                visualization.generate_model_output_plots(
+                    output_folder=dest_folder,
+                    image_name=Path(image_path).stem,
+                    bodypart_names=bpt_names,
+                    bodyparts_to_plot=bpts_to_plot,
+                    image=image,
+                    scmap=scmap,
+                    locref=locref,
+                    paf=paf,
+                    paf_graph=paf_graph,
+                    paf_all_in_one=all_paf_in_one,
+                    paf_colormap=cfg["colormap"],
+                    output_suffix=f"{label}_{shuffle}_{frac}_{snap}.png",
                 )
-                to_plot = [
-                    i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts
-                ]
-                list_of_inds = []
-                for n, edge in enumerate(pafgraph):
-                    if any(ind in to_plot for ind in edge):
-                        list_of_inds.append(
-                            [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
-                        )
-                if len(to_plot) > 1:
-                    map_ = scmap[:, :, to_plot].sum(axis=2)
-                    locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
-                    locref_y_ = locref_y[:, :, to_plot].sum(axis=2)
-                elif len(to_plot) == 1 and len(bptnames) > 1:
-                    map_ = scmap[:, :, to_plot]
-                    locref_x_ = locref_x[:, :, to_plot]
-                    locref_y_ = locref_y[:, :, to_plot]
-                else:
-                    map_ = scmap[..., 0]
-                    locref_x_ = locref_x[..., 0]
-                    locref_y_ = locref_y[..., 0]
-                fig1, _ = visualize_scoremaps(image, map_)
-                temp = dest_path.format(
-                    imname=imname,
-                    map="scmap",
-                    label=label,
-                    shuffle=shuffle,
-                    frac=frac,
-                    snap=snap,
-                )
-                fig1.savefig(temp)
-
-                fig2, _ = visualize_locrefs(image, map_, locref_x_, locref_y_)
-                temp = dest_path.format(
-                    imname=imname,
-                    map="locref",
-                    label=label,
-                    shuffle=shuffle,
-                    frac=frac,
-                    snap=snap,
-                )
-                fig2.savefig(temp)
-
-                if paf is not None:
-                    if not all_paf_in_one:
-                        for inds, names in list_of_inds:
-                            fig3, _ = visualize_paf(image, paf[:, :, [inds]])
-                            temp = dest_path.format(
-                                imname=imname,
-                                map=f'paf_{"_".join(names)}',
-                                label=label,
-                                shuffle=shuffle,
-                                frac=frac,
-                                snap=snap,
-                            )
-                            fig3.savefig(temp)
-                    else:
-                        inds = [elem[0] for elem in list_of_inds]
-                        n_inds = len(inds)
-                        cmap = plt.cm.get_cmap(cfg["colormap"], n_inds)
-                        colors = cmap(range(n_inds))
-                        fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
-                        temp = dest_path.format(
-                            imname=imname,
-                            map=f"paf",
-                            label=label,
-                            shuffle=shuffle,
-                            frac=frac,
-                            snap=snap,
-                        )
-                        fig3.savefig(temp)
-                plt.close("all")
 
 
 def _parse_model_outputs(
     image: np.ndarray,
     outputs: dict[str, dict[str, np.ndarray]],
+    strides: dict[str, int],
     denormalize_image: bool = True,
 ) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
     """Parses the model outputs into a format that can easily be plotted.
@@ -446,6 +425,7 @@ def _parse_model_outputs(
     Args:
         image: The image used to obtain the outputs.
         outputs: The model outputs.
+        strides: The total stride for each model head.
         denormalize_image: Whether the image was normalized and should be de-normalized.
 
     Returns: (img, scmap, locref, paf)
@@ -463,6 +443,8 @@ def _parse_model_outputs(
 
     heatmaps = _conditional_resize(outputs["bodypart"].get("heatmap"), img_w, img_h)
     locrefs = _conditional_resize(outputs["bodypart"].get("locref"), img_w, img_h)
+    if locrefs is not None:
+        locrefs = locrefs * strides["bodypart"]
     paf = _conditional_resize(outputs["bodypart"].get("paf"), img_w, img_h)
     if "unique_bodypart" in outputs:
         heatmaps_unique = outputs["unique_bodypart"].get("heatmap")
@@ -474,6 +456,9 @@ def _parse_model_outputs(
 
         locrefs_unique = outputs["unique_bodypart"].get("locref")
         locrefs_unique = _conditional_resize(locrefs_unique, img_w, img_h)
+        if locrefs_unique is not None:
+            locrefs_unique = strides["unique_bodypart"] * locrefs_unique
+
         if locrefs is None:
             locrefs = locrefs_unique
         elif locrefs_unique is not None:

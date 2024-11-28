@@ -1091,10 +1091,21 @@ def convert_detections2tracklets(
     Examples
     --------
     If you want to convert detections to tracklets:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    >>> import deeplabcut
+    >>> deeplabcut.convert_detections2tracklets(
+    >>>    "/analysis/project/reaching-task/config.yaml",
+    >>>    ["/analysis/project/video1.mp4"],
+    >>>    videotype='.mp4',
+    >>> )
 
     If you want to convert detections to tracklets based on box_tracker:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
+    >>> import deeplabcut
+    >>> deeplabcut.convert_detections2tracklets(
+    >>>    "/analysis/project/reaching-task/config.yaml",
+    >>>    ["/analysis/project/video1.mp4"],
+    >>>    videotype=".mp4",
+    >>>    track_method="box",
+    >>> )
 
     --------
 
@@ -1159,6 +1170,7 @@ def extract_maps(
     shuffle: int = 0,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
+    device: str | None = None,
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
@@ -1182,6 +1194,16 @@ def extract_maps(
     trainingsetindex: int, optional
         Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
         variable can also be set to "all".
+
+    gputouse: int or None, optional, default=None
+        For the TensorFlow engine (for the PyTorch engine see ``device``). Specifies
+        the GPU to use (see number in ``nvidia-smi``). If you do not have a GPU put
+        ``None``. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    device: str or None, optional, default=None
+        The CUDA device to use for training. If None, the device will be taken from the
+        ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. See
+        https://pytorch.org/docs/stable/notes/cuda.html for more information.
 
     rescale: bool, default False
         Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
@@ -1218,6 +1240,17 @@ def extract_maps(
             gputouse=gputouse,
             rescale=rescale,
             Indices=Indices,
+            modelprefix=modelprefix,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch import extract_maps
+        extract_maps(
+            config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            device=_gpu_to_use_to_device(gputouse, device),
+            rescale=rescale,
+            indices=Indices,
             modelprefix=modelprefix,
         )
 
@@ -1269,7 +1302,8 @@ def extract_save_all_maps(
     comparisonbodyparts: str | list[str] = "all",
     extract_paf: bool = True,
     all_paf_in_one: bool = True,
-    gputouse: int = None,
+    gputouse: int | None = None,
+    device: str | None = None,
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
@@ -1304,6 +1338,16 @@ def extract_save_all_maps(
     all_paf_in_one : bool
         By default, all part affinity fields are displayed on a single frame.
         If false, individual fields are shown on separate frames.
+
+    gputouse: int or None, optional, default=None
+        For the TensorFlow engine (for the PyTorch engine see ``device``). Specifies
+        the GPU to use (see number in ``nvidia-smi``). If you do not have a GPU put
+        ``None``. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    device: str or None, optional, default=None
+        The CUDA device to use for training. If None, the device will be taken from the
+        ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. See
+        https://pytorch.org/docs/stable/notes/cuda.html for more information.
 
     Indices: default None
         For which images shall the scmap/locref and paf be computed? Give a list of images
@@ -1342,6 +1386,21 @@ def extract_save_all_maps(
             gputouse=gputouse,
             rescale=rescale,
             Indices=Indices,
+            modelprefix=modelprefix,
+            dest_folder=dest_folder,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch import extract_save_all_maps
+        return extract_save_all_maps(
+            config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            comparison_bodyparts=comparisonbodyparts,
+            extract_paf=extract_paf,
+            all_paf_in_one=all_paf_in_one,
+            device=_gpu_to_use_to_device(gputouse, device),
+            rescale=rescale,
+            indices=Indices,
             modelprefix=modelprefix,
             dest_folder=dest_folder,
         )
@@ -1443,10 +1502,19 @@ def export_model(
 
 def _update_device(gpu_to_use: int | None, torch_kwargs: dict) -> None:
     if "device" not in torch_kwargs and gpu_to_use is not None:
+        device = _gpu_to_use_to_device(gpu_to_use, device=None)
+        if device is not None:
+            torch_kwargs["device"] = device
+
+
+def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | None:
+    if device is None and gpu_to_use is not None:
         if isinstance(gpu_to_use, int):
-            torch_kwargs["device"] = f"cuda:{gpu_to_use}"
+            device = f"cuda:{gpu_to_use}"
         else:
-            torch_kwargs["device"] = gpu_to_use
+            device = gpu_to_use
+
+    return device
 
 
 def _load_config(config: str) -> dict:

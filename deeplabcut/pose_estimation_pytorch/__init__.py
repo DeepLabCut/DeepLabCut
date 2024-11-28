@@ -12,6 +12,8 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     analyze_videos,
     convert_detections2tracklets,
     evaluate_network,
+    extract_maps,
+    extract_save_all_maps,
     train_network,
 )
 from deeplabcut.pose_estimation_pytorch.config import (
