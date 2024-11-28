@@ -125,5 +125,5 @@ if __name__ == "__main__":
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger=None,
         create_labeled_videos=True,
-        delete_after_test_run=False,
+        delete_after_test_run=True,
     )

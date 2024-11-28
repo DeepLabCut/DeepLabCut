@@ -108,5 +108,5 @@ if __name__ == "__main__":
             frame_shape=(128, 128),
         ),
         create_labeled_videos=True,
-        delete_after_test_run=False,
+        delete_after_test_run=True,
     )
