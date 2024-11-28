@@ -38,7 +38,7 @@ import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
+from deeplabcut.utils import auxiliaryfunctions, VideoReader
 
 
 class VideoIterator(VideoReader):
@@ -308,7 +308,7 @@ def analyze_videos(
     if batch_size is None:
         batch_size = cfg.get("batch_size", 1)
 
-    if multi_animal:
+    if not multi_animal:
         save_as_df = True
         if use_shelve:
             print(
