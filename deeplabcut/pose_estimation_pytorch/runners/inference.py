@@ -80,7 +80,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     @torch.no_grad()
     def inference(
         self,
-        images: Iterable[str | np.ndarray]
+        images: Iterable[str | Path | np.ndarray]
         | Iterable[tuple[str | np.ndarray, dict[str, Any]]],
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
@@ -128,7 +128,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """
         Prepares inputs for an image and adds them to the data ready to be processed
         """
-        if isinstance(data, (str, np.ndarray)):
+        if isinstance(data, (str, Path, np.ndarray)):
             inputs, context = data, {}
         else:
             inputs, context = data

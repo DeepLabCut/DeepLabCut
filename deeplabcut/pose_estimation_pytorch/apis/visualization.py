@@ -24,6 +24,7 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as preprocessor
 import deeplabcut.pose_estimation_pytorch.models as models
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
@@ -190,11 +191,13 @@ def extract_maps(
         if device is not None:
             loader.model_cfg["device"] = device
         loader.model_cfg["device"] = utils.resolve_device(loader.model_cfg)
+        device = loader.model_cfg["device"]
 
-        task = Task(loader.model_cfg["method"])
         if snapshot_index is None:
             snapshot_index = -1
-        snapshots = utils.get_model_snapshots(snapshot_index, loader.model_folder, task)
+        snapshots = utils.get_model_snapshots(
+            snapshot_index, loader.model_folder, loader.pose_task
+        )
 
         image_paths = loader.df.index
         if indices is not None:
@@ -206,35 +209,7 @@ def extract_maps(
             (loader.project_path / img_path).resolve() for img_path in image_paths
         ]
 
-        context = None
-        if task == Task.TOP_DOWN:
-            det_snapshots = utils.get_model_snapshots(
-                detector_snapshot_index, loader.model_folder, Task.DETECT
-            )
-            if detector_snapshot_index is None or len(det_snapshots) == 0:
-                if detector_snapshot_index is None:
-                    print("No ``detector_snapshot_index`` given.")
-                else:
-                    print(f"No detector snapshots found in {loader.model_folder}")
-                print("Using GT bboxes to extract maps for this top-down model")
-
-                bboxes_train = loader.ground_truth_bboxes(mode="train")
-                bboxes_test = loader.ground_truth_bboxes(mode="test")
-                bboxes = {**bboxes_train, **bboxes_test}
-                context = [
-                    dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths
-                ]
-            else:
-                if isinstance(detector_snapshot_index, str):
-                    detector_snapshot_index = -1
-
-                detector_runner = utils.get_detector_inference_runner(
-                    model_config=loader.model_cfg,
-                    snapshot_path=det_snapshots[-1].path,
-                    device=device,
-                )
-                context = detector_runner.inference(image_paths)
-
+        context = _get_context(image_paths, loader, detector_snapshot_index, device)
         train_idx = set(loader.split["train"])
         for snapshot in snapshots:
             snapshot_id = snapshot.path.stem
@@ -257,7 +232,7 @@ def extract_maps(
                 keys = []
                 images = []
                 outputs = []
-                if task == Task.TOP_DOWN:
+                if loader.pose_task == Task.TOP_DOWN:
                     # parse each input individually
                     num_bboxes = len(result["inputs"])
                     for bbox_idx in range(num_bboxes):
@@ -348,10 +323,10 @@ def extract_save_all_maps(
     --------
     Calculated maps for images 0, 1 and 33.
         >>> deeplabcut.extract_save_all_maps(
-                "/analysis/project/reaching-task/config.yaml",
-                shuffle=1,
-                indices=[0, 1, 33]
-            )
+        >>>     "/analysis/project/reaching-task/config.yaml",
+        >>>     shuffle=1,
+        >>>     indices=[0, 1, 33]
+        >>> )
 
     """
     cfg = read_config_as_dict(config)
@@ -372,15 +347,7 @@ def extract_save_all_maps(
 
     print("Saving plots...")
     for frac, values in maps.items():
-        if dest_folder is None:
-            trainset_index = cfg["TrainingFraction"].index(frac)
-            loader = data.DLCLoader(
-                config, trainset_index, shuffle, modelprefix=modelprefix
-            )
-            dest_folder = loader.project_path / loader.evaluation_folder / "maps"
-        else:
-            dest_folder = Path(dest_folder)
-
+        dest_folder = _get_maps_folder(cfg, frac, shuffle, modelprefix, dest_folder)
         dest_folder.mkdir(exist_ok=True)
         for snap, maps in values.items():
             for image_idx, image_maps in tqdm(maps.items()):
@@ -412,6 +379,44 @@ def extract_save_all_maps(
                     paf_colormap=cfg["colormap"],
                     output_suffix=f"{label}_{shuffle}_{frac}_{snap}.png",
                 )
+
+
+def _get_context(
+    image_paths: list[Path],
+    loader: data.Loader,
+    detector_snapshot_index: int | str | None,
+    device: str,
+) -> list[dict] | None:
+    """Gets the context for top-down pose estimation models"""
+    if loader.pose_task != Task.TOP_DOWN:
+        return None
+
+    det_snapshots = []
+    if detector_snapshot_index is not None:
+        det_snapshots = utils.get_model_snapshots(
+            detector_snapshot_index, loader.model_folder, Task.DETECT
+        )
+
+    if detector_snapshot_index is None or len(det_snapshots) == 0:
+        if detector_snapshot_index is None:
+            print("No ``detector_snapshot_index`` given.")
+        else:
+            print(f"No detector snapshots found in {loader.model_folder}")
+        print("Using GT bboxes to extract maps for this top-down model")
+
+        bboxes_train = loader.ground_truth_bboxes(mode="train")
+        bboxes_test = loader.ground_truth_bboxes(mode="test")
+        bboxes = {**bboxes_train, **bboxes_test}
+        return [
+            dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths
+        ]
+
+    detector_runner = utils.get_detector_inference_runner(
+        model_config=loader.model_cfg,
+        snapshot_path=det_snapshots[-1].path,
+        device=device,
+    )
+    return detector_runner.inference(image_paths)
 
 
 def _parse_model_outputs(
@@ -495,3 +500,25 @@ def _conditional_resize(array: np.ndarray | None, w: int, h: int) -> np.ndarray 
     array_whc = cv2.resize(array_whc, (w, h), interpolation=cv2.INTER_LINEAR)
     array_chw = array_whc.transpose((2, 0, 1))
     return array_chw
+
+
+def _get_maps_folder(
+    cfg: dict,
+    train_frac: float,
+    shuffle: int,
+    model_prefix: str | None,
+    dest_folder: str | Path | None,
+) -> Path:
+    """Gets the destination folder for output maps"""
+    if dest_folder is None:
+        project_path = Path(cfg["project_path"])
+        eval_folder = auxiliaryfunctions.get_evaluation_folder(
+            trainFraction=train_frac,
+            shuffle=shuffle,
+            cfg=cfg,
+            engine=Engine.PYTORCH,
+            modelprefix=model_prefix,
+        )
+        dest_folder = project_path / eval_folder / "maps"
+
+    return Path(dest_folder)
