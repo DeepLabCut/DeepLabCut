@@ -85,9 +85,19 @@ def extract_model_outputs(
         output = model(inputs.to(device))
 
         for head, head_cfg in model.cfg["heads"].items():
-            if head_cfg["predictor"].get("apply_sigmoid"):
+            if (
+                head_cfg["predictor"].get("apply_sigmoid", False)
+                or head_cfg["predictor"]["type"] == "PartAffinityFieldPredictor"
+            ):
                 if "heatmap" in output[head]:
+                    print(f"APPLYING SIGMOID TO {head} HEATMAP")
+                    print(torch.min(output[head]["heatmap"]), torch.max(output[head]["heatmap"]))
                     output[head]["heatmap"] = F.sigmoid(output[head]["heatmap"])
+                    print(
+                        torch.min(output[head]["heatmap"]),
+                        torch.max(output[head]["heatmap"])
+                    )
+                    print("---")
 
         output = {
             head: {
