@@ -371,7 +371,7 @@ def extract_save_all_maps(
                     paf_graph=paf_graph,
                     paf_all_in_one=all_paf_in_one,
                     paf_colormap=cfg["colormap"],
-                    output_suffix=f"{label}_{shuffle}_{frac}_{snap}.png",
+                    output_suffix=f"{label}_{shuffle}_{frac}_{snap}",
                 )
 
 
@@ -421,12 +421,15 @@ def _collect_model_outputs(
     """Collects the model outputs into data that can be processed.
 
     Args:
-        task:
-        result:
-        image_idx:
+        task: Whether the model is a bottom-up or top-down model.
+        result: A result output by ``extract_model_outputs``.
+        image_idx: The index of the image
 
     Returns: keys, images, outputs
-        keys:
+        keys: The key for each image to plot.
+        images: The images to plot for this input image (a single image for bottom-up
+            models, and the number of bounding boxes for top-down models).
+        outputs: The model outputs for each image.
     """
     if task == Task.TOP_DOWN:
         keys, images, outputs = [], [], []
@@ -500,7 +503,15 @@ def _parse_model_outputs(
 def _prepare_maps_for_plotting(
     maps: list[np.ndarray], image_size: tuple[int, int]
 ) -> np.ndarray | None:
-    """"""
+    """Resizes all maps to the image size and concatenates them into a single array.
+
+    Args:
+        maps: The maps that will be shown on the image.
+        image_size: The (width, height) of the input image.
+
+    Returns:
+        The resized maps, or None if the list of maps was empty.
+    """
     if len(maps) == 0:
         return None
 
