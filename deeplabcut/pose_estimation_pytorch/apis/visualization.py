@@ -110,6 +110,7 @@ def extract_maps(
     device: str | None = None,
     rescale: bool = False,
     indices: list[int] | None = None,
+    extract_paf: bool = True,
     modelprefix: str | None = "",
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
@@ -180,13 +181,13 @@ def extract_maps(
         # (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
         metadata = loader.model_cfg["metadata"]
         bpt_names = metadata["bodyparts"] + metadata["unique_bodyparts"]
-        # FIXME(niels): get the paf graph from test_config
-        # test_config_path = loader.model_folder.parent / "test" / "pose_cfg.yaml"
-        # test_config = read_config_as_dict(test_config_path)
         paf_graph = []
         bpt_head_cfg = loader.model_cfg["model"]["heads"]["bodypart"]
         if bpt_head_cfg["type"] == "DLCRNetHead":
             paf_graph = bpt_head_cfg.get("predictor", {}).get("graph")
+            paf_indices = bpt_head_cfg.get("predictor", {}).get("edges_to_keep")
+            if paf_indices is not None:
+                paf_graph = [paf_graph[i] for i in paf_indices]
 
         if device is not None:
             loader.model_cfg["device"] = device
@@ -230,9 +231,10 @@ def extract_maps(
                     image_idx = indices[idx]
 
                 # key can be just image_idx, or (image_idx, bbox_idx) for TD models
-                for key, image, output in _collect_model_outputs(
+                keys, images, outputs = _collect_model_outputs(
                     loader.pose_task, result, image_idx
-                ):
+                )
+                for key, image, output in zip(keys, images, outputs):
                     parsed = _parse_model_outputs(
                         image,
                         output,
@@ -339,9 +341,21 @@ def extract_save_all_maps(
                     image_path,
                     training_image,
                 ) = image_maps
+
                 if not extract_paf:
-                    paf = None
+                    paf = []
+
                 label = "train" if training_image else "test"
+                img_w, img_h = image.shape[1], image.shape[0]
+                scmap = _prepare_maps_for_plotting(scmap, (img_w, img_h))
+                if scmap is None:
+                    raise ValueError("Cannot plot heatmaps - none output by the model")
+
+                locref = _prepare_maps_for_plotting(locref, (img_w, img_h))
+                if locref is not None:
+                    locref = locref.reshape((img_h, img_w, -1, 2))
+                paf = _prepare_maps_for_plotting(paf, (img_w, img_h))
+
                 visualization.generate_model_output_plots(
                     output_folder=dest_folder,
                     image_name=Path(image_path).stem,
@@ -445,7 +459,7 @@ def _parse_model_outputs(
     outputs: dict[str, dict[str, np.ndarray]],
     strides: dict[str, int],
     denormalize_image: bool = True,
-) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
+) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
     """Parses the model outputs into a format that can easily be plotted.
 
     Args:
@@ -456,71 +470,45 @@ def _parse_model_outputs(
 
     Returns: (img, scmap, locref, paf)
         img: The (de-normalized) image used as input.
-        scmap: The score maps output by the model, resized to the image size.
-        locref: The locref fields output by the model, resized to the image size.
-        paf: The part-affinity fields output by the model, resized to the image size.
+        scmap: The score maps output by the model.
+        locref: The locref fields output by the model.
+        paf: The part-affinity fields output by the model.
     """
     image = image.transpose((1, 2, 0))
-    img_h, img_w = image.shape[:2]
     if denormalize_image:
         image = image * np.array([0.229, 0.224, 0.225])
         image = image + np.array([0.485, 0.456, 0.406])
         image = np.clip(image, 0, 1)
 
-    heatmaps = _conditional_resize(outputs["bodypart"].get("heatmap"), img_w, img_h)
-    locrefs = _conditional_resize(outputs["bodypart"].get("locref"), img_w, img_h)
-    if locrefs is not None:
-        locrefs = locrefs * strides["bodypart"]
-    paf = _conditional_resize(outputs["bodypart"].get("paf"), img_w, img_h)
+    heatmaps = [h for h in outputs["bodypart"].get("heatmap", [])]
+    locrefs = [m * strides["bodypart"] for m in outputs["bodypart"].get("locref", [])]
+    paf = [p for p in outputs["bodypart"].get("paf", [])]
+
     if "unique_bodypart" in outputs:
-        heatmaps_unique = outputs["unique_bodypart"].get("heatmap")
-        heatmaps_unique = _conditional_resize(heatmaps_unique, img_w, img_h)
-        if heatmaps is None:
-            heatmaps = heatmaps_unique
-        elif heatmaps_unique is not None:
-            heatmaps = np.concatenate([heatmaps, heatmaps_unique])
-
-        locrefs_unique = outputs["unique_bodypart"].get("locref")
-        locrefs_unique = _conditional_resize(locrefs_unique, img_w, img_h)
-        if locrefs_unique is not None:
-            locrefs_unique = strides["unique_bodypart"] * locrefs_unique
-
-        if locrefs is None:
-            locrefs = locrefs_unique
-        elif locrefs_unique is not None:
-            locrefs = np.concatenate([locrefs, locrefs_unique])
-
-    if heatmaps is not None:
-        heatmaps = heatmaps.transpose((1, 2, 0))
-    if locrefs is not None:
-        num_fields = len(locrefs) // 2
-        locrefs = locrefs.transpose((1, 2, 0))
-        locrefs = locrefs.reshape((img_h, img_w, num_fields, 2))
-    if paf is not None:
-        paf = paf.transpose((1, 2, 0))
+        heatmaps += [h for h in outputs["unique_bodypart"].get("heatmap", [])]
+        locrefs += [
+            strides["unique_bodypart"] * m
+            for m in outputs["unique_bodypart"].get("locref", [])
+        ]
 
     return image, heatmaps, locrefs, paf
 
 
-def _conditional_resize(array: np.ndarray | None, w: int, h: int) -> np.ndarray | None:
-    """Resizes the array if it isn't None
-
-    Args:
-        array: The array to resize, of shape (channels, height, width)
-        w: The target width for the array
-        h: The target height for the array
-
-    Returns:
-        None if the array was None
-        The resized array of shape (channels, h, w) if it was not None
-    """
-    if array is None:
+def _prepare_maps_for_plotting(
+    maps: list[np.ndarray], image_size: tuple[int, int]
+) -> np.ndarray | None:
+    """"""
+    if len(maps) == 0:
         return None
 
-    array_whc = array.transpose((1, 2, 0))
-    array_whc = cv2.resize(array_whc, (w, h), interpolation=cv2.INTER_LINEAR)
-    array_chw = array_whc.transpose((2, 0, 1))
-    return array_chw
+    img_w, img_h = image_size
+    return np.stack(
+        [
+            cv2.resize(map_, (img_w, img_h), interpolation=cv2.INTER_LINEAR)
+            for map_ in maps
+        ],
+        axis=-1,
+    )
 
 
 def _get_maps_folder(

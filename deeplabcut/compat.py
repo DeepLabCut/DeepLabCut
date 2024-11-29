@@ -1308,6 +1308,8 @@ def extract_save_all_maps(
     Indices: list[int] | None = None,
     modelprefix: str = "",
     dest_folder: str = None,
+    snapshot_index: int | str | None = None,
+    detector_snapshot_index: int | str | None = None,
     engine: Engine | None = None,
 ):
     """
@@ -1354,6 +1356,14 @@ def extract_save_all_maps(
 
     nplots_per_row: int, optional (default=None)
         Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
+
+    snapshot_index: Only for PyTorch models. Index (starting at 0) of the snapshot we
+        want to extract maps with. To evaluate the last one, use -1. To extract maps
+        for all snapshots, use "all". Default uses the value set in the project config.
+
+    detector_snapshot_index: Only for TD PyTorch models. If defined, uses the detector
+        with the given index for pose estimation. To extract maps for all detector
+        snapshots, use "all". Default uses the value set in the project config.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1402,6 +1412,8 @@ def extract_save_all_maps(
             rescale=rescale,
             indices=Indices,
             modelprefix=modelprefix,
+            snapshot_index=snapshot_index,
+            detector_snapshot_index=detector_snapshot_index,
             dest_folder=dest_folder,
         )
 

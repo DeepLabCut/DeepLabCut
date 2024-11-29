@@ -178,23 +178,25 @@ def generate_model_output_plots(
         i for i, bpt in enumerate(bodypart_names) if bpt in bodyparts_to_plot
     ]
     if len(to_plot) > 1:
-        map_ = scmap[:, :, to_plot]
+        map_ = scmap[:, :, to_plot].sum(axis=2)
     elif len(to_plot) == 1 and len(bodypart_names) > 1:
         map_ = scmap[:, :, to_plot[0]]
     else:
         map_ = scmap[..., 0]
 
-    fig1, _ = visualize_scoremaps(image, map_.sum(axis=2))
+    fig1, _ = visualize_scoremaps(image, map_)
     fig1.savefig(output_folder / _filename("scmap"))
 
     if locref is not None:
         if len(to_plot) > 1:
+            map_ = scmap[:, :, to_plot]
             locref_x_ = locref[:, :, to_plot, 0]
             locref_y_ = locref[:, :, to_plot, 1]
             # only get the locref fields around their respective detections
             locref_x_[map_ < 0.5] = 0
             locref_y_[map_ < 0.5] = 0
             # combine locrefs
+            map_ = map_.sum(axis=2)
             locref_x_ = locref_x_.sum(axis=2)
             locref_y_ = locref_y_.sum(axis=2)
         elif len(to_plot) == 1 and len(bodypart_names) > 1:
@@ -204,7 +206,7 @@ def generate_model_output_plots(
             locref_x_ = locref[..., 0]
             locref_y_ = locref[..., 1]
 
-        fig2, _ = visualize_locrefs(image, map_.sum(axis=2), locref_x_, locref_y_)
+        fig2, _ = visualize_locrefs(image, map_, locref_x_, locref_y_)
         fig2.savefig(output_folder / _filename("locref"))
 
     if paf is not None:
