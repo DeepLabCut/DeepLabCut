@@ -248,6 +248,10 @@ def extract_maps(
                         denormalize_image=True,
                     )
                     img_name = image_paths[idx].stem
+                    if isinstance(key, tuple):
+                        bbox_id = key[1]
+                        img_name += f"_bbox{bbox_id:03d}"
+
                     is_train = image_idx in train_idx
                     extracted_maps[loader.train_fraction][snapshot_id][key] = (
                         *parsed, None, bpt_names, paf_graph, img_name, is_train
