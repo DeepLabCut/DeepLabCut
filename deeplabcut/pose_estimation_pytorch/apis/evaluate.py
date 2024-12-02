@@ -181,7 +181,6 @@ def visualize_predictions(
     predictions: dict,
     ground_truth: dict,
     output_dir: str | Path | None = None,
-    draw_skeleton: bool = True,
     num_samples: int | None = None,
     random_select: bool = False,
     show_ground_truth: bool = True,
