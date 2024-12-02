@@ -202,8 +202,6 @@ def visualize_predictions(
         output_dir: Path to save visualization outputs.
             Defaults to "predictions_visualizations"
 
-        draw_skeleton: Whether to draw skeleton connections between keypoints
-
         num_samples: Number of images to visualize. If None, processes all images
 
         random_select: If True, randomly samples images; if False, uses first N images
