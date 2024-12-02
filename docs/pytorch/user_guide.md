@@ -89,4 +89,4 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `visualize_locrefs`            |     🟢      |                                                                                                     |                                                     |
 | `visualize_paf`                |     🟢      |                                                                                                     |                                                     |
 | `extract_save_all_maps`        |     🟢      |                                                                                                     |                                                     |
-| `export_model`                 |     🔴      |                                                                                                     |                                                     |
+| `export_model`                 |     🟢      |                                                                                                     |                                                     |
