@@ -27,6 +27,8 @@ model:
   freeze_bn_weights: false
 runner:
   type: DetectorTrainingRunner
+  key_metric: "test.mAP@50:95"
+  key_metric_asc: true
   eval_interval: 10
   optimizer:
     type: AdamW

@@ -69,6 +69,7 @@ class DLCLoader(Loader):
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
+        self.split = self.load_split(self._project_config, trainset_index, shuffle)
         self._dfs, image_sizes = self.load_ground_truth(
             self._project_config,
             trainset_index=trainset_index,
@@ -208,8 +209,7 @@ class DLCLoader(Loader):
             )
 
         # load the data splits, check that there's nothing suspect
-        splits = self.load_split(self._project_config, trainset_index, shuffle)
-        dfs = self.split_data(df, splits)
+        dfs = self.split_data(df, self.split)
         dfs["full"] = df
         # let's not validate for now
         # dfs = _validate_dataframes(dfs, df_train)

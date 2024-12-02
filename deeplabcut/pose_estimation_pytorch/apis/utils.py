@@ -37,7 +37,9 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
+    DetectorInferenceRunner,
     InferenceRunner,
+    PoseInferenceRunner,
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
@@ -176,7 +178,7 @@ def get_model_snapshots(
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
-                f"{names}) with prefix {snapshot_manager.task.snapshot_prefix}. Could "
+                f"{names}) with prefix {snapshot_manager.snapshot_prefix}. Could "
                 f"not return snapshot with index {index}."
             )
 
@@ -476,3 +478,130 @@ def get_inference_runners(
         postprocessor=pose_postprocessor,
     )
     return pose_runner, detector_runner
+
+
+def get_detector_inference_runner(
+    model_config: dict,
+    snapshot_path: str | Path,
+    batch_size: int = 1,
+    device: str | None = None,
+    max_individuals: int | None = None,
+    transform: A.BaseCompose | None = None,
+) -> DetectorInferenceRunner:
+    """Builds an inference runner for object detection.
+
+    Args:
+        model_config: the pytorch configuration file
+        snapshot_path: the path of the snapshot from which to load the weights
+        max_individuals: the maximum number of individuals per image
+        batch_size: the batch size to use for the pose model.
+        device: if defined, overwrites the device selection from the model config
+        transform: the transform for pose estimation. if None, uses the transform
+            defined in the config.
+
+    Returns:
+        an inference runner for object detection
+    """
+    if device == "mps":  # FIXME(niels): Cannot run detectors on MPS
+        device = "cpu"
+
+    if max_individuals is None:
+        max_individuals = len(model_config["metadata"]["individuals"])
+
+    det_cfg = model_config["detector"]
+    if transform is None:
+        transform = build_transforms(det_cfg["data"]["inference"])
+
+    if "pretrained" in det_cfg["model"]:
+        det_cfg["model"]["pretrained"] = False
+
+    preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform)
+    postprocessor = build_detector_postprocessor(max_individuals=max_individuals)
+    runner = build_inference_runner(
+        task=Task.DETECT,
+        model=DETECTORS.build(det_cfg["model"]),
+        device=device,
+        snapshot_path=snapshot_path,
+        batch_size=batch_size,
+        preprocessor=preprocessor,
+        postprocessor=postprocessor,
+    )
+
+    if not isinstance(runner, DetectorInferenceRunner):
+        raise RuntimeError(f"Failed to build DetectorInferenceRunner: {model_config}")
+
+    return runner
+
+
+def get_pose_inference_runner(
+    model_config: dict,
+    snapshot_path: str | Path,
+    batch_size: int = 1,
+    device: str | None = None,
+    max_individuals: int | None = None,
+    transform: A.BaseCompose | None = None,
+) -> PoseInferenceRunner:
+    """Builds an inference runner for pose estimation.
+
+    Args:
+        model_config: the pytorch configuration file
+        snapshot_path: the path of the snapshot from which to load the weights
+        max_individuals: the maximum number of individuals per image
+        batch_size: the batch size to use for the pose model.
+        device: if defined, overwrites the device selection from the model config
+        transform: the transform for pose estimation. if None, uses the transform
+            defined in the config.
+
+    Returns:
+        an inference runner for pose estimation
+    """
+    pose_task = Task(model_config["method"])
+    metadata = model_config["metadata"]
+    num_bodyparts = len(metadata["bodyparts"])
+    num_unique = len(metadata["unique_bodyparts"])
+    with_identity = bool(metadata["with_identity"])
+    if max_individuals is None:
+        max_individuals = len(metadata["individuals"])
+
+    if device is None:
+        device = resolve_device(model_config)
+
+    if transform is None:
+        transform = build_transforms(model_config["data"]["inference"])
+
+    if pose_task == Task.BOTTOM_UP:
+        pose_preprocessor = build_bottom_up_preprocessor(
+            color_mode=model_config["data"]["colormode"],
+            transform=transform,
+        )
+        pose_postprocessor = build_bottom_up_postprocessor(
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique,
+            with_identity=with_identity,
+        )
+    else:
+        pose_preprocessor = build_top_down_preprocessor(
+            color_mode=model_config["data"]["colormode"],
+            transform=transform,
+            cropped_image_size=(256, 256),
+        )
+        pose_postprocessor = build_top_down_postprocessor(
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique,
+        )
+
+    runner = build_inference_runner(
+        task=pose_task,
+        model=PoseModel.build(model_config["model"]),
+        device=device,
+        snapshot_path=snapshot_path,
+        batch_size=batch_size,
+        preprocessor=pose_preprocessor,
+        postprocessor=pose_postprocessor,
+    )
+    if not isinstance(runner, PoseInferenceRunner):
+        raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")
+
+    return runner

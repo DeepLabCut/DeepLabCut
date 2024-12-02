@@ -19,3 +19,7 @@ from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets imp
 )
 from deeplabcut.pose_estimation_pytorch.apis.evaluate import evaluate_network
 from deeplabcut.pose_estimation_pytorch.apis.train import train_network
+from deeplabcut.pose_estimation_pytorch.apis.visualization import (
+    extract_maps,
+    extract_save_all_maps,
+)
