@@ -16,6 +16,7 @@ import torch
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
@@ -94,7 +95,7 @@ def export_model(
     detector_snapshots = [None]
     if loader.pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
-            detector_snapshot_index = loader.project_cfg["detector_snapshot_index"]
+            detector_snapshot_index = loader.project_cfg["detector_snapshotindex"]
         detector_snapshots = utils.get_model_snapshots(
             detector_snapshot_index, loader.model_folder, Task.DETECT
         )
@@ -107,11 +108,8 @@ def export_model(
                 f"export a detector snapshot with a top-down pose estimation model."
             )
 
-    export_dir_name = (
-        f"DLC_{loader.project_cfg['task']}_{loader.model_cfg['net_type']}_"
-        f"iteration-{loader.project_cfg['iteration']}_shuffle-{shuffle}"
-    )
-    export_dir = loader.project_path / "exported-models-pytorch" / export_dir_name
+    export_folder_name = get_export_folder_name(loader)
+    export_dir = loader.project_path / "exported-models-pytorch" / export_folder_name
     export_dir.mkdir(exist_ok=True, parents=True)
 
     load_kwargs = dict(map_location="cpu", weights_only=True)
@@ -121,24 +119,14 @@ def export_model(
             detector_weights = torch.load(det_snapshot.path, **load_kwargs)["model"]
 
         for snapshot in snapshots:
-            export_filename = export_dir_name
-            if det_snapshot is not None:
-                export_filename += "_" + det_snapshot.uid()
-            export_filename += "_" + snapshot.uid()
+            export_filename = get_export_filename(loader, snapshot, det_snapshot)
             export_path = export_dir / export_filename
             if export_path.exists() and not overwrite:
                 continue
 
             model_cfg = copy.deepcopy(loader.model_cfg)
             if wipe_paths:
-                model_cfg["metadata"]["project_path"] = ""
-                model_cfg["metadata"]["pose_config_path"] = ""
-                if "weight_init" in model_cfg["train_settings"]:
-                    model_cfg["train_settings"]["weight_init"] = None
-                if "resume_training_from" in model_cfg:
-                    model_cfg["resume_training_from"] = None
-                if "resume_training_from" in model_cfg.get("detector", {}):
-                    model_cfg["detector"]["resume_training_from"] = None
+                wipe_paths_from_model_config(model_cfg)
 
             pose_weights = torch.load(snapshot.path, **load_kwargs)["model"]
             export_dict = dict(config=model_cfg, pose=pose_weights)
@@ -146,3 +134,55 @@ def export_model(
                 export_dict["detector"] = detector_weights
 
             torch.save(export_dict, export_path)
+
+
+def get_export_folder_name(loader: dlc3_data.DLCLoader) -> str:
+    """
+    Args:
+        loader: The loader for the shuffle for which we want to export models.
+
+    Returns:
+        The name of the folder in which exported models should be placed for a shuffle.
+    """
+    return (
+        f"DLC_{loader.project_cfg['task']}_{loader.model_cfg['net_type']}_"
+        f"iteration-{loader.project_cfg['iteration']}_shuffle-{loader.shuffle}"
+    )
+
+
+def get_export_filename(
+    loader: dlc3_data.DLCLoader,
+    snapshot: Snapshot,
+    detector_snapshot: Snapshot | None = None,
+) -> str:
+    """
+    Args:
+        loader: The loader for the shuffle for which we want to export models.
+        snapshot: The pose model snapshot to export.
+        detector_snapshot: The detector snapshot to export, for top-down models.
+
+    Returns:
+        The name of the file in which the exported model should be stored.
+    """
+    export_filename = get_export_folder_name(loader)
+    if detector_snapshot is not None:
+        export_filename += "_" + detector_snapshot.uid()
+    export_filename += "_" + snapshot.uid()
+    return export_filename
+
+
+def wipe_paths_from_model_config(model_cfg: dict) -> None:
+    """
+    Removes all paths from the contents of the ``pytorch_config`` file.
+
+    Args:
+        model_cfg: The model configuration to wipe.
+    """
+    model_cfg["metadata"]["project_path"] = ""
+    model_cfg["metadata"]["pose_config_path"] = ""
+    if "weight_init" in model_cfg["train_settings"]:
+        model_cfg["train_settings"]["weight_init"] = None
+    if "resume_training_from" in model_cfg:
+        model_cfg["resume_training_from"] = None
+    if "resume_training_from" in model_cfg.get("detector", {}):
+        model_cfg["detector"]["resume_training_from"] = None
