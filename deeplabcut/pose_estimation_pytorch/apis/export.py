@@ -79,12 +79,11 @@ def export_model(
         modelprefix=modelprefix,
     )
 
-    # FIXME(niels): use loader.pose_task when integrated
-    pose_task = Task(loader.model_cfg["method"])
-
     if snapshotindex is None:
         snapshotindex = loader.project_cfg["snapshotindex"]
-    snapshots = utils.get_model_snapshots(snapshotindex, loader.model_folder, pose_task)
+    snapshots = utils.get_model_snapshots(
+        snapshotindex, loader.model_folder, loader.pose_task
+    )
 
     if len(snapshots) == 0:
         raise ValueError(
@@ -93,7 +92,7 @@ def export_model(
         )
 
     detector_snapshots = [None]
-    if pose_task == Task.TOP_DOWN:
+    if loader.pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
             detector_snapshot_index = loader.project_cfg["detector_snapshot_index"]
         detector_snapshots = utils.get_model_snapshots(
