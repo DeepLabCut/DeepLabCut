@@ -170,7 +170,7 @@ def get_export_filename(
     if detector_snapshot is not None:
         export_filename += "_" + detector_snapshot.uid()
     export_filename += "_" + snapshot.uid()
-    return export_filename
+    return export_filename + ".pt"
 
 
 def wipe_paths_from_model_config(model_cfg: dict) -> None:
