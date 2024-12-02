@@ -46,6 +46,7 @@ class DLCLoader(Loader):
         self._project_root = Path(config).parent
         self._project_config = af.read_config(str(config))
         self._shuffle = shuffle
+        self._trainset_index = trainset_index
         self._train_frac = self._project_config["TrainingFraction"][trainset_index]
         self._model_folder = af.get_model_folder(
             self._train_frac,
@@ -61,6 +62,10 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
+        self.split = self.load_split(self._project_config, trainset_index, shuffle)
+
+        # lazy-load DataFrames
+        self._loaded_df: dict[str, pd.DataFrame] | None = None
         self._resolutions = set()
 
         super().__init__(
@@ -69,13 +74,11 @@ class DLCLoader(Loader):
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
-        self.split = self.load_split(self._project_config, trainset_index, shuffle)
-        self._dfs, image_sizes = self.load_ground_truth(
-            self._project_config,
-            trainset_index=trainset_index,
-            shuffle=shuffle,
-        )
-        self._resolutions = self._resolutions.union(image_sizes)
+
+    @property
+    def project_cfg(self) -> dict:
+        """Returns: the configuration for the DeepLabCut project"""
+        return self._project_config
 
     @property
     def df(self) -> pd.DataFrame:
@@ -375,6 +378,19 @@ class DLCLoader(Loader):
                     )
 
         return {"annotations": anns, "categories": categories, "images": images}
+
+    @property
+    def _dfs(self) -> dict[str, pd.DataFrame]:
+        """Lazy-loading of the training dataset dataframes"""
+        if self._loaded_df is None:
+            self._loaded_df, image_sizes = self.load_ground_truth(
+                self._project_config,
+                trainset_index=self._trainset_index,
+                shuffle=self.shuffle,
+            )
+            self._resolutions = self._resolutions.union(image_sizes)
+
+        return self._loaded_df
 
 
 def _load_mat_dataset(

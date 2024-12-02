@@ -1450,14 +1450,12 @@ def export_model(
     wipepaths: bool = False,
     modelprefix: str = "",
     engine: Engine | None = None,
-):
+) -> None:
     """Export DeepLabCut models for the model zoo or for live inference.
 
     Saves the pose configuration, snapshot files, and frozen TF graph of the model to
-    directory named exported-models within the project directory
-
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
+    directory named exported-models within the project directory (and an
+    `exported-models-pytorch` directory for PyTorch models).
 
     Parameters
     -----------
@@ -1524,6 +1522,18 @@ def export_model(
             overwrite=overwrite,
             make_tar=make_tar,
             wipepaths=wipepaths,
+            modelprefix=modelprefix,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch.apis.export import export_model
+        return export_model(
+            config=cfg_path,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            snapshotindex=snapshotindex,
+            iteration=iteration,
+            overwrite=overwrite,
+            wipe_paths=wipepaths,
             modelprefix=modelprefix,
         )
 
