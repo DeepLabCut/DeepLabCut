@@ -9,6 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests exporting models"""
+import copy
+import shutil
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -21,9 +23,19 @@ from deeplabcut.pose_estimation_pytorch import Task
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 
 
+@pytest.fixture()
+def project_dir(tmp_path_factory) -> Path:
+    project_dir = tmp_path_factory.mktemp("tmp-project")
+    print(f"\nTemporary project directory:")
+    print(str(project_dir))
+    print("---")
+    yield project_dir
+    shutil.rmtree(str(project_dir))
+
+
 def _mock_multianimal_project(project_dir: Path):
     video_dir = project_dir / "videos"
-    video_dir.mkdir()
+    video_dir.mkdir(exist_ok=True)
 
     cfg_file, yaml_file = af.create_config_template(multianimal=True)
     cfg_file["Task"] = "mock"
@@ -56,7 +68,10 @@ def _make_mock_loader(
     loader.shuffle = 0
 
     loader.project_cfg = dict(
-        task=project_task,
+        project_path=str(project_path),
+        Task=project_task,
+        date="Jan12",
+        TrainingFraction=[0.95],
         snapshotindex=default_snapshot_index,
         detector_snapshotindex=default_detector_snapshot_index,
         iteration=project_iteration,
@@ -76,11 +91,16 @@ def _make_mock_loader(
     return loader
 
 
-def _get_export_model_data(project_dir, num_snapshots, task):
+def _get_export_model_data(
+    project_dir: Path,
+    num_snapshots: int,
+    task: Task,
+    project_iteration: int = 0,
+):
     _mock_multianimal_project(project_dir)
 
-    model_dir = Path(project_dir) / "fake-shuffle-0"
-    model_dir.mkdir(exist_ok=True)
+    model_dir = Path(project_dir) / f"iteration-{project_iteration}" /  "fake-shuffle-0"
+    model_dir.mkdir(exist_ok=True, parents=True)
     snapshots = []
     snapshot_data = []
     for i in range(num_snapshots):
@@ -105,7 +125,7 @@ def _get_export_model_data(project_dir, num_snapshots, task):
     mock_loader = _make_mock_loader(
         project_path=project_dir,
         project_task="mock",
-        project_iteration=0,
+        project_iteration=project_iteration,
         model_folder=model_dir,
         net_type="fake-net",
         pose_task=task,
@@ -128,13 +148,12 @@ def _get_export_model_data(project_dir, num_snapshots, task):
     ]
 )
 def test_export_model(
-    tmp_path_factory,
+    project_dir,
     task: Task,
     num_snapshots: int,
     idx: int,
     detector_idx: int | None,
 ):
-    project_dir = tmp_path_factory.mktemp("tmp-project")
     test_data = _get_export_model_data(project_dir, num_snapshots, task)
     mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
 
@@ -179,8 +198,7 @@ def test_export_model(
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.export.wipe_paths_from_model_config")
 @pytest.mark.parametrize("task", [Task.BOTTOM_UP, Task.TOP_DOWN])
-def test_export_model_clear_paths(mock_wipe: Mock, tmp_path_factory, task: Task):
-    project_dir = tmp_path_factory.mktemp("tmp-project")
+def test_export_model_clear_paths(mock_wipe: Mock, project_dir, task: Task):
     test_data = _get_export_model_data(project_dir, 1, task)
     mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
 
@@ -199,8 +217,7 @@ def test_export_model_clear_paths(mock_wipe: Mock, tmp_path_factory, task: Task)
 
 @pytest.mark.parametrize("task", [Task.BOTTOM_UP, Task.TOP_DOWN])
 @pytest.mark.parametrize("overwrite", [True, False])
-def test_export_overwrite(tmp_path_factory, task: Task, overwrite: bool):
-    project_dir = tmp_path_factory.mktemp("tmp-project")
+def test_export_overwrite(project_dir, task: Task, overwrite: bool):
     test_data = _get_export_model_data(project_dir, 1, task)
     mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
     snapshot = snapshots[0]
@@ -232,3 +249,58 @@ def test_export_overwrite(tmp_path_factory, task: Task, overwrite: bool):
             assert existing_data != exported_data
         else:
             assert existing_data == exported_data
+
+
+@pytest.mark.parametrize("task", [Task.BOTTOM_UP, Task.TOP_DOWN])
+@pytest.mark.parametrize("iteration", [5, 12])
+def test_export_change_iteration(project_dir, task: Task, iteration: int):
+    test_data = _get_export_model_data(
+        project_dir, 1, task, project_iteration=0,
+    )
+    mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
+    snapshot = snapshots[0]
+    detector = None if task == Task.BOTTOM_UP else detector_snapshots[0]
+
+    loader_diff_iter = _get_export_model_data(
+        project_dir, 1, task, project_iteration=iteration
+    )[0]
+
+    def get_mock_loader(config, *args, **kwargs):
+        _loader = copy.deepcopy(mock_loader)
+        if isinstance(config, dict):
+            _loader = copy.deepcopy(mock_loader)
+            _loader.project_cfg = config
+        return _loader
+
+    def read_mock_config(*args, **kwargs):
+        return copy.deepcopy(mock_loader.project_cfg)
+
+    # patch the DLCLoader but also read_config
+    with patch(
+        "deeplabcut.pose_estimation_pytorch.apis.export.dlc3_data.DLCLoader",
+        get_mock_loader,
+    ):
+        with patch(
+            "deeplabcut.pose_estimation_pytorch.apis.export.af.read_config",
+            read_mock_config,
+        ):
+            # check no exports exist yet
+            for loader in [mock_loader, loader_diff_iter]:
+                dir_name = export.get_export_folder_name(loader)
+                filename = export.get_export_filename(loader, snapshot, detector)
+                assert not (
+                    project_dir / "exported-models-pytorch" / dir_name / filename
+                ).exists()
+
+            # export data
+            export.export_model(project_dir / "config.yaml", iteration=iteration)
+
+            # check the export exists for the correct iteration
+            for loader, file_should_exist in [
+                (mock_loader, False), (loader_diff_iter, True)
+            ]:
+                dir_name = export.get_export_folder_name(loader)
+                filename = export.get_export_filename(loader, snapshot, detector)
+                expected = project_dir / "exported-models-pytorch" / dir_name / filename
+                expected_exists = expected.exists()
+                assert expected_exists == file_should_exist

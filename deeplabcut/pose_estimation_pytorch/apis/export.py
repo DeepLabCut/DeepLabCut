@@ -16,6 +16,7 @@ import torch
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
+import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
@@ -70,11 +71,12 @@ def export_model(
         >>>     snapshotindex=-1,
         >>> )
     """
+    cfg = af.read_config(str(config))
     if iteration is not None:
-        raise ValueError(f"TODO(niels)")
+        cfg["iteration"] = iteration
 
     loader = dlc3_data.DLCLoader(
-        config=Path(config),
+        config=cfg,
         trainset_index=trainingsetindex,
         shuffle=shuffle,
         modelprefix=modelprefix,
@@ -145,7 +147,7 @@ def get_export_folder_name(loader: dlc3_data.DLCLoader) -> str:
         The name of the folder in which exported models should be placed for a shuffle.
     """
     return (
-        f"DLC_{loader.project_cfg['task']}_{loader.model_cfg['net_type']}_"
+        f"DLC_{loader.project_cfg['Task']}_{loader.model_cfg['net_type']}_"
         f"iteration-{loader.project_cfg['iteration']}_shuffle-{loader.shuffle}"
     )
 

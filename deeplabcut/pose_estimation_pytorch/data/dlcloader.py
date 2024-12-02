@@ -31,20 +31,25 @@ class DLCLoader(Loader):
 
     def __init__(
         self,
-        config: str | Path,
+        config: str | Path | dict,
         trainset_index: int = 0,
         shuffle: int = 0,
         modelprefix: str = "",
     ):
         """
         Args:
-            config: path to the DeepLabCut project config
+            config: Path to the DeepLabCut project config, or the project config itself
             trainset_index: the index of the TrainingsetFraction for which to load data
             shuffle: the index of the shuffle for which to load data
             modelprefix: the modelprefix for the shuffle
         """
-        self._project_root = Path(config).parent
-        self._project_config = af.read_config(str(config))
+        if isinstance(config, (str, Path)):
+            self._project_root = Path(config).parent
+            self._project_config = af.read_config(str(config))
+        else:
+            self._project_root = Path(config["project_path"])
+            self._project_config = config
+
         self._shuffle = shuffle
         self._trainset_index = trainset_index
         self._train_frac = self._project_config["TrainingFraction"][trainset_index]
