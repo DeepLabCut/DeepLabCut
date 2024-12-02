@@ -1179,11 +1179,10 @@ def extract_maps(
     """
     Extracts the scoremap, locref, partaffinityfields (if available).
 
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph, imagename, True/False if this image was in trainingset)
+    for those keys, each item contains: (image, scmap, locref, paf, bpt_names,
+    partaffinity_graph, imagename, True/False if this image was in trainingset).
+
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -1192,8 +1191,9 @@ def extract_maps(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use. By default the first (note
+        that TrainingFraction is a list in config.yaml). This variable can also be set
+        to "all".
 
     gputouse: int or None, optional, default=None
         For the TensorFlow engine (for the PyTorch engine see ``device``). Specifies
@@ -1258,9 +1258,14 @@ def extract_maps(
 
 
 def visualize_scoremaps(image: np.ndarray, scmap: np.ndarray):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
+    """Plots scoremaps as an image overlay.
+
+    Args:
+        image: An image as a numpy array of shape (h, w, channels)
+        scmap: A scoremap of shape (h, w)
+
+    Returns:
+        The figure and axis on which the image scoremap was plot.
     """
     return visualization.visualize_scoremaps(image, scmap)
 
@@ -1273,9 +1278,18 @@ def visualize_locrefs(
     step: int = 5,
     zoom_width: int = 0,
 ):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
+    """Plots a scoremap and the corresponding location refinement field on an image.
+
+    Args:
+        image: An image as a numpy array of shape (h, w, channels)
+        scmap: A scoremap of shape (h, w)
+        locref_x: The x-coordinate of the location refinement field, of shape (h, w)
+        locref_y: The y-coordinate of the location refinement field, of shape (h, w)
+        step: The step with which to plot the location refinement field.
+        zoom_width: The zoom width with which to plot the scoremaps.
+
+    Returns:
+        The figure and axis on which the image scoremap and locref field were plot.
     """
     return visualization.visualize_locrefs(
         image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width
@@ -1288,9 +1302,16 @@ def visualize_paf(
     step: int = 5,
     colors: list | None = None,
 ):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
+    """Plots the PAF on top of the image.
+
+    Args:
+        image: Shape (height, width, channels). The image on which the model was run.
+        paf: Shape (height, width, 2 * len(paf_graph)). The PAF output by the model.
+        step: The step with which to plot the scoremaps.
+        colors: The colormap to use.
+
+    Returns:
+        The figure and axis on which the image PAF was plot.
     """
     return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
@@ -1315,9 +1336,6 @@ def extract_save_all_maps(
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
     will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
-
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
 
     ----------
     config : string

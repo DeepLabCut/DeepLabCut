@@ -81,7 +81,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     def inference(
         self,
         images: Iterable[str | Path | np.ndarray]
-        | Iterable[tuple[str | np.ndarray, dict[str, Any]]],
+        | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]],
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
@@ -123,7 +123,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return results
 
     def _prepare_inputs(
-        self, data: str | np.ndarray | tuple[str | np.ndarray, dict],
+        self, data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
         """
         Prepares inputs for an image and adds them to the data ready to be processed

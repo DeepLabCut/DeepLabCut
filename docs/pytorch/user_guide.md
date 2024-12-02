@@ -70,7 +70,7 @@ print(available_models())
 ### Development State and Road Map 🚧
 
 The table below describes the DeepLabCut API methods that have been implemented for the
-PyTorch, as well as indications which options are not yet implemented, and which
+PyTorch engine, as well as indications which options are not yet implemented, and which
 parameters are not valid for the DLC 3.0 PyTorch API.
 
 
