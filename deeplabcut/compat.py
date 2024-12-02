@@ -1244,7 +1244,7 @@ def extract_maps(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import extract_maps
-        extract_maps(
+        return extract_maps(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
