@@ -26,7 +26,7 @@ def export_model(
     trainingsetindex: int = 0,
     snapshotindex: int | None = None,
     detector_snapshot_index: int | None = None,
-    iteration: int = None,
+    iteration: int | None = None,
     overwrite: bool = False,
     wipe_paths: bool = False,
     modelprefix: str = "",

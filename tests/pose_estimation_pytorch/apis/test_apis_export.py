@@ -195,3 +195,40 @@ def test_export_model_clear_paths(mock_wipe: Mock, tmp_path_factory, task: Task)
 
         # check that wipe_paths_from_model_config was called
         assert mock_wipe.call_count == 1
+
+
+@pytest.mark.parametrize("task", [Task.BOTTOM_UP, Task.TOP_DOWN])
+@pytest.mark.parametrize("overwrite", [True, False])
+def test_export_overwrite(tmp_path_factory, task: Task, overwrite: bool):
+    project_dir = tmp_path_factory.mktemp("tmp-project")
+    test_data = _get_export_model_data(project_dir, 1, task)
+    mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
+    snapshot = snapshots[0]
+    detector = None if task == Task.BOTTOM_UP else detector_snapshots[0]
+
+    def get_mock_loader(*args, **kwargs):
+        return mock_loader
+
+    with patch(
+        "deeplabcut.pose_estimation_pytorch.apis.export.dlc3_data.DLCLoader",
+        get_mock_loader,
+    ):
+        dir_name = export.get_export_folder_name(mock_loader)
+        filename = export.get_export_filename(mock_loader, snapshot, detector)
+        expected_export = project_dir / "exported-models-pytorch" / dir_name / filename
+        expected_export.parent.mkdir(exist_ok=False, parents=True)
+
+        # add existing data
+        assert not expected_export.exists()
+        existing_data = dict()
+        torch.save(existing_data, expected_export)
+
+        # export data
+        export.export_model(project_dir / "config.yaml", overwrite=overwrite)
+
+        exported_data = torch.load(expected_export, weights_only=True)
+
+        if overwrite:
+            assert existing_data != exported_data
+        else:
+            assert existing_data == exported_data
