@@ -118,7 +118,6 @@ class TorchSnapshotManager:
             save_path = self.snapshot_path(epoch, best=True)
             parsed_state_dict = {
                 k: v
-                k: v
                 for k, v in state_dict.items()
                 if self.save_optimizer_state or k != "optimizer"
             }

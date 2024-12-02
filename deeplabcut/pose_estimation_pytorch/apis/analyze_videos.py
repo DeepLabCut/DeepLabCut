@@ -145,12 +145,14 @@ def video_inference(
 
         print(f"Running detector with batch size {detector_runner.batch_size}")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
+        print(bbox_predictions[0].keys())
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
-
+    
+    
     predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
     if shelf_writer is not None:
         shelf_writer.close()

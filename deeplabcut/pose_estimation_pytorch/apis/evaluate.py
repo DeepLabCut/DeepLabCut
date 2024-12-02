@@ -82,6 +82,7 @@ def predict(
         else:
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
             context = [{"bboxes": ground_truth_bboxes[image]} for image in image_paths]
+            print(context[0])
 
     images_with_context = image_paths
     if context is not None:
