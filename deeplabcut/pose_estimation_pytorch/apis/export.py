@@ -104,7 +104,7 @@ def export_model(
 
         if len(detector_snapshots) == 0:
             raise ValueError(
-                "Attempting to export a top-down pose estimation model but no detector"
+                "Attempting to export a top-down pose estimation model but no detector "
                 f"snapshots were found in ``{loader.model_folder}`` for "
                 f"``detector_snapshot_index={detector_snapshot_index}``. You must "
                 f"export a detector snapshot with a top-down pose estimation model."
@@ -168,8 +168,8 @@ def get_export_filename(
     """
     export_filename = get_export_folder_name(loader)
     if detector_snapshot is not None:
-        export_filename += "_" + detector_snapshot.uid()
-    export_filename += "_" + snapshot.uid()
+        export_filename += "_snapshot-detector" + detector_snapshot.uid()
+    export_filename += "_snapshot-" + snapshot.uid()
     return export_filename + ".pt"
 
 
