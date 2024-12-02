@@ -60,6 +60,7 @@ def export_model(
             folder.
 
     Raises:
+        ValueError: If no snapshots could be found for the shuffle.
         ValueError: If a top-down model is exported but no detector snapshots are found.
 
     Examples:
