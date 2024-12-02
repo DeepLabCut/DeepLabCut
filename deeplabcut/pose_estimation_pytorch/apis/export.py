@@ -31,7 +31,7 @@ def export_model(
     overwrite: bool = False,
     wipe_paths: bool = False,
     modelprefix: str = "",
-):
+) -> None:
     """Export DeepLabCut models for live inference.
 
     Saves the pytorch_config.yaml configuration, snapshot files, of the model to a
