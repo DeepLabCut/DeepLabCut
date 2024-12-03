@@ -134,6 +134,19 @@ class PoseModel(nn.Module):
             for name, head in self.heads.items()
         }
 
+    def get_stride(self, head: str) -> int:
+        """
+        Args:
+            head: The head for which to get the total stride.
+
+        Returns:
+            The total stride for the outputs of the head.
+
+        Raises:
+            ValueError: If there is no such head.
+        """
+        return self._strides[head]
+
     @staticmethod
     def build(
         cfg: dict,

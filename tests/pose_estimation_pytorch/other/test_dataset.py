@@ -35,7 +35,8 @@ def mock_config() -> Mock:
             "unique_bodyparts": [],
             "individuals": ["animal"],
             "with_identity": False,
-        }
+        },
+        "method": "bu",
     }
     return aux_functions
 

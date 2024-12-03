@@ -17,6 +17,7 @@ from typing import Iterable
 import numpy as np
 from ruamel.yaml import YAML
 
+import deeplabcut.core.visualization as visualization
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
@@ -1090,10 +1091,21 @@ def convert_detections2tracklets(
     Examples
     --------
     If you want to convert detections to tracklets:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    >>> import deeplabcut
+    >>> deeplabcut.convert_detections2tracklets(
+    >>>    "/analysis/project/reaching-task/config.yaml",
+    >>>    ["/analysis/project/video1.mp4"],
+    >>>    videotype='.mp4',
+    >>> )
 
     If you want to convert detections to tracklets based on box_tracker:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
+    >>> import deeplabcut
+    >>> deeplabcut.convert_detections2tracklets(
+    >>>    "/analysis/project/reaching-task/config.yaml",
+    >>>    ["/analysis/project/video1.mp4"],
+    >>>    videotype=".mp4",
+    >>>    track_method="box",
+    >>> )
 
     --------
 
@@ -1158,6 +1170,7 @@ def extract_maps(
     shuffle: int = 0,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
+    device: str | None = None,
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
@@ -1166,11 +1179,10 @@ def extract_maps(
     """
     Extracts the scoremap, locref, partaffinityfields (if available).
 
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph, imagename, True/False if this image was in trainingset)
+    for those keys, each item contains: (image, scmap, locref, paf, bpt_names,
+    partaffinity_graph, imagename, True/False if this image was in trainingset).
+
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -1179,8 +1191,19 @@ def extract_maps(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use. By default the first (note
+        that TrainingFraction is a list in config.yaml). This variable can also be set
+        to "all".
+
+    gputouse: int or None, optional, default=None
+        For the TensorFlow engine (for the PyTorch engine see ``device``). Specifies
+        the GPU to use (see number in ``nvidia-smi``). If you do not have a GPU put
+        ``None``. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    device: str or None, optional, default=None
+        The CUDA device to use for training. If None, the device will be taken from the
+        ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. See
+        https://pytorch.org/docs/stable/notes/cuda.html for more information.
 
     rescale: bool, default False
         Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
@@ -1219,23 +1242,32 @@ def extract_maps(
             Indices=Indices,
             modelprefix=modelprefix,
         )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch import extract_maps
+        return extract_maps(
+            config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            device=_gpu_to_use_to_device(gputouse, device),
+            rescale=rescale,
+            indices=Indices,
+            modelprefix=modelprefix,
+        )
 
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
-def visualize_scoremaps(
-    image: np.ndarray, scmap: np.ndarray, engine: Engine = DEFAULT_ENGINE,
-):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-    """
-    if engine == Engine.TF:
-        # TODO: also works for Pytorch, but should not import as then requires TF
-        from deeplabcut.pose_estimation_tensorflow import visualize_scoremaps
-        return visualize_scoremaps(image, scmap)
+def visualize_scoremaps(image: np.ndarray, scmap: np.ndarray):
+    """Plots scoremaps as an image overlay.
 
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    Args:
+        image: An image as a numpy array of shape (h, w, channels)
+        scmap: A scoremap of shape (h, w)
+
+    Returns:
+        The figure and axis on which the image scoremap was plot.
+    """
+    return visualization.visualize_scoremaps(image, scmap)
 
 
 def visualize_locrefs(
@@ -1245,17 +1277,23 @@ def visualize_locrefs(
     locref_y: np.ndarray,
     step: int = 5,
     zoom_width: int = 0,
-    engine: Engine = DEFAULT_ENGINE,
 ):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-    """
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import visualize_locrefs
-        return visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
+    """Plots a scoremap and the corresponding location refinement field on an image.
 
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    Args:
+        image: An image as a numpy array of shape (h, w, channels)
+        scmap: A scoremap of shape (h, w)
+        locref_x: The x-coordinate of the location refinement field, of shape (h, w)
+        locref_y: The y-coordinate of the location refinement field, of shape (h, w)
+        step: The step with which to plot the location refinement field.
+        zoom_width: The zoom width with which to plot the scoremaps.
+
+    Returns:
+        The figure and axis on which the image scoremap and locref field were plot.
+    """
+    return visualization.visualize_locrefs(
+        image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width
+    )
 
 
 def visualize_paf(
@@ -1263,17 +1301,19 @@ def visualize_paf(
     paf: np.ndarray,
     step: int = 5,
     colors: list | None = None,
-    engine: Engine = DEFAULT_ENGINE,
 ):
-    """
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-    """
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import visualize_paf
-        return visualize_paf(image, paf, step=step, colors=colors)
+    """Plots the PAF on top of the image.
 
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    Args:
+        image: Shape (height, width, channels). The image on which the model was run.
+        paf: Shape (height, width, 2 * len(paf_graph)). The PAF output by the model.
+        step: The step with which to plot the scoremaps.
+        colors: The colormap to use.
+
+    Returns:
+        The figure and axis on which the image PAF was plot.
+    """
+    return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
 def extract_save_all_maps(
@@ -1283,19 +1323,19 @@ def extract_save_all_maps(
     comparisonbodyparts: str | list[str] = "all",
     extract_paf: bool = True,
     all_paf_in_one: bool = True,
-    gputouse: int = None,
+    gputouse: int | None = None,
+    device: str | None = None,
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
     dest_folder: str = None,
+    snapshot_index: int | str | None = None,
+    detector_snapshot_index: int | str | None = None,
     engine: Engine | None = None,
 ):
     """
     Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
     will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
-
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
 
     ----------
     config : string
@@ -1319,11 +1359,29 @@ def extract_save_all_maps(
         By default, all part affinity fields are displayed on a single frame.
         If false, individual fields are shown on separate frames.
 
+    gputouse: int or None, optional, default=None
+        For the TensorFlow engine (for the PyTorch engine see ``device``). Specifies
+        the GPU to use (see number in ``nvidia-smi``). If you do not have a GPU put
+        ``None``. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    device: str or None, optional, default=None
+        The CUDA device to use for training. If None, the device will be taken from the
+        ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. See
+        https://pytorch.org/docs/stable/notes/cuda.html for more information.
+
     Indices: default None
         For which images shall the scmap/locref and paf be computed? Give a list of images
 
     nplots_per_row: int, optional (default=None)
         Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
+
+    snapshot_index: Only for PyTorch models. Index (starting at 0) of the snapshot we
+        want to extract maps with. To evaluate the last one, use -1. To extract maps
+        for all snapshots, use "all". Default uses the value set in the project config.
+
+    detector_snapshot_index: Only for TD PyTorch models. If defined, uses the detector
+        with the given index for pose estimation. To extract maps for all detector
+        snapshots, use "all". Default uses the value set in the project config.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1357,6 +1415,23 @@ def extract_save_all_maps(
             rescale=rescale,
             Indices=Indices,
             modelprefix=modelprefix,
+            dest_folder=dest_folder,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch import extract_save_all_maps
+        return extract_save_all_maps(
+            config,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            comparison_bodyparts=comparisonbodyparts,
+            extract_paf=extract_paf,
+            all_paf_in_one=all_paf_in_one,
+            device=_gpu_to_use_to_device(gputouse, device),
+            rescale=rescale,
+            indices=Indices,
+            modelprefix=modelprefix,
+            snapshot_index=snapshot_index,
+            detector_snapshot_index=detector_snapshot_index,
             dest_folder=dest_folder,
         )
 
@@ -1457,10 +1532,19 @@ def export_model(
 
 def _update_device(gpu_to_use: int | None, torch_kwargs: dict) -> None:
     if "device" not in torch_kwargs and gpu_to_use is not None:
+        device = _gpu_to_use_to_device(gpu_to_use, device=None)
+        if device is not None:
+            torch_kwargs["device"] = device
+
+
+def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | None:
+    if device is None and gpu_to_use is not None:
         if isinstance(gpu_to_use, int):
-            torch_kwargs["device"] = f"cuda:{gpu_to_use}"
+            device = f"cuda:{gpu_to_use}"
         else:
-            torch_kwargs["device"] = gpu_to_use
+            device = gpu_to_use
+
+    return device
 
 
 def _load_config(config: str) -> dict:
