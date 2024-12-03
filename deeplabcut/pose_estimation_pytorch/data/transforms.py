@@ -78,7 +78,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         if rotation is not None:
             rotation = (-rotation, rotation)
         if translation is not None:
-            translation = (0, translation)
+            translation = (-translation, translation)
 
         transforms.append(
             A.Affine(
