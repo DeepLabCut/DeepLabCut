@@ -99,7 +99,7 @@ def _get_export_model_data(
 ):
     _mock_multianimal_project(project_dir)
 
-    model_dir = Path(project_dir) / f"iteration-{project_iteration}" /  "fake-shuffle-0"
+    model_dir = Path(project_dir) / f"iteration-{project_iteration}" / "fake-shuffle-0"
     model_dir.mkdir(exist_ok=True, parents=True)
     snapshots = []
     snapshot_data = []
@@ -145,7 +145,7 @@ def _get_export_model_data(
         (Task.TOP_DOWN, 10, -1, 0),
         (Task.TOP_DOWN, 10, -1, 5),
         (Task.TOP_DOWN, 10, -1, -1),
-    ]
+    ],
 )
 def test_export_model(
     project_dir,
@@ -255,7 +255,10 @@ def test_export_overwrite(project_dir, task: Task, overwrite: bool):
 @pytest.mark.parametrize("iteration", [5, 12])
 def test_export_change_iteration(project_dir, task: Task, iteration: int):
     test_data = _get_export_model_data(
-        project_dir, 1, task, project_iteration=0,
+        project_dir,
+        1,
+        task,
+        project_iteration=0,
     )
     mock_loader, snapshots, snapshot_data, detector_snapshots, detector_data = test_data
     snapshot = snapshots[0]
@@ -297,7 +300,8 @@ def test_export_change_iteration(project_dir, task: Task, iteration: int):
 
             # check the export exists for the correct iteration
             for loader, file_should_exist in [
-                (mock_loader, False), (loader_diff_iter, True)
+                (mock_loader, False),
+                (loader_diff_iter, True),
             ]:
                 dir_name = export.get_export_folder_name(loader)
                 filename = export.get_export_filename(loader, snapshot, detector)
