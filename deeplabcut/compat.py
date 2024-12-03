@@ -53,7 +53,7 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
     if engine == Engine.TF:
         return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"
     elif engine == Engine.PYTORCH:
-        return ("albumentations", )
+        return ("albumentations",)
 
     raise RuntimeError(f"Unknown augmentation for engine: {engine}")
 
@@ -218,6 +218,7 @@ def train_network(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import train_network
+
         if max_snapshots_to_keep is None:
             max_snapshots_to_keep = 5
 
@@ -239,6 +240,7 @@ def train_network(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import train_network
+
         _update_device(gputouse, torch_kwargs)
         if "display_iters" not in torch_kwargs:
             torch_kwargs["display_iters"] = displayiters
@@ -299,6 +301,7 @@ def return_train_network_path(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import return_train_network_path
+
         return return_train_network_path(
             config,
             shuffle=shuffle,
@@ -306,7 +309,10 @@ def return_train_network_path(
             modelprefix=modelprefix,
         )
     elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis.utils import return_train_network_path
+        from deeplabcut.pose_estimation_pytorch.apis.utils import (
+            return_train_network_path,
+        )
+
         return return_train_network_path(
             config,
             shuffle=shuffle,
@@ -458,6 +464,7 @@ def evaluate_network(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import evaluate_network
+
         return evaluate_network(
             str(config),
             Shuffles=Shuffles,
@@ -473,6 +480,7 @@ def evaluate_network(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import evaluate_network
+
         _update_device(gputouse, torch_kwargs)
         return evaluate_network(
             config,
@@ -553,6 +561,7 @@ def return_evaluate_network_data(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
+
         return return_evaluate_network_data(
             config,
             shuffle=shuffle,
@@ -816,6 +825,7 @@ def analyze_videos(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_videos
+
         kwargs = {}
         if use_openvino is not None:  # otherwise default comes from tensorflow API
             kwargs["use_openvino"] = use_openvino
@@ -846,6 +856,7 @@ def analyze_videos(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import analyze_videos
+
         _update_device(gputouse, torch_kwargs)
 
         if batchsize is not None:
@@ -907,6 +918,7 @@ def create_tracking_dataset(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
+
         return create_tracking_dataset(
             config,
             videos,
@@ -994,6 +1006,7 @@ def analyze_time_lapse_frames(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_time_lapse_frames
+
         return analyze_time_lapse_frames(
             config,
             directory,
@@ -1120,6 +1133,7 @@ def convert_detections2tracklets(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import convert_detections2tracklets
+
         return convert_detections2tracklets(
             config,
             videos,
@@ -1233,6 +1247,7 @@ def extract_maps(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import extract_maps
+
         return extract_maps(
             config,
             shuffle=shuffle,
@@ -1244,6 +1259,7 @@ def extract_maps(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import extract_maps
+
         return extract_maps(
             config,
             shuffle=shuffle,
@@ -1404,6 +1420,7 @@ def extract_save_all_maps(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import extract_save_all_maps
+
         return extract_save_all_maps(
             config,
             shuffle=shuffle,
@@ -1419,6 +1436,7 @@ def extract_save_all_maps(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import extract_save_all_maps
+
         return extract_save_all_maps(
             config,
             shuffle=shuffle,
@@ -1512,6 +1530,7 @@ def export_model(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import export_model
+
         return export_model(
             cfg_path=cfg_path,
             shuffle=shuffle,
@@ -1526,6 +1545,7 @@ def export_model(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis.export import export_model
+
         return export_model(
             config=cfg_path,
             shuffle=shuffle,

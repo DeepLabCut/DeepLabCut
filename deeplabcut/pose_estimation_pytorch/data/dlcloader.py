@@ -67,11 +67,6 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
-        self.split = self.load_split(self._project_config, trainset_index, shuffle)
-
-        # lazy-load DataFrames
-        self._loaded_df: dict[str, pd.DataFrame] | None = None
-        self._resolutions = set()
 
         super().__init__(
             self._project_root
@@ -79,6 +74,11 @@ class DLCLoader(Loader):
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
+
+        # lazy-load split and DataFrames
+        self._split: dict[str, list[int]] | None = None
+        self._loaded_df: dict[str, pd.DataFrame] | None = None
+        self._resolutions = set()
 
     @property
     def project_cfg(self) -> dict:
@@ -123,6 +123,15 @@ class DLCLoader(Loader):
     def train_fraction(self) -> float:
         """Returns: the fraction of the dataset used for training"""
         return self._train_frac
+
+    @property
+    def split(self) -> dict[str, list[int]]:
+        if self._split is None:
+            self._split = self.load_split(
+                self._project_config, self._trainset_index, self.shuffle
+            )
+
+        return self._split
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.
