@@ -210,11 +210,15 @@ class DLCLoader(Loader):
         # as in TF DeepLabCut, load the training data from the .mat/.pickle file
         if config.get("multianimalproject", False):
             image_sizes, df_train = _load_pickle_dataset(
-                dataset_file.with_suffix(".pickle"), config["scorer"], params=params,
+                dataset_file.with_suffix(".pickle"),
+                config["scorer"],
+                params=params,
             )
         else:
             image_sizes, df_train = _load_mat_dataset(
-                dataset_file.with_suffix(".mat"), config["scorer"], params=params,
+                dataset_file.with_suffix(".mat"),
+                config["scorer"],
+                params=params,
             )
 
         # load the full dataset file
@@ -302,9 +306,8 @@ class DLCLoader(Loader):
             the coco format data
         """
         with_individuals = "individuals" in df.columns.names
-        if (
-            not with_individuals and
-            (len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0)
+        if not with_individuals and (
+            len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0
         ):
             raise ValueError(
                 "The DataFrame contains single-animal annotations (for a single, "
@@ -373,7 +376,7 @@ class DLCLoader(Loader):
                             0 < keypoints[..., 1],
                             keypoints[..., 1] < height,
                         ),
-                    )
+                    ),
                 )
                 keypoints[:, 2] = np.where(is_visible, 2, 0)
                 num_keypoints = is_visible.sum()
@@ -509,7 +512,11 @@ def _load_pickle_dataset(
                     keypoints[idv_idx, bodypart, 0] = x
                     keypoints[idv_idx, bodypart, 1] = y
 
-            elif idv_idx == params.max_num_animals and data_unique is not None and keypoints_unique is None:
+            elif (
+                idv_idx == params.max_num_animals
+                and data_unique is not None
+                and keypoints_unique is None
+            ):
                 keypoints_unique = np.zeros((params.num_unique_bpts, 2))
                 keypoints_unique.fill(np.nan)
                 for joint_id, x, y in idv_bodyparts:
@@ -542,7 +549,9 @@ def _load_pickle_dataset(
 
 
 def _validate_dataframes(
-    dfs: dict[str, pd.DataFrame], df_train: pd.DataFrame, strict: bool = False,
+    dfs: dict[str, pd.DataFrame],
+    df_train: pd.DataFrame,
+    strict: bool = False,
 ) -> dict[str, pd.DataFrame]:
     """Validates the training/test DataFrames
 
