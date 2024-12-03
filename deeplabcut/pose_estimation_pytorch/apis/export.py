@@ -30,7 +30,7 @@ def export_model(
     iteration: int | None = None,
     overwrite: bool = False,
     wipe_paths: bool = False,
-    modelprefix: str = "",
+    modelprefix: str | None = None,
 ) -> None:
     """Export DeepLabCut models for live inference.
 
@@ -80,7 +80,7 @@ def export_model(
         config=cfg,
         trainset_index=trainingsetindex,
         shuffle=shuffle,
-        modelprefix=modelprefix,
+        modelprefix="" if modelprefix is None else modelprefix,
     )
 
     if snapshotindex is None:
