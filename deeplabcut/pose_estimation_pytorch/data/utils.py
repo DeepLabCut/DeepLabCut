@@ -51,6 +51,7 @@ def bbox_from_keypoints(
     squeeze = False
 
     # we do not estimate bbox on keypoints that have 0 or -1 flag
+    keypoints = np.copy(keypoints)
     keypoints[keypoints[..., -1] <= 0] = np.nan
 
     if len(keypoints.shape) == 2:
