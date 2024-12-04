@@ -225,6 +225,8 @@ def compute_rmse(
     if np.any(~np.isnan(pixel_errors)):
         rmse = np.nanmean(pixel_errors).item()
 
+        # TODO: CHECK THAT THIS WORKS WITH np.nanmean(pixel_errors, axis=1).item()
+
         keypoint_scores = np.stack([m.keypoint_scores() for m in matches])
         pixel_errors_cutoff = pixel_errors[keypoint_scores >= pcutoff]
         if np.any(~np.isnan(pixel_errors_cutoff)):

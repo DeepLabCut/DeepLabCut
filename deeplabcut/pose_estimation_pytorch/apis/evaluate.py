@@ -102,6 +102,8 @@ def evaluate(
     loader: Loader,
     mode: str,
     detector_runner: InferenceRunner | None = None,
+    comparison_bodyparts: str | list[str] | None = None,
+    per_keypoint_evaluation: bool = False,
     pcutoff: float = 1,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
     """
@@ -113,6 +115,11 @@ def evaluate(
         detector_runner: If task == 'TD', a detector can be given to compute bounding
             boxes for pose estimation. If no detector is given, ground truth bounding
             boxes are used
+        comparison_bodyparts: A subset of the bodyparts for which to compute the
+            evaluation metrics.
+        per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
+            save the results to a {model_name}-keypoint-results.csv in the
+            evaluation-results-pytorch folder.
         pcutoff: The p-cutoff to use for evaluation
 
     Returns:
@@ -145,6 +152,18 @@ def evaluate(
         }
         gt_unique_keypoints = loader.ground_truth_keypoints(mode, unique_bodypart=True)
 
+    if comparison_bodyparts is not None:
+        poses = _get_keypoint_subset(poses, parameters.bodyparts, comparison_bodyparts)
+        gt_keypoints = _get_keypoint_subset(
+            gt_keypoints, parameters.bodyparts, comparison_bodyparts
+        )
+        unique_poses = _get_keypoint_subset(
+            unique_poses, parameters.unique_bpts, comparison_bodyparts
+        )
+        gt_unique_keypoints = _get_keypoint_subset(
+            gt_unique_keypoints, parameters.unique_bpts, comparison_bodyparts
+        )
+
     results = metrics.compute_metrics(
         gt_keypoints,
         poses,
@@ -152,6 +171,7 @@ def evaluate(
         pcutoff=pcutoff,
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,
+        per_keypoint_evaluation=per_keypoint_evaluation,
     )
 
     if loader.model_cfg["metadata"]["with_identity"]:
@@ -377,6 +397,8 @@ def evaluate_snapshot(
     transform: A.Compose | None = None,
     plotting: bool | str = False,
     show_errors: bool = True,
+    comparison_bodyparts: str | list[str] | None = None,
+    per_keypoint_evaluation: bool = False,
     detector_snapshot: Snapshot | None = None,
 ) -> pd.DataFrame:
     """Evaluates a snapshot.
@@ -394,6 +416,11 @@ def evaluate_snapshot(
             be either ``True``, ``False``, ``"bodypart"``, or ``"individual"``. Setting
             to ``True`` defaults as ``"bodypart"`` for multi-animal projects.
         show_errors: whether to compare predictions and ground truth
+        comparison_bodyparts: A subset of the bodyparts for which to compute the
+            evaluation metrics.
+        per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
+            save the results to a {model_name}-keypoint-results.csv in the
+            evaluation-results-pytorch folder.
         detector_snapshot: Only for TD models. If defined, evaluation metrics are
             computed using the detections made by this snapshot
     """
@@ -519,6 +546,8 @@ def evaluate_network(
     plotting: bool | str = False,
     show_errors: bool = True,
     transform: A.Compose = None,
+    comparison_bodyparts: str | list[str] | None = None,
+    per_keypoint_evaluation: bool = False,
     modelprefix: str = "",
     detector_snapshot_index: int | None = None,
 ) -> None:
@@ -547,6 +576,11 @@ def evaluate_network(
         show_errors: display train and test errors.
         transform: transformation pipeline for evaluation
             ** Should normalise the data the same way it was normalised during training **
+        comparison_bodyparts: A subset of the bodyparts for which to compute the
+            evaluation metrics.
+        per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
+            save the results to a {model_name}-keypoint-results.csv in the
+            evaluation-results-pytorch folder.
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         detector_snapshot_index: Only for TD models. If defined, uses the detector with
@@ -653,6 +687,8 @@ def evaluate_network(
                         transform=transform,
                         plotting=plotting,
                         show_errors=show_errors,
+                        comparison_bodyparts=comparison_bodyparts,
+                        per_keypoint_evaluation=per_keypoint_evaluation,
                         detector_snapshot=detector_snapshot,
                     )
 
@@ -703,6 +739,35 @@ def save_evaluation_results(
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
+
+
+def _get_keypoint_subset(
+    data: dict[str, np.ndarray] | None,
+    bodyparts: list[str],
+    bodypart_subset: str | list[str],
+) -> dict[str, np.ndarray] | None:
+    """
+
+    Args:
+        data:
+        bodyparts:
+        bodypart_subset:
+
+    Returns:
+
+    """
+    if data is None:
+        return None
+
+    if isinstance(bodypart_subset, str):
+        bodypart_subset = [bodypart_subset]
+
+    to_keep = set(bodypart_subset)
+    bpt_indices = [i for i, b in enumerate(bodyparts) if b in to_keep]
+    if len(bpt_indices) == 0:
+        return None
+
+    return {image: kpts[:, bpt_indices] for image, kpts in data.items()}
 
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ def compute_metrics(
     pcutoff: float = -1,
     oks_bbox_margin: int = 0,
     oks_sigma: float = 0.1,
+    per_keypoint_evaluation: bool = False,
 ) -> dict:
     """Computes pose estimation performance metrics
 
@@ -70,6 +71,7 @@ def compute_metrics(
         oks_bbox_margin: The margin to add around keypoints to compute the area for OKS
             computation.
         oks_sigma: The OKS sigma to use to compute pose.
+        per_keypoint_evaluation: Compute per-keypoint RMSE values.
 
     Returns:
         A dictionary containing keys "rmse", "rmse_cutoff", "mAP" and "mAR" mapping
@@ -78,6 +80,10 @@ def compute_metrics(
         If unique bodyparts are given, two extra keys "rmse_unique_bodyparts" and
         "rmse_pcutoff_unique_bodyparts" are also returned, containing the metrics for
         the unique bodyparts head.
+
+        If `per_keypoint_evaluation=True`, "keypoint_rmse", "keypoint_rmse_cutoff" (and
+        optionally "unique_keypoint_rmse" and "unique_keypoint_rmse_cutoff") keys are
+        added, containing a list of floats representing the RMSE for each keypoint.
 
     Examples:
         >>> # Define the p-cutoff, prediction, and target DataFrames
