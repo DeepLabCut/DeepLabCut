@@ -458,10 +458,12 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
 </ul>
 </li>
 </ul>
@@ -728,6 +730,7 @@ models <strong>it is not recommended to change the optimizer or scheduler</stron
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: a learning rate scheduler</span>
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">load_scheduler_state_dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true/false</span><span class="w"> </span><span class="c1"># whether to load scheduler state when resuming training from a snapshot,</span>
 <span class="w">  </span><span class="nt">snapshots</span><span class="p">:</span><span class="w">  </span><span class="c1"># parameters for the TorchSnapshotManager</span>
 <span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the &quot;best&quot; model does not count as one of them)</span>
 <span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save  </span>
@@ -762,7 +765,7 @@ optimizers can be found in <a class="reference external" href="https://pytorch.o
 <span class="w">      </span><span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-4</span>
 </pre></div>
 </div>
-<p><strong>Scheduler</strong>: YYou can use <a class="reference external" href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">any scheduler</a> defined in
+<p><strong>Scheduler</strong>: You can use <a class="reference external" href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">any scheduler</a> defined in
 <code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler</span></code>, where the arguments given are arguments of the scheduler.
 The default scheduler is an LRListScheduler, which changes the learning rates at each
 milestone to the corresponding values in <code class="docutils literal notranslate"><span class="pre">lr_list</span></code>. Examples:</p>
@@ -809,20 +812,37 @@ default.</p>
 <p>Additionally, you can log results to <a class="reference external" href="https://wandb.ai/site">Weights and Biases</a>, by adding a
 <code class="docutils literal notranslate"><span class="pre">WandbLogger</span></code>. Just make sure you’re logged in to your <code class="docutils literal notranslate"><span class="pre">wandb</span></code> account before starting
 your training run (with <code class="docutils literal notranslate"><span class="pre">wandb</span> <span class="pre">login</span></code> from your shell). For more information, see their
-<a class="reference external" href="https://docs.wandb.ai/tutorials">tutorials</a> and their documentation for
-<a class="reference external" href="https://docs.wandb.ai/ref/python/init"><code class="docutils literal notranslate"><span class="pre">wandb.init</span></code></a>. You can also log images as they are seen by the model to <code class="docutils literal notranslate"><span class="pre">wandb</span></code>
-with the <code class="docutils literal notranslate"><span class="pre">image_log_interval</span></code>. This logs a random train and test image, as well as the
-targets and heatmaps for that image.</p>
+<a class="reference external" href="https://docs.wandb.ai/tutorials">tutorials</a> and their documentation for <a class="reference external" href="https://docs.wandb.ai/ref/python/init"><code class="docutils literal notranslate"><span class="pre">wandb.init</span></code></a>.</p>
 <p>Logging to <code class="docutils literal notranslate"><span class="pre">wandb</span></code> is a good way to keep track of what you’ve run, including performance
 and metrics.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">logger</span><span class="p">:</span>
 <span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WandbLogger</span>
-<span class="w"> </span><span class="nt">image_log_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># how often images are logged to wandb (in epochs)</span>
 <span class="w"> </span><span class="nt">project_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-dlc3-project</span><span class="w">  </span><span class="c1"># the name of the project where the run should be logged</span>
 <span class="w"> </span><span class="nt">run_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dekr-w32-shuffle0</span><span class="w">  </span><span class="c1"># the name of the run to log</span>
 <span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># any other argument you can pass to `wandb.init`, such as `tags: [&quot;dekr&quot;, &quot;split=0&quot;]`</span>
 </pre></div>
 </div>
+<p>You can also log images as they are seen by the model to <code class="docutils literal notranslate"><span class="pre">wandb</span></code>
+with the <code class="docutils literal notranslate"><span class="pre">image_log_interval</span></code>. This logs a random train and test image, as well as the
+targets and heatmaps for that image.</p>
+</section>
+<section id="restarting-training-at-a-specific-checkpoint">
+<h3>Restarting Training at a Specific Checkpoint<a class="headerlink" href="#restarting-training-at-a-specific-checkpoint" title="Link to this heading">#</a></h3>
+<p>If you wish to restart the training at a specific checkpoint, you can specify the
+full path of the checkpoint to the <code class="docutils literal notranslate"><span class="pre">resume_training_from</span></code> variable, as shown below. In this
+example, <code class="docutils literal notranslate"><span class="pre">snapshot-010.pt</span></code> will be loaded before training starts, and the model will
+continue to train from the 10th epoch on.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># model configuration</span>
+<span class="nn">...</span>
+<span class="c1"># weights from which to resume training</span>
+<span class="nt">resume_training_from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-010.pt</span>
+</pre></div>
+</div>
+<p>When continuing to train a model, you may want to modify the learning rate scheduling
+that was being used (by editing the configuration under the <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> key). When doing
+so, you <em>must set <code class="docutils literal notranslate"><span class="pre">load_scheduler_state_dict:</span> <span class="pre">false</span></code></em> in your <code class="docutils literal notranslate"><span class="pre">runner</span></code> config!
+Otherwise, the parameters for the scheduler your started training with will be loaded
+from the state dictionary, and your edits might not be kept!</p>
 </section>
 </section>
 <section id="training-top-down-models">
@@ -862,11 +882,11 @@ trained. All information relating to the detector is placed under the <code clas
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </pre></div>
 </div>
-<p>Currently, the only detector available is a <code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code>. However, multiple variants are
-available (you can view the different variants on <a class="reference external" href="https://pytorch.org/vision/stable/models.html#object-detection">torchvision’s object detection page</a>). It’s recommended to
-use the fastest detector that brings enough performance. The recommended variants
-are the following (from fastest to most powerful, taken from torchvision’s
-documentation):</p>
+<p>Currently, the only detectors available are <code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code> and <code class="docutils literal notranslate"><span class="pre">SSDLite</span></code>. However, multiple variants of
+<code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code> are available (you can view the different variants on
+<a class="reference external" href="https://pytorch.org/vision/stable/models.html#object-detection">torchvision’s object detection page</a>). It’s recommended to use the fastest
+detector that brings enough performance. The recommended variants are the following
+(from fastest to most powerful, taken from torchvision’s documentation):</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>name</p></th>
@@ -876,17 +896,22 @@ documentation):</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>fasterrcnn_mobilenet_v3_large_fpn</p></td>
+<tr class="row-even"><td><p>SSDLite</p></td>
+<td class="text-right"><p>21.3</p></td>
+<td class="text-right"><p>3.4M</p></td>
+<td class="text-right"><p>0.58</p></td>
+</tr>
+<tr class="row-odd"><td><p>fasterrcnn_mobilenet_v3_large_fpn</p></td>
 <td class="text-right"><p>32.8</p></td>
 <td class="text-right"><p>19.4M</p></td>
 <td class="text-right"><p>4.49</p></td>
 </tr>
-<tr class="row-odd"><td><p>fasterrcnn_resnet50_fpn</p></td>
+<tr class="row-even"><td><p>fasterrcnn_resnet50_fpn</p></td>
 <td class="text-right"><p>37</p></td>
 <td class="text-right"><p>41.8M</p></td>
 <td class="text-right"><p>134.38</p></td>
 </tr>
-<tr class="row-even"><td><p>fasterrcnn_resnet50_fpn_v2</p></td>
+<tr class="row-odd"><td><p>fasterrcnn_resnet50_fpn_v2</p></td>
 <td class="text-right"><p>46.7</p></td>
 <td class="text-right"><p>43.7M</p></td>
 <td class="text-right"><p>280.37</p></td>
@@ -894,6 +919,25 @@ documentation):</p>
 </tbody>
 </table>
 </div>
+</section>
+<section id="restarting-training-of-an-object-detector-at-a-specific-checkpoint">
+<h3>Restarting Training of an Object Detector at a Specific Checkpoint<a class="headerlink" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint" title="Link to this heading">#</a></h3>
+<p>If you wish to restart the training of a detector at a specific checkpoint, you can
+specify the full path of the checkpoint to the detector’s <code class="docutils literal notranslate"><span class="pre">resume_training_from</span></code> variable, as
+shown below. In this example, <code class="docutils literal notranslate"><span class="pre">snapshot-detector-020.pt</span></code> will be loaded before training
+starts, and the model will continue to train from the 20th epoch on.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detector</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># detector configuration</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain"># weights from which to resume training</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">resume_training_from</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt</span>
+</pre></div>
+</div>
+<p>When continuing to train a detector, you may want to modify the learning rate scheduling
+that was being used (by editing the configuration under the <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> key). When doing
+so, you <em>must set <code class="docutils literal notranslate"><span class="pre">load_scheduler_state_dict:</span> <span class="pre">false</span></code></em> in your <code class="docutils literal notranslate"><span class="pre">detector</span></code>: <code class="docutils literal notranslate"><span class="pre">runner</span></code>
+config! Otherwise, the parameters for the scheduler your started training with will be
+loaded from the state dictionary, and your edits might not be kept!</p>
 </section>
 </section>
 </section>
@@ -970,10 +1014,12 @@ documentation):</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
 </ul>
 </li>
 </ul>

@@ -69,24 +69,24 @@ print(available_models())
 
 ### Development State and Road Map 🚧
 
-The table below describes the DeepLabCut API methods that have been implemented,
-as well as indications which options are not yet implemented, and which parameters
-are not valid for the DLC 3.0 API.
+The table below describes the DeepLabCut API methods that have been implemented for the
+PyTorch engine, as well as indications which options are not yet implemented, and which
+parameters are not valid for the DLC 3.0 PyTorch API.
 
 
-| API Method                     | Implemented | Parameters not yet implemented                                                                                                | Parameters invalid for pytorch                      |
-|--------------------------------|:-----------:|-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| `train_network`                |     🟢      | `keepdeconvweights`                                                                                                           | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
-| `return_train_network_path`    |     🟢      |                                                                                                                               |                                                     |
-| `evaluate_network`             |     🟢      | `comparisonbodyparts`, `rescale`, `per_keypoint_evaluation`                                                                   |                                                     |
-| `return_evaluate_network_data` |     🔴      |                                                                                                                               | `TFGPUinference`, `allow_growth`                    |
-| `analyze_videos`               |     🟢      | `use_shelve`, `save_as_csv`, `in_random_order`, `batchsize`, `cropping`, `dynamic`, `robust_nframes`, `n_tracks`, `calibrate` |                                                     |
-| `create_tracking_dataset`      |     🔴      |                                                                                                                               |                                                     |
-| `analyze_time_lapse_frames`    |     🟠      |   the name has changed to  `analyze_images` to better reflect what it actually does (no video needed)                         |                                                     |
-| `convert_detections2tracklets` |     🟢      | `greedy`, `calibrate`, `window_size`                                                                                          |                                                     |
-| `extract_maps`                 |     🔴      |                                                                                                                               |                                                     |
-| `visualize_scoremaps`          |     🔴      |                                                                                                                               |                                                     |
-| `visualize_locrefs`            |     🔴      |                                                                                                                               |                                                     |
-| `visualize_paf`                |     🔴      |                                                                                                                               |                                                     |
-| `extract_save_all_maps`        |     🔴      |                                                                                                                               |                                                     |
-| `export_model`                 |     🔴      |                                                                                                                               |                                                     |
+| API Method                     | Implemented | Parameters not yet implemented                                                                      | Parameters invalid for pytorch                      |
+|--------------------------------|:-----------:|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| `train_network`                |     🟢      | `keepdeconvweights`                                                                                 | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
+| `return_train_network_path`    |     🟢      |                                                                                                     |                                                     |
+| `evaluate_network`             |     🟢      | `comparisonbodyparts`, `rescale`, `per_keypoint_evaluation`                                         |                                                     |
+| `return_evaluate_network_data` |     🔴      |                                                                                                     | `TFGPUinference`, `allow_growth`                    |
+| `analyze_videos`               |     🟢      | `in_random_order`, `dynamic`, `n_tracks`, `calibrate`                                               |                                                     |
+| `create_tracking_dataset`      |     🔴      |                                                                                                     |                                                     |
+| `analyze_time_lapse_frames`    |     🟠      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
+| `convert_detections2tracklets` |     🟢      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
+| `extract_maps`                 |     🟢      |                                                                                                     |                                                     |
+| `visualize_scoremaps`          |     🟢      |                                                                                                     |                                                     |
+| `visualize_locrefs`            |     🟢      |                                                                                                     |                                                     |
+| `visualize_paf`                |     🟢      |                                                                                                     |                                                     |
+| `extract_save_all_maps`        |     🟢      |                                                                                                     |                                                     |
+| `export_model`                 |     🟢      |                                                                                                     |                                                     |
