@@ -7,3 +7,13 @@ model:
     deepen_factor: 0.33
     widen_factor: 0.5
   backbone_output_channels: 512
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
+      milestones: [ 90, 190 ]

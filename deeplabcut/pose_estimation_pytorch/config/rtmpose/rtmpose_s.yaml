@@ -80,7 +80,7 @@ runner:
           total_iters: 5
       - type: CosineAnnealingLR
         params:
-          T_max: 250     # max_epochs // 2
+          T_max: 200     # max_epochs // 2
           eta_min: 5e-5  # ~base_lr / 20
       - type: LRListScheduler
         params:
@@ -89,10 +89,10 @@ runner:
           lr_list:
             - - 5e-5
       milestones:
-      - 250              # max_epochs // 2
-      - 500
+      - 200              # max_epochs // 2
+      - 400
 train_settings:
   batch_size: 32
   dataloader_workers: 4
   dataloader_pin_memory: false
-  epochs: 500
+  epochs: 400
