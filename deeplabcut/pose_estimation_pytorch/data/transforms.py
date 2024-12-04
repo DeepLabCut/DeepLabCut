@@ -79,7 +79,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         if rotation is not None:
             rotation = (-rotation, rotation)
         if translation is not None:
-            translation = (0, translation)
+            translation = (-translation, translation)
 
         transforms.append(
             A.Affine(
@@ -293,6 +293,8 @@ class KeypointAwareCrop(A.RandomCrop):
         sampling = self.crop_sampling
         if self.crop_sampling == "hybrid":
             sampling = np.random.choice(["uniform", "density"])
+        if len(kpts) == 0:
+            sampling = "uniform"
         if sampling == "uniform":
             center = np.random.random(2)
         else:
@@ -322,7 +324,7 @@ class KeypointAwareCrop(A.RandomCrop):
         self,
         keypoints,
         **params,
-    ) -> list[float]:
+    ) -> list[tuple[float]]:
         keypoints = super().apply_to_keypoints(keypoints, **params)
         new_keypoints = []
         for kp in keypoints:

@@ -31,21 +31,27 @@ class DLCLoader(Loader):
 
     def __init__(
         self,
-        config: str | Path,
+        config: str | Path | dict,
         trainset_index: int = 0,
         shuffle: int = 0,
         modelprefix: str = "",
     ):
         """
         Args:
-            config: path to the DeepLabCut project config
+            config: Path to the DeepLabCut project config, or the project config itself
             trainset_index: the index of the TrainingsetFraction for which to load data
             shuffle: the index of the shuffle for which to load data
             modelprefix: the modelprefix for the shuffle
         """
-        self._project_root = Path(config).parent
-        self._project_config = af.read_config(str(config))
+        if isinstance(config, (str, Path)):
+            self._project_root = Path(config).parent
+            self._project_config = af.read_config(str(config))
+        else:
+            self._project_root = Path(config["project_path"])
+            self._project_config = config
+
         self._shuffle = shuffle
+        self._trainset_index = trainset_index
         self._train_frac = self._project_config["TrainingFraction"][trainset_index]
         self._model_folder = af.get_model_folder(
             self._train_frac,
@@ -61,7 +67,6 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
-        self._resolutions = set()
 
         super().__init__(
             self._project_root
@@ -69,13 +74,16 @@ class DLCLoader(Loader):
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
-        self.split = self.load_split(self._project_config, trainset_index, shuffle)
-        self._dfs, image_sizes = self.load_ground_truth(
-            self._project_config,
-            trainset_index=trainset_index,
-            shuffle=shuffle,
-        )
-        self._resolutions = self._resolutions.union(image_sizes)
+
+        # lazy-load split and DataFrames
+        self._split: dict[str, list[int]] | None = None
+        self._loaded_df: dict[str, pd.DataFrame] | None = None
+        self._resolutions = set()
+
+    @property
+    def project_cfg(self) -> dict:
+        """Returns: the configuration for the DeepLabCut project"""
+        return self._project_config
 
     @property
     def df(self) -> pd.DataFrame:
@@ -115,6 +123,15 @@ class DLCLoader(Loader):
     def train_fraction(self) -> float:
         """Returns: the fraction of the dataset used for training"""
         return self._train_frac
+
+    @property
+    def split(self) -> dict[str, list[int]]:
+        if self._split is None:
+            self._split = self.load_split(
+                self._project_config, self._trainset_index, self.shuffle
+            )
+
+        return self._split
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.
@@ -198,11 +215,15 @@ class DLCLoader(Loader):
         # as in TF DeepLabCut, load the training data from the .mat/.pickle file
         if config.get("multianimalproject", False):
             image_sizes, df_train = _load_pickle_dataset(
-                dataset_file.with_suffix(".pickle"), config["scorer"], params=params,
+                dataset_file.with_suffix(".pickle"),
+                config["scorer"],
+                params=params,
             )
         else:
             image_sizes, df_train = _load_mat_dataset(
-                dataset_file.with_suffix(".mat"), config["scorer"], params=params,
+                dataset_file.with_suffix(".mat"),
+                config["scorer"],
+                params=params,
             )
 
         # load the full dataset file
@@ -290,9 +311,8 @@ class DLCLoader(Loader):
             the coco format data
         """
         with_individuals = "individuals" in df.columns.names
-        if (
-            not with_individuals and
-            (len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0)
+        if not with_individuals and (
+            len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0
         ):
             raise ValueError(
                 "The DataFrame contains single-animal annotations (for a single, "
@@ -361,7 +381,7 @@ class DLCLoader(Loader):
                             0 < keypoints[..., 1],
                             keypoints[..., 1] < height,
                         ),
-                    )
+                    ),
                 )
                 keypoints[:, 2] = np.where(is_visible, 2, 0)
                 num_keypoints = is_visible.sum()
@@ -380,6 +400,19 @@ class DLCLoader(Loader):
                     )
 
         return {"annotations": anns, "categories": categories, "images": images}
+
+    @property
+    def _dfs(self) -> dict[str, pd.DataFrame]:
+        """Lazy-loading of the training dataset dataframes"""
+        if self._loaded_df is None:
+            self._loaded_df, image_sizes = self.load_ground_truth(
+                self._project_config,
+                trainset_index=self._trainset_index,
+                shuffle=self.shuffle,
+            )
+            self._resolutions = self._resolutions.union(image_sizes)
+
+        return self._loaded_df
 
 
 def _load_mat_dataset(
@@ -484,7 +517,11 @@ def _load_pickle_dataset(
                     keypoints[idv_idx, bodypart, 0] = x
                     keypoints[idv_idx, bodypart, 1] = y
 
-            elif idv_idx == params.max_num_animals and data_unique is not None and keypoints_unique is None:
+            elif (
+                idv_idx == params.max_num_animals
+                and data_unique is not None
+                and keypoints_unique is None
+            ):
                 keypoints_unique = np.zeros((params.num_unique_bpts, 2))
                 keypoints_unique.fill(np.nan)
                 for joint_id, x, y in idv_bodyparts:
@@ -517,7 +554,9 @@ def _load_pickle_dataset(
 
 
 def _validate_dataframes(
-    dfs: dict[str, pd.DataFrame], df_train: pd.DataFrame, strict: bool = False,
+    dfs: dict[str, pd.DataFrame],
+    df_train: pd.DataFrame,
+    strict: bool = False,
 ) -> dict[str, pd.DataFrame]:
     """Validates the training/test DataFrames
 
