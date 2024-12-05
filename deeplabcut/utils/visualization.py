@@ -444,7 +444,7 @@ def plot_evaluation_results(
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
-    bounding_boxes: dict = {},
+    bounding_boxes: dict | None = None,
     bboxes_cutoff: float = 0.6,
 ) -> None:
     """
@@ -467,9 +467,14 @@ def plot_evaluation_results(
         dot_size: the dot size to use for keypoints
         alpha_value: the alpha value to use for keypoints
         p_cutoff: the p-cutoff for "confident" keypoints
-        bounding_boxes: dictionary with df_combined rows as keys and bounding boxes (np array for coordinates and np array for confidence)
+        bounding_boxes: dictionary with df_combined rows as keys and bounding boxes
+            (np array for coordinates and np array for confidence).
+            None corresponds to no bounding boxes.
         bboxes_cutoff: bounding boxes confidence cutoff threshold.
     """
+    if bounding_boxes is None:
+        bounding_boxes = {}
+
     for row_index, row in df_combined.iterrows():
         if isinstance(row_index, str):
             image_rel_path = Path(row_index)
