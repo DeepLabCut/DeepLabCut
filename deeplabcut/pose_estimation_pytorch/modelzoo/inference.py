@@ -26,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils.make_labeled_video import _create_labeled_video
+from deeplabcut.utils.make_labeled_video import create_video
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -174,7 +174,7 @@ def _video_inference_superanimal(
 
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
-        _create_labeled_video(
+        create_video(
             video_path,
             output_h5,
             pcutoff=pcutoff,

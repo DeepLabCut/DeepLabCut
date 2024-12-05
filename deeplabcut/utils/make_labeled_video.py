@@ -978,7 +978,7 @@ def proc_video(
                 )
                 clip.close()
             else:
-                _create_labeled_video(
+                create_video(
                     video,
                     filepath,
                     keypoints2show=labeled_bpts,
@@ -1008,7 +1008,7 @@ def proc_video(
             return False
 
 
-def _create_labeled_video(
+def create_video(
     video,
     h5file,
     keypoints2show="all",
@@ -1087,6 +1087,9 @@ def _create_labeled_video(
         bboxes_list=bboxes_list,
         bboxes_pcutoff=bboxes_pcutoff,
     )
+
+# for backwards compatibility
+_create_labeled_video = create_video
 
 
 def create_video_with_keypoints_only(
