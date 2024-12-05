@@ -138,7 +138,7 @@ def make_multianimal_labeled_image(
         probs_pred: prediction probabilities
         colors: colors for poses
         dotsize: size of dot
-        alphavalue:
+        alphavalue: transparency for the keypoints
         pcutoff: cut-off confidence value
         labels: labels to use for ground truth, reliable predictions, and not reliable predictions (confidence below cut-off value)
         ax: matplotlib plot's axes object
