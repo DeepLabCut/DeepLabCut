@@ -23,3 +23,6 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
 from deeplabcut.pose_estimation_pytorch.models.target_generators.pafs_targets import (
     PartAffinityFieldGenerator,
 )
+from deeplabcut.pose_estimation_pytorch.models.target_generators.sim_cc import (
+    SimCCGenerator,
+)

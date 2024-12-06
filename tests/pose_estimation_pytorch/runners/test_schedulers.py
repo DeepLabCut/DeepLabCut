@@ -8,30 +8,26 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
+"""Tests building schedulers from config"""
 import random
 from dataclasses import dataclass
 
 import numpy as np
 import pytest
 import torch
+import torch.nn as nn
 
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 
 
 def generate_random_lr_list(num_floats: int):
-    """Summary:
-    Generate list of lists including random numbers.
+    """Generate list of lists including random numbers.
 
     Args:
         num_floats: number of floats we want to include in our list
 
     Returns:
         ran_list: random list of sorted numbers, being first number bigger than the last
-
-    Examples:
-        input: num_float = 2
-        output: [[0.96420871896179], [0.3917365732012833]]
     """
     ran_list = []
     for i in range(num_floats):
@@ -48,8 +44,8 @@ def generate_random_lr_list(num_floats: int):
     ]
 )
 def test_scheduler(milestones, lr_list):
-    """Summary:
-    Testing schedulers.py.
+    """Testing schedulers.py.
+
     Given a list of milestones and a list of learning rates, this function tests
     if the length of each list is the same. Furthermore, it will assess if
     the current learning rate (output from the function we are testing) is a float
@@ -184,6 +180,84 @@ def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) ->
     for e in range(middle_epoch, num_epochs):
         _assert_learning_rates_match(e, optimizer, test_cfg.expected_lrs[e])
         s.step()
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        dict(  # example with 3 warm-up epochs
+            config=dict(
+                dict(
+                    type="ConstantLR",
+                    params=dict(factor=0.1, total_iters=3),
+                ),
+            ),
+            start_lr=1.0,
+            expected_lrs=[[0.1], [0.1], [0.1], [1.0], [1.0]],
+        ),
+        dict(  # example from torch.optim.lr_scheduler.SequentialLR
+            config=dict(
+                type="SequentialLR",
+                params=dict(
+                    schedulers=[
+                        dict(
+                            type="ConstantLR",
+                            params=dict(factor=0.1, total_iters=2),
+                        ),
+                        dict(type="ExponentialLR", params=dict(gamma=0.9)),
+                    ],
+                    milestones=[2],
+                ),
+            ),
+            start_lr=1.0,
+            expected_lrs=[[0.1], [0.1], [1.0], [0.9], [0.81], [0.729]],
+        ),
+        dict(  # example from torch.optim.lr_scheduler.SequentialLR
+            config=dict(
+                type="SequentialLR",
+                params=dict(
+                    schedulers=[
+                        dict(
+                            type="ConstantLR",
+                            params=dict(factor=0.1, total_iters=2),
+                        ),
+                        dict(type="StepLR", params=dict(step_size=2, gamma=0.1)),
+                    ],
+                    milestones=[5],
+                ),
+            ),
+            start_lr=1.0,
+            expected_lrs=[
+                [0.1], [0.1], [1.0], [1.0], [1.0],  # ConstantLR
+                [1.0], [1.0], [0.1], [0.1], [0.01],  # StepLR
+            ],
+        ),
+    ],
+)
+def test_build_sequential_lr(data):
+    print("\nTESTING")
+    start_lr = data["start_lr"]
+    print(f"Start LR: {start_lr}")
+    model = nn.Linear(in_features=1, out_features=1)
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=start_lr)
+
+    print("BUILDING")
+    scheduler = schedulers.build_scheduler(data["config"], optimizer)
+
+    print("RUNNING")
+    lrs = []
+    for epoch in range(len(data["expected_lrs"])):
+        lrs.append(scheduler.get_last_lr())
+        print(scheduler.get_last_lr())
+        scheduler.step()
+
+    print(f"Expected: {data['expected_lrs']}")
+    print(f"Actual: {lrs}")
+    np.testing.assert_allclose(
+        np.asarray(data["expected_lrs"]),
+        np.asarray(lrs),
+        atol=1e-10,
+    )
 
 
 def _assert_learning_rates_match(e, optimizer, expected):

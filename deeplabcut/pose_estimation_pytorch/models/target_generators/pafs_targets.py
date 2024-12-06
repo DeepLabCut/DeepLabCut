@@ -62,7 +62,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
 
         for b in range(batch_size):
             for _, kpts_animal in enumerate(coords[b]):
-                visible = set(np.flatnonzero(kpts_animal[..., -1]))
+                visible = set(np.flatnonzero(kpts_animal[..., -1] > 0))
                 kpts_animal = kpts_animal[..., :2]
                 for l, (bp1, bp2) in enumerate(self.graph):
                     if not (bp1 in visible and bp2 in visible):

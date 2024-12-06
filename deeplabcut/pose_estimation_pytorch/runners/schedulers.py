@@ -10,6 +10,8 @@
 #
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -77,7 +79,24 @@ def build_scheduler(
     else:
         scheduler = getattr(torch.optim.lr_scheduler, scheduler_cfg["type"])
 
-    return scheduler(optimizer=optimizer, **scheduler_cfg["params"])
+    parsed_params = {}
+    for param_name, param in scheduler_cfg["params"].items():
+        if isinstance(param, list):
+            param = [_parse_scheduler_param(p, optimizer) for p in param]
+        else:
+            param = _parse_scheduler_param(param, optimizer)
+
+        parsed_params[param_name] = param
+
+    return scheduler(optimizer=optimizer, **parsed_params)
+
+
+def _parse_scheduler_param(param: Any, optimizer: torch.optim.Optimizer) -> Any:
+    """Parses parameters so they're built as schedulers if they're configured as one"""
+    if isinstance(param, dict) and "type" in param:
+        param = build_scheduler(param, optimizer)
+
+    return param
 
 
 def load_scheduler_state(
