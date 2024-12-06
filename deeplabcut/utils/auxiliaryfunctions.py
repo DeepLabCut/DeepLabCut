@@ -319,7 +319,7 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
     return cfg["bodyparts"]
 
 
-def get_unique_bodyparts(cfg : dict) -> typing.List[str]:
+def get_unique_bodyparts(cfg: dict) -> typing.List[str]:
     """
     Args:
         cfg: a project configuration file
@@ -506,6 +506,53 @@ def grab_files_in_folder(folder, ext="", relative=True):
             yield file if relative else os.path.join(folder, file)
 
 
+def filter_files_by_patterns(
+    folder: str | Path,
+    start_patterns: set[str] | None = None,
+    contain_patterns: set[str] | None = None,
+    end_patterns: set[str] | None = None,
+) -> List[Path]:
+    """
+    Filters files in a folder based on start, contain, and end patterns.
+
+    Args:
+        folder (str | Path): The folder to search for files.
+
+        start_patterns (Set[str] | None): Patterns the filenames should start with.
+            If None or empty, this pattern is not taken into account.
+
+        contain_patterns (set[str]): Patterns the filenames should contain.
+            If None or empty, this pattern is not taken into account.
+
+        end_patterns (set[str]): Patterns the filenames should end with.
+            If None or empty, this pattern is not taken into account.
+
+    Returns:
+        List[Path]: List of files that match the criteria.
+    """
+    folder = Path(folder)  # Ensure the folder is a Path object
+    if not folder.is_dir():
+        raise ValueError(f"{folder} is not a valid directory.")
+
+    # Filter files based on the given patterns
+    matching_files = [
+        file
+        for file in folder.iterdir()
+        if file.is_file()
+        and (
+            not start_patterns
+            or any(file.name.startswith(start) for start in start_patterns)
+        )
+        and (
+            not contain_patterns
+            or any(contain in file.name for contain in contain_patterns)
+        )
+        and (not end_patterns or any(file.name.endswith(end) for end in end_patterns))
+    ]
+
+    return matching_files
+
+
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific file."""
     videos = list(grab_files_in_folder(videopath, videtype))
@@ -611,6 +658,7 @@ def get_evaluation_folder(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -712,6 +760,7 @@ def get_scorer_name(
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
         engine = get_shuffle_engine(
             cfg=cfg,
             trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -721,6 +770,7 @@ def get_scorer_name(
 
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
+
         snapshot_index = None
         if isinstance(trainingsiterations, int):
             snapshot_index = trainingsiterations
@@ -753,7 +803,11 @@ def get_scorer_name(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
+            str(
+                get_model_folder(
+                    trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
+                )
+            ),
             "train",
             engine.pose_cfg_name,
         )
@@ -864,28 +918,45 @@ def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
             return True, dataname, DLCscorer
 
 
+def find_video_full_data(folder, videoname, scorer):
+    scorer_legacy = scorer.replace("DLC", "DeepCut")
+    full_files = filter_files_by_patterns(
+        folder=folder,
+        start_patterns={videoname + scorer, videoname + scorer_legacy},
+        contain_patterns={"full"},
+        end_patterns={"pickle"},
+    )
+    if not full_files:
+        raise FileNotFoundError(
+            f"No full data found in {folder} "
+            f"for video {videoname} and scorer {scorer}."
+        )
+    return full_files[0]
+
+
 def find_video_metadata(folder, videoname, scorer):
     """For backward compatibility, let us search the substring 'meta'"""
     scorer_legacy = scorer.replace("DLC", "DeepCut")
-    meta = [
-        file
-        for file in grab_files_in_folder(folder, "pickle")
-        if "meta" in file
-        and (
-            file.startswith(videoname + scorer)
-            or file.startswith(videoname + scorer_legacy)
-        )
-    ]
-    if not len(meta):
+    meta_files = filter_files_by_patterns(
+        folder=folder,
+        start_patterns={videoname + scorer, videoname + scorer_legacy},
+        contain_patterns={"meta"},
+        end_patterns={"pickle"},
+    )
+    if not meta_files:
         raise FileNotFoundError(
             f"No metadata found in {folder} "
             f"for video {videoname} and scorer {scorer}."
         )
-    return os.path.join(folder, meta[0])
+    return meta_files[0]
 
 
 def load_video_metadata(folder, videoname, scorer):
     return read_pickle(find_video_metadata(folder, videoname, scorer))
+
+
+def load_video_full_data(folder, videoname, scorer):
+    return read_pickle(find_video_full_data(folder, videoname, scorer))
 
 
 def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):
