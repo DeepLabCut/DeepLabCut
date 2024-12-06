@@ -134,7 +134,7 @@ class CreateVideos(DefaultTab):
 
         # Skeleton
         self.draw_skeleton_checkbox = QtWidgets.QCheckBox("Draw skeleton")
-        self.draw_skeleton_checkbox.setCheckState(Qt.Checked)
+        self.draw_skeleton_checkbox.setCheckState(Qt.Unchecked)
         self.draw_skeleton_checkbox.stateChanged.connect(self.update_draw_skeleton)
         tmp_layout.addWidget(self.draw_skeleton_checkbox)
 
@@ -145,6 +145,24 @@ class CreateVideos(DefaultTab):
             self.update_use_filtered_data
         )
         tmp_layout.addWidget(self.use_filtered_data_checkbox)
+
+        # Selector for p-cutoff
+        pcutoff_widget = QtWidgets.QWidget()
+        pcutoff_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
+        pcutoff_label = QtWidgets.QLabel("Plotting confidence cutoff (pcutoff)")
+        self.pcutoff_selector = QtWidgets.QDoubleSpinBox()
+        self.pcutoff_selector.setMinimum(0.0)
+        self.pcutoff_selector.setMaximum(1.0)
+        self.pcutoff_selector.setValue(0.6)
+        self.pcutoff_selector.setSingleStep(0.05)
+        pcutoff_layout.addWidget(pcutoff_label)
+        pcutoff_layout.addWidget(self.pcutoff_selector)
+        pcutoff_widget.setLayout(pcutoff_layout)
+        pcutoff_widget.setToolTip(
+            "This value sets the confidence threshold, above which predictions are "
+            "shown in the labeled videos."
+        )
+        tmp_layout.addWidget(pcutoff_widget)
 
         # Plot trajectories
         self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
@@ -179,11 +197,11 @@ class CreateVideos(DefaultTab):
         layout.addLayout(tmp_layout, Qt.AlignLeft)
 
     def update_high_quality_video(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"High quality {s}.")
 
     def update_plot_trajectory_choice(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Plot trajectories {s}.")
 
     def update_selected_bodyparts(self):
@@ -196,7 +214,7 @@ class CreateVideos(DefaultTab):
         self.bodyparts_to_use = selected_bodyparts
 
     def update_use_all_bodyparts(self, s):
-        if s == Qt.Checked:
+        if Qt.CheckState(s) == Qt.Checked:
             self.bodyparts_list_widget.setEnabled(False)
             self.bodyparts_list_widget.hide()
             self.root.logger.info("Plot all bodyparts ENABLED.")
@@ -207,15 +225,15 @@ class CreateVideos(DefaultTab):
             self.root.logger.info("Plot all bodyparts DISABLED.")
 
     def update_use_filtered_data(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Use filtered data {s}")
 
     def update_draw_skeleton(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Draw skeleton {s}")
 
     def update_overwrite_videos(self, state):
-        s = "ENABLED" if state == Qt.Checked else "DISABLED"
+        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Overwrite videos {s}")
 
     def update_color_by(self, text):
@@ -243,12 +261,12 @@ class CreateVideos(DefaultTab):
             # Single animal scenario.
             # Color is based on bodypart.
             color_by = "bodypart"
-        filtered = bool(self.use_filtered_data_checkbox.checkState())
+        filtered = self.use_filtered_data_checkbox.isChecked()
 
         bodyparts = "all"
         if (
             len(self.bodyparts_to_use) != 0
-            and self.plot_all_bodyparts.checkState() != Qt.Checked
+            and self.plot_all_bodyparts.isChecked()
         ):
             self.update_selected_bodyparts()
             bodyparts = self.bodyparts_to_use
@@ -258,11 +276,13 @@ class CreateVideos(DefaultTab):
             videos=videos,
             shuffle=shuffle,
             filtered=filtered,
-            save_frames=bool(self.create_high_quality_video.checkState()),
+            save_frames=self.create_high_quality_video.isChecked(),
+            pcutoff=self.pcutoff_selector.value(),
             displayedbodyparts=bodyparts,
-            draw_skeleton=bool(self.draw_skeleton_checkbox.checkState()),
+            draw_skeleton=self.draw_skeleton_checkbox.isChecked(),
             trailpoints=trailpoints,
             color_by=color_by,
+            overwrite=self.overwrite_videos.isChecked(),
         )
         if all(videos_created):
             self.root.writer.write("Labeled videos created.")
@@ -273,13 +293,14 @@ class CreateVideos(DefaultTab):
             failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
-        if self.plot_trajectories.checkState():
+        if self.plot_trajectories.isChecked():
             deeplabcut.plot_trajectories(
                 config=config,
                 videos=videos,
                 shuffle=shuffle,
                 filtered=filtered,
                 displayedbodyparts=bodyparts,
+                pcutoff=self.pcutoff_selector.value(),
             )
 
     def build_skeleton(self, *args):

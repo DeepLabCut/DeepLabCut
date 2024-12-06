@@ -7,7 +7,7 @@ jobs:
   build-and-test:
     working_directory: ~/circleci-demo-python-django
     docker:
-      - image: circleci/python:3.8  # primary container for the build job
+      - image: circleci/python:3.10  # primary container for the build job
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
