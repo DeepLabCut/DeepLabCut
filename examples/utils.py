@@ -374,6 +374,7 @@ def run(
         trainingsetindex=trainset_index,
         device=device,
         plotting=True,
+        per_keypoint_evaluation=True,
     )
     times.append(time.time())
     log_step(f"Evaluation time: {times[-1] - times[-2]} seconds")

@@ -269,7 +269,6 @@ from deeplabcut.pose_estimation_pytorch.data import (
     build_transforms,
     DLCLoader,
 )
-from deeplabcut.pose_estimation_pytorch.task import Task
 
 loader = DLCLoader(
     config="/path/to/my/project/config.yaml",
@@ -279,12 +278,12 @@ loader = DLCLoader(
 train_dataset = loader.create_dataset(
     transform=build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
-    task=Task.BOTTOM_UP,
+    task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
     transform=build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
-    task=Task.BOTTOM_UP,
+    task=loader.pose_task,
 )
 ```
 
@@ -358,7 +357,6 @@ model_cfg = make_pytorch_pose_config(
     top_down=True,
 )
 write_config(config_path=model_cfg_path, config=model_cfg)
-task = Task(model_cfg["method"])
 
 # Create the loader for the COCO dataset
 loader = COCOLoader(
@@ -370,12 +368,12 @@ loader = COCOLoader(
 train_dataset = loader.create_dataset(
     transform=build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
-    task=task,
+    task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
     transform=build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
-    task=task,
+    task=loader.pose_task,
 )
 ```
 
