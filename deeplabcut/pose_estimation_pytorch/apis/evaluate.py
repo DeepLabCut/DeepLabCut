@@ -255,7 +255,11 @@ def visualize_predictions(
         if plot_bboxes:
             bboxes = predictions[image_path].get("bboxes", None)
             bbox_scores = predictions[image_path].get("bbox_scores", None)
-            bounding_boxes = (bboxes, bbox_scores) if bbox_scores is not None and bbox_scores is not None else None
+            bounding_boxes = (
+                (bboxes, bbox_scores)
+                if bbox_scores is not None and bbox_scores is not None
+                else None
+            )
         else:
             bounding_boxes = None
 
