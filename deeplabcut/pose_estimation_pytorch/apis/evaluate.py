@@ -48,7 +48,6 @@ from deeplabcut.utils.visualization import (
 
 
 def predict(
-    pose_task: Task,
     pose_runner: InferenceRunner,
     loader: Loader,
     mode: str,
@@ -57,7 +56,6 @@ def predict(
     """Predicts poses on data contained in a loader
 
     Args:
-        pose_task: Whether the model is a top-down or bottom-up model
         pose_runner: The runner to use for pose estimation
         loader: The loader containing the data to predict poses on
         mode: {"train", "test"} The mode to predict on
@@ -72,7 +70,7 @@ def predict(
     image_paths = loader.image_filenames(mode)
     context = None
 
-    if pose_task == Task.TOP_DOWN:
+    if loader.pose_task == Task.TOP_DOWN:
         # Get bounding boxes for context
         if detector_runner is not None:
             bbox_predictions = detector_runner.inference(images=tqdm(image_paths))
@@ -97,24 +95,26 @@ def predict(
 
 
 def evaluate(
-    pose_task: Task,
     pose_runner: InferenceRunner,
     loader: Loader,
     mode: str,
     detector_runner: InferenceRunner | None = None,
+    parameters: PoseDatasetParameters | None = None,
     comparison_bodyparts: str | list[str] | None = None,
     per_keypoint_evaluation: bool = False,
     pcutoff: float = 1,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
     """
     Args:
-        pose_task: Whether to run top-down or bottom-up
         pose_runner: The runner for pose estimation
         loader: The loader containing the data to evaluate
         mode: Either 'train' or 'test'
         detector_runner: If task == 'TD', a detector can be given to compute bounding
             boxes for pose estimation. If no detector is given, ground truth bounding
-            boxes are used
+            boxes are used.
+        parameters: PoseDatasetParameters to use. If None, the parameters will be
+            obtained from the given Loader. This can be used to change the names of
+            bodyparts, e.g. when a model is trained with memory replay.
         comparison_bodyparts: A subset of the bodyparts for which to compute the
             evaluation metrics. Passing "all" or None evaluates on all bodyparts.
         per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
@@ -130,25 +130,27 @@ def evaluate(
     if comparison_bodyparts == "all":
         comparison_bodyparts = None
 
-    parameters = loader.get_dataset_parameters()
     predictions = predict(
-        pose_task=pose_task,
         pose_runner=pose_runner,
         loader=loader,
         mode=mode,
         detector_runner=detector_runner,
     )
+
+    # For models trained with memory-replay from SuperAnimal, keep project bodyparts
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
         if weight_init.memory_replay:
             for _, pred in predictions.items():
                 pred["bodyparts"] = pred["bodyparts"][:, weight_init.conversion_array]
 
+    gt_keypoints = loader.ground_truth_keypoints(mode)
     poses = {filename: pred["bodyparts"] for filename, pred in predictions.items()}
 
-    gt_keypoints = loader.ground_truth_keypoints(mode)
-    unique_poses = None
-    gt_unique_keypoints = None
+    if parameters is None:
+        parameters = loader.get_dataset_parameters()
+
+    gt_unique_keypoints, unique_poses = None, None
     if parameters.num_unique_bpts > 1:
         unique_poses = {
             filename: pred["unique_bodyparts"] for filename, pred in predictions.items()
@@ -434,7 +436,6 @@ def evaluate_snapshot(
         detector_snapshot: Only for TD models. If defined, evaluation metrics are
             computed using the detections made by this snapshot
     """
-    pose_task = Task(loader.model_cfg.get("method", "bu"))
     parameters = loader.get_dataset_parameters()
     pcutoff = cfg.get("pcutoff", 0.6)
 
@@ -451,16 +452,26 @@ def evaluate_snapshot(
         with_identity=loader.model_cfg["metadata"]["with_identity"],
         transform=transform,
         detector_path=detector_path,
-        detector_transform=None,
     )
 
-    # The project bodyparts might be different to the bodyparts the model was trained to
-    #  output, if the model is fine-tuned from SuperAnimal with memory replay.
-    #  For evaluation, we want to only use the project bodyparts
-    project_bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
-    parameters = PoseDatasetParameters(
-        bodyparts=project_bodyparts,
-        unique_bpts=parameters.unique_bpts,
+    # For memory-replay SuperAnimal models, convert bodyparts to project bodyparts
+    if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init", None):
+        weight_init = WeightInitialization.from_dict(weight_init_cfg)
+        if weight_init.memory_replay:
+            bodyparts = weight_init.bodyparts
+            if bodyparts is None:
+                bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
+
+            parameters = PoseDatasetParameters(
+                bodyparts=bodyparts,
+                unique_bpts=parameters.unique_bpts,
+                individuals=parameters.individuals,
+            )
+
+    # get the names of bodyparts on which the model is evaluated
+    eval_parameters = PoseDatasetParameters(
+        bodyparts=_get_subset_bodyparts(parameters.bodyparts, comparison_bodyparts),
+        unique_bpts=_get_subset_bodyparts(parameters.unique_bpts, comparison_bodyparts),
         individuals=parameters.individuals,
     )
 
@@ -477,7 +488,6 @@ def evaluate_snapshot(
     }
     for split in ["train", "test"]:
         results, predictions_for_split = evaluate(
-            pose_task=pose_task,
             pose_runner=pose_runner,
             loader=loader,
             mode=split,
@@ -485,18 +495,17 @@ def evaluate_snapshot(
             detector_runner=detector_runner,
             comparison_bodyparts=comparison_bodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
+            parameters=parameters,
         )
         if per_keypoint_evaluation:
-            rmse_per_bodypart[split] = _extract_rmse_per_keypoint(
-                results,
-                parameters.bodyparts,
-                parameters.unique_bpts,
+            rmse_per_bodypart[split] = _extract_rmse_per_bodypart(
+                results, eval_parameters.bodyparts, eval_parameters.unique_bpts,
             )
 
         df_split_predictions = build_predictions_dataframe(
             scorer=scorer,
             predictions=predictions_for_split,
-            parameters=parameters,
+            parameters=eval_parameters,
             image_name_to_index=image_to_dlc_df_index,
         )
         predictions[split] = df_split_predictions
@@ -543,7 +552,6 @@ def evaluate_snapshot(
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
-            unique_bodyparts = loader.get_dataset_parameters().unique_bpts
 
             plot_evaluation_results(
                 df_combined=df_combined,
@@ -552,7 +560,7 @@ def evaluate_snapshot(
                 model_name=scorer,
                 output_folder=str(folder_path),
                 in_train_set=mode == "train",
-                plot_unique_bodyparts=len(unique_bodyparts) > 0,
+                plot_unique_bodyparts=eval_parameters.num_unique_bpts > 0,
                 mode=plot_mode,
                 colormap=cfg["colormap"],
                 dot_size=cfg["dotsize"],
@@ -665,15 +673,14 @@ def evaluate_network(
                 loader.model_cfg["device"] = device
             loader.model_cfg["device"] = utils.resolve_device(loader.model_cfg)
 
-            task = Task(loader.model_cfg["method"])
             snapshots = get_model_snapshots(
                 snapshotindex,
                 model_folder=loader.model_folder,
-                task=task,
+                task=loader.pose_task,
             )
 
             detector_snapshots = [None]
-            if task == Task.TOP_DOWN:
+            if loader.pose_task == Task.TOP_DOWN:
                 if detector_snapshot_index is not None:
                     det_snapshots = get_model_snapshots(
                         "all", loader.model_folder, Task.DETECT
@@ -806,20 +813,26 @@ def _get_keypoint_subset(
     bodyparts: list[str],
     bodypart_subset: str | list[str],
 ) -> dict[str, np.ndarray] | None:
-    """
+    """Obtains the pose for a subset of bodyparts
 
     Args:
-        data:
-        bodyparts:
-        bodypart_subset:
+        data: The data for which to obtain the pose belonging to the subset. A dict
+            mapping image name to an array of shape (num_idv, len(bodyparts), ...).
+        bodyparts: The bodyparts corresponding to the columns of the arrays in the data
+            dict (in the same order).
+        bodypart_subset: The subset of bodyparts to keep.
 
     Returns:
-
+        A dict containing the image keys, mapping to arrays of shape
+        (num_idv, len(subset), ...) containing the data subset.
     """
     if data is None:
         return None
 
     if isinstance(bodypart_subset, str):
+        if bodypart_subset == "all":
+            return data
+
         bodypart_subset = [bodypart_subset]
 
     to_keep = set(bodypart_subset)
@@ -830,28 +843,57 @@ def _get_keypoint_subset(
     return {image: kpts[:, bpt_indices] for image, kpts in data.items()}
 
 
-def _extract_rmse_per_keypoint(
+def _get_subset_bodyparts(
+    bodyparts: list[str], subset: str | list[str] | None,
+) -> list[str]:
+    """Gets a subset of bodyparts that were used.
+
+    Args:
+        bodyparts: The bodyparts output by the model.
+        subset: The subset of bodyparts to keep.
+
+    Returns:
+        The bodyparts that were used to evaluate the model.
+    """
+    if isinstance(subset, str):
+        if subset == "all":
+            return bodyparts
+        subset = [subset]
+
+    to_keep = set(subset)
+    return [b for b in bodyparts if b in to_keep]
+
+
+def _extract_rmse_per_bodypart(
     results: dict[str, float],
     bodyparts: list[str],
     unique_bodyparts: list[str],
 ) -> dict[str, float]:
-    """
+    """Extracts the RMSE per bodypart metrics from the results dict
+
+    This method modifies the given dict in-place, removing all keys for RMSE per
+    bodypart or unique bodypart.
 
     Args:
-        results:
-        bodyparts:
-        unique_bodyparts:
+        results: The results returned by the evaluation method.
+        bodyparts: The bodyparts defined for the project.
+        unique_bodyparts: The unique bodyparts defined for the project.
 
     Returns:
-
+        The per-bodypart RMSE.
     """
-    rmse_per_keypoint = {}
+    rmse_per_bodypart = {}
     for bpt_idx, bpt in enumerate(bodyparts):
-        rmse_per_keypoint[bpt] = results.pop(f"rmse_keypoint_{bpt_idx}")
-    for bpt_idx, bpt in enumerate(unique_bodyparts):
-        rmse_per_keypoint[bpt] = results.pop(f"rmse_unique_keypoint_{bpt_idx}")
+        rmse = results.pop(f"rmse_keypoint_{bpt_idx}", None)
+        if rmse is not None:
+            rmse_per_bodypart[bpt] = rmse
 
-    return rmse_per_keypoint
+    for bpt_idx, bpt in enumerate(unique_bodyparts):
+        rmse = results.pop(f"rmse_unique_keypoint_{bpt_idx}", None)
+        if rmse is not None:
+            rmse_per_bodypart[bpt] = rmse
+
+    return rmse_per_bodypart
 
 
 if __name__ == "__main__":
