@@ -25,7 +25,7 @@ def compute_metrics(
     pcutoff: float = -1,
     oks_bbox_margin: int = 0,
     oks_sigma: float = 0.1,
-    per_keypoint_evaluation: bool = False,
+    per_keypoint_rmse: bool = False,
 ) -> dict:
     """Computes pose estimation performance metrics
 
@@ -71,7 +71,7 @@ def compute_metrics(
         oks_bbox_margin: The margin to add around keypoints to compute the area for OKS
             computation.
         oks_sigma: The OKS sigma to use to compute pose.
-        per_keypoint_evaluation: Compute per-keypoint RMSE values.
+        per_keypoint_rmse: Compute per-keypoint RMSE values.
 
     Returns:
         A dictionary containing keys "rmse", "rmse_cutoff", "mAP" and "mAR" mapping
@@ -100,26 +100,32 @@ def compute_metrics(
         }  # Sample output scores
     """
     data = prepare_evaluation_data(ground_truth, predictions)
-    rmse, rmse_pcutoff = distance_metrics.compute_rmse(data, single_animal, pcutoff)
     oks_scores = distance_metrics.compute_oks(
         data=data,
         oks_sigma=oks_sigma,
         oks_bbox_margin=oks_bbox_margin,
     )
-    results = dict(rmse=rmse, rmse_pcutoff=rmse_pcutoff, **oks_scores)
+
+    data_unique = None
+    if unique_bodypart_gt is not None:
+        assert unique_bodypart_poses is not None
+        data_unique = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
+
+    rmse_scores = distance_metrics.compute_rmse(
+        data,
+        single_animal,
+        pcutoff,
+        data_unique=data_unique,
+        per_keypoint_results=per_keypoint_rmse,
+    )
+    results = dict(**rmse_scores, **oks_scores)
 
     if not single_animal:
-        det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(data, pcutoff)
+        det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(
+            data, pcutoff, data_unique=data_unique,
+        )
         results["rmse_detections"] = det_rmse
         results["rmse_detections_pcutoff"] = det_rmse_p
-
-    if unique_bodypart_gt is not None:
-        # TODO: We should integrate unique bodyparts to main RMSE computation
-        assert unique_bodypart_poses is not None
-        unique_bpt = prepare_evaluation_data(unique_bodypart_gt, unique_bodypart_poses)
-        unique_bpt_metrics = distance_metrics.compute_rmse(unique_bpt, True, pcutoff)
-        results["rmse_unique_bpts"] = unique_bpt_metrics[0]
-        results["rmse_unique_bpts_pcutoff"] = unique_bpt_metrics[1]
 
     return results
 

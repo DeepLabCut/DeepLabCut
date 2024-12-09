@@ -116,7 +116,7 @@ def evaluate(
             boxes for pose estimation. If no detector is given, ground truth bounding
             boxes are used
         comparison_bodyparts: A subset of the bodyparts for which to compute the
-            evaluation metrics.
+            evaluation metrics. Passing "all" or None evaluates on all bodyparts.
         per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
             save the results to a {model_name}-keypoint-results.csv in the
             evaluation-results-pytorch folder.
@@ -127,6 +127,9 @@ def evaluate(
         A dict mapping the paths of images for which predictions were computed to the
             different predictions made by each model head
     """
+    if comparison_bodyparts == "all":
+        comparison_bodyparts = None
+
     parameters = loader.get_dataset_parameters()
     predictions = predict(
         pose_task=pose_task,
@@ -157,6 +160,13 @@ def evaluate(
         gt_keypoints = _get_keypoint_subset(
             gt_keypoints, parameters.bodyparts, comparison_bodyparts
         )
+        if poses is None or gt_keypoints is None:
+            raise ValueError(
+                "comparison_bodyparts must include at least one bodypart defined in "
+                f"the project. Found {comparison_bodyparts} but project bodyparts are "
+                f"{parameters.bodyparts}"
+            )
+
         unique_poses = _get_keypoint_subset(
             unique_poses, parameters.unique_bpts, comparison_bodyparts
         )
@@ -171,7 +181,7 @@ def evaluate(
         pcutoff=pcutoff,
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,
-        per_keypoint_evaluation=per_keypoint_evaluation,
+        per_keypoint_rmse=per_keypoint_evaluation,
     )
 
     if loader.model_cfg["metadata"]["with_identity"]:
@@ -455,6 +465,7 @@ def evaluate_snapshot(
     )
 
     predictions = {}
+    rmse_per_bodypart = {}
     scores = {
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
@@ -472,7 +483,16 @@ def evaluate_snapshot(
             mode=split,
             pcutoff=pcutoff,
             detector_runner=detector_runner,
+            comparison_bodyparts=comparison_bodyparts,
+            per_keypoint_evaluation=per_keypoint_evaluation,
         )
+        if per_keypoint_evaluation:
+            rmse_per_bodypart[split] = _extract_rmse_per_keypoint(
+                results,
+                parameters.bodyparts,
+                parameters.unique_bpts,
+            )
+
         df_split_predictions = build_predictions_dataframe(
             scorer=scorer,
             predictions=predictions_for_split,
@@ -502,6 +522,12 @@ def evaluate_snapshot(
     scores_filepath = output_filename.with_suffix(".csv")
     scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
     save_evaluation_results(df_scores, scores_filepath, show_errors, pcutoff)
+
+    if per_keypoint_evaluation:
+        rmse_per_bpt_path = output_filename.with_name(
+            output_filename.stem + "-keypoint-results.csv"
+        )
+        save_rmse_per_bodypart(rmse_per_bodypart, rmse_per_bpt_path, show_errors)
 
     if plotting:
         folder_name = f"LabeledImages_{scorer}"
@@ -741,6 +767,40 @@ def save_evaluation_results(
     df_scores.to_csv(combined_scores_path)
 
 
+def save_rmse_per_bodypart(
+    rmse_per_bodypart: dict[str, dict[str, float]],
+    output_path: Path,
+    print_results: bool,
+) -> None:
+    """
+    Saves the evaluation results per bodypart to a CSV file.
+
+    Args:
+        rmse_per_bodypart: The scores dataframe for a snapshot
+        output_path: The path of the file where
+        print_results: Whether to print results to the console
+    """
+    index, data = [], []
+    if print_results:
+        print(f"Per-bodypart evaluation results ({output_path.stem}):")
+
+    for split, rmse_results in rmse_per_bodypart.items():
+        key = split.capitalize() + " error (px)"
+        index.append(key)
+        data.append(rmse_results)
+
+        if print_results:
+            print(f"  {key}")
+            bpt_key_length = max([len(k) for k in rmse_results.keys()]) + 4
+            for k, v in rmse_results.items():
+                key = (k + ":").ljust(bpt_key_length)
+                print(f"    {key}{v:3>.2f}px")
+
+    # Save scores file
+    df_rmse_per_bodypart = pd.DataFrame(data, index=index)
+    df_rmse_per_bodypart.to_csv(output_path)
+
+
 def _get_keypoint_subset(
     data: dict[str, np.ndarray] | None,
     bodyparts: list[str],
@@ -768,6 +828,30 @@ def _get_keypoint_subset(
         return None
 
     return {image: kpts[:, bpt_indices] for image, kpts in data.items()}
+
+
+def _extract_rmse_per_keypoint(
+    results: dict[str, float],
+    bodyparts: list[str],
+    unique_bodyparts: list[str],
+) -> dict[str, float]:
+    """
+
+    Args:
+        results:
+        bodyparts:
+        unique_bodyparts:
+
+    Returns:
+
+    """
+    rmse_per_keypoint = {}
+    for bpt_idx, bpt in enumerate(bodyparts):
+        rmse_per_keypoint[bpt] = results.pop(f"rmse_keypoint_{bpt_idx}")
+    for bpt_idx, bpt in enumerate(unique_bodyparts):
+        rmse_per_keypoint[bpt] = results.pop(f"rmse_unique_keypoint_{bpt_idx}")
+
+    return rmse_per_keypoint
 
 
 if __name__ == "__main__":
