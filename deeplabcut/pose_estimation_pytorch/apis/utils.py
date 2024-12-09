@@ -591,11 +591,19 @@ def get_pose_inference_runner(
             with_identity=with_identity,
         )
     else:
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            cropped_image_size=(256, 256),
-        )
+        if pose_task == Task.CTD:
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                cropped_image_size=(256, 256),
+            )
+        else:
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                cropped_image_size=(256, 256),
+            )
+
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
