@@ -1,0 +1,28 @@
+treadmill_ole,swimming_ole,openfield_ole,MackenzieMausHaus, ChanLab,Daniel3Mouse,dlc-openfield,EPM ,FST,LBD,OFT,Mostafizur,3CSI,BM,TwoWhiteMice,MasterName
+head,head,head,nose,Nose,snout,snout,nose,nose,nose,nose,snout,nose,nose,Nose,nose
+,,,leftearbase,Ear_left,leftear,leftear,earl,earl,earl,earl,leftear,earl,earl,Left_ear,left_ear
+,,,rightearbase,Ear_right,rightear,rightear,earr,earr,earr,earr,rightear,earr,earr,Right_ear,right_ear
+,,,lefteartip,,,,,,,,,,,,left_ear_tip
+,,,righteartip,,,,,,,,,,,,right_ear_tip
+,,,lefteye,,,,,,,,,,,,left_eye
+,,,righteye,,,,,,,,,,,,right_eye
+spine 1,spine 1,,spine1,,shoulder,,neck,neck,neck,neck,shoulder,neck,neck,,neck
+,,,spine2,,spine1,,,,,,spine1,,,,mid_back
+spine 2,spine 2,middle,spine3,Center,spine2,,bodycentre,bodycentre,bodycentre,bodycentre,spine2,bodycenter,bodycenter,Centroid,mouse_center
+,,,spine4,,spine3,,,,,,spine3,,,,mid_backend
+spine 3,spine 3,,spine5,,spine4,,,,,,spine4,,,,mid_backend2
+spine 4,spine 4,,spine6,,,,,,,,,,,,mid_backend3
+base ,base ,tailbase,tailbase,Tail_base,tailbase,tailbase,tailbase,tailbase,tailbase,tailbase,tailbase,tailbase,tailbase,Tail_base,tail_base
+,,,tail1,,tail1,,,,,,tail1,,,,tail1
+tail 25,tail 25,,tail2,,tail2,,,,,,tail2,,,,tail2
+,,,tail3,,,,tailcentre,tailcentre,tailcentre,tailcentre,,tailcenter,tailcenter,,tail3
+tail 50 ,tail 50,,tail4,, ,,,,,,,,,,tail4
+tail 75,tail 75,,tail5,, ,,,,,,,,,,tail5
+,,,leftshoulder,, ,,,,,,,,,,left_shoulder
+,,,leftside,, ,,bcl,bcl,bcl,bcl,,bcl,bcl,Left_lateral,left_midside
+,,,lefthip,Lateral_left,,,hipl,hipl,hipl,hipl,,hipl,hipl,,left_hip
+,,,rightshoulder,,,,,,,,,,,,right_shoulder
+,,,rightside,,,,bcr,bcr,bcr,bcr,,bcr,bcr,Right_lateral,right_midside
+,,,righthip,Lateral_right,,,hipr,hipr,hipr,hipr,,hipr,hipr,,right_hip
+tail 100,tail 100,tailtip,,Tail_end,tailend,,tailtip,tailtip,tailtip,tailtip,tailend,tailtip,tailtip,Tail_end,tail_end
+,,,,,,,headcentre,headcentre,headcentre,headcentre,,headcenter,headcenter,,head_midpoint
