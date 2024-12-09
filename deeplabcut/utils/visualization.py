@@ -142,7 +142,7 @@ def make_multianimal_labeled_image(
         pcutoff: cut-off confidence value
         labels: labels to use for ground truth, reliable predictions, and not reliable predictions (confidence below cut-off value)
         ax: matplotlib plot's axes object
-        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confice levels,
+        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confidence levels,
         bounding_boxes_color: If bounding_boxes is not None, this is the color that will be used for plotting them
         bboxes_cutoff: bounding boxes confidence cutoff threshold.
 
