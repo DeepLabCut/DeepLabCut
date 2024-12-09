@@ -12,6 +12,7 @@ import json
 import os
 import pickle
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -660,9 +661,10 @@ def _generic2coco(
     train_annotations,
     test_annotations,
     meta,
-    deepcopy=False,
-    full_image_path=True,
-    append_image_id=True,
+    deepcopy: bool = False,
+    full_image_path: bool = True,
+    append_image_id: bool = True,
+    no_image_copy: bool = False,
 ):
     """
     Take generic data and create coco structure
@@ -672,6 +674,17 @@ def _generic2coco(
     annotations
     - train.json
     - test.json
+
+    Args:
+        deepcopy: Only when no_image_copy=False. If False, images are not copied from
+            their original location and symlinks are created instead.
+        full_image_path: Only when no_image_copy=False. If True, the ``file_name`` for
+            the images in the annotation files contain the resolved path to the images.
+            Otherwise, a relative path is used.
+        append_image_id: Only when no_image_copy=False. Appends the image IDs in the
+            dataset to the image names.
+        no_image_copy: Instead of copying images to the COCO dataset, the full paths to
+            the images in the original dataset are used in the annotations.
     """
 
     os.makedirs(os.path.join(proj_root, "images"), exist_ok=True)
@@ -693,54 +706,46 @@ def _generic2coco(
     broken_links = []
     # copying images via symbolic link
     for image in train_images + test_images:
-        src = image["file_name"]
+        # important to resolve the filepath! Otherwise, errors can occur when running
+        # this code from Jupyter Notebooks
+        src = Path(image["file_name"]).resolve()
         image_id = image["id"]
 
-        if not os.path.exists(src):
+        if not src.exists():
             print("problem comes from", image["source_dataset"])
             print(src)
             broken_links.append(image_id)
             continue
-        else:
-            pass
-            # print ('success comes from', image['source_dataset'])
-            # print (src)
 
-        # in dlc, some images have same name but under different folder
-        # we used to use a parent folder to distinguish them, but it's only applicable to DLC
-        # so here it's easier to just append a id into the filename
+        file_name = str(src)
+        dest = src
+        if not no_image_copy:
+            # in dlc, some images have same name but under different folder
+            # we used to use a parent folder to distinguish them, but it's only
+            # applicable to DLC so here it's easier to append an id into the filename
 
-        image_name = src.split(os.sep)[-1]
+            # not to repeatedly add image id in memory replay training
+            dest_image_name = src.name
+            if append_image_id:
+                dest_image_name = f"{src.stem}_{image_id}{src.suffix}"
 
-        if image_name.count(".") > 1:
-            sep = image_name.rfind(".")
-            pre, suffix = image_name[:sep], image_name[sep + 1 :]
-        else:
-            # this does not work for image file that looks like image9.5.jpg..
-            pre, suffix = image_name.split(".")
+            dest = Path(proj_root) / "images" / dest_image_name
+            dest = dest.resolve()
 
-        # not to repeatedly add image id in memory replay training
-        if append_image_id:
-            dest_image_name = f"{pre}_{image_id}.{suffix}"
-        else:
-            dest_image_name = image_name
-        dest = os.path.join(proj_root, "images", dest_image_name)
+            file_name = str(Path(*dest.parts[-2:]))
+            if full_image_path:
+                file_name = str(dest)
 
-        # now, we will also need to update the path in the config files
+            if deepcopy:
+                shutil.copy(src, dest)
+            else:
+                try:
+                    os.symlink(src, dest)
+                except Exception as err:
+                    print(f"Could not create a symlink from {src} to {dest}: {err}")
+                    pass
 
-        if full_image_path:
-            image["file_name"] = dest
-        else:
-            image["file_name"] = os.path.join("images", dest_image_name)
-
-        if deepcopy:
-            shutil.copy(src, dest)
-        else:
-            try:
-                os.symlink(src, dest)
-            except:
-                pass
-
+        image["file_name"] = file_name
         lookuptable[dest] = src
 
     train_annotations = [

@@ -148,7 +148,6 @@ def convert_detections2tracklets(
                 np.vstack([scorers, bodypart_labels, xyl_value]),
                 names=["scorer", "bodyparts", "coords"],
             )
-            image_names = [fn for fn in data if fn != "metadata"]
 
             if track_method == "box":
                 mot_tracker = trackingutils.SORTBox(
@@ -184,31 +183,32 @@ def convert_detections2tracklets(
                     "analyzing the video!"
                 )
 
+            num_frames = data["metadata"]["nframes"]
             ass = auxiliaryfunctions.read_pickle(ass_filename)
 
             # Initialize storage of the 'single' individual track
             if cfg["uniquebodyparts"]:
                 tracklets["single"] = {}
                 _single = {}
-                for index, image_name in enumerate(image_names):
+                for index in range(num_frames):
                     single_detection = ass["single"].get(index)
                     if single_detection is None:
                         continue
-                    imindex = int(re.findall(r"\d+", image_name)[0])
-                    _single[imindex] = single_detection
+                    _single[index] = np.asarray(single_detection)
                 tracklets["single"].update(_single)
 
             if inference_cfg["topktoretain"] == 1:
                 tracklets[0] = {}
-                for index, image_name in tqdm(enumerate(image_names)):
+                for index in tqdm(range(num_frames)):
                     assemblies = ass.get(index)
                     if assemblies is None:
                         continue
-                    tracklets[0][image_name] = assemblies[0].data
+
+                    tracklets[0][index] = np.asarray(assemblies[0].data)
             else:
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
-                for index, image_name in tqdm(enumerate(image_names)):
+                for index in tqdm(range(num_frames)):
                     assemblies = ass.get(index)
                     if assemblies is None or len(assemblies) == 0:
                         continue
@@ -232,9 +232,7 @@ def convert_detections2tracklets(
                             xy = animals[:, keep_inds, :2]
                         trackers = mot_tracker.track(xy)
 
-                    trackingutils.fill_tracklets(
-                        tracklets, trackers, animals, image_name
-                    )
+                    trackingutils.fill_tracklets(tracklets, trackers, animals, index)
 
             tracklets["header"] = df_index
             with open(track_filename, "wb") as f:

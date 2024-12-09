@@ -1,0 +1,6 @@
+model:
+  type: SSDLite
+  freeze_bn_stats: true
+  freeze_bn_weights: false
+train_settings:
+  batch_size: 16

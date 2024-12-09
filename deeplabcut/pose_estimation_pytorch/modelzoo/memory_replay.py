@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import glob
 import json
 import os
 from collections import defaultdict
@@ -19,139 +18,176 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance
-from scipy.spatial.distance import cdist
 
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.modelzoo.generalized_data_converter.datasets import (
     COCOPoseDataset,
     MaDLCPoseDataset,
-    MultiSourceDataset,
     SingleDLCPoseDataset,
 )
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
-    update_config,
+from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.pose_estimation_pytorch.modelzoo import (
+    get_super_animal_project_config_path,
 )
-from deeplabcut.utils.pseudo_label import calculate_iou, optimal_match, xywh2xyxy
+from deeplabcut.utils.pseudo_label import calculate_iou
+
+
+def get_pose_predictions(
+    loader: DLCLoader,
+    images: list[str],
+    bboxes: dict[str, list],
+    superanimal_name: str,
+    model_snapshot_path: str | Path,
+    detector_snapshot_path: str | Path,
+    max_individuals: int,
+    device: str | None = None,
+) -> dict[str, dict]:
+    """Gets predictions made by a SuperAnimal model on a DeepLabCut project
+
+    Args:
+        loader: The path to the root of the project.
+        images: The images on which to run inference with the SuperAnimal model.
+        bboxes: The ground truth bounding boxes for each image in the project.
+        superanimal_name: The name of the SuperAnimal dataset being used.
+        model_snapshot_path: The path to the SuperAnimal pose snapshot.
+        detector_snapshot_path: The path to the SuperAnimal detector snapshot.
+        max_individuals: The maximum number of individuals to detect per image.
+        device: The CUDA device to use.
+
+    Returns:
+        The predictions made by the SuperAnimal model on each image in the images list.
+    """
+    model_name = detector_snapshot_path.stem + "-" + model_snapshot_path.stem
+    predictions_folder = (
+        loader.project_path / "memory_replay" / superanimal_name / model_name
+    )
+    predictions_folder.mkdir(exist_ok=True, parents=True)
+    predictions_file = predictions_folder / "pseudo-labels.json"
+
+    # COCO-format annotations file containing predictions made by the SuperAnimal model
+    sa_predictions = {}
+    if predictions_file.exists():
+        with open(predictions_file, "r") as f:
+            raw_sa_predictions = json.load(f)
+
+        # parse predictions to convert lists to numpy arrays
+        for image, predictions in raw_sa_predictions.items():
+            sa_predictions[image] = {
+                "bodyparts": np.array(predictions["bodyparts"]),
+                "bboxes": np.array(predictions["bboxes"]),
+                # "bbox_scores": np.array(predictions["bbox_scores"]),
+            }
+
+    # get images that need to be processed
+    processed_images = set(sa_predictions.keys())
+    images_to_process = [image for image in (set(images) - processed_images)]
+
+    # if all images have been processed by the SuperAnimal model, return the predictions
+    if len(images_to_process) == 0:
+        return sa_predictions
+
+    pose_runner, detector_runner = get_inference_runners(
+        loader.model_cfg,
+        snapshot_path=model_snapshot_path,
+        max_individuals=max_individuals,
+        num_bodyparts=len(loader.model_cfg["metadata"]["bodyparts"]),
+        num_unique_bodyparts=len(loader.model_cfg["metadata"]["unique_bodyparts"]),
+        device=device,
+        detector_path=detector_snapshot_path,
+    )
+
+    # FIXME(niels, yeshaokai) - Use the detector to combine GT-keypoint created bounding
+    #  boxes and predicted bounding boxes - keep the larger of the two
+    # bbox_predictions = detector_runner.inference(images=images_to_process)
+    pose_inputs = [
+        (
+            str(loader.project_path / Path(image)),
+            {"bboxes": np.array(bboxes[image])}
+        )
+        for image in images_to_process
+    ]
+    predictions = pose_runner.inference(pose_inputs)
+
+    for image, prediction in zip(images_to_process, predictions):
+        sa_predictions[image] = prediction
+
+    # save the updated SuperAnimal predictions
+    json_sa_predictions = {
+        image: {
+            "bodyparts": predictions["bodyparts"].tolist(),
+            "bboxes": predictions["bboxes"].tolist(),
+            # "bbox_scores": predictions["bbox_scores"].tolist(),
+        }
+        for image, predictions in sa_predictions.items()
+    }
+    with open(predictions_file, "w") as f:
+        json.dump(json_sa_predictions, f, indent=2)
+
+    return sa_predictions
 
 
 # this is reading from a coco project
 def prepare_memory_replay_dataset(
-    source_dataset_folder,
-    superanimal_name,
-    model_name,
-    max_individuals=1,
-    train_file="train.json",
-    test_file="test.json",
-    pose_threshold=0.0,
-    device=None,
-    pose_model_path="",
-    detector_path="",
-    customized_pose_checkpoint=None,
+    loader: DLCLoader,
+    source_dataset_folder: str | Path,
+    superanimal_name: str,
+    model_snapshot_path: str,
+    detector_snapshot_path: str,
+    max_individuals: int = 1,
+    train_file: str = "train.json",
+    pose_threshold: float = 0.0,
+    device: str | None = None,
 ):
     """
     Need to first run inference on the source project train file
     """
+    project_root = loader.project_path.resolve()
+    source_dataset_folder = Path(source_dataset_folder).resolve()
 
-    (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_path,
-    ) = get_config_model_paths(superanimal_name, model_name)
+    # Contains the ground truth annotations for the DeepLabCut project
+    # .../dlc-models-pytorch/.../...shuffle0/train/memory_replay/annotations/train.json
+    with open(source_dataset_folder / "annotations" / train_file, "r") as f:
+        project_gt = json.load(f)
 
-    if customized_pose_checkpoint is not None:
-        print(
-            "memory replay fine-tuning pose checkpoint is replaced by",
-            customized_pose_checkpoint,
-        )
+    # parse the GT so that image paths are in the format (no matter the OS):
+    # "labeled-data/{video_name}/{image_name}"
+    for image in project_gt["images"]:
+        image["file_name"] = "/".join(Path(image["file_name"]).parts[-3:])
 
-    config = {**project_config, **model_config}
-    config = update_config(config, max_individuals, device)
-    individuals = [f"animal{i}" for i in range(max_individuals)]
-    config["individuals"] = individuals
-    num_bodyparts = len(config["bodyparts"])
-    train_file_path = os.path.join(source_dataset_folder, "annotations", train_file)
+    image_id_to_name = {}
+    image_id_to_annotations = defaultdict(list)
 
-    pose_runner, detector_runner = get_inference_runners(
-        config,
-        snapshot_path=pose_model_path,
-        max_individuals=max_individuals,
-        num_bodyparts=len(model_config["metadata"]["bodyparts"]),
-        num_unique_bodyparts=0,
-        detector_path=detector_path,
-    )
+    image_name_to_id = {}
+    image_name_to_gt = defaultdict(list)
+    image_name_to_bbox = defaultdict(list)
 
-    with open(train_file_path, "r") as f:
-        train_obj = json.load(f)
+    for image in project_gt["images"]:
+        image_name_to_id[image["file_name"]] = image["id"]
+        image_id_to_name[image["id"]] = image["file_name"]
 
-    images = train_obj["images"]
-    annotations = train_obj["annotations"]
-    categories = train_obj["categories"]
-    imagename2id = {}
-    imageid2name = {}
-    imagename2gt = defaultdict(list)
+    for anno in project_gt["annotations"]:
+        name = image_id_to_name[anno["image_id"]]
+        image_name_to_gt[name].append(anno)
+        image_name_to_bbox[name].append(anno["bbox"])
 
-    for image in images:
-        # this only works with relative path as the testing image can be at a different folder
-        imagename = image["file_name"].split(os.sep)[-1]
-        imagename2id[imagename] = image["id"]
-        imageid2name[image["id"]] = imagename
-
-    imagename2bbox = defaultdict(list)
-    for anno in annotations:
-        imagename = imageid2name[anno["image_id"]]
-        imagename2gt[imagename].append(anno)
-        imagename2bbox[imagename].append(anno["bbox"])
-
-    imageid2annotations = defaultdict(list)
-
-    imageids = list(imagename2id.values())
-    for annotation in annotations:
+    image_ids = list(image_name_to_id.values())
+    for annotation in project_gt["annotations"]:
         image_id = annotation["image_id"]
-        if annotation["image_id"] in imageids:
-            imageid2annotations[image_id].append(annotation)
+        if annotation["image_id"] in image_ids:
+            image_id_to_annotations[image_id].append(annotation)
 
-    # need to support more image types
-    image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tiff"]
-
-    images_in_folder = []
-    for ext in image_extensions:
-        images_in_folder.extend(
-            glob.glob(os.path.join(source_dataset_folder, "images", ext))
-        )
-
-    corresponded_images = []
-    for image in images_in_folder:
-        image_path = image
-        imagename = image.split(os.sep)[-1]
-        if imagename in imagename2id:
-            corresponded_images.append(image_path)
-
-    images = corresponded_images
-
-    bbox_predictions = detector_runner.inference(images=images)
-
-    bbox_gts = [
-        {"bboxes": np.array(imagename2bbox[image.split(os.sep)[-1]])}
-        for image in images
-    ]
-
-    pose_inputs = list(zip(images, bbox_gts))
-
-    # pose inference should return meta data for pseudo labeling
-    predictions = pose_runner.inference(pose_inputs)
-
-    assert len(images) == len(predictions)
-
-    imagename2prediction = {}
-
-    for image_path, prediction in zip(images, predictions):
-        imagename = image_path.split(os.sep)[-1]
-        imagename2prediction[imagename] = prediction
+    image_name_to_prediction = get_pose_predictions(
+        loader=loader,
+        images=[image["file_name"] for image in project_gt["images"]],
+        bboxes=image_name_to_bbox,
+        superanimal_name=superanimal_name,
+        model_snapshot_path=model_snapshot_path,
+        detector_snapshot_path=detector_snapshot_path,
+        max_individuals=max_individuals,
+        device=device,
+    )
 
     def xywh2xyxy(bbox):
         temp_bbox = np.copy(bbox)
@@ -173,10 +209,11 @@ def prepare_memory_replay_dataset(
 
         return col_ind
 
-    for imagename, gts in imagename2gt.items():
+    num_bodyparts = len(project_gt["categories"][0]["keypoints"])
+    for image_name, gts in image_name_to_gt.items():
         bbox_gts = [np.array(gt["bbox"]) for gt in gts]
         bbox_gts = [xywh2xyxy(e) for e in bbox_gts]
-        prediction = imagename2prediction[imagename]
+        prediction = image_name_to_prediction[image_name]
         bbox_preds = [xywh2xyxy(pred) for pred in prediction["bboxes"]]
         optimal_pred_indices = optimal_match(bbox_gts, bbox_preds)
 
@@ -203,10 +240,7 @@ def prepare_memory_replay_dataset(
                 # after the mixing, we don't care about confidence anymore
 
                 for kpt_idx in range(len(matched_gt)):
-                    if (
-                        matched_gt[kpt_idx][2] < pose_threshold
-                        and matched_gt[kpt_idx][2] > 0
-                    ):
+                    if 0 < matched_gt[kpt_idx][2] < pose_threshold:
                         matched_gt[kpt_idx][2] = -1
                     elif matched_gt[kpt_idx][2] > 0:
                         matched_gt[kpt_idx][2] = 2
@@ -218,60 +252,70 @@ def prepare_memory_replay_dataset(
         source_dataset_folder, "annotations", "memory_replay_train.json"
     )
 
+    # parse the GT to put the image paths back into OS-specific format
+    for image in project_gt["images"]:
+        image_rel_path = image["file_name"].split("/")
+        image["file_name"] = str(project_root.resolve() / Path(*image_rel_path))
+
     with open(memory_replay_train_file_path, "w") as f:
-        json.dump(train_obj, f, indent=4)
+        json.dump(project_gt, f, indent=4)
 
 
 def prepare_memory_replay(
-    dlc_proj_root: str | Path,
-    shuffle: int,
+    config: str | Path,
+    loader: DLCLoader,
     superanimal_name: str,
-    model_name: str,
+    model_snapshot_path: str | Path,
+    detector_snapshot_path: str | Path,
     device: str,
-    max_individuals=3,
-    trainingsetindex: int = 0,
-    train_file="train.json",
-    pose_threshold=0.1,
-    customized_pose_checkpoint=None,
-):
-    """TODO: Documentation"""
+    max_individuals: int = 3,
+    train_file: str = "train.json",
+    pose_threshold: float = 0.1,
+) -> None:
+    """Prepares a shuffle to be trained with memory replay.
 
-    # in order to fill the num_bodyparts stuff
+    To be trained using memory replay, predictions must be made on all images in the
+    dataset using the SuperAnimal model. Predictions for bodyparts that aren't labeled
+    in the DeepLabCut project are then used as pseudo-labels during training.
 
-    config_path = Path(dlc_proj_root, "config.yaml")
-    cfg = af.read_config(config_path)
+    This method will create a COCO-format dataset in the same folder as the
+    ``pytorch_config.yaml`` (the model folder).
+
+    Args:
+        config: Path to the DeepLabCut project configuration file.
+        loader: The loader used to load the training/test data on which a model will
+            be fine-tuned with memory replay.
+        superanimal_name: The name of the SuperAnimal model that is being fine-tuned.
+        model_snapshot_path: Path to the SuperAnimal pose snapshot to fine-tune.
+        detector_snapshot_path: Path to the SuperAnimal detector snapshot to fine-tune.
+        device: Device to use to run inference using the SuperAnimal model.
+        max_individuals: Maximum number of animals that can be present in a frame.
+        train_file: Name of the file containing train annotations (e.g. `train.json`).
+        pose_threshold: The minimum score for a prediction to be used as a pseudo-label.
+    """
+    cfg = af.read_config(config)
+    super_animal_cfg = af.read_plainconfig(
+        get_super_animal_project_config_path(super_animal=superanimal_name)
+    )
 
     if "individuals" in cfg:
         temp_dataset = MaDLCPoseDataset(
-            str(dlc_proj_root), "temp_dataset", shuffle=shuffle
+            str(loader.project_path), "temp_dataset", shuffle=loader.shuffle
         )
     else:
         temp_dataset = SingleDLCPoseDataset(
-            str(dlc_proj_root), "temp_dataset", shuffle=shuffle
+            str(loader.project_path), "temp_dataset", shuffle=loader.shuffle
         )
 
-    dlc_proj_root = Path(dlc_proj_root)
-    config_path = dlc_proj_root / "config.yaml"
-
-    cfg = af.read_config(config_path)
-
-    trainIndex = 0
-
-    model_folder = dlc_proj_root / af.get_model_folder(
-        cfg["TrainingFraction"][trainIndex], shuffle, cfg, engine=Engine.PYTORCH
-    )
-
-    memory_replay_folder = model_folder / "memory_replay"
-
+    memory_replay_folder = loader.model_folder / "memory_replay"
     temp_dataset.materialize(
-        memory_replay_folder, framework="coco", append_image_id=False
+        memory_replay_folder,
+        framework="coco",
+        append_image_id=False,
+        no_image_copy=True,  # use the images in the labeled-data folder
     )
 
-    original_model_config = af.read_config(
-        str(model_folder / "train" / "pytorch_config.yaml")
-    )
-
-    weight_init_cfg = original_model_config["train_settings"].get("weight_init")
+    weight_init_cfg = loader.model_cfg["train_settings"].get("weight_init")
     if weight_init_cfg is None:
         raise ValueError(
             "You can only train models with memory replay when you are fine-tuning a "
@@ -291,24 +335,36 @@ def prepare_memory_replay(
 
     dataset = COCOPoseDataset(memory_replay_folder, "memory_replay_dataset")
 
-    conversion_table_path = dlc_proj_root / "memory_replay" / "conversion_table.csv"
+    # here we project the original DLC projects to superanimal space and save them into
+    # a coco project format
+    bodyparts = af.get_bodyparts(cfg)
+    sa_bodyparts = af.get_bodyparts(super_animal_cfg)
+    conversion_table = {}
+    for idx, bpt in enumerate(bodyparts):
+        conversion_table[bpt] = sa_bodyparts[weight_init.conversion_array[idx]]
 
-    # here we project the original DLC projects to superanimal space and save them into a coco project format
-    dataset.project_with_conversion_table(str(conversion_table_path))
-    dataset.materialize(memory_replay_folder, deepcopy=False, framework="coco")
-
-    # then in this function, we do pseudo label to match prediction and gts to create memory-replay dataset that will be named memory_replay_train.json
-    memory_replay_train_file = os.path.join(
-        memory_replay_folder, "annotations", "memory_replay_train.json"
+    dataset.project_with_conversion_table(
+        table_path=None,
+        table_dict=dict(
+            master_keypoints=sa_bodyparts,
+            conversion_table=conversion_table,
+        ),
     )
 
+    dataset.materialize(
+        memory_replay_folder, framework="coco", deepcopy=False, no_image_copy=True,
+    )
+
+    # then in this function, we do pseudo label to match prediction and gts to create
+    # memory-replay dataset that will be named memory_replay_train.json
     prepare_memory_replay_dataset(
+        loader,
         memory_replay_folder,
         superanimal_name,
-        model_name,
+        model_snapshot_path,
+        detector_snapshot_path,
         max_individuals=max_individuals,
         device=device,
         train_file=train_file,
         pose_threshold=pose_threshold,
-        customized_pose_checkpoint=customized_pose_checkpoint,
     )

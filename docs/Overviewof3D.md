@@ -1,7 +1,7 @@
 (3D-overview)=
 # 3D DeepLabCut
 
-In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our new work that was published at [ICRA 2021 on strong baseline 3D models (and a 3D dataset)](https://github.com/African-Robotics-Unit/AcinoSet). In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).
+In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our work that was published at [ICRA 2021 on strong baseline 3D models (and a 3D dataset)](https://github.com/African-Robotics-Unit/AcinoSet). In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 

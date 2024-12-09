@@ -55,6 +55,8 @@ class HeatmapGenerator(BaseGenerator):
         num_heatmaps: int,
         pos_dist_thresh: int,
         heatmap_mode: str | Mode = Mode.KEYPOINT,
+        gradient_masking: bool = False,
+        background_weight: float = 0.1,
         generate_locref: bool = True,
         locref_std: float = 7.2801,
         **kwargs,
@@ -65,6 +67,15 @@ class HeatmapGenerator(BaseGenerator):
             pos_dist_thresh: 3*std of the gaussian. We think of dist_thresh as a radius
                 and std is a 'diameter'.
             mode: the mode to generate heatmaps for
+            gradient_masking: Whether to mask the gradient when a bodypart is undefined
+                (has visibility ``0`` in the dataset). WARNING: Do not set this option
+                for bottom-up models, as a keypoint missing for one animal means the
+                gradients for all animals will be set to 0 for that image.
+                Gradients for inputs that have the visibility flag ``-1`` will always be
+                masked, as this flag indicates that the keypoint is not defined for the
+                image.
+            background_weight: If ``gradient_masking == True`, the weight to apply to
+                the loss for background pixels.
             learned_id_target: whether to generate the heatmap for keypoints
                 or for learned IDs
             generate_locref: whether to generate location refinement maps
@@ -85,6 +96,9 @@ class HeatmapGenerator(BaseGenerator):
         if isinstance(heatmap_mode, str):
             heatmap_mode = HeatmapGenerator.Mode(heatmap_mode)
         self.heatmap_mode = heatmap_mode
+
+        self.gradient_masking = gradient_masking
+        self.background_weight = background_weight
 
         self.generate_locref = generate_locref
         self.locref_scale = 1.0 / locref_std
@@ -116,11 +130,24 @@ class HeatmapGenerator(BaseGenerator):
 
         Examples:
             input:
-                annotations = {"keypoints":torch.randint(1,min(image_size),(batch_size, num_animals, num_joints, 2))}
-                prediction = [torch.rand((batch_size, num_joints, image_size[0], image_size[1]))]
+                annotations = {
+                    "keypoints": torch.randint(
+                        1, min(image_size), (batch_size, num_animals, num_joints, 2)
+                    )
+                }
                 image_size = (256, 256)
+                model_stride = 4
             output:
-                targets = {'heatmaps':scmap, 'locref_map':locref_map, 'locref_masks':locref_masks}
+                targets = {
+                    "heatmap": {
+                        "target": array of shape (batch_size, 64, 64, num_joints),
+                        "weights": array of shape (batch_size, 64, 64, num_joints),
+                    },
+                    "locref": {
+                        "target": array of shape (batch_size, 64, 64, num_joints),
+                        "weights": array of shape (batch_size, 64, 64, num_joints),
+                    }
+                }
         """
         stride_y, stride_x = stride, stride
         batch_size, _, height, width = outputs["heatmap"].shape
@@ -143,10 +170,9 @@ class HeatmapGenerator(BaseGenerator):
 
         map_size = batch_size, height, width
         heatmap = np.zeros((*map_size, self.num_heatmaps), dtype=np.float32)
-
-        # coords shape: (batch_size, n_keypoints, 1, 2)
         weights = np.ones(
-            (batch_size, coords.shape[1], height, width), dtype=np.float32
+            (batch_size, self.num_heatmaps, height, width),
+            dtype=np.float32,
         )
 
         locref_map, locref_mask = None, None
@@ -163,14 +189,12 @@ class HeatmapGenerator(BaseGenerator):
         for b in range(batch_size):
             for heatmap_idx, group_keypoints in enumerate(coords[b]):
                 for keypoint in group_keypoints:
-                    # FIXME: Gradient masking weights should be parameters
-                    if keypoint[-1] == 0:
-                        # full gradient masking
-                        weights[b, heatmap_idx] = 0.0
+                    if self.gradient_masking and keypoint[-1] == 0:
+                        # apply background weight if keypoints are missing
+                        weights[b, heatmap_idx] = self.background_weight
                     elif keypoint[-1] == -1:
-                        # full gradient masking
+                        # always mask weights when the keypoint is undefined
                         weights[b, heatmap_idx] = 0.0
-
                     elif keypoint[-1] > 0:
                         # keypoint visible
                         self.update(
@@ -190,7 +214,6 @@ class HeatmapGenerator(BaseGenerator):
             }
         }
 
-        # we don't handle masking for locref
         if self.generate_locref:
             locref_map = locref_map.transpose((0, 3, 1, 2))
             locref_mask = locref_mask.transpose((0, 3, 1, 2))

@@ -295,7 +295,7 @@ class PoseDataset(Dataset):
 
         # we use ..., :3 to pass the visibility flag along
         return {
-            "keypoints": pad_to_length(keypoints[..., :3], num_animals, -1).astype(
+            "keypoints": pad_to_length(keypoints[..., :3], num_animals, 0).astype(
                 np.single
             ),
             "keypoints_unique": keypoints_unique[..., :3].astype(np.single),

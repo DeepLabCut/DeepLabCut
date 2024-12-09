@@ -1,6 +1,7 @@
 # novel for pytorch DLC:
 albumentations<=1.4.3
 einops
+pycocotools
 timm
 wandb
 
@@ -13,7 +14,7 @@ intel-openmp
 imageio-ffmpeg
 imgaug>=0.4.0
 numba>=0.54.0
-matplotlib>=3.3
+matplotlib>=3.3, <3.8.4
 networkx>=2.6
 numpy>=1.18.5
 pandas>=1.0.1,!=1.5.0

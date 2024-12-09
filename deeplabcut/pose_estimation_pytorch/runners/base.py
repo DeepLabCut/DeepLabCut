@@ -41,31 +41,42 @@ class Runner(ABC, Generic[ModelType]):
             gpus: the list of GPU indices to use for multi-GPU training
             snapshot_path: the path of a snapshot from which to load model weights
         """
+        if gpus is None:
+            gpus = []
+
+        if len(gpus) == 1:
+            if device != "cuda":
+                raise ValueError(
+                    "When specifying a GPU index to train on, the device must be set "
+                    f"to 'cuda'. Found {device}"
+                )
+            device = f"cuda:{gpus[0]}"
+
         self.model = model
         self.device = device
-        self.gpus = gpus
         self.snapshot_path = snapshot_path
+        self._gpus = gpus
+        self._data_parallel = len(gpus) > 1
 
     @staticmethod
     def load_snapshot(
         snapshot_path: str | Path,
         device: str,
         model: ModelType,
-        optimizer: torch.optim.Optimizer | None = None,
-    ) -> int:
-        """
+    ) -> dict:
+        """Loads the state dict for a model from a file
+
+        This method loads a file containing a DeepLabCut PyTorch model snapshot onto
+        a given device, and sets the model weights using the state_dict.
+
         Args:
             snapshot_path: the path containing the model weights to load
             device: the device on which the model should be loaded
             model: the model for which the weights are loaded
-            optimizer: if defined, the optimizer weights to load
 
         Returns:
-            the number of epochs the model was trained for
+            The content of the snapshot file.
         """
         snapshot = torch.load(snapshot_path, map_location=device)
-        model.load_state_dict(snapshot['model'])
-        if optimizer is not None and 'optimizer' in snapshot:
-            optimizer.load_state_dict(snapshot["optimizer"])
-
-        return snapshot.get("metadata", {}).get("epoch", 0)
+        model.load_state_dict(snapshot["model"])
+        return snapshot

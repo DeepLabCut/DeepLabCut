@@ -15,6 +15,8 @@ import sys
 from functools import cached_property
 from pathlib import Path
 from typing import List
+from urllib.error import URLError
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import qdarkstyle
 
 import deeplabcut
@@ -36,17 +38,32 @@ from PySide6.QtWidgets import (
 from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 
-def _check_for_updates():
-    is_latest, latest_version = utils.is_latest_deeplabcut_version()
-    is_latest_plugin, latest_plugin_version = misc.is_latest_version()
-    if is_latest and is_latest_plugin:
-        msg = QtWidgets.QMessageBox(
-            text=f"DeepLabCut is up-to-date",
+def call_with_timeout(func, timeout, *args, **kwargs):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        return future.result(timeout=timeout)
+
+
+def _check_for_updates(silent=True):
+    try:
+        is_latest, latest_version = call_with_timeout(
+            utils.is_latest_deeplabcut_version, 1
         )
-        msg.exec_()
+        is_latest_plugin, latest_plugin_version = call_with_timeout(
+            misc.is_latest_version, 1
+        )
+    except (URLError, TimeoutError):  # Handle internet connectivity issues
+        is_latest = is_latest_plugin = True
+
+    if is_latest and is_latest_plugin:
+        if not silent:
+            msg = QtWidgets.QMessageBox(
+                text=f"DeepLabCut is up-to-date",
+            )
+            msg.exec_()
     else:
         if not is_latest and is_latest_plugin:
             text = f"DeepLabCut {latest_version} available"
@@ -62,9 +79,9 @@ def _check_for_updates():
             text=text,
         )
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton("Update", msg.AcceptRole)
+        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
         msg.setDefaultButton(update_btn)
-        _ = msg.addButton("Skip", msg.RejectRole)
+        _ = msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
         msg.exec_()
         if msg.clickedButton() is update_btn:
             subprocess.check_call([sys.executable, "-m", *command])
@@ -242,6 +259,20 @@ class MainWindow(QMainWindow):
             return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
 
     @property
+    def models_folder(self) -> str:
+        try:
+            return str(
+                compat.return_train_network_path(
+                    self.config,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                )[2]
+            )
+        except FileNotFoundError:
+            return self.project_folder()
+
+    @property
     def inference_cfg_path(self) -> str:
         return os.path.join(
             self.cfg["project_path"],
@@ -355,6 +386,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
+        QTimer.singleShot(1000, lambda: _check_for_updates(silent=True))
+
     def default_set(self):
         self.name_default = ""
         self.proj_default = ""
@@ -402,7 +435,7 @@ class MainWindow(QMainWindow):
         self.aboutAction.triggered.connect(self._learn_dlc)
 
         self.check_updates = QAction("&Check for Updates...", self)
-        self.check_updates.triggered.connect(_check_for_updates)
+        self.check_updates.triggered.connect(lambda: _check_for_updates(silent=False))
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -640,7 +673,9 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
-            self.tab_widget.removeTab(self.tab_widget.indexOf(self.unsupervised_id_tracking))
+            self.tab_widget.removeTab(
+                self.tab_widget.indexOf(self.unsupervised_id_tracking)
+            )
             self.tab_widget.removeTab(self.tab_widget.indexOf(self.refine_tracklets))
 
         self.setCentralWidget(self.tab_widget)

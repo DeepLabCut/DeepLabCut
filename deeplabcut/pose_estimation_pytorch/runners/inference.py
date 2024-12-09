@@ -18,6 +18,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -35,6 +36,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     def __init__(
         self,
         model: ModelType,
+        batch_size: int = 1,
         device: str = "cpu",
         snapshot_path: str | Path | None = None,
         preprocessor: Preprocessor | None = None,
@@ -49,14 +51,27 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             postprocessor: the postprocessor to use on images after inference
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
+        if not isinstance(batch_size, int) or batch_size <= 0:
+            raise ValueError(f"batch_size must be a positive integer; is {batch_size}")
+
+        self.batch_size = batch_size
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(self.snapshot_path, self.device, self.model)
 
+        self._batch: torch.Tensor | None = None
+        self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
+
+        self._contexts: list[dict] = []
+        self._image_batch_sizes: list[int] = []
+        self._predictions: list = []
+
     @abstractmethod
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -69,8 +84,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     @torch.no_grad()
     def inference(
         self,
-        images: Iterable[str | np.ndarray]
-        | Iterable[tuple[str | np.ndarray, dict[str, Any]]],
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
 
@@ -79,13 +97,18 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         Args:
             images: the images to run inference on, optionally with context
+            shelf_writer: by default, data are saved in a list and returned at the end
+                of inference. Passing a shelf manager writes data to disk on-the-fly
+                using a "shelf" (a pickle-based, persistent, database-like object by
+                default, resulting in constant memory footprint). The returned list is
+                then empty.
 
         Returns:
             a dict containing head predictions for each image
             [
                 {
                     "bodypart": {"poses": np.array},
-                    "unique_bodypart": "poses": np.array},
+                    "unique_bodypart": {"poses": np.array},
                 }
             ]
         """
@@ -94,24 +117,123 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         results = []
         for data in images:
-            if isinstance(data, (str, np.ndarray)):
-                input_image, context = data, {}
+            self._prepare_inputs(data)
+            self._process_full_batches()
+            results += self._extract_results(shelf_writer)
+
+        # Process the last batch even if not full
+        if self._inputs_waiting_for_processing():
+            self._process_batch()
+            results += self._extract_results(shelf_writer)
+
+        return results
+
+    def _prepare_inputs(
+        self,
+        data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
+    ) -> None:
+        """
+        Prepares inputs for an image and adds them to the data ready to be processed
+        """
+        if isinstance(data, (str, Path, np.ndarray)):
+            inputs, context = data, {}
+        else:
+            inputs, context = data
+
+        if self.preprocessor is not None:
+            inputs, context = self.preprocessor(inputs, context)
+        else:
+            inputs = torch.as_tensor(inputs)
+
+        # add new model_kwargs from the inputs
+        model_kwargs = context.pop("model_kwargs", {})
+        for k, v in model_kwargs.items():
+            curr_v = self._model_kwargs.get(k)
+            if curr_v is None:
+                curr_v = v
+            elif isinstance(curr_v, np.ndarray):
+                curr_v = np.concatenate([curr_v, v], dim=0)
+            elif isinstance(curr_v, torch.Tensor):
+                curr_v = torch.cat([curr_v, v], dim=0)
             else:
-                input_image, context = data
+                raise ValueError(
+                    f"model_kwargs {k} must be a numpy array or torch tensor - "
+                    f"found '{type(v)}'."
+                )
+            self._model_kwargs[k] = curr_v
 
-            if self.preprocessor is not None:
-                # TODO: input batch should also be able to be a dict[str, torch.Tensor]
-                input_image, context = self.preprocessor(input_image, context)
+        self._contexts.append(context)
+        self._image_batch_sizes.append(len(inputs))
 
-            image_predictions = self.predict(input_image, **context.get("model_kwargs", {}))
+        # skip when there are no inputs for an image
+        if len(inputs) == 0:
+            return
+
+        if self._batch is None:
+            self._batch = inputs
+        else:
+            self._batch = torch.cat([self._batch, inputs], dim=0)
+
+    def _process_full_batches(self) -> None:
+        """Processes prepared inputs in batches of the desired batch size."""
+        while self._batch is not None and len(self._batch) >= self.batch_size:
+            self._process_batch()
+
+    def _extract_results(self, shelf_writer: shelving.ShelfWriter) -> list:
+        """Obtains results that were obtained from processing a batch."""
+        results = []
+        while (
+            len(self._image_batch_sizes) > 0
+            and len(self._predictions) >= self._image_batch_sizes[0]
+        ):
+            num_predictions = self._image_batch_sizes[0]
+            image_predictions = self._predictions[:num_predictions]
+            context = self._contexts[0]
             if self.postprocessor is not None:
                 # TODO: Should we return context?
                 # TODO: typing update - the post-processor can remove a dict level
                 image_predictions, _ = self.postprocessor(image_predictions, context)
 
-            results.append(image_predictions)
+            if shelf_writer is not None:
+                shelf_writer.add_prediction(
+                    bodyparts=image_predictions["bodyparts"],
+                    unique_bodyparts=image_predictions.get("unique_bodyparts"),
+                    identity_scores=image_predictions.get("identity_scores"),
+                )
+            else:
+                results.append(image_predictions)
+
+            self._contexts = self._contexts[1:]
+            self._image_batch_sizes = self._image_batch_sizes[1:]
+            self._predictions = self._predictions[num_predictions:]
 
         return results
+
+    def _process_batch(self) -> None:
+        """
+        Processes a batch. There must be inputs waiting to be processed before this is
+        called, otherwise this method will raise an error.
+        """
+        batch = self._batch[: self.batch_size]
+        model_kwargs = {
+            mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
+        }
+
+        self._predictions += self.predict(batch, **model_kwargs)
+
+        # remove processed inputs from batch
+        if len(self._batch) <= self.batch_size:
+            self._batch = None
+            self._model_kwargs = {}
+        else:
+            self._batch = self._batch[self.batch_size :]
+            self._model_kwargs = {
+                mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()
+            }
+
+    def _inputs_waiting_for_processing(self) -> bool:
+        """Returns: Whether there are inputs which have not yet been processed"""
+        return self._batch is not None and len(self._batch) > 0
 
 
 class PoseInferenceRunner(InferenceRunner[PoseModel]):
@@ -120,7 +242,9 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
     def __init__(self, model: PoseModel, **kwargs):
         super().__init__(model, **kwargs)
 
-    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -131,35 +255,23 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             [
                 {
                     "bodypart": {"poses": np.ndarray},
-                    "unique_bodypart": "poses": np.ndarray},
+                    "unique_bodypart": {"poses": np.ndarray},
+                }
             ]
         """
-        # TODO: iterates over batch one element at a time
-        batch_size = 1
-        batch_predictions = []
-
-        for i in range(0, len(inputs), batch_size):
-            batch_inputs = inputs[i : i + batch_size]
-            batch_inputs = batch_inputs.to(self.device)
-
-            if kwargs:
-                # Get the i-th element of "cond kpts"
-                kwargs_ = {}
-                kwargs_["cond_kpts"] = kwargs["cond_kpts"][i : i + batch_size]
-                batch_outputs = self.model(batch_inputs, **kwargs_)
-            else:
-                batch_outputs = self.model(batch_inputs, **kwargs)
-
-            raw_predictions = self.model.get_predictions(batch_outputs)
-            for b in range(batch_size):
-                image_predictions = {}
-                for head, head_outputs in raw_predictions.items():
-                    image_predictions[head] = {}
-                    for pred_name, pred in head_outputs.items():
-                        image_predictions[head][pred_name] = pred[b].cpu().numpy()
-                batch_predictions.append(image_predictions)
-
-        return batch_predictions
+        outputs = self.model(inputs.to(self.device), **kwargs)
+        raw_predictions = self.model.get_predictions(outputs)
+        predictions = [
+            {
+                head: {
+                    pred_name: pred[b].cpu().numpy()
+                    for pred_name, pred in head_outputs.items()
+                }
+                for head, head_outputs in raw_predictions.items()
+            }
+            for b in range(len(inputs))
+        ]
+        return predictions
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
@@ -173,7 +285,9 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         """
         super().__init__(model, **kwargs)
 
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -187,31 +301,17 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                     "unique_bodypart": "poses": np.ndarray},
             ]
         """
-        # TODO: iterates over batch one element at a time
-        batch_size = 1
-        batch_predictions = []
-        for i in range(0, len(inputs), batch_size):
-            batch_inputs = inputs[i : i + batch_size]
-            batch_inputs = batch_inputs.to(self.device)
-            _, raw_predictions = self.model(batch_inputs)
-            for b, item in enumerate(raw_predictions):
-                # take the top-k bounding boxes as individuals
-                batch_predictions.append(
-                    {
-                        "detection": {
-                            "bboxes": item["boxes"]
-                            .cpu()
-                            .numpy()
-                            .reshape(-1, 4),
-                            "scores": item["scores"]
-                            .cpu()
-                            .numpy()
-                            .reshape(-1),
-                        }
-                    }
-                )
-
-        return batch_predictions
+        _, raw_predictions = self.model(inputs.to(self.device))
+        predictions = [
+            {
+                "detection": {
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "scores": item["scores"].cpu().numpy().reshape(-1),
+                }
+            }
+            for item in raw_predictions
+        ]
+        return predictions
 
 
 def build_inference_runner(
@@ -219,6 +319,7 @@ def build_inference_runner(
     model: nn.Module,
     device: str,
     snapshot_path: str | Path,
+    batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
 ) -> InferenceRunner:
@@ -230,6 +331,7 @@ def build_inference_runner(
         model: the model to run
         device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
         snapshot_path: the snapshot from which to load the weights
+        batch_size: the batch size to use to run inference
         preprocessor: the preprocessor to use on images before inference
         postprocessor: the postprocessor to use on images after inference
 
@@ -240,6 +342,7 @@ def build_inference_runner(
         model=model,
         device=device,
         snapshot_path=snapshot_path,
+        batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
     )

@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import inspect
-import os
 import subprocess
 import warnings
 from pathlib import Path
@@ -22,63 +21,128 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metad
 from deeplabcut.utils import auxiliaryfunctions
 
 
-def get_config_model_paths(
-    project_name: str,
-    pose_model_type: str,
-    detector_type: str = "fasterrcnn",
-    weight_folder: str = None,
-):
-    """Get the paths to the model and project configs
+def get_model_configs_folder_path() -> Path:
+    """Returns: the folder containing the SuperAnimal model configuration files"""
+    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "model_configs"
+
+
+def get_project_configs_folder_path() -> Path:
+    """Returns: the folder containing the SuperAnimal project configuration files"""
+    return (
+        Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "project_configs"
+    )
+
+
+def get_snapshot_folder_path() -> Path:
+    """Returns: the path to the folder containing the SuperAnimal model snapshots"""
+    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
+
+
+def get_super_animal_model_config_path(model_name: str) -> Path:
+    """Gets the path to the configuration file for a SuperAnimal model.
 
     Args:
-        project_name: the name of the project
-        pose_model_type: the name of the pose model
-        detector_type: the type of the detector
-        weight_folder: the folder containing the weights
+        model_name: The name of the model for which to get the path.
 
     Returns:
-        the paths to the models and project configs
+        The path to the config file for a SuperAnimal model.
     """
-    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-    modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
+    return get_model_configs_folder_path() / f"{model_name}.yaml"
 
-    model_cfg_path = os.path.join(
-        modelzoo_path, "model_configs", f"{pose_model_type}.yaml"
-    )
-    model_config = auxiliaryfunctions.read_plainconfig(model_cfg_path)
-    project_config = auxiliaryfunctions.read_config(
-        os.path.join(modelzoo_path, "project_configs", f"{project_name}.yaml")
-    )
 
+def get_super_animal_project_config_path(super_animal: str) -> Path:
+    """Gets the path to a SuperAnimal project configuration file.
+
+    Args:
+        super_animal: The name of the SuperAnimal for which to get the config path.
+
+    Returns:
+        The path to the config file for a SuperAnimal project.
+    """
+    return get_project_configs_folder_path() / f"{super_animal}.yaml"
+
+
+def get_super_animal_snapshot_path(
+    dataset: str,
+    model_name: str,
+    download: bool = True,
+) -> Path:
+    """Gets the path to the snapshot containing SuperAnimal model weights.
+
+    Args:
+        dataset: The name of the SuperAnimal dataset.
+        model_name: The name of the model.
+        download: Whether to download the weights if they aren't already there.
+
+    Returns:
+        The path to the weights for a SuperAnimal model.
+    """
+    model_path = get_snapshot_folder_path() / f"{dataset}_{model_name}.pt"
+    if download and not model_path.exists():
+        download_super_animal_snapshot(dataset, model_name)
+
+    return model_path
+
+
+def load_super_animal_config(
+    super_animal: str,
+    model_name: str,
+    detector_name: str | None = None,
+    max_individuals: int = 30,
+    device: str | None = None,
+) -> dict:
+    """Loads the model configuration file for a model, detector and SuperAnimal
+
+    Args:
+        super_animal: The name of the SuperAnimal for which to create the model config.
+        model_name: The name of the model for which to create the model config.
+        detector_name: The name of the detector for which to create the model config.
+        max_individuals: The maximum number of detections to make in an image
+        device: The device to use to train/run inference on the model
+
+    Returns:
+        The model configuration for a SuperAnimal-pretrained model.
+    """
+    project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
+    project_config = config_utils.read_config_as_dict(project_cfg_path)
+
+    model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
+    model_config = config_utils.read_config_as_dict(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
-    if weight_folder is None:
-        weight_folder = os.path.join(modelzoo_path, "checkpoints")
+    model_config = update_config(model_config, max_individuals, device)
 
-    # FIXME - DO NOT DOWNLOAD HERE
-    pose_model_name = f"{project_name}_{pose_model_type}.pth"
-    pose_model_path = os.path.join(weight_folder, pose_model_name)
-    detector_name = f"{project_name}_{detector_type}.pt"
-    detector_model_path = os.path.join(weight_folder, detector_name)
-    if not (Path(pose_model_path).exists() and Path(detector_model_path).exists()):
-        download_huggingface_model(
-            f"{project_name}_{pose_model_type}",
-            target_dir=str(weight_folder),
-            rename_mapping={
-                "pose_model.pth": pose_model_name,
-                "detector.pt": detector_name,
-            },
-        )
+    if detector_name is None:
+        model_config["method"] = "BU"
+    else:
+        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
+        detector_cfg = config_utils.read_config_as_dict(detector_cfg_path)
+        model_config["method"] = "TD"
+        model_config["detector"] = detector_cfg
+    return model_config
 
-    # FIXME: Needed due to changes in code - remove when new snapshots are uploaded
-    pose_model_path = _parse_model_snapshot(Path(pose_model_path), device="cpu")
-    detector_model_path = _parse_model_snapshot(Path(detector_model_path), device="cpu")
 
-    return (
-        model_config,
-        project_config,
-        pose_model_path,
-        detector_model_path,
-    )
+def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
+    """Downloads a SuperAnimal snapshot
+
+    Args:
+        dataset: The name of the SuperAnimal dataset for which to download a snapshot.
+        model_name: The name of the model for which to download a snapshot.
+
+    Returns:
+        The path to the downloaded snapshot.
+
+    Raises:
+        RuntimeError if the model fails to download.
+    """
+    snapshot_dir = get_snapshot_folder_path()
+    model_name = f"{dataset}_{model_name}"
+    model_path = snapshot_dir / f"{model_name}.pt"
+
+    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
+    if not model_path.exists():
+        raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+
+    return snapshot_dir / f"{model_name}.pt"
 
 
 def get_gpu_memory_map():
@@ -112,58 +176,27 @@ def raise_warning_if_called_directly():
         )
 
 
-def update_config(config, max_individuals, device):
+def update_config(config: dict, max_individuals: int, device: str):
+    """Loads the model configuration file for a model, detector and SuperAnimal
+
+    Args:
+        config: The default model configuration file.
+        max_individuals: The maximum number of detections to make in an image
+        device: The device to use to train/run inference on the model
+
+    Returns:
+        The model configuration for a SuperAnimal-pretrained model.
+    """
     config = config_utils.replace_default_values(
         config,
-        num_bodyparts=len(config["bodyparts"]),
+        num_bodyparts=len(config["metadata"]["bodyparts"]),
         num_individuals=max_individuals,
         backbone_output_channels=config["model"]["backbone_output_channels"],
     )
+    config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
+
     config["device"] = device
-    config_utils.pretty_print(config)
+    if "detector" in config:
+        config["detector"]["device"] = device
+
     return config
-
-
-def _parse_model_snapshot(base: Path, device: str, print_keys: bool = False) -> Path:
-    """FIXME: A new snapshot should be uploaded and used"""
-
-    def _map_model_keys(state_dict: dict) -> dict:
-        updated_dict = {}
-        for k, v in state_dict.items():
-            if not (
-                k.startswith("backbone.model.downsamp_modules.")
-                or k.startswith("backbone.model.final_layer")
-                or k.startswith("backbone.model.classifier")
-            ):
-                parts = k.split(".")
-                if parts[:4] == ["heads", "bodypart", "heatmap_head", "model"]:
-                    parts[3] = "deconv_layers.0"
-                updated_dict[".".join(parts)] = v
-        return updated_dict
-
-    parsed = base.with_stem(base.stem + "_parsed")
-    if not parsed.exists():
-        snapshot = torch.load(base, map_location=device)
-        if print_keys:
-            print(5 * "-----\n")
-            print(base.stem + " keys")
-            for name, _ in snapshot["model_state_dict"].items():
-                print(f"  * {name}")
-            print()
-
-        parsed_model_snapshot = {
-            "model": _map_model_keys(snapshot["model_state_dict"]),
-            "metadata": {"epoch": 0},
-        }
-        torch.save(parsed_model_snapshot, parsed)
-    return parsed
-
-
-def get_pose_model_type(backbone: str) -> str:
-    """Temporary fix: pose_model_types for SuperAnimal models do not match net types"""
-    if backbone.startswith("resnet"):
-        return backbone
-    elif backbone.startswith("hrnet"):
-        return backbone.replace("_", "")
-
-    raise ValueError(f"Unknown backbone for SuperAnimal Weights")

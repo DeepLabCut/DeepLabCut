@@ -49,7 +49,7 @@ def train(
     device: str | None = "cpu",
     gpus: list[int] | None = None,
     logger_config: dict | None = None,
-    snapshot_path: str | None = None,
+    snapshot_path: str | Path | None = None,
     transform: A.BaseCompose | None = None,
     inference_transform: A.BaseCompose | None = None,
     max_snapshots_to_keep: int | None = None,
@@ -105,8 +105,14 @@ def train(
         run_config["device"] = device
         device = utils.resolve_device(run_config)
 
+    if gpus is None:
+        gpus = run_config["runner"].get("gpus")
+
     if device == "mps" and task == Task.DETECT:
         device = "cpu"  # FIXME: Cannot train detectors on MPS
+
+    if snapshot_path is None:
+        snapshot_path = run_config.get("resume_training_from")
 
     model.to(device)  # Move model before giving its parameters to the optimizer
     runner = build_training_runner(
@@ -150,13 +156,7 @@ def train(
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
-    valid_dataloader = DataLoader(
-        valid_dataset,
-        batch_size=1,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-    )
+    valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
 
     if (
         loader.model_cfg["model"].get("freeze_bn_stats", False)
@@ -195,13 +195,13 @@ def train(
 
 
 def train_network(
-    config: str,
+    config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     modelprefix: str = "",
     device: str | None = None,
-    snapshot_path: str | None = None,
-    detector_path: str | None = None,
+    snapshot_path: str | Path | None = None,
+    detector_path: str | Path | None = None,
     batch_size: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
@@ -239,7 +239,8 @@ def train_network(
         display_iters: overrides the number of iterations between each log of the loss
             within an epoch
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
-        pose_threshold: used for memory-replay. pseudo predictions that are below this are discarded for memory-replay
+        pose_threshold: Used for memory-replay. Pseudo-predictions with confidence lower
+            than this threshold are discarded for memory-replay
         **kwargs : could be any entry of the pytorch_config dictionary. Examples are
             to see the full list see the pytorch_cfg.yaml file in your project folder
     """
@@ -252,27 +253,32 @@ def train_network(
 
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
-
         if weight_init.memory_replay:
-            dataset_params = loader.get_dataset_parameters()
-            backbone_name = loader.model_cfg["model"]["backbone"]["model_name"]
-            model_name = modelzoo_utils.get_pose_model_type(backbone_name)
-            # at some point train_network should support a different train_file passing so memory replay can also take the same train file
+            if weight_init.detector_snapshot_path is None:
+                raise ValueError(
+                    "When fine-tuning a SuperAnimal model with memory replay, a "
+                    "detector must be given as well so animals can be detected in "
+                    "images to obtain pseudo-labels. Please update your weight "
+                    "initialization so that `detector_snapshot_path` is not None."
+                )
 
+            print("Preparing data for memory replay (this can take some time)")
+            dataset_params = loader.get_dataset_parameters()
             prepare_memory_replay(
-                loader.project_path,
-                shuffle,
+                config,
+                loader,
                 weight_init.dataset,
-                model_name,
+                weight_init.snapshot_path,
+                weight_init.detector_snapshot_path,
                 device,
                 train_file="train.json",
                 max_individuals=dataset_params.max_num_animals,
                 pose_threshold=pose_threshold,
-                customized_pose_checkpoint=weight_init.customized_pose_checkpoint,
             )
 
+            print("Loading memory replay data")
             loader = COCOLoader(
-                project_root=Path(loader.model_folder).parent / "memory_replay",
+                project_root=loader.model_folder / "memory_replay",
                 model_config_path=loader.model_config_path,
                 train_json_filename="memory_replay_train.json",
             )
@@ -308,7 +314,6 @@ def train_network(
 
     # get the pose task
     pose_task = Task(loader.model_cfg.get("method", "bu"))
-    # We should allow people to set detector epochs to 0 if it was already trained. because they will most likely tune the pose estimator
     if (
         pose_task == Task.TOP_DOWN
         and loader.model_cfg["detector"]["train_settings"]["epochs"] > 0
@@ -333,15 +338,16 @@ def train_network(
             max_snapshots_to_keep=max_snapshots_to_keep,
         )
 
-    train(
-        loader=loader,
-        run_config=loader.model_cfg,
-        task=pose_task,
-        device=device,
-        logger_config=loader.model_cfg.get("logger"),
-        snapshot_path=snapshot_path,
-        max_snapshots_to_keep=max_snapshots_to_keep,
-    )
+    if loader.model_cfg["train_settings"]["epochs"] > 0:
+        train(
+            loader=loader,
+            run_config=loader.model_cfg,
+            task=pose_task,
+            device=device,
+            logger_config=loader.model_cfg.get("logger"),
+            snapshot_path=snapshot_path,
+            max_snapshots_to_keep=max_snapshots_to_keep,
+        )
 
     destroy_file_logging()
 

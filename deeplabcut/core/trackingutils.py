@@ -115,6 +115,10 @@ class Ellipse:
         dist = math.sqrt(
             (self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2
         )
+
+        if max_dist == 0:
+            max_dist = 1
+
         cost1 = 1 - min(dist / max_dist, 1)
         cost2 = abs(math.cos(self.theta - other_ellipse.theta))
         return 0.8 * cost1 + 0.2 * cost2 * cost1
@@ -762,11 +766,11 @@ def fill_tracklets(tracklets, trackers, animals, imname):
         if tracklet_id not in tracklets:
             tracklets[tracklet_id] = {}
         if pred_id != -1:
-            tracklets[tracklet_id][imname] = animals[pred_id]
+            tracklets[tracklet_id][imname] = np.asarray(animals[pred_id])
         else:  # Resort to the tracker prediction
             xy = np.asarray(content[:-2])
             pred = np.insert(xy, range(2, len(xy) + 1, 2), 1)
-            tracklets[tracklet_id][imname] = pred
+            tracklets[tracklet_id][imname] = np.asarray(pred)
 
 
 def calc_bboxes_from_keypoints(data, slack=0, offset=0):

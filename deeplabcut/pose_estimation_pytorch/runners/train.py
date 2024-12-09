@@ -22,11 +22,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
 
-from deeplabcut.pose_estimation_pytorch.metrics import compute_bbox_metrics
-from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
-    get_scores,
-    pair_predicted_individuals_with_gt,
-)
+import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
@@ -35,51 +32,70 @@ from deeplabcut.pose_estimation_pytorch.runners.logger import (
     CSVLogger,
     ImageLoggerMixin,
 )
-from deeplabcut.pose_estimation_pytorch.runners.schedulers import build_scheduler
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
-    """Runner base class
+    """Base TrainingRunner class.
 
-    A runner takes a model and runs actions on it, such as training or inference
+    A TrainingRunner is used to fit models to datasets. Subclasses must implement the
+    ``step(self, batch, mode)`` method, which performs a single training or validation
+    step on a batch of data. The step is different depending on the model type (e.g.
+    a pose model step vs. an object detector step).
+
+    Args:
+        model: The model to fit.
+        optimizer: The optimizer to use to fit the model.
+        snapshot_manager: Manages how snapshots are saved to disk during training.
+        device: The device on which to run training (e.g. 'cpu', 'cuda', 'cuda:0').
+        gpus: Used to specify the GPU indices for multi-GPU training (e.g. [0, 1, 2, 3]
+            to train on 4 GPUs). When a GPUs list is given, the device must be 'cuda'.
+        eval_interval: The interval at which the model will be evaluated while training
+            (e.g. `eval_interva=5` means the model will be evaluated every 5 epochs).
+        snapshot_path: If continuing to train a model, the path to the snapshot to
+            resume training from.
+        scheduler: The learning rate scheduler (or it's configuration), if one should be
+            used.
+        load_scheduler_state_dict: When resuming training (snapshot_path is not None),
+            attempts to load the scheduler state dict from the snapshot. If you've
+            modified your scheduler, set this to False or the old scheduler parameters
+            might be used.
+        logger: Logger to monitor training (e.g. a WandBLogger).
+        log_filename: Name of the file in which to store training stats.
     """
 
     def __init__(
         self,
         model: ModelType,
-        optimizer: torch.optim.Optimizer,
+        optimizer: dict | torch.optim.Optimizer,
         snapshot_manager: TorchSnapshotManager,
         device: str = "cpu",
         gpus: list[int] | None = None,
         eval_interval: int = 1,
-        snapshot_path: Path | None = None,
-        scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+        snapshot_path: str | Path | None = None,
+        scheduler: dict | torch.optim.lr_scheduler.LRScheduler | None = None,
+        load_scheduler_state_dict: bool = True,
         logger: BaseLogger | None = None,
+        log_filename: str = "learning_stats.csv",
     ):
-        """
-        Args:
-            model: the model to run actions on
-            optimizer: the optimizer to use when fitting the model
-            snapshot_manager: the module to use to manage snapshots
-            device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            gpus: the list of GPU indices to use for multi-GPU training
-            eval_interval: how often evaluation is run on the test set (in epochs)
-            snapshot_path: if defined, the path of a snapshot from which to load
-                pretrained weights
-            scheduler: scheduler for adjusting the lr of the optimizer
-            logger: logger to monitor training (e.g WandB logger)
-        """
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
         )
+        if isinstance(optimizer, dict):
+            optimizer = build_optimizer(model, optimizer)
+        if isinstance(scheduler, dict):
+            scheduler = schedulers.build_scheduler(scheduler, optimizer)
+
         self.eval_interval = eval_interval
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.snapshot_manager = snapshot_manager
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
-        self.csv_logger = CSVLogger(train_folder=snapshot_manager.model_folder)
+        self.csv_logger = CSVLogger(
+            train_folder=snapshot_manager.model_folder,
+            log_filename=log_filename,
+        )
         self.logger = logger
         self.starting_epoch = 0
         self.current_epoch = 0
@@ -87,24 +103,34 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         # some models cannot compute a validation loss (e.g. detectors)
         self._print_valid_loss = True
 
-        if self.snapshot_path is not None and self.snapshot_path != "":
-            self.starting_epoch = self.load_snapshot(
-                self.snapshot_path,
-                self.device,
-                self.model,
-                self.optimizer,
-            )
+        if self.snapshot_path:
+            snapshot = self.load_snapshot(self.snapshot_path, self.device, self.model)
+            self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
+
+            if "optimizer" in snapshot:
+                self.optimizer.load_state_dict(snapshot["optimizer"])
+
+            self._load_scheduler_state_dict(load_scheduler_state_dict, snapshot)
 
         self._metadata = dict(epoch=self.starting_epoch, metrics=dict(), losses=dict())
         self._epoch_ground_truth = {}
         self._epoch_predictions = {}
 
     def state_dict(self) -> dict:
-        return {
-            "metadata": self._metadata,
-            "model": self.model.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-        }
+        """Returns: the state dict for the runner"""
+        model = self.model
+        if self._data_parallel:
+            model = self.model.module
+
+        state_dict_ = dict(
+            metadata=self._metadata,
+            model=model.state_dict(),
+            optimizer=self.optimizer.state_dict(),
+        )
+        if self.scheduler is not None:
+            state_dict_["scheduler"] = self.scheduler.state_dict()
+
+        return state_dict_
 
     @abstractmethod
     def step(
@@ -152,8 +178,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner = Runner(model, optimizer, cfg, device='cuda')
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
-        if self.gpus:
-            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+        if self._data_parallel:
+            self.model = DataParallel(self.model, device_ids=self._gpus).cuda()
         else:
             self.model.to(self.device)
 
@@ -161,7 +187,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self.logger.select_images_to_log(train_loader, valid_loader)
 
         # continuing to train a model: either total epochs or extra epochs
-        if self.starting_epoch > epochs:
+        if self.starting_epoch > 0:
             epochs = self.starting_epoch + epochs
 
         for e in range(self.starting_epoch + 1, epochs + 1):
@@ -186,6 +212,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
+
+            epoch_metrics = self._metadata.get("metrics")
+            if (
+                e % self.eval_interval == 0
+                and epoch_metrics is not None
+                and len(epoch_metrics) > 0
+            ):
+                logging.info(f"Model performance:")
+                line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
+                for name, score in epoch_metrics.items():
+                    logging.info(f"  {(name + ':').ljust(line_length)}{score:6.2f}")
 
     def _epoch(
         self,
@@ -219,17 +256,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         loss_metrics = defaultdict(list)
         for i, batch in enumerate(loader):
             losses_dict = self.step(batch, mode)
-            epoch_loss.append(losses_dict["total_loss"])
+            if "total_loss" in losses_dict:
+                epoch_loss.append(losses_dict["total_loss"])
+                if (i + 1) % display_iters == 0 and mode != "eval":
+                    logging.info(
+                        f"Number of iterations: {i + 1}, "
+                        f"loss: {losses_dict['total_loss']:.5f}, "
+                        f"lr: {self.optimizer.param_groups[0]['lr']}"
+                    )
 
             for key in losses_dict.keys():
                 loss_metrics[key].append(losses_dict[key])
-
-            if (i + 1) % display_iters == 0:
-                logging.info(
-                    f"Number of iterations: {i + 1}, "
-                    f"loss: {losses_dict['total_loss']:.5f}, "
-                    f"lr: {self.optimizer.param_groups[0]['lr']}"
-                )
 
         perf_metrics = None
         if mode == "eval":
@@ -237,12 +274,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._metadata["metrics"] = perf_metrics
             self._epoch_predictions = {}
             self._epoch_ground_truth = {}
-            if perf_metrics is not None and len(perf_metrics) > 0:
-                logging.info(f"Epoch {self.current_epoch} performance:")
-                for name, score in perf_metrics.items():
-                    logging.info(f"{name + ':': <20}{score:.3f}")
 
-        epoch_loss = np.mean(epoch_loss).item()
+        if len(epoch_loss) > 0:
+            epoch_loss = np.mean(epoch_loss).item()
+        else:
+            epoch_loss = 0
         self.history[f"{mode}_loss"].append(epoch_loss)
 
         metrics_to_log = {}
@@ -265,6 +301,29 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self.logger.log(metrics_to_log, step=self.current_epoch)
 
         return epoch_loss
+
+    def _load_scheduler_state_dict(self, load_state_dict: bool, snapshot: dict) -> None:
+        if self.scheduler is None:
+            return
+
+        loaded_state_dict = False
+        if load_state_dict and "scheduler" in snapshot:
+            try:
+                schedulers.load_scheduler_state(self.scheduler, snapshot["scheduler"])
+                loaded_state_dict = True
+            except ValueError as err:
+                logging.warning(
+                    "Failed to load the scheduler state_dict. The scheduler will "
+                    "restart at epoch 0. This is expected if the scheduler "
+                    "configuration was edited since the original snapshot was "
+                    f"trained. Error: {err}"
+                )
+
+        if not loaded_state_dict and self.starting_epoch > 0:
+            logging.info(
+                f"Setting the scheduler starting epoch to {self.starting_epoch}"
+            )
+            self.scheduler.last_epoch = self.starting_epoch
 
 
 class PoseTrainingRunner(TrainingRunner[PoseModel]):
@@ -315,7 +374,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         else:
             outputs = self.model(inputs)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
@@ -341,7 +400,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
             self._update_epoch_predictions(
                 name="bodyparts",
-                paths=batch["path"],
                 gt_keypoints=ground_truth,
                 pred_keypoints=predictions["bodypart"]["poses"],
                 offsets=batch["offsets"],
@@ -350,7 +408,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             if "unique_bodypart" in predictions:
                 self._update_epoch_predictions(
                     name="unique_bodyparts",
-                    paths=batch["path"],
                     gt_keypoints=batch["annotations"]["keypoints_unique"],
                     pred_keypoints=predictions["unique_bodypart"]["poses"],
                     offsets=batch["offsets"],
@@ -364,29 +421,12 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         Returns:
             A dictionary containing the different losses for the step
         """
-        num_animals = max(
-            [len(kpts) for kpts in self._epoch_ground_truth["bodyparts"].values()]
-        )
-        poses = pair_predicted_individuals_with_gt(
-            self._epoch_predictions["bodyparts"], self._epoch_ground_truth["bodyparts"]
-        )
-
-        # pad predictions if there are any missing (needed for top-down models)
-        gt, pred = {}, {}
-        for path, img_gt in self._epoch_ground_truth["bodyparts"].items():
-            for kpt_dict, kpts in [(gt, img_gt), (pred, poses[path])]:
-                if len(kpts) < num_animals:
-                    padded_kpts = -np.ones((num_animals, *kpts.shape[1:]))
-                    padded_kpts[: len(kpts)] = kpts
-                    kpt_dict[path] = padded_kpts
-                else:
-                    kpt_dict[path] = kpts
-
-        scores = get_scores(
-            poses=pred,
-            ground_truth=gt,
-            unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
+        scores = metrics.compute_metrics(
+            ground_truth=self._epoch_ground_truth["bodyparts"],
+            predictions=self._epoch_predictions["bodyparts"],
+            single_animal=False,  # FIXME(niels): Get this value from the dataset
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
+            unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             pcutoff=0.6,
         )
         return {f"metrics/test.{metric}": value for metric, value in scores.items()}
@@ -394,7 +434,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
     def _update_epoch_predictions(
         self,
         name: str,
-        paths: torch.Tensor,
         gt_keypoints: torch.Tensor,
         pred_keypoints: torch.Tensor,
         scales: torch.Tensor,
@@ -403,45 +442,28 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         """Updates the stored predictions with a new batch"""
         epoch_gt_metric = self._epoch_ground_truth.get(name, {})
         epoch_metric = self._epoch_predictions.get(name, {})
-        assert len(paths) == len(gt_keypoints) == len(pred_keypoints)
-        assert len(paths) == len(offsets) == len(scales)
+        assert len(gt_keypoints) == len(pred_keypoints)
+        assert len(offsets) == len(scales)
         scales = scales.detach().cpu().numpy()
         offsets = offsets.detach().cpu().numpy()
 
-        for path, gt, pred, scale, offset in zip(
-            paths,
+        for gt, pred, scale, offset in zip(
             gt_keypoints,
             pred_keypoints,
             scales,
             offsets,
         ):
-            # ground_truth now should already have visibility flag
             ground_truth = gt.detach().cpu().numpy()
-            gt_with_vis = ground_truth
-
-            # FIXME: convert (-1, -2) to 0. Else error is incorrectly calculated
-            for batch_id in range(len(ground_truth)):
-                # keypoints (num_kpts, 3)
-                keypoints = ground_truth[batch_id]
-                for kpts in keypoints:
-                    vis = kpts[-1]
-                    if vis < 0:
-                        kpts[-1] = 0
+            pred = pred.copy()
 
             # rescale to the full image for TD or CTD
-            gt_with_vis[..., :2] = (gt_with_vis[..., :2] * scale) + offset
-            pred = pred.copy()
+            ground_truth[..., :2] = (ground_truth[..., :2] * scale) + offset
             pred[..., :2] = (pred[..., :2] * scale) + offset
 
-            # for TD models, individuals are predicted separately
-            if path in epoch_gt_metric:
-                epoch_gt_metric[path] = np.concatenate(
-                    [epoch_gt_metric[path], gt_with_vis], axis=0
-                )
-                epoch_metric[path] = np.concatenate([epoch_metric[path], pred], axis=0)
-            else:
-                epoch_gt_metric[path] = gt_with_vis
-                epoch_metric[path] = pred
+            # we don't care about image paths here - use a default index
+            index = len(epoch_metric) + 1
+            epoch_gt_metric[f"sample{index:09}"] = ground_truth
+            epoch_metric[f"sample{index:09}"] = pred
 
         self._epoch_ground_truth[name] = epoch_gt_metric
         self._epoch_predictions[name] = epoch_metric
@@ -457,7 +479,11 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             optimizer: The optimizer to use to train the model.
             **kwargs: TrainingRunner kwargs
         """
-        super().__init__(model, optimizer, **kwargs)
+        log_filename = "learning_stats_detector.csv"
+        if "log_filename" in kwargs:
+            log_filename = kwargs.pop("log_filename")
+
+        super().__init__(model, optimizer, log_filename=log_filename, **kwargs)
         self._pycoco_warning_displayed = False
         self._print_valid_loss = False
 
@@ -494,7 +520,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         images = batch["image"]
         images = images.to(self.device)
 
-        if self.gpus:
+        if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
@@ -532,7 +558,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         try:
             return {
                 f"metrics/test.{k}": v
-                for k, v in compute_bbox_metrics(
+                for k, v in metrics.compute_bbox_metrics(
                     self._epoch_ground_truth, self._epoch_predictions
                 ).items()
             }
@@ -599,7 +625,7 @@ def build_training_runner(
     model: nn.Module,
     device: str,
     gpus: list[int] | None = None,
-    snapshot_path: str | None = None,
+    snapshot_path: str | Path | None = None,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
     """
@@ -621,12 +647,18 @@ def build_training_runner(
     optim_cfg = runner_config["optimizer"]
     optim_cls = getattr(torch.optim, optim_cfg["type"])
     optimizer = optim_cls(params=model.parameters(), **optim_cfg["params"])
-    scheduler = build_scheduler(runner_config.get("scheduler"), optimizer)
+    scheduler = schedulers.build_scheduler(runner_config.get("scheduler"), optimizer)
+
+    # if no custom snapshot prefix is defined, use the default one
+    snapshot_prefix = runner_config.get("snapshot_prefix")
+    if snapshot_prefix is None or len(snapshot_prefix) == 0:
+        snapshot_prefix = task.snapshot_prefix
+
     kwargs = dict(
         model=model,
         optimizer=optimizer,
         snapshot_manager=TorchSnapshotManager(
-            task=task,
+            snapshot_prefix=snapshot_prefix,
             model_folder=model_folder,
             key_metric=runner_config.get("key_metric"),
             key_metric_asc=runner_config.get("key_metric_asc"),
@@ -639,9 +671,28 @@ def build_training_runner(
         eval_interval=runner_config.get("eval_interval"),
         snapshot_path=snapshot_path,
         scheduler=scheduler,
+        load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
     )
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)
 
     return PoseTrainingRunner(**kwargs)
+
+
+def build_optimizer(
+    model: nn.Module,
+    optimizer_config: dict,
+) -> torch.optim.Optimizer:
+    """Builds an optimizer from a configuration.
+
+    Args:
+        model: The model to optimize.
+        optimizer_config: The configuration for the optimizer.
+
+    Returns:
+        The optimizer for the model built according to the given configuration.
+    """
+    optim_cls = getattr(torch.optim, optimizer_config["type"])
+    optimizer = optim_cls(params=model.parameters(), **optimizer_config["params"])
+    return optimizer

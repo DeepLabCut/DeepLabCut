@@ -7,22 +7,17 @@
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
-    BACKBONES,
-)
-from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import (
-    HRNet,
-)
-from deeplabcut.pose_estimation_pytorch.models.modules import (
-    CoAMBlock,
-    SelfAttentionModule_CoAM,
+from deeplabcut.pose_estimation_pytorch.models.backbones.base import BACKBONES
+from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import HRNet
+from deeplabcut.pose_estimation_pytorch.models.modules import (  # ColoredKeypointEncoder,; StackedKeypointEncoder,
     BaseKeypointEncoder,
-    #ColoredKeypointEncoder,
-    #StackedKeypointEncoder,
-    KEYPOINT_ENCODERS
+    CoAMBlock,
+    KEYPOINT_ENCODERS,
+    SelfAttentionModule_CoAM,
 )
 
 
@@ -34,20 +29,20 @@ class HRNetCoAM(HRNet):
 
     Attributes:
         model: the HRNet model
-        coam_stages: CoAM blocks for each stage 
+        coam_stages: CoAM blocks for each stage
     """
 
     def __init__(
-            self,
-            kpt_encoder: dict | BaseKeypointEncoder,
-            base_model_name: str = "hrnet_w32",
-            pretrained: bool = True,
-            coam_modules: tuple[int,...] = (2,),
-            selfatt_coam_modules: tuple[int,...] | None = None,
-            channel_att_only: bool = False,
-            att_heads: int = 1,
-            img_size: tuple[int,int] = (256,  256),
-            **kwargs,
+        self,
+        kpt_encoder: dict | BaseKeypointEncoder,
+        base_model_name: str = "hrnet_w32",
+        pretrained: bool = True,
+        coam_modules: tuple[int, ...] = (2,),
+        selfatt_coam_modules: tuple[int, ...] | None = None,
+        channel_att_only: bool = False,
+        att_heads: int = 1,
+        img_size: tuple[int, int] = (256, 256),
+        **kwargs,
     ) -> None:
         """Constructs an ImageNet pretrained HRNet from timm and creates CoAM blocks.
 
@@ -63,10 +58,7 @@ class HRNetCoAM(HRNet):
             num_joints: Number of joints in the dataset.
         """
 
-        super().__init__(
-            model_name = base_model_name,
-            pretrained = pretrained,
-            **kwargs)
+        super().__init__(model_name=base_model_name, pretrained=pretrained, **kwargs)
 
         self.coam_modules = coam_modules
         self.selfatt_coam_modules = selfatt_coam_modules
@@ -78,40 +70,54 @@ class HRNetCoAM(HRNet):
         self.coam_stages = nn.ModuleList([None, None, None, None])
         self.selfatt_coam_stages = nn.ModuleList([None, None, None, None])
 
-        spat_dims = [(int(img_size[0]/4),int(img_size[1]/4)),
-                     (int(img_size[0]/8),int(img_size[1]/8)),
-                     (int(img_size[0]/16),int(img_size[1]/16)),
-                     (int(img_size[0]/32),int(img_size[1]/32))]
+        spat_dims = [
+            (int(img_size[0] / 4), int(img_size[1] / 4)),
+            (int(img_size[0] / 8), int(img_size[1] / 8)),
+            (int(img_size[0] / 16), int(img_size[1] / 16)),
+            (int(img_size[0] / 32), int(img_size[1] / 32)),
+        ]
 
-        assert not(set(coam_modules) & set(selfatt_coam_modules) if selfatt_coam_modules else set()), \
-            "CoAM and Self-Attention-CoAM cannot be used at the same time"
+        assert not (
+            set(coam_modules) & set(selfatt_coam_modules)
+            if selfatt_coam_modules
+            else set()
+        ), "CoAM and Self-Attention-CoAM cannot be used at the same time"
 
-        all_output_channels = [self.model.stage2_cfg['num_channels'],
-                               self.model.stage3_cfg['num_channels'],
-                               self.model.stage4_cfg['num_channels']]
+        all_output_channels = [
+            self.model.stage2_cfg["num_channels"],
+            self.model.stage3_cfg["num_channels"],
+            self.model.stage4_cfg["num_channels"],
+        ]
 
         for coam_pos in self.coam_modules:
             if coam_pos == 4:
                 spat_dims_ = [spat_dims[0]]
                 channels = [all_output_channels[-1][0]]
             else:
-                spat_dims_ = spat_dims[:coam_pos+1]
-                channels = all_output_channels[coam_pos-1]
-            
-            self.coam_stages[coam_pos-1] = CoAMBlock(spat_dims=spat_dims_, channel_list=channels,
-                                                     cond_enc=self.cond_enc, n_heads=att_heads,
-                                                     channel_only=self.channel_att_only)
-        
+                spat_dims_ = spat_dims[: coam_pos + 1]
+                channels = all_output_channels[coam_pos - 1]
+
+            self.coam_stages[coam_pos - 1] = CoAMBlock(
+                spat_dims=spat_dims_,
+                channel_list=channels,
+                cond_enc=self.cond_enc,
+                n_heads=att_heads,
+                channel_only=self.channel_att_only,
+            )
+
         if self.selfatt_coam_modules:
             for selfatt_coam_pos in self.selfatt_coam_modules:
                 if selfatt_coam_pos == 4:
                     spat_dims_ = [spat_dims[0]]
                     channels = [all_output_channels[-1][0]]
                 else:
-                    spat_dims_ = spat_dims[:selfatt_coam_pos+1]
-                    channels = all_output_channels[coam_pos-1]
-                self.selfatt_coam_stages[selfatt_coam_pos-1] = SelfAttentionModule_CoAM(spat_dims=spat_dims_, channel_list=channels)
-
+                    spat_dims_ = spat_dims[: selfatt_coam_pos + 1]
+                    channels = all_output_channels[coam_pos - 1]
+                self.selfatt_coam_stages[selfatt_coam_pos - 1] = (
+                    SelfAttentionModule_CoAM(
+                        spat_dims=spat_dims_, channel_list=channels
+                    )
+                )
 
     def stages(self, x, cond_hm) -> list[torch.Tensor]:
         x = self.model.layer1(x)
@@ -125,16 +131,22 @@ class HRNetCoAM(HRNet):
 
         yl = self.model.stage2(xl)
 
-        xl = [t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i] for i, t in enumerate(self.model.transition2)]
-        
+        xl = [
+            t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i]
+            for i, t in enumerate(self.model.transition2)
+        ]
+
         if self.coam_stages[1]:
             xl = self.coam_stages[1](xl, cond_hm)
         elif self.selfatt_coam_stages[1]:
             xl = self.selfatt_coam_stages[1](xl)
-        
+
         yl = self.model.stage3(xl)
 
-        xl = [t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i] for i, t in enumerate(self.model.transition3)]
+        xl = [
+            t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i]
+            for i, t in enumerate(self.model.transition3)
+        ]
 
         if self.coam_stages[2]:
             xl = self.coam_stages[2](xl, cond_hm)
@@ -149,9 +161,8 @@ class HRNetCoAM(HRNet):
             yl = self.selfatt_coam_stages[3](yl)
 
         return yl
-    
 
-    def forward(self, x, cond_kpts):
+    def forward(self, x: torch.Tensor, cond_kpts: np.ndarray):
         """Forward pass through the HRNetCoAM backbone.
 
         Args:
@@ -166,7 +177,7 @@ class HRNetCoAM(HRNet):
         cond_hm = self.cond_enc(cond_kpts.squeeze(1), x.size()[2:])
         cond_hm = torch.from_numpy(cond_hm).float().to(x.device)
         cond_hm = cond_hm.permute(0, 3, 1, 2)  # (B, C, H, W)
-        
+
         # Stem
         x = self.model.conv1(x)
         x = self.model.bn1(x)
@@ -179,7 +190,9 @@ class HRNetCoAM(HRNet):
         y = self.stages(x, cond_hm)
 
         if self.model.incre_modules is not None:
-            raise NotImplementedError("Incremental HRNet modules not supported for HRNetCoAM")
+            raise NotImplementedError(
+                "Incremental HRNet modules not supported for HRNetCoAM"
+            )
             x = [incre(f) for f, incre in zip(x, self.model.incre_modules)]
 
         return self.prepare_output(y)

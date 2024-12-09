@@ -67,8 +67,9 @@ iteration:
 default_net_type:
 default_augmenter:
 snapshotindex:
-detector_snapshotindex:
+detector_snapshotindex: -1
 batch_size: 1
+detector_batch_size: 1
 
 
 # Cropping Parameters (for analysis and outlier frame detection)

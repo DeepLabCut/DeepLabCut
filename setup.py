@@ -18,6 +18,21 @@ with open("README.md", encoding="utf-8", errors="replace") as fh:
     long_description = fh.read()
 
 
+def super_animal_config_paths() -> list[str]:
+    config_dirs = [
+        Path("deeplabcut") / "modelzoo" / "model_configs",
+        Path("deeplabcut") / "modelzoo" / "project_configs",
+    ]
+
+    configs = []
+    for subdir in config_dirs:
+        for p in subdir.iterdir():
+            if p.suffix == ".yaml":
+                configs.append(str(p))
+
+    return configs
+
+
 def pytorch_config_paths() -> list[str]:
     pytorch_configs = []
     config_dir = Path("deeplabcut") / "pose_estimation_pytorch" / "config"
@@ -32,7 +47,7 @@ def pytorch_config_paths() -> list[str]:
 
 setuptools.setup(
     name="deeplabcut",
-    version="3.0.0rc1",
+    version="3.0.0rc6",
     author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -41,7 +56,7 @@ setuptools.setup(
     url="https://github.com/DeepLabCut/DeepLabCut",
     install_requires=[
         "albumentations<=1.4.3",
-        "dlclibrary>=0.0.5",
+        "dlclibrary>=0.0.7",
         "einops",
         "dlclibrary>=0.0.6",
         "filterpy>=1.4.4",
@@ -97,11 +112,7 @@ setuptools.setup(
                 "deeplabcut/pose_cfg.yaml",
                 "deeplabcut/inference_cfg.yaml",
                 "deeplabcut/reid_cfg.yaml",
-                "deeplabcut/modelzoo/model_configs/dlcrnet.yaml",
-                "deeplabcut/modelzoo/model_configs/hrnetw32.yaml",
                 "deeplabcut/modelzoo/models_to_framework.json",
-                "deeplabcut/modelzoo/project_configs/superanimal_quadruped.yaml",
-                "deeplabcut/modelzoo/project_configs/superanimal_topviewmouse.yaml",
                 "deeplabcut/pose_estimation_tensorflow/models/pretrained/pretrained_model_urls.yaml",
                 "deeplabcut/gui/style.qss",
                 "deeplabcut/gui/media/logo.png",
@@ -117,7 +128,7 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
-            ] + pytorch_config_paths(),
+            ] + super_animal_config_paths() + pytorch_config_paths(),
         )
     ],
     include_package_data=True,

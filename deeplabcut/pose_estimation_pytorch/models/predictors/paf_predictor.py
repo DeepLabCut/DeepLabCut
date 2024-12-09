@@ -152,7 +152,11 @@ class PartAffinityFieldPredictor(BasePredictor):
             heatmaps, self.nms_radius, threshold=0.01
         )
         if ~torch.any(peaks):
-            return {"poses": torch.zeros((batch_size, 0, self.num_multibodyparts, 5))}
+            return {
+                "poses": -torch.ones(
+                    (batch_size, self.num_animals, self.num_multibodyparts, 5)
+                )
+            }
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
         locrefs = locrefs * self.locref_stdev
@@ -169,13 +173,14 @@ class PartAffinityFieldPredictor(BasePredictor):
             scale_factors,
             n_id_channels=0,  # FIXME Handle identity training
         )
-        poses = torch.empty((batch_size, self.num_animals, self.num_multibodyparts, 5))
-        poses_unique = torch.empty((batch_size, 1, self.num_uniquebodyparts, 4))
+        poses = -torch.ones((batch_size, self.num_animals, self.num_multibodyparts, 5))
+        poses_unique = -torch.ones((batch_size, 1, self.num_uniquebodyparts, 4))
         for i, data_dict in enumerate(preds):
             assemblies, unique = self.assembler._assemble(data_dict, ind_frame=0)
-            for j, assembly in enumerate(assemblies):
-                poses[i, j, :, :4] = torch.from_numpy(assembly.data)
-                poses[i, j, :, 4] = assembly.affinity
+            if assemblies is not None:
+                for j, assembly in enumerate(assemblies):
+                    poses[i, j, :, :4] = torch.from_numpy(assembly.data)
+                    poses[i, j, :, 4] = assembly.affinity
             if unique is not None:
                 poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
 
@@ -207,14 +212,13 @@ class PartAffinityFieldPredictor(BasePredictor):
         locrefs: torch.Tensor,
         peak_inds_in_batch: torch.Tensor,
         strides: tuple[float, float],
-        n_decimals: int = 3,
     ) -> torch.Tensor:
         s, b, r, c = peak_inds_in_batch.T
         stride_y, stride_x = strides
         strides = torch.Tensor((stride_x, stride_y)).to(locrefs.device)
         off = locrefs[s, b, :, r, c]
         loc = strides * peak_inds_in_batch[:, [3, 2]] + strides // 2 + off
-        return torch.round(loc, decimals=n_decimals)
+        return loc
 
     @staticmethod
     def compute_edge_costs(
@@ -326,8 +330,8 @@ class PartAffinityFieldPredictor(BasePredictor):
     ) -> list[dict[str, NDArray]]:
         n_samples, n_channels = heatmaps.shape[:2]
         n_bodyparts = n_channels - n_id_channels
-        pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides, n_decimals)
-        pos = pos.detach().cpu().numpy()
+        pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides)
+        pos = np.round(pos.detach().cpu().numpy(), decimals=n_decimals)
         heatmaps = heatmaps.detach().cpu().numpy()
         pafs = pafs.detach().cpu().numpy()
         peak_inds_in_batch = peak_inds_in_batch.detach().cpu().numpy()

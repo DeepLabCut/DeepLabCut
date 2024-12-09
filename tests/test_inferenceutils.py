@@ -61,17 +61,17 @@ def test_calc_object_keypoint_similarity(real_assemblies):
 
 def test_match_assemblies(real_assemblies):
     assemblies = real_assemblies[0]
-    matched, unmatched = inferenceutils.match_assemblies(
+    num_gt, matches = inferenceutils.match_assemblies(
         assemblies, assemblies[::-1], 0.01
     )
-    assert not unmatched
-    for ass1, ass2, oks in matched:
-        assert ass1 is ass2
-        assert oks == 1
+    assert len(assemblies) == len(matches)
+    for m in matches:
+        assert m.prediction is m.ground_truth
+        assert m.oks == 1
 
-    matched, unmatched = inferenceutils.match_assemblies([], assemblies, 0.01)
-    assert not matched
-    assert all(ass1 is ass2 for ass1, ass2 in zip(unmatched, assemblies))
+    num_gt, matches = inferenceutils.match_assemblies([], assemblies, 0.01)
+    assert len(matches) == 0
+    assert num_gt == len(assemblies)
 
 
 def test_evaluate_assemblies(real_assemblies):
@@ -107,7 +107,7 @@ def test_link():
     j1 = inferenceutils.Joint(pos1, conf, idx=idx1)
     j2 = inferenceutils.Joint(pos2, conf, idx=idx2)
     link = inferenceutils.Link(j1, j2)
-    assert link.confidence == conf ** 2
+    assert link.confidence == conf**2
     assert link.idx == (idx1, idx2)
     assert link.to_vector() == [*pos1, *pos2]
 
@@ -176,9 +176,9 @@ def test_assembler(tmpdir_factory, real_assemblies):
         1 for a in real_assemblies.values() for _ in a
     )
 
-    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
-    ass.to_h5(output_name)
-    ass.to_pickle(str(output_name).replace("h5", "pickle"))
+    output_dir = tmpdir_factory.mktemp("data")
+    ass.to_h5(output_dir.join("fake.h5"))
+    ass.to_pickle(output_dir.join("fake.pickle"))
 
 
 def test_assembler_with_single_bodypart(real_assemblies):
@@ -288,9 +288,9 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
             eq.append(np.all(ids == ids[0]))
     assert all(eq)
 
-    output_name = tmpdir_factory.mktemp("data").join("fake.h5")
-    ass.to_h5(output_name)
-    ass.to_pickle(str(output_name).replace("h5", "pickle"))
+    output_dir = tmpdir_factory.mktemp("data")
+    ass.to_h5(output_dir.join("fake.h5"))
+    ass.to_pickle(output_dir.join("fake.pickle"))
 
 
 def test_assembler_calibration(real_assemblies):

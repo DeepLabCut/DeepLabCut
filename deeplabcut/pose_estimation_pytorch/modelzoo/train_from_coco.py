@@ -36,7 +36,7 @@ def adaptation_train(
     detector_path: str | None,
     batch_size: int = 8,
     detector_batch_size: int = 8,
-    eval_interval: int = 1,
+    eval_interval: int | None = None,
 ):
     setup_file_logging(Path(model_folder) / "log.txt")
     loader = COCOLoader(

@@ -20,12 +20,10 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.data.image import (
-    load_image,
     _crop_and_pad_image_torch,
+    load_image,
 )
-from deeplabcut.pose_estimation_pytorch.data.utils import (
-    bbox_from_keypoints,
-)
+from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
@@ -111,6 +109,7 @@ def build_top_down_preprocessor(
             ToTensor(),
         ]
     )
+
 
 def build_conditional_top_down_preprocessor(
     color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
@@ -337,7 +336,9 @@ class ToBatch(Preprocessor):
 class TorchCropDetections(Preprocessor):
     """TODO"""
 
-    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh", ctd: bool = False) -> None:
+    def __init__(
+        self, cropped_image_size: int, bbox_format: str = "xywh", ctd: bool = False
+    ) -> None:
         self.cropped_image_size = cropped_image_size
         self.bbox_format = bbox_format
         self.ctd = ctd
@@ -385,7 +386,9 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
     ) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "cond_kpts" not in context:
-            raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
+            raise ValueError(
+                f"Must include cond kpts to ComputeBBoxes, found {context}"
+            )
 
         context["bboxes"] = [
             # FIXME: bbox_margin should be a parameter set in the configuration
@@ -402,14 +405,16 @@ class ConditionalKeypointsToModelInputs(Preprocessor):
         self.cond_kpt_key = cond_kpt_key
 
     def __call__(
-            self, image: np.ndarray, context: Context
+        self, image: np.ndarray, context: Context
     ) -> tuple[np.ndarray, Context]:
 
         context["model_kwargs"] = {"cond_kpts": context[self.cond_kpt_key]}
 
         cond_keypoints = context[self.cond_kpt_key]
         rescaled = cond_keypoints.copy()
-        rescaled[..., :2] = (rescaled[..., :2] - np.array(context["offsets"])[:,None]) / np.array(context["scales"])[:,None]
+        rescaled[..., :2] = (
+            rescaled[..., :2] - np.array(context["offsets"])[:, None]
+        ) / np.array(context["scales"])[:, None]
         context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
 
         return image, context

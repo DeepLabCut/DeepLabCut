@@ -94,7 +94,7 @@ def transformer_reID(
         modelprefix=modelprefix,
     )
 
-    deeplabcut.pose_estimation_tensorflow.create_tracking_dataset(
+    deeplabcut.compat.create_tracking_dataset(
         config,
         videos,
         track_method,

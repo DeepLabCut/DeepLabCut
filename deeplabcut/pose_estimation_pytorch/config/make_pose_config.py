@@ -21,6 +21,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     read_config_as_dict,
     replace_default_values,
     update_config,
+    write_config,
 )
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
@@ -28,10 +29,12 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 def make_pytorch_pose_config(
     project_config: dict,
-    pose_config_path: str,
+    pose_config_path: str | Path,
     net_type: str | None = None,
     top_down: bool = False,
+    detector_type: str | None = None,
     weight_init: WeightInitialization | None = None,
+    save: bool = False,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -59,8 +62,11 @@ def make_pytorch_pose_config(
             by associating a detector to the pose model. Required for multi-animal
             projects when net_type is a backbone (as a backbone + heatmap head can only
             predict pose for single individuals).
+        detector_type: for top-down pose models, the architecture of the desired object
+            detection model
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
+        save: Whether to save the model configuration file to the ``pose_config_path``.
 
     Returns:
         the PyTorch pose configuration file
@@ -114,22 +120,11 @@ def make_pytorch_pose_config(
 
     is_top_down = model_cfg.get("method", "BU").upper() == "TD"
     if is_top_down:
-        # FIXME(niels): Currently, the variant used is the default MobileNet. In the
-        #  future, we want users to be able to choose which detector variant they use
-        #  when creating the configuration file, instead of having to update it once
-        #  created
-        variant = None
-        if weight_init is not None:
-            # FIXME(niels): We only have fasterrcnn_resnet50_fpn_v2 SuperAnimal weights.
-            #  This should be updated once more SuperAnimal detectors are uploaded,
-            #  so that users can choose which pre-trained detector they use.
-            variant = "fasterrcnn_resnet50_fpn_v2"
-
         model_cfg = add_detector(
             configs_dir,
             model_cfg,
             len(individuals),
-            variant=variant,
+            detector_type=detector_type,
         )
 
     # add the default augmentations to the config
@@ -179,10 +174,52 @@ def make_pytorch_pose_config(
         )
 
     # sort first-level keys to make it prettier
-    return dict(sorted(pose_config.items()))
+    pose_config = dict(sorted(pose_config.items()))
+
+    if save:
+        write_config(pose_config_path, pose_config, overwrite=True)
+
+    return pose_config
 
 
-def add_metadata(project_config: dict, config: dict, pose_config_path: str) -> dict:
+def make_pytorch_test_config(
+    model_config: dict,
+    test_config_path: str | Path,
+    save: bool = False,
+) -> dict:
+    """Creates the test configuration for a model
+
+    Args:
+        model_config: The PyTorch config for the model.
+        test_config_path: The path of the test config
+        save: Whether to save the test config to ``test_config_path``.
+
+    Returns:
+        The test configuration file.
+    """
+    bodyparts = model_config["metadata"]["bodyparts"]
+    unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
+    all_joint_names = bodyparts + unique_bodyparts
+
+    test_config = dict(
+        dataset=model_config["metadata"]["project_path"],
+        dataset_type="multi-animal-imgaug",  # required for downstream tracking
+        num_joints=len(all_joint_names),
+        all_joints=[[i] for i in range(len(all_joint_names))],
+        all_joints_names=all_joint_names,
+        net_type=model_config["net_type"],
+        global_scale=1,
+        scoremap_dir="test",
+    )
+    if save:
+        write_config(test_config_path, test_config)
+
+    return test_config
+
+
+def add_metadata(
+    project_config: dict, config: dict, pose_config_path: str | Path
+) -> dict:
     """Adds metadata to a pytorch pose configuration
 
     Args:
@@ -196,7 +233,7 @@ def add_metadata(project_config: dict, config: dict, pose_config_path: str) -> d
     config = copy.deepcopy(config)
     config["metadata"] = {
         "project_path": project_config["project_path"],
-        "pose_config_path": pose_config_path,
+        "pose_config_path": str(pose_config_path),
         "bodyparts": auxiliaryfunctions.get_bodyparts(project_config),
         "unique_bodyparts": auxiliaryfunctions.get_unique_bodyparts(project_config),
         "individuals": project_config.get("individuals", ["animal"]),
@@ -311,7 +348,7 @@ def add_detector(
     configs_dir: Path,
     config: dict,
     num_individuals: int,
-    variant: str | None = None
+    detector_type: str | None = None,
 ) -> dict:
     """Adds a detector to a model
 
@@ -319,22 +356,24 @@ def add_detector(
         configs_dir: path to the DeepLabCut "configs" directory
         config: model configuration to update
         num_individuals: the maximum number of individuals the model should detect
-        variant: the detector variant to use (if None, uses the variant set in the
-            default detector.yaml config)
+        detector_type: the type of detector to use (if None, uses ``ssdlite``)
 
     Returns:
         the model configuration with an added detector config
     """
-    config = copy.deepcopy(config)
-    detector_config = read_config_as_dict(configs_dir / "base" / "detector.yaml")
-    detector_config = replace_default_values(
-        detector_config,
-        num_individuals=num_individuals,
-    )
-    if variant is not None:
-        detector_config["detector"]["model"]["variant"] = variant
+    if detector_type is None:
+        detector_type = "ssdlite"  # default detector
 
-    config = update_config(config, detector_config)
+    detector_type = detector_type.lower()
+    config = copy.deepcopy(config)
+    detector_config = update_config(
+        read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
+        read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
+    )
+    detector_config = replace_default_values(
+        detector_config, num_individuals=num_individuals,
+    )
+    config["detector"] = dict(sorted(detector_config.items()))
     return config
 
 

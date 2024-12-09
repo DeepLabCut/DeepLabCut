@@ -24,6 +24,8 @@ import typing
 import pickle
 import warnings
 from pathlib import Path
+from typing import List
+
 import numpy as np
 import pandas as pd
 import ruamel.yaml.representer
@@ -139,6 +141,7 @@ default_augmenter:
 snapshotindex:
 detector_snapshotindex:
 batch_size:
+detector_batch_size:
 \n
 # Cropping Parameters (for analysis and outlier frame detection)
 cropping:
@@ -209,6 +212,12 @@ def read_config(configname):
                 if cfg.get("engine") is None:
                     cfg["engine"] = Engine.TF.aliases[0]
                     write_config(configname, cfg)
+
+                if cfg.get("detector_snapshotindex") is None:
+                    cfg["detector_snapshotindex"] = -1
+
+                if cfg.get("detector_batch_size") is None:
+                    cfg["detector_batch_size"] = 1
 
                 if cfg["project_path"] != curr_dir:
                     cfg["project_path"] = curr_dir
@@ -437,7 +446,7 @@ def get_list_of_videos(
 
     if isinstance(videotype, str):
         videotype = [videotype]
-    if videotype is None:
+    if not videotype:
         videotype = auxfun_videos.SUPPORTED_VIDEOS
     # filter list of videos
     videos = [
@@ -552,8 +561,8 @@ def get_model_folder(
     trainFraction: float,
     shuffle: int,
     cfg: dict,
-    engine: Engine = Engine.TF,
     modelprefix: str = "",
+    engine: Engine = Engine.TF,
 ) -> Path:
     """
     Args:
@@ -561,9 +570,9 @@ def get_model_folder(
             for which to get the model folder
         shuffle: the index of the shuffle for which to get the model folder
         cfg: the project configuration
+        modelprefix: The name of the folder
         engine: The engine for which we want the model folder. Defaults to `tensorflow`
             for backwards compatibility with DeepLabCut 2.X
-        modelprefix: The name of the folder
 
     Returns:
         the relative path from the project root to the folder containing the model files
@@ -629,6 +638,29 @@ def get_evaluation_folder(
     )
 
 
+def get_snapshots_from_folder(train_folder: Path) -> List[str]:
+    """
+    Returns an ordered list of existing snapshot names in the train folder, sorted by
+    increasing training iterations.
+
+    Raises:
+        FileNotFoundError: if no snapshot_names are found in the train_folder.
+    """
+    snapshot_names = [
+        file.stem for file in train_folder.iterdir() if "index" in file.name
+    ]
+
+    if len(snapshot_names) == 0:
+        raise FileNotFoundError(
+            f"No snapshots were found in {train_folder}! Please ensure the network has "
+            f"been trained and verify the iteration, shuffle and trainFraction are "
+            f"correct."
+        )
+
+    # sort in ascending order of iteration number
+    return sorted(snapshot_names, key=lambda name: int(name.split("-")[1]))
+
+
 def get_deeplabcut_path():
     """Get path of where deeplabcut is currently running"""
     import importlib.util
@@ -670,9 +702,9 @@ def get_scorer_name(
     cfg: dict,
     shuffle: int,
     trainFraction: float,
-    engine: Engine | None = None,
     trainingsiterations: str | int = "unknown",
     modelprefix: str = "",
+    engine: Engine | None = None,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
     If the engine is not specified, determines which to use from
@@ -710,18 +742,13 @@ def get_scorer_name(
         snapshotindex = get_snapshot_index_for_scorer(
             "snapshotindex", cfg["snapshotindex"]
         )
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
-            "train",
+        model_folder = get_model_folder(
+            trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
         )
-        Snapshots = np.array(
-            [fn.split(".")[0] for fn in os.listdir(modelfolder) if "index" in fn]
-        )
-        increasing_indices = np.argsort([int(m.split("-")[1]) for m in Snapshots])
-        Snapshots = Snapshots[increasing_indices]
-        SNP = Snapshots[snapshotindex]
-        trainingsiterations = (SNP.split(os.sep)[-1]).split("-")[-1]
+        train_folder = Path(cfg["project_path"]) / model_folder / "train"
+        snapshot_names = get_snapshots_from_folder(train_folder)
+        snapshot_name = snapshot_names[snapshotindex]
+        trainingsiterations = (snapshot_name.split(os.sep)[-1]).split("-")[-1]
 
     dlc_cfg = read_plainconfig(
         os.path.join(

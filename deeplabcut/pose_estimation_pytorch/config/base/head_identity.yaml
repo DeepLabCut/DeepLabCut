@@ -1,12 +1,13 @@
 type: HeatmapHead
 predictor:
-  type: HeatmapPredictor
-  location_refinement: false
+  type: IdentityPredictor
+  apply_sigmoid: true
 target_generator:
   type: HeatmapPlateauGenerator
   num_heatmaps: "num_individuals"
   pos_dist_thresh: 17
   heatmap_mode: INDIVIDUAL
+  gradient_masking: false
   generate_locref: false
 criterion:
   heatmap:

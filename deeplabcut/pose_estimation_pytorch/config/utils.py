@@ -175,6 +175,20 @@ def load_backbones(configs_dir: Path) -> list[str]:
     return backbones
 
 
+def load_detectors(configs_dir: Path) -> list[str]:
+    """
+    Args:
+        configs_dir: the Path to the folder containing the "configs" for PyTorch
+            DeepLabCut
+
+    Returns:
+        all detectors that are available
+    """
+    detector_dir = configs_dir / "detectors"
+    detectors = [p.stem for p in detector_dir.iterdir() if p.suffix == ".yaml"]
+    return detectors
+
+
 def read_config_as_dict(config_path: str | Path) -> dict:
     """
     Args:
@@ -244,7 +258,7 @@ def available_models() -> list[str]:
     other_architectures = [
         p
         for p in configs_folder_path.iterdir()
-        if p.is_dir() and not p.name in ("backbones", "base")
+        if p.is_dir() and not p.name in ("backbones", "base", "detectors")
     ]
     for folder in other_architectures:
         variants = [p.stem for p in folder.iterdir() if p.suffix == ".yaml"]
@@ -252,3 +266,8 @@ def available_models() -> list[str]:
             models.add(variant)
 
     return list(sorted(models))
+
+
+def available_detectors() -> list[str]:
+    """Returns: all the possible detectors that can be used"""
+    return load_detectors(get_config_folder_path())

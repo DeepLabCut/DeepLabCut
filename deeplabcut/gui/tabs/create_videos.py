@@ -146,6 +146,24 @@ class CreateVideos(DefaultTab):
         )
         tmp_layout.addWidget(self.use_filtered_data_checkbox)
 
+        # Selector for p-cutoff
+        pcutoff_widget = QtWidgets.QWidget()
+        pcutoff_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
+        pcutoff_label = QtWidgets.QLabel("Plotting confidence cutoff (pcutoff)")
+        self.pcutoff_selector = QtWidgets.QDoubleSpinBox()
+        self.pcutoff_selector.setMinimum(0.0)
+        self.pcutoff_selector.setMaximum(1.0)
+        self.pcutoff_selector.setValue(0.6)
+        self.pcutoff_selector.setSingleStep(0.05)
+        pcutoff_layout.addWidget(pcutoff_label)
+        pcutoff_layout.addWidget(self.pcutoff_selector)
+        pcutoff_widget.setLayout(pcutoff_layout)
+        pcutoff_widget.setToolTip(
+            "This value sets the confidence threshold, above which predictions are "
+            "shown in the labeled videos."
+        )
+        tmp_layout.addWidget(pcutoff_widget)
+
         # Plot trajectories
         self.plot_trajectories = QtWidgets.QCheckBox("Plot trajectories")
         self.plot_trajectories.setCheckState(Qt.Unchecked)
@@ -259,20 +277,13 @@ class CreateVideos(DefaultTab):
             shuffle=shuffle,
             filtered=filtered,
             save_frames=self.create_high_quality_video.isChecked(),
+            pcutoff=self.pcutoff_selector.value(),
             displayedbodyparts=bodyparts,
             draw_skeleton=self.draw_skeleton_checkbox.isChecked(),
             trailpoints=trailpoints,
             color_by=color_by,
+            overwrite=self.overwrite_videos.isChecked(),
         )
-        if all(videos_created):
-            self.root.writer.write("Labeled videos created.")
-        else:
-            failed_videos = [
-                video for success, video in zip(videos_created, videos) if not success
-            ]
-            failed_videos_str = ", ".join(failed_videos)
-            self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
-
         if all(videos_created):
             self.root.writer.write("Labeled videos created.")
         else:
@@ -289,6 +300,7 @@ class CreateVideos(DefaultTab):
                 shuffle=shuffle,
                 filtered=filtered,
                 displayedbodyparts=bodyparts,
+                pcutoff=self.pcutoff_selector.value(),
             )
 
     def build_skeleton(self, *args):

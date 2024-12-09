@@ -347,7 +347,7 @@ def _to_coco_ground_truth(
                         "image_id": id_,
                         "category_id": 1,
                         "area": area,
-                        "bbox": bbox,
+                        "bbox": bbox.tolist(),
                         "keypoints": kpts.reshape(-1).tolist(),
                         "iscrowd": 0,
                         "num_keypoints": num_keypoints,
@@ -397,7 +397,7 @@ def _to_coco_predictions(
                     "image_id": img_id,
                     "category_id": 1,
                     "keypoints": kpts.reshape(-1).tolist(),
-                    "bbox": bbox,
+                    "bbox": bbox.tolist(),
                     "area": area,
                     "score": score,
                 }

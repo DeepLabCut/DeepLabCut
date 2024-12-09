@@ -85,7 +85,11 @@ def evaluate(
                 continue
         benchmark = benchmark_cls()
         for name in benchmark.names():
-            if Result(method_name=name, benchmark_name=benchmark_cls.name) in results:
+            if Result(
+                code=benchmark.code,
+                method_name=name,
+                benchmark_name=benchmark_cls.name,
+            ) in results:
                 continue
             else:
                 result = benchmark.evaluate(name, on_error=on_error)

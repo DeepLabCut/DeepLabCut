@@ -74,7 +74,9 @@ def test_get_batch(ma_dataset):
             == len(data_items)
             == batch_size
         )
-        for data_item, joint_id, batch_joint in zip(data_items, joint_ids, batch_joints):
+        for data_item, joint_id, batch_joint in zip(
+            data_items, joint_ids, batch_joints
+        ):
             assert len(data_item.joints) == len(joint_id)
             assert len(batch_joint) == len(np.concatenate(joint_id))
             start = 0

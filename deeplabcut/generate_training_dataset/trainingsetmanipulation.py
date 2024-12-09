@@ -398,19 +398,26 @@ def ParseYaml(configfile):
 
 
 def MakeTrain_pose_yaml(
-    itemstochange, saveasconfigfile, defaultconfigfile, items2drop={}
+    itemstochange,
+    saveasconfigfile,
+    defaultconfigfile,
+    items2drop: dict | None = None,
+    save: bool = True,
 ):
+    if items2drop is None:
+        items2drop = {}
+
     docs = ParseYaml(defaultconfigfile)
     for key in items2drop.keys():
-        # print(key, "dropping?")
         if key in docs[0].keys():
             docs[0].pop(key)
 
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
-    with open(saveasconfigfile, "w") as f:
-        yaml.dump(docs[0], f)
+    if save:
+        with open(saveasconfigfile, "w") as f:
+            yaml.dump(docs[0], f)
 
     return docs[0]
 
@@ -777,6 +784,7 @@ def create_training_dataset(
     trainIndices=None,
     testIndices=None,
     net_type=None,
+    detector_type=None,
     augmenter_type=None,
     posecfg_template=None,
     superanimal_name="",
@@ -830,8 +838,8 @@ def create_training_dataset(
                 * ``efficientnet-b4``
                 * ``efficientnet-b5``
                 * ``efficientnet-b6``
-            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
-            complete list)
+            PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
+            a complete list)
                 * ``resnet_50``
                 * ``resnet_101``
                 * ``hrnet_w18``
@@ -846,6 +854,16 @@ def create_training_dataset(
                 * ``top_down_hrnet_w32``
                 * ``top_down_hrnet_w48``
                 * ``animaltokenpose_base``
+
+    detector_type: string, optional, default=None
+        Only for the PyTorch engine.
+        When passing creating shuffles for top-down models, you can specify which
+        detector you want. If the detector_type is None, the ```ssdlite``` will be used.
+        The list of all available detectors can be obtained by calling
+        ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported options:
+            * ``ssdlite``
+            * ``fasterrcnn_mobilenet_v3_large_fpn``
+            * ``fasterrcnn_resnet50_fpn_v2``
 
     augmenter_type: string, optional, default=None
         Type of augmenter. The options available depend on which engine is used.
@@ -958,6 +976,7 @@ def create_training_dataset(
             num_shuffles,
             Shuffles,
             net_type=net_type,
+            detector_type=detector_type,
             trainIndices=trainIndices,
             testIndices=testIndices,
             userfeedback=userfeedback,
@@ -1193,7 +1212,7 @@ def create_training_dataset(
                         cfg["project_path"],
                         Path(modelfoldername),
                         "train",
-                        "pose_cfg.yaml",
+                        engine.pose_cfg_name,
                     )
                 )
                 path_test_config = str(
@@ -1204,67 +1223,75 @@ def create_training_dataset(
                         "pose_cfg.yaml",
                     )
                 )
-                # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-                items2change = {
-                    "dataset": datafilename,
-                    "engine": engine.aliases[0],
-                    "metadataset": metadatafilename,
-                    "num_joints": len(bodyparts),
-                    "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": model_path,
-                    "project_path": str(cfg["project_path"]),
-                    "net_type": net_type,
-                    "dataset_type": augmenter_type,
-                }
+                if engine == Engine.TF:
+                    items2change = {
+                        "dataset": datafilename,
+                        "engine": engine.aliases[0],
+                        "metadataset": metadatafilename,
+                        "num_joints": len(bodyparts),
+                        "all_joints": [[i] for i in range(len(bodyparts))],
+                        "all_joints_names": [str(bpt) for bpt in bodyparts],
+                        "init_weights": model_path,
+                        "project_path": str(cfg["project_path"]),
+                        "net_type": net_type,
+                        "dataset_type": augmenter_type,
+                    }
 
-                items2drop = {}
-                if augmenter_type == "scalecrop":
-                    # these values are dropped as scalecrop
-                    # doesn't have rotation implemented
-                    items2drop = {"rotation": 0, "rotratio": 0.0}
-                # Also drop maDLC smart cropping augmentation parameters
-                for key in ["pre_resize", "crop_size", "max_shift", "crop_sampling"]:
-                    items2drop[key] = None
+                    items2drop = {}
+                    if augmenter_type == "scalecrop":
+                        # these values are dropped as scalecrop
+                        # doesn't have rotation implemented
+                        items2drop = {"rotation": 0, "rotratio": 0.0}
+                    # Also drop maDLC smart cropping augmentation parameters
+                    for key in [
+                        "pre_resize",
+                        "crop_size",
+                        "max_shift",
+                        "crop_sampling",
+                    ]:
+                        items2drop[key] = None
 
-                trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile, items2drop
-                )
+                    trainingdata = MakeTrain_pose_yaml(
+                        items2change,
+                        path_train_config,
+                        defaultconfigfile,
+                        items2drop,
+                        save=(engine == Engine.TF),
+                    )
 
-                keys2save = [
-                    "dataset",
-                    "num_joints",
-                    "all_joints",
-                    "all_joints_names",
-                    "net_type",
-                    "init_weights",
-                    "global_scale",
-                    "location_refinement",
-                    "locref_stdev",
-                ]
-                MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
-                print(
-                    "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
-                )
-
-                # Populate the pytorch config yaml file
-                if engine == Engine.PYTORCH:
+                    keys2save = [
+                        "dataset",
+                        "num_joints",
+                        "all_joints",
+                        "all_joints_names",
+                        "net_type",
+                        "init_weights",
+                        "global_scale",
+                        "location_refinement",
+                        "locref_stdev",
+                    ]
+                    MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
+                    print(
+                        "The training dataset is successfully created. Use the function"
+                        "'train_network' to start training. Happy training!"
+                    )
+                elif engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
                         make_pytorch_pose_config,
+                        make_pytorch_test_config,
                     )
                     from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
                         make_super_animal_finetune_config,
                     )
 
-                    pose_cfg_path = path_train_config.replace(
-                        "pose_cfg.yaml", "pytorch_config.yaml"
-                    )
                     if weight_init is not None and weight_init.with_decoder:
                         pytorch_cfg = make_super_animal_finetune_config(
                             project_config=cfg,
                             pose_config_path=path_train_config,
-                            net_type=net_type,
+                            model_name=net_type,
+                            detector_name=detector_type,
                             weight_init=weight_init,
+                            save=True,
                         )
                     else:
                         pytorch_cfg = make_pytorch_pose_config(
@@ -1272,10 +1299,12 @@ def create_training_dataset(
                             pose_config_path=path_train_config,
                             net_type=net_type,
                             top_down=top_down,
+                            detector_type=detector_type,
                             weight_init=weight_init,
+                            save=True,
                         )
 
-                    auxiliaryfunctions.write_plainconfig(pose_cfg_path, pytorch_cfg)
+                    make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
 
         return splits
 
@@ -1561,6 +1590,7 @@ def create_training_dataset_from_existing_split(
     shuffles: list[int] | None = None,
     userfeedback: bool = True,
     net_type: str | None = None,
+    detector_type: str | None = None,
     augmenter_type: str | None = None,
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
@@ -1608,6 +1638,17 @@ def create_training_dataset_from_existing_split(
                 * ``efficientnet-b6``
             Currently supported  options for engine=Engine.TF can be obtained by calling
             ``deeplabcut.pose_estimation_pytorch.available_models()``.
+
+        detector_type: string, optional, default=None
+            Only for the PyTorch engine.
+            When passing creating shuffles for top-down models, you can specify which
+            detector you want. If the detector_type is None, the ```ssdlite``` will be
+            used. The list of all available detectors can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported
+            options:
+                * ``ssdlite``
+                * ``fasterrcnn_mobilenet_v3_large_fpn``
+                * ``fasterrcnn_resnet50_fpn_v2``
 
         augmenter_type: Type of augmenter. Currently supported augmenters for
             engine=Engine.TF are
@@ -1680,6 +1721,7 @@ def create_training_dataset_from_existing_split(
         trainIndices=[train_idx for _ in range(num_copies)],
         testIndices=[test_idx for _ in range(num_copies)],
         net_type=net_type,
+        detector_type=detector_type,
         augmenter_type=augmenter_type,
         posecfg_template=posecfg_template,
         superanimal_name=superanimal_name,

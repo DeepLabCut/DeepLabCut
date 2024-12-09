@@ -12,9 +12,14 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     analyze_videos,
     convert_detections2tracklets,
     evaluate_network,
+    extract_maps,
+    extract_save_all_maps,
     train_network,
 )
-from deeplabcut.pose_estimation_pytorch.config import available_models
+from deeplabcut.pose_estimation_pytorch.config import (
+    available_detectors,
+    available_models,
+)
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.cocoloader import COCOLoader
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
@@ -22,4 +27,6 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDatasetParameters,
 )
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import fix_seeds

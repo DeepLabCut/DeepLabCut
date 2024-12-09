@@ -26,7 +26,9 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 matplotlib_axes_logger.setLevel("ERROR")
 
 
-def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
+def calibrate_cameras(
+    config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)
+):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
 
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images.

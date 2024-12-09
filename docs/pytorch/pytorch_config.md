@@ -288,6 +288,7 @@ runner:
     ...
   scheduler:  # optional: a learning rate scheduler
     ...
+  load_scheduler_state_dict: true/false # whether to load scheduler state when resuming training from a snapshot,
   snapshots:  # parameters for the TorchSnapshotManager
     max_snapshots: 5  # the maximum number of snapshots to save (the "best" model does not count as one of them)
     save_epochs: 25  # the interval between each snapshot save  
@@ -327,7 +328,7 @@ https://pytorch.org/docs/stable/optim.html). Examples:
       lr: 1e-4
 ```
 
-**Scheduler**: YYou can use [any scheduler](
+**Scheduler**: You can use [any scheduler](
 https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate) defined in
 `torch.optim.lr_scheduler`, where the arguments given are arguments of the scheduler. 
 The default scheduler is an LRListScheduler, which changes the learning rates at each 
@@ -379,10 +380,7 @@ default.
 Additionally, you can log results to [Weights and Biases](https://wandb.ai/site), by adding a
 `WandbLogger`. Just make sure you're logged in to your `wandb` account before starting 
 your training run (with `wandb login` from your shell). For more information, see their
-[tutorials](https://docs.wandb.ai/tutorials) and their documentation for 
-[`wandb.init`](https://docs.wandb.ai/ref/python/init). You can also log images as they are seen by the model to `wandb` 
-with the `image_log_interval`. This logs a random train and test image, as well as the 
-targets and heatmaps for that image.
+[tutorials](https://docs.wandb.ai/tutorials) and their documentation for [`wandb.init`](https://docs.wandb.ai/ref/python/init).
 
 Logging to `wandb` is a good way to keep track of what you've run, including performance
 and metrics.
@@ -390,11 +388,34 @@ and metrics.
 ```yaml
 logger:
  type: WandbLogger
- image_log_interval: 5  # how often images are logged to wandb (in epochs)
  project_name: my-dlc3-project  # the name of the project where the run should be logged
  run_name: dekr-w32-shuffle0  # the name of the run to log
  ...  # any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`
 ```
+
+You can also log images as they are seen by the model to `wandb` 
+with the `image_log_interval`. This logs a random train and test image, as well as the 
+targets and heatmaps for that image.
+
+### Restarting Training at a Specific Checkpoint
+
+If you wish to restart the training at a specific checkpoint, you can specify the
+full path of the checkpoint to the `resume_training_from` variable, as shown below. In this 
+example, `snapshot-010.pt` will be loaded before training starts, and the model will 
+continue to train from the 10th epoch on.
+
+```yaml
+# model configuration
+...
+# weights from which to resume training
+resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-010.pt
+```
+
+When continuing to train a model, you may want to modify the learning rate scheduling 
+that was being used (by editing the configuration under the `scheduler` key). When doing
+so, you *must set `load_scheduler_state_dict: false`* in your `runner` config! 
+Otherwise, the parameters for the scheduler your started training with will be loaded 
+from the state dictionary, and your edits might not be kept!
 
 ## Training Top-Down Models
 
@@ -437,15 +458,37 @@ detector:
     ...
 ```
 
-Currently, the only detector available is a `FasterRCNN`. However, multiple variants are
-available (you can view the different variants on [torchvision's object detection page](
-https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to
-use the fastest detector that brings enough performance. The recommended variants
-are the following (from fastest to most powerful, taken from torchvision's
-documentation):
+Currently, the only detectors available are `FasterRCNN` and `SSDLite`. However, multiple variants of
+`FasterRCNN` are available (you can view the different variants on 
+[torchvision's object detection page](https://pytorch.org/vision/stable/models.html#object-detection)). It's recommended to use the fastest 
+detector that brings enough performance. The recommended variants are the following 
+(from fastest to most powerful, taken from torchvision's documentation):
 
-| name                              |  Box MAP (larger = more powerful) | Params (larger = more powerful) |    GFLOPS (larger = slower) |
-|-----------------------------------|----------------------------------:|--------------------------------:|----------------------------:|
-| fasterrcnn_mobilenet_v3_large_fpn |                              32.8 |                           19.4M |                        4.49 |
-| fasterrcnn_resnet50_fpn           |                                37 |                           41.8M |                      134.38 |
-| fasterrcnn_resnet50_fpn_v2        |                              46.7 |                           43.7M |                      280.37 |
+| name                              | Box MAP (larger = more powerful) | Params (larger = more powerful) | GFLOPS (larger = slower) |
+|-----------------------------------|---------------------------------:|--------------------------------:|-------------------------:|
+| SSDLite                           |                             21.3 |                            3.4M |                     0.58 |
+| fasterrcnn_mobilenet_v3_large_fpn |                             32.8 |                           19.4M |                     4.49 |
+| fasterrcnn_resnet50_fpn           |                               37 |                           41.8M |                   134.38 |
+| fasterrcnn_resnet50_fpn_v2        |                             46.7 |                           43.7M |                   280.37 |
+
+
+### Restarting Training of an Object Detector at a Specific Checkpoint
+
+If you wish to restart the training of a detector at a specific checkpoint, you can
+specify the full path of the checkpoint to the detector's `resume_training_from` variable, as
+shown below. In this example, `snapshot-detector-020.pt` will be loaded before training
+starts, and the model will continue to train from the 20th epoch on.
+
+```yaml
+detector:
+  # detector configuration
+  ...
+  # weights from which to resume training
+  resume_training_from: /Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt
+```
+
+When continuing to train a detector, you may want to modify the learning rate scheduling 
+that was being used (by editing the configuration under the `scheduler` key). When doing
+so, you *must set `load_scheduler_state_dict: false`* in your `detector`: `runner`
+config! Otherwise, the parameters for the scheduler your started training with will be
+loaded from the state dictionary, and your edits might not be kept!

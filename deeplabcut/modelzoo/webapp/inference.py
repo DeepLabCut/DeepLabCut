@@ -12,11 +12,9 @@ from typing import Dict
 
 import numpy as np
 
+import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_config_model_paths,
-    update_config,
-)
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 
 
 class SingletonTopDownRunners:
@@ -71,26 +69,21 @@ class SuperanimalPyTorchInference:
     def __init__(
         self,
         project_name: str,
-        pose_model_type: str = "hrnetw32",
+        pose_model_type: str = "hrnet_w32",
+        detector_model_type: str = "fasterrcnn_resnet50_fpn_v2",
         max_individuals: int = 30,
         device: str = "cpu",
     ):
-
-        (
-            model_config,
-            project_config,
-            _,
-            _,
-        ) = get_config_model_paths(project_name, pose_model_type)
-
         self.max_individuals = max_individuals
-        config = {**project_config, **model_config}
+        config = modelzoo.load_super_animal_config(
+            super_animal=project_name,
+            model_name=pose_model_type,
+            detector_name=detector_model_type,
+        )
         config = update_config(config, max_individuals, device)
-
         self._config = config
 
     def initialize_models(self, pose_model_path: str, detector_model_path: str):
-
         self.models = SingletonTopDownRunners(
             self.config,
             pose_model_path,

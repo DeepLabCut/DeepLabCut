@@ -27,7 +27,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxiliaryfunctions
 
 
 class Loader(ABC):
@@ -49,6 +48,7 @@ class Loader(ABC):
     def __init__(self, model_config_path: str | Path) -> None:
         self.model_config_path = Path(model_config_path)
         self.model_cfg = config.read_config_as_dict(str(model_config_path))
+        self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
     @property

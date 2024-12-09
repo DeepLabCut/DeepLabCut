@@ -194,7 +194,10 @@ class ImageLoggerMixin(ABC):
         image = F.convert_image_dtype(image.detach().cpu(), dtype=torch.uint8)
         if keypoints is not None and len(keypoints) > 0:
             assert len(keypoints.shape) == 3
-            keypoints[keypoints < 0] = np.nan
+            # Use visibility and force torchvision >= 0.18
+            # pytorch.org/vision/0.18/generated/torchvision.utils.draw_keypoints.html
+            # pytorch.org/vision/0.17/generated/torchvision.utils.draw_keypoints.html
+            keypoints[torch.any(torch.isnan(keypoints), dim=-1)] = -1
             image = draw_keypoints(
                 image, keypoints=keypoints[..., :2], colors="red", radius=5
             )
@@ -367,15 +370,17 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 class CSVLogger(BaseLogger):
     """Logger saving stats and metrics to a CSV file"""
 
-    def __init__(self, train_folder: Path) -> None:
+    def __init__(self, train_folder: Path, log_filename: str) -> None:
         """Initialize the WandbLogger class.
 
         Args:
             train_folder: The path of the folder containing training files.
+            log_filename: The name of the file in which to store training stats
         """
         super().__init__()
         self.train_folder = train_folder
-        self.log_file = train_folder / "learning_stats.csv"
+        self.log_filename = log_filename
+        self.log_file = train_folder / log_filename
 
         self._steps: list[int] = []
         self._metric_store: list[dict] = []
