@@ -66,6 +66,8 @@ def train_network(
     displayiters: int | None = None,
     saveiters: int | None = None,
     maxiters: int | None = None,
+    epochs: int | None = None,
+    save_epochs: int | None = None,
     allow_growth: bool = True,
     gputouse: str | None = None,
     autotune: bool = False,
@@ -120,6 +122,20 @@ def train_network(
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
+    save_epochs: optional, default=None
+        Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
+        TensorFlow engine). The number of epochs between each snapshot save. If
+        None, the value will be read from the `pytorch_config.yaml` file.
+
+    epochs: optional, default=None
+        Only for the PyTorch engine (equivalent to the `maxiters` parameter for the
+        TensorFlow engine). The maximum number of epochs to train the model for. If
+        None, the value will be read from the `pytorch_config.yaml` file. An epoch is a
+        single pass through the training dataset, which means your model has seen each
+        training image exactly once. So if you have 64 training images for your network,
+        an epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2,
+        16 with batch size 4, etc.).
+
     allow_growth: bool, optional, default=True.
         Only for the TensorFlow engine.
         For some smaller GPUs the memory issues happen. If ``True``, the memory
@@ -140,7 +156,6 @@ def train_network(
         (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317).
 
     keepdeconvweights: bool, optional, default=True
-        Only for the TensorFlow engine.
         Also restores the weights of the deconvolution layers (and the backbone) when
         training from a snapshot. Note that if you change the number of bodyparts, you
         need to set this to false for re-training.
@@ -171,8 +186,6 @@ def train_network(
         train_network method here. These arguments are passed to the downstream method.
         Some of the parameters that can be passed are
             * ``device`` (the CUDA device to use for training)
-            * ``epochs`` (maximum number of epochs to train the network for)
-            * ``save_epochs`` (the number of epochs between each snapshot saved)
         `   * ``batch_size`` (the batch size to use while training).
 
         When training a top-down model, these parameters are also available for the
@@ -251,6 +264,9 @@ def train_network(
             trainingsetindex=trainingsetindex,
             modelprefix=modelprefix,
             max_snapshots_to_keep=max_snapshots_to_keep,
+            load_head_weights=keepdeconvweights,
+            epochs=epochs,
+            save_epochs=save_epochs,
             **torch_kwargs,
         )
 
