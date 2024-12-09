@@ -183,6 +183,7 @@ def visualize_predictions(
     num_samples: int | None = None,
     random_select: bool = False,
     show_ground_truth: bool = True,
+    plot_bboxes: bool = True,
 ) -> None:
     """Visualize model predictions alongside ground truth keypoints.
 
@@ -251,6 +252,13 @@ def visualize_predictions(
             visible_pred.append(visible_points)
         visible_pred = np.stack(visible_pred)  # Shape: [N, num_visible_joints, 3]
 
+        if plot_bboxes:
+            bboxes = predictions[image_path].get("bboxes", None)
+            bbox_scores = predictions[image_path].get("bbox_scores", None)
+            bounding_boxes = (bboxes, bbox_scores) if bbox_scores is not None and bbox_scores is not None else None
+        else:
+            bounding_boxes = None
+
         # Generate and save visualization
         try:
             plot_gt_and_predictions(
@@ -258,6 +266,7 @@ def visualize_predictions(
                 output_dir=output_dir,
                 gt_bodyparts=visible_gt,
                 pred_bodyparts=visible_pred,
+                bounding_boxes=bounding_boxes,
             )
             print(f"Successfully plotted predictions for {image_path}")
         except Exception as e:
@@ -276,6 +285,9 @@ def plot_gt_and_predictions(
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
+    bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
+    bounding_boxes_color="k",
+    bboxes_pcutoff: float = 0.6,
 ):
     """Plot ground truth and predictions on an image.
 
@@ -291,6 +303,9 @@ def plot_gt_and_predictions(
         dot_size: Size of the plotted points
         alpha_value: Transparency of the points
         p_cutoff: Confidence threshold for showing predictions
+        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confidence levels,
+        bounding_boxes_color: If bounding_boxes is not None, this is the color that will be used for plotting them
+        bboxes_cutoff: bounding boxes confidence cutoff threshold.
     """
     # Ensure output directory exists
     output_dir = Path(output_dir)
@@ -336,6 +351,9 @@ def plot_gt_and_predictions(
         alpha_value,
         p_cutoff,
         ax=ax,
+        bounding_boxes=bounding_boxes,
+        bounding_boxes_color=bounding_boxes_color,
+        bboxes_cutoff=bboxes_pcutoff,
     )
 
     # Plot unique bodyparts if present
