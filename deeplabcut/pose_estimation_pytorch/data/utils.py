@@ -51,8 +51,8 @@ def bbox_from_keypoints(
     squeeze = False
 
     # we do not estimate bbox on keypoints that have 0 or -1 flag
-    mask = keypoints[..., -1] > 0
-    keypoints = keypoints[mask]
+    keypoints = np.copy(keypoints)
+    keypoints[keypoints[..., -1] <= 0] = np.nan
 
     if len(keypoints.shape) == 2:
         squeeze = True
@@ -61,6 +61,10 @@ def bbox_from_keypoints(
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
     bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
     bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+
+    # can have NaNs if some individuals have no visible keypoints
+    bboxes = np.nan_to_num(bboxes, nan=0)
+
     bboxes = np.clip(
         bboxes,
         a_min=[0, 0, 0, 0],
@@ -258,84 +262,6 @@ def _crop_image_keypoints(
     return cropped_resized_image, cropped_resized_keypoints, offsets, scales
 
 
-def _crop_and_pad_image_torch(
-    image: np.array,
-    bbox: np.array,
-    bbox_format: str,
-    output_size: int,
-    center: bool = True,
-) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
-    """TODO: Reimplement this function with numpy and for non-square resize :)
-    Only works for square cropped bounding boxes. Crops images around bounding boxes
-    for top-down pose estimation in a MMpose style. Computes offsets so that
-    coordinates in the original image can be mapped to the cropped one;
-
-        x_cropped = (x - offset_x) / scale_x
-        x_cropped = (y - offset_y) / scale_y
-
-    Args:
-        image: (h, w, c) the image to crop
-        bbox: (4,) the bounding box to crop around
-        bbox_format: {"xyxy", "xywh", "cxcywh"} the format of the bounding box
-        output_size: the size to resize the image to
-        center: Whether to center the crop if it needs to be padded
-
-    Returns:
-        cropped_image, (offset_x, offset_y), (scale_x, scale_y)
-    """
-    image = torch.tensor(image).permute(2, 0, 1)
-    bbox = torch.tensor(bbox)
-    if bbox_format != "cxcywh":
-        bbox = box_convert(bbox.unsqueeze(0), bbox_format, "cxcywh").squeeze()
-
-    c, h, w = image.shape
-    crop_size = torch.max(bbox[2:])
-
-    xmin = int(torch.clip(bbox[0] - (crop_size / 2), min=0, max=w - 1).cpu().item())
-    xmax = int(torch.clip(bbox[0] + (crop_size / 2), min=1, max=w).cpu().item())
-    ymin = int(torch.clip(bbox[1] - (crop_size / 2), min=0, max=h - 1).cpu().item())
-    ymax = int(torch.clip(bbox[1] + (crop_size / 2), min=1, max=h).cpu().item())
-    cropped_image = image[:, ymin:ymax, xmin:xmax]
-
-    crop_h, crop_w = cropped_image.shape[1:3]
-    pad_size = max(crop_h, crop_w)
-    offset = (xmin, ymin)
-
-    # Pad image if not square
-    if not crop_h == crop_w:
-        padded_cropped_image = torch.zeros((c, pad_size, pad_size), dtype=image.dtype)
-        if center:
-            # center the bbox in padding
-            w_start = (pad_size - crop_w) // 2
-            h_start = (pad_size - crop_h) // 2
-        else:
-            w_start = 0
-            if bbox[0] - (crop_size / 2) < 0:
-                # padding on the left
-                w_start = pad_size - crop_w
-            elif bbox[0] + (crop_size / 2) >= w:
-                # padding on the right
-                w_start = 0
-
-            h_start = 0
-            if bbox[1] - (crop_size / 2) < 0:
-                # padding at the top
-                h_start = pad_size - crop_h
-            elif bbox[1] + (crop_size / 2) >= h:
-                # padding at the bottom
-                h_start = 0
-
-        h_end = h_start + crop_h
-        w_end = w_start + crop_w
-        offset = (offset[0] - w_start, offset[1] - h_start)
-        padded_cropped_image[:, h_start:h_end, w_start:w_end] = cropped_image
-        cropped_image = padded_cropped_image
-
-    scale = pad_size / output_size
-    output = F.resize(cropped_image, [output_size, output_size], antialias=True)
-    return output.permute(1, 2, 0).numpy(), offset, (scale, scale)
-
-
 def _compute_crop_bounds(
     bboxes: np.ndarray,
     image_shape: tuple[int, int, int],
@@ -488,7 +414,7 @@ def apply_transform(
     """
 
     if transform:
-        oob_mask = _out_of_bounds_keypoints(keypoints, image.shape)
+        oob_mask = out_of_bounds_keypoints(keypoints, image.shape)
         transformed = _apply_transform(
             transform, image, keypoints, bboxes, class_labels
         )
@@ -501,7 +427,7 @@ def apply_transform(
 
         out_shape = transformed["image"].shape
         if len(transformed["keypoints"]) > 0:
-            oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
+            oob_mask = out_of_bounds_keypoints(transformed["keypoints"], out_shape)
             # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
             if np.sum(oob_mask) > 0:
                 transformed["keypoints"][oob_mask, 2] = 0.0
@@ -559,7 +485,7 @@ def _apply_transform(
     return transformed
 
 
-def _out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
+def out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
     """Computes which visible keypoints are outside an image
 
     Args:

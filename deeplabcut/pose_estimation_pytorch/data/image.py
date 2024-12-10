@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 
+import cv2
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
@@ -162,3 +163,84 @@ def resize_and_random_crop(
             anns["area"] = scaled_area
 
     return scaled_cropped_image, targets
+
+
+def top_down_crop(
+    image: np.ndarray,
+    bbox: np.ndarray,
+    output_size: tuple[int, int],
+    margin: int = 0,
+    center_padding: bool = False,
+) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
+    """
+    Crops images around bounding boxes for top-down pose estimation. Computes offsets so
+    that coordinates in the original image can be mapped to the cropped one;
+
+        x_cropped = (x - offset_x) / scale_x
+        x_cropped = (y - offset_y) / scale_y
+
+    Bounding boxes are expected to be in COCO-format (xywh).
+
+    Args:
+        image: (h, w, c) the image to crop
+        bbox: (4,) the bounding box to crop around
+        output_size: the (width, height) of the output cropped image
+        margin: a margin to add around the bounding box before cropping
+        center_padding: whether to center the image in the padding if any is needed
+
+    Returns:
+        cropped_image, (offset_x, offset_y), (scale_x, scale_y)
+    """
+    image_h, image_w, c = image.shape
+    out_w, out_h = output_size
+    x, y, w, h = bbox
+
+    cx = x + w / 2
+    cy = y + h / 2
+    w += 2 * margin
+    h += 2 * margin
+
+    input_ratio = w / h
+    output_ratio = out_w / out_h
+    if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
+        h = w / output_ratio
+    elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
+        w = h * output_ratio
+
+    # cx,cy,w,h will now give the right ratio -> check if padding is needed
+    x1, y1 = int(round(cx - (w / 2))), int(round(cy - (h / 2)))
+    x2, y2 = int(round(cx + (w / 2))), int(round(cy + (h / 2)))
+
+    # pad symmetrically - compute total padding across axis
+    pad_left, pad_right, pad_top, pad_bottom = 0, 0, 0, 0
+    if x1 < 0:
+        pad_left = -x1
+        x1 = 0
+    if x2 > image_w:
+        pad_right = x2 - image_w
+        x2 = image_w
+    if y1 < 0:
+        pad_top = -y1
+        y1 = 0
+    if y2 > image_h:
+        pad_bottom = y2 - image_h
+        y2 = image_h
+
+    w, h = x2 - x1, y2 - y1
+    pad_x = pad_left + pad_right
+    pad_y = pad_top + pad_bottom
+    if center_padding:
+        pad_left = pad_x // 2
+        pad_top = pad_y // 2
+
+    # crop the pixels we care about
+    image_crop = np.zeros((h + pad_y, w + pad_x, c), dtype=image.dtype)
+    image_crop[pad_top:pad_top + h, pad_left:pad_left + w] = image[y1:y2, x1:x2]
+
+    # resize the cropped image
+    image = cv2.resize(image_crop, (out_w, out_h), interpolation=cv2.INTER_LINEAR)
+
+    # compute scale and offset
+    offset = x1 - pad_left, y1 - pad_top
+    scale = (w + pad_x) / out_w, (h + pad_y) / out_h
+    return image, offset, scale
