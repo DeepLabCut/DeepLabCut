@@ -20,17 +20,16 @@ Licensed under GNU Lesser General Public License v3.0
 import multiprocessing
 
 
+def _wrapper(func, queue, *args, **kwargs):
+    try:
+        result = func(*args, **kwargs)
+        queue.put(result)  # Pass the result back via the queue
+    except Exception as e:
+        queue.put(e)  # Pass any exception back via the queue
 
 def call_with_timeout(func, timeout, *args, **kwargs):
-    def wrapper(queue, *args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-            queue.put(result)  # Pass the result back via the queue
-        except Exception as e:
-            queue.put(e)  # Pass any exception back via the queue
-
     queue = multiprocessing.Queue()
-    process = multiprocessing.Process(target=wrapper, args=(queue, *args), kwargs=kwargs)
+    process = multiprocessing.Process(target=_wrapper, args=(func, queue, *args), kwargs=kwargs)
     process.start()
     process.join(timeout)
 
