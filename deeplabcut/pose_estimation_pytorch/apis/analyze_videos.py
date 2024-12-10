@@ -175,27 +175,27 @@ def analyze_videos(
     shuffle: int = 1,
     trainingsetindex: int = 0,
     save_as_csv: bool = False,
+    in_random_order: bool = False,
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
     destfolder: str | None = None,
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
+    dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     modelprefix: str = "",
     use_shelve: bool = False,
     robust_nframes: bool = False,
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
+    n_tracks: int | None = None,
+    calibrate: bool = False,
     identity_only: bool | None = False,
     overwrite: bool = False,
     cropping: list[int] | None = None,
     save_as_df: bool = False,
 ) -> str:
     """Makes prediction based on a trained network.
-
-    # TODO:
-        - other options missing options such as calibrate
-        - pass detector path or detector runner
 
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshot_index').
@@ -213,6 +213,8 @@ def analyze_videos(
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
         save_as_csv: For multi-animal projects and when `auto_track=True`, passed
             along to the `stitch_tracklets` method to save tracks as CSV.
+        in_random_order: Whether or not to analyze videos in a random order. This is
+            only relevant when specifying a video directory in `videos`.
         device: the device to use for video analysis
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
@@ -227,6 +229,7 @@ def analyze_videos(
             the snapshot index is loaded from the project configuration.
         detector_snapshot_index: (only for top-down models) index of the detector
             snapshot to use, used in the same way as ``snapshot_index``
+        dynamic: TODO(niels)
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
@@ -248,6 +251,11 @@ def analyze_videos(
 
             If ``False``, one must run ``convert_detections2tracklets`` and
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file.
+        n_tracks: Number of tracks to reconstruct. By default, taken as the number of
+            individuals defined in the config.yaml. Another number can be passed if the
+            number of animals in the video is different from the number of animals the
+            model was trained on.
+        calibrate: TODO(niels)
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
@@ -359,7 +367,7 @@ def analyze_videos(
     )
 
     # Reading video and init variables
-    videos = list_videos_in_folder(videos, videotype)
+    videos = list_videos_in_folder(videos, videotype, shuffle=in_random_order)
     for video in videos:
         if destfolder is None:
             output_path = video.parent
@@ -452,6 +460,7 @@ def analyze_videos(
                         videotype,
                         shuffle,
                         trainingsetindex,
+                        n_tracks=n_tracks,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
                     )

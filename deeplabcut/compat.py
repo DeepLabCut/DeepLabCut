@@ -666,7 +666,6 @@ def analyze_videos(
         Saves the predictions in a .csv file.
 
     in_random_order: bool, optional (default=True)
-        Only for the TensorFlow engine.
         Whether or not to analyze videos in a random order.
         This is only relevant when specifying a video directory in `videos`.
 
@@ -693,8 +692,7 @@ def analyze_videos(
         Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
         Source: https://arxiv.org/abs/1909.11229
 
-    dynamic: tuple(bool, float, int) triple containing (state, detectiontreshold, margin)
-        Currently not supported by the PyTorch engine.
+    dynamic: tuple(bool, float, int) triple containing (state, det_threshold, margin)
         If the state is true, then dynamic cropping will be performed. That means that
         if an object is detected (i.e. any body part > detectiontreshold), then object
         boundaries are computed according to the smallest/largest x position and
@@ -744,7 +742,6 @@ def analyze_videos(
         rely exclusively on identity prediction.
 
     calibrate: bool, optional, default=False
-        Currently not supported by the PyTorch engine.
         If ``True``, use training data to calibrate the animal assembly procedure. This
         improves its robustness to wrong body part links, but requires very little
         missing data.
@@ -892,11 +889,15 @@ def analyze_videos(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             save_as_csv=save_as_csv,
+            in_random_order=in_random_order,
             destfolder=destfolder,
+            dynamic=dynamic,
             modelprefix=modelprefix,
             use_shelve=use_shelve,
             robust_nframes=robust_nframes,
             auto_track=auto_track,
+            n_tracks=n_tracks,
+            calibrate=calibrate,
             identity_only=identity_only,
             overwrite=False,
             cropping=cropping,

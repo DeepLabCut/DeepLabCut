@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
 from typing import Callable
 
@@ -270,34 +271,44 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str], video_type: str | None
+    data_path: str | list[str],
+    video_type: str | None,
+    shuffle: bool = False,
 ) -> list[Path]:
     """
-    TODO
+    Args:
+        data_path: Path or list of paths to folders containing videos
+        video_type: The type of video to filter for
+        shuffle: If the paths point to directories, whether to shuffle the order of
+            videos in the directory.
+
+    Returns:
+        The paths of videos to analyze.
     """
     if not isinstance(data_path, list):
         data_path = [data_path]
     video_paths = [Path(p) for p in data_path]
 
     videos = []
-    for video_path in video_paths:
-        if video_path.is_dir():
+    for path in video_paths:
+        if path.is_dir():
             if video_type is None:
                 video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
             else:
                 video_suffixes = [video_type]
 
-            video_suffixes = [
+            suffixes = [
                 s if s.startswith(".") else "." + s for s in video_suffixes
             ]
-            videos += [
-                file for file in video_path.iterdir() if file.suffix in video_suffixes
-            ]
+            videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
+            if shuffle:
+                random.shuffle(videos_in_dir)
+            videos += videos_in_dir
         else:
             assert (
-                video_path.exists()
-            ), f"Could not find the video: {video_path}. Check access rights."
-            videos.append(video_path)
+                path.exists()
+            ), f"Could not find the video: {path}. Check access rights."
+            videos.append(path)
 
     return videos
 
