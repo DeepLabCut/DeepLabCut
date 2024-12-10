@@ -352,7 +352,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         snapshot_path: str | Path,
         device: str,
         model: PoseModel,
-        load_head_weights: bool = True,
     ) -> dict:
         """Loads the state dict for a model from a file
 
@@ -363,8 +362,6 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             snapshot_path: the path containing the model weights to load
             device: the device on which the model should be loaded
             model: the model for which the weights are loaded
-            load_head_weights: Whether to load the head weights from the saved snapshot.
-                Otherwise, only the backbone weights are loaded.
 
         Returns:
             The content of the snapshot file.
