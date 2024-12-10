@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import List
 from urllib.error import URLError
 import qdarkstyle
-import multiprocessing
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION, compat
@@ -25,6 +24,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
+from deeplabcut.utils.multiprocessing import call_with_timeout
 from napari_deeplabcut import misc
 from PySide6.QtWidgets import (
     QMessageBox,
@@ -39,33 +39,6 @@ from PySide6 import QtCore
 from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt, QTimer
-
-
-def call_with_timeout(func, timeout, *args, **kwargs):
-    def wrapper(queue, *args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-            queue.put(result)  # Pass the result back via the queue
-        except Exception as e:
-            queue.put(e)  # Pass any exception back via the queue
-
-    queue = multiprocessing.Queue()
-    process = multiprocessing.Process(target=wrapper, args=(queue, *args), kwargs=kwargs)
-    process.start()
-    process.join(timeout)
-
-    if process.is_alive():
-        process.terminate()  # Forcefully terminate the process
-        process.join()
-        raise TimeoutError(f"Function {func.__name__} did not complete within {timeout} seconds.")
-
-    if not queue.empty():
-        result = queue.get()
-        if isinstance(result, Exception):
-            raise result  # Re-raise the exception if it occurred in the function
-        return result
-    else:
-        raise TimeoutError(f"Function {func.__name__} completed but did not return a result.")
 
 
 def _check_for_updates(silent=True):
