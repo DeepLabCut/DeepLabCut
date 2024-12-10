@@ -612,7 +612,6 @@ class RandomBBoxTransform(A.DualTransform):
             bboxes_extra = [bbox[4:] for bbox in bboxes]
             bboxes_xyxy = bboxes_xyxy[:, :4]
 
-        # TODO(niels): should bboxes width and height be scaled with same value?
         # sample parameters
         bboxes_to_scale = np.random.random(len(bboxes)) < self.scale_prob
         num_bboxes_to_scale = np.sum(bboxes_to_scale).item()

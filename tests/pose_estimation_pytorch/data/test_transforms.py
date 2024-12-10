@@ -131,23 +131,10 @@ def test_coarse_dropout():
 )
 def test_random_bbox_transform_does_not_modify_with_base_config(data: dict) -> None:
     _set_random_seed()
-
     h, w, c = data["image_shape"]
-    image_wh = np.array([w, h])
-
-    gen = np.random.default_rng(seed=0)
 
     # generate 100 bboxes
-    num_bboxes = 100
-    bboxes = np.zeros((num_bboxes, 4))
-    # sample x, y in the images
-    bboxes[:, :2] = image_wh * gen.random((num_bboxes, 2))
-    # sample w, h with the space remaining
-    bboxes[:, 2:] = (image_wh - bboxes[:, :2]) * gen.random((num_bboxes, 2))
-
-    print()
-    print("Input bounding boxes")
-    print(bboxes)
+    bboxes = _gen_random_bboxes(np.random.default_rng(seed=0), 100, w, h)
 
     t = A.Compose(
         [transforms.RandomBBoxTransform(**data["transform_config"])],
@@ -210,23 +197,10 @@ def test_random_bbox_transform_does_not_modify_with_base_config(data: dict) -> N
 )
 def test_random_bbox_transform_scale(data: dict) -> None:
     _set_random_seed()
-
     h, w, c = data["image_shape"]
-    image_wh = np.array([w, h])
-
-    gen = np.random.default_rng(seed=0)
 
     # generate 100 bboxes
-    num_bboxes = 100
-    bboxes = np.zeros((num_bboxes, 4))
-    # sample x, y in the images
-    bboxes[:, :2] = image_wh * gen.random((num_bboxes, 2))
-    # sample w, h with the space remaining
-    bboxes[:, 2:] = (image_wh - bboxes[:, :2]) * gen.random((num_bboxes, 2))
-
-    print()
-    print("Input bounding boxes")
-    print(bboxes)
+    bboxes = _gen_random_bboxes(np.random.default_rng(seed=0), 100, w, h)
 
     t = A.Compose(
         [transforms.RandomBBoxTransform(**data["transform_config"])],
@@ -269,23 +243,10 @@ def test_random_bbox_transform_scale(data: dict) -> None:
 )
 def test_random_bbox_transform_shift(data: dict) -> None:
     _set_random_seed()
-
     h, w, c = data["image_shape"]
-    image_wh = np.array([w, h])
-
-    gen = np.random.default_rng(seed=0)
 
     # generate 100 bboxes
-    num_bboxes = 100
-    bboxes = np.zeros((num_bboxes, 4))
-    # sample x, y in the images
-    bboxes[:, :2] = image_wh * gen.random((num_bboxes, 2))
-    # sample w, h with the space remaining
-    bboxes[:, 2:] = (image_wh - bboxes[:, :2]) * gen.random((num_bboxes, 2))
-
-    print()
-    print("Input bounding boxes")
-    print(bboxes)
+    bboxes = _gen_random_bboxes(np.random.default_rng(seed=0), 100, w, h)
 
     t = A.Compose(
         [transforms.RandomBBoxTransform(**data["transform_config"])],
@@ -313,3 +274,19 @@ def test_random_bbox_transform_shift(data: dict) -> None:
 def _set_random_seed():
     np.random.seed(0)
     random.seed(0)
+
+
+def _gen_random_bboxes(
+    gen: np.random.Generator, num_bboxes: int, w: int, h: int,
+) -> np.ndarray:
+    image_wh = np.array([w, h])
+    bboxes = np.zeros((num_bboxes, 4))
+    # sample x, y in the images
+    bboxes[:, :2] = image_wh * gen.random((num_bboxes, 2))
+    # sample w, h with the space remaining
+    bboxes[:, 2:] = (image_wh - bboxes[:, :2]) * gen.random((num_bboxes, 2))
+
+    print()
+    print("Input bounding boxes")
+    print(bboxes)
+    return bboxes

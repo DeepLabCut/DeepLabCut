@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-import torch.nn
 import torch.nn as nn
 
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
@@ -95,12 +94,12 @@ class Rtmpose(BaseWeightInitializer):
 
     def init_weights(self, model: nn.Module) -> None:
         for module in model.modules():
-            if isinstance(module, torch.nn.Conv2d):
+            if isinstance(module, nn.Conv2d):
                 nn.init.normal_(module.weight, std=0.001)
                 nn.init.constant_(module.bias, 0)
-            elif isinstance(module, torch.nn.BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 1)
-            elif isinstance(module, torch.nn.Linear):
+            elif isinstance(module, nn.Linear):
                 nn.init.normal_(module.weight, std=0.01)
                 nn.init.constant_(module.bias, 0)

@@ -14,7 +14,7 @@ data:
       width: 384
       height: 384
 method: td  # Need to add a detector
-model:  # https://github.com/open-mmlab/mmpose/blob/main/projects/rtmpose/rtmpose/body_2d_keypoint/rtmpose-x_8xb256-700e_coco-384x288.py
+model:
   backbone:
     type: CSPNeXt
     model_name: cspnext_x
