@@ -488,6 +488,8 @@ def evaluate_network(
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
+            comparison_bodyparts=comparisonbodyparts,
+            per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
             **torch_kwargs,
         )
