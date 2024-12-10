@@ -12,6 +12,7 @@ import pytest
 import time
 from deeplabcut.utils.multiprocessing import call_with_timeout
 
+
 def test_call_with_timeout():
     def succeeding_method(parameter):
         return parameter
