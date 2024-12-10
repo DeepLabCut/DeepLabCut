@@ -1,0 +1,121 @@
+    # Project definitions (do not edit)
+Task:
+scorer:
+date:
+multianimalproject:
+identity:
+
+    # Project path (change when moving around)
+project_path:
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+bodyparts:
+
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+start:
+stop:
+numframes2pick:
+
+    # Plotting configuration
+skeleton: []
+skeleton_color: black
+pcutoff:
+dotsize:
+alphavalue:
+colormap:
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+iteration:
+default_net_type:
+default_augmenter:
+snapshotindex:
+batch_size: 1
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping:
+    #if cropping is true for analysis, then set the values here:
+x1:
+x2:
+y1:
+y2:
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+move2corner:
+alpha_r: 0.02
+apply_prob: 0.5
+clahe: true
+claheratio: 0.1
+crop_sampling: hybrid
+crop_size:
+- 400
+- 400
+cropratio: 0.4
+dataset:
+dataset_type: multi-animal-imgaug
+decay_steps: 30000
+display_iters: 500
+edge: false
+emboss:
+  alpha:
+  - 0.0
+  - 1.0
+  embossratio: 0.1
+  strength:
+  - 0.5
+  - 1.5
+global_scale: 0.8
+histeq: true
+histeqratio: 0.1
+init_weights:
+intermediate_supervision: false
+intermediate_supervision_layer: 12
+location_refinement: true
+locref_huber_loss: true
+locref_loss_weight: 0.05
+locref_stdev: 7.2801
+lr_init: 0.0005
+max_input_size: 1500
+max_shift: 0.4
+mean_pixel:
+- 123.68
+- 116.779
+- 103.939
+metadataset:
+min_input_size: 64
+mirror: false
+multi_stage: true
+multi_step:
+- - 0.0001
+  - 7500
+- - 5.0e-05
+  - 12000
+- - 1.0e-05
+  - 200000
+net_type: resnet_50
+num_idchannel: 0
+num_joints: 27
+num_limbs: 351
+optimizer: adam
+pafwidth: 20
+pairwise_huber_loss: false
+pairwise_loss_weight: 0.1
+pairwise_predict: false
+partaffinityfield_graph: []
+partaffinityfield_predict: false
+pos_dist_thresh: 17
+pre_resize: []
+rotation: 25
+rotratio: 0.4
+save_iters: 10000
+scale_jitter_lo: 0.5
+scale_jitter_up: 1.25
+sharpen: false
+sharpenratio: 0.3
+stride: 8.0
+weigh_only_present_joints: false
+gradient_masking: true
+weight_decay: 0.0001
+weigh_part_predictions: false
