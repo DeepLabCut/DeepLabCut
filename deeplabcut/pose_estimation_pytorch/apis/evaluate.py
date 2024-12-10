@@ -59,9 +59,9 @@ def predict(
         pose_runner: The runner to use for pose estimation
         loader: The loader containing the data to predict poses on
         mode: {"train", "test"} The mode to predict on
-        detector_runner: If the task is "TD", a detector runner can be given to detect
-            individuals in the images. If no detector is given, ground truth bounding
-            boxes will be used to crop individuals before pose estimation
+        detector_runner: If the loader's `pose_task` is "TD", a detector runner can be
+            given to detect individuals in the images. If no detector is given, ground
+            truth bounding boxes will be used to crop individuals before pose estimation
 
     Returns:
         The paths of images for which predictions were computed mapping to the
@@ -109,9 +109,9 @@ def evaluate(
         pose_runner: The runner for pose estimation
         loader: The loader containing the data to evaluate
         mode: Either 'train' or 'test'
-        detector_runner: If task == 'TD', a detector can be given to compute bounding
-            boxes for pose estimation. If no detector is given, ground truth bounding
-            boxes are used.
+        detector_runner: If the loader's `pose_task` is "TD", a detector can be given to
+            compute bounding boxes for pose estimation. If no detector is given, ground
+            truth bounding boxes are used.
         parameters: PoseDatasetParameters to use. If None, the parameters will be
             obtained from the given Loader. This can be used to change the names of
             bodyparts, e.g. when a model is trained with memory replay.
