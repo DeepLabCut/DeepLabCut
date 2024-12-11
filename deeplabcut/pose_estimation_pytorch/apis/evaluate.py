@@ -21,6 +21,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -436,6 +437,12 @@ def evaluate_snapshot(
         detector_snapshot: Only for TD models. If defined, evaluation metrics are
             computed using the detections made by this snapshot
     """
+    head_type = loader.model_cfg["model"]["heads"]["bodypart"]["type"]
+    if head_type == "DLCRNetHead":
+        prune_paf_graph.benchmark_paf_graphs(
+            loader=loader, snapshot_path=snapshot.path, verbose=False,
+        )
+
     parameters = loader.get_dataset_parameters()
     pcutoff = cfg.get("pcutoff", 0.6)
 

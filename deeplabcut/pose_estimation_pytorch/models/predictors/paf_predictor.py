@@ -364,3 +364,12 @@ class PartAffinityFieldPredictor(BasePredictor):
             peaks_and_costs.append(dict_)
 
         return peaks_and_costs
+
+    def set_paf_edges_to_keep(self, edge_indices: list[int]) -> None:
+        """Sets the PAF edge indices to use to assemble individuals
+
+        Args:
+            edge_indices: The indices of edges in the graph to keep.
+        """
+        self.edges_to_keep = edge_indices
+        self.assembler.paf_inds = edge_indices
