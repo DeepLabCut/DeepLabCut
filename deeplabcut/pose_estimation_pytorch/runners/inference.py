@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
@@ -208,8 +209,25 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 class PoseInferenceRunner(InferenceRunner[PoseModel]):
     """Runner for pose estimation inference"""
 
-    def __init__(self, model: PoseModel, **kwargs):
+    def __init__(
+        self,
+        model: PoseModel,
+        dynamic: DynamicCropper | None = None,
+        **kwargs,
+    ):
         super().__init__(model, **kwargs)
+        self.dynamic = dynamic
+        if dynamic is not None:
+            print(
+                f"Inference runner using dynamic cropping: {self.dynamic}.\n"
+                "Note that dynamic cropping should only be used to analyze videos with "
+                "bottom-up pose estimation models."
+            )
+            if self.batch_size != 1:
+                raise ValueError(
+                    "Dynamic cropping can only be used with batch size 1. Please set "
+                    "your batch size to 1."
+                )
 
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
@@ -226,8 +244,15 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
+        if self.dynamic is not None:
+            inputs = self.dynamic.crop(inputs)
+
         outputs = self.model(inputs.to(self.device))
         raw_predictions = self.model.get_predictions(outputs)
+
+        if self.dynamic is not None:
+            self.dynamic.update(raw_predictions["bodypart"]["poses"])
+
         predictions = [
             {
                 head: {
@@ -293,6 +318,7 @@ def build_inference_runner(
     batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -305,6 +331,10 @@ def build_inference_runner(
         batch_size: the batch size to use to run inference
         preprocessor: the preprocessor to use on images before inference
         postprocessor: the postprocessor to use on images after inference
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         the inference runner
@@ -318,6 +348,19 @@ def build_inference_runner(
         postprocessor=postprocessor,
     )
     if task == Task.DETECT:
+        if dynamic is not None:
+            raise ValueError(
+                f"The DynamicCropper can only be used for pose estimation; not object "
+                f"detection. Please turn off dynamic cropping."
+            )
         return DetectorInferenceRunner(**kwargs)
 
-    return PoseInferenceRunner(**kwargs)
+    if task != Task.BOTTOM_UP:
+        if dynamic is not None:
+            print(
+                "Turning off dynamic cropping. It should only be used for bottom-up "
+                f"pose estimation models, but you are using a {task} model."
+            )
+        dynamic = None
+
+    return PoseInferenceRunner(dynamic=dynamic, **kwargs)

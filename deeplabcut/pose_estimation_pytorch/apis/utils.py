@@ -39,6 +39,7 @@ from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     DetectorInferenceRunner,
+    DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
 )
@@ -394,6 +395,7 @@ def get_inference_runners(
     detector_batch_size: int = 1,
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -413,6 +415,10 @@ def get_inference_runners(
             for top-down models (if a detector runner is needed)
         detector_transform: the transform for object detection. if None, uses the
             transform defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         a runner for pose estimation
@@ -487,6 +493,7 @@ def get_inference_runners(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
     )
     return pose_runner, detector_runner
 
@@ -551,6 +558,7 @@ def get_pose_inference_runner(
     device: str | None = None,
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -562,6 +570,10 @@ def get_pose_inference_runner(
         device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         an inference runner for pose estimation
@@ -611,6 +623,7 @@ def get_pose_inference_runner(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
     )
     if not isinstance(runner, PoseInferenceRunner):
         raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")
