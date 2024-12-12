@@ -135,7 +135,7 @@ def benchmark_paf_graphs(
         if verbose:
             print("Selecting the following Graph")
             print(60 * "-")
-            print(f"|Graph {graph_id}: {len(best_edges)} edges")
+            print(f"|Graph with {len(best_edges)} edges")
             print(f"|   mAP: {graph_metrics['mAP']}")
             print(f"|   mAR: {graph_metrics['mAR']}")
             print(f"|   edges: {best_edges}")
