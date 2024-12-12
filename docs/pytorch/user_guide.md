@@ -80,7 +80,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `return_train_network_path`    |     🟢      |                                                                                                     |                                                     |
 | `evaluate_network`             |     🟠      | `rescale`                                                                                           |                                                     |
 | `return_evaluate_network_data` |     🔴      |                                                                                                     | `TFGPUinference`, `allow_growth`                    |
-| `analyze_videos`               |     🟠      | `dynamic`, `calibrate`                                                                              |                                                     |
+| `analyze_videos`               |     🟠      | `calibrate`                                                                                         |                                                     |
 | `create_tracking_dataset`      |     🔴      |                                                                                                     |                                                     |
 | `analyze_time_lapse_frames`    |     🟠      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
 | `convert_detections2tracklets` |     🟢      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
