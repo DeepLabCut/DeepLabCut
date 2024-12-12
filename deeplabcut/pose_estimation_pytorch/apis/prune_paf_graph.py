@@ -33,7 +33,28 @@ def benchmark_paf_graphs(
     loader: data.Loader,
     snapshot_path: Path,
     verbose: bool = False,
+    overwrite: bool = False,
+    update_config: bool = True,
 ) -> list[dict]:
+    """Prunes the PAF graph to maximize performance
+
+    Args:
+        loader: The loader for the model to prune.
+        snapshot_path: The path to the snapshot with which to prune the model.
+        verbose: Verbose pruning of the model.
+        overwrite: Whether to overwrite the graph if it was already pruned.
+        update_config: Whether to update the model configuration with the pruned graph.
+
+    Returns:
+        A list of dictionaries containing results for each pruned graph.
+
+        If the graph was already pruned, a single element is returned with an
+        "edges_to_keep" key,  containing the indices of edges to keep in the graph.
+
+        Otherwise, a list of graphs that were evaluated is returned, with "key_metric",
+        "edges_to_keep" and "metrics" keys. The list is sorted by "key_metric" (which
+        is pose mAP).
+    """
     runner = utils.get_pose_inference_runner(loader.model_cfg, snapshot_path)
     device = runner.device
     preprocessor = runner.preprocessor
@@ -41,7 +62,7 @@ def benchmark_paf_graphs(
     predictor = model.heads.bodypart.predictor
 
     # only benchmark the PAF graph if the PAF indices contain all edges
-    if len(predictor.edges_to_keep) < len(predictor.graph):
+    if not overwrite and len(predictor.edges_to_keep) < len(predictor.graph):
         return [dict(edges_to_keep=predictor.edges_to_keep)]
 
     model.to(device)
@@ -105,7 +126,8 @@ def benchmark_paf_graphs(
             print()
 
     results = list(sorted(results, key=lambda r: 1 - r["key_metric"]))
-    if len(results) > 0:
+
+    if update_config and len(results) > 0:
         best_results = results[0]
         best_edges = best_results["edges_to_keep"]
         graph_metrics = best_results["metrics"]
