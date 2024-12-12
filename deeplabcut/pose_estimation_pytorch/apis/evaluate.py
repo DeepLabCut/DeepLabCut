@@ -543,7 +543,9 @@ def evaluate_snapshot(
         )
         if per_keypoint_evaluation:
             rmse_per_bodypart[split] = _extract_rmse_per_bodypart(
-                results, eval_parameters.bodyparts, eval_parameters.unique_bpts,
+                results,
+                eval_parameters.bodyparts,
+                eval_parameters.unique_bpts,
             )
 
         df_split_predictions = build_predictions_dataframe(
@@ -903,7 +905,8 @@ def _get_keypoint_subset(
 
 
 def _get_subset_bodyparts(
-    bodyparts: list[str], subset: str | list[str] | None,
+    bodyparts: list[str],
+    subset: str | list[str] | None,
 ) -> list[str]:
     """Gets a subset of bodyparts that were used.
 

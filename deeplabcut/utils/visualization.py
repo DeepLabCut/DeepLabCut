@@ -159,7 +159,9 @@ def make_multianimal_labeled_image(
     ax.imshow(frame, "gray")
 
     if bounding_boxes is not None:
-        for i, (bbox, bbox_score) in enumerate(zip(bounding_boxes[0], bounding_boxes[1])):
+        for i, (bbox, bbox_score) in enumerate(
+            zip(bounding_boxes[0], bounding_boxes[1])
+        ):
             bbox_origin = (bbox[0], bbox[1])
             (bbox_width, bbox_height) = (bbox[2], bbox[3])
             if isinstance(bboxes_color, Colormap):
