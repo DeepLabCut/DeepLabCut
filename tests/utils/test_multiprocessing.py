@@ -13,22 +13,25 @@ import time
 from deeplabcut.utils.multiprocessing import call_with_timeout
 
 
+def _succeeding_method(parameter):
+    return parameter
+
+
+def _failing_method():
+    raise ValueError("Raise value error on purpose")
+
+
+def _hanging_method():
+    while True:
+        time.sleep(5)
+
+
 def test_call_with_timeout():
-    def succeeding_method(parameter):
-        return parameter
-
     parameter = (10, "Hello test")
-    assert call_with_timeout(succeeding_method, 1, parameter) == parameter
-
-    def failing_method():
-        raise ValueError("Raise value error on purpose")
+    assert call_with_timeout(_succeeding_method, 30, parameter) == parameter
 
     with pytest.raises(ValueError):
-        call_with_timeout(failing_method, timeout=1)
-
-    def hanging_method():
-        while True:
-            time.sleep(1)
+        call_with_timeout(_failing_method, timeout=30)
 
     with pytest.raises(TimeoutError):
-        call_with_timeout(hanging_method, timeout=1)
+        call_with_timeout(_hanging_method, timeout=1)
