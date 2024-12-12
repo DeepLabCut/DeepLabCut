@@ -224,12 +224,12 @@ def analyze_videos(
             snapshot to use, used in the same way as ``snapshot_index``
         dynamic: (state, detection threshold, margin) triplet. If the state is true,
             then dynamic cropping will be performed. That means that if an object is
-            detected (i.e. any body part > detectiontreshold), then object boundaries
+            detected (i.e. any body part > detection threshold), then object boundaries
             are computed according to the smallest/largest x position and
             smallest/largest y position of all body parts. This  window is expanded by
             the margin and from then on only the posture within this crop is analyzed
-            (until the object is lost, i.e. <detectiontreshold). The current position is
-            utilized for updating the crop window for the next frame (this is why the
+            (until the object is lost, i.e. < detection threshold). The current position
+            is utilized for updating the crop window for the next frame (this is why the
             margin is important and should be set large enough given the movement of the
             animal).
         modelprefix: directory containing the deeplabcut models to use when evaluating
