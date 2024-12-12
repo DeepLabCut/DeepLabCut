@@ -10,7 +10,7 @@
 #
 """Modules to dynamically crop individuals out of videos to improve video analysis"""
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 import torch
@@ -56,8 +56,8 @@ class DynamicCropper:
     """
     threshold: float
     margin: int
-    _crop: tuple[int, int, int, int] | None = None
-    _shape: tuple[int, int] | None = None
+    _crop: tuple[int, int, int, int] | None = field(default=None, repr=False)
+    _shape: tuple[int, int] | None = field(default=None, repr=False)
 
     def crop(self, image: torch.Tensor) -> torch.Tensor:
         """Crops an input image according to the dynamic cropping parameters.
