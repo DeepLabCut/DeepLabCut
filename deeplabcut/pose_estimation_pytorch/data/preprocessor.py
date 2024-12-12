@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data import top_down_crop
+from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
 
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
