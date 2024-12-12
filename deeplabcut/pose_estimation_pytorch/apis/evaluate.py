@@ -323,8 +323,8 @@ def plot_gt_and_predictions(
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
     bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
-    bounding_boxes_color="k",
     bboxes_pcutoff: float = 0.6,
+    bounding_boxes_color: str = "auto",
 ):
     """Plot ground truth and predictions on an image.
 
@@ -341,8 +341,11 @@ def plot_gt_and_predictions(
         alpha_value: Transparency of the points
         p_cutoff: Confidence threshold for showing predictions
         bounding_boxes:  bounding boxes (top-left corner, size) and their respective confidence levels,
-        bounding_boxes_color: If bounding_boxes is not None, this is the color that will be used for plotting them
         bboxes_cutoff: bounding boxes confidence cutoff threshold.
+        bounding_boxes_color: If plotting bounding boxes, this is the color that will be used for bounding boxes.
+            If set to "auto" (default value):
+                - if mode is "bodypart", the bbox color will be a default color
+                - if mode is "individual", each individual's color will be used for its bounding box
     """
     # Ensure output directory exists
     output_dir = Path(output_dir)
@@ -377,6 +380,16 @@ def plot_gt_and_predictions(
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
+    if bounding_boxes_color == "auto":
+        if mode == "bodypart":
+            bboxes_color = None
+        elif mode == "individual":
+            bboxes_color = get_cmap(num_pred + 1, name=colormap)
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+    else:
+        bboxes_color = bounding_boxes_color
+
     # Plot regular bodyparts
     ax = make_multianimal_labeled_image(
         frame,
@@ -389,8 +402,8 @@ def plot_gt_and_predictions(
         p_cutoff,
         ax=ax,
         bounding_boxes=bounding_boxes,
-        bounding_boxes_color=bounding_boxes_color,
         bboxes_cutoff=bboxes_pcutoff,
+        bboxes_color=bboxes_color,
     )
 
     # Plot unique bodyparts if present

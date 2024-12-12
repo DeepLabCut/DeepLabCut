@@ -90,6 +90,7 @@ def CreateVideo(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: tuple | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
@@ -156,7 +157,8 @@ def CreateVideo(
         C = colorclass.to_rgba(np.linspace(0, 1, nindividuals))
     colors = (C[:, :3] * 255).astype(np.uint8)
 
-    bboxes_color = (0, 0, 0)
+    if bboxes_color is None:
+        bboxes_color = (255, 0, 0)
 
     with np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
@@ -256,6 +258,7 @@ def CreateVideoSlow(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: str | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
 
@@ -314,7 +317,8 @@ def CreateVideoSlow(
     else:
         colors = visualization.get_cmap(nbodyparts, name=colormap)
 
-    bounding_boxes_color = "k"
+    if bboxes_color is None:
+        bboxes_color = "red"
 
     nframes_digits = int(np.ceil(np.log10(nframes)))
     if nframes_digits > 9:
@@ -361,7 +365,7 @@ def CreateVideoSlow(
                             bbox_width,
                             bbox_height,
                             linewidth=1,
-                            edgecolor=bounding_boxes_color,
+                            edgecolor=bboxes_color,
                             facecolor="none",
                         )
                         ax.add_patch(rectangle)
@@ -1029,6 +1033,7 @@ def create_video(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: tuple | None = None,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -1086,6 +1091,7 @@ def create_video(
         plot_bboxes=plot_bboxes,
         bboxes_list=bboxes_list,
         bboxes_pcutoff=bboxes_pcutoff,
+        bboxes_color=bboxes_color,
     )
 
 
@@ -1306,7 +1312,7 @@ def create_video_with_all_detections(
                 .get("model", {})
                 .get("box_score_thresh", 0.6)
             )
-            bboxes_color = (0, 0, 0)
+            bboxes_color = (255, 0, 0)
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
