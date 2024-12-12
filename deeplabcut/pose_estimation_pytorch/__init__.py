@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from deeplabcut.pose_estimation_pytorch.apis import (
+    analyze_images,
     analyze_videos,
     convert_detections2tracklets,
     evaluate_network,

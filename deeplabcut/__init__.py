@@ -99,6 +99,7 @@ from deeplabcut.compat import (
     return_evaluate_network_data,
     analyze_videos,
     create_tracking_dataset,
+    analyze_images,
     analyze_time_lapse_frames,
     convert_detections2tracklets,
     extract_maps,
