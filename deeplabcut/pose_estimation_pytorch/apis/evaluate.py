@@ -290,7 +290,7 @@ def visualize_predictions(
             bbox_scores = predictions[image_path].get("bbox_scores", None)
             bounding_boxes = (
                 (bboxes, bbox_scores)
-                if bbox_scores is not None and bbox_scores is not None
+                if bboxes is not None and bbox_scores is not None
                 else None
             )
         else:
