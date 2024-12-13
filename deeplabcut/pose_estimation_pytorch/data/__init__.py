@@ -15,4 +15,15 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDatasetParameters,
     PoseDataset,
 )
+from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
+    build_bottom_up_postprocessor,
+    build_detector_postprocessor,
+    build_top_down_postprocessor,
+    Postprocessor,
+)
+from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
+    build_bottom_up_preprocessor,
+    build_top_down_preprocessor,
+    Preprocessor,
+)
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
