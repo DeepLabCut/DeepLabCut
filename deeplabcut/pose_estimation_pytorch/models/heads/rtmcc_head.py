@@ -134,3 +134,29 @@ class RTMCCHead(BaseHead):
         feats = self.gau(feats)
         x, y = self.cls_x(feats), self.cls_y(feats)
         return dict(x=x, y=y)
+
+    @staticmethod
+    def update_input_size(model_cfg: dict, input_size: tuple[int, int]) -> None:
+        """Updates an RTMPose model configuration file for a new image input size
+
+        Args:
+            model_cfg: The model configuration to update in-place.
+            input_size: The updated input (width, height).
+        """
+        _sigmas = {192: 4.9, 256: 5.66, 288: 6, 384: 6.93}
+
+        def _sigma(size: int) -> float:
+            sigma = _sigmas.get(size)
+            if sigma is None:
+                return 2.87 + 0.01 * size
+
+            return sigma
+
+        w, h = input_size
+        model_cfg["data"]["inference"]["top_down_crop"] = dict(width=w, height=h)
+        model_cfg["data"]["train"]["top_down_crop"] = dict(width=w, height=h)
+        head_cfg = model_cfg["model"]["heads"]["bodypart"]
+        head_cfg["input_size"] = input_size
+        head_cfg["in_featuremap_size"] = h // 32, w // 32
+        head_cfg["target_generator"]["input_size"] = input_size
+        head_cfg["target_generator"]["sigma"] = (_sigma(w), _sigma(h))
