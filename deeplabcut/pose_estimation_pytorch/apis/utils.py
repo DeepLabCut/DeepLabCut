@@ -596,10 +596,15 @@ def get_pose_inference_runner(
             with_identity=with_identity,
         )
     else:
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+        margin = crop_cfg.get("margin", 0)
+
         pose_preprocessor = build_top_down_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,
-            cropped_image_size=(256, 256),
+            top_down_crop_size=(width, height),
+            top_down_crop_margin=margin,
         )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
