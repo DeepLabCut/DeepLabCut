@@ -25,24 +25,6 @@ from scipy.stats import truncnorm
 def build_transforms(augmentations: dict) -> A.BaseCompose:
     transforms = []
 
-    if crop_sampling := augmentations.get("crop_sampling"):
-        transforms.append(
-            A.PadIfNeeded(
-                min_height=crop_sampling["height"],
-                min_width=crop_sampling["width"],
-                border_mode=cv2.BORDER_CONSTANT,
-                always_apply=True,
-            )
-        )
-        transforms.append(
-            KeypointAwareCrop(
-                crop_sampling["width"],
-                crop_sampling["height"],
-                crop_sampling["max_shift"],
-                crop_sampling["method"],
-            )
-        )
-
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
 
@@ -99,6 +81,24 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
                 scale_factor=bbox_tfm.get("scale_factor", (0.75, 1.25)),
                 scale_prob=bbox_tfm.get("scale_prob", 1.0),
                 p=bbox_tfm.get("p", 1.0),
+            )
+        )
+
+    if crop_sampling := augmentations.get("crop_sampling"):
+        transforms.append(
+            A.PadIfNeeded(
+                min_height=crop_sampling["height"],
+                min_width=crop_sampling["width"],
+                border_mode=cv2.BORDER_CONSTANT,
+                always_apply=True,
+            )
+        )
+        transforms.append(
+            KeypointAwareCrop(
+                crop_sampling["width"],
+                crop_sampling["height"],
+                crop_sampling["max_shift"],
+                crop_sampling["method"],
             )
         )
 
