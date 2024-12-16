@@ -152,11 +152,14 @@ class PartAffinityFieldPredictor(BasePredictor):
             heatmaps, self.nms_radius, threshold=0.01
         )
         if ~torch.any(peaks):
-            return {
-                "poses": -torch.ones(
-                    (batch_size, self.num_animals, self.num_multibodyparts, 5)
-                )
-            }
+            poses = -torch.ones(
+                (batch_size, self.num_animals, self.num_multibodyparts, 5)
+            )
+            results = dict(poses=poses)
+            if self.return_preds:
+                results["preds"] = [dict(coordinates=[[]], costs=[])],
+
+            return results
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
         locrefs = locrefs * self.locref_stdev
@@ -364,3 +367,12 @@ class PartAffinityFieldPredictor(BasePredictor):
             peaks_and_costs.append(dict_)
 
         return peaks_and_costs
+
+    def set_paf_edges_to_keep(self, edge_indices: list[int]) -> None:
+        """Sets the PAF edge indices to use to assemble individuals
+
+        Args:
+            edge_indices: The indices of edges in the graph to keep.
+        """
+        self.edges_to_keep = edge_indices
+        self.assembler.paf_inds = edge_indices

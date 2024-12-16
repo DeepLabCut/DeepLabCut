@@ -21,6 +21,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -30,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
+    build_bboxes_dict_for_dataframe,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -214,6 +216,7 @@ def visualize_predictions(
     num_samples: int | None = None,
     random_select: bool = False,
     show_ground_truth: bool = True,
+    plot_bboxes: bool = True,
 ) -> None:
     """Visualize model predictions alongside ground truth keypoints.
 
@@ -282,6 +285,17 @@ def visualize_predictions(
             visible_pred.append(visible_points)
         visible_pred = np.stack(visible_pred)  # Shape: [N, num_visible_joints, 3]
 
+        if plot_bboxes:
+            bboxes = predictions[image_path].get("bboxes", None)
+            bbox_scores = predictions[image_path].get("bbox_scores", None)
+            bounding_boxes = (
+                (bboxes, bbox_scores)
+                if bboxes is not None and bbox_scores is not None
+                else None
+            )
+        else:
+            bounding_boxes = None
+
         # Generate and save visualization
         try:
             plot_gt_and_predictions(
@@ -289,6 +303,7 @@ def visualize_predictions(
                 output_dir=output_dir,
                 gt_bodyparts=visible_gt,
                 pred_bodyparts=visible_pred,
+                bounding_boxes=bounding_boxes,
             )
             print(f"Successfully plotted predictions for {image_path}")
         except Exception as e:
@@ -307,6 +322,9 @@ def plot_gt_and_predictions(
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
+    bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
+    bboxes_pcutoff: float = 0.6,
+    bounding_boxes_color: str = "auto",
 ):
     """Plot ground truth and predictions on an image.
 
@@ -322,6 +340,12 @@ def plot_gt_and_predictions(
         dot_size: Size of the plotted points
         alpha_value: Transparency of the points
         p_cutoff: Confidence threshold for showing predictions
+        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confidence levels,
+        bboxes_cutoff: bounding boxes confidence cutoff threshold.
+        bounding_boxes_color: If plotting bounding boxes, this is the color that will be used for bounding boxes.
+            If set to "auto" (default value):
+                - if mode is "bodypart", the bbox color will be a default color
+                - if mode is "individual", each individual's color will be used for its bounding box
     """
     # Ensure output directory exists
     output_dir = Path(output_dir)
@@ -356,6 +380,16 @@ def plot_gt_and_predictions(
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
+    if bounding_boxes_color == "auto":
+        if mode == "bodypart":
+            bboxes_color = None
+        elif mode == "individual":
+            bboxes_color = get_cmap(num_pred + 1, name=colormap)
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+    else:
+        bboxes_color = bounding_boxes_color
+
     # Plot regular bodyparts
     ax = make_multianimal_labeled_image(
         frame,
@@ -367,6 +401,9 @@ def plot_gt_and_predictions(
         alpha_value,
         p_cutoff,
         ax=ax,
+        bounding_boxes=bounding_boxes,
+        bboxes_cutoff=bboxes_pcutoff,
+        bboxes_color=bboxes_color,
     )
 
     # Plot unique bodyparts if present
@@ -436,6 +473,12 @@ def evaluate_snapshot(
         detector_snapshot: Only for TD models. If defined, evaluation metrics are
             computed using the detections made by this snapshot
     """
+    head_type = loader.model_cfg["model"]["heads"]["bodypart"]["type"]
+    if head_type == "DLCRNetHead":
+        prune_paf_graph.benchmark_paf_graphs(
+            loader=loader, snapshot_path=snapshot.path, verbose=False,
+        )
+
     parameters = loader.get_dataset_parameters()
     pcutoff = cfg.get("pcutoff", 0.6)
 
@@ -477,6 +520,7 @@ def evaluate_snapshot(
 
     predictions = {}
     rmse_per_bodypart = {}
+    bounding_boxes = {}
     scores = {
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
@@ -499,7 +543,9 @@ def evaluate_snapshot(
         )
         if per_keypoint_evaluation:
             rmse_per_bodypart[split] = _extract_rmse_per_bodypart(
-                results, eval_parameters.bodyparts, eval_parameters.unique_bpts,
+                results,
+                eval_parameters.bodyparts,
+                eval_parameters.unique_bpts,
             )
 
         df_split_predictions = build_predictions_dataframe(
@@ -508,7 +554,12 @@ def evaluate_snapshot(
             parameters=eval_parameters,
             image_name_to_index=image_to_dlc_df_index,
         )
+        split_bounding_boxes = build_bboxes_dict_for_dataframe(
+            predictions=predictions_for_split,
+            image_name_to_index=image_to_dlc_df_index,
+        )
         predictions[split] = df_split_predictions
+        bounding_boxes[split] = split_bounding_boxes
         for k, v in results.items():
             scores[f"{split} {k}"] = round(v, 2)
 
@@ -548,10 +599,18 @@ def evaluate_snapshot(
             plot_mode = "bodypart"
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
+
+        bboxes_cutoff = (
+            loader.model_cfg.get("detector", {})
+            .get("model", {})
+            .get("box_score_thresh", 0.6)
+        )
+
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
+            bboxes_split = bounding_boxes[mode]
 
             plot_evaluation_results(
                 df_combined=df_combined,
@@ -566,6 +625,8 @@ def evaluate_snapshot(
                 dot_size=cfg["dotsize"],
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
+                bounding_boxes=bboxes_split,
+                bboxes_cutoff=bboxes_cutoff,
             )
 
     return df_predictions
@@ -844,7 +905,8 @@ def _get_keypoint_subset(
 
 
 def _get_subset_bodyparts(
-    bodyparts: list[str], subset: str | list[str] | None,
+    bodyparts: list[str],
+    subset: str | list[str] | None,
 ) -> list[str]:
     """Gets a subset of bodyparts that were used.
 

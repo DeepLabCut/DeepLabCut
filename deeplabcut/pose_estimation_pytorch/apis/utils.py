@@ -336,6 +336,28 @@ def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
     return df_predictions_ma
 
 
+def _image_names_to_df_index(
+    image_names: list[str],
+    image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
+) -> pd.MultiIndex | list[str]:
+    """
+    Creates index for predictions dataframe.
+    This method is used in build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe.
+    It is important that these two methods return objects with the same index / keys.
+
+    Args:
+        image_names: list of image names
+        image_name_to_index, optional: a transform to apply on each image_name
+    """
+
+    if image_name_to_index is not None:
+        return pd.MultiIndex.from_tuples(
+            [image_name_to_index(image_name) for image_name in image_names]
+        )
+    else:
+        return image_names
+
+
 def build_predictions_dataframe(
     scorer: str,
     predictions: dict[str, dict[str, np.ndarray]],
@@ -353,23 +375,18 @@ def build_predictions_dataframe(
     Returns:
 
     """
+    image_names = []
     prediction_data = []
-    index_data = []
-    for image, image_predictions in predictions.items():
+    for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
             image_data = np.concatenate(
                 [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
             )
-
+        image_names.append(image_name)
         prediction_data.append(image_data)
-        if image_name_to_index is not None:
-            index_data.append(image_name_to_index(image))
 
-    if len(index_data) > 0:
-        index = pd.MultiIndex.from_tuples(index_data)
-    else:
-        index = list(predictions.keys())
+    index = _image_names_to_df_index(image_names, image_name_to_index)
 
     return pd.DataFrame(
         prediction_data,
@@ -380,6 +397,39 @@ def build_predictions_dataframe(
             with_likelihood=True,
         ),
     )
+
+
+def build_bboxes_dict_for_dataframe(
+    predictions: dict[str, dict[str, np.ndarray]],
+    image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
+) -> dict:
+    """
+    Creates a dictionary with bounding boxes from predictions.
+    The keys of the dictionary are the same as the index of the dataframe created by build_predictions_dataframe.
+    Therefore, the structures returned by build_predictions_dataframe and by build_bboxes_dict_for_dataframe
+    can be accessed with the same keys.
+
+    Args:
+        predictions: Dictionary containing the evaluation results
+        image_name_to_index, optional: a transform to apply on each image_name
+
+    Returns:
+        Dictionary with sames keys as in the dataframe returned by build_predictions_dataframe,
+        and respective bounding boxes and scores, if any.
+    """
+
+    image_names = []
+    bboxes_data = []
+    for image_name, image_predictions in predictions.items():
+        image_names.append(image_name)
+        if "bboxes" in image_predictions:
+            bboxes_data.append(
+                (image_predictions["bboxes"], image_predictions["bbox_scores"])
+            )
+
+    index = _image_names_to_df_index(image_names, image_name_to_index)
+
+    return dict(zip(index, bboxes_data))
 
 
 def get_inference_runners(

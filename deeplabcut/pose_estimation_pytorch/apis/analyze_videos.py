@@ -38,7 +38,10 @@ class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str | Path, context: list[dict[str, Any]] | None = None, cropping: list[int] | None = None
+        self,
+        video_path: str | Path,
+        context: list[dict[str, Any]] | None = None,
+        cropping: list[int] | None = None,
     ) -> None:
         super().__init__(str(video_path))
         self._context = context
@@ -496,14 +499,10 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack(
-        [p["bodyparts"][..., :3] for p in predictions]
-    )
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
     pred_unique_bodyparts = None
     if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack(
-            [p["unique_bodyparts"] for p in predictions]
-        )
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
 
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
@@ -530,7 +529,7 @@ def create_df_from_prediction(
         index=range(len(pred_bodyparts)),
     )
     if pred_unique_bodyparts is not None:
-        unique_columns = [dlc_scorer], ['single'], unique_bodyparts, coords
+        unique_columns = [dlc_scorer], ["single"], unique_bodyparts, coords
         df_u = pd.DataFrame(
             pred_unique_bodyparts.reshape((len(pred_unique_bodyparts), -1)),
             columns=pd.MultiIndex.from_product(unique_columns, names=cols_names),
@@ -708,6 +707,10 @@ def _generate_output_data(
             "confidence": scores,
             "costs": None,
         }
+
+        if "bboxes" in frame_predictions:
+            output[key]["bboxes"] = frame_predictions["bboxes"]
+            output[key]["bbox_scores"] = frame_predictions["bbox_scores"]
 
         if "identity_scores" in frame_predictions:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)

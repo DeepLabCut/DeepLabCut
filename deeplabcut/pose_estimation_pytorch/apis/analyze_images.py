@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import copy
 import glob
 import json
 import logging
@@ -21,8 +22,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-import deeplabcut.pose_estimation_pytorch.data as data
+import deeplabcut.pose_estimation_pytorch.apis.visualization as visualization
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
@@ -47,67 +49,132 @@ def superanimal_analyze_images(
     images: str | Path | list[str] | list[Path],
     max_individuals: int,
     out_folder: str | Path,
-    bbox_threshold: float = 0.6,
     progress_bar: bool = True,
     device: str | None = None,
+    pose_threshold: float = 0.4,
+    bbox_threshold: float = 0.6,
+    plot_skeleton: bool = True,
+    customized_model_config: str | Path | dict | None = None,
+    customized_pose_checkpoint: str | Path | None = None,
+    customized_detector_checkpoint: str | Path | None = None,
 ) -> dict[str, dict]:
     """
-    This funciton inferences a superanimal model on a set of images and saves the
+    This function inferences a superanimal model on a set of images and saves the
     results as labeled images.
 
     Args:
-        superanimal_name: The name of the superanimal to analyze. Supported list:
-            - "superanimal_bird"
-            - "superanimal_topviewmouse"
-            - "superanimal_quadruped"
-        model_name: The name of the pose model architecture to use for inference.
-        detector_name: The name of the detector architecture to use for inference.
-        images: The images to analyze. Can either be a directory containing images, or
+        superanimal_name: str
+            The name of the SuperAnimal to analyze. Supported list:
+                - "superanimal_bird"
+                - "superanimal_topviewmouse"
+                - "superanimal_quadruped"
+
+        model_name: str
+            The name of the pose model architecture to use for inference. To get a list
+            of available models for a SuperAnimal, call:
+                >>> import dlclibrary
+                >>> superanimal_name = "superanimal_topviewmouse"
+                >>> dlclibrary.get_available_models(superanimal_name)
+
+        detector_name: str
+            The name of the detector architecture to use for inference. To get a list
+            of available detectors for a SuperAnimal, call:
+                >>> import dlclibrary
+                >>> superanimal_name = "superanimal_topviewmouse"
+                >>> dlclibrary.get_available_detectors(superanimal_name)
+
+        images: str, Path, list[str], list[Path]
+            The images to analyze. Can either be a directory containing images, or
             a list of paths of images.
-        max_individuals: The maximum number of individuals to detect in each image.
-        out_folder: The directory where the labeled images will be saved.
-        bbox_threshold: The minimum confidence score to keep bounding box detections.
-            Must be in (0, 1).
-        progress_bar: Whether to display a progress bar when running inference.
-        device: The device to use to run image analysis.
+
+        max_individuals: int
+            The maximum number of individuals to detect in each image.
+
+        out_folder: str | Path
+            The directory where the labeled images will be saved.
+
+        progress_bar: bool, default=True
+            Whether to display a progress bar when running inference.
+
+        device: str | None, default=None
+            The device to use to run image analysis.
+
+        pose_threshold: float, default=0.4
+            The cutoff score when plotting pose predictions. To note, this is called 
+            pcutoff in other parts of the code. Must be in (0, 1).
+
+        bbox_threshold: float, default=0.1
+            The minimum confidence score to keep bounding box detections. Must be in
+            (0, 1).
+
+        plot_skeleton: bool, default=True
+            If a skeleton is defined in the model configuration file, whether to plot
+            the skeleton connecting the predicted bodyparts on the images.
+
+        customized_model_config: str | Path | dict | None
+            A customized SuperAnimal model config, as an alternative to the default
+            SuperAnimal model config. You can get the default SuperAnimal config with:
+                >>> import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+                >>> config = modelzoo.load_super_animal_config(
+                >>>     super_animal, model_name, detector_name,
+                >>> )
+
+        customized_pose_checkpoint: str | None
+            A customized SuperAnimal pose checkpoint, as an alternative to the
+            HuggingFace SuperAnimal models.
+
+        customized_detector_checkpoint: str | None
+            A customized SuperAnimal detector checkpoint, as an alternative to the
+            HuggingFace SuperAnimal models.
 
     Returns:
-        The predictions for each image
+        The predictions made by the model for each image.
 
     Examples:
-        >>> import deeplabcut
-        >>> from deeplabcut.pose_estimation_pytorch.apis.analyze_images import (
+        >>> from deeplabcut.pose_estimation_pytorch.apis import (
         >>>     superanimal_analyze_images
         >>> )
-        >>> superanimal_name = "superanimal_quadruped"
-        >>> model_name = "hrnetw32"
-        >>> device = "cuda:0"
-        >>> max_individuals = 3
-        >>> test_images_folder = "test_rodent_images"
-        >>> out_images_folder = "vis_test_rodent_images"
-        >>> ret = superanimal_analyze_images(
-        >>>     superanimal_name,
-        >>>     model_name,
-        >>>     test_images_folder,
-        >>>     max_individuals,
-        >>>     out_images_folder
+        >>> predictions = superanimal_analyze_images(
+        >>>     superanimal_name="superanimal_topviewmouse",
+        >>>     model_name="resnet_50",
+        >>>     detector_name="fasterrcnn_mobilenet_v3_large_fpn",
+        >>>     images="test_mouse_images",
+        >>>     max_individuals=3,
+        >>>     out_folder="test_mouse_images_labeled",
+        >>>     device="cuda:0",
+        >>>     pose_threshold=0.1,
         >>> )
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True, parents=True)
 
-    snapshot_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=model_name,
-    )
-    detector_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=detector_name,
-    )
+    if customized_pose_checkpoint is None:
+        snapshot_path = modelzoo.get_super_animal_snapshot_path(
+            dataset=superanimal_name,
+            model_name=model_name,
+        )
+    else:
+        snapshot_path = Path(customized_pose_checkpoint)
 
-    config = modelzoo.load_super_animal_config(
-        super_animal=superanimal_name,
-        model_name=model_name,
-        detector_name=detector_name,
-    )
+    if customized_detector_checkpoint is None:
+        detector_path = modelzoo.get_super_animal_snapshot_path(
+            dataset=superanimal_name,
+            model_name=detector_name,
+        )
+    else:
+        detector_path = Path(customized_detector_checkpoint)
+
+    if customized_model_config is None:
+        config = modelzoo.load_super_animal_config(
+            super_animal=superanimal_name,
+            model_name=model_name,
+            detector_name=detector_name,
+        )
+    elif isinstance(customized_model_config, (str, Path)):
+        config = config_utils.read_config_as_dict(customized_model_config)
+    else:
+        config = copy.deepcopy(customized_model_config)
+
     config = update_config(config, max_individuals, device)
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
     if "detector" in config:
@@ -123,9 +190,29 @@ def superanimal_analyze_images(
         progress_bar=progress_bar,
     )
 
-    superanimal_colormaps = get_superanimal_colormaps()
-    colormap = superanimal_colormaps[superanimal_name]
-    create_labeled_images_from_predictions(predictions, out_folder, colormap)
+    skeleton_bodyparts = config.get("skeleton", [])
+    skeleton = None
+    if plot_skeleton and len(skeleton_bodyparts) > 0:
+        skeleton = []
+        bodyparts = config["metadata"]["bodyparts"]
+        for bpt_0, bpt_1 in skeleton_bodyparts:
+            skeleton.append(
+                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
+            )
+
+    visualization.create_labeled_images(
+        predictions=predictions,
+        out_folder=out_folder,
+        num_bodyparts=len(config["metadata"]["bodyparts"]),
+        num_unique_bodyparts=len(config["metadata"]["unique_bodyparts"]),
+        max_individuals=max_individuals,
+        pcutoff=pose_threshold,
+        bboxes_pcutoff=bbox_threshold,
+        cmap=get_superanimal_colormaps()[superanimal_name],
+        skeleton=skeleton,
+        skeleton_color=config.get("skeleton_color", "black"),
+    )
+
     return predictions
 
 
@@ -262,7 +349,7 @@ def analyze_image_folder(
     max_individuals: int | None = None,
     progress_bar: bool = True,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
-    """Runs pose inference on a folder of images
+    """Runs pose inference on a folder of images and returns the predictions
 
     Args:
         model_cfg: The model config (or its path) used to analyze the images.
@@ -344,32 +431,6 @@ def analyze_image_folder(
         image_path: image_predictions
         for image_path, image_predictions in zip(image_paths, predictions)
     }
-
-
-def create_labeled_images_from_predictions(predictions, out_folder, cmap):
-    for image_path, prediction in predictions.items():
-        frame = auxfun_videos.imread(str(image_path), mode="skimage")
-        fig, ax = plt.subplots()
-        ax.imshow(frame)
-        for idx, pose in enumerate(prediction["bodyparts"]):
-            x, y, confidence = pose[:, 0], pose[:, 1], pose[:, 2]
-            if np.sum(pose) < 0:
-                continue
-            mask = confidence > 0.0
-            x = x[mask]
-            y = y[mask]
-            ax.scatter(x, y, c=np.arange(len(x)), cmap=cmap)
-        bboxes = prediction["bboxes"]
-        for bbox in bboxes:
-            # Draw bounding boxes around detected objects
-            xmin, ymin, w, h = bbox
-            rect = plt.Rectangle(
-                (xmin, ymin), w, h, fill=False, edgecolor="green", linewidth=2
-            )
-
-            ax.add_patch(rect)
-        image_name = image_path.split(os.sep)[-1]
-        fig.savefig(os.path.join(out_folder, f"vis_{image_name}"))
 
 
 def plot_images_coco(

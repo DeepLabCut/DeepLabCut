@@ -379,6 +379,7 @@ def evaluate_network(
         If provided it must be either ``True``, ``False``, ``"bodypart"``, or
         ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
         multi-animal projects.
+        If a detector is used, the predicted bounding boxes will also be plotted.
 
     show_errors: bool, optional, default=True
         Display train and test errors.
