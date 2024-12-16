@@ -98,7 +98,8 @@ def superanimal_analyze_images(
             The device to use to run image analysis.
 
         pose_threshold: float, default=0.4
-            The cutoff score when plotting pose predictions.
+            The cutoff score when plotting pose predictions. To note, this is called 
+            pcutoff in other parts of the code. Must be in (0, 1).
 
         bbox_threshold: float, default=0.1
             The minimum confidence score to keep bounding box detections. Must be in
@@ -139,6 +140,7 @@ def superanimal_analyze_images(
         >>>     max_individuals=3,
         >>>     out_folder="test_mouse_images_labeled",
         >>>     device="cuda:0",
+        >>>     pose_threshold=0.1,
         >>> )
     """
     out_folder = Path(out_folder)
