@@ -14,9 +14,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import cv2
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F
+from PIL import Image
 from tqdm import tqdm
 
 import deeplabcut.core.visualization as visualization
@@ -24,10 +27,123 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as preprocessor
 import deeplabcut.pose_estimation_pytorch.models as models
+import deeplabcut.utils.visualization as visualization_utils
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
+
+
+def create_labeled_images(
+    predictions: dict[str, dict[str, np.ndarray | np.ndarray]],
+    out_folder: str | Path,
+    num_bodyparts: int,
+    num_unique_bodyparts: int,
+    max_individuals: int = 1,
+    p_cutoff: float = 0.6,
+    bboxes_pcutoff: float = 0.6,
+    mode: str = "bodypart",
+    cmap: str | colors.Colormap = "rainbow",
+    dot_size: int = 12,
+    alpha_value: float = 0.7,
+):
+    """Plots model predictions on images.
+
+    Args:
+        predictions: The predictions to plot. A dictionary mapping image paths to
+            the predictions made by the model on that image. The predictions should
+            contain a "bodyparts" key, mapping to an array of shape (max_individuals,
+            num_bodyparts, 3) containing predicted bodyparts. If there are any unique
+            bodyparts predicted, then it should also contain a "unique_bodyparts" key,
+            mapping to an array of shape (1, num_bodyparts, 3) containing the predicted
+            unique bodyparts.
+        out_folder: The folder where model predictions should be saved.
+        num_bodyparts: The number of bodyparts predicted by the model.
+        num_unique_bodyparts: The number of unique bodyparts predicted by the model.
+        max_individuals: The maximum number of individuals predicted by the model.
+        p_cutoff: The p-cutoff score above which predicted bodyparts are displayed with
+            a "⋅" marker, and below which they are displayed with a "X" marker.
+        bboxes_pcutoff: The bounding box cutoff score, below which predicted bounding
+            boxes are shown with a dashed line.
+        mode: One of "bodypart", "individual". Whether to color predictions by
+            bodypart or individual.
+        cmap: The colormap to use to plot predictions.
+        dot_size: The size of the bodypart prediction markers.
+        alpha_value: The transparency value of the bodypart prediction markers.
+    """
+    out_folder = Path(out_folder)
+    out_folder.mkdir(exist_ok=True)
+
+    color_by_individual = mode == "individual"
+
+    bboxes_color = "g"
+    if isinstance(cmap, str):
+        cmap_name = cmap
+        num_colors = num_bodyparts + num_unique_bodyparts + 1
+        if color_by_individual:
+            num_colors = max_individuals + 1
+        cmap = visualization_utils.get_cmap(num_colors, name=cmap_name)
+
+        bboxes_color = cmap(num_bodyparts + num_unique_bodyparts + 1)
+        if color_by_individual:
+            bboxes_color = visualization_utils.get_cmap(num_colors, name=cmap_name)
+
+    fig, ax = visualization_utils.create_minimal_figure()
+    for image_path, image_predictions in predictions.items():
+        # Load frame
+        frame = Image.open(str(image_path))
+        h, w = frame.height, frame.width
+
+        # Get bodypart predictions, put in order so colors are set correctly
+        pred = image_predictions["bodyparts"]  # (num_idv, num_kpt, 3)
+        if not color_by_individual:
+            pred = pred.swapaxes(0, 1)
+        predictions = [p[:, :2] for p in pred]
+        scores = [p[:, 2:3] for p in pred]
+
+        # Add unique bodypart predictions if there are any
+        if num_unique_bodyparts > 0:
+            unique_pred = image_predictions["unique_bodyparts"]
+            if not color_by_individual:
+                unique_pred = unique_pred.swapaxes(0, 1)
+            predictions += [up[:, :2] for up in unique_pred]
+            scores += [up[:, 2:3] for up in unique_pred]
+
+        # Make empty ground truth as we have none
+        gt = [np.full((1, 2), fill_value=np.nan) for _ in range(len(predictions))]
+
+        # Load bounding boxes if there are any
+        bounding_boxes = None
+        if "bboxes" in image_predictions:
+            bboxes = image_predictions["bboxes"]
+            bbox_scores = image_predictions["bbox_scores"]
+            bounding_boxes = (bboxes, bbox_scores)
+
+        # Create the figure
+        fig.set_size_inches(w / 100, h / 100)
+        ax.set_xlim(0, w)
+        ax.set_ylim(0, h)
+        ax.invert_yaxis()
+        visualization_utils.make_multianimal_labeled_image(
+            np.asarray(frame),
+            gt,
+            predictions,
+            scores,
+            cmap,
+            dot_size,
+            alpha_value,
+            p_cutoff,
+            ax=ax,
+            bounding_boxes=bounding_boxes,
+            bboxes_cutoff=bboxes_pcutoff,
+            bboxes_color=bboxes_color,
+        )
+
+        output_path = out_folder / f"predictions_{Path(image_path).stem}.png"
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        fig.savefig(output_path)
+        visualization_utils.erase_artists(ax)
+    plt.close(fig)
 
 
 @torch.no_grad()
@@ -93,10 +209,7 @@ def extract_model_outputs(
                     output[head]["heatmap"] = F.sigmoid(output[head]["heatmap"])
 
         output = {
-            head: {
-                name: output.cpu().numpy()
-                for name, output in head_outputs.items()
-            }
+            head: {name: output.cpu().numpy() for name, output in head_outputs.items()}
             for head, head_outputs in output.items()
         }
         model_data.append(
@@ -219,7 +332,8 @@ def extract_maps(
             snapshot_id = snapshot.path.stem
             extracted_maps[loader.train_fraction][snapshot_id] = {}
             runner = utils.get_pose_inference_runner(
-                model_config=loader.model_cfg, snapshot_path=snapshot.path,
+                model_config=loader.model_cfg,
+                snapshot_path=snapshot.path,
             )
             results = extract_model_outputs(
                 image_paths,
@@ -254,7 +368,12 @@ def extract_maps(
 
                     is_train = image_idx in train_idx
                     extracted_maps[loader.train_fraction][snapshot_id][key] = (
-                        *parsed, None, bpt_names, paf_graph, img_name, is_train
+                        *parsed,
+                        None,
+                        bpt_names,
+                        paf_graph,
+                        img_name,
+                        is_train,
                     )
 
     # img, scmap, locref, paf, peaks, bpt_names, paf_graph, img_name, is_train
@@ -405,9 +524,7 @@ def _get_context(
         bboxes_train = loader.ground_truth_bboxes(mode="train")
         bboxes_test = loader.ground_truth_bboxes(mode="test")
         bboxes = {**bboxes_train, **bboxes_test}
-        return [
-            dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths
-        ]
+        return [dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths]
 
     detector_runner = utils.get_detector_inference_runner(
         model_config=loader.model_cfg,
