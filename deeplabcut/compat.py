@@ -965,7 +965,7 @@ def analyze_images(
     config: str | Path,
     images: str | Path | list[str] | list[Path],
     frame_type: str | None = None,
-    destfolder: Path | None = None,
+    destfolder: str | Path | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     max_individuals: int | None = None,
@@ -974,6 +974,10 @@ def analyze_images(
     detector_snapshot_index: int | None = None,
     save_as_csv: bool = False,
     modelprefix: str = "",
+    plotting: bool | str = False,
+    pcutoff: float | None = None,
+    bbox_pcutoff: float | None = None,
+    plot_skeleton: bool = False,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Analyzes images with a DeepLabCut model and stores the output in an H5 file.
 
@@ -1033,6 +1037,30 @@ def analyze_images(
         Saves the predictions in a .csv file. The default is ``False``; if provided it
         must be either ``True`` or ``False``.
 
+    plotting: bool, str, default=False
+        Plots the predictions made by the model on the analyzed images. Results will be
+        stored in a folder named `LabeledImages_{scorer}`, where scorer is the name
+        of the model used to analyze the images. This folder will be in the same
+        directory as the file containing the predictions (either the given `destfolder`,
+        or the folder containing the first image to analyze).
+
+        If provided it must be either ``True``, ``False``, ``"bodypart"``, or
+        ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
+        multi-animal projects. If a detector is used, the predicted bounding boxes
+        will also be plotted.
+
+    pcutoff: float, optional, default=None
+        The cutoff score when plotting pose predictions. Must be None or in
+        (0, 1). If None, the pcutoff is read from the project configuration file.
+
+    bbox_pcutoff: float, optional, default=None
+        The cutoff score when plotting bounding box predictions. Must be
+        None or in (0, 1). If None, it is read from the project configuration file.
+
+    plot_skeleton: bool, default=False
+        If a skeleton is defined in the project's config.yaml, whether
+        to plot the skeleton connecting the predicted bodyparts on the images.
+
     modelprefix: str, optional
         Directory containing the deeplabcut models to use when running image analysis.
         By default, the models are assumed to exist in the project folder.
@@ -1059,6 +1087,17 @@ def analyze_images(
         >>>     shuffle=3,
         >>> )
         >>>
+
+    If you want to analyze frames in a folder, save them and plot predictions:
+        >>> import deeplabcut
+        >>> deeplabcut.analyze_images(
+        >>>     "/analysis/project/reaching-task/config.yaml",
+        >>>     "/analysis/project/my_images",
+        >>>     shuffle=3,
+        >>>     destfolder="/analysis/project/my_images_analyzed",
+        >>>     plotting=True,
+        >>> )
+        >>>
     --------
     """
     engine = get_shuffle_engine(
@@ -1083,6 +1122,10 @@ def analyze_images(
             device=device,
             save_as_csv=save_as_csv,
             max_individuals=max_individuals,
+            plotting=plotting,
+            pcutoff=pcutoff,
+            bbox_pcutoff=bbox_pcutoff,
+            plot_skeleton=plot_skeleton,
         )
 
     raise NotImplementedError(f"This function is not implemented for {engine}")

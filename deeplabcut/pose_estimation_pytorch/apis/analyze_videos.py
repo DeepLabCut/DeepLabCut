@@ -260,7 +260,6 @@ def analyze_videos(
             individuals defined in the config.yaml. Another number can be passed if the
             number of animals in the video is different from the number of animals the
             model was trained on.
-        calibrate: TODO(niels)
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.

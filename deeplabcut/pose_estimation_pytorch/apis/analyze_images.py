@@ -230,6 +230,10 @@ def analyze_images(
     max_individuals: int | None = None,
     save_as_csv: bool = False,
     progress_bar: bool = True,
+    plotting: bool | str = False,
+    pcutoff: float | None = None,
+    bbox_pcutoff: float | None = None,
+    plot_skeleton: bool = True,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -254,6 +258,13 @@ def analyze_images(
             to the number of individuals in the project if None.
         save_as_csv: Whether to also save the predictions as a CSV file.
         progress_bar: Whether to display a progress bar when running inference.
+        plotting: Whether to plot predictions on images.
+        pcutoff: The cutoff score when plotting pose predictions. Must be None or in
+            (0, 1). If None, the pcutoff is read from the project configuration file.
+        bbox_pcutoff: The cutoff score when plotting bounding box predictions. Must be
+            None or in (0, 1). If None, it is read from the project configuration file.
+        plot_skeleton: If a skeleton is defined in the model configuration file, whether
+            to plot the skeleton connecting the predicted bodyparts on the images.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -305,6 +316,7 @@ def analyze_images(
         output_dir = Path(images[0]).parent.resolve()
         print(f"Setting output directory to {output_dir}")
     output_dir = Path(output_dir)
+    output_dir.mkdir(exist_ok=True)
 
     scorer = get_scorer_name(
         cfg,
@@ -335,6 +347,41 @@ def analyze_images(
     if save_as_csv:
         print(f"Saving CSV as {output_filepath}")
         df_predictions.to_csv(output_filepath.with_suffix(".csv"))
+
+    if plotting:
+        plot_dir = output_dir / f"LabeledImages_{scorer}"
+        plot_dir.mkdir(exist_ok=True)
+
+        mode = plotting if isinstance(plotting, str) else "bodypart"
+
+        bodyparts = model_cfg["metadata"]["bodyparts"]
+        skeleton = None
+        if plot_skeleton and len(cfg.get("skeleton", [])) > 0:
+            skeleton = [
+                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
+                for bpt_0, bpt_1 in cfg["skeleton"]
+            ]
+
+        if pcutoff is None:
+            pcutoff = cfg.get("pcutoff", 0.6)
+        if bbox_pcutoff is None:
+            bbox_pcutoff = cfg.get("bbox_pcutoff", 0.6)
+
+        visualization.create_labeled_images(
+            predictions=predictions,
+            out_folder=plot_dir,
+            num_bodyparts=len(bodyparts),
+            num_unique_bodyparts=len(model_cfg["metadata"]["unique_bodyparts"]),
+            max_individuals=len(individuals),
+            pcutoff=pcutoff,
+            bboxes_pcutoff=bbox_pcutoff,
+            mode=mode,
+            cmap=cfg.get("colormap", "rainbow"),
+            dot_size=cfg.get("dotsize", 12),
+            alpha_value=cfg.get("alphavalue", 12),
+            skeleton=skeleton,
+            skeleton_color=cfg.get("skeleton_color"),
+        )
 
     return predictions
 
