@@ -34,15 +34,16 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
-def launch_napari(files=None):
+def launch_napari(files=None, plugin="napari-deeplabcut", stack=False):
     viewer = napari.Viewer()
-    # Automatically activate the napari-deeplabcut plugin
-    for action in viewer.window.plugins_menu.actions():
-        if "deeplabcut" in action.text():
-            action.trigger()
-            break
+    if plugin == "napari-deeplabcut":
+        # Automatically activate the napari-deeplabcut plugin
+        for action in viewer.window.plugins_menu.actions():
+            if "deeplabcut" in action.text():
+                action.trigger()
+                break
     if files is not None:
-        viewer.open(files, plugin="napari-deeplabcut")
+        viewer.open(files, plugin=plugin, stack=stack)
     return viewer
 
 
@@ -451,7 +452,10 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        if config.endswith("config.yaml"):
+        if (
+            config.endswith("config.yaml")
+            and not config.endswith("pytorch_config.yaml")
+        ):
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:

@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+from __future__ import annotations
 
 import argparse
 import os
@@ -32,7 +33,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from deeplabcut.pose_estimation_tensorflow.lib import crossvalutils
+from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
 
@@ -187,6 +188,7 @@ def plot_trajectories(
     resolution=100,
     linewidth=1.0,
     track_method="",
+    pcutoff: float | None = None,
 ):
     """Plots the trajectories of various bodyparts across the video.
 
@@ -251,6 +253,9 @@ def plot_trajectories(
          For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
          be taken from the config.yaml file if none is given.
 
+    pcutoff: string, optional, default=None
+        Overrides the pcutoff set in the project configuration to plot the trajectories.
+
     Returns
     -------
     None
@@ -266,6 +271,10 @@ def plot_trajectories(
         )
     """
     cfg = auxiliaryfunctions.read_config(config)
+
+    if pcutoff is None:
+        pcutoff = cfg["pcutoff"]
+
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -308,7 +317,7 @@ def plot_trajectories(
                 linewidth,
                 cfg["colormap"],
                 cfg["alphavalue"],
-                cfg["pcutoff"],
+                pcutoff,
                 suffix,
                 imagetype,
                 tmpfolder,

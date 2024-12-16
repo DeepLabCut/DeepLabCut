@@ -10,7 +10,7 @@
 #
 import numpy as np
 import pytest
-from deeplabcut.modelzoo.api import superanimal_inference
+from deeplabcut.pose_estimation_tensorflow.modelzoo.api import superanimal_inference
 
 
 def test_get_multi_scale_frames():
