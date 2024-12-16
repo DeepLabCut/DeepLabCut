@@ -41,7 +41,7 @@ def create_labeled_images(
     num_bodyparts: int,
     num_unique_bodyparts: int,
     max_individuals: int = 1,
-    p_cutoff: float = 0.6,
+    pcutoff: float = 0.6,
     bboxes_pcutoff: float = 0.6,
     mode: str = "bodypart",
     cmap: str | colors.Colormap = "rainbow",
@@ -64,7 +64,7 @@ def create_labeled_images(
         num_bodyparts: The number of bodyparts predicted by the model.
         num_unique_bodyparts: The number of unique bodyparts predicted by the model.
         max_individuals: The maximum number of individuals predicted by the model.
-        p_cutoff: The p-cutoff score above which predicted bodyparts are displayed with
+        pcutoff: The p-cutoff score above which predicted bodyparts are displayed with
             a "⋅" marker, and below which they are displayed with a "X" marker.
         bboxes_pcutoff: The bounding box cutoff score, below which predicted bounding
             boxes are shown with a dashed line.
@@ -145,7 +145,7 @@ def create_labeled_images(
             cmap,
             dot_size,
             alpha_value,
-            p_cutoff,
+            pcutoff,
             ax=ax,
             bounding_boxes=bounding_boxes,
             bboxes_cutoff=bboxes_pcutoff,
