@@ -108,8 +108,13 @@ def superanimal_analyze_images(
             If a skeleton is defined in the model configuration file, whether to plot
             the skeleton connecting the predicted bodyparts on the images.
 
-        customized_model_config: | Path | dict | None
-            A customized SuperAnimal model config.
+        customized_model_config: str | Path | dict | None
+            A customized SuperAnimal model config, as an alternative to the default
+            SuperAnimal model config. You can get the default SuperAnimal config with:
+                >>> import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+                >>> config = modelzoo.load_super_animal_config(
+                >>>     super_animal, model_name, detector_name,
+                >>> )
 
         customized_pose_checkpoint: str | None
             A customized SuperAnimal pose checkpoint, as an alternative to the
