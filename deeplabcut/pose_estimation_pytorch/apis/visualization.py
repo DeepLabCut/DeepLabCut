@@ -14,6 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import cv2
+import matplotlib.collections as collections
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,6 +47,8 @@ def create_labeled_images(
     cmap: str | colors.Colormap = "rainbow",
     dot_size: int = 12,
     alpha_value: float = 0.7,
+    skeleton: list[tuple[int, int]] | None = None,
+    skeleton_color: str = "k",
 ):
     """Plots model predictions on images.
 
@@ -70,6 +73,9 @@ def create_labeled_images(
         cmap: The colormap to use to plot predictions.
         dot_size: The size of the bodypart prediction markers.
         alpha_value: The transparency value of the bodypart prediction markers.
+        skeleton: If skeletons should be plotted, the list of bodyparts that constitute
+            the skeletons.
+        skeleton_color: The color with which to plot the skeleton, if one is given.
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True)
@@ -96,6 +102,13 @@ def create_labeled_images(
 
         # Get bodypart predictions, put in order so colors are set correctly
         pred = image_predictions["bodyparts"]  # (num_idv, num_kpt, 3)
+        bones = None
+        if skeleton is not None:
+            bones = [
+                idv_pose[[idx_1, idx_2]][:, :2]
+                for idv_pose in pred
+                for idx_1, idx_2 in skeleton
+            ]
         if not color_by_individual:
             pred = pred.swapaxes(0, 1)
         predictions = [p[:, :2] for p in pred]
@@ -138,6 +151,12 @@ def create_labeled_images(
             bboxes_cutoff=bboxes_pcutoff,
             bboxes_color=bboxes_color,
         )
+        if bones is not None:
+            ax.add_collection(
+                collections.LineCollection(
+                    bones, colors=skeleton_color, alpha=alpha_value
+                )
+            )
 
         output_path = out_folder / f"predictions_{Path(image_path).stem}.png"
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)

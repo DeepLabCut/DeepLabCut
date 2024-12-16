@@ -51,6 +51,7 @@ def superanimal_analyze_images(
     device: str | None = None,
     pose_threshold: float = 0.4,
     bbox_threshold: float = 0.6,
+    plot_skeleton: bool = True,
     customized_model_config: str | Path | dict | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
@@ -102,6 +103,10 @@ def superanimal_analyze_images(
         bbox_threshold: float, default=0.1
             The minimum confidence score to keep bounding box detections. Must be in
             (0, 1).
+
+        plot_skeleton: bool, default=True
+            If a skeleton is defined in the model configuration file, whether to plot
+            the skeleton connecting the predicted bodyparts on the images.
 
         customized_model_config: | Path | dict | None
             A customized SuperAnimal model config.
@@ -176,6 +181,16 @@ def superanimal_analyze_images(
         progress_bar=progress_bar,
     )
 
+    skeleton_bodyparts = config.get("skeleton", [])
+    skeleton = None
+    if plot_skeleton and len(skeleton_bodyparts) > 0:
+        skeleton = []
+        bodyparts = config["metadata"]["bodyparts"]
+        for bpt_0, bpt_1 in skeleton_bodyparts:
+            skeleton.append(
+                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
+            )
+
     visualization.create_labeled_images(
         predictions=predictions,
         out_folder=out_folder,
@@ -185,6 +200,8 @@ def superanimal_analyze_images(
         p_cutoff=pose_threshold,
         bboxes_pcutoff=bbox_threshold,
         cmap=get_superanimal_colormaps()[superanimal_name],
+        skeleton=skeleton,
+        skeleton_color=config.get("skeleton_color", "black"),
     )
 
     return predictions
