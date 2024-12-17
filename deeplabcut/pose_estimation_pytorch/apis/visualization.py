@@ -46,6 +46,7 @@ def create_labeled_images(
     alpha_value: float = 0.7,
     skeleton: list[tuple[int, int]] | None = None,
     skeleton_color: str = "k",
+    close_figure_after_save: bool = True,
 ):
     """Plots model predictions on images.
 
@@ -70,6 +71,8 @@ def create_labeled_images(
         skeleton: If skeletons should be plotted, the list of bodyparts that constitute
             the skeletons.
         skeleton_color: The color with which to plot the skeleton, if one is given.
+        close_figure_after_save: Whether to close figures after saving the labeled
+            images to disk.
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True)
@@ -82,18 +85,9 @@ def create_labeled_images(
         # Load frame
         frame = Image.open(str(image_path))
 
-        # get pose predictions, create skeleton if required
-        pred = image_predictions["bodyparts"]  # (num_idv, num_kpt, 3)
+        # get pose predictions
+        pred = image_predictions["bodyparts"]
         total_idv, total_bodyparts = pred.shape[:2]
-        bones = None
-        if skeleton is not None:
-            bones = [
-                idv_pose[[idx_1, idx_2]][:, :2]
-                for idv_pose in pred
-                for idx_1, idx_2 in skeleton
-            ]
-
-        # get unique bodyparts if there are any
         unique_pred = None
         if "unique_bodyparts" in image_predictions:
             unique_pred = image_predictions["unique_bodyparts"][0]
@@ -111,21 +105,28 @@ def create_labeled_images(
             if np.sum(pose) < 0 or np.sum(mask) <= 0:
                 continue
 
-            xy = xy[mask]
-            if color_by_individual:
-                ax.scatter(xy[:, 0], xy[:, 1], c=cmap(idx / total_idv), s=dot_size)
-            else:
-                c = np.linspace(0, 1, total_bodyparts)
-                c = c[:len(pose)][mask]
-                ax.scatter(xy[:, 0], xy[:, 1], c=c, cmap=cmap, s=dot_size)
+            bones = []
+            if skeleton is not None:
+                for idx_1, idx_2 in skeleton:
+                    if scores[idx_1] > pcutoff and scores[idx_2] > pcutoff:
+                        bones.append(xy[[idx_1, idx_2]])
 
-        # plot skeleton
-        if bones is not None:
-            ax.add_collection(
-                collections.LineCollection(
-                    bones, colors=skeleton_color, alpha=alpha_value
+            kwargs = dict(s=dot_size)
+            if color_by_individual:
+                kwargs["c"] = cmap(idx / total_idv)
+            else:
+                c = np.linspace(0, 1, total_bodyparts)[:len(pose)][mask]
+                kwargs["c"] = c
+                kwargs["cmap"] = cmap
+
+            xy = xy[mask]
+            ax.scatter(xy[:, 0], xy[:, 1], **kwargs)
+            if len(bones) > 0:
+                ax.add_collection(
+                    collections.LineCollection(
+                        bones, colors=skeleton_color, alpha=alpha_value
+                    )
                 )
-            )
 
         # plot unique bodyparts
         if unique_pred is not None:
@@ -134,13 +135,16 @@ def create_labeled_images(
             if np.sum(mask) <= 0:
                 continue
 
-            xy = xy[mask]
+            kwargs = dict(s=dot_size)
             if color_by_individual:
-                ax.scatter(xy[:, 0], xy[:, 1], c=cmap(1), s=dot_size)
+                kwargs["c"] = cmap(1)
             else:
                 c = np.linspace(0, 1, total_bodyparts)
-                c = c[-len(unique_pred):][mask]
-                ax.scatter(xy[:, 0], xy[:, 1], c=c, cmap=cmap, s=dot_size)
+                kwargs["c"] = c[-len(unique_pred):][mask]
+                kwargs["cmap"] = cmap
+
+            xy = xy[mask]
+            ax.scatter(xy[:, 0], xy[:, 1], **kwargs)
 
         # plot bounding boxes
         if "bboxes" in image_predictions:
@@ -160,6 +164,12 @@ def create_labeled_images(
         output_path = out_folder / f"predictions_{Path(image_path).stem}.png"
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         fig.savefig(output_path)
+
+        if close_figure_after_save:
+            plt.close(fig)
+
+    if close_figure_after_save:
+        plt.close()
 
 
 @torch.no_grad()

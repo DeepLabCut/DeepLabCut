@@ -206,6 +206,7 @@ def superanimal_analyze_images(
         cmap=get_superanimal_colormaps()[superanimal_name],
         skeleton=skeleton,
         skeleton_color=config.get("skeleton_color", "black"),
+        close_figure_after_save=False,
     )
 
     return predictions
