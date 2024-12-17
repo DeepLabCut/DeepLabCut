@@ -201,9 +201,6 @@ def superanimal_analyze_images(
     visualization.create_labeled_images(
         predictions=predictions,
         out_folder=out_folder,
-        num_bodyparts=len(config["metadata"]["bodyparts"]),
-        num_unique_bodyparts=len(config["metadata"]["unique_bodyparts"]),
-        max_individuals=max_individuals,
         pcutoff=pose_threshold,
         bboxes_pcutoff=bbox_threshold,
         cmap=get_superanimal_colormaps()[superanimal_name],

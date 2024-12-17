@@ -38,9 +38,6 @@ from deeplabcut.utils import auxiliaryfunctions
 def create_labeled_images(
     predictions: dict[str, dict[str, np.ndarray | np.ndarray]],
     out_folder: str | Path,
-    num_bodyparts: int,
-    num_unique_bodyparts: int,
-    max_individuals: int = 1,
     pcutoff: float = 0.6,
     bboxes_pcutoff: float = 0.6,
     mode: str = "bodypart",
@@ -61,9 +58,6 @@ def create_labeled_images(
             mapping to an array of shape (1, num_bodyparts, 3) containing the predicted
             unique bodyparts.
         out_folder: The folder where model predictions should be saved.
-        num_bodyparts: The number of bodyparts predicted by the model.
-        num_unique_bodyparts: The number of unique bodyparts predicted by the model.
-        max_individuals: The maximum number of individuals predicted by the model.
         pcutoff: The p-cutoff score above which predicted bodyparts are displayed with
             a "⋅" marker, and below which they are displayed with a "X" marker.
         bboxes_pcutoff: The bounding box cutoff score, below which predicted bounding
@@ -81,27 +75,16 @@ def create_labeled_images(
     out_folder.mkdir(exist_ok=True)
 
     color_by_individual = mode == "individual"
-
-    bboxes_color = "g"
     if isinstance(cmap, str):
-        cmap_name = cmap
-        num_colors = num_bodyparts + num_unique_bodyparts + 1
-        if color_by_individual:
-            num_colors = max_individuals + 1
-        cmap = visualization_utils.get_cmap(num_colors, name=cmap_name)
+        cmap = plt.cm.get_cmap(cmap)
 
-        bboxes_color = cmap(num_bodyparts + num_unique_bodyparts + 1)
-        if color_by_individual:
-            bboxes_color = visualization_utils.get_cmap(num_colors, name=cmap_name)
-
-    fig, ax = visualization_utils.create_minimal_figure()
     for image_path, image_predictions in predictions.items():
         # Load frame
         frame = Image.open(str(image_path))
-        h, w = frame.height, frame.width
 
-        # Get bodypart predictions, put in order so colors are set correctly
+        # get pose predictions, create skeleton if required
         pred = image_predictions["bodyparts"]  # (num_idv, num_kpt, 3)
+        total_idv, total_bodyparts = pred.shape[:2]
         bones = None
         if skeleton is not None:
             bones = [
@@ -109,48 +92,34 @@ def create_labeled_images(
                 for idv_pose in pred
                 for idx_1, idx_2 in skeleton
             ]
-        if not color_by_individual:
-            pred = pred.swapaxes(0, 1)
-        predictions = [p[:, :2] for p in pred]
-        scores = [p[:, 2:3] for p in pred]
 
-        # Add unique bodypart predictions if there are any
-        if num_unique_bodyparts > 0:
-            unique_pred = image_predictions["unique_bodyparts"]
-            if not color_by_individual:
-                unique_pred = unique_pred.swapaxes(0, 1)
-            predictions += [up[:, :2] for up in unique_pred]
-            scores += [up[:, 2:3] for up in unique_pred]
+        # get unique bodyparts if there are any
+        unique_pred = None
+        if "unique_bodyparts" in image_predictions:
+            unique_pred = image_predictions["unique_bodyparts"][0]
+            total_idv += 1
+            total_bodyparts += len(unique_pred)
 
-        # Make empty ground truth as we have none
-        gt = [np.full((1, 2), fill_value=np.nan) for _ in range(len(predictions))]
+        # create plot
+        fig, ax = plt.subplots()
+        ax.imshow(frame)
 
-        # Load bounding boxes if there are any
-        bounding_boxes = None
-        if "bboxes" in image_predictions:
-            bboxes = image_predictions["bboxes"]
-            bbox_scores = image_predictions["bbox_scores"]
-            bounding_boxes = (bboxes, bbox_scores)
+        # plot bodyparts
+        for idx, pose in enumerate(pred):
+            xy, scores = pose[:, :2], pose[:, 2]
+            mask = scores > pcutoff
+            if np.sum(pose) < 0 or np.sum(mask) <= 0:
+                continue
 
-        # Create the figure
-        fig.set_size_inches(w / 100, h / 100)
-        ax.set_xlim(0, w)
-        ax.set_ylim(0, h)
-        ax.invert_yaxis()
-        visualization_utils.make_multianimal_labeled_image(
-            np.asarray(frame),
-            gt,
-            predictions,
-            scores,
-            cmap,
-            dot_size,
-            alpha_value,
-            pcutoff,
-            ax=ax,
-            bounding_boxes=bounding_boxes,
-            bboxes_cutoff=bboxes_pcutoff,
-            bboxes_color=bboxes_color,
-        )
+            xy = xy[mask]
+            if color_by_individual:
+                ax.scatter(xy[:, 0], xy[:, 1], c=cmap(idx / total_idv), s=dot_size)
+            else:
+                c = np.linspace(0, 1, total_bodyparts)
+                c = c[:len(pose)][mask]
+                ax.scatter(xy[:, 0], xy[:, 1], c=c, cmap=cmap, s=dot_size)
+
+        # plot skeleton
         if bones is not None:
             ax.add_collection(
                 collections.LineCollection(
@@ -158,11 +127,39 @@ def create_labeled_images(
                 )
             )
 
+        # plot unique bodyparts
+        if unique_pred is not None:
+            xy, scores = unique_pred[:, :2], unique_pred[:, 2]
+            mask = scores > pcutoff
+            if np.sum(mask) <= 0:
+                continue
+
+            xy = xy[mask]
+            if color_by_individual:
+                ax.scatter(xy[:, 0], xy[:, 1], c=cmap(1), s=dot_size)
+            else:
+                c = np.linspace(0, 1, total_bodyparts)
+                c = c[-len(unique_pred):][mask]
+                ax.scatter(xy[:, 0], xy[:, 1], c=c, cmap=cmap, s=dot_size)
+
+        # plot bounding boxes
+        if "bboxes" in image_predictions:
+            bboxes = image_predictions["bboxes"]
+            bbox_scores = image_predictions["bbox_scores"]
+            for idx, (bbox, score) in enumerate(zip(bboxes, bbox_scores)):
+                if score <= bboxes_pcutoff:
+                    continue
+
+                xmin, ymin, w, h = bbox
+                rect = plt.Rectangle(
+                    (xmin, ymin), w, h, fill=False, edgecolor="green", linewidth=2
+                )
+                ax.add_patch(rect)
+
+        # save predictions
         output_path = out_folder / f"predictions_{Path(image_path).stem}.png"
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         fig.savefig(output_path)
-        visualization_utils.erase_artists(ax)
-    plt.close(fig)
 
 
 @torch.no_grad()
