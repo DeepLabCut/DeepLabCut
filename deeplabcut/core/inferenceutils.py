@@ -849,7 +849,7 @@ class Assembler:
                 if unique is not None:
                     self.unique[i] = unique
         else:
-            global wrapped  # Hack to make the function pickable
+            global wrapped  # Hack to make the function pickable # TODO interesting stuff for multiprocessing!!
 
             def wrapped(i):
                 return i, self._assemble(self[i], i)
