@@ -253,7 +253,7 @@ class ExtractFrames(DefaultTab):
         message = "Failed to create worker: it is None"
         root_message = "failed to extract frames: worker is None"
         if self.worker is not None:
-            failed: list[bool] = self.worker.outputs
+            failed = self.worker.outputs
             if failed is None:
                 # outputs are None during manual frame extraction
                 return

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Tuple, Callable
+from typing import Callable, Tuple
 
 from PySide6 import QtCore
 import re
