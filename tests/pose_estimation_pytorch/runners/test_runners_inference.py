@@ -59,8 +59,7 @@ class MockInferenceRunner(inference.InferenceRunner):
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         self.batch_shapes.append(tuple(inputs.shape))
         return [  # return first elem of input
-            {"mock": {"index": i[0, 0, 0].detach().numpy()}}
-            for i in inputs
+            {"mock": {"index": i[0, 0, 0].detach().numpy()}} for i in inputs
         ]
 
 
@@ -101,8 +100,8 @@ def test_mock_bottom_up(batch_size):
         [0, 0, 0, 5, 2],
         [1, 2, 3, 4],
         [3, 4, 2, 1, 4],
-        [4, 23, 5, 20, 64, 100]
-    ]
+        [4, 23, 5, 20, 64, 100],
+    ],
 )
 def test_mock_top_down(batch_size, detections_per_image):
     h, w = 8, 8

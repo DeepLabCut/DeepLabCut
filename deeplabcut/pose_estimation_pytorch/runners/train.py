@@ -19,8 +19,8 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
+from torch.utils.data import DataLoader
 
 import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers

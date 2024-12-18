@@ -19,7 +19,6 @@ from typing import Generic, TypeVar
 import torch
 import torch.nn as nn
 
-
 ModelType = TypeVar("ModelType", bound=nn.Module)
 
 
@@ -87,7 +86,9 @@ class Runner(ABC, Generic[ModelType]):
         """
         try:
             snapshot = torch.load(
-                snapshot_path, map_location=device, weights_only=weights_only,
+                snapshot_path,
+                map_location=device,
+                weights_only=weights_only,
             )
         except pickle.UnpicklingError as err:
             print(
