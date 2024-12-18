@@ -368,9 +368,6 @@ def analyze_images(
         visualization.create_labeled_images(
             predictions=predictions,
             out_folder=plot_dir,
-            num_bodyparts=len(bodyparts),
-            num_unique_bodyparts=len(model_cfg["metadata"]["unique_bodyparts"]),
-            max_individuals=len(individuals),
             pcutoff=pcutoff,
             bboxes_pcutoff=bbox_pcutoff,
             mode=mode,
