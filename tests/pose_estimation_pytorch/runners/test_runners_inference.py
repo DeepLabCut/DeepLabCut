@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests inference runners"""
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -18,6 +18,25 @@ import torch
 import deeplabcut.pose_estimation_pytorch.data.postprocessor as post
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as prep
 import deeplabcut.pose_estimation_pytorch.runners.inference as inference
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.build_optimizer", Mock())
+@pytest.mark.parametrize("task", [Task.DETECT, Task.TOP_DOWN, Task.BOTTOM_UP])
+@pytest.mark.parametrize("weights_only", [True, False])
+def test_load_weights_only_with_build_training_runner(task: Task, weights_only: bool):
+    with patch("deeplabcut.pose_estimation_pytorch.runners.base.torch.load") as load:
+        snapshot = "snapshot.pt"
+        runner = inference.build_inference_runner(
+            task=task,
+            model=Mock(),
+            device="cpu",
+            snapshot_path=snapshot,
+            load_weights_only=weights_only,
+        )
+        load.assert_called_once_with(
+            snapshot, map_location="cpu", weights_only=weights_only
+        )
 
 
 class MockInferenceRunner(inference.InferenceRunner):

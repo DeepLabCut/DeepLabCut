@@ -41,14 +41,21 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         snapshot_path: str | Path | None = None,
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
+        load_weights_only: bool = True,
     ):
         """
         Args:
-            model: the model to run actions on
-            device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            snapshot_path: if defined, the path of a snapshot from which to load pretrained weights
-            preprocessor: the preprocessor to use on images before inference
-            postprocessor: the postprocessor to use on images after inference
+            model: The model to run actions on
+            device: The device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            snapshot_path: If defined, the path of a snapshot from which to load
+                pretrained weights
+            preprocessor: The preprocessor to use on images before inference
+            postprocessor: The postprocessor to use on images after inference
+            load_weights_only: Value for the torch.load() `weights_only` parameter. If
+                False, the python pickle module is used implicitly, which is known to be
+                insecure. Only set to False if you're loading data that you trust (e.g.
+                snapshots that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -59,7 +66,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.postprocessor = postprocessor
 
         if self.snapshot_path is not None and self.snapshot_path != "":
-            self.load_snapshot(self.snapshot_path, self.device, self.model)
+            self.load_snapshot(
+                self.snapshot_path,
+                self.device,
+                self.model,
+                weights_only=load_weights_only,
+            )
 
         self._batch: torch.Tensor | None = None
         self._contexts: list[dict] = []
@@ -293,6 +305,7 @@ def build_inference_runner(
     batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
+    load_weights_only: bool = True,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -305,9 +318,14 @@ def build_inference_runner(
         batch_size: the batch size to use to run inference
         preprocessor: the preprocessor to use on images before inference
         postprocessor: the postprocessor to use on images after inference
+        load_weights_only: Value for the torch.load() `weights_only` parameter. If
+            False, the python pickle module is used implicitly, which is known to be
+            insecure. Only set to False if you're loading data that you trust (e.g.
+            snapshots that you created yourself). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
 
     Returns:
-        the inference runner
+        The inference runner.
     """
     kwargs = dict(
         model=model,
@@ -316,6 +334,7 @@ def build_inference_runner(
         batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
+        load_weights_only=load_weights_only,
     )
     if task == Task.DETECT:
         return DetectorInferenceRunner(**kwargs)

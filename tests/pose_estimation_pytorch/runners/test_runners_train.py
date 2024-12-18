@@ -17,6 +17,31 @@ import torch
 
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 import deeplabcut.pose_estimation_pytorch.runners.train as train_runners
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.build_optimizer", Mock())
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.CSVLogger", Mock())
+@pytest.mark.parametrize("task", [Task.DETECT, Task.TOP_DOWN, Task.BOTTOM_UP])
+@pytest.mark.parametrize("weights_only", [True, False])
+def test_load_weights_only_with_build_training_runner(task: Task, weights_only: bool):
+    runner_config = dict(
+        optimizer=dict(),
+        snapshots=dict(max_snapshots=1, save_epochs=5, save_optimizer_state=False),
+        load_weights_only=weights_only,
+    )
+    with patch("deeplabcut.pose_estimation_pytorch.runners.base.torch.load") as load:
+        train_runners.build_training_runner(
+            runner_config=runner_config,
+            model_folder=Mock(),
+            task=task,
+            model=Mock(),
+            device="cpu",
+            snapshot_path="snapshot.pt",
+        )
+        load.assert_called_once_with(
+            "snapshot.pt", map_location="cpu", weights_only=weights_only
+        )
 
 
 @dataclass
