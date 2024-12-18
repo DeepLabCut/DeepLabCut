@@ -7,7 +7,7 @@ identity:
 
 
 # Project path (change when moving around)
-project_path:
+project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
@@ -23,9 +23,6 @@ bodyparts:
 - leftear
 - rightear
 - tailbase
-
-
-# Fraction of video to start/stop when extracting frames for labeling/refinement
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
