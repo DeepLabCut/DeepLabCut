@@ -1156,9 +1156,6 @@ def analyze_time_lapse_frames(
     values format (.csv), which in turn can be imported in many programs, such as
     MATLAB, R, Prism, etc.
 
-    This function is only implemented for tensorflow models/shuffles, and will throw
-    an error if called with a PyTorch shuffle.
-
     Parameters
     ----------
     config : string
