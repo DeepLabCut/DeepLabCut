@@ -1231,7 +1231,7 @@ def analyze_time_lapse_frames(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import analyze_images
-        analyze_images(
+        return analyze_images(
             config=config,
             images=directory,
             output_dir=directory,
