@@ -83,7 +83,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `analyze_videos`               |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
 | `create_tracking_dataset`      |     🔴      |                                                                                                     |                                                     |
 | `analyze_time_lapse_frames`    |     🟢      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
-| `convert_detections2tracklets` |     🟢      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
+| `convert_detections2tracklets` |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
 | `extract_maps`                 |     🟢      |                                                                                                     |                                                     |
 | `visualize_scoremaps`          |     🟢      |                                                                                                     |                                                     |
 | `visualize_locrefs`            |     🟢      |                                                                                                     |                                                     |
