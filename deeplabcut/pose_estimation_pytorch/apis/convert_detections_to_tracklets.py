@@ -42,9 +42,9 @@ def convert_detections2tracklets(
     ignore_bodyparts: Optional[List[str]] = None,
     inferencecfg: Optional[dict] = None,
     modelprefix="",
-    greedy=False,  # TODO: Unused, remove
-    calibrate=False,  # TODO: Unused, remove
-    window_size=0,  # TODO: Unused, remove
+    greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
+    calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
+    window_size: int = 0,  # TODO(niels): implement window size selection for assembly during video analysis
     identity_only=False,
     track_method="",
 ):
@@ -101,7 +101,6 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
     )
 
-    # TODO: deal with lists of strings
     videos = list_videos_in_folder(videos, videotype)
     if len(videos) == 0:
         print(f"No videos were found in {videos}")

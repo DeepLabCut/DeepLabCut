@@ -26,7 +26,11 @@ import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.runners.base import (
+    attempt_snapshot_load,
+    ModelType,
+    Runner,
+)
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
     CSVLogger,
@@ -341,14 +345,62 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 class PoseTrainingRunner(TrainingRunner[PoseModel]):
     """Runner to train pose estimation models"""
 
-    def __init__(self, model: PoseModel, optimizer: torch.optim.Optimizer, **kwargs):
+    def __init__(
+        self,
+        model: PoseModel,
+        optimizer: torch.optim.Optimizer,
+        load_head_weights: bool = True,
+        **kwargs,
+    ):
         """
         Args:
             model: The neural network for solving pose estimation task.
             optimizer: A PyTorch optimizer for updating model parameters.
+            load_head_weights: When `snapshot_path` is not None, whether to load the
+                head weights from the saved snapshot or just the backbone weights.
             **kwargs: TrainingRunner kwargs
         """
+        self._load_head_weights = load_head_weights
         super().__init__(model, optimizer, **kwargs)
+
+    def load_snapshot(
+        self,
+        snapshot_path: str | Path,
+        device: str,
+        model: PoseModel,
+        weights_only: bool = True,
+    ) -> dict:
+        """Loads the state dict for a model from a file
+
+        This method loads a file containing a DeepLabCut PyTorch model snapshot onto
+        a given device, and sets the model weights using the state_dict.
+
+        Args:
+            snapshot_path: the path containing the model weights to load
+            device: the device on which the model should be loaded
+            model: the model for which the weights are loaded
+            weights_only: Value for torch.load() `weights_only` parameter. If False, the
+                python pickle module is used implicitly, which is known to be insecure.
+                Only set to False if you're loading data that you trust (e.g. snapshots
+                that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
+
+        Returns:
+            The content of the snapshot file.
+        """
+        snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
+        if self._load_head_weights:
+            model.load_state_dict(snapshot["model"])
+        else:
+            backbone_prefix = "backbone."
+            backbone_weights = {
+                k[len(backbone_prefix) :]: v
+                for k, v in snapshot["model"].items()
+                if k.startswith(backbone_prefix)
+            }
+            model.backbone.load_state_dict(backbone_weights)
+
+        return snapshot
 
     def step(
         self, batch: dict[str, Any], mode: str = "train"
@@ -633,6 +685,7 @@ def build_training_runner(
     device: str,
     gpus: list[int] | None = None,
     snapshot_path: str | Path | None = None,
+    load_head_weights: bool = True,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
     """
@@ -646,6 +699,8 @@ def build_training_runner(
         device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
         gpus: the list of GPU indices to use for multi-GPU training
         snapshot_path: the snapshot from which to load the weights
+        load_head_weights: When `snapshot_path` is not None and a pose model is being
+            trained, whether to load the head weights from the saved snapshot.
         logger: the logger to use, if any
 
     Returns:
@@ -683,6 +738,7 @@ def build_training_runner(
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)
 
+    kwargs["load_head_weights"] = load_head_weights
     return PoseTrainingRunner(**kwargs)
 
 
