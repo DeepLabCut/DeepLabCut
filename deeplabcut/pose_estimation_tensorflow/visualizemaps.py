@@ -8,12 +8,15 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-
-
 import os
 import matplotlib.pyplot as plt
-import numpy as np
 from skimage.transform import resize
+from deeplabcut.core.visualization import (
+    form_figure,  # for backwards compatibility
+    visualize_scoremaps,
+    visualize_locrefs,
+    visualize_paf,
+)
 
 
 def extract_maps(
@@ -266,79 +269,6 @@ def resize_all_maps(image, scmap, locref, paf):
     if paf is not None:
         paf = resize_to_same_shape(paf, image)
     return scmap, (locref_x, locref_y), paf
-
-
-def form_figure(nx, ny):
-    fig, ax = plt.subplots(frameon=False)
-    ax.set_xlim(0, nx)
-    ax.set_ylim(0, ny)
-    ax.axis("off")
-    ax.invert_yaxis()
-    fig.tight_layout()
-    return fig, ax
-
-
-def visualize_scoremaps(image, scmap):
-    ny, nx = np.shape(image)[:2]
-    fig, ax = form_figure(nx, ny)
-    ax.imshow(image)
-    ax.imshow(scmap, alpha=0.5)
-    return fig, ax
-
-
-def visualize_locrefs(image, scmap, locref_x, locref_y, step=5, zoom_width=0):
-    fig, ax = visualize_scoremaps(image, scmap)
-    X, Y = np.meshgrid(np.arange(locref_x.shape[1]), np.arange(locref_x.shape[0]))
-    M = np.zeros(locref_x.shape, dtype=bool)
-    M[scmap < 0.5] = True
-    U = np.ma.masked_array(locref_x, mask=M)
-    V = np.ma.masked_array(locref_y, mask=M)
-    ax.quiver(
-        X[::step, ::step],
-        Y[::step, ::step],
-        U[::step, ::step],
-        V[::step, ::step],
-        color="r",
-        units="x",
-        scale_units="xy",
-        scale=1,
-        angles="xy",
-    )
-    if zoom_width > 0:
-        maxloc = np.unravel_index(np.argmax(scmap), scmap.shape)
-        ax.set_xlim(maxloc[1] - zoom_width, maxloc[1] + zoom_width)
-        ax.set_ylim(maxloc[0] + zoom_width, maxloc[0] - zoom_width)
-    return fig, ax
-
-
-def visualize_paf(image, paf, step=5, colors=None):
-    ny, nx = np.shape(image)[:2]
-    fig, ax = form_figure(nx, ny)
-    ax.imshow(image)
-    n_fields = paf.shape[2]
-    if colors is None:
-        colors = ["r"] * n_fields
-    for n in range(n_fields):
-        U = paf[:, :, n, 0]
-        V = paf[:, :, n, 1]
-        X, Y = np.meshgrid(np.arange(U.shape[1]), np.arange(U.shape[0]))
-        M = np.zeros(U.shape, dtype=bool)
-        M[U**2 + V**2 < 0.5 * 0.5**2] = True
-        U = np.ma.masked_array(U, mask=M)
-        V = np.ma.masked_array(V, mask=M)
-        ax.quiver(
-            X[::step, ::step],
-            Y[::step, ::step],
-            U[::step, ::step],
-            V[::step, ::step],
-            scale=50,
-            headaxislength=4,
-            alpha=1,
-            width=0.002,
-            color=colors[n],
-            angles="xy",
-        )
-    return fig, ax
 
 
 def _save_individual_subplots(fig, axes, labels, output_path):
