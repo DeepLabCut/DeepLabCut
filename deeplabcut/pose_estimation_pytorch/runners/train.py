@@ -302,7 +302,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         for key in loss_metrics:
             name = f"{mode}.{key}"
-            val = np.nan
+            val = float("nan")
             if np.sum(~np.isnan(loss_metrics[key])) > 0:
                 val = np.nanmean(loss_metrics[key]).item()
             self._metadata["losses"][name] = val
@@ -548,7 +548,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             losses = {k: v.detach().cpu().numpy() for k, v in losses.items()}
 
         elif mode == "eval":
-            losses["total_loss"] = np.nan
+            losses["total_loss"] = float("nan")
             self._update_epoch_predictions(
                 paths=batch["path"],
                 sizes=batch["original_size"],
