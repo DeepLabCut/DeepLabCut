@@ -21,7 +21,7 @@ import deeplabcut.pose_estimation_pytorch.runners as runners
 def test_load_snapshot_weights_only_error(tmpdir_factory):
     snapshot_dir = tmpdir_factory.mktemp("snapshot-dir")
     snapshot_path = snapshot_dir / "snapshot.pt"
-    torch.save(dict(content=np.zeros(10)), snapshot_path)
+    torch.save(dict(content=np.zeros(10)), str(snapshot_path))
 
     with pytest.raises(pickle.UnpicklingError):
         runners.Runner.load_snapshot(
