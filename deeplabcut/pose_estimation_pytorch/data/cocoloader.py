@@ -69,14 +69,21 @@ class COCOLoader(Loader):
         """
         if self._dataset_parameters is None:
             num_individuals, bodyparts = self.get_project_parameters(self.train_json)
+
+            crop_cfg = self.model_cfg["data"]["train"].get("top_down_crop", {})
+            crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+            crop_margin = crop_cfg.get("margin", 0)
+
             self._dataset_parameters = PoseDatasetParameters(
                 bodyparts=bodyparts,
                 unique_bpts=[],
                 individuals=[f"individual{i}" for i in range(num_individuals)],
                 with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
-                cropped_image_size=self.model_cfg.get("output_size", (256, 256)),
+                top_down_crop_size=(crop_w, crop_h),
+                top_down_crop_margin=crop_margin,
             )
+
         return self._dataset_parameters
 
     @staticmethod

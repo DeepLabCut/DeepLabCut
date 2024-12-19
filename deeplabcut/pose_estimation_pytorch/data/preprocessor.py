@@ -20,7 +20,8 @@ import cv2
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.utils import _crop_and_pad_image_torch
+from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
+
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
@@ -80,7 +81,10 @@ def build_bottom_up_preprocessor(
 
 
 def build_top_down_preprocessor(
-    color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
+    color_mode: str,
+    transform: A.BaseCompose,
+    top_down_crop_size: tuple[int, int],
+    top_down_crop_margin: int = 0,
 ) -> Preprocessor:
     """Creates a preprocessor for top-down pose estimation
 
@@ -92,8 +96,8 @@ def build_top_down_preprocessor(
     Args:
         color_mode: whether to load the image as an RGB or BGR
         transform: the transform to apply to the image
-        cropped_image_size: the size of images for each individual to give to the pose
-            estimator
+        top_down_crop_size: the (width, height) to resize cropped bboxes to
+        top_down_crop_margin: the margin to add around detected bboxes for the crop
 
     Returns:
         A default top-down Preprocessor
@@ -101,7 +105,7 @@ def build_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
-            TorchCropDetections(cropped_image_size=cropped_image_size[0]),
+            TopDownCrop(output_size=top_down_crop_size, margin=top_down_crop_margin),
             AugmentImage(transform),
             ToTensor(),
         ]
@@ -303,12 +307,20 @@ class ToBatch(Preprocessor):
         return image.unsqueeze(0), context
 
 
-class TorchCropDetections(Preprocessor):
-    """TODO"""
+class TopDownCrop(Preprocessor):
+    """Crops bounding boxes out of images for top-down pose estimation
 
-    def __init__(self, cropped_image_size: int, bbox_format: str = "xywh") -> None:
-        self.cropped_image_size = cropped_image_size
-        self.bbox_format = bbox_format
+    Args:
+        output_size: The (width, height) of crops to output
+        margin: The margin to add around detected bounding boxes before cropping
+    """
+
+    def __init__(self, output_size: int | tuple[int, int], margin: int = 0) -> None:
+        if isinstance(output_size, int):
+            output_size = (output_size, output_size)
+
+        self.output_size = output_size
+        self.margin = margin
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -319,10 +331,10 @@ class TorchCropDetections(Preprocessor):
 
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
-            cropped_image, offset, scale = _crop_and_pad_image_torch(
-                image, bbox, "xywh", self.cropped_image_size
+            crop, offset, scale = top_down_crop(
+                image, bbox, self.output_size, margin=self.margin
             )
-            images.append(cropped_image)
+            images.append(crop)
             offsets.append(offset)
             scales.append(scale)
 

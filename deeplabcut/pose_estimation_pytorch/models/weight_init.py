@@ -86,3 +86,20 @@ class Dekr(BaseWeightInitializer):
                 nn.init.constant_(module.translation_conv.weight, 0)
                 if hasattr(module, "bias"):
                     nn.init.constant_(module.translation_conv.bias, 0)
+
+
+@WEIGHT_INIT.register_module
+class Rtmpose(BaseWeightInitializer):
+    """Class to used to initialize head weights in the same way as RTMPose"""
+
+    def init_weights(self, model: nn.Module) -> None:
+        for module in model.modules():
+            if isinstance(module, nn.Conv2d):
+                nn.init.normal_(module.weight, std=0.001)
+                nn.init.constant_(module.bias, 0)
+            elif isinstance(module, nn.BatchNorm2d):
+                nn.init.constant_(module.weight, 1)
+                nn.init.constant_(module.bias, 1)
+            elif isinstance(module, nn.Linear):
+                nn.init.normal_(module.weight, std=0.01)
+                nn.init.constant_(module.bias, 0)

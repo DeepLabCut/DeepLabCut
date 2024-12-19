@@ -39,7 +39,7 @@ model:
       heatmap_config:
         channels:
         - 270
-        - 64
+        - 18
         - "num_bodyparts + 1"  # num_bodyparts + center keypoint
         num_blocks: 1
         dilation_rate: 1

@@ -21,6 +21,9 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.identity_predictor imp
 from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import (
     PartAffinityFieldPredictor,
 )
+from deeplabcut.pose_estimation_pytorch.models.predictors.sim_cc import (
+    SimCCPredictor,
+)
 from deeplabcut.pose_estimation_pytorch.models.predictors.single_predictor import (
     HeatmapPredictor,
 )
