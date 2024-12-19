@@ -122,11 +122,6 @@ def train_network(
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
-    save_epochs: optional, default=None
-        Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
-        TensorFlow engine). The number of epochs between each snapshot save. If
-        None, the value will be read from the `pytorch_config.yaml` file.
-
     epochs: optional, default=None
         Only for the PyTorch engine (equivalent to the `maxiters` parameter for the
         TensorFlow engine). The maximum number of epochs to train the model for. If
@@ -136,6 +131,10 @@ def train_network(
         an epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2,
         16 with batch size 4, etc.).
 
+    save_epochs: optional, default=None
+        Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
+        TensorFlow engine). The number of epochs between each snapshot save. If
+        None, the value will be read from the `pytorch_config.yaml` file.
     allow_growth: bool, optional, default=True.
         Only for the TensorFlow engine.
         For some smaller GPUs the memory issues happen. If ``True``, the memory
