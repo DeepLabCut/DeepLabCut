@@ -1036,6 +1036,10 @@ def analyze_images(
         Saves the predictions in a .csv file. The default is ``False``; if provided it
         must be either ``True`` or ``False``.
 
+    modelprefix: str, optional
+        Directory containing the deeplabcut models to use when running image analysis.
+        By default, the models are assumed to exist in the project folder.
+
     plotting: bool, str, default=False
         Plots the predictions made by the model on the analyzed images. Results will be
         stored in a folder named `LabeledImages_{scorer}`, where scorer is the name
@@ -1059,10 +1063,6 @@ def analyze_images(
     plot_skeleton: bool, default=False
         If a skeleton is defined in the project's config.yaml, whether
         to plot the skeleton connecting the predicted bodyparts on the images.
-
-    modelprefix: str, optional
-        Directory containing the deeplabcut models to use when running image analysis.
-        By default, the models are assumed to exist in the project folder.
 
     Returns
     -------
