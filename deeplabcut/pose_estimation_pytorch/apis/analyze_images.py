@@ -24,10 +24,12 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.visualization as visualization
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_predictions_dataframe,
     get_inference_runners,
     get_model_snapshots,
     get_scorer_name,
@@ -215,7 +217,8 @@ def superanimal_analyze_images(
 def analyze_images(
     config: str | Path,
     images: str | Path | list[str] | list[Path],
-    output_dir: str | Path,
+    frame_type: str | None = None,
+    output_dir: str | Path | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     snapshot_index: int | None = None,
@@ -223,7 +226,12 @@ def analyze_images(
     modelprefix: str = "",
     device: str | None = None,
     max_individuals: int | None = None,
+    save_as_csv: bool = False,
     progress_bar: bool = True,
+    plotting: bool | str = False,
+    pcutoff: float | None = None,
+    bbox_pcutoff: float | None = None,
+    plot_skeleton: bool = True,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -232,6 +240,9 @@ def analyze_images(
         images: The image(s) to run inference on. Can be the path to an image, the path
             to a directory containing images, or a list of image paths or directories
             containing images.
+        frame_type: Filters the images to analyze to only the ones with the given suffix
+            (e.g. setting `frame_type`=".png" will only analyze ".png" images). The
+            default behavior analyzes all ".jpg", ".jpeg" and ".png" images.
         output_dir: The directory where the predictions will be stored.
         shuffle: The shuffle for which to run image analysis.
         trainingsetindex: The trainingsetindex for which to run image analysis.
@@ -243,17 +254,20 @@ def analyze_images(
         device: The device to use to run image analysis.
         max_individuals: The maximum number of individuals to detect in each image. Set
             to the number of individuals in the project if None.
+        save_as_csv: Whether to also save the predictions as a CSV file.
         progress_bar: Whether to display a progress bar when running inference.
+        plotting: Whether to plot predictions on images.
+        pcutoff: The cutoff score when plotting pose predictions. Must be None or in
+            (0, 1). If None, the pcutoff is read from the project configuration file.
+        bbox_pcutoff: The cutoff score when plotting bounding box predictions. Must be
+            None or in (0, 1). If None, it is read from the project configuration file.
+        plot_skeleton: If a skeleton is defined in the model configuration file, whether
+            to plot the skeleton connecting the predicted bodyparts on the images.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
         for it (e.g. "bodyparts", "unique_bodyparts", "bboxes", "bbox_scores")
     """
-    if not output_dir.is_dir():
-        raise ValueError(
-            f"The `output_dir` must be a directory - please change: {output_dir}"
-        )
-
     cfg = auxiliaryfunctions.read_config(config)
     train_frac = cfg["TrainingFraction"][trainingsetindex]
     model_folder = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
@@ -285,22 +299,22 @@ def analyze_images(
         images=images,
         snapshot_path=snapshot.path,
         detector_path=None if detector_snapshot is None else detector_snapshot.path,
+        frame_type=frame_type,
         device=device,
         max_individuals=max_individuals,
         progress_bar=progress_bar,
     )
 
     if len(predictions) == 0:
-        logging.info(f"Found no images in {images}")
+        print(f"Found no images in {images}")
         return {}
 
-    # FIXME(niels): store as H5
-    pred_json = {}
-    for image, pred in predictions.items():
-        pred_json[image] = dict(bodyparts=pred["bodyparts"].tolist())
-        for k in ("unique_bodyparts", "bboxes", "bbox_scores"):
-            if k in pred:
-                pred_json[image][k] = pred[k].tolist()
+    if output_dir is None:
+        images = list(predictions.keys())
+        output_dir = Path(images[0]).parent.resolve()
+        print(f"Setting output directory to {output_dir}")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(exist_ok=True)
 
     scorer = get_scorer_name(
         cfg,
@@ -309,10 +323,60 @@ def analyze_images(
         snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
         modelprefix=modelprefix,
     )
-    output_path = output_dir / f"{scorer}_image_predictions.json"
-    logging.info(f"Saving predictions to {output_path}")
-    with open(output_path, "w") as f:
-        json.dump(pred_json, f)
+    individuals = model_cfg["metadata"]["individuals"]
+    if max_individuals is not None:
+        individuals = [f"individual{i}" for i in range(max_individuals)]
+
+    df_predictions = build_predictions_dataframe(
+        scorer=scorer,
+        predictions=predictions,
+        parameters=data.PoseDatasetParameters(
+            bodyparts=model_cfg["metadata"]["bodyparts"],
+            unique_bpts=model_cfg["metadata"]["unique_bodyparts"],
+            individuals=individuals,
+        ),
+        image_name_to_index=None,
+    )
+
+    output_filepath = output_dir / f"image_predictions_{scorer}.h5"
+    print(f"Saving predictions to {output_filepath}")
+
+    df_predictions.to_hdf(output_filepath, key="predictions")
+    if save_as_csv:
+        print(f"Saving CSV as {output_filepath}")
+        df_predictions.to_csv(output_filepath.with_suffix(".csv"))
+
+    if plotting:
+        plot_dir = output_dir / f"LabeledImages_{scorer}"
+        plot_dir.mkdir(exist_ok=True)
+
+        mode = plotting if isinstance(plotting, str) else "bodypart"
+
+        bodyparts = model_cfg["metadata"]["bodyparts"]
+        skeleton = None
+        if plot_skeleton and len(cfg.get("skeleton", [])) > 0:
+            skeleton = [
+                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
+                for bpt_0, bpt_1 in cfg["skeleton"]
+            ]
+
+        if pcutoff is None:
+            pcutoff = cfg.get("pcutoff", 0.6)
+        if bbox_pcutoff is None:
+            bbox_pcutoff = cfg.get("bbox_pcutoff", 0.6)
+
+        visualization.create_labeled_images(
+            predictions=predictions,
+            out_folder=plot_dir,
+            pcutoff=pcutoff,
+            bboxes_pcutoff=bbox_pcutoff,
+            mode=mode,
+            cmap=cfg.get("colormap", "rainbow"),
+            dot_size=cfg.get("dotsize", 12),
+            alpha_value=cfg.get("alphavalue", 12),
+            skeleton=skeleton,
+            skeleton_color=cfg.get("skeleton_color"),
+        )
 
     return predictions
 
@@ -322,6 +386,7 @@ def analyze_image_folder(
     images: str | Path | list[str] | list[Path],
     snapshot_path: str | Path,
     detector_path: str | Path | None = None,
+    frame_type: str | None = None,
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
@@ -335,6 +400,9 @@ def analyze_image_folder(
         snapshot_path: The path of the snapshot to use to analyze the images.
         detector_path: The path of the detector snapshot to use to analyze the images,
             if a top-down model was used.
+        frame_type: Filters the images to analyze to only the ones with the given suffix
+            (e.g. setting `frame_type`=".png" will only analyze ".png" images). The
+            default behavior analyzes all ".jpg", ".jpeg" and ".png" images.
         device: The device to use to run image analysis.
         max_individuals: The maximum number of individuals to detect in each image. Set
             to the number of individuals in the project if None.
@@ -379,7 +447,11 @@ def analyze_image_folder(
         detector_transform=None,
     )
 
-    image_paths = parse_images_and_image_folders(images)
+    image_suffixes = ".png", ".jpg", ".jpeg"
+    if frame_type is not None:
+        image_suffixes = (frame_type, )
+
+    image_paths = parse_images_and_image_folders(images, image_suffixes)
     pose_inputs = image_paths
     if detector_runner is not None:
         logging.info(f"Running object detection with {detector_path}")

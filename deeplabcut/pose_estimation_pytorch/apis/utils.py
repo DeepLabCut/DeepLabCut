@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
 from typing import Callable
 
@@ -38,6 +39,7 @@ from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     DetectorInferenceRunner,
+    DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
 )
@@ -270,34 +272,44 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str], video_type: str | None
+    data_path: str | list[str],
+    video_type: str | None,
+    shuffle: bool = False,
 ) -> list[Path]:
     """
-    TODO
+    Args:
+        data_path: Path or list of paths to folders containing videos
+        video_type: The type of video to filter for
+        shuffle: If the paths point to directories, whether to shuffle the order of
+            videos in the directory.
+
+    Returns:
+        The paths of videos to analyze.
     """
     if not isinstance(data_path, list):
         data_path = [data_path]
     video_paths = [Path(p) for p in data_path]
 
     videos = []
-    for video_path in video_paths:
-        if video_path.is_dir():
+    for path in video_paths:
+        if path.is_dir():
             if video_type is None:
                 video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
             else:
                 video_suffixes = [video_type]
 
-            video_suffixes = [
+            suffixes = [
                 s if s.startswith(".") else "." + s for s in video_suffixes
             ]
-            videos += [
-                file for file in video_path.iterdir() if file.suffix in video_suffixes
-            ]
+            videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
+            if shuffle:
+                random.shuffle(videos_in_dir)
+            videos += videos_in_dir
         else:
             assert (
-                video_path.exists()
-            ), f"Could not find the video: {video_path}. Check access rights."
-            videos.append(video_path)
+                path.exists()
+            ), f"Could not find the video: {path}. Check access rights."
+            videos.append(path)
 
     return videos
 
@@ -433,6 +445,7 @@ def get_inference_runners(
     detector_batch_size: int = 1,
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -452,6 +465,10 @@ def get_inference_runners(
             for top-down models (if a detector runner is needed)
         detector_transform: the transform for object detection. if None, uses the
             transform defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         a runner for pose estimation
@@ -529,6 +546,7 @@ def get_inference_runners(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", True),
     )
     return pose_runner, detector_runner
@@ -595,6 +613,7 @@ def get_pose_inference_runner(
     device: str | None = None,
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -606,6 +625,10 @@ def get_pose_inference_runner(
         device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         an inference runner for pose estimation
@@ -655,6 +678,7 @@ def get_pose_inference_runner(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", True),
     )
     if not isinstance(runner, PoseInferenceRunner):

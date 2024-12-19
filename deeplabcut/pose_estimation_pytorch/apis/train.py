@@ -53,6 +53,7 @@ def train(
     transform: A.BaseCompose | None = None,
     inference_transform: A.BaseCompose | None = None,
     max_snapshots_to_keep: int | None = None,
+    load_head_weights: bool = True,
 ) -> None:
     """Builds a model from a configuration and fits it to a dataset
 
@@ -69,6 +70,8 @@ def train(
         inference_transform: if defined, overwrites the inference transform defined in
             the model config
         max_snapshots_to_keep: the maximum number of snapshots to store for each model
+        load_head_weights: When `snapshot_path` is not None and a pose model is being
+            trained, whether to load the head weights from the saved snapshot.
     """
     weight_init = None
     pretrained = True
@@ -123,6 +126,7 @@ def train(
         device=device,
         gpus=gpus,
         snapshot_path=snapshot_path,
+        load_head_weights=load_head_weights,
         logger=logger,
     )
 
@@ -202,6 +206,7 @@ def train_network(
     device: str | None = None,
     snapshot_path: str | Path | None = None,
     detector_path: str | Path | None = None,
+    load_head_weights: bool = True,
     batch_size: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
@@ -226,6 +231,12 @@ def train_network(
         snapshot_path: if resuming training, the snapshot from which to resume
         detector_path: if resuming training of a top-down model, used to specify the
             detector snapshot from which to resume
+        load_head_weights: if resuming training of a pose estimation model (either
+            through the `snapshot_path` attribute or the `resume_training_from` key in
+            the `pytorch_config.yaml` file), setting this to True also loads the weights
+            for the model head (equivalent to the `keepdeconvweights` for  TensorFlow
+            models). Note that if you change the number of bodyparts, you need to set
+            this to false for re-training.
         batch_size: overrides the batch size to train with
         epochs: overrides the maximum number of epochs to train the model for
         save_epochs: overrides the number of epochs between each snapshot save

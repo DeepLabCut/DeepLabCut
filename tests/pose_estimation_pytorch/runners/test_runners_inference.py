@@ -149,6 +149,31 @@ def test_mock_top_down(batch_size, detections_per_image):
             assert i_det[0, 0, 0] == p_det["mock"]["index"]
 
 
+def test_dynamic_pose_inference_calls_dynamic():
+    pose_batch = [Mock()]
+    image_crop = Mock()
+    image_crop.__len__ = Mock(return_value=1)
+
+    model = Mock()
+    model.get_predictions = Mock()
+    model.get_predictions.return_value = dict(bodypart=dict(poses=pose_batch))
+
+    dynamic = Mock()
+    dynamic.crop = Mock()
+    dynamic.crop.return_value = image_crop
+    dynamic.update = Mock()
+
+    runner = inference.PoseInferenceRunner(
+        model=model,
+        dynamic=dynamic,
+        batch_size=1,
+    )
+    image = torch.Tensor((1, 3, 64, 64))
+    _ = runner.predict(image)
+    dynamic.crop.assert_called_once_with(image)
+    dynamic.update.assert_called_once_with(pose_batch)
+
+
 def _check_batch_shapes(batch_size, h, w, batch_shapes) -> None:
     for b in batch_shapes[:-1]:
         assert b[0] == batch_size
