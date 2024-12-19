@@ -19,8 +19,8 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
+from torch.utils.data import DataLoader
 
 import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
@@ -63,6 +63,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             might be used.
         logger: Logger to monitor training (e.g. a WandBLogger).
         log_filename: Name of the file in which to store training stats.
+        load_weights_only: Value for the torch.load() `weights_only` parameter if
+            `snapshot_path` is not None. If False, the python pickle module is used
+            implicitly, which is known to be insecure. Only set to False if you're
+            loading data that you trust (e.g. snapshots that you created yourself). For
+            more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
     """
 
     def __init__(
@@ -78,6 +84,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         load_scheduler_state_dict: bool = True,
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
+        load_weights_only: bool = True,
     ):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -104,7 +111,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._print_valid_loss = True
 
         if self.snapshot_path:
-            snapshot = self.load_snapshot(self.snapshot_path, self.device, self.model)
+            snapshot = self.load_snapshot(
+                self.snapshot_path,
+                self.device,
+                self.model,
+                weights_only=load_weights_only,
+            )
             self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
 
             if "optimizer" in snapshot:
@@ -639,9 +651,7 @@ def build_training_runner(
     Returns:
         the runner that was built
     """
-    optim_cfg = runner_config["optimizer"]
-    optim_cls = getattr(torch.optim, optim_cfg["type"])
-    optimizer = optim_cls(params=model.parameters(), **optim_cfg["params"])
+    optimizer = build_optimizer(model, runner_config["optimizer"])
     scheduler = schedulers.build_scheduler(runner_config.get("scheduler"), optimizer)
 
     # if no custom snapshot prefix is defined, use the default one
@@ -668,6 +678,7 @@ def build_training_runner(
         scheduler=scheduler,
         load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
+        load_weights_only=runner_config.get("load_weights_only", True),
     )
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)
