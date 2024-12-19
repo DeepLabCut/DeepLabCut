@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests inference runners"""
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -18,6 +18,25 @@ import torch
 import deeplabcut.pose_estimation_pytorch.data.postprocessor as post
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as prep
 import deeplabcut.pose_estimation_pytorch.runners.inference as inference
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.build_optimizer", Mock())
+@pytest.mark.parametrize("task", [Task.DETECT, Task.TOP_DOWN, Task.BOTTOM_UP])
+@pytest.mark.parametrize("weights_only", [True, False])
+def test_load_weights_only_with_build_training_runner(task: Task, weights_only: bool):
+    with patch("deeplabcut.pose_estimation_pytorch.runners.base.torch.load") as load:
+        snapshot = "snapshot.pt"
+        runner = inference.build_inference_runner(
+            task=task,
+            model=Mock(),
+            device="cpu",
+            snapshot_path=snapshot,
+            load_weights_only=weights_only,
+        )
+        load.assert_called_once_with(
+            snapshot, map_location="cpu", weights_only=weights_only
+        )
 
 
 class MockInferenceRunner(inference.InferenceRunner):
@@ -40,8 +59,7 @@ class MockInferenceRunner(inference.InferenceRunner):
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         self.batch_shapes.append(tuple(inputs.shape))
         return [  # return first elem of input
-            {"mock": {"index": i[0, 0, 0].detach().numpy()}}
-            for i in inputs
+            {"mock": {"index": i[0, 0, 0].detach().numpy()}} for i in inputs
         ]
 
 
@@ -82,8 +100,8 @@ def test_mock_bottom_up(batch_size):
         [0, 0, 0, 5, 2],
         [1, 2, 3, 4],
         [3, 4, 2, 1, 4],
-        [4, 23, 5, 20, 64, 100]
-    ]
+        [4, 23, 5, 20, 64, 100],
+    ],
 )
 def test_mock_top_down(batch_size, detections_per_image):
     h, w = 8, 8

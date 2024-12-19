@@ -42,14 +42,21 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         snapshot_path: str | Path | None = None,
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
+        load_weights_only: bool = True,
     ):
         """
         Args:
-            model: the model to run actions on
-            device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            snapshot_path: if defined, the path of a snapshot from which to load pretrained weights
-            preprocessor: the preprocessor to use on images before inference
-            postprocessor: the postprocessor to use on images after inference
+            model: The model to run actions on
+            device: The device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            snapshot_path: If defined, the path of a snapshot from which to load
+                pretrained weights
+            preprocessor: The preprocessor to use on images before inference
+            postprocessor: The postprocessor to use on images after inference
+            load_weights_only: Value for the torch.load() `weights_only` parameter. If
+                False, the python pickle module is used implicitly, which is known to be
+                insecure. Only set to False if you're loading data that you trust (e.g.
+                snapshots that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -60,7 +67,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.postprocessor = postprocessor
 
         if self.snapshot_path is not None and self.snapshot_path != "":
-            self.load_snapshot(self.snapshot_path, self.device, self.model)
+            self.load_snapshot(
+                self.snapshot_path,
+                self.device,
+                self.model,
+                weights_only=load_weights_only,
+            )
 
         self._batch: torch.Tensor | None = None
         self._contexts: list[dict] = []
@@ -81,8 +93,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     @torch.no_grad()
     def inference(
         self,
-        images: Iterable[str | Path | np.ndarray]
-        | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]],
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
@@ -124,7 +138,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return results
 
     def _prepare_inputs(
-        self, data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
+        self,
+        data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
         """
         Prepares inputs for an image and adds them to the data ready to be processed
@@ -192,14 +207,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         Processes a batch. There must be inputs waiting to be processed before this is
         called, otherwise this method will raise an error.
         """
-        batch = self._batch[:self.batch_size]
+        batch = self._batch[: self.batch_size]
         self._predictions += self.predict(batch)
 
         # remove processed inputs from batch
         if len(self._batch) <= self.batch_size:
             self._batch = None
         else:
-            self._batch = self._batch[self.batch_size:]
+            self._batch = self._batch[self.batch_size :]
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
@@ -295,14 +310,8 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         predictions = [
             {
                 "detection": {
-                    "bboxes": item["boxes"]
-                    .cpu()
-                    .numpy()
-                    .reshape(-1, 4),
-                    "scores": item["scores"]
-                    .cpu()
-                    .numpy()
-                    .reshape(-1),
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "scores": item["scores"].cpu().numpy().reshape(-1),
                 }
             }
             for item in raw_predictions
@@ -319,6 +328,7 @@ def build_inference_runner(
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
+    load_weights_only: bool = True,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -335,9 +345,14 @@ def build_inference_runner(
             cropping should not be used. Only for bottom-up pose estimation models.
             Should only be used when creating inference runners for video pose
             estimation with batch size 1.
+        load_weights_only: Value for the torch.load() `weights_only` parameter. If
+            False, the python pickle module is used implicitly, which is known to be
+            insecure. Only set to False if you're loading data that you trust (e.g.
+            snapshots that you created yourself). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
 
     Returns:
-        the inference runner
+        The inference runner.
     """
     kwargs = dict(
         model=model,
@@ -346,6 +361,7 @@ def build_inference_runner(
         batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
+        load_weights_only=load_weights_only,
     )
     if task == Task.DETECT:
         if dynamic is not None:

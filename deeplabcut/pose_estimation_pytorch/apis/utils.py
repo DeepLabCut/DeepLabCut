@@ -533,6 +533,9 @@ def get_inference_runners(
                 postprocessor=build_detector_postprocessor(
                     max_individuals=max_individuals,
                 ),
+                load_weights_only=model_config["detector"]["runner"].get(
+                    "load_weights_only", True,
+                ),
             )
 
     pose_runner = build_inference_runner(
@@ -544,6 +547,7 @@ def get_inference_runners(
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
+        load_weights_only=model_config["runner"].get("load_weights_only", True),
     )
     return pose_runner, detector_runner
 
@@ -593,6 +597,7 @@ def get_detector_inference_runner(
         batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
+        load_weights_only=det_cfg["runner"].get("load_weights_only", True),
     )
 
     if not isinstance(runner, DetectorInferenceRunner):
@@ -674,6 +679,7 @@ def get_pose_inference_runner(
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
+        load_weights_only=model_config["runner"].get("load_weights_only", True),
     )
     if not isinstance(runner, PoseInferenceRunner):
         raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")
