@@ -42,9 +42,9 @@ def convert_detections2tracklets(
     ignore_bodyparts: Optional[List[str]] = None,
     inferencecfg: Optional[dict] = None,
     modelprefix="",
-    greedy: bool = False,  # TODO: Unused, remove
-    calibrate: bool = False,  # TODO: Unused, remove
-    window_size: int = 0,  # TODO: Unused, remove
+    greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
+    calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
+    window_size: int = 0,  # TODO(niels): implement window size selection for assembly during video analysis
     identity_only=False,
     track_method="",
 ):
