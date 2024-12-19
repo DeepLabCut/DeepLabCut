@@ -26,7 +26,11 @@ import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.runners.base import (
+    attempt_snapshot_load,
+    ModelType,
+    Runner,
+)
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
     CSVLogger,
@@ -364,6 +368,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         snapshot_path: str | Path,
         device: str,
         model: PoseModel,
+        weights_only: bool = True,
     ) -> dict:
         """Loads the state dict for a model from a file
 
@@ -374,17 +379,22 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             snapshot_path: the path containing the model weights to load
             device: the device on which the model should be loaded
             model: the model for which the weights are loaded
+            weights_only: Value for torch.load() `weights_only` parameter. If False, the
+                python pickle module is used implicitly, which is known to be insecure.
+                Only set to False if you're loading data that you trust (e.g. snapshots
+                that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
 
         Returns:
             The content of the snapshot file.
         """
-        snapshot = torch.load(snapshot_path, map_location=device)
+        snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
         if self._load_head_weights:
             model.load_state_dict(snapshot["model"])
         else:
             backbone_prefix = "backbone."
             backbone_weights = {
-                k[len(backbone_prefix):]: v
+                k[len(backbone_prefix) :]: v
                 for k, v in snapshot["model"].items()
                 if k.startswith(backbone_prefix)
             }

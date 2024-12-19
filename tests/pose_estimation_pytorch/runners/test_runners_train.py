@@ -280,39 +280,41 @@ def _fit_runner_and_check_lrs(
     scheduler = schedulers.build_scheduler(scheduler_cfg, optimizer)
     num_epochs = len(expected_lrs)
 
-    with patch(
-        "deeplabcut.pose_estimation_pytorch.runners.Runner.load_snapshot"
-    ) as mock_load_snapshot:
-        snapshot_path = None
-        mock_load_snapshot.return_value = dict()
-        if snapshot_to_load is not None:
-            snapshot_path = "fake_snapshot.pt"
-            mock_load_snapshot.return_value = snapshot_to_load
+    base_path = "deeplabcut.pose_estimation_pytorch.runners"
+    with patch(f"{base_path}.base.Runner.load_snapshot") as base_mock_load:
+        with patch(f"{base_path}.train.PoseTrainingRunner.load_snapshot") as mock_load:
+            snapshot_path = None
+            base_mock_load.return_value = dict()
+            mock_load.return_value = dict()
+            if snapshot_to_load is not None:
+                snapshot_path = "fake_snapshot.pt"
+                base_mock_load.return_value = snapshot_to_load
+                mock_load.return_value = snapshot_to_load
 
-        print()
-        print(f"Scheduler: {scheduler}")
-        print(f"Starting training for {num_epochs} epochs")
-        runner = runner_cls(
-            model=Mock(),
-            optimizer=optimizer,
-            snapshot_manager=Mock(),
-            scheduler=scheduler,
-            snapshot_path=snapshot_path,
-            **runner_kwargs,
-        )
+            print()
+            print(f"Scheduler: {scheduler}")
+            print(f"Starting training for {num_epochs} epochs")
+            runner = runner_cls(
+                model=Mock(),
+                optimizer=optimizer,
+                snapshot_manager=Mock(),
+                scheduler=scheduler,
+                snapshot_path=snapshot_path,
+                **runner_kwargs,
+            )
 
-        # Mock the step call; check that the learning rate is correct for the epoch
-        def step(*args, **kwargs):
-            # the current_epoch value is indexed at 1
-            total_epoch = runner.current_epoch - 1
-            epoch = total_epoch - runner.starting_epoch
-            _assert_learning_rates_match(total_epoch, optimizer, expected_lrs[epoch])
-            optimizer.step()
-            return dict(total_loss=0)
+            # Mock the step call; check that the learning rate is correct for the epoch
+            def step(*args, **kwargs):
+                # the current_epoch value is indexed at 1
+                total_epoch = runner.current_epoch - 1
+                epoch = total_epoch - runner.starting_epoch
+                _assert_learning_rates_match(total_epoch, optimizer, expected_lrs[epoch])
+                optimizer.step()
+                return dict(total_loss=0)
 
-        train_loader, val_loader = [Mock()], [Mock()]
-        runner.step = step
-        runner.fit(train_loader, val_loader, epochs=num_epochs, display_iters=1000)
+            train_loader, val_loader = [Mock()], [Mock()]
+            runner.step = step
+            runner.fit(train_loader, val_loader, epochs=num_epochs, display_iters=1000)
 
     return runner
 
