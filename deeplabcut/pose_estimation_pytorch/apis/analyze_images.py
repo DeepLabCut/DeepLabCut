@@ -28,8 +28,9 @@ import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_inference_runners,
+    get_detector_inference_runner,
     get_model_snapshots,
+    get_pose_inference_runner,
     get_scorer_name,
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
@@ -357,32 +358,29 @@ def analyze_image_folder(
             f" Please specify the `detector_path` parameter."
         )
 
-    bodyparts = model_cfg["metadata"]["bodyparts"]
-    unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
-    individuals = model_cfg["metadata"]["individuals"]
     if max_individuals is None:
-        max_individuals = len(individuals)
+        max_individuals = len(model_cfg["metadata"]["individuals"])
 
     if device is None:
         device = resolve_device(model_cfg)
 
-    pose_runner, detector_runner = get_inference_runners(
+    pose_runner = get_pose_inference_runner(
         model_config=model_cfg,
         snapshot_path=snapshot_path,
-        max_individuals=max_individuals,
-        num_bodyparts=len(bodyparts),
-        num_unique_bodyparts=len(unique_bodyparts),
         device=device,
-        with_identity=False,
-        transform=None,
-        detector_path=detector_path,
-        detector_transform=None,
+        max_individuals=max_individuals,
     )
 
     image_paths = parse_images_and_image_folders(images)
     pose_inputs = image_paths
-    if detector_runner is not None:
+    if detector_path is not None:
         logging.info(f"Running object detection with {detector_path}")
+        detector_runner = get_detector_inference_runner(
+            model_config=model_cfg,
+            snapshot_path=detector_path,
+            device=device,
+            max_individuals=max_individuals,
+        )
 
         detector_image_paths = image_paths
         if progress_bar:

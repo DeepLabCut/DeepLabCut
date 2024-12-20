@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
 from deeplabcut.pose_estimation_pytorch.apis.export import export_model
 from deeplabcut.pose_estimation_pytorch.apis.train import train_network
 from deeplabcut.pose_estimation_pytorch.apis.visualization import (
+    create_labeled_images,
     extract_maps,
     extract_save_all_maps,
 )

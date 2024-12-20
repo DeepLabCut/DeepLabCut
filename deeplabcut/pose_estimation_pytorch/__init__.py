@@ -8,11 +8,13 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.apis import (
     analyze_image_folder,
     analyze_images,
     analyze_videos,
     build_predictions_dataframe,
+    create_labeled_images,
     convert_detections2tracklets,
     evaluate,
     evaluate_network,
