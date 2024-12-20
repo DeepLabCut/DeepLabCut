@@ -223,6 +223,7 @@ def dropimagesduetolackofannotation(config):
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
             continue
+        conversioncode.guarantee_multiindex_rows(DC)
         annotatedimages = [fn[-1] for fn in DC.index]
         imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
         print("Annotated images: ", len(annotatedimages), " In folder:", len(imagelist))
