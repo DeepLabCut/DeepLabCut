@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
     predict,
     evaluate,
     evaluate_network,
+    visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.apis.export import export_model
 from deeplabcut.pose_estimation_pytorch.apis.train import train_network
