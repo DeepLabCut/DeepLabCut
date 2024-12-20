@@ -33,13 +33,25 @@ from deeplabcut.pose_estimation_pytorch.config import (
     available_detectors,
     available_models,
 )
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
-from deeplabcut.pose_estimation_pytorch.data.cocoloader import COCOLoader
-from deeplabcut.pose_estimation_pytorch.data.dataset import (
+from deeplabcut.pose_estimation_pytorch.data import (
+    build_transforms,
+    COCOLoader,
+    COLLATE_FUNCTIONS,
+    DLCLoader,
+    Loader,
     PoseDataset,
     PoseDatasetParameters,
 )
-from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
-from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
+from deeplabcut.pose_estimation_pytorch.runners import (
+    build_inference_runner,
+    build_training_runner,
+    DetectorInferenceRunner,
+    DetectorTrainingRunner,
+    InferenceRunner,
+    PoseInferenceRunner,
+    PoseTrainingRunner,
+    TorchSnapshotManager,
+    TrainingRunner,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import fix_seeds
