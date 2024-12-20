@@ -17,13 +17,14 @@ import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
+from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import (
-    _crop_and_pad_image_torch,
     _crop_image_keypoints,
     _extract_keypoints_and_bboxes,
     apply_transform,
     map_id_to_annotations,
     map_image_path_to_id,
+    out_of_bounds_keypoints,
     pad_to_length,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -39,6 +40,8 @@ class PoseDatasetParameters:
         individuals: the names of individuals
         with_center_keypoints: whether to compute center keypoints for individuals
         color_mode: {"RGB", "BGR"} the mode to load images in
+        top_down_crop_size: for top-down models, the (width, height) to crop bboxes to
+        top_down_crop_margin: for top-down models, the margin to add around bboxes
     """
 
     bodyparts: list[str]
@@ -46,7 +49,8 @@ class PoseDatasetParameters:
     individuals: list[str]
     with_center_keypoints: bool = False
     color_mode: str = "RGB"
-    cropped_image_size: tuple[int, int] | None = None
+    top_down_crop_size: tuple[int, int] | None = None
+    top_down_crop_margin: int | None = None
 
     @property
     def num_joints(self) -> int:
@@ -73,13 +77,22 @@ class PoseDataset(Dataset):
     task: Task = Task.BOTTOM_UP
 
     def __post_init__(self):
-
         self.image_path_id_map = map_image_path_to_id(self.images)
         self.annotation_idx_map = map_id_to_annotations(self.annotations)
-
         self.img_id_to_index = {
             img["id"]: index for index, img in enumerate(self.images)
         }
+        if self.task == Task.TOP_DOWN and (
+            self.parameters.top_down_crop_size is None
+            or self.parameters.top_down_crop_margin is None
+        ):
+            raise ValueError(
+                "You must specify a ``top_down_crop_size`` and ``top_down_crop_margin``"
+                "in your PoseDatasetParameters when the task is TOP_DOWN."
+            )
+
+        self.td_crop_size = self.parameters.top_down_crop_size
+        self.td_crop_margin = self.parameters.top_down_crop_margin
 
     def __len__(self):
         # TODO: TD should only return the number of annotations that aren't unique_bodyparts
@@ -161,14 +174,9 @@ class PoseDataset(Dataset):
         keypoints_unique = transformed["keypoints_unique"]
         bboxes = transformed["bboxes"]
         offsets = (0, 0)
-        scales = (1, 1)
+        scales = (1.0, 1.0)
 
         if self.task == Task.TOP_DOWN:
-
-            if self.parameters.cropped_image_size is None:
-                raise ValueError(
-                    "You must specify a cropped image size for top-down models"
-                )
             if len(bboxes) > 1:
                 raise ValueError(
                     "There can only be one bbox per item in TD datasets, found "
@@ -176,19 +184,30 @@ class PoseDataset(Dataset):
                 )
             bboxes = bboxes.astype(int)
 
-            # TODO: The following code should be replaced by a numpy version
+            if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
+                # bbox was augmented out of the image; blank image, no keypoints
+                keypoints[..., 2] = 0.0
+                image = np.zeros(
+                    (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1]),
+                    dtype=image.dtype,
+                )
+            else:
+                image, offsets, scales = top_down_crop(
+                    image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
+                )
+                keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
+                keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+                bboxes = bboxes[:1]
+                bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
+                bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
+                bboxes[..., 2] = bboxes[..., 2] / scales[0]
+                bboxes[..., 3] = bboxes[..., 3] / scales[1]
 
-            image, offsets, scales = _crop_and_pad_image_torch(
-                image, bboxes[0], "xywh", self.parameters.cropped_image_size[0]
-            )
-            keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
-            keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-            bboxes = bboxes[:1]
-            bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
-            bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
-            bboxes[..., 2] = bboxes[..., 2] / scales[0]
-            bboxes[..., 3] = bboxes[..., 3] / scales[1]
-            bboxes = np.clip(bboxes, 0, self.parameters.cropped_image_size[0] - 1)
+                # as a RandomBBoxTransform can be added, keypoints may be outside of the
+                #   image after the crop
+                oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
+                if np.sum(oob_mask) > 0:
+                    keypoints[oob_mask, 2] = 0.0
 
         if self.parameters.with_center_keypoints:
             keypoints = self.add_center_keypoints(keypoints)
@@ -224,8 +243,8 @@ class PoseDataset(Dataset):
             "image_id": image_id,
             "path": image_path,
             "original_size": np.array(original_size),
-            "offsets": np.array(offsets),
-            "scales": np.array(scales),
+            "offsets": np.array(offsets, dtype=int),
+            "scales": np.array(scales, dtype=float),
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
