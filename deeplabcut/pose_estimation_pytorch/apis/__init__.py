@@ -10,6 +10,7 @@
 #
 
 from deeplabcut.pose_estimation_pytorch.apis.analyze_images import (
+    analyze_image_folder,
     analyze_images,
     analyze_image_folder,
     superanimal_analyze_images,
@@ -29,7 +30,15 @@ from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
     visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.apis.export import export_model
-from deeplabcut.pose_estimation_pytorch.apis.train import train_network
+from deeplabcut.pose_estimation_pytorch.apis.train import (
+    train,
+    train_network,
+)
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    get_detector_inference_runner,
+    get_inference_runners,
+    get_pose_inference_runner,
+)
 from deeplabcut.pose_estimation_pytorch.apis.visualization import (
     create_labeled_images,
     extract_maps,

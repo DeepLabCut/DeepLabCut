@@ -30,6 +30,7 @@ except (ModuleNotFoundError, ImportError):
         "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
     )
 
+from deeplabcut.core.engine import Engine
 from deeplabcut.create_project import (
     create_new_project,
     create_new_project_3d,

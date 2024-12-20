@@ -16,3 +16,9 @@ from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_module import (
     HighResolutionModule,
 )
+from deeplabcut.pose_estimation_pytorch.models.modules.gated_attention_unit import (
+    GatedAttentionUnit,
+)
+from deeplabcut.pose_estimation_pytorch.models.modules.norm import (
+    ScaleNorm,
+)
