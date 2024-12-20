@@ -293,9 +293,9 @@ def compute_rmse(
 
     results = dict(rmse=float("nan"), rmse_pcutoff=float("nan"))
     if support > 0:
-        results["rmse"] = error / support
+        results["rmse"] = float(error / support)
     if cutoff_support > 0:
-        results["rmse_pcutoff"] = cutoff_error / cutoff_support
+        results["rmse_pcutoff"] = float(cutoff_error / cutoff_support)
 
     if per_keypoint_results:
         bodypart_errors = [("rmse_keypoint", pixel_errors)]
@@ -306,8 +306,8 @@ def compute_rmse(
             for idx, keypoint_error in enumerate(bpt_errors.T):
                 rmse = float("nan")
                 if np.any(~np.isnan(keypoint_error)):
-                    rmse = np.nanmean(keypoint_error)
-                results[f"{key_prefix}_{idx}"] = rmse
+                    rmse = np.nanmean(keypoint_error).item()
+                results[f"{key_prefix}_{idx}"] = float(rmse)
 
     return results
 
@@ -378,12 +378,12 @@ def compute_detection_rmse(
 
     distances = np.stack(distances)
     if np.any(~np.isnan(distances)):
-        rmse = np.nanmean(distances).item()
+        rmse = float(np.nanmean(distances).item())
 
         keypoint_scores = np.stack(scores)
         pixel_errors_cutoff = distances[keypoint_scores >= pcutoff]
         if np.any(~np.isnan(pixel_errors_cutoff)):
-            rmse_cutoff = np.nanmean(pixel_errors_cutoff).item()
+            rmse_cutoff = float(np.nanmean(pixel_errors_cutoff).item())
 
     return rmse, rmse_cutoff
 
@@ -418,6 +418,6 @@ def collect_pixel_errors(
         cutoff_pixel_errors = pixel_errors[cutoff_mask]
         support_cutoff = np.sum(~np.isnan(cutoff_pixel_errors)).item()
         if support_cutoff > 0:
-            cutoff_error = np.nansum(cutoff_pixel_errors)
+            cutoff_error = np.nansum(cutoff_pixel_errors).item()
 
     return error, support, cutoff_error, support_cutoff

@@ -83,24 +83,43 @@ class Runner(ABC, Generic[ModelType]):
         Returns:
             The content of the snapshot file.
         """
-        try:
-            snapshot = torch.load(
-                snapshot_path,
-                map_location=device,
-                weights_only=weights_only,
-            )
-        except pickle.UnpicklingError as err:
-            print(
-                f"\nFailed to load the snapshot: {snapshot_path}.\n"
-                "If you trust the snapshot that you're trying to load, you can try "
-                "calling `Runner.load_snapshot` with `weights_only=False`. See "
-                "the message below for more information and warnings.\n"
-                "You can set the `weights_only` parameter in the model configuration ("
-                "the content of the pytorch_config.yaml), as:\n```\n"
-                "runner:\n"
-                "  load_weights_only: False\n```\n"
-            )
-            raise err
-
+        snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
         model.load_state_dict(snapshot["model"])
         return snapshot
+
+
+def attempt_snapshot_load(path: str | Path, device: str, weights_only: bool) -> dict:
+    """Attempts to load a snapshot using `torch.load(...)`.
+
+    Args:
+        path: The path of the snapshot to try to load..
+        device: The device to use for the `map_location`.
+        weights_only: Value for torch.load() `weights_only` parameter. If False, the
+            python pickle module is used implicitly, which is known to be insecure.
+            Only set to False if you're loading data that you trust (e.g. snapshots
+            that you created yourself). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
+
+    Returns:
+        The loaded snapshot.
+
+    Raises:
+        pickle.UnpicklingError: If `weights_only=True` but the snapshot failed to load
+            with `weights_only=True`.
+    """
+    try:
+        snapshot = torch.load(path, map_location=device, weights_only=weights_only)
+    except pickle.UnpicklingError as err:
+        print(
+            f"\nFailed to load the snapshot: {path}.\n"
+            "If you trust the snapshot that you're trying to load, you can try "
+            "calling `Runner.load_snapshot` with `weights_only=False`. See "
+            "the message below for more information and warnings.\n"
+            "You can set the `weights_only` parameter in the model configuration ("
+            "the content of the pytorch_config.yaml), as:\n```\n"
+            "runner:\n"
+            "  load_weights_only: False\n```\n"
+        )
+        raise err
+
+    return snapshot

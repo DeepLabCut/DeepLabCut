@@ -10,6 +10,7 @@
 #
 
 from deeplabcut.pose_estimation_pytorch.runners.base import Runner
+from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
 from deeplabcut.pose_estimation_pytorch.runners.logger import LOGGER
 from deeplabcut.pose_estimation_pytorch.runners.inference import (
     build_inference_runner,
