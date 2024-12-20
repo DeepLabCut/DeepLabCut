@@ -64,20 +64,17 @@ disk.
 ```python
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.config import (
-    make_pytorch_pose_config,
-    write_config,
-)
+import deeplabcut.pose_estimation_pytorch as pep
 
 project_cfg = { "Task": "mice", ... }  # the configuration for your DLC project
 pose_config_path = Path("/path/to/my/config/pytorch_cfg.yaml")
-model_cfg = make_pytorch_pose_config(
+model_cfg = pep.config.make_pytorch_pose_config(
     project_config=project_cfg,
     pose_config_path=pose_config_path,
     net_type="hrnet_w32",
     top_down=True,
+    save=True,
 )
-write_config(pose_config_path, model_cfg)
 ```
 
 #### Adding Models
@@ -238,9 +235,9 @@ dataset creation and test/train splitting. The `DLCLoader` class is used to load
 labeled data for a specific shuffle.
 
 ```python3
-from deeplabcut.pose_estimation_pytorch.data import DLCLoader
+import deeplabcut.pose_estimation_pytorch as pep
 
-loader = DLCLoader(
+loader = pep.DLCLoader(
     config="/path/to/my/project/config.yaml",
     trainset_index=0,
     shuffle=1,
@@ -265,23 +262,20 @@ images and keypoints to a tensor dataset for training and evaluation. You can ge
 an instance of training/test dataset with your `DLCLoader`:
 
 ```python3
-from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
-    DLCLoader,
-)
+import deeplabcut.pose_estimation_pytorch as pep
 
-loader = DLCLoader(
+loader = pep.DLCLoader(
     config="/path/to/my/project/config.yaml",
     trainset_index=0,
     shuffle=1,
 )
 train_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=pep.build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
     task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=pep.build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
     task=loader.pose_task,
 )
@@ -320,15 +314,7 @@ configuration file (as described in [#model_configuration_files]).
 ```python3
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.config import (
-    make_pytorch_pose_config,
-    write_config,
-)
-from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
-    COCOLoader,
-)
-from deeplabcut.pose_estimation_pytorch.task import Task
+import deeplabcut.pose_estimation_pytorch as pep
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
@@ -336,14 +322,14 @@ train_json_filename = "train.json"
 test_json_filename = "test.json"
 
 # Parse information about the project
-train_dict = COCOLoader.load_json(project_root, filename=train_json_filename)
-max_num_individuals, bodyparts = COCOLoader.get_project_parameters(train_dict)
+train_dict = pep.COCOLoader.load_json(project_root, filename=train_json_filename)
+max_num_individuals, bodyparts = pep.COCOLoader.get_project_parameters(train_dict)
 
 # Generate a configuration file for your PyTorch model
 # In this case, it's for a Top-Down HRNet_w32
 experiment_path = project_root / "experiments" / "hrnet_w32"
 model_cfg_path = experiment_path / "train" / "pytorch_cfg.yaml"
-model_cfg = make_pytorch_pose_config(
+model_cfg = pep.config.make_pytorch_pose_config(
     project_config={
         "project_path": str(project_root.resolve()),
         "multianimalproject": max_num_individuals > 1,
@@ -355,23 +341,23 @@ model_cfg = make_pytorch_pose_config(
     pose_config_path=experiment_path,
     net_type="hrnet_w32",
     top_down=True,
+    save=True,
 )
-write_config(config_path=model_cfg_path, config=model_cfg)
 
 # Create the loader for the COCO dataset
-loader = COCOLoader(
+loader = pep.COCOLoader(
     project_root=project_root,
     model_config_path="/path/to/my/project/experiments/pytorch_config.yaml",
     train_json_filename=train_json_filename,
     test_json_filename=test_json_filename,
 )
 train_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=pep.build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
     task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=pep.build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
     task=loader.pose_task,
 )
@@ -389,16 +375,15 @@ pretrained weights, and either train them or run inference with them.
 ```python
 from pathlib import Path
 
+import deeplabcut.pose_estimation_pytorch as pep
 from deeplabcut.pose_estimation_pytorch.apis.train import train
-from deeplabcut.pose_estimation_pytorch.data import COCOLoader
-from deeplabcut.pose_estimation_pytorch.task import Task
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
 train_json_filename = "train.json"
 test_json_filename = "test.json"
 
-loader = COCOLoader(
+loader = pep.COCOLoader(
     project_root=project_root,
     model_config_path="/path/to/my/project/experiments/pytorch_config.yaml",
     train_json_filename=train_json_filename,
@@ -407,7 +392,7 @@ loader = COCOLoader(
 train(
     loader=loader,
     run_config=loader.model_cfg,
-    task=Task(loader.model_cfg["method"]),
+    task=pep.Task(loader.model_cfg["method"]),
     device="cuda:2",
     logger_config=dict(
         type="WandbLogger",
