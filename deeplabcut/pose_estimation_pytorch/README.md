@@ -421,11 +421,7 @@ train(
 ### Running Video Analysis outside a DeepLabCut Project
 
 DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your
-<<<<<<< HEAD
 data. The usage of this API assumes the existence of a DLC project (with `config.yaml`
-=======
-data. The usage of this API assumes the existance of a DLC project (with `config.yaml`
->>>>>>> pytorch_dlc
 file, etc.).
 
 Sometimes it might be more convenient to just run a model on your data via a low-level
