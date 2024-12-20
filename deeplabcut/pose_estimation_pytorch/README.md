@@ -420,17 +420,21 @@ train(
 
 ### Running Video Analysis outside a DeepLabCut Project
 
-DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your data. The usage of this API assumes the existance of a DLC project (with `config.yaml` file, etc.).
+DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your
+data. The usage of this API assumes the existence of a DLC project (with `config.yaml`
+file, etc.).
 
-Sometimes it might be more convenient to just run a model on your data via a low-level API. We also use this API under the hood, in particular for the Model Zoo. Check out the example below:
+Sometimes it might be more convenient to just run a model on your data via a low-level
+API. We also use this API under the hood, in particular for the Model Zoo. Check out the
+example below:
 
 ```python
 from pathlib import Path
 
+import deeplabcut.pose_estimation_pytorch as pep
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import video_inference
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 
 train_dir = Path("/Users/Jaylen/my-dlc-models/train")
 pytorch_config_path = train_dir / "pytorch_config.yaml"
@@ -447,24 +451,22 @@ detector_batch_size = 8
 
 # read model configuration
 model_cfg = read_config_as_dict(pytorch_config_path)
-bodyparts = model_cfg["metadata"]["bodyparts"]
-unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
-with_identity = model_cfg["metadata"].get("with_identity", False)
-
 pose_task = Task(model_cfg["method"])
-pose_runner, detector_runner = get_inference_runners(
+pose_runner = pep.get_pose_inference_runner(
     model_config=model_cfg,
     snapshot_path=snapshot_path,
     max_individuals=max_num_animals,
-    num_bodyparts=len(bodyparts),
-    num_unique_bodyparts=len(unique_bodyparts),
     batch_size=batch_size,
-    with_identity=with_identity,
-    transform=None,
-    detector_batch_size=detector_batch_size,
-    detector_path=detector_snapshot_path,
-    detector_transform=None,
 )
+
+detector_runner = None
+if pose_task == pep.Task.TOP_DOWN:
+    detector_runner = pep.get_detector_inference_runner(
+        model_config=model_cfg,
+        snapshot_path=detector_snapshot_path,
+        max_individuals=max_num_animals,
+        batch_size=detector_batch_size,
+    )
 
 predictions = video_inference(
     video=video_path,
