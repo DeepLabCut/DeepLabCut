@@ -174,7 +174,7 @@ def attempt_snapshot_load(
             "`TORCH_LOAD_WEIGHTS_ONLY` environment variable. If you call \n"
             "`TORCH_LOAD_WEIGHTS_ONLY=False python -m deeplabcut`, it will launch the\n"
             "DeepLabCut GUI with the default `load_weights_only` value to False.\n"
-            "If you set this value to `True`, make sure you only load snapshots that\n"
+            "If you set this value to `False`, make sure you only load snapshots that\n"
             "you trust.\n\n"
         )
         raise err
