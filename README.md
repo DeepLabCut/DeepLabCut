@@ -6,12 +6,14 @@
 </p>
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=300w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=180w" height="150">
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=180w" height="150">
 
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=300w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=180w" height="150">
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=300w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
 
 
   
@@ -21,7 +23,7 @@
 [📚Documentation](https://deeplabcut.github.io/DeepLabCut/README.html) |
 [🛠️ Installation](https://deeplabcut.github.io/DeepLabCut/docs/installation.html) |
 [🌎 Home Page](https://www.deeplabcut.org) |
-[🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/dlc-modelzoo/) |
+[🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/deeplabcut/) |
 [🚨 News](https://deeplabcut.github.io/DeepLabCut/README.html#news-and-in-the-news) |
 [🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues) 
 
@@ -32,6 +34,7 @@
 [👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 
 
 
+![Vesion](https://img.shields.io/badge/python_version-3.10-purple)
 [![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
 [![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
@@ -45,8 +48,7 @@
 [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)
 [![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-
-
+[![CZI's Essential Open Source Software for Science](https://chanzuckerberg.github.io/open-science/badges/CZI-EOSS.svg)](https://czi.co/EOSS)
 
 </div>
 
@@ -56,8 +58,15 @@
 
 # [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
-Very quick start: `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
-* We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/master/docker). Please note that currently we support Python 3.9 (see conda files for guidance).
+Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
+
+Developers Stable Release:
+- Very quick start: You need to have TensorFlow installed (up to v2.10 supported across platforms) `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
+  
+Developers Alpha Release:
+- We also have an alpha release of PyTorch DeepLabCut available! [Please see here for instructions and information](https://github.com/DeepLabCut/DeepLabCut/blob/pytorch_docs/docs/pytorch/user_guide.md).
+
+We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
 
@@ -71,15 +80,17 @@ For a deeper understanding and more resources for you to get started with Python
 
 # [DEMO the code](/examples)
 
-🐭 demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
+🐭 pose tracking of single animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
 
-🐭🐭🐭 demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_3miceDemo.ipynb)
+🐭🐭🐭 pose tracking of multiple animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_3miceDemo.ipynb)
 
 - See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
 # Why use DeepLabCut?
 
-In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229) and [Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0)). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support. We currently provide state-of-the-art performance for animal pose estimation.
+In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229) and [Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0)). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support.
+In v3.0+ we have changed the backend to support PyTorch. This brings not only an easier installation process for users, but performance gains, developer flexibility, and a lot of new tools! Importantly, the high-level API stays the same, so it will be a seamless transition for users 💜!
+We currently provide state-of-the-art performance for animal pose estimation and the labs (M. Mathis Lab and A. Mathis Group) have both top journal and computer vision conference papers.
 
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" height="160">
@@ -98,7 +109,8 @@ In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthyl
 
 ## Code contributors:
 
-DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with the core dev team consisting of [Tanmay Nath](https://github.com/meet10may) (2.0-2.1), and currently (2.1+) with [Jessy Lauer](https://github.com/jeylau) and (2.3+) [Niels Poulsen](https://github.com/n-poulsen). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [100+ contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
+DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with the core dev team consisting of [Tanmay Nath](https://github.com/meet10may) (2.0-2.1), and currently (2.1+) with [Jessy Lauer](https://github.com/jeylau) and (2.3+) [Niels Poulsen](https://github.com/n-poulsen).
+DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [100+ contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
 
 This is an actively developed package and we welcome community development and involvement.
 
@@ -115,84 +127,9 @@ This is an actively developed package and we welcome community development and i
 | The DeepLabCut [AI Residency Program](https://www.deeplabcutairesidency.org/)                        | To come and work with us next summer👏                                       | Annually                  | DLC Team                               |
 
 
-## References:
+## References \& Citations:
 
-If you use this code or data we kindly ask that you please [cite Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) and, if you use the Python package (DeepLabCut2.x) please also cite [Nath, Mathis et al, 2019](https://doi.org/10.1038/s41596-019-0176-0). If you utilize the MobileNetV2s or EfficientNets please cite [Mathis, Biasi et al. 2021](https://openaccess.thecvf.com/content/WACV2021/papers/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.pdf). If you use versions 2.2beta+ or 2.2rc1+, please cite [Lauer et al. 2022](https://www.nature.com/articles/s41592-022-01443-0).
-
-DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.org](http://citeas.org/)!):
-
-- Mathis et al 2018: [10.1038/s41593-018-0209-y](https://doi.org/10.1038/s41593-018-0209-y)
-- Nath, Mathis et al 2019: [10.1038/s41596-019-0176-0](https://doi.org/10.1038/s41596-019-0176-0)
-- Lauer et al 2022: [10.1038/s41592-022-01443-0](https://doi.org/10.1038/s41592-022-01443-0)
-
-
-Please check out the following references for more details:
-
-    @article{Mathisetal2018,
-        title = {DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
-        author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-        journal = {Nature Neuroscience},
-        year = {2018},
-        url = {https://www.nature.com/articles/s41593-018-0209-y}}
-
-     @article{NathMathisetal2019,
-        title = {Using DeepLabCut for 3D markerless pose estimation across species and behaviors},
-        author = {Nath*, Tanmay and Mathis*, Alexander and Chen, An Chi and Patel, Amir and Bethge, Matthias and Mathis, Mackenzie W},
-        journal = {Nature Protocols},
-        year = {2019},
-        url = {https://doi.org/10.1038/s41596-019-0176-0}}
-        
-    @InProceedings{Mathis_2021_WACV,
-        author    = {Mathis, Alexander and Biasi, Thomas and Schneider, Steffen and Yuksekgonul, Mert and Rogers, Byron and Bethge, Matthias and Mathis, Mackenzie W.},
-        title     = {Pretraining Boosts Out-of-Domain Robustness for Pose Estimation},
-        booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-        month     = {January},
-        year      = {2021},
-        pages     = {1859-1868}}
-        
-    @article{Lauer2022MultianimalPE,
-        title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
-        author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
-        journal={Nature Methods},
-        year={2022},
-        volume={19},
-        pages={496 - 504}}
-
-    @article{insafutdinov2016eccv,
-        title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
-        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
-        booktitle = {ECCV'16},
-        url = {http://arxiv.org/abs/1605.03170}}
-        
-Review & Educational articles:
-
-    @article{Mathis2020DeepLT,
-        title={Deep learning tools for the measurement of animal behavior in neuroscience},
-        author={Mackenzie W. Mathis and Alexander Mathis},
-        journal={Current Opinion in Neurobiology},
-        year={2020},
-        volume={60},
-        pages={1-11}}
-
-    @article{Mathis2020Primer,
-        title={A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives},
-        author={Alexander Mathis and Steffen Schneider and Jessy Lauer and Mackenzie W. Mathis},
-        journal={Neuron},
-        year={2020},
-        volume={108},
-        pages={44-65}}
-
-Other open-access pre-prints related to our work on DeepLabCut:
-
-    @article{MathisWarren2018speed,
-        author = {Mathis, Alexander and Warren, Richard A.},
-        title = {On the inference speed and video-compression robustness of DeepLabCut},
-        year = {2018},
-        doi = {10.1101/457242},
-        publisher = {Cold Spring Harbor Laboratory},
-        URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
-        eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
-        journal = {bioRxiv}}
+Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our sugestions for your Methods section!
 
 ## License:
 
@@ -203,6 +140,8 @@ SuperAnimal models are provided for research use only (non-commercial use).
 ## Major Versions:
 
 - For all versions, please see [here](https://github.com/DeepLabCut/DeepLabCut/releases).
+
+VERSION 3.0: A whole new experience with PyTorch🔥. While the high-level API remains the same, the backend and developer friendliness have greatly improved, along with performance gains!
 
 VERSION 2.3: Model Zoo SuperAnimals, and a whole new GUI experience.
 
@@ -215,6 +154,8 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 # News (and in the news):
 
+:purple_heart: We released a major update, moving from 2.x --> 3.x with the backend change to PyTorch
+
 :purple_heart: The DeepLabCut Model Zoo launches SuperAnimals, see more [here](http://www.mackenziemathislab.org/dlc-modelzoo/).
 
 :purple_heart: **DeepLabCut supports multi-animal pose estimation!** maDLC is out of beta/rc mode and beta is deprecated, thanks to the testers out there for feedback! Your labeled data will be backwards compatible, but not all other steps. Please see the [new `2.2+` releases](https://github.com/DeepLabCut/DeepLabCut/releases) for what's new & how to install it, please see our new [paper, Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0), and the [new docs]( https://deeplabcut.github.io/DeepLabCut) on how to use it!
@@ -223,6 +164,9 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 :purple_heart: We have a **real-time** package available! http://DLClive.deeplabcut.org
 
+
+- June 2024: Our second DLC paper ['Using DeepLabCut for 3D markerless pose estimation across species and behaviors'](https://www.nature.com/articles/s41596-019-0176-0) in Nature Protocols has surpassed 1,000 Google Scholar citations!
+- May 2024: DeepLabCut was featured in Nature: ['DeepLabCut: the motion-tracking tool that went viral'](https://www.nature.com/articles/d41586-024-01474-x)
 - January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 Google Scholar citations! 
 - December 2023: DeepLabCut hit 600,000 downloads!
 - October 2023: DeepLabCut celebrates a milestone with 4,000 🌟 in Github!
@@ -256,3 +200,7 @@ importing a project into the new data format for DLC 2.0
 - August 2018: NVIDIA AI Developer News: [AI Enables Markerless Animal Tracking](https://news.developer.nvidia.com/ai-enables-markerless-animal-tracking/)
 - July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338).
 - April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
+
+  ## Funding
+
+  We are grateful for the follow support over the years! This software project was supported in part by the Essential Open Source Software for Science (EOSS) program at Chan Zuckerberg Initiative (cycles 1, 3, 3-DEI, 4), and jointly with the Kavli Foundation for EOSS Cycle 6!  We also thank the Rowland Institute at Harvard for funding from 2017-2020, and EPFL from 2020-present.

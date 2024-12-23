@@ -19,7 +19,7 @@ from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
 from matplotlib.path import Path
-from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons
+from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons, TextBox
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import QMutex
 
@@ -327,6 +327,9 @@ class TrackletVisualizer:
 
         self.dps = []
 
+        self.swap_id1 = None
+        self.swap_id2 = None
+
     def _prepare_canvas(self, manager, fig):
         params = {
             "keymap.save": "s",
@@ -358,7 +361,7 @@ class TrackletVisualizer:
 
         img = self.video.read_frame()
         self.im = self.ax1.imshow(img)
-        self.scat = self.ax1.scatter([], [], s=self.dotsize ** 2, picker=True)
+        self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
         self.trails = sum(
@@ -374,6 +377,7 @@ class TrackletVisualizer:
         )
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
+
         custom_lines = [
             plt.Line2D([0], [0], color=self.cmap(i), lw=4)
             for i in range(len(manager.individuals))
@@ -420,10 +424,15 @@ class TrackletVisualizer:
         self.ax_flag = self.fig.add_axes([0.75, 0.1, 0.05, 0.03])
         self.ax_save = self.fig.add_axes([0.80, 0.1, 0.05, 0.03])
         self.ax_help = self.fig.add_axes([0.85, 0.1, 0.05, 0.03])
+        self.ax_swap = self.fig.add_axes([0.90, 0.1, 0.05, 0.03])  # New button
+
         self.save_button = Button(self.ax_save, "Save", color="darkorange")
         self.save_button.on_clicked(self.save)
         self.help_button = Button(self.ax_help, "Help")
         self.help_button.on_clicked(self.display_help)
+        self.swap_button = Button(self.ax_swap, "Swap")  # New button
+        self.swap_button.on_clicked(self.swap_tracklets)  # Placeholder action
+
         self.drag_toggle = CheckButtons(self.ax_drag, ["Drag"])
         self.drag_toggle.on_clicked(self.toggle_draggable_points)
         self.flag_button = Button(self.ax_flag, "Flag")
@@ -441,8 +450,74 @@ class TrackletVisualizer:
         self.ax1_background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
         self.fig.show()
 
+        # Create dropdowns for selecting tracklets to swap, placing them near the swap button
+        self.ax_dropdown1 = self.fig.add_axes([0.9, 0.15, 0.05, 0.03])
+        self.ax_dropdown2 = self.fig.add_axes([0.9, 0.20, 0.05, 0.03])
+        self.textbox1 = TextBox(self.ax_dropdown1, "ID 1")
+        self.textbox2 = TextBox(self.ax_dropdown2, "ID 2")
+        self.textbox1.on_submit(self.set_swap_id1)
+        self.textbox2.on_submit(self.set_swap_id2)
+
     def show(self, fig=None):
         self._prepare_canvas(self.manager, fig)
+
+    def swap_tracklets(self, event):
+        if self.swap_id1 is not None and self.swap_id2 is not None:
+
+            # Get tracklet indices for each individual
+            inds1 = [
+                k
+                for k in range(len(self.manager.tracklet2id))
+                if self.manager.tracklet2id[k] == self.swap_id1
+            ]
+            inds2 = [
+                k
+                for k in range(len(self.manager.tracklet2id))
+                if self.manager.tracklet2id[k] == self.swap_id2
+            ]
+
+            print(f"Swapping tracklets {self.swap_id1} and {self.swap_id2}")
+
+            # Frames to swap
+            frames = []
+            if len(self.cuts) == 2:
+                frames = list(range(min(self.cuts), max(self.cuts) + 1))
+            elif len(self.cuts) == 1:
+                frames = [self.cuts[0]]
+            else:
+                frames = list(range(self.curr_frame, self.manager.nframes))
+
+            # Swap the tracklets
+            for i in range(min(len(inds1), len(inds2))):
+                self.manager.swap_tracklets(inds1[i], inds2[i], frames)
+                self.display_traces()
+                self.slider.set_val(self.curr_frame)
+
+    def set_swap_id1(self, val):
+        # check that the input is a valid from the list of individuals
+        if int(val) in self.manager.tracklet2id:
+            self.swap_id1 = int(val)
+            print("ID 1 set.")
+        else:
+            print(
+                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
+            )
+            self.swap_id1 = None
+
+    def set_swap_id2(self, val):
+        # check that the input is a valid from the list of individuals
+        if int(val) in self.manager.tracklet2id:
+            self.swap_id2 = int(val)
+            print("ID 2 set.")
+        else:
+            print(
+                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
+            )
+            self.swap_id2 = None
+
+    def terminate(self, event):
+        plt.close(self.fig)
+        self.player.terminate()
 
     def fill_shaded_areas(self):
         self.clean_collections()
@@ -587,9 +662,9 @@ class TrackletVisualizer:
             if len(self.cuts) > 1:
                 self.cuts.sort()
                 if self.picked_pair:
-                    self.manager.tracklet_swaps[self.picked_pair][
-                        self.cuts
-                    ] = ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                    self.manager.tracklet_swaps[self.picked_pair][self.cuts] = (
+                        ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
+                    )
                     self.fill_shaded_areas()
                     self.cuts = []
                     for line in self.ax_slider.lines:
@@ -807,7 +882,7 @@ class TrackletVisualizer:
 
     def update_dotsize(self, val):
         self.dotsize = val
-        self.scat.set_sizes([self.dotsize ** 2])
+        self.scat.set_sizes([self.dotsize**2])
 
     @staticmethod
     def calc_distance(x1, y1, x2, y2):
