@@ -68,11 +68,13 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         logger: Logger to monitor training (e.g. a WandBLogger).
         log_filename: Name of the file in which to store training stats.
         load_weights_only: Value for the torch.load() `weights_only` parameter if
-            `snapshot_path` is not None. If False, the python pickle module is used
-            implicitly, which is known to be insecure. Only set to False if you're
-            loading data that you trust (e.g. snapshots that you created yourself). For
-            more information, see:
+            `snapshot_path` is not None.
+            If False, the python pickle module is used implicitly, which is known to
+            be insecure. Only set to False if you're loading data that you trust
+            (e.g. snapshots that you created yourself). For more information, see:
                 https://pytorch.org/docs/stable/generated/torch.load.html
+            If None, the default value is used:
+                `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
     """
 
     def __init__(
@@ -88,7 +90,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         load_scheduler_state_dict: bool = True,
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
-        load_weights_only: bool = True,
+        load_weights_only: bool | None = None,
     ):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -368,7 +370,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         snapshot_path: str | Path,
         device: str,
         model: PoseModel,
-        weights_only: bool = True,
+        weights_only: bool | None = None,
     ) -> dict:
         """Loads the state dict for a model from a file
 
@@ -379,11 +381,13 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             snapshot_path: the path containing the model weights to load
             device: the device on which the model should be loaded
             model: the model for which the weights are loaded
-            weights_only: Value for torch.load() `weights_only` parameter. If False, the
-                python pickle module is used implicitly, which is known to be insecure.
-                Only set to False if you're loading data that you trust (e.g. snapshots
-                that you created yourself). For more information, see:
+            weights_only: Value for torch.load() `weights_only` parameter.
+                If False, the python pickle module is used implicitly, which is known to
+                be insecure. Only set to False if you're loading data that you trust
+                (e.g. snapshots that you created yourself). For more information, see:
                     https://pytorch.org/docs/stable/generated/torch.load.html
+                If None, the default value is used:
+                    `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
 
         Returns:
             The content of the snapshot file.
@@ -733,7 +737,7 @@ def build_training_runner(
         scheduler=scheduler,
         load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
-        load_weights_only=runner_config.get("load_weights_only", True),
+        load_weights_only=runner_config.get("load_weights_only", None),
     )
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)
