@@ -1,38 +1,29 @@
-name: Python package
+name: python package
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
+  test:
+    name: ${{ matrix.platform }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, windows-latest]
-        python-version: [3.9, "3.10"]
-        include:
-          - os: ubuntu-latest
-            path: ~/.cache/pip
-          - os: macos-13
-            path: ~/Library/Caches/pip
-          - os: windows-latest
-            path: ~\AppData\Local\pip\Cache
-        exclude:
-          - os: macos-13
-            python-version: 3.7
-          - os: windows-latest
-            python-version: 3.7
+      # platform: [ubuntu-latest, windows-latest, macos-latest ]
+        platform: [ubuntu-latest]
+        python-version: ['3.11', '3.12', '3.13']
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -41,8 +32,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install setuptools tox tox-gh-actions
+          python -m pip install -r requirements.txt
 
       - name: Install ffmpeg
         run: |
@@ -55,31 +47,35 @@ jobs:
             choco install ffmpeg
           fi
         shell: bash
-
+        
       - name: Run pytest tests
         run: |
           pip install pytest
           python -m pytest
+
+      - name: Coverage
+        uses: codecov/codecov-action@v2
 
       - name: Run functional tests
         run: |
           pip install git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
           python examples/testscript.py
           python examples/testscript_multianimal.py
+    
 
   deploy:
-    # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your
-    # github secrets (see readme for details)
-    needs: [build]
+# this will run when you have tagged a commit, starting with "v*"
+# and requires that you have put your twine API key in your
+# github secrets (see readme for details)
+    needs: [test]
     runs-on: ubuntu-latest
     if: contains(github.ref, 'tags')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.x"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
