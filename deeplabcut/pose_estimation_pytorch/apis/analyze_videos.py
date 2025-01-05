@@ -38,14 +38,17 @@ import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, VideoReader
+from deeplabcut.utils import auxiliaryfunctions, VideoReader
 
 
 class VideoIterator(VideoReader):
     """A class to iterate over videos, with possible added context"""
 
     def __init__(
-        self, video_path: str | Path, context: list[dict[str, Any]] | None = None, cropping: list[int] | None = None
+        self,
+        video_path: str | Path,
+        context: list[dict[str, Any]] | None = None,
+        cropping: list[int] | None = None,
     ) -> None:
         super().__init__(str(video_path))
         self._context = context
@@ -290,13 +293,17 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
-        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+        cfg,
+        model_cfg,
+        snapshot_index,
+        detector_snapshot_index,
     )
 
     if cropping is None and cfg.get("cropping", False):
         cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
 
     # Get general project parameters
+    multi_animal = cfg["multianimalproject"]
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
@@ -308,6 +315,15 @@ def analyze_videos(
 
     if batch_size is None:
         batch_size = cfg.get("batch_size", 1)
+
+    if not multi_animal:
+        save_as_df = True
+        if use_shelve:
+            print(
+                "The ``use_shelve`` parameter cannot be used for single animal "
+                "projects. Setting ``use_shelve=False``."
+            )
+            use_shelve = False
 
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
@@ -401,7 +417,7 @@ def analyze_videos(
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             if use_shelve and save_as_df:
-                print("Can't `save_as_df` as `use_shelve=True`. Skipping.")
+                print("Can't ``save_as_df`` as ``use_shelve=True``. Skipping.")
 
             if not use_shelve:
                 output_data = _generate_output_data(pose_cfg, predictions)
@@ -411,7 +427,7 @@ def analyze_videos(
                 if save_as_df:
                     create_df_from_prediction(
                         predictions=predictions,
-                        cfg=cfg,
+                        multi_animal=multi_animal,
                         model_cfg=model_cfg,
                         dlc_scorer=dlc_scorer,
                         output_path=output_path,
@@ -419,7 +435,7 @@ def analyze_videos(
                         save_as_csv=save_as_csv,
                     )
 
-            if cfg["multianimalproject"]:
+            if multi_animal:
                 _generate_assemblies_file(
                     full_data_path=output_pkl,
                     output_path=output_path / f"{output_prefix}_assemblies.pickle",
@@ -462,20 +478,16 @@ def analyze_videos(
 def create_df_from_prediction(
     predictions: list[dict[str, np.ndarray]],
     dlc_scorer: str,
-    cfg: dict,
+    multi_animal: bool,
     model_cfg: dict,
     output_path: str | Path,
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack(
-        [p["bodyparts"][..., :3] for p in predictions]
-    )
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
     pred_unique_bodyparts = None
     if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack(
-            [p["unique_bodyparts"] for p in predictions]
-        )
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
 
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
@@ -484,14 +496,13 @@ def create_df_from_prediction(
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
     n_individuals = len(individuals)
-    multianimal_project = cfg.get("multianimalproject")
 
     print(f"Saving results in {output_h5} and {output_pkl}")
     coords = ["x", "y", "likelihood"]
     cols = [[dlc_scorer], bodyparts, coords]
     cols_names = ["scorer", "bodyparts", "coords"]
 
-    if multianimal_project:
+    if multi_animal:
         cols.insert(1, individuals)
         cols_names.insert(1, "individuals")
 
@@ -503,7 +514,7 @@ def create_df_from_prediction(
         index=range(len(pred_bodyparts)),
     )
     if pred_unique_bodyparts is not None:
-        unique_columns = [dlc_scorer], ['single'], unique_bodyparts, coords
+        unique_columns = [dlc_scorer], ["single"], unique_bodyparts, coords
         df_u = pd.DataFrame(
             pred_unique_bodyparts.reshape((len(pred_unique_bodyparts), -1)),
             columns=pd.MultiIndex.from_product(unique_columns, names=cols_names),
@@ -681,6 +692,10 @@ def _generate_output_data(
             "confidence": scores,
             "costs": None,
         }
+
+        if "bboxes" in frame_predictions:
+            output[key]["bboxes"] = frame_predictions["bboxes"]
+            output[key]["bbox_scores"] = frame_predictions["bbox_scores"]
 
         if "identity_scores" in frame_predictions:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)

@@ -11,8 +11,6 @@
 from __future__ import annotations
 
 import argparse
-import json
-import os
 from pathlib import Path
 from typing import Iterable
 
@@ -32,6 +30,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
+    build_bboxes_dict_for_dataframe,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -82,7 +81,6 @@ def predict(
         else:
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
             context = [{"bboxes": ground_truth_bboxes[image]} for image in image_paths]
-            print(context[0])
 
     images_with_context = image_paths
     if context is not None:
@@ -182,10 +180,10 @@ def visualize_predictions(
     predictions: dict,
     ground_truth: dict,
     output_dir: str | Path | None = None,
-    draw_skeleton: bool = True,
     num_samples: int | None = None,
     random_select: bool = False,
     show_ground_truth: bool = True,
+    plot_bboxes: bool = True,
 ) -> None:
     """Visualize model predictions alongside ground truth keypoints.
 
@@ -205,8 +203,6 @@ def visualize_predictions(
 
         output_dir: Path to save visualization outputs.
             Defaults to "predictions_visualizations"
-
-        draw_skeleton: Whether to draw skeleton connections between keypoints
 
         num_samples: Number of images to visualize. If None, processes all images
 
@@ -256,6 +252,17 @@ def visualize_predictions(
             visible_pred.append(visible_points)
         visible_pred = np.stack(visible_pred)  # Shape: [N, num_visible_joints, 3]
 
+        if plot_bboxes:
+            bboxes = predictions[image_path].get("bboxes", None)
+            bbox_scores = predictions[image_path].get("bbox_scores", None)
+            bounding_boxes = (
+                (bboxes, bbox_scores)
+                if bbox_scores is not None and bbox_scores is not None
+                else None
+            )
+        else:
+            bounding_boxes = None
+
         # Generate and save visualization
         try:
             plot_gt_and_predictions(
@@ -263,6 +270,7 @@ def visualize_predictions(
                 output_dir=output_dir,
                 gt_bodyparts=visible_gt,
                 pred_bodyparts=visible_pred,
+                bounding_boxes=bounding_boxes,
             )
             print(f"Successfully plotted predictions for {image_path}")
         except Exception as e:
@@ -281,6 +289,9 @@ def plot_gt_and_predictions(
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
+    bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
+    bounding_boxes_color="k",
+    bboxes_pcutoff: float = 0.6,
 ):
     """Plot ground truth and predictions on an image.
 
@@ -296,6 +307,9 @@ def plot_gt_and_predictions(
         dot_size: Size of the plotted points
         alpha_value: Transparency of the points
         p_cutoff: Confidence threshold for showing predictions
+        bounding_boxes:  bounding boxes (top-left corner, size) and their respective confidence levels,
+        bounding_boxes_color: If bounding_boxes is not None, this is the color that will be used for plotting them
+        bboxes_cutoff: bounding boxes confidence cutoff threshold.
     """
     # Ensure output directory exists
     output_dir = Path(output_dir)
@@ -341,6 +355,9 @@ def plot_gt_and_predictions(
         alpha_value,
         p_cutoff,
         ax=ax,
+        bounding_boxes=bounding_boxes,
+        bounding_boxes_color=bounding_boxes_color,
+        bboxes_cutoff=bboxes_pcutoff,
     )
 
     # Plot unique bodyparts if present
@@ -434,6 +451,7 @@ def evaluate_snapshot(
     )
 
     predictions = {}
+    bounding_boxes = {}
     scores = {
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
@@ -458,7 +476,12 @@ def evaluate_snapshot(
             parameters=parameters,
             image_name_to_index=image_to_dlc_df_index,
         )
+        split_bounding_boxes = build_bboxes_dict_for_dataframe(
+            predictions=predictions_for_split,
+            image_name_to_index=image_to_dlc_df_index,
+        )
         predictions[split] = df_split_predictions
+        bounding_boxes[split] = split_bounding_boxes
         for k, v in results.items():
             scores[f"{split} {k}"] = round(v, 2)
 
@@ -492,11 +515,19 @@ def evaluate_snapshot(
             plot_mode = "bodypart"
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
+
+        bboxes_cutoff = (
+            loader.model_cfg.get("detector", {})
+            .get("model", {})
+            .get("box_score_thresh", 0.6)
+        )
+
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(
                 df_ground_truth, left_index=True, right_index=True
             )
             unique_bodyparts = loader.get_dataset_parameters().unique_bpts
+            bboxes_split = bounding_boxes[mode]
 
             plot_evaluation_results(
                 df_combined=df_combined,
@@ -511,6 +542,8 @@ def evaluate_snapshot(
                 dot_size=cfg["dotsize"],
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
+                bounding_boxes=bboxes_split,
+                bboxes_cutoff=bboxes_cutoff,
             )
 
     return df_predictions

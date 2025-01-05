@@ -37,7 +37,9 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
+    DetectorInferenceRunner,
     InferenceRunner,
+    PoseInferenceRunner,
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
@@ -176,7 +178,7 @@ def get_model_snapshots(
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
-                f"{names}) with prefix {snapshot_manager.task.snapshot_prefix}. Could "
+                f"{names}) with prefix {snapshot_manager.snapshot_prefix}. Could "
                 f"not return snapshot with index {index}."
             )
 
@@ -322,6 +324,28 @@ def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
     return df_predictions_ma
 
 
+def _image_names_to_df_index(
+    image_names: list[str],
+    image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
+) -> pd.MultiIndex | list[str]:
+    """
+    Creates index for predictions dataframe.
+    This method is used in build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe.
+    It is important that these two methods return objects with the same index / keys.
+
+    Args:
+        image_names: list of image names
+        image_name_to_index, optional: a transform to apply on each image_name
+    """
+
+    if image_name_to_index is not None:
+        return pd.MultiIndex.from_tuples(
+            [image_name_to_index(image_name) for image_name in image_names]
+        )
+    else:
+        return image_names
+
+
 def build_predictions_dataframe(
     scorer: str,
     predictions: dict[str, dict[str, np.ndarray]],
@@ -339,23 +363,18 @@ def build_predictions_dataframe(
     Returns:
 
     """
+    image_names = []
     prediction_data = []
-    index_data = []
-    for image, image_predictions in predictions.items():
+    for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
             image_data = np.concatenate(
                 [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
             )
-
+        image_names.append(image_name)
         prediction_data.append(image_data)
-        if image_name_to_index is not None:
-            index_data.append(image_name_to_index(image))
 
-    if len(index_data) > 0:
-        index = pd.MultiIndex.from_tuples(index_data)
-    else:
-        index = list(predictions.keys())
+    index = _image_names_to_df_index(image_names, image_name_to_index)
 
     return pd.DataFrame(
         prediction_data,
@@ -366,6 +385,39 @@ def build_predictions_dataframe(
             with_likelihood=True,
         ),
     )
+
+
+def build_bboxes_dict_for_dataframe(
+    predictions: dict[str, dict[str, np.ndarray]],
+    image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
+) -> dict:
+    """
+    Creates a dictionary with bounding boxes from predictions.
+    The keys of the dictionary are the same as the index of the dataframe created by build_predictions_dataframe.
+    Therefore, the structures returned by build_predictions_dataframe and by build_bboxes_dict_for_dataframe
+    can be accessed with the same keys.
+
+    Args:
+        predictions: Dictionary containing the evaluation results
+        image_name_to_index, optional: a transform to apply on each image_name
+
+    Returns:
+        Dictionary with sames keys as in the dataframe returned by build_predictions_dataframe,
+        and respective bounding boxes and scores, if any.
+    """
+
+    image_names = []
+    bboxes_data = []
+    for image_name, image_predictions in predictions.items():
+        image_names.append(image_name)
+        if "bboxes" in image_predictions:
+            bboxes_data.append(
+                (image_predictions["bboxes"], image_predictions["bbox_scores"])
+            )
+
+    index = _image_names_to_df_index(image_names, image_name_to_index)
+
+    return dict(zip(index, bboxes_data))
 
 
 def get_inference_runners(
@@ -476,3 +528,130 @@ def get_inference_runners(
         postprocessor=pose_postprocessor,
     )
     return pose_runner, detector_runner
+
+
+def get_detector_inference_runner(
+    model_config: dict,
+    snapshot_path: str | Path,
+    batch_size: int = 1,
+    device: str | None = None,
+    max_individuals: int | None = None,
+    transform: A.BaseCompose | None = None,
+) -> DetectorInferenceRunner:
+    """Builds an inference runner for object detection.
+
+    Args:
+        model_config: the pytorch configuration file
+        snapshot_path: the path of the snapshot from which to load the weights
+        max_individuals: the maximum number of individuals per image
+        batch_size: the batch size to use for the pose model.
+        device: if defined, overwrites the device selection from the model config
+        transform: the transform for pose estimation. if None, uses the transform
+            defined in the config.
+
+    Returns:
+        an inference runner for object detection
+    """
+    if device == "mps":  # FIXME(niels): Cannot run detectors on MPS
+        device = "cpu"
+
+    if max_individuals is None:
+        max_individuals = len(model_config["metadata"]["individuals"])
+
+    det_cfg = model_config["detector"]
+    if transform is None:
+        transform = build_transforms(det_cfg["data"]["inference"])
+
+    if "pretrained" in det_cfg["model"]:
+        det_cfg["model"]["pretrained"] = False
+
+    preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform)
+    postprocessor = build_detector_postprocessor(max_individuals=max_individuals)
+    runner = build_inference_runner(
+        task=Task.DETECT,
+        model=DETECTORS.build(det_cfg["model"]),
+        device=device,
+        snapshot_path=snapshot_path,
+        batch_size=batch_size,
+        preprocessor=preprocessor,
+        postprocessor=postprocessor,
+    )
+
+    if not isinstance(runner, DetectorInferenceRunner):
+        raise RuntimeError(f"Failed to build DetectorInferenceRunner: {model_config}")
+
+    return runner
+
+
+def get_pose_inference_runner(
+    model_config: dict,
+    snapshot_path: str | Path,
+    batch_size: int = 1,
+    device: str | None = None,
+    max_individuals: int | None = None,
+    transform: A.BaseCompose | None = None,
+) -> PoseInferenceRunner:
+    """Builds an inference runner for pose estimation.
+
+    Args:
+        model_config: the pytorch configuration file
+        snapshot_path: the path of the snapshot from which to load the weights
+        max_individuals: the maximum number of individuals per image
+        batch_size: the batch size to use for the pose model.
+        device: if defined, overwrites the device selection from the model config
+        transform: the transform for pose estimation. if None, uses the transform
+            defined in the config.
+
+    Returns:
+        an inference runner for pose estimation
+    """
+    pose_task = Task(model_config["method"])
+    metadata = model_config["metadata"]
+    num_bodyparts = len(metadata["bodyparts"])
+    num_unique = len(metadata["unique_bodyparts"])
+    with_identity = bool(metadata["with_identity"])
+    if max_individuals is None:
+        max_individuals = len(metadata["individuals"])
+
+    if device is None:
+        device = resolve_device(model_config)
+
+    if transform is None:
+        transform = build_transforms(model_config["data"]["inference"])
+
+    if pose_task == Task.BOTTOM_UP:
+        pose_preprocessor = build_bottom_up_preprocessor(
+            color_mode=model_config["data"]["colormode"],
+            transform=transform,
+        )
+        pose_postprocessor = build_bottom_up_postprocessor(
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique,
+            with_identity=with_identity,
+        )
+    else:
+        pose_preprocessor = build_top_down_preprocessor(
+            color_mode=model_config["data"]["colormode"],
+            transform=transform,
+            cropped_image_size=(256, 256),
+        )
+        pose_postprocessor = build_top_down_postprocessor(
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique,
+        )
+
+    runner = build_inference_runner(
+        task=pose_task,
+        model=PoseModel.build(model_config["model"]),
+        device=device,
+        snapshot_path=snapshot_path,
+        batch_size=batch_size,
+        preprocessor=pose_preprocessor,
+        postprocessor=pose_postprocessor,
+    )
+    if not isinstance(runner, PoseInferenceRunner):
+        raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")
+
+    return runner

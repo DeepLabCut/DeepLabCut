@@ -26,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils.make_labeled_video import _create_labeled_video
+from deeplabcut.utils.make_labeled_video import create_video
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -59,6 +59,8 @@ def _video_inference_superanimal(
     cropping: list[int] | None = None,
     dest_folder: Optional[str] = None,
     output_suffix: str = "",
+    plot_bboxes: bool = True,
+    bboxes_pcutoff: float = 0.9,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -131,8 +133,6 @@ def _video_inference_superanimal(
 
         output_json = output_h5.with_suffix(".json")
         if len(output_suffix) > 0:
-            # str(output_h5).replace(".h5", "_before_adapt.json")
-            # str(output_h5).replace(".h5", "_after_adapt.json")
             output_json = output_json.with_stem(output_h5.stem + output_suffix)
 
         video = VideoIterator(video_path, cropping=cropping)
@@ -143,6 +143,12 @@ def _video_inference_superanimal(
             detector_runner=detector_runner,
         )
 
+        bbox_keys_in_predictions = {"bboxes", "bbox_scores"}
+        bboxes_list = [
+            {key: value for key, value in p.items() if key in bbox_keys_in_predictions}
+            for i, p in enumerate(predictions)
+        ]
+
         bbox = cropping
         if cropping is None:
             vid_w, vid_h = video.dimensions
@@ -152,7 +158,7 @@ def _video_inference_superanimal(
         df = create_df_from_prediction(
             predictions=predictions,
             dlc_scorer=dlc_scorer,
-            cfg=dict(multianimalproject=True),
+            multi_animal=True,
             model_cfg=model_cfg,
             output_path=output_path,
             output_prefix=output_prefix,
@@ -168,7 +174,7 @@ def _video_inference_superanimal(
 
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
-        _create_labeled_video(
+        create_video(
             video_path,
             output_h5,
             pcutoff=pcutoff,
@@ -176,6 +182,9 @@ def _video_inference_superanimal(
             bbox=bbox,
             cmap=colormap,
             output_path=str(output_video),
+            plot_bboxes=plot_bboxes,
+            bboxes_list=bboxes_list,
+            bboxes_pcutoff=bboxes_pcutoff,
         )
         print(f"Video with predictions was saved as {output_path}")
 

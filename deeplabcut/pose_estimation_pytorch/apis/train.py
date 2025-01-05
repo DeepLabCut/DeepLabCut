@@ -338,15 +338,16 @@ def train_network(
             max_snapshots_to_keep=max_snapshots_to_keep,
         )
 
-    train(
-        loader=loader,
-        run_config=loader.model_cfg,
-        task=pose_task,
-        device=device,
-        logger_config=loader.model_cfg.get("logger"),
-        snapshot_path=snapshot_path,
-        max_snapshots_to_keep=max_snapshots_to_keep,
-    )
+    if loader.model_cfg["train_settings"]["epochs"] > 0:
+        train(
+            loader=loader,
+            run_config=loader.model_cfg,
+            task=pose_task,
+            device=device,
+            logger_config=loader.model_cfg.get("logger"),
+            snapshot_path=snapshot_path,
+            max_snapshots_to_keep=max_snapshots_to_keep,
+        )
 
     destroy_file_logging()
 
