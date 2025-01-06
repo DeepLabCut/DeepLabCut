@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     get_pose_inference_runner,
     predict,
     superanimal_analyze_images,
+    train,
     train_network,
     video_inference,
     VideoIterator,
