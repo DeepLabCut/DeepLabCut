@@ -59,13 +59,24 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.text()
 
     def load_config(self):
+        print("a")
         cwd = os.getcwd()
+        print("b " + cwd)
+        # Interesting observation: when a new 3d project is created, its config file does not contain empty fields,
+        # but when trying to open it for first time in gui creates them.
+        # The funny thing is that the code printing c and following is never executed,
+        # so empty fields are populated before printing c.
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
+        print(config[0])
+        print(config[1])
+        print("c")
         if not config:
             return
+        print("d")
         self.config = config[0]
+        print("e")
         self.open_line.setText(self.config)
         self.ok_button.setFocus()
 

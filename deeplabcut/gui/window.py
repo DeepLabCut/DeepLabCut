@@ -553,9 +553,13 @@ class MainWindow(QMainWindow):
 
     def _open_project(self):
         open_project = OpenProject(self)
+        print("Hello 1")
         open_project.load_config()
+        print("Hello 2")
         if not open_project.config:
             return
+        print("The config is:")
+        print(open_project.config)
 
         open_project.loaded = True
         self._update_project_state(
