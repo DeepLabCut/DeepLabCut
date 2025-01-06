@@ -160,7 +160,7 @@ class Loader(ABC):
             the format:
                 {
                     'path/to/image000.png': {
-                        "width": (int) the width of the image, in
+                        "width": (int) the width of the image, in pixels
                         "height": (int) the height of the image, in pixels
                         "bboxes": (np.ndarray) bboxes with shape (num_individuals, xywh)
                     },
