@@ -18,12 +18,13 @@ import torch
 import deeplabcut.pose_estimation_pytorch.data.postprocessor as post
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as prep
 import deeplabcut.pose_estimation_pytorch.runners.inference as inference
+from deeplabcut.pose_estimation_pytorch import get_load_weights_only
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 @patch("deeplabcut.pose_estimation_pytorch.runners.train.build_optimizer", Mock())
 @pytest.mark.parametrize("task", [Task.DETECT, Task.TOP_DOWN, Task.BOTTOM_UP])
-@pytest.mark.parametrize("weights_only", [True, False])
+@pytest.mark.parametrize("weights_only", [None, True, False])
 def test_load_weights_only_with_build_training_runner(task: Task, weights_only: bool):
     with patch("deeplabcut.pose_estimation_pytorch.runners.base.torch.load") as load:
         snapshot = "snapshot.pt"
@@ -34,6 +35,8 @@ def test_load_weights_only_with_build_training_runner(task: Task, weights_only: 
             snapshot_path=snapshot,
             load_weights_only=weights_only,
         )
+        if weights_only is None:
+            weights_only = get_load_weights_only()
         load.assert_called_once_with(
             snapshot, map_location="cpu", weights_only=weights_only
         )

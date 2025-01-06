@@ -47,9 +47,11 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     build_training_runner,
     DetectorInferenceRunner,
     DetectorTrainingRunner,
+    get_load_weights_only,
     InferenceRunner,
     PoseInferenceRunner,
     PoseTrainingRunner,
+    set_load_weights_only,
     TorchSnapshotManager,
     TrainingRunner,
 )
