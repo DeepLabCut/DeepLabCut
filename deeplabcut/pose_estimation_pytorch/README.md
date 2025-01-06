@@ -330,14 +330,12 @@ max_num_individuals, bodyparts = pep.COCOLoader.get_project_parameters(train_dic
 experiment_path = project_root / "experiments" / "hrnet_w32"
 model_cfg_path = experiment_path / "train" / "pytorch_cfg.yaml"
 model_cfg = pep.config.make_pytorch_pose_config(
-    project_config={
-        "project_path": str(project_root.resolve()),
-        "multianimalproject": max_num_individuals > 1,
-        "bodyparts": bodyparts,
-        "multianimalbodyparts": bodyparts,
-        "uniquebodyparts": [],
-        "individuals": [f"idv{i}" for i in range(max_num_individuals)],
-    },
+    project_config=pep.config.make_basic_project_config(
+        dataset_path=str(project_root.resolve()),
+        bodyparts=bodyparts,
+        max_individuals=max_num_individuals,
+        multi_animal=True,
+    ),
     pose_config_path=experiment_path,
     net_type="hrnet_w32",
     top_down=True,
