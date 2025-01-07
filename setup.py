@@ -70,7 +70,7 @@ setuptools.setup(
         "pandas>=1.0.1,!=1.5.0",
         "scikit-image>=0.17",
         "scikit-learn>=1.0",
-        "scipy>=1.4,<1.11.0",
+        "scipy>=1.9",
         "statsmodels>=0.11",
         "tables==3.8.0",
         "timm",
