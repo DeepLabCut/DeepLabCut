@@ -412,7 +412,7 @@ class Tracklet:
             The optimal hard threshold for singular values is 4/sqrt(3)
         """
         mat = self.to_hankelet()
-        if np.all(mat == 0):
+        if not np.any(mat):  # check if the matrix only contains zeros
             s = np.zeros(min(10, min(mat.shape)))
         else:
             # nrows, ncols = mat.shape
