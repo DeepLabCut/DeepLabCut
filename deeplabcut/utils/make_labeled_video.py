@@ -888,9 +888,6 @@ def proc_video(
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, filtered, track_method
             )
-            full_data = auxiliaryfunctions.load_video_full_data(
-                destfolder, vname, DLCscorer
-            )
             metadata = auxiliaryfunctions.load_video_metadata(
                 destfolder, vname, DLCscorer
             )
@@ -916,14 +913,23 @@ def proc_video(
                 if bp in bodyparts
             ]
 
-            frames_dict = {
-                int(key.replace("frame", "")): value
-                for key, value in full_data.items()
-                if key.startswith("frame") and key[5:].isdigit()
-            }
-            bboxes_list = None
-            if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
-                bboxes_list = [frames_dict[key] for key in sorted(frames_dict.keys())]
+            # The full data file is not created for single-animal TensorFlow models
+            try:
+                full_data = auxiliaryfunctions.load_video_full_data(
+                    destfolder, vname, DLCscorer
+                )
+                frames_dict = {
+                    int(key.replace("frame", "")): value
+                    for key, value in full_data.items()
+                    if key.startswith("frame") and key[5:].isdigit()
+                }
+                bboxes_list = None
+                if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
+                    bboxes_list = [
+                        frames_dict[key] for key in sorted(frames_dict.keys())
+                    ]
+            except FileNotFoundError:
+                bboxes_list = None
 
             if keypoints_only:
                 # Mask rather than drop unwanted bodyparts to ensure consistent coloring
