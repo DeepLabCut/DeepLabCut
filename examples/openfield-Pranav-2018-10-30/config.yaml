@@ -9,7 +9,6 @@ identity:
 # Project path (change when moving around)
 project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
-
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
 engine: pytorch
 

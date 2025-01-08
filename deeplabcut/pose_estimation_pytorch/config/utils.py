@@ -142,7 +142,11 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
 
     for k, v in updates.items():
         if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            config[k] = update_config(config[k], v, copy_original=False)
+            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+                # if changing the optimizer or scheduler type, update all values
+                config[k] = v
+            else:
+                config[k] = update_config(config[k], v, copy_original=False)
         else:
             config[k] = copy.deepcopy(v)
     return config

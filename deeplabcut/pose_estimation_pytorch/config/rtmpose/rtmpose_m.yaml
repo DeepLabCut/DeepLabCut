@@ -1,0 +1,98 @@
+data:
+  inference:
+    top_down_crop:
+      width: 256
+      height: 256
+  train:
+    random_bbox_transform:
+      shift_factor: 0.16
+      shift_prob: 0.3
+      scale_factor: [0.75, 1.25]
+      scale_prob: 1.0
+      p: 1.0
+    top_down_crop:
+      width: 256
+      height: 256
+method: td  # Need to add a detector
+model:
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_m
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    deepen_factor: 0.67
+    widen_factor: 0.75
+  backbone_output_channels: 768
+  heads:
+    bodypart:
+      type: RTMCCHead
+      weight_init: RTMPose
+      target_generator:
+        type: SimCCGenerator
+        input_size: [256, 256]
+        smoothing_type: gaussian
+        sigma: [5.66, 5.66]
+        simcc_split_ratio: 2.0
+        label_smooth_weight: 0.0
+        normalize: false
+      criterion:
+        x:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+        y:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+      predictor:
+        type: SimCCPredictor
+        simcc_split_ratio: 2.0
+      input_size: [256, 256]
+      in_channels: 768
+      out_channels: "num_bodyparts"
+      in_featuremap_size: [8, 8]  # input_size / backbone stride
+      simcc_split_ratio: 2.0
+      final_layer_kernel_size: 7
+      gau_cfg:
+        hidden_dims: 256
+        s: 128
+        expansion_factor: 2
+        dropout_rate: 0
+        drop_path: 0.0
+        act_fn: "SiLU"
+        use_rel_bias: false
+        pos_enc: false
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-3
+  scheduler:
+    type: SequentialLR
+    params:
+      schedulers:
+      - type: LinearLR
+        params:
+          start_factor: 0.001
+          end_factor: 1.0
+          total_iters: 5
+      - type: CosineAnnealingLR
+        params:
+          T_max: 200     # max_epochs // 2
+          eta_min: 5e-5  # ~base_lr / 20
+      - type: LRListScheduler
+        params:
+          milestones:
+            - 0
+          lr_list:
+            - - 5e-5
+      milestones:
+      - 200              # max_epochs // 2
+      - 400
+train_settings:
+  batch_size: 32
+  dataloader_workers: 4
+  dataloader_pin_memory: false
+  epochs: 400

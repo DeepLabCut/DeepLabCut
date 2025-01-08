@@ -21,6 +21,9 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.dekr import (
     DEKRHeatmapLoss,
     DEKROffsetLoss,
 )
+from deeplabcut.pose_estimation_pytorch.models.criterions.kl_discrete import (
+    KLDiscreteLoss,
+)
 from deeplabcut.pose_estimation_pytorch.models.criterions.weighted import (
     WeightedBCECriterion,
     WeightedHuberCriterion,

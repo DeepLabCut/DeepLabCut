@@ -19,14 +19,18 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
+from torch.utils.data import DataLoader
 
 import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
-from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.runners.base import (
+    attempt_snapshot_load,
+    ModelType,
+    Runner,
+)
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
     CSVLogger,
@@ -63,6 +67,14 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             might be used.
         logger: Logger to monitor training (e.g. a WandBLogger).
         log_filename: Name of the file in which to store training stats.
+        load_weights_only: Value for the torch.load() `weights_only` parameter if
+            `snapshot_path` is not None.
+            If False, the python pickle module is used implicitly, which is known to
+            be insecure. Only set to False if you're loading data that you trust
+            (e.g. snapshots that you created yourself). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
+            If None, the default value is used:
+                `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
     """
 
     def __init__(
@@ -78,6 +90,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         load_scheduler_state_dict: bool = True,
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
+        load_weights_only: bool | None = None,
     ):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -104,7 +117,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._print_valid_loss = True
 
         if self.snapshot_path:
-            snapshot = self.load_snapshot(self.snapshot_path, self.device, self.model)
+            snapshot = self.load_snapshot(
+                self.snapshot_path,
+                self.device,
+                self.model,
+                weights_only=load_weights_only,
+            )
             self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
 
             if "optimizer" in snapshot:
@@ -290,7 +308,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         for key in loss_metrics:
             name = f"{mode}.{key}"
-            val = np.nan
+            val = float("nan")
             if np.sum(~np.isnan(loss_metrics[key])) > 0:
                 val = np.nanmean(loss_metrics[key]).item()
             self._metadata["losses"][name] = val
@@ -329,14 +347,64 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 class PoseTrainingRunner(TrainingRunner[PoseModel]):
     """Runner to train pose estimation models"""
 
-    def __init__(self, model: PoseModel, optimizer: torch.optim.Optimizer, **kwargs):
+    def __init__(
+        self,
+        model: PoseModel,
+        optimizer: torch.optim.Optimizer,
+        load_head_weights: bool = True,
+        **kwargs,
+    ):
         """
         Args:
             model: The neural network for solving pose estimation task.
             optimizer: A PyTorch optimizer for updating model parameters.
+            load_head_weights: When `snapshot_path` is not None, whether to load the
+                head weights from the saved snapshot or just the backbone weights.
             **kwargs: TrainingRunner kwargs
         """
+        self._load_head_weights = load_head_weights
         super().__init__(model, optimizer, **kwargs)
+
+    def load_snapshot(
+        self,
+        snapshot_path: str | Path,
+        device: str,
+        model: PoseModel,
+        weights_only: bool | None = None,
+    ) -> dict:
+        """Loads the state dict for a model from a file
+
+        This method loads a file containing a DeepLabCut PyTorch model snapshot onto
+        a given device, and sets the model weights using the state_dict.
+
+        Args:
+            snapshot_path: the path containing the model weights to load
+            device: the device on which the model should be loaded
+            model: the model for which the weights are loaded
+            weights_only: Value for torch.load() `weights_only` parameter.
+                If False, the python pickle module is used implicitly, which is known to
+                be insecure. Only set to False if you're loading data that you trust
+                (e.g. snapshots that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
+                If None, the default value is used:
+                    `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+
+        Returns:
+            The content of the snapshot file.
+        """
+        snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
+        if self._load_head_weights:
+            model.load_state_dict(snapshot["model"])
+        else:
+            backbone_prefix = "backbone."
+            backbone_weights = {
+                k[len(backbone_prefix) :]: v
+                for k, v in snapshot["model"].items()
+                if k.startswith(backbone_prefix)
+            }
+            model.backbone.load_state_dict(backbone_weights)
+
+        return snapshot
 
     def step(
         self, batch: dict[str, Any], mode: str = "train"
@@ -536,7 +604,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             losses = {k: v.detach().cpu().numpy() for k, v in losses.items()}
 
         elif mode == "eval":
-            losses["total_loss"] = np.nan
+            losses["total_loss"] = float("nan")
             self._update_epoch_predictions(
                 paths=batch["path"],
                 sizes=batch["original_size"],
@@ -621,6 +689,7 @@ def build_training_runner(
     device: str,
     gpus: list[int] | None = None,
     snapshot_path: str | Path | None = None,
+    load_head_weights: bool = True,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
     """
@@ -634,14 +703,14 @@ def build_training_runner(
         device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
         gpus: the list of GPU indices to use for multi-GPU training
         snapshot_path: the snapshot from which to load the weights
+        load_head_weights: When `snapshot_path` is not None and a pose model is being
+            trained, whether to load the head weights from the saved snapshot.
         logger: the logger to use, if any
 
     Returns:
         the runner that was built
     """
-    optim_cfg = runner_config["optimizer"]
-    optim_cls = getattr(torch.optim, optim_cfg["type"])
-    optimizer = optim_cls(params=model.parameters(), **optim_cfg["params"])
+    optimizer = build_optimizer(model, runner_config["optimizer"])
     scheduler = schedulers.build_scheduler(runner_config.get("scheduler"), optimizer)
 
     # if no custom snapshot prefix is defined, use the default one
@@ -668,10 +737,12 @@ def build_training_runner(
         scheduler=scheduler,
         load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
+        load_weights_only=runner_config.get("load_weights_only", None),
     )
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)
 
+    kwargs["load_head_weights"] = load_head_weights
     return PoseTrainingRunner(**kwargs)
 
 
