@@ -550,7 +550,9 @@ def _get_context(
         bboxes_train = loader.ground_truth_bboxes(mode="train")
         bboxes_test = loader.ground_truth_bboxes(mode="test")
         bboxes = {**bboxes_train, **bboxes_test}
-        return [dict(bboxes=bboxes[str(img_path)]) for img_path in image_paths]
+        return [
+            dict(bboxes=bboxes[str(img_path)]["bboxes"]) for img_path in image_paths
+        ]
 
     detector_runner = utils.get_detector_inference_runner(
         model_config=loader.model_cfg,

@@ -358,6 +358,7 @@ def train_network(
             logger_config=loader.model_cfg.get("logger"),
             snapshot_path=snapshot_path,
             max_snapshots_to_keep=max_snapshots_to_keep,
+            load_head_weights=load_head_weights,
         )
 
     destroy_file_logging()

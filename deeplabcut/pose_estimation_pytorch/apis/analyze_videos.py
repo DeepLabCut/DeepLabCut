@@ -88,7 +88,6 @@ class VideoIterator(VideoReader):
 
 def video_inference(
     video: str | Path | VideoIterator,
-    task: Task,
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     cropping: list[int] | None = None,
@@ -99,10 +98,11 @@ def video_inference(
 
     Args:
         video: The video to analyze
-        task: The pose task to run (bottom-up or top-down)
         pose_runner: The pose runner to run inference with
-        detector_runner: When ``task==Task.TOP_DOWN``, the detector runner to obtain
-            bounding boxes for the video.
+        detector_runner: When the pose model is a top-down model, a detector runner can
+            be given to obtain bounding boxes for the video. If the pose model is a
+            top-down model and no detector_runner is given, the bounding boxes must
+            already be set in the VideoIterator (see examples).
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
@@ -119,6 +119,41 @@ def video_inference(
         Predictions for each frame in the video. If a shelf_manager is given, this list
         will be empty and the predictions will exclusively be stored in the file written
         by the shelf.
+
+    Examples:
+        Bottom-up video analysis:
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> video_predictions = pep.video_inference("video.mp4", runner)
+        >>>
+
+        Top-down video analysis:
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
+        >>> video_predictions = pep.video_inference("video.mp4", runner, d_runner)
+        >>>
+
+        Top-Down pose estimation with pre-computed bounding boxes:
+        >>> import numpy as np
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>>
+        >>> video_iterator = pep.VideoIterator("video.mp4")
+        >>> video_iterator.set_context([
+        >>>     { # frame 1 context
+        >>>         "bboxes": np.array([[12, 17, 4, 5]]),  # format (x0, y0, w, h)
+        >>>     },
+        >>>     { # frame 1 context
+        >>>         "bboxes": np.array([[12, 17, 4, 5], [18, 92, 54, 32]]),
+        >>>     },
+        >>>     ...
+        >>> ])
+        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> video_predictions = pep.video_inference(video_iterator, runner)
+        >>>
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
@@ -134,11 +169,7 @@ def video_inference(
         f"  resolution:             w={vid_w}, h={vid_h}\n"
     )
 
-    if task == Task.TOP_DOWN:
-        # Get bounding boxes for context
-        if detector_runner is None:
-            raise ValueError("Must use a detector for top-down video analysis")
-
+    if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
         video.set_context(bbox_predictions)
@@ -407,7 +438,6 @@ def analyze_videos(
             predictions = video_inference(
                 video=video_iterator,
                 pose_runner=pose_runner,
-                task=pose_task,
                 detector_runner=detector_runner,
                 cropping=cropping,
                 shelf_writer=shelf_writer,
