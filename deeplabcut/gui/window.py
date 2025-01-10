@@ -44,10 +44,10 @@ from PySide6.QtCore import Qt, QTimer
 def _check_for_updates(silent=True):
     try:
         is_latest, latest_version = call_with_timeout(
-            utils.is_latest_deeplabcut_version, 1
+            utils.is_latest_deeplabcut_version, 5
         )
         is_latest_plugin, latest_plugin_version = call_with_timeout(
-            misc.is_latest_version, 1
+            misc.is_latest_version, 5
         )
     except (URLError, TimeoutError):  # Handle internet connectivity issues
         is_latest = is_latest_plugin = True
