@@ -185,7 +185,9 @@ def train_network(
         train_network method here. These arguments are passed to the downstream method.
         Some of the parameters that can be passed are
             * ``device`` (the CUDA device to use for training)
-        `   * ``batch_size`` (the batch size to use while training).
+            * ``batch_size`` (the batch size to use while training)
+            * ``snapshot_path`` (the pose model snapshot to resume training from)
+            * ``detector_path`` (the detector model snapshot to resume training from)
 
         When training a top-down model, these parameters are also available for the
         detector, with the parameters ``detector_batch_size``, ``detector_epochs`` and
