@@ -525,6 +525,12 @@ def get_inference_runners(
                 top_down_crop_with_context=crop_cfg.get("with_context", True),
             )
 
+        pose_postprocessor = build_top_down_postprocessor(
+            max_individuals=max_individuals,
+            num_bodyparts=num_bodyparts,
+            num_unique_bodyparts=num_unique_bodyparts,
+        )
+
         # FIXME: Cannot run detectors on MPS
         detector_device = device
         if device == "mps":
