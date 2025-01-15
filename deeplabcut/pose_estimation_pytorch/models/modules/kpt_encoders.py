@@ -19,7 +19,7 @@ import torchvision.transforms.functional as TF
 import matplotlib.pyplot as plt
 
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-from deeplabcut.pose_estimation_pytorch.data.utils import _out_of_bounds_keypoints
+from deeplabcut.pose_estimation_pytorch.data.utils import out_of_bounds_keypoints
 
 
 KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
