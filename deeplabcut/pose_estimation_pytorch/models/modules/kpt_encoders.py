@@ -178,7 +178,7 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
         kpts = keypoints.copy()
         kpts[keypoints[..., 2] <= 0] = 0
         kpts = np.nan_to_num(kpts)
-        oob_mask = _out_of_bounds_keypoints(kpts, (256,256))
+        oob_mask = out_of_bounds_keypoints(kpts, (256,256))
         if np.sum(oob_mask) > 0:
             kpts[oob_mask] = 0
         kpts = kpts.astype(int)
