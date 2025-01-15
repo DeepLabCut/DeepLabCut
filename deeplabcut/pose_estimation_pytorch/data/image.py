@@ -15,15 +15,14 @@ import copy
 from pathlib import Path
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
-from torchvision.ops import box_convert
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
 
 
-import matplotlib.pyplot as plt
 def plot_keypoints(image, keypoints1, keypoints2, output_path="", img_ix=0):
     """
     Plots an image with two sets of keypoints and saves the result to disk.
@@ -65,6 +64,7 @@ def plot_keypoints(image, keypoints1, keypoints2, output_path="", img_ix=0):
     # Save the image to disk
     plt.savefig(f'{output_path}/loaded_cropped_{img_ix}.png', bbox_inches='tight')
     plt.close()
+
 
 def plot_image_grid(images, conditions, save_path="", batch_ix=0, single=False):
     """
@@ -303,7 +303,7 @@ def top_down_crop(
     output_size: tuple[int, int],
     margin: int = 0,
     center_padding: bool = False,
-    cond_td_padding: bool = False,
+    crop_with_context: bool = True,
 ) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
     """
     Crops images around bounding boxes for top-down pose estimation. Computes offsets so
@@ -320,7 +320,7 @@ def top_down_crop(
         output_size: the (width, height) of the output cropped image
         margin: a margin to add around the bounding box before cropping
         center_padding: whether to center the image in the padding if any is needed
-        cond_td_padding: whether to pad the image with empty pixels instead of context
+        crop_with_context: Whether to keep context around the bounding box when cropping
 
     Returns:
         cropped_image, (offset_x, offset_y), (scale_x, scale_y)
@@ -334,7 +334,7 @@ def top_down_crop(
     w += 2 * margin
     h += 2 * margin
 
-    if not cond_td_padding:
+    if crop_with_context:
         input_ratio = w / h
         output_ratio = out_w / out_h
         if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
@@ -362,8 +362,7 @@ def top_down_crop(
         y2 = image_h
 
     w, h = x2 - x1, y2 - y1
-
-    if cond_td_padding:
+    if not crop_with_context:
         input_ratio = w / h
         output_ratio = out_w / out_h
         if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0

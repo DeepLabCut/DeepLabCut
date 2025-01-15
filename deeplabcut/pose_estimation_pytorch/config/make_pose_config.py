@@ -217,6 +217,75 @@ def make_pytorch_test_config(
     return test_config
 
 
+def make_basic_project_config(
+    dataset_path: Path | str,
+    bodyparts: list[str],
+    max_individuals: int,
+    multi_animal: bool = True,
+) -> dict:
+    """Creates a basic configuration dict that can be used to create model configs.
+
+    This should be used to create the `project_config` given to
+    `make_pytorch_pose_config` for non-DeepLabCut projects (e.g. when creating a
+    configuration file for a model that will be trained on a COCO dataset).
+
+    Args:
+        dataset_path: The path to the dataset for which the config will be created.
+        bodyparts: The bodyparts labeled for individuals in the dataset.
+        max_individuals: The maximum number of individuals to detect in a single image.
+        multi_animal: Whether multiple animals can be present in an image.
+
+    Returns:
+        The created project configuration dict that can be given to
+        `make_pytorch_pose_config`.
+
+    Examples:
+        Creating a `pytorch_config` for a ResNet50 backbone with a part-affinity head (
+        as multi_animal=True and top_down=False)
+
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> project_config = pep.config.make_basic_project_config(
+        >>>     dataset_path="/path/coco",
+        >>>     bodyparts=["nose", "left_eye", "right_eye"],
+        >>>     max_individuals=12,
+        >>>     multi_animal=True,
+        >>> )
+        >>> model_config = pep.config.make_pytorch_pose_config(
+        >>>     project_config=project_config,
+        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+        >>>     net_type="resnet_50",
+        >>>     top_down=False,
+        >>>     save=True,
+        >>> )
+
+        Creating a `pytorch_config` for a ResNet50 backbone with a simple heatmap head
+        (as the project is single-animal):
+
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> project_config = pep.config.make_basic_project_config(
+        >>>     dataset_path="/path/coco",
+        >>>     bodyparts=["nose", "left_eye", "right_eye"],
+        >>>     max_individuals=1,
+        >>>     multi_animal=False,
+        >>> )
+        >>> model_config = pep.config.make_pytorch_pose_config(
+        >>>     project_config=project_config,
+        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+        >>>     net_type="resnet_50",
+        >>>     top_down=False,
+        >>>     save=True,
+        >>> )
+    """
+    return dict(
+        project_path=str(dataset_path),
+        multianimalproject=multi_animal,
+        bodyparts=bodyparts,
+        multianimalbodyparts=bodyparts,
+        uniquebodyparts=[],
+        individuals=[f"individual{i:03d}" for i in range(max_individuals)],
+    )
+
+
 def add_metadata(
     project_config: dict, config: dict, pose_config_path: str | Path
 ) -> dict:

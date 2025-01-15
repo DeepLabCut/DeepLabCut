@@ -232,9 +232,10 @@ if __name__ == "__main__":
     )
 
     print("CREATE VIDEO")
-    deeplabcut.create_labeled_video(
+    successful = deeplabcut.create_labeled_video(
         path_config_file, [newvideo], destfolder=DESTFOLDER, save_frames=True
     )
+    assert all(successful), f"Failed to create a labeled video!"
 
     print("Making plots")
     deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=DESTFOLDER)
@@ -363,18 +364,20 @@ if __name__ == "__main__":
     )
     deeplabcut.filterpredictions(path_config_file, [newvideo2])
 
-    deeplabcut.create_labeled_video(
+    successful = deeplabcut.create_labeled_video(
         path_config_file,
         [newvideo2],
         destfolder=DESTFOLDER,
         displaycropped=True,
         filtered=True,
     )
+    assert all(successful), f"Failed to create a labeled video!"
 
     print("Creating a Johansson video!")
-    deeplabcut.create_labeled_video(
+    successful = deeplabcut.create_labeled_video(
         path_config_file, [newvideo2], destfolder=DESTFOLDER, keypoints_only=True
     )
+    assert all(successful), f"Failed to create a labeled video!"
 
     deeplabcut.plot_trajectories(
         path_config_file, [newvideo2], destfolder=DESTFOLDER, filtered=True

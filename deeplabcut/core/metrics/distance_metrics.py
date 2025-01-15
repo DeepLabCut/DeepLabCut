@@ -152,13 +152,12 @@ def compute_oks(
     }
 
 
-def compute_rmse(
+def match_predictions_for_rmse(
     data: list[tuple[np.ndarray, np.ndarray]],
     single_animal: bool,
-    pcutoff: float,
     oks_bbox_margin: float = 0.0,
-) -> tuple[float, float]:
-    """Computes the RMSE for pose predictions.
+) -> list[matching.PotentialMatch]:
+    """Matches GT keypoints to predictions to compute RMSE.
 
     Single animal RMSE is computed by simply calculating the distance between each
     ground truth keypoint and the corresponding prediction.
@@ -176,16 +175,16 @@ def compute_rmse(
             num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
             the pose they are (x, y, confidence score).
         single_animal: Whether this is a single animal dataset.
-        pcutoff: The p-cutoff to use to compute RMSE.
         oks_bbox_margin: When single_animal is False, predictions are matched to GT
             using OKS. This is the margin used to apply when computing the bbox from
             the pose to compute OKS.
 
     Returns:
-        The RMSE and RMSE after removing all detections with a score below the pcutoff.
+        A list containing the predictions matched to ground truth.
 
     Raises:
-        AssertionError
+        ValueError: If `single_animal=True` but more than one ground truth/predicted
+        keypoint is found for an entry
     """
     matches = []
     for gt, pred in data:
@@ -217,25 +216,106 @@ def compute_rmse(
 
         matches.extend(image_matches)
 
-    rmse, rmse_cutoff = float("nan"), float("nan")
-    if len(matches) == 0:
-        return rmse, rmse_cutoff
+    return matches
 
-    pixel_errors = np.stack([m.pixel_errors() for m in matches])
-    if np.any(~np.isnan(pixel_errors)):
-        rmse = np.nanmean(pixel_errors).item()
 
+def compute_rmse(
+    data: list[tuple[np.ndarray, np.ndarray]],
+    single_animal: bool,
+    pcutoff: float,
+    data_unique: list[tuple[np.ndarray, np.ndarray]] | None = None,
+    per_keypoint_results: bool = False,
+    oks_bbox_margin: float = 0.0,
+) -> dict[str, float]:
+    """Computes the RMSE for pose predictions.
+
+    Single animal RMSE is computed by simply calculating the distance between each
+    ground truth keypoint and the corresponding prediction.
+
+    Multi-animal RMSE is computed differently: predictions are first matched to ground
+    truth individuals using greedy OKS matching. RMSE is then computed only between
+    predictions and the ground truth pose they are matched to, only when the OKS is
+    non-zero (greater than a small threshold). Predictions that cannot be matched to
+    any ground truth with non-zero OKS are not used to compute RMSE.
+
+    Args:
+        data: The data for which to compute RMSE. This is a list containing (gt_poses,
+            predicted_poses), where gt_pose is an array of shape (num_gt_individuals,
+            num_bpts, 3) and predicted_poses is an array of shape (num_predictions,
+            num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
+            the pose they are (x, y, confidence score).
+        single_animal: Whether this is a single animal dataset.
+        pcutoff: The p-cutoff to use to compute RMSE.
+        data_unique: Unique bodypart ground truth and predictions to include in RMSE
+            computations, if there are any such bodyparts.
+        per_keypoint_results: Whether to compute the RMSE for each individual keypoint.
+        oks_bbox_margin: When single_animal is False, predictions are matched to GT
+            using OKS. This is the margin used to apply when computing the bbox from
+            the pose to compute OKS.
+
+    Returns:
+        A dictionary matching metric names to values. It will at least have "rmse" and
+        "rmse_cutoff" keys. If `per_keypoint_results=True` and there is at least one
+        non-NaN pixel error it will also contain "rmse_keypoint_X" and
+        "rmse_cutoff_keypoint_X" keys for each bodypart, where X is the index of the
+        bodypart.
+
+    Raises:
+        ValueError: If `single_animal=True` but more than one ground truth/predicted
+            keypoint is found for an entry
+    """
+    matches = match_predictions_for_rmse(data, single_animal, oks_bbox_margin)
+    pixel_errors, keypoint_scores = None, None
+    if len(matches) > 0:
+        pixel_errors = np.stack([m.pixel_errors() for m in matches])
         keypoint_scores = np.stack([m.keypoint_scores() for m in matches])
-        pixel_errors_cutoff = pixel_errors[keypoint_scores >= pcutoff]
-        if np.any(~np.isnan(pixel_errors_cutoff)):
-            rmse_cutoff = np.nanmean(pixel_errors_cutoff).item()
 
-    return rmse, rmse_cutoff
+    error, support, cutoff_error, cutoff_support = 0, 0, 0, 0
+    if pixel_errors is not None:
+        error, support, cutoff_error, cutoff_support = collect_pixel_errors(
+            pixel_errors, keypoint_scores, pcutoff,
+        )
+
+    unique_pixel_errors, unique_keypoint_scores = None, None
+    if data_unique is not None:
+        u_matches = match_predictions_for_rmse(data_unique, single_animal=True)
+        if len(u_matches) > 0:
+            unique_pixel_errors = np.stack([m.pixel_errors() for m in u_matches])
+            unique_keypoint_scores = np.stack([m.keypoint_scores() for m in u_matches])
+
+            u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
+                unique_pixel_errors, unique_keypoint_scores, pcutoff,
+            )
+            error += u_error
+            support += u_support
+            cutoff_error += u_cutoff_error
+            cutoff_support += u_cutoff_support
+
+    results = dict(rmse=float("nan"), rmse_pcutoff=float("nan"))
+    if support > 0:
+        results["rmse"] = float(error / support)
+    if cutoff_support > 0:
+        results["rmse_pcutoff"] = float(cutoff_error / cutoff_support)
+
+    if per_keypoint_results:
+        bodypart_errors = [("rmse_keypoint", pixel_errors)]
+        if unique_pixel_errors is not None:
+            bodypart_errors.append(("rmse_unique_keypoint", unique_pixel_errors))
+
+        for key_prefix, bpt_errors in bodypart_errors:
+            for idx, keypoint_error in enumerate(bpt_errors.T):
+                rmse = float("nan")
+                if np.any(~np.isnan(keypoint_error)):
+                    rmse = np.nanmean(keypoint_error).item()
+                results[f"{key_prefix}_{idx}"] = float(rmse)
+
+    return results
 
 
 def compute_detection_rmse(
     data: list[tuple[np.ndarray, np.ndarray]],
     pcutoff: float,
+    data_unique: list[tuple[np.ndarray, np.ndarray]] | None = None,
 ) -> tuple[float, float]:
     """Computes the detection RMSE for pose predictions.
 
@@ -252,6 +332,8 @@ def compute_detection_rmse(
             num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
             the pose they are (x, y, confidence score).
         pcutoff: The p-cutoff to use to compute RMSE.
+        data_unique: Unique bodypart ground truth and predictions to include in RMSE
+            computations, if there are any such bodyparts.
 
     Returns:
         The detection RMSE and detection RMSE after removing all detections with a
@@ -279,17 +361,63 @@ def compute_detection_rmse(
                     distances.append(np.linalg.norm(gt[:2] - pred[:2]))
                     scores.append(bpt_pred[pred_index, 2])
 
+    if data_unique is not None:
+        for image_gt, image_pred in data_unique:
+            assert len(image_gt) == len(image_pred) == 1, (
+                f"Unique GT an predictions must have length 1! Found {image_gt.shape}, "
+                f"{image_pred.shape}."
+            )
+            unique_gt, unique_pred = image_gt[0], image_pred[0]
+            for gt, pred in zip(unique_gt, unique_pred):
+                distances.append(np.linalg.norm(gt[:2] - pred[:2]))
+                scores.append(pred[2])
+
     rmse, rmse_cutoff = float("nan"), float("nan")
     if len(distances) == 0:
         return rmse, rmse_cutoff
 
     distances = np.stack(distances)
     if np.any(~np.isnan(distances)):
-        rmse = np.nanmean(distances).item()
+        rmse = float(np.nanmean(distances).item())
 
         keypoint_scores = np.stack(scores)
         pixel_errors_cutoff = distances[keypoint_scores >= pcutoff]
         if np.any(~np.isnan(pixel_errors_cutoff)):
-            rmse_cutoff = np.nanmean(pixel_errors_cutoff).item()
+            rmse_cutoff = float(np.nanmean(pixel_errors_cutoff).item())
 
     return rmse, rmse_cutoff
+
+
+def collect_pixel_errors(
+    pixel_errors: np.ndarray,
+    keypoint_scores: np.ndarray,
+    pcutoff: float,
+) -> tuple[float, int, float, int]:
+    """Collects pixel errors for RMSE computation
+
+    Args:
+        pixel_errors: The pixel errors to collect, of shape (num_matches, num_bodyparts)
+        keypoint_scores: The scores corresponding to the pixel errors, of shape
+            (num_matches, num_bodyparts).
+        pcutoff: The pcutoff to use when computing cutoff RMSE.
+
+    Returns: error, support, cutoff_error, support_cutoff
+        error: The sum of all pixel errors.
+        support: The number of valid pixel errors.
+        cutoff_error: The sum of all pixel errors with score > pcutoff.
+        support_cutoff: The number of valid pixel errors with score > pcutoff.
+    """
+    error = 0.0
+    cutoff_error = 0.0
+    support = np.sum(~np.isnan(pixel_errors)).item()
+    support_cutoff = 0
+    if support > 0:
+        error += np.nansum(pixel_errors).item()
+
+        cutoff_mask = keypoint_scores >= pcutoff
+        cutoff_pixel_errors = pixel_errors[cutoff_mask]
+        support_cutoff = np.sum(~np.isnan(cutoff_pixel_errors)).item()
+        if support_cutoff > 0:
+            cutoff_error = np.nansum(cutoff_pixel_errors).item()
+
+    return error, support, cutoff_error, support_cutoff

@@ -11,7 +11,11 @@
 """Tests the pre-processors"""
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
+import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+    make_basic_project_config,
+    make_pytorch_pose_config,
+)
 from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print, update_config
 
 
@@ -417,3 +421,25 @@ def _make_project_config(
         project_config["bodyparts"] = bodyparts
 
     return project_config
+
+
+@pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
+@pytest.mark.parametrize("max_idv", [1, 12, 20])
+@pytest.mark.parametrize("multi", [True, False])
+def test_make_basic_project_config(bodyparts: list[str], max_idv: int, multi: bool):
+    if not multi and max_idv > 1:
+        return
+
+    project_config = make_basic_project_config(
+        dataset_path="path/dataset",
+        bodyparts=bodyparts,
+        max_individuals=max_idv,
+        multi_animal=multi,
+    )
+
+    bpts = af.get_bodyparts(project_config)
+    assert bodyparts == bpts
+
+    individuals = project_config["individuals"]
+    assert len(individuals) == max_idv
+    assert len(set(individuals)) == max_idv

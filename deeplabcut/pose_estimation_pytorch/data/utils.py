@@ -48,8 +48,8 @@ def bbox_from_keypoints(
     squeeze = False
 
     # we do not estimate bbox on keypoints that have 0 or -1 flag
-    mask = keypoints[..., -1] > 0
-    keypoints = keypoints[mask]
+    keypoints = np.copy(keypoints)
+    keypoints[keypoints[..., -1] <= 0] = np.nan
 
     if len(keypoints.shape) == 2:
         squeeze = True
@@ -58,6 +58,10 @@ def bbox_from_keypoints(
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
     bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
     bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+
+    # can have NaNs if some individuals have no visible keypoints
+    bboxes = np.nan_to_num(bboxes, nan=0)
+
     bboxes = np.clip(
         bboxes,
         a_min=[0, 0, 0, 0],
@@ -435,7 +439,7 @@ def apply_transform(
     """
 
     if transform:
-        oob_mask = _out_of_bounds_keypoints(keypoints, image.shape)
+        oob_mask = out_of_bounds_keypoints(keypoints, image.shape)
         transformed = _apply_transform(
             transform, image, keypoints, bboxes, class_labels
         )
@@ -448,7 +452,7 @@ def apply_transform(
 
         out_shape = transformed["image"].shape
         if len(transformed["keypoints"]) > 0:
-            oob_mask = _out_of_bounds_keypoints(transformed["keypoints"], out_shape)
+            oob_mask = out_of_bounds_keypoints(transformed["keypoints"], out_shape)
             # out-of-bound keypoints have visibility flag 0. Don't touch coordinates
             if np.sum(oob_mask) > 0:
                 transformed["keypoints"][oob_mask, 2] = 0.0
@@ -506,7 +510,7 @@ def _apply_transform(
     return transformed
 
 
-def _out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
+def out_of_bounds_keypoints(keypoints: np.ndarray, shape: tuple) -> np.ndarray:
     """Computes which visible keypoints are outside an image
 
     Args:

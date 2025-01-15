@@ -1,0 +1,19 @@
+model:
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_m
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    deepen_factor: 0.67
+    widen_factor: 0.75
+  backbone_output_channels: 768
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
+      milestones: [ 90, 190 ]

@@ -10,15 +10,43 @@
 #
 from __future__ import annotations
 
+import logging
+import os
+import pickle
 from abc import ABC
 from pathlib import Path
 from typing import Generic, TypeVar
 
+import numpy as np
 import torch
 import torch.nn as nn
 
-
 ModelType = TypeVar("ModelType", bound=nn.Module)
+
+_load_weights_only: bool = (
+    os.getenv("TORCH_LOAD_WEIGHTS_ONLY", "true").lower() in ("true", "1")
+)
+
+
+def get_load_weights_only() -> bool:
+    """Gets the default value to use when loading snapshots with `torch.load(...)`.
+
+    Returns:
+        The default `weights_only` value when loading snapshots using `torch.load(...)`.
+    """
+    global _load_weights_only
+    return _load_weights_only
+
+
+def set_load_weights_only(value: bool) -> None:
+    """Sets the default value to use when loading snapshots with `torch.load(...)`.
+
+    Args:
+        value: The default `weights_only` value to use when loading snapshots using
+            `torch.load(...)`.
+    """
+    global _load_weights_only
+    _load_weights_only = value
 
 
 class Runner(ABC, Generic[ModelType]):
@@ -63,6 +91,7 @@ class Runner(ABC, Generic[ModelType]):
         snapshot_path: str | Path,
         device: str,
         model: ModelType,
+        weights_only: bool | None = None,
     ) -> dict:
         """Loads the state dict for a model from a file
 
@@ -70,14 +99,21 @@ class Runner(ABC, Generic[ModelType]):
         a given device, and sets the model weights using the state_dict.
 
         Args:
-            snapshot_path: the path containing the model weights to load
-            device: the device on which the model should be loaded
-            model: the model for which the weights are loaded
+            snapshot_path: The path containing the model weights to load
+            device: The device on which the model should be loaded
+            model: The model for which the weights are loaded
+            weights_only: Value for torch.load() `weights_only` parameter.
+                If False, the python pickle module is used implicitly, which is known to
+                be insecure. Only set to False if you're loading data that you trust
+                (e.g. snapshots that you created yourself). For more information, see:
+                    https://pytorch.org/docs/stable/generated/torch.load.html
+                If None, the default value is used:
+                    `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
 
         Returns:
             The content of the snapshot file.
         """
-        snapshot = torch.load(snapshot_path, map_location=device)
+        snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
         #############################################################################################
         # snapshot = torch.load("/home/lucas/checkpoints/fish/w48/model_best.pth", map_location="cpu")
 
@@ -98,3 +134,111 @@ class Runner(ABC, Generic[ModelType]):
         ############################################################################################
         model.load_state_dict(snapshot["model"])
         return snapshot
+
+
+def attempt_snapshot_load(
+    path: str | Path,
+    device: str,
+    weights_only: bool | None = None,
+) -> dict:
+    """Attempts to load a snapshot using `torch.load(...)`.
+
+    Args:
+        path: The path of the snapshot to try to load..
+        device: The device to use for the `map_location`.
+        weights_only: Value for torch.load() `weights_only` parameter.
+            If False, the python pickle module is used implicitly, which is known to be
+            insecure. Only set to False if you're loading data that you trust (e.g.
+            snapshots that you created yourself). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
+            If None, the default value is used:
+                `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+
+    Returns:
+        The loaded snapshot.
+
+    Raises:
+        pickle.UnpicklingError: If `weights_only=True` but the snapshot failed to load
+            with `weights_only=True`.
+    """
+    try:
+        if weights_only is None:
+            weights_only = get_load_weights_only()
+
+        snapshot = torch.load(path, map_location=device, weights_only=weights_only)
+    except pickle.UnpicklingError as err:
+        logging.error(
+            f"\nFailed to load the snapshot: {path}.\n\n"
+            "If you trust the snapshot that you're trying to load, you can try\n"
+            "calling `Runner.load_snapshot` with `weights_only=False`. See the \n"
+            "error message below for more information and warnings.\n"
+            "You can set the `weights_only` parameter in the model configuration (\n"
+            "the content of the pytorch_config.yaml), as:\n\n```\n"
+            "runner:\n"
+            "  load_weights_only: False\n```\n\n"
+            "If it's the detector snapshot that's failing to load, place the\n"
+            "`load_weights_only` key under the detector runner:\n\n```\n"
+            "detector:\n"
+            "    runner:\n"
+            "      load_weights_only: False\n```\n\n"
+            "You can also set the default `load_weights_only` that will be used when\n"
+            "the `load_weights_only` variable is not set in the `pytorch_config.yaml`\n"
+            "using `deeplabcut.pose_estimation_pytorch.set_load_weights_only(value)`:\n"
+            "\n```\n"
+            "from deeplabcut.pose_estimation_pytorch import set_load_weights_only\n"
+            "set_load_weights_only(True)\n"
+            "```\n\n"
+            "You can also set the value for `load_weights_only` with a \n"
+            "`TORCH_LOAD_WEIGHTS_ONLY` environment variable. If you call \n"
+            "`TORCH_LOAD_WEIGHTS_ONLY=False python -m deeplabcut`, it will launch the\n"
+            "DeepLabCut GUI with the default `load_weights_only` value to False.\n"
+            "If you set this value to `False`, make sure you only load snapshots that\n"
+            "you trust.\n\n"
+        )
+        raise err
+
+    return snapshot
+
+
+def fix_snapshot_metadata(path: str | Path) -> None:
+    """Replace numpy floats in snapshot metrics
+
+    Only call this method with snapshots that you trust, as torch.load(...) is called
+    with `weights_only=False`. For more information, see:
+        https://pytorch.org/docs/stable/generated/torch.load.html
+
+    DeepLabCut PyTorch snapshots trained with older releases may have `numpy` floats in
+    the stored metrics. This method opens the snapshots (with `weights_only=False`),
+    replaces the numpy floats with python floats (allowing to load with
+    `weights_only=True`), and saves the new snapshot data.
+
+    Warning: This overwrites your existing snapshot. If you want to ensure that no data
+    is lost, copy your snapshot before calling `fix_snapshot_metadata`.
+
+    Args:
+        path: The path of the snapshot to fix.
+    """
+    snapshot = torch.load(path, map_location="cpu", weights_only=False)
+    metrics = snapshot.get("metadata", {}).get("metrics")
+    if metrics is not None:
+        snapshot["metadata"]["metrics"] = {k: float(v) for k, v in metrics.items()}
+
+    torch.save(snapshot, path)
+
+
+def _add_numpy_to_torch_safe_globals():
+    """
+    Attempts tot add numpy classes allowing snapshots containing numpy floats in the
+    metrics to be loaded without needing to change the `weights_only` argument.
+
+    This fix only works for `numpy>=1.25.0`.
+    """
+    try:
+        from numpy.core.multiarray import scalar
+        from numpy.dtypes import Float64DType
+        torch.serialization.add_safe_globals([np.dtype, Float64DType, scalar])
+    except Exception:
+        pass
+
+
+_add_numpy_to_torch_safe_globals()

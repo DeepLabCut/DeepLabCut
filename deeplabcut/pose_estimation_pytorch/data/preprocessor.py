@@ -25,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.data.image import (
 )
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
+
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
 
@@ -83,7 +84,11 @@ def build_bottom_up_preprocessor(
 
 
 def build_top_down_preprocessor(
-    color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
+    color_mode: str,
+    transform: A.BaseCompose,
+    top_down_crop_size: tuple[int, int],
+    top_down_crop_margin: int = 0,
+    top_down_crop_with_context: bool = True,
 ) -> Preprocessor:
     """Creates a preprocessor for top-down pose estimation
 
@@ -95,8 +100,9 @@ def build_top_down_preprocessor(
     Args:
         color_mode: whether to load the image as an RGB or BGR
         transform: the transform to apply to the image
-        cropped_image_size: the size of images for each individual to give to the pose
-            estimator
+        top_down_crop_size: the (width, height) to resize cropped bboxes to
+        top_down_crop_margin: the margin to add around detected bboxes for the crop
+        top_down_crop_with_context: whether to keep context when applying the top-down crop
 
     Returns:
         A default top-down Preprocessor
@@ -104,7 +110,11 @@ def build_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
-            TorchCropDetections(cropped_image_size=cropped_image_size[0], ctd=False),
+            TopDownCrop(
+                output_size=top_down_crop_size,
+                margin=top_down_crop_margin,
+                with_context=top_down_crop_with_context,
+            ),
             AugmentImage(transform),
             ToTensor(),
         ]
@@ -112,7 +122,11 @@ def build_top_down_preprocessor(
 
 
 def build_conditional_top_down_preprocessor(
-    color_mode: str, transform: A.BaseCompose, cropped_image_size: tuple[int, int]
+    color_mode: str,
+    transform: A.BaseCompose,
+    top_down_crop_size: tuple[int, int],
+    top_down_crop_margin: int = 0,
+    top_down_crop_with_context: bool = False,
 ) -> Preprocessor:
     """Creates a preprocessor for conditional top-down pose estimation
 
@@ -124,8 +138,9 @@ def build_conditional_top_down_preprocessor(
     Args:
         color_mode: whether to load the image as an RGB or BGR
         transform: the transform to apply to the image
-        cropped_image_size: the size of images for each individual to give to the pose
-            estimator
+        top_down_crop_size: the (width, height) to resize cropped bboxes to
+        top_down_crop_margin: the margin to add around detected bboxes for the crop
+        top_down_crop_with_context: whether to keep context when applying the top-down crop
 
     Returns:
         A default conditional top-down Preprocessor
@@ -134,7 +149,11 @@ def build_conditional_top_down_preprocessor(
         components=[
             LoadImage(color_mode),
             ComputeBoundingBoxesFromCondKeypoints(),
-            TorchCropDetections(cropped_image_size=cropped_image_size[0], ctd=True),
+            TopDownCrop(
+                output_size=top_down_crop_size,
+                margin=top_down_crop_margin,
+                with_context=top_down_crop_with_context,
+            ),
             AugmentImage(transform),
             ConditionalKeypointsToModelInputs(),
             ToTensor(),
@@ -333,15 +352,27 @@ class ToBatch(Preprocessor):
         return image.unsqueeze(0), context
 
 
-class TorchCropDetections(Preprocessor):
-    """TODO"""
+class TopDownCrop(Preprocessor):
+    """Crops bounding boxes out of images for top-down pose estimation
+
+    Args:
+        output_size: The (width, height) of crops to output
+        margin: The margin to add around detected bounding boxes before cropping
+        with_context: Whether to keep context in the top-down crop
+    """
 
     def __init__(
-        self, cropped_image_size: int, bbox_format: str = "xywh", ctd: bool = False
+        self,
+        output_size: int | tuple[int, int],
+        margin: int = 0,
+        with_context: bool = True,
     ) -> None:
-        self.cropped_image_size = cropped_image_size
-        self.bbox_format = bbox_format
-        self.ctd = ctd
+        if isinstance(output_size, int):
+            output_size = (output_size, output_size)
+
+        self.output_size = output_size
+        self.margin = margin
+        self.with_context = with_context
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -352,20 +383,19 @@ class TorchCropDetections(Preprocessor):
 
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
-            cropped_image, offset, scale = top_down_crop(
-                image, bbox, (self.cropped_image_size, self.cropped_image_size),
-                margin=0, cond_td_padding=self.ctd
+            crop, offset, scale = top_down_crop(
+                image,
+                bbox,
+                self.output_size,
+                margin=self.margin,
+                crop_with_context=self.with_context,
             )
-            images.append(cropped_image)
+            images.append(crop)
             offsets.append(offset)
             scales.append(scale)
 
         context["offsets"] = np.array(offsets)
         context["scales"] = np.array(scales)
-
-        # if "cond_kpts" in context:
-        #     context["cond_kpts"][:, :, 0] = (context["cond_kpts"][:, :, 0] - offsets[0]) / scales[0]
-        #     context["cond_kpts"][:, :, 1] = (context["cond_kpts"][:, :, 1] - offsets[1]) / scales[1]
 
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:

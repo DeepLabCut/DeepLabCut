@@ -26,3 +26,9 @@ from deeplabcut.pose_estimation_pytorch.models.modules.kpt_encoders import (
     StackedKeypointEncoder,
     KEYPOINT_ENCODERS
 )
+from deeplabcut.pose_estimation_pytorch.models.modules.gated_attention_unit import (
+    GatedAttentionUnit,
+)
+from deeplabcut.pose_estimation_pytorch.models.modules.norm import (
+    ScaleNorm,
+)

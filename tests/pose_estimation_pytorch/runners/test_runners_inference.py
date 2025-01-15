@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests inference runners"""
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -18,6 +18,28 @@ import torch
 import deeplabcut.pose_estimation_pytorch.data.postprocessor as post
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as prep
 import deeplabcut.pose_estimation_pytorch.runners.inference as inference
+from deeplabcut.pose_estimation_pytorch import get_load_weights_only
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.build_optimizer", Mock())
+@pytest.mark.parametrize("task", [Task.DETECT, Task.TOP_DOWN, Task.BOTTOM_UP])
+@pytest.mark.parametrize("weights_only", [None, True, False])
+def test_load_weights_only_with_build_training_runner(task: Task, weights_only: bool):
+    with patch("deeplabcut.pose_estimation_pytorch.runners.base.torch.load") as load:
+        snapshot = "snapshot.pt"
+        runner = inference.build_inference_runner(
+            task=task,
+            model=Mock(),
+            device="cpu",
+            snapshot_path=snapshot,
+            load_weights_only=weights_only,
+        )
+        if weights_only is None:
+            weights_only = get_load_weights_only()
+        load.assert_called_once_with(
+            snapshot, map_location="cpu", weights_only=weights_only
+        )
 
 
 class MockInferenceRunner(inference.InferenceRunner):
@@ -40,8 +62,7 @@ class MockInferenceRunner(inference.InferenceRunner):
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         self.batch_shapes.append(tuple(inputs.shape))
         return [  # return first elem of input
-            {"mock": {"index": i[0, 0, 0].detach().numpy()}}
-            for i in inputs
+            {"mock": {"index": i[0, 0, 0].detach().numpy()}} for i in inputs
         ]
 
 
@@ -82,8 +103,8 @@ def test_mock_bottom_up(batch_size):
         [0, 0, 0, 5, 2],
         [1, 2, 3, 4],
         [3, 4, 2, 1, 4],
-        [4, 23, 5, 20, 64, 100]
-    ]
+        [4, 23, 5, 20, 64, 100],
+    ],
 )
 def test_mock_top_down(batch_size, detections_per_image):
     h, w = 8, 8
@@ -129,6 +150,31 @@ def test_mock_top_down(batch_size, detections_per_image):
             print(i_det.shape)
             print(p_det["mock"]["index"])
             assert i_det[0, 0, 0] == p_det["mock"]["index"]
+
+
+def test_dynamic_pose_inference_calls_dynamic():
+    pose_batch = [Mock()]
+    image_crop = Mock()
+    image_crop.__len__ = Mock(return_value=1)
+
+    model = Mock()
+    model.get_predictions = Mock()
+    model.get_predictions.return_value = dict(bodypart=dict(poses=pose_batch))
+
+    dynamic = Mock()
+    dynamic.crop = Mock()
+    dynamic.crop.return_value = image_crop
+    dynamic.update = Mock()
+
+    runner = inference.PoseInferenceRunner(
+        model=model,
+        dynamic=dynamic,
+        batch_size=1,
+    )
+    image = torch.Tensor((1, 3, 64, 64))
+    _ = runner.predict(image)
+    dynamic.crop.assert_called_once_with(image)
+    dynamic.update.assert_called_once_with(pose_batch)
 
 
 def _check_batch_shapes(batch_size, h, w, batch_shapes) -> None:

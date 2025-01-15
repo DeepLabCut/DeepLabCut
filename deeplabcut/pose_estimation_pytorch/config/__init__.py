@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+    make_basic_project_config,
     make_pytorch_pose_config,
     make_pytorch_test_config,
 )
