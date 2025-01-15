@@ -89,7 +89,7 @@ def predict(
                 f"Missing context for some images: {len(context)} != {len(image_paths)}"
             )
         images_with_context = list(zip(image_paths, context))
-
+           
     predictions = pose_runner.inference(images=tqdm(images_with_context))
     return {
         image_path: image_predictions
@@ -227,6 +227,15 @@ def visualize_predictions(
 
     # Process each selected image
     for image_path in image_paths:
+        # Read image to get dimensions
+        frame = auxfun_videos.imread(str(image_path), mode="skimage")
+        h, w = frame.shape[:2]
+        
+        # Calculate adaptive dot size based on image dimensions
+        # This creates dots that scale with image size while staying reasonable
+        dot_size = int(min(w, h) * 0.015)  # 1.5% of smallest dimension
+        dot_size = max(6, min(dot_size, 25))  # Keep size between 6 and 25 pixels
+
         # Get prediction and ground truth data
         pred_data = predictions[image_path]
         gt_keypoints = ground_truth[image_path]  # Shape: [N, num_keypoints, 3]
@@ -271,12 +280,12 @@ def visualize_predictions(
                 gt_bodyparts=visible_gt,
                 pred_bodyparts=visible_pred,
                 bounding_boxes=bounding_boxes,
+                dot_size=dot_size,  # Pass the adaptive dot size
             )
             print(f"Successfully plotted predictions for {image_path}")
         except Exception as e:
             print(f"Error plotting predictions for {image_path}: {str(e)}")
-
-
+            
 def plot_gt_and_predictions(
     image_path: str | Path,
     output_dir: str | Path,
