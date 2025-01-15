@@ -5,7 +5,8 @@ runner:
   gpus: null
   key_metric: "test.mAP"
   key_metric_asc: true
-  eval_interval: 10
+  #eval_interval: 10
+  eval_interval: 3
   optimizer:
     type: AdamW
     params:

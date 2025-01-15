@@ -360,8 +360,11 @@ class GenerativeSampler:
             synth_joints[j] = synth_list[sampled_idx]
             synth_joints[j, 2] = 2
 
+        nan_mask = np.isnan(synth_joints).any(axis=1)
+        synth_joints[nan_mask, 2] = 0
         np.clip(synth_joints[:, 0], 0, image_size[1], out=synth_joints[:, 0])
         np.clip(synth_joints[:, 1], 0, image_size[0], out=synth_joints[:, 1])
+        # print('synth_joints', synth_joints)
 
         return synth_joints
 

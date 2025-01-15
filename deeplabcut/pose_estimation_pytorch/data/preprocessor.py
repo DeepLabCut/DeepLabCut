@@ -20,8 +20,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.data.image import (
-    _crop_and_pad_image_torch,
     load_image,
+    top_down_crop
 )
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
@@ -128,7 +128,7 @@ def build_conditional_top_down_preprocessor(
             estimator
 
     Returns:
-        A default top-down Preprocessor
+        A default conditional top-down Preprocessor
     """
     return ComposePreprocessor(
         components=[
@@ -352,8 +352,9 @@ class TorchCropDetections(Preprocessor):
 
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
-            cropped_image, offset, scale = _crop_and_pad_image_torch(
-                image, bbox, self.bbox_format, self.cropped_image_size, self.ctd
+            cropped_image, offset, scale = top_down_crop(
+                image, bbox, (self.cropped_image_size, self.cropped_image_size),
+                margin=0, cond_td_padding=self.ctd
             )
             images.append(cropped_image)
             offsets.append(offset)
@@ -391,10 +392,11 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
             )
 
         context["bboxes"] = [
-            # FIXME: bbox_margin should be a parameter set in the configuration
-            bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 10)
+            # FIXME: bbox_margin should be a parameter set in the configuration (25 for animals, 5 for humans?)
+            bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 25)
             for cond_kpts in context[self.cond_kpt_key]
         ]
+        # context["bboxes"] = np.clip(context["bboxes"], 0, image.shape[0] - 1)
 
         return image, context
 

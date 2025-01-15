@@ -23,6 +23,96 @@ from torchvision.ops import box_convert
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
 
 
+import matplotlib.pyplot as plt
+def plot_keypoints(image, keypoints1, keypoints2, output_path="", img_ix=0):
+    """
+    Plots an image with two sets of keypoints and saves the result to disk.
+
+    Args:
+        image (numpy array): The image to be plotted (shape: [256, 256, 3]).
+        keypoints1 (numpy array): First set of keypoints (shape: [5, 3]).
+        keypoints2 (numpy array): Second set of keypoints (shape: [5, 3]).
+        output_path (str): Path to save the output image.
+    """
+
+    keypoints2[keypoints2 < 0] = 0
+
+    # Check if the keypoints have a confidence score
+    if keypoints1.shape[1] == 3:
+        keypoints1 = keypoints1[:, :2]  # Ignore confidence for now
+    if keypoints2.shape[1] == 3:
+        keypoints2 = keypoints2[:, :2]
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(6, 6))
+    # Plot the image
+    ax.imshow(image)
+    # Plot the first set of keypoints
+    for ix, keypoint in enumerate(keypoints1):
+        if ix == len(keypoints1) - 1:
+            ax.scatter(keypoint[0], keypoint[1], c='green', s=50, label="GT keypoints")
+        else:
+            ax.scatter(keypoint[0], keypoint[1], c='green', s=50)
+    # Plot the second set of keypoints
+    for ix, keypoint in enumerate(keypoints2):
+        if ix == len(keypoints2) - 1:
+            ax.scatter(keypoint[0], keypoint[1], c='red', s=50, label="Cond keypoints")
+        else:
+            ax.scatter(keypoint[0], keypoint[1], c='red', s=50)
+    # Add a legend to differentiate keypoints
+    ax.legend()
+    # Remove axis ticks
+    ax.axis("off")
+    # Save the image to disk
+    plt.savefig(f'{output_path}/loaded_cropped_{img_ix}.png', bbox_inches='tight')
+    plt.close()
+
+def plot_image_grid(images, conditions, save_path="", batch_ix=0, single=False):
+    """
+    Plots a grid of 16 images from vector1 in the left column and 16 images from vector2 in the right column.
+    Args:
+        images (numpy array): First vector of shape [32, 3, 256, 256].
+        conditions (numpy array): Second vector of shape [32, 3, 256, 256].
+        save_path (str): Path to save the output image.
+    """
+    # Ensure the inputs have the correct shape
+    num_images = 1 if single else 32
+
+    assert images.shape == (num_images, 3, 256, 256), "images must have shape [32, 3, 256, 256]"
+    assert conditions.shape == (num_images, 3, 256, 256), "conditions must have shape [32, 3, 256, 256]"
+
+    if single:
+        images1, images2 = images, conditions
+    else:
+        num_images = num_images // 2
+        # Select the first 16 images from each vector
+        images1 = images[:num_images]
+        images2 = conditions[:num_images]
+    
+    # Create a figure with 16 rows and 2 columns
+    fig, axes = plt.subplots(num_images, 2, figsize=(8, 32))
+    
+    # Loop through the rows and plot images
+    for i in range(num_images):
+        if single:
+            curr_ax = axes
+        else:
+            curr_ax = axes[i]
+        # Left column: images from vector1
+        curr_ax[0].imshow(np.transpose(images1[i], (1, 2, 0)))  # Convert [3, 256, 256] to [256, 256, 3]
+        curr_ax[0].axis("off")  # Turn off the axis
+        curr_ax[0].set_title(f"Input Images {i+1}", fontsize=8)
+        # Right column: images from vector2
+        curr_ax[1].imshow(np.transpose(images2[i], (1, 2, 0)))  # Convert [3, 256, 256] to [256, 256, 3]
+        curr_ax[1].axis("off")  # Turn off the axis
+        curr_ax[1].set_title(f"Cond. Heatmaps {i+1}", fontsize=8)
+    
+    # Adjust spacing
+    plt.tight_layout()
+    # Save the figure
+    plt.savefig(f'{save_path}/hrnet_coam_input_{batch_ix}.png', bbox_inches='tight')
+    plt.close(fig)  # Close the figure to free up memory
+
+
 def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
     """Loads an image from a file using cv2
 
@@ -40,85 +130,6 @@ def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
         raise ValueError(f"Unsupported `color_mode`: {color_mode}")
 
     return image
-
-
-def _crop_and_pad_image_torch(
-    image: np.array, bbox: np.array, bbox_format: str, output_size: int, cond_td: bool = False
-) -> tuple[np.array, tuple[int, int], tuple[int, int]]:
-    """TODO: Reimplement this function with numpy and for non-square resize :)
-    Only works for square cropped bounding boxes. Crops images around bounding boxes
-    for top-down pose estimation in a MMpose style. Computes offsets so that
-    coordinates in the original image can be mapped to the cropped one;
-
-        x_cropped = (x - offset_x) / scale_x
-        x_cropped = (y - offset_y) / scale_y
-
-    Args:
-        image: (h, w, c) the image to crop
-        bbox: (4,) the bounding box to crop around
-        bbox_format: {"xyxy", "xywh", "cxcywh"} the format of the bounding box
-        output_size: the size to resize the image to
-
-    Returns:
-        cropped_image, (offset_x, offset_y), (scale_x, scale_y)
-    """
-    image = torch.tensor(image).permute(2, 0, 1)
-    bbox = torch.tensor(bbox)
-    if bbox_format != "cxcywh":
-        bbox = box_convert(bbox.unsqueeze(0), bbox_format, "cxcywh").squeeze()
-
-    c, h, w = image.shape
-    crop_size = torch.max(bbox[2:])
-
-    if cond_td:
-        # pad with empty pixels instead of context
-        cx, cy, boxw, boxh = bbox
-        xmin, xmax = int(cx - boxw/2), int(cx + boxw/2)
-        ymin, ymax = int(cy - boxh/2), int(cy + boxh/2)
-        # add 25 pixels of margin to the bbox
-        xmin, ymin = max(0, xmin - 25), max(0, ymin - 25)
-        xmax, ymax = min(w, xmax + 25), min(h, ymax + 25)
-    else:
-        xmin = int(torch.clip(bbox[0] - (crop_size / 2), min=0, max=w - 1).cpu().item())
-        xmax = int(torch.clip(bbox[0] + (crop_size / 2), min=1, max=w).cpu().item())
-        ymin = int(torch.clip(bbox[1] - (crop_size / 2), min=0, max=h - 1).cpu().item())
-        ymax = int(torch.clip(bbox[1] + (crop_size / 2), min=1, max=h).cpu().item())
-
-    cropped_image = image[:, ymin:ymax, xmin:xmax]
-
-    crop_h, crop_w = cropped_image.shape[1:3]
-    pad_size = max(crop_h, crop_w)
-    offset = (xmin, ymin)
-
-    # Pad image if not square
-    if not crop_h == crop_w:
-        padded_cropped_image = torch.zeros((c, pad_size, pad_size), dtype=image.dtype)
-        # Try to center bbox in padding
-        w_start = 0
-        if bbox[0] - (crop_size / 2) < 0:
-            # padding on the left
-            w_start = pad_size - crop_w
-        elif bbox[0] + (crop_size / 2) >= w:
-            # padding on the right
-            w_start = 0
-
-        h_start = 0
-        if bbox[1] - (crop_size / 2) < 0:
-            # padding at the top
-            h_start = pad_size - crop_h
-        elif bbox[1] + (crop_size / 2) >= h:
-            # padding at the bottom
-            h_start = 0
-
-        h_end = h_start + crop_h
-        w_end = w_start + crop_w
-        offset = (offset[0] - w_start, offset[1] - h_start)
-        padded_cropped_image[:, h_start:h_end, w_start:w_end] = cropped_image
-        cropped_image = padded_cropped_image
-
-    scale = pad_size / output_size
-    output = F.resize(cropped_image, [output_size, output_size], antialias=True)
-    return output.permute(1, 2, 0).numpy(), offset, (scale, scale)
 
 
 def resize_and_random_crop(
@@ -284,3 +295,101 @@ def resize_and_random_crop(
             anns["area"] = scaled_area
 
     return scaled_cropped_image, targets
+
+
+def top_down_crop(
+    image: np.ndarray,
+    bbox: np.ndarray,
+    output_size: tuple[int, int],
+    margin: int = 0,
+    center_padding: bool = False,
+    cond_td_padding: bool = False,
+) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
+    """
+    Crops images around bounding boxes for top-down pose estimation. Computes offsets so
+    that coordinates in the original image can be mapped to the cropped one;
+
+        x_cropped = (x - offset_x) / scale_x
+        x_cropped = (y - offset_y) / scale_y
+
+    Bounding boxes are expected to be in COCO-format (xywh).
+
+    Args:
+        image: (h, w, c) the image to crop
+        bbox: (4,) the bounding box to crop around
+        output_size: the (width, height) of the output cropped image
+        margin: a margin to add around the bounding box before cropping
+        center_padding: whether to center the image in the padding if any is needed
+        cond_td_padding: whether to pad the image with empty pixels instead of context
+
+    Returns:
+        cropped_image, (offset_x, offset_y), (scale_x, scale_y)
+    """
+    image_h, image_w, c = image.shape
+    out_w, out_h = output_size
+    x, y, w, h = bbox
+
+    cx = x + w / 2
+    cy = y + h / 2
+    w += 2 * margin
+    h += 2 * margin
+
+    if not cond_td_padding:
+        input_ratio = w / h
+        output_ratio = out_w / out_h
+        if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
+            h = w / output_ratio
+        elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
+            w = h * output_ratio
+
+    # cx,cy,w,h will now give the right ratio -> check if padding is needed
+    x1, y1 = int(round(cx - (w / 2))), int(round(cy - (h / 2)))
+    x2, y2 = int(round(cx + (w / 2))), int(round(cy + (h / 2)))
+
+    # pad symmetrically - compute total padding across axis
+    pad_left, pad_right, pad_top, pad_bottom = 0, 0, 0, 0
+    if x1 < 0:
+        pad_left = -x1
+        x1 = 0
+    if x2 > image_w:
+        pad_right = x2 - image_w
+        x2 = image_w
+    if y1 < 0:
+        pad_top = -y1
+        y1 = 0
+    if y2 > image_h:
+        pad_bottom = y2 - image_h
+        y2 = image_h
+
+    w, h = x2 - x1, y2 - y1
+
+    if cond_td_padding:
+        input_ratio = w / h
+        output_ratio = out_w / out_h
+        if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
+            w_pad = int(w - h * output_ratio) // 2
+            pad_top += w_pad
+            pad_bottom += w_pad
+
+        elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
+            h_pad = int(h - (w / output_ratio)) // 2
+            pad_left += h_pad
+            pad_right += h_pad
+
+    pad_x = pad_left + pad_right
+    pad_y = pad_top + pad_bottom
+    if center_padding:
+        pad_left = pad_x // 2
+        pad_top = pad_y // 2
+
+    # crop the pixels we care about
+    image_crop = np.zeros((h + pad_y, w + pad_x, c), dtype=image.dtype)
+    image_crop[pad_top:pad_top + h, pad_left:pad_left + w] = image[y1:y2, x1:x2]
+
+    # resize the cropped image
+    image = cv2.resize(image_crop, (out_w, out_h), interpolation=cv2.INTER_LINEAR)
+
+    # compute scale and offset
+    offset = x1 - pad_left, y1 - pad_top
+    scale = (w + pad_x) / out_w, (h + pad_y) / out_h
+    return image, offset, scale

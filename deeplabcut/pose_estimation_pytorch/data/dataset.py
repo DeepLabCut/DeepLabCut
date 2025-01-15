@@ -16,7 +16,7 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import Dataset
 
-from deeplabcut.pose_estimation_pytorch.data.image import load_image, _crop_and_pad_image_torch
+from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _crop_image_keypoints,
     _extract_keypoints_and_bboxes,
@@ -201,23 +201,33 @@ class PoseDataset(Dataset):
                      image_size=original_size,
                 )
 
-                bboxes[0] = bbox_from_keypoints(
-                    synthesized_keypoints,
-                    original_size[0],
-                    original_size[1],
-                    10,  # FIXME: bbox_margin should be a parameter set in cfg
-                )
+                # if conditional keypoints are empty, we take original bbox
+                if np.any(synthesized_keypoints[..., -1] > 0):
+                    bboxes[0] = bbox_from_keypoints(
+                        synthesized_keypoints,
+                        original_size[0],
+                        original_size[1],
+                        25,  # FIXME: bbox_margin should be a parameter set in cfg (25 for animals, 5 for humans?)
+                    )
 
-            # TODO: The following code should be replaced by a numpy version
-            image, offsets, scales = _crop_and_pad_image_torch(
-                image, bboxes[0], "xywh", self.parameters.cropped_image_size[0], self.task
+            image, offsets, scales = top_down_crop(
+                image, bboxes[0], self.parameters.cropped_image_size, margin=0,
+                cond_td_padding=(self.task==Task.CTD)
             )
+
             keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
             keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+            # print('keypoints GT', keypoints)
             if self.task == Task.CTD:
                 synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
                 synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
+                # synthesized_keypoints[synthesized_keypoints < 0] = 0
+                # print('keypoints COND', synthesized_keypoints)
+                # print('')
                 keypoints = safe_stack([keypoints, synthesized_keypoints[None, ...]], (0, self.parameters.num_joints, 3))
+
+            # from deeplabcut.pose_estimation_pytorch.data.image import plot_keypoints
+            # plot_keypoints(image, keypoints[0,0], keypoints[1,0], "/home/lucas/logs/debug_images", index)
 
             bboxes = bboxes[:1]
             bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]

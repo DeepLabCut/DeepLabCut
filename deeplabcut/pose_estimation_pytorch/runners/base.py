@@ -78,5 +78,23 @@ class Runner(ABC, Generic[ModelType]):
             The content of the snapshot file.
         """
         snapshot = torch.load(snapshot_path, map_location=device)
+        #############################################################################################
+        # snapshot = torch.load("/home/lucas/checkpoints/fish/w48/model_best.pth", map_location="cpu")
+
+        # import re
+        # snapshot = {"backbone.model." + k: v for k, v in snapshot.items()}
+        # snapshot = {re.sub(r"model.stage([0-4])_att", r"coam_stages.\1", k): v for k, v in snapshot.items()}
+        # snapshot = {k.replace("backbone.model.final_layer.weigth",
+        #                       "heads.bodypart.heatmap_head.final_conv.weight"): v for k, v in snapshot.items()}
+        # snapshot = {k.replace("backbone.model.final_layer.bias",
+        #                       "heads.bodypart.heatmap_head.final_conv.bias"): v for k, v in snapshot.items()}
+
+        # # print(model)
+        # # for key in model.state_dict().keys():
+        # #     print(key)
+
+        # model.load_state_dict(snapshot)
+
+        ############################################################################################
         model.load_state_dict(snapshot["model"])
         return snapshot
