@@ -46,6 +46,7 @@ def build_bottom_up_postprocessor(
     num_bodyparts: int,
     num_unique_bodyparts: int,
     with_identity: bool = False,
+    with_backbone_features: bool = False,
 ) -> ComposePostprocessor:
     """Creates a postprocessor for bottom-up pose estimation (or object detection)
 
@@ -54,6 +55,7 @@ def build_bottom_up_postprocessor(
         num_bodyparts: the number of bodyparts output by the model
         num_unique_bodyparts: the number of unique_bodyparts output by the model
         with_identity: whether the model has an identity head
+        with_backbone_features:
 
     Returns:
         A default bottom-up Postprocessor
@@ -70,6 +72,10 @@ def build_bottom_up_postprocessor(
     if with_identity:
         keys_to_concatenate["identity_heatmap"] = ("identity", "heatmap")
         empty_shapes["identity_heatmap"] = (1, 1, max_individuals)
+
+    if with_backbone_features:
+        keys_to_concatenate["features"] = ("backbone", "features")
+        empty_shapes["features"] = (num_bodyparts, 0, 1)
 
     components = [
         ConcatenateOutputs(
@@ -117,6 +123,7 @@ def build_top_down_postprocessor(
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
+    with_backbone_features: bool = False,
 ) -> Postprocessor:
     """Creates a postprocessor for top-down pose estimation
 
@@ -124,6 +131,7 @@ def build_top_down_postprocessor(
         max_individuals: the maximum number of individuals in a single image
         num_bodyparts: the number of bodyparts output by the model
         num_unique_bodyparts: the number of unique_bodyparts output by the model
+        with_backbone_features:
 
     Returns:
         A default top-down Postprocessor
@@ -135,6 +143,10 @@ def build_top_down_postprocessor(
         keys_to_concatenate["unique_bodyparts"] = ("unique_bodypart", "poses")
         empty_shapes["unique_bodyparts"] = (num_unique_bodyparts, 3)
         keys_to_rescale.append("unique_bodyparts")
+
+    if with_backbone_features:
+        keys_to_concatenate["features"] = ("backbone", "features")
+        empty_shapes["features"] = (num_bodyparts, 0, 1)
 
     return ComposePostprocessor(
         components=[
@@ -482,4 +494,48 @@ class AssignIndividualIdentities(Postprocessor):
         map_ = assign_identity(predictions["bodyparts"], predictions["identity_scores"])
         predictions["bodyparts"] = predictions["bodyparts"][map_]
         predictions["identity_scores"] = predictions["identity_scores"][map_]
+        return predictions, context
+
+
+class PrepareBackboneFeatures(Postprocessor):
+    """Adds backbone features for each individual and keypoint to the outputs
+
+    Attributes:
+        top_down: Whether the model is a top-down model.
+    """
+
+    def __init__(self, top_down: bool) -> None:
+        self.top_down = top_down
+
+    def __call__(self, predictions: Any, context: Context) -> tuple[Any, Context]:
+        if self.top_down:
+            input_w, input_h = context["top_down_crop_size"]
+        else:
+            input_w, input_h = context["image_size"]
+
+        for pred in predictions:
+            features: np.ndarray = pred["backbone"]["features"]
+            pose: np.ndarray = pred["bodypart"]["poses"]
+
+            # only extract features from valid pose
+            mask = ~np.all(pose < 0, axis=(1, 2))
+            pose = pose[mask]
+            pred["bodypart"]["poses"] = pose
+
+            num_features, h, w = features.shape
+            backbone_stride = input_w / w, input_h / h
+
+            num_preds, num_keypoints, _ = pose.shape
+
+            bodypart_features = np.zeros((num_preds, num_keypoints, num_features))
+            indices = np.rint(pose[..., :2] / backbone_stride).astype(int)
+            indices[..., 0] = np.clip(indices[..., 0], 0, w - 1)
+            indices[..., 1] = np.clip(indices[..., 1], 0, h - 1)
+
+            for idv, idv_indices in enumerate(indices):
+                for kpt, (x, y) in enumerate(idv_indices):
+                    bodypart_features[idv, kpt] = features[:, y, x]
+
+            pred["backbone"]["bodypart_features"] = bodypart_features
+
         return predictions, context
