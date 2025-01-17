@@ -97,7 +97,6 @@ class HRNet(BaseBackbone):
         return self.prepare_output(y_list)
 
 
-
 def _load_hrnet(
     model_name: str,
     pretrained: bool,
