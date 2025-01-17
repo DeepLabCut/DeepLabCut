@@ -167,7 +167,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if curr_v is None:
                 curr_v = v
             elif isinstance(curr_v, np.ndarray):
-                curr_v = np.concatenate([curr_v, v], dim=0)
+                curr_v = np.concatenate([curr_v, v], axis=0)
             elif isinstance(curr_v, torch.Tensor):
                 curr_v = torch.cat([curr_v, v], dim=0)
             else:

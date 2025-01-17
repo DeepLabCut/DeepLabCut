@@ -84,13 +84,27 @@ def predict(
                 for image in image_paths
             ]
 
-    elif pose_task == Task.CTD:
+    elif loader.pose_task == Task.CTD:
         # Get conditional keypoints for context
-        bu_snapshot = loader.model_cfg["data"]["inference"]["bu_snapshot"]
-        bu_preds = loader.model_cfg["data"]["inference"]["bu_predictions"]
-        pose_predictions = loader.load_predictions(Path(bu_snapshot), Path(bu_preds),
-                                                   loader.get_dataset_parameters())
-        context = [{"cond_kpts": pose_predictions[image]} for image in image_paths]
+        import json
+        with open(loader.model_cfg["data"]["inference"]["conditions"], "r") as f:
+            conditions = json.load(f)
+
+        def _get_condition(image):
+            if not isinstance(image, Path):
+                image = Path(image)
+            video_name, image_name = image.parent.name, image.name
+            image_key = f"labeled-data/{video_name}/{image_name}"
+            image_conditions = np.stack(
+                [
+                    np.array(c["keypoints"]).reshape((-1, 3))
+                    for c in conditions
+                    if c["image_path"] == image_key
+                ]
+            )
+            return image_conditions
+
+        context = [{"cond_kpts": _get_condition[image]} for image in image_paths]
 
     images_with_context = image_paths
     if context is not None:

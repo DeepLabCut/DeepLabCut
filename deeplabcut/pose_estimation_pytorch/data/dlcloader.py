@@ -269,12 +269,14 @@ class DLCLoader(Loader):
         train_ids = [int(i) for i in meta[1]]
         test_ids = [int(i) for i in meta[2]]
         return {"train": train_ids, "test": test_ids}
-    
+
     @staticmethod
-    def load_predictions(bu_snapshot: Path, bu_predictions: Path, parameters: PoseDatasetParameters) -> pd.DataFrame:
-
+    def load_predictions(
+        bu_snapshot: Path,
+        bu_predictions: Path,
+        parameters: PoseDatasetParameters,
+    ) -> pd.DataFrame:
         if bu_predictions is None:
-
             pred_path = Path(str(bu_snapshot).replace('dlc-models', 'evaluation-results')).parent.parent
             cfg = af.read_config(pred_path.parent.parent.parent / "config.yaml")
             scorer = af.get_scorer_name(
@@ -285,8 +287,8 @@ class DLCLoader(Loader):
                     trainingsiterations=re.search(r'snapshot-(.+)\.pth', str(bu_snapshot)).group(1),
                     modelprefix="",
                 )
-            pred_file = pred_path / f"{scorer[0]}.h5"
 
+            pred_file = pred_path / f"{scorer[0]}.h5"
             dlc_preds = pd.read_hdf(pred_file, key="df_with_missing")
 
             #FIXME: Implement the case where snapshot is loaded
