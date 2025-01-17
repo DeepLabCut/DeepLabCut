@@ -195,7 +195,7 @@ class PoseDataset(Dataset):
         scales = (1.0, 1.0)
 
         if self.task in (Task.TOP_DOWN, Task.CTD):
-            if self.parameters.cropped_image_size is None:
+            if self.parameters.top_down_crop_size is None:
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
                 )
@@ -236,7 +236,7 @@ class PoseDataset(Dataset):
                 image, offsets, scales = top_down_crop(
                     image,
                     bboxes[0],
-                    self.parameters.cropped_image_size,
+                    self.parameters.top_down_crop_size,
                     margin=0,
                     crop_with_context=(self.task != Task.CTD),
                 )
@@ -260,7 +260,7 @@ class PoseDataset(Dataset):
                 bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
                 bboxes[..., 2] = bboxes[..., 2] / scales[0]
                 bboxes[..., 3] = bboxes[..., 3] / scales[1]
-                bboxes = np.clip(bboxes, 0, self.parameters.cropped_image_size[0] - 1) #TODO: clip based on [x,y,x,y]?
+                bboxes = np.clip(bboxes, 0, self.parameters.top_down_crop_size[0] - 1) #TODO: clip based on [x,y,x,y]?
 
                 # as a RandomBBoxTransform can be added, keypoints may be outside of the
                 #   image after the crop

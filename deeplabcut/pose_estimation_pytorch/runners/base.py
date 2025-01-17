@@ -115,22 +115,31 @@ class Runner(ABC, Generic[ModelType]):
         """
         snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
         #############################################################################################
-        # snapshot = torch.load("/home/lucas/checkpoints/fish/w48/model_best.pth", map_location="cpu")
+        #snapshot = torch.load("/home/lucas/checkpoints/fish/w48/model_best.pth", map_location="cpu")
+        # snapshot = torch.load("/home/lucas/checkpoints/fish/w48/model_best_new.pth", map_location="cpu")
 
         # import re
-        # snapshot = {"backbone.model." + k: v for k, v in snapshot.items()}
-        # snapshot = {re.sub(r"model.stage([0-4])_att", r"coam_stages.\1", k): v for k, v in snapshot.items()}
-        # snapshot = {k.replace("backbone.model.final_layer.weigth",
-        #                       "heads.bodypart.heatmap_head.final_conv.weight"): v for k, v in snapshot.items()}
-        # snapshot = {k.replace("backbone.model.final_layer.bias",
-        #                       "heads.bodypart.heatmap_head.final_conv.bias"): v for k, v in snapshot.items()}
+   
+        # snapshot = {
+        #     "backbone.model." + k: v for k, v in snapshot.items()
+        # }
+        # snapshot = {
+        #     re.sub(r"model.stage2_att", r"coam_stages.1", k): v for k, v in snapshot.items()
+        # }
+        # snapshot = {
+        #     k.replace("backbone.model.final_layer.weight", "heads.bodypart.heatmap_head.final_conv.weight"): v
+        #     for k, v in snapshot.items()
+        # }
+        # snapshot = {
+        #     k.replace("backbone.model.final_layer.bias", "heads.bodypart.heatmap_head.final_conv.bias"): v
+        #     for k, v in snapshot.items()
+        # }
 
-        # # print(model)
-        # # for key in model.state_dict().keys():
-        # #     print(key)
+        # fc = "heads.bodypart.heatmap_head.final_conv"
+        # snapshot[f"{fc}.weight"] = snapshot[f"{fc}.weight"][[0, 1, 2, 3, 6]]
+        # snapshot[f"{fc}.bias"] = snapshot[f"{fc}.bias"][[0, 1, 2, 3, 6]]
 
-        # model.load_state_dict(snapshot)
-
+        # model.load_state_dict(snapshot, strict=False)
         ############################################################################################
         model.load_state_dict(snapshot["model"])
         return snapshot
