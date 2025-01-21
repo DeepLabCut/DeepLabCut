@@ -48,11 +48,21 @@ def build_feature_extraction_runner(
     rescale_mode = postprocessing.RescaleAndOffset.Mode.KEYPOINT
     if top_down:
         rescale_mode = postprocessing.RescaleAndOffset.Mode.KEYPOINT_TD
+        data_cfg = loader.model_cfg["data"]["inference"]
+        crop_cfg = data_cfg.get("top_down_crop", {})
+        width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+        preprocessor = data.build_top_down_preprocessor(
+            color_mode=loader.model_cfg["data"]["colormode"],
+            transform=data.build_transforms(data_cfg),
+            top_down_crop_size=(width, height),
+            top_down_crop_margin=crop_cfg.get("margin", 0),
+        )
+    else:
+        preprocessor = data.build_bottom_up_preprocessor(
+            loader.model_cfg["data"]["colormode"],
+            data.build_transforms(loader.model_cfg["data"]["inference"])
+        )
 
-    preprocessor = data.build_bottom_up_preprocessor(
-        loader.model_cfg["data"]["colormode"],
-        data.build_transforms(loader.model_cfg["data"]["inference"])
-    )
     postprocessor = postprocessing.ComposePostprocessor(
         [
             postprocessing.PrepareBackboneFeatures(top_down=top_down),
@@ -173,11 +183,6 @@ def create_tracking_dataset(
         shuffle=shuffle,
         modelprefix=modelprefix,
     )
-    if loader.pose_task == Task.TOP_DOWN:
-        raise ValueError(
-            "Currently, only bottom-up models can be used to train ReID trackers."
-        )
-
     test_cfg_path = loader.model_folder.parent / "test" / "pose_cfg.yaml"
     test_cfg = read_config_as_dict(test_cfg_path)
 
