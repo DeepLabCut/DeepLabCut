@@ -589,7 +589,9 @@ def get_detector_inference_runner(
     Returns:
         an inference runner for object detection
     """
-    if device == "mps":  # FIXME(niels): Cannot run detectors on MPS
+    if device is None:
+        device = resolve_device(model_config)
+    elif device == "mps":  # FIXME(niels): Cannot run detectors on MPS
         device = "cpu"
 
     if max_individuals is None:
