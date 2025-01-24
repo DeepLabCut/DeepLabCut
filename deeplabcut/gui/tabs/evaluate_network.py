@@ -186,13 +186,13 @@ class EvaluateNetwork(DefaultTab):
         config = self.root.config
 
         Shuffles = [self.root.shuffle_value]
-        plotting = self.plot_predictions.checkState() == Qt.Checked
+        plotting = self.plot_predictions.isChecked()
 
         bodyparts_to_use = "all"
         if (
             len(self.root.all_bodyparts)
             != len(self.bodyparts_list_widget.selected_bodyparts)
-        ) and self.use_all_bodyparts.checkState() == False:
+        ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(
