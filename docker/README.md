@@ -27,10 +27,6 @@ We provide docker containers for three different use cases outlined below.
 In all cases, your current directory will be mounted in the container, and the container
 will be started with your current username and group.
 
-- To launch the DLC GUI directly, run
-  ```bash
-  deeplabcut-docker gui
-  ```
 - Interactive console with DLC in light mode
   ```bash
   deeplabcut-docker bash

@@ -52,21 +52,24 @@ iterate_build_matrix() {
 
     #[add other dlc versions to build here]
     dlc_versions=(
-        "2.3.5"
-        #"2.3.2"
+        "3.0.0"
     )
 
     #[add other cuda versions to build here]
     cuda_versions=(
-        #"11.4.3-cudnn8-runtime-ubuntu20.04"
-        "11.7.1-cudnn8-runtime-ubuntu20.04"
+        "cuda11.8-cudnn9"
+        "cuda12.1-cudnn9"
+        "cuda12.4-cudnn9"
+    )
+
+    pytorch_versions=(
+        "2.5.1"
     )
 
     docker_types=(
         "base"
         "test"
         "core"
-        #"gui"
     )
 
     mode=${1:-build}
@@ -74,22 +77,26 @@ iterate_build_matrix() {
         ${cuda_versions[@]}; do
         for deeplabcut_version in \
             ${dlc_versions[@]}; do
-            for stage in \
-                ${docker_types[@]}; do
-                tag=${deeplabcut_version}-${stage}-cuda${cuda_version}-latest
-                case "$mode" in
-                build)
-                    echo \
-                        --build-arg=CUDA_VERSION=${cuda_version} \
-                        --build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
-                        "--tag=${BASENAME}:$tag" \
-                        -f "Dockerfile.${stage}" \.
-                    # --no-cache \
-                    ;;
-                push | clean | test)
-                    echo ${BASENAME}:${tag}
-                    ;;
-                esac
+            for pytorch_version in \
+                ${pytorch_versions[@]}; do
+                for stage in \
+                    ${docker_types[@]}; do
+                    tag=${deeplabcut_version}-${stage}-${cuda_version}-latest
+                    case "$mode" in
+                    build)
+                        echo \
+                            --build-arg=CUDA_VERSION=${cuda_version} \
+                            --build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
+                            --build-arg=PYTORCH_VERSION=${pytorch_version} \
+                            "--tag=${BASENAME}:$tag" \
+                            -f "Dockerfile.${stage}" \.
+                        # --no-cache \
+                        ;;
+                    push | clean | test)
+                        echo ${BASENAME}:${tag}
+                        ;;
+                    esac
+                done
             done
         done
     done
