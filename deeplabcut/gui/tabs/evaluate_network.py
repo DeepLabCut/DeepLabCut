@@ -192,7 +192,7 @@ class EvaluateNetwork(DefaultTab):
         if (
             len(self.root.all_bodyparts)
             != len(self.bodyparts_list_widget.selected_bodyparts)
-        ) and self.use_all_bodyparts.checkState() == False:
+        ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(

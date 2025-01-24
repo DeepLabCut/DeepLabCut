@@ -243,7 +243,7 @@ class CreateVideos(DefaultTab):
             # Single animal scenario.
             # Color is based on bodypart.
             color_by = "bodypart"
-        filtered = bool(self.use_filtered_data_checkbox.checkState())
+        filtered = self.use_filtered_data_checkbox.isChecked()
 
         bodyparts = "all"
         if (
@@ -258,9 +258,9 @@ class CreateVideos(DefaultTab):
             videos=videos,
             shuffle=shuffle,
             filtered=filtered,
-            save_frames=bool(self.create_high_quality_video.checkState()),
+            save_frames=self.create_high_quality_video.isChecked(),
             displayedbodyparts=bodyparts,
-            draw_skeleton=bool(self.draw_skeleton_checkbox.checkState()),
+            draw_skeleton=self.draw_skeleton_checkbox.isChecked(),
             trailpoints=trailpoints,
             color_by=color_by,
         )
@@ -273,7 +273,7 @@ class CreateVideos(DefaultTab):
             failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
-        if self.plot_trajectories.checkState():
+        if self.plot_trajectories.isChecked():
             deeplabcut.plot_trajectories(
                 config=config,
                 videos=videos,
