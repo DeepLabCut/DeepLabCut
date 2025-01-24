@@ -248,7 +248,7 @@ class CreateVideos(DefaultTab):
         bodyparts = "all"
         if (
             len(self.bodyparts_to_use) != 0
-            and self.plot_all_bodyparts.checkState() != Qt.Checked
+            and not self.plot_all_bodyparts.isChecked()
         ):
             self.update_selected_bodyparts()
             bodyparts = self.bodyparts_to_use

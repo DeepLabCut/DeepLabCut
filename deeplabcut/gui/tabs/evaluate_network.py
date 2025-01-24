@@ -186,7 +186,7 @@ class EvaluateNetwork(DefaultTab):
         config = self.root.config
 
         Shuffles = [self.root.shuffle_value]
-        plotting = self.plot_predictions.checkState() == Qt.Checked
+        plotting = self.plot_predictions.isChecked()
 
         bodyparts_to_use = "all"
         if (
