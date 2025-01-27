@@ -421,7 +421,7 @@ def analyze_videos(
         output_prefix = video.stem + dlc_scorer
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
-        video_iterator = VideoIterator(video)
+        video_iterator = VideoIterator(video, cropping=cropping)
 
         shelf_writer = None
         if use_shelve:
@@ -439,7 +439,6 @@ def analyze_videos(
                 video=video_iterator,
                 pose_runner=pose_runner,
                 detector_runner=detector_runner,
-                cropping=cropping,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
             )

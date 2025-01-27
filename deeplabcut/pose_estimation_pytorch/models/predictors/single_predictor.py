@@ -74,6 +74,8 @@ class HeatmapPredictor(BasePredictor):
             >>> poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]
+        # print("---")
+        # print(f"HEATMAPS SHAPE: {heatmaps.shape}")
         scale_factors = stride, stride
 
         if self.apply_sigmoid:
@@ -81,6 +83,12 @@ class HeatmapPredictor(BasePredictor):
 
         heatmaps = heatmaps.permute(0, 2, 3, 1)
         batch_size, height, width, num_joints = heatmaps.shape
+        # print(f"HEATMAPS SHAPE: {heatmaps.shape}")
+        # print(f"STRIDE: {stride}")
+        # for i in range(heatmaps.shape[-1]):
+        #     hm = heatmaps[0, :, :, i]
+        #     y0, x0 = stride * (hm == torch.max(hm)).nonzero()[0]
+        #     print(i, f"({x0}, {y0}):", torch.max(heatmaps[..., i]))
 
         locrefs = None
         if self.location_refinement:
@@ -91,10 +99,16 @@ class HeatmapPredictor(BasePredictor):
             locrefs = locrefs * self.locref_std
 
         poses = self.get_pose_prediction(heatmaps, locrefs, scale_factors)
+        # print(f"PREDICTION: {poses.shape}")
+        # for p in poses[0]:
+        #     for kpt in p:
+        #         print(kpt)
+        #     print("---")
 
         if self.clip_scores:
             poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
 
+        # raise ValueError("")
         return {"poses": poses}
 
     def get_top_values(
@@ -143,7 +157,7 @@ class HeatmapPredictor(BasePredictor):
 
         batch_size, num_joints = x.shape
 
-        dz = torch.zeros((batch_size, 1, num_joints, 3)).to(x.device)
+        dz = torch.zeros((batch_size, 1, num_joints, 3), device=heatmap.device)
         for b in range(batch_size):
             for j in range(num_joints):
                 dz[b, 0, j, 2] = heatmap[b, y[b, j], x[b, j], j]
@@ -155,7 +169,7 @@ class HeatmapPredictor(BasePredictor):
         x = x * scale_factors[1] + 0.5 * scale_factors[1] + dz[:, :, :, 0]
         y = y * scale_factors[0] + 0.5 * scale_factors[0] + dz[:, :, :, 1]
 
-        pose = torch.empty((batch_size, 1, num_joints, 3))
+        pose = torch.zeros((batch_size, 1, num_joints, 3), device=heatmap.device)
         pose[:, :, :, 0] = x
         pose[:, :, :, 1] = y
         pose[:, :, :, 2] = dz[:, :, :, 2]
