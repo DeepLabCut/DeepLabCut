@@ -34,6 +34,24 @@ will be started with your current username and group.
   deeplabcut-docker notebook
   ```
 
+You can pass `docker run` arguments to `deeplabcut-docker` directly. So if you have GPUs
+and want them to be available in your Docker container, call:
+
+```bash
+deeplabcut-docker bash --gpus all
+```
+
+You can select which DeepLabCut version and CUDA version to use through the 
+`DLC_VERSION` and `CUDA_VERSION` environment variables. So to launch a container with 
+CUDA 12.1 and DLC 3.0.0, you can run: 
+
+```bash
+DLC_VERSION=3.0.0 CUDA_VERSION="cuda12.1-cudnn9" deeplabcut-docker bash --gpus all
+```
+
+*Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
+script if this is preferred over a python helper script.*
+
 ## For developers
 
 Make sure your docker daemon is running and navigate to the repository root directory.

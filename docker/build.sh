@@ -69,6 +69,7 @@ iterate_build_matrix() {
     docker_types=(
         "base"
         "core"
+        "jupyter"
         "test"
     )
 
