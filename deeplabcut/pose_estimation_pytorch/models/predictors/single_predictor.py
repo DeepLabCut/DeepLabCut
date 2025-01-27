@@ -74,8 +74,6 @@ class HeatmapPredictor(BasePredictor):
             >>> poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]
-        # print("---")
-        # print(f"HEATMAPS SHAPE: {heatmaps.shape}")
         scale_factors = stride, stride
 
         if self.apply_sigmoid:
@@ -83,12 +81,6 @@ class HeatmapPredictor(BasePredictor):
 
         heatmaps = heatmaps.permute(0, 2, 3, 1)
         batch_size, height, width, num_joints = heatmaps.shape
-        # print(f"HEATMAPS SHAPE: {heatmaps.shape}")
-        # print(f"STRIDE: {stride}")
-        # for i in range(heatmaps.shape[-1]):
-        #     hm = heatmaps[0, :, :, i]
-        #     y0, x0 = stride * (hm == torch.max(hm)).nonzero()[0]
-        #     print(i, f"({x0}, {y0}):", torch.max(heatmaps[..., i]))
 
         locrefs = None
         if self.location_refinement:
@@ -99,16 +91,10 @@ class HeatmapPredictor(BasePredictor):
             locrefs = locrefs * self.locref_std
 
         poses = self.get_pose_prediction(heatmaps, locrefs, scale_factors)
-        # print(f"PREDICTION: {poses.shape}")
-        # for p in poses[0]:
-        #     for kpt in p:
-        #         print(kpt)
-        #     print("---")
 
         if self.clip_scores:
             poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
 
-        # raise ValueError("")
         return {"poses": poses}
 
     def get_top_values(
