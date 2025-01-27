@@ -68,8 +68,8 @@ iterate_build_matrix() {
 
     docker_types=(
         "base"
-        "test"
         "core"
+        "test"
     )
 
     mode=${1:-build}
