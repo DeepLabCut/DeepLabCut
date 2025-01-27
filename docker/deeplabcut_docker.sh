@@ -2,9 +2,10 @@
 #
 # Helper script for launching deeplabcut docker UI containers
 # Usage:
-#   $ ./deeplabcut-docker.sh [gui|notebook|bash]
+#   $ ./deeplabcut-docker.sh [notebook|bash]
 
 DOCKER=${DOCKER:-docker}
+CUDA_VERSION=${CUDA_VERSION:-"cuda12.4-cudnn9"}
 DLC_VERSION=${DLC_VERSION:-"latest"}
 DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
@@ -77,12 +78,14 @@ get_mount_args() {
     echo "${args[@]}"
 }
 
+# FIXME(niels): update to match the naming convention we decide on
 get_container_name() {
-    echo deeplabcut/deeplabcut:${DLC_VERSION}-$1
+    echo deeplabcut/deeplabcut:"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
 }
 
+# FIXME(niels): update to match the naming convention we decide on
 get_local_container_name() {
-    echo deeplabcut-${DLC_VERSION}-$1
+    echo deeplabcut-"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
 }
 
 ### Start of helper functions ###
@@ -99,7 +102,7 @@ update() {
 }
 
 # Build the docker container
-# Usage: build [core|gui|gui-jupyter]
+# Usage: build [core|jupyter]
 build() {
     tag=$1
     _build $(get_container_name $tag) $(get_local_container_name $tag) || exit 1
@@ -115,7 +118,7 @@ _build() {
     gid=$(id -g)
 
     err "Configuring a local container for user $uname ($uid) in group $gname ($gid)"
-    $DOCKER build -q -t ${local_name} - <<EOF
+    $DOCKER build -q -t "${local_name}" - <<EOF
     from ${remote_name}
 
     # Create same user as on the host system
@@ -138,27 +141,17 @@ EOF
 
 ### Start of CLI functions ###
 
-# Launch the UI version of DeepLabCut
-gui() {
-    extra_args="$@"
-    update gui || exit 1
-    build gui || exit 1
-    args="$(get_x11_args) $(get_mount_args) ${extra_args}"
-    $DOCKER run -it --rm ${args} $(get_local_container_name gui) ||
-        err "Failed to launch the DLC GUI. Used args: \"${args}\""
-}
-
 # Launch a Jupyter Server in the current directory
 notebook() {
     extra_args="$@"
-    update gui-jupyter || exit 1
-    build gui-jupyter || exit 1
+    update jupyter || exit 1
+    build jupyter || exit 1
     args="$(get_x11_args) $(get_mount_args) ${extra_args} -v /app/examples"
     err "Starting the notebook server."
     err "Open your browser at"
     err "http://127.0.0.1:${DLC_NOTEBOOK_PORT}"
     err "If prompted for a password, enter 'deeplabcut'."
-    $DOCKER run -p 127.0.0.1:${DLC_NOTEBOOK_PORT}:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) ||
+    $DOCKER run -p 127.0.0.1:"${DLC_NOTEBOOK_PORT}":8888 -it --rm ${args} $(get_local_container_name jupyter) ||
         err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
@@ -183,15 +176,14 @@ custom() {
 }
 
 check_system
-subcommand=${1:-gui}
+subcommand=${1:-notebook}
 shift 1
 case "${subcommand}" in
-gui) gui "$@" ;;
 notebook) notebook "$@" ;;
 bash) bash "$@" ;;
 custom) custom "$@" ;;
 *)
     echo "Usage"
-    echo "$0 [gui|notebook|bash|help]"
+    echo "$0 [notebook|bash|help]"
     ;;
 esac

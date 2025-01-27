@@ -1,14 +1,14 @@
 # DeepLabCut Dockerfiles
 
-**Note that this README is mainly intended for DeepLabCut developers. The main documentation contains its own user documentation on the provided docker images.**
+**Note that this README is mainly intended for DeepLabCut developers. The main
+documentation contains its own user documentation on the provided docker images.**
 
 This repo contains build routines for the following official DeepLabCut docker images:
-- `deeplabcut/deeplabcut:base`: Base image with TF2.5, cuDNN8 and DLC
+- `deeplabcut/deeplabcut:base`: Base image with PyTorch 2.5.1, cuDNN9 and DLC
 - `deeplabcut/deeplabcut:latest-core`: DLC in light mode
-- `deeplabcut/deeplabcut:latest-gui`: DLC in GUI mode
-- `deeplabcut/deeplabcut:latest-gui-jupyter`: DLC in GUI mode, with jupyter installed
+- `deeplabcut/deeplabcut:latest-jupyter`: DLC with jupyter installed
 
-All images are based on Python 3.8.
+All images come with Python 3.11 installed.
 The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabcut
 
 ## Quickstart
@@ -19,8 +19,6 @@ A helper package called `deeplabcut-docker` is available on PyPI and can be inst
 ``` bash
 pip install deeplabcut-docker
 ```
-
-*Note: Advanced users can also directly download and use the `deeplabcut-docker.sh` script if this is preferred over a python helper script.*
 
 We provide docker containers for three different use cases outlined below.
 

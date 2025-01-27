@@ -10,7 +10,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import argparse
-import os
 import pty
 import sys
 
@@ -50,7 +49,7 @@ def _parse_args():
     parser.add_argument(
         "container",
         type=str,
-        choices=["gui", "notebook", "bash"],
+        choices=["notebook", "bash"],
         help=(
             "The container to launch. A list of all containers is available on "
             "https://hub.docker.com/r/deeplabcut/deeplabcut/tags. By default, the "
