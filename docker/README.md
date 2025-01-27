@@ -41,6 +41,12 @@ and want them to be available in your Docker container, call:
 deeplabcut-docker bash --gpus all
 ```
 
+If you want to have access to your data, you can mount a volume inside your container:
+
+```bash
+deeplabcut-docker bash --gpus all -v /home/john:/home/john
+```
+
 You can select which DeepLabCut version and CUDA version to use through the 
 `DLC_VERSION` and `CUDA_VERSION` environment variables. So to launch a container with 
 CUDA 12.1 and DLC 3.0.0, you can run: 
