@@ -75,11 +75,14 @@ You can simply call the model and run video inference.
 To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the `deeplabcut.video_inference_superanimal` simply function set the `video_adapt` option to __True__. Be aware, that enabling this option will (minimally) extend the processing time. 
 
 ```python
-video_path = 'demo-video.mp4'
-superanimal_name = 'superanimal_quadruped_hrnetw32'
+import deeplabcut
+video_path = "demo-video.mp4"
+superanimal_name = "superanimal_quadruped"
 
 deeplabcut.video_inference_superanimal([video_path],
                                         superanimal_name,
+                                        model_name="hrnet_w32",
+                                        detector_name="fasterrcnn_resnet50_fpn_v2",
                                         video_adapt = False)
 ```
 
@@ -89,13 +92,19 @@ deeplabcut.video_inference_superanimal([video_path],
 In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the `scale_list`:
 
 ```python
-video_path = 'demo-video.mp4'
-superanimal_name = 'superanimal_quadruped_dlcrnet'
+import deeplabcut
+video_path = "demo-video.mp4"
+superanimal_name = "superanimal_quadruped"
 
 # The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.
 scale_list = range(200, 600, 50)
 
-deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list, video_adapt = False)
+deeplabcut.video_inference_superanimal([video_path],
+                                        superanimal_name,
+                                        model_name="hrnet_w32",
+                                        detector_name="fasterrcnn_resnet50_fpn_v2",
+                                        scale_list=scale_list,
+                                        video_adapt = False)
 ```
 
 #### Practical example: Using transfer learning with superanimal weights.
