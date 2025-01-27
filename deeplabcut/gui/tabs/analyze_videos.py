@@ -269,15 +269,15 @@ class AnalyzeVideos(DefaultTab):
         shuffle = self.root.shuffle_value
 
         videos = list(self.files)
-        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
+        save_as_csv = self.save_as_csv.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
 
         if self.root.is_multianimal:
             calibrate_assembly = (
-                self.calibrate_assembly_checkbox.checkState() == Qt.Checked
+                self.calibrate_assembly_checkbox.isChecked()
             )
             assemble_with_ID_only = (
-                self.assemble_with_ID_only_checkbox.checkState() == Qt.Checked
+                self.assemble_with_ID_only_checkbox.isChecked()
             )
             track_method = self.tracker_type_widget.currentText()
             edit_config(self.root.config, {"default_track_method": track_method})
@@ -332,13 +332,13 @@ class AnalyzeVideos(DefaultTab):
         shuffle = self.root.shuffle_value
 
         videos = list(self.files)
-        save_as_csv = self.save_as_csv.checkState() == Qt.Checked
-        save_as_nwb = self.save_as_nwb.checkState() == Qt.Checked
-        filter_data = self.filter_predictions.checkState() == Qt.Checked
+        save_as_csv = self.save_as_csv.isChecked()
+        save_as_nwb = self.save_as_nwb.isChecked()
+        filter_data = self.filter_predictions.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
         try:
             create_video_all_detections = (
-                self.create_detections_video_checkbox.checkState() == Qt.Checked
+                self.create_detections_video_checkbox.isChecked()
             )
         except AttributeError:
             create_video_all_detections = False
@@ -361,12 +361,12 @@ class AnalyzeVideos(DefaultTab):
                 save_as_csv=save_as_csv,
             )
 
-        if self.plot_trajectories.checkState() == Qt.Checked:
+        if self.plot_trajectories.isChecked():
             bdpts = self.bodyparts_list_widget.selected_bodyparts
             self.root.logger.debug(
                 f"Selected body parts for plot_trajectories: {bdpts}"
             )
-            showfig = self.show_trajectory_plots.checkState() == Qt.Checked
+            showfig = self.show_trajectory_plots.isChecked()
             deeplabcut.plot_trajectories(
                 config,
                 videos=videos,
