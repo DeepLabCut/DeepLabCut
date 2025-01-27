@@ -50,6 +50,14 @@ class VideoIterator(VideoReader):
         if self._crop:
             self.set_bbox(*cropping)
 
+    def set_crop(self, cropping: list[int] | None = None) -> None:
+        """Sets the cropping parameters for the video."""
+        self._crop = cropping is not None
+        if self._crop:
+            self.set_bbox(*cropping)
+        else:
+            self.set_bbox(0, 1, 0, 1, relative=True)
+
     def get_context(self) -> list[dict[str, Any]] | None:
         if self._context is None:
             return None
@@ -157,6 +165,8 @@ def video_inference(
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
+    elif cropping is not None:
+        video.set_crop(cropping)
 
     n_frames = video.get_n_frames(robust=robust_nframes)
     vid_w, vid_h = video.dimensions
