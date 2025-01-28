@@ -108,7 +108,8 @@ the root user (which can be dangerous) without passing the `--allow-root` option
 running `docker run deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9` will lead to an  
 error (`Running as root is not recommended. Use --allow-root to bypass`). What you can 
 do (and we do in the `deeplabcut-docker` package) is to build a docker image with the
-`jupyter` image as a base. So you could create the `Dockerfile`:
+`jupyter` image as a base. We would recommend doing this for the `core` images as well. 
+You can create the `Dockerfile`:
 
 ```dockerfile
 FROM deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9
