@@ -13,6 +13,8 @@ The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabc
 
 ## Quickstart
 
+### `deeplabcut-docker`
+
 You can use the images fully standalone, without the need of cloning the DeepLabCut
 repo. A helper package called `deeplabcut-docker` is available on PyPI and can be
 installed by running:
@@ -60,21 +62,85 @@ DLC_VERSION=3.0.0 CUDA_VERSION=12.1 deeplabcut-docker bash --gpus all
 *Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
 script if this is preferred over a python helper script.*
 
-### Jupyter Notebooks Running in Containers on Remote Servers
+#### Jupyter Notebooks Running on Remote Servers
 
-To run a notebook on a remote server:
+Sometimes, we want to run Jupyter Notebooks on remote servers but connect to them 
+through the browser on our local machine. To do so, port forwarding needs to be used.
+This is straightforward, and there are many resources you can explore on how to do so (
+such as [this StackOverflow post](https://stackoverflow.com/a/69244262) or the [Jupyter 
+Notebook docs](https://jupyter-notebook.readthedocs.io/en/4.x/public_server.html)).
+
+This can easily be done with `deeplabcut-docker`. To run a DeepLabCut notebook on a
+remote server:
 
 ```bash
-# the Jupyter Server is running on port 8888 in the docker container
-# you map your server's port XXXX to port 8888 in the docker container
-# you forward port YYYY on your computer to port X on the server
+# The Jupyter Server is running on port 8888 in the docker container
+# You forward your server's port XXXX to the container's port 8888
+# You forward port your laptop's port YYYY to port XXXX on the server
 ssh -L localhost:YYYY:localhost:XXXX john@123.456.78.987
-DLC_NOTEBOOK_PORT=XXXX  deeplabcut-docker notebook --gpus all
+DLC_NOTEBOOK_PORT=XXXX deeplabcut-docker notebook --gpus all
 
-# Example with X=8889, Y=8890
+# Example with XXXX=8889, YYYY=8890
+# 1. Connect to your server, using port forwarding
 ssh -L localhost:8890:localhost:8889 john@123.456.78.987
-DLC_NOTEBOOK_PORT=XXXX  deeplabcut-docker notebook --gpus all
-# then connect to the server running on your machine at http://127.0.0.1:8890!
+
+# 2. On the remote server, use deeplabcut-docker to launch the container
+DLC_NOTEBOOK_PORT=8889 deeplabcut-docker notebook --gpus all
+
+# 3. Connect to the server running on your machine at http://127.0.0.1:8890!
+```
+
+### Using Docker without `deeplabcut-docker`
+
+Docker images can also be run without the `deeplabcut-docker` package, for more expert
+users. This is not the recommended, as many of the nice features (such as starting 
+the container with the current user instead of root) won't be there.
+
+The `core` image can simply be run by pulling the image and using `docker run`:
+
+```bash
+docker pull deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
+docker run -it --rm --gpus all deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
+```
+
+The `jupyter` image cannot be run in the same way. Notebook servers cannot be run as 
+the root user (which can be dangerous) without passing the `--allow-root` option, so
+running `docker run deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9` will lead to an  
+error (`Running as root is not recommended. Use --allow-root to bypass`). What you can 
+do (and we do in the `deeplabcut-docker` package) is to build a docker image with the
+`jupyter` image as a base. So you could create the `Dockerfile`:
+
+```dockerfile
+FROM deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9
+ARG UID
+ARG GID
+ARG UNAME
+ARG GNAME
+
+# Create same user as on the host system
+RUN mkdir -p /home
+RUN mkdir -p /app
+RUN groupadd -g ${GID} ${GNAME} || groupmod -o -g ${GID} ${GNAME}
+RUN useradd -d /home -s /bin/bash -u ${UID} -g ${GID} ${UNAME}
+RUN chown -R ${UNAME}:${GNAME} /home
+RUN chown -R ${UNAME}:${GNAME} /app
+WORKDIR /app
+
+# Switch to the local user from now on
+USER ${UNAME}
+```
+
+And then build and run:
+
+```bash
+docker build \
+  --build-arg UID=$(id -u) \
+  --build-arg GID=$(id -g) \
+  --build-arg UNAME=$(id -un) \
+  --build-arg GNAME=$(id -gn) \
+  -t my-dlc-image \
+  .
+docker run -p 127.0.0.1:8889:8888 -it --rm --gpus all my-dlc-image
 ```
 
 ## For developers
