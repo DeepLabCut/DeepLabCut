@@ -1,6 +1,6 @@
 ARG CUDA_VERSION
 ARG DEEPLABCUT_VERSION
-FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-base-${CUDA_VERSION}
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-base-cuda${CUDA_VERSION}-cudnn9
 
 ENV DLClight True
 

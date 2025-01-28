@@ -1,6 +1,6 @@
 ARG CUDA_VERSION
 ARG PYTORCH_VERSION
-FROM pytorch/pytorch:${PYTORCH_VERSION}-${CUDA_VERSION}-runtime
+FROM pytorch/pytorch:${PYTORCH_VERSION}-cuda${CUDA_VERSION}-cudnn9-runtime
 
 ARG DEEPLABCUT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,6 +15,7 @@ RUN apt-get update -yy && \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# FIXME(niels) install DeepLabCut through pypi releases
 RUN pip install --upgrade pip
 RUN python -m pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc \
 	huggingface_hub \

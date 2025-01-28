@@ -57,9 +57,9 @@ iterate_build_matrix() {
 
     #[add other cuda versions to build here]
     cuda_versions=(
-        "cuda11.8-cudnn9"
-        "cuda12.1-cudnn9"
-        "cuda12.4-cudnn9"
+        "11.8"
+        "12.1"
+        "12.4"
     )
 
     pytorch_versions=(
@@ -82,7 +82,7 @@ iterate_build_matrix() {
                 ${pytorch_versions[@]}; do
                 for stage in \
                     ${docker_types[@]}; do
-                    tag=${deeplabcut_version}-${stage}-${cuda_version}
+                    tag=${deeplabcut_version}-${stage}-cuda${cuda_version}-cudnn9
                     case "$mode" in
                     build)
                         echo \

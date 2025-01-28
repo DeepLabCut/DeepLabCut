@@ -4,26 +4,26 @@
 documentation contains its own user documentation on the provided docker images.**
 
 This repo contains build routines for the following official DeepLabCut docker images:
-- `deeplabcut/deeplabcut:base`: Base image with PyTorch 2.5.1, cuDNN9 and DLC
-- `deeplabcut/deeplabcut:latest-core`: DLC in light mode
-- `deeplabcut/deeplabcut:latest-jupyter`: DLC with jupyter installed
+- `deeplabcut/deeplabcut:$DLC_VERSION-base-$CUDA_VERSION`: Base image with cuDNN9 and DLC
+- `deeplabcut/deeplabcut:$DLC_VERSION-core-$CUDA_VERSION`: DLC in light mode
+- `deeplabcut/deeplabcut:$DLC_VERSION-jupyter-$CUDA_VERSION`: DLC with jupyter installed
 
 All images come with Python 3.11 installed.
 The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabcut
 
 ## Quickstart
 
-You can use the images fully standalone, without the need of cloning the DeepLabCut repo.
-A helper package called `deeplabcut-docker` is available on PyPI and can be installed by running
+You can use the images fully standalone, without the need of cloning the DeepLabCut
+repo. A helper package called `deeplabcut-docker` is available on PyPI and can be
+installed by running:
 
-``` bash
+```bash
 pip install deeplabcut-docker
 ```
 
-We provide docker containers for three different use cases outlined below.
-
-In all cases, your current directory will be mounted in the container, and the container
-will be started with your current username and group.
+We provide docker containers for two different use cases outlined below. In both cases,
+your current directory will be mounted in the container, and the container will be
+started with your current username and group.
 
 - Interactive console with DLC in light mode
   ```bash
@@ -41,7 +41,9 @@ and want them to be available in your Docker container, call:
 deeplabcut-docker bash --gpus all
 ```
 
-If you want to have access to your data, you can mount a volume inside your container:
+If you want to mount other volumes to your container, you can do so with the [`-v`
+](https://docs.docker.com/reference/cli/docker/container/run/#volume) flag, as you would
+when calling `docker run`:
 
 ```bash
 deeplabcut-docker bash --gpus all -v /home/john:/home/john
@@ -52,7 +54,7 @@ You can select which DeepLabCut version and CUDA version to use through the
 CUDA 12.1 and DLC 3.0.0, you can run: 
 
 ```bash
-DLC_VERSION=3.0.0 CUDA_VERSION="cuda12.1-cudnn9" deeplabcut-docker bash --gpus all
+DLC_VERSION=3.0.0 CUDA_VERSION=12.1 deeplabcut-docker bash --gpus all
 ```
 
 *Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
