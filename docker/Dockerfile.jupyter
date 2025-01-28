@@ -5,4 +5,4 @@ FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}-cudnn9
 RUN pip install "notebook<7"
 
 EXPOSE 8888
-ENTRYPOINT ["jupyter", "notebook", "--no-browser",  "--ip", "0.0.0.0"]
+ENTRYPOINT ["jupyter", "notebook", "--no-browser", "--NotebookApp.token=deeplabcut", "--ip", "0.0.0.0"]
