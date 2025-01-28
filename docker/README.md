@@ -58,6 +58,23 @@ DLC_VERSION=3.0.0 CUDA_VERSION="cuda12.1-cudnn9" deeplabcut-docker bash --gpus a
 *Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
 script if this is preferred over a python helper script.*
 
+### Jupyter Notebooks Running in Containers on Remote Servers
+
+To run a notebook on a remote server:
+
+```bash
+# the Jupyter Server is running on port 8888 in the docker container
+# you map your server's port XXXX to port 8888 in the docker container
+# you forward port YYYY on your computer to port X on the server
+ssh -L localhost:YYYY:localhost:XXXX john@123.456.78.987
+DLC_NOTEBOOK_PORT=XXXX  deeplabcut-docker notebook --gpus all
+
+# Example with X=8889, Y=8890
+ssh -L localhost:8890:localhost:8889 john@123.456.78.987
+DLC_NOTEBOOK_PORT=XXXX  deeplabcut-docker notebook --gpus all
+# then connect to the server running on your machine at http://127.0.0.1:8890!
+```
+
 ## For developers
 
 Make sure your docker daemon is running and navigate to the repository root directory.

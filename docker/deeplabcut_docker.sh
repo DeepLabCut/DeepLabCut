@@ -36,41 +36,6 @@ check_system() {
     fi
 }
 
-# Select docker parameters based on the system.
-# Display variable and bind paths slightly differ
-# between macOS and Linux. Further systems should
-# be added here.
-get_x11_args() {
-    if [[ $(uname -s) == Linux ]]; then
-        err "Using Linux config"
-        args=(
-            "-e DISPLAY=unix$DISPLAY"
-            "-v /tmp/.X11-unix:/tmp/.X11-unix"
-            "-v $XAUTHORITY:/home/developer/.Xauthority"
-        )
-    elif [[ $(uname -s) == Darwin ]]; then
-        err "Using OSX config"
-        # TODO(stes) This is most likely not robust for all users;
-        #            We need to replace "en0" by some dynamic way
-        #            of figuring out the active network interface.
-        #            Even better would be to use 127.0.0.1, if this
-        #            is possible with the correct external config
-        ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
-        display_id=$(echo $DISPLAY | sed -e 's/.*\(:[0-9]\)/\1/')
-        args=(
-            "-e DISPLAY=${ip}${display_id}"
-        )
-    else
-        err "Unknown operating system:"
-        err "$(uname -s)"
-        err "Please open an issue on "
-        err "https://github.com/DeepLabCut/DeepLabCut/issues"
-        err "And attach your full console output."
-        exit 1
-    fi
-    echo "${args[@]}"
-}
-
 get_mount_args() {
     args=(
         "-v $(pwd):/app -w /app"
@@ -146,7 +111,7 @@ notebook() {
     extra_args="$@"
     update jupyter || exit 1
     build jupyter || exit 1
-    args="$(get_x11_args) $(get_mount_args) ${extra_args} -v /app/examples"
+    args="$(get_mount_args) ${extra_args}"
     err "Starting the notebook server."
     err "Open your browser at"
     err "http://127.0.0.1:${DLC_NOTEBOOK_PORT}"
