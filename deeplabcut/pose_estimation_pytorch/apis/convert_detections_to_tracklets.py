@@ -169,6 +169,7 @@ def convert_detections2tracklets(
     )
 
 
+# todo remove multi_bpts and use joints instead?
 def build_tracklets(
     assemblies_data: dict,
     track_method: str,
@@ -218,6 +219,7 @@ def build_tracklets(
             _single[index] = np.asarray(single_detection)
         tracklets["single"].update(_single)
 
+    # todo what is this topktoretain? Why 1? why if-else?
     if inference_cfg["topktoretain"] == 1:
         tracklets[0] = {}
         for index in tqdm(range(num_frames)):
