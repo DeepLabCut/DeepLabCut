@@ -29,7 +29,7 @@ Note that this will *not* disprupt or install Tensorflow, or any other DeepLabCu
 With `deeplabcut-docker`, you can use the images in two modes.
 
 - *Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.*
-- *Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS).*
+- *Note 2: The labelling GUI cannot be used through the Docker images. However, you can install [`napari-deeplabcut`](https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation) in a conda environment to do the labelling!*
 - *Note 3: For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
 If you want to mount the whole directory could e.g., pass*
 
