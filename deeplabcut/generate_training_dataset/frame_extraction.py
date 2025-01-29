@@ -267,7 +267,7 @@ def extract_frames(
     print("Config file read successfully.")
 
     if videos_list is None:
-        videos = cfg.get("video_sets_original") or cfg["video_sets"]
+        videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
     else:  # filter video_list by the ones in the config file
         videos = [v for v in cfg["video_sets"] if v in videos_list]
 
