@@ -518,9 +518,11 @@ class PrepareBackboneFeatures(Postprocessor):
             pose: np.ndarray = pred["bodypart"]["poses"]
 
             # only extract features from valid pose
-            mask = ~np.all(pose < 0, axis=(1, 2))
+            mask = ~np.all((pose < 0) | np.isnan(pose), axis=(1, 2))
             pose = pose[mask]
-            pred["bodypart"]["poses"] = pose
+            pred["bodypart"]["poses"] = pose.copy()
+
+            pose = np.nan_to_num(pose, nan=0)
 
             num_features, h, w = features.shape
             backbone_stride = input_w / w, input_h / h
@@ -534,7 +536,9 @@ class PrepareBackboneFeatures(Postprocessor):
 
             for idv, idv_indices in enumerate(indices):
                 for kpt, (x, y) in enumerate(idv_indices):
-                    bodypart_features[idv, kpt] = features[:, y, x]
+                    # only assign features if the pose was defined
+                    if np.sum(x + y) > 0:
+                        bodypart_features[idv, kpt] = features[:, y, x]
 
             pred["backbone"]["bodypart_features"] = bodypart_features
 
