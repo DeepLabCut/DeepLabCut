@@ -29,7 +29,7 @@ Note that this will *not* disprupt or install Tensorflow, or any other DeepLabCu
 With `deeplabcut-docker`, you can use the images in two modes.
 
 - *Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.*
-- *Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS). The GUI images can only be considered stable on Linux systems as of DeepLabCut 2.2.0.2 and need additional configuration on Mac.*
+- *Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS).*
 - *Note 3: For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
 If you want to mount the whole directory could e.g., pass*
 
@@ -64,7 +64,7 @@ $ ipython
 
 ### Jupyter Notebook mode
 
-Finally, you can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running
+You can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running
 
 ``` bash
 $ deeplabcut-docker notebook 
