@@ -137,20 +137,10 @@ def convert_detections2tracklets(
             print(f"Tracklets already computed at {track_filename}")
             print("Set overwrite = True to overwrite.")
         else:
-            dlc_scorer = metadata["data"]["Scorer"]
             joints = data["metadata"]["all_joints_names"]
             n_joints = len(joints)
 
-            # TODO: adjust this for multi + unique bodyparts!
-            # this is only for multianimal parts and unique bodyparts as one (not one
-            # unique bodyparts guy tracked etc.)
-            bodypart_labels = [bpt for bpt in joints for _ in range(3)]
-            scorers = len(bodypart_labels) * [dlc_scorer]
-            xyl_value = int(len(bodypart_labels) / 3) * ["x", "y", "likelihood"]
-            df_index = pd.MultiIndex.from_arrays(
-                np.vstack([scorers, bodypart_labels, xyl_value]),
-                names=["scorer", "bodyparts", "coords"],
-            )
+            df_index = _create_tracklets_header(joints, metadata["data"]["Scorer"])
 
             if track_method == "box":
                 mot_tracker = trackingutils.SORTBox(
@@ -266,6 +256,16 @@ def convert_detections2tracklets(
         "The tracklets were created (i.e., under the hood "
         "deeplabcut.convert_detections2tracklets was run). Now you can "
         "'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+    )
+
+
+def _create_tracklets_header(joints, dlc_scorer):
+    bodypart_labels = [bpt for bpt in joints for _ in range(3)]
+    scorers = len(bodypart_labels) * [dlc_scorer]
+    xyl_value = int(len(bodypart_labels) / 3) * ["x", "y", "likelihood"]
+    return pd.MultiIndex.from_arrays(
+        np.vstack([scorers, bodypart_labels, xyl_value]),
+        names=["scorer", "bodyparts", "coords"],
     )
 
 
