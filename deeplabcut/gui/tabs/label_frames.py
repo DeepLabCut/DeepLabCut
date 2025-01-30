@@ -92,7 +92,7 @@ def label_frames(
         else:
             image_dir = data_dir / image_folder
 
-        files = [str(image_dir), config_path]
+        files = [str(image_dir), str(config_path)]
     _ = launch_napari(files=files)
 
 
