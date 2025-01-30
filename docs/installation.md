@@ -168,7 +168,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matchi
 
   `nvcc -V` to check your installed version(s).
 
-- The best practice is to then run the supplied `testscript.py` (this is inside the examples folder you acquired when you git cloned the repo). Here is more information/a short [video on running the testscript](https://www.youtube.com/watch?v=IOWtKn3l33s).
+- The best practice is to then run the supplied `testscript_pytorch_single_animal.py` (or `testscript.py` for the TensorFlow engine); this is inside the examples folder you acquired when you git cloned the repo. Here is more information/a short [video on running the testscript](https://www.youtube.com/watch?v=IOWtKn3l33s).
 
 - Additionally, if you want to use the bleeding edge, with yout git clone you also get the latest code. While inside the main DeepLabCut folder, you can run `./reinstall.sh` to be sure it's installed (more here: https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code)
 
@@ -230,7 +230,3 @@ If you perform the system-wide installation, and the computer has other Python p
        - If you want to use a pre3.0 version, you will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers)
-
-
-
-Return to [readme](readme).

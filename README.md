@@ -60,15 +60,20 @@
 
 Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
 
-Developers Stable Release:
-- Very quick start: You need to have TensorFlow installed (up to v2.10 supported across platforms) `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
-  
-Developers Alpha Release:
-- We also have an alpha release of PyTorch DeepLabCut available! [Please see here for instructions and information](https://github.com/DeepLabCut/DeepLabCut/blob/pytorch_docs/docs/pytorch/user_guide.md).
+Developers Stable Release: very quick start (Python 3.10+ required)
+
+- To install DeepLabCut with the PyTorch engine, you can simply
+  - [Install PyTorch](https://pytorch.org/get-started/locally/) (**select the desired
+  CUDA version**): `pip install torch torchvision`
+  - Then [install `pytables`](https://www.pytables.org/usersguide/installation.html): `conda install -c conda-forge pytables==3.8.0`
+  - Finally install `DeepLabCut`: `pip install deeplabcut`!
+- To use TensorFlow models (up to v2.10 supported across platforms; up to v2.12 
+supported on Linux) `pip install "deeplabcut[gui,tf]"` that includes all functions plus
+GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
 
 We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
 
-# [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
+# [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut/README.html)
 
 Our docs walk you through using DeepLabCut, and key API points. For an overview of the toolbox and workflow for project management, see our step-by-step at [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0).
 
