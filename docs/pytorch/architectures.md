@@ -93,7 +93,8 @@ the pose task to single-animal pose estimation!
 
 Hence any single-animal model can be transformed into a top-down, multi-animal model. To
 do so, simply prefix `top_down` to your single-animal model name. Currently, the 
-following detectors are available: ``. Other variants will be added soon!  
+following detectors are available: `ssdlite`, `fasterrcnn_mobilenet_v3_large_fpn`,
+`fasterrcnn_resnet50_fpn_v2`. Other variants will be added soon!  
 
 The pose model for top-down nets is simply the backbone followed by a single convolution
 for pose estimation. It's also possible to add deconvolutional layers to top-down model
