@@ -49,7 +49,6 @@ parts:
   - file: docs/recipes/MegaDetectorDLCLive
 - caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
-  - file: docs/tutorial
   - file: docs/convert_maDLC
   - file: docs/recipes/OtherData
   - file: docs/recipes/io

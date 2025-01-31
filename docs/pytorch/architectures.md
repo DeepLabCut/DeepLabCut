@@ -10,22 +10,32 @@ from deeplabcut.pose_estimation_pytorch import available_models
 print(available_models())
 ```
 
-## Backbones (neural networks)
+You can see a list of supported object detection architectures/variants by using:
 
-Several  backbones are currently implemented in DeepLabCut PyTorch (more will come, and you can add more easily in our new model registry).
+```python
+from deeplabcut.pose_estimation_pytorch import available_detectors
+print(available_detectors())
+```
+
+## Neural Networks Architectures
+
+Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
+and you can add more easily in our new model registry).
 
 **ResNets**
 - Adapted from [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) and [Insafutdinov, Eldar et al. "DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model". European Conference on Computer Vision (ECCV) 2016.]
-- Current variants are `resnet_50`, `resnet_101`, `top_down_resnet_101`, `top_down_resnet_50`
+- Current bottom-up variants are `resnet_50`, `resnet_101`
+- Current top-down variants are `top_down_resnet_101`, `top_down_resnet_50`
 
 **HRNet**
 - Adapted from [Wang, Jingdong, et al. "Deep high-resolution representation learning for visual recognition." IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.](https://arxiv.org/abs/1908.07919)
-- Current variants are `hrnet_w18`, `hrnet_w32`, `hrnet_w48`, `top_down_hrnet_w18`, `top_down_hrnet_w32`, `top_down_hrnet_w48`
+- Current variants are `hrnet_w18`, `hrnet_w32`, `hrnet_w48`, 
+- Current top-down variants are `top_down_hrnet_w18`, `top_down_hrnet_w32`, `top_down_hrnet_w48`
 - Slower but typically more powerful than ResNets
 
 **DEKR**
 - Adapted from [Geng, Zigang et al. "Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.](https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf)
-- This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints
+- This model is a bottom-up model using HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints
 - Current variants that are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
 - Note, this is a powerful multi-animal model but very heavy (slow)
 
@@ -40,6 +50,10 @@ Several  backbones are currently implemented in DeepLabCut PyTorch (more will co
 - This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals
 - Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5`
 
+**RTMPose**
+- From [Jiang, Tao et al. "RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose"](https://arxiv.org/abs/2303.07399)
+- Top-down pose estimation model using a fast CSPNeXt backbone with a SimCC-style head
+- Variants: `rtmpose_s`, `rtmpose_m`, `rtmpose_x`
 
 **AnimalTokenPose**
 -  Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
@@ -78,8 +92,8 @@ individual). As localization of individuals is handled by the detector, this sim
 the pose task to single-animal pose estimation!
 
 Hence any single-animal model can be transformed into a top-down, multi-animal model. To
-do so, simply prefix `top_down` to your single-animal model name. Currently only a 
-single FasterRCNN variant is available as a detector. Other variants will be added soon! 
+do so, simply prefix `top_down` to your single-animal model name. Currently, the 
+following detectors are available: ``. Other variants will be added soon!  
 
 The pose model for top-down nets is simply the backbone followed by a single convolution
 for pose estimation. It's also possible to add deconvolutional layers to top-down model

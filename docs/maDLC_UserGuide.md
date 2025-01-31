@@ -4,7 +4,6 @@
 This document should serve as the user guide for maDLC,
 and it is here to support the scientific advances presented in [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0).
 
-
 Note, we strongly encourage you to use the [Project Manager GUI](project-manager-gui) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!
 
 ## How to think about using maDLC:
@@ -21,9 +20,9 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 ## Install:
 
-**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install 'deeplabcut'`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`.
+**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install 'deeplabcut'`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`. Check the [installation page](how-to-install) for more information, including GPU support.
 
-IF you want to use the bleeding edge version to make edits to the code, see here on how to install it and test it (https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
+IF you want to use the bleeding edge version to make edits to the code, see [here on how to install it and test it](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
 
 ## Get started in the terminal or Project GUI:
 
@@ -35,7 +34,7 @@ Then follow the tabs! It might be useful to read the following, however, so you 
 ```{Hint}
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
- Please read more [here](https://github.com/DeepLabCut/Docker4DeepLabCut2.0), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+ Please read more [here](https://deeplabcut.github.io/DeepLabCut/docs/docker.html), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
 
 Open an ``ipython`` session and import the package by typing in the terminal:
 ```python
@@ -50,13 +49,18 @@ for every function there is a associated help document that can be viewed by add
 ### Create a New Project:
 
 ```python
-deeplabcut.create_new_project('ProjectName','YourName', ['/usr/FullPath/OfVideo1.avi', '/usr/FullPath/OfVideo2.avi', '/usr/FullPath/OfVideo1.avi'],
-              copy_videos=True, multianimal=True)
+deeplabcut.create_new_project(
+    "ProjectName",
+    "YourName",
+    ["/usr/FullPath/OfVideo1.avi", "/usr/FullPath/OfVideo2.avi", "/usr/FullPath/OfVideo1.avi"],
+    copy_videos=True,
+    multianimal=True,
+)
 ```
 
-Tip: if you want to place the project folder somewhere specific, please also pass : ``working_directory = 'FullPathOftheworkingDirectory'``
+Tip: if you want to place the project folder somewhere specific, please also pass : ``working_directory = "FullPathOftheworkingDirectory"``
 
-- Note, if you are a linux/macos user the path should look like: ``['/home/username/yourFolder/video1.mp4']``; if you are a Windows user, it should look like: ``[r'C:\username\yourFolder\video1.mp4']``
+- Note, if you are a linux/macOS user the path should look like: ``["/home/username/yourFolder/video1.mp4"]``; if you are a Windows user, it should look like: ``[r"C:\username\yourFolder\video1.mp4"]``
 - Note, you can also put ``config_path = `` in front of the above line to create the path to the config.yaml that is used in the next step, i.e. ``config_path=deeplabcut.create_project(...)``)
     - If you do not, we recommend setting a variable so this can be easily used! Once you run this step, the config_path is printed for you once you run this line, so set a variable for ease of use, i.e. something like:
 ```python
@@ -64,9 +68,17 @@ config_path = '/thefulloutputpath/config.yaml'
 ```
  - just be mindful of the formatting for Windows vs. Unix, see above.
 
-This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
+This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
-**dlc-models:** This directory contains the subdirectories *test* and *train*, each of which holds the meta information with regard to the parameters of the feature detectors in configuration files. The configuration files are YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text editors. The subdirectory *train* will store checkpoints (called snapshots in TensorFlow) during training of the model. These snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular saved checkpoint, in case the training was interrupted.
+**dlc-models** and **dlc-models-pytorch:** These directories contains the subdirectories
+*test* and *train*, each of which holds the meta information with regard to the
+parameters of the feature detectors in configuration files. The configuration files are
+YAML files, a common human-readable data serialization language. These files can be
+opened and edited with standard text editors. The subdirectory *train* will store
+checkpoints (called snapshots in PyTorch/TensorFlow) during training of the model. These
+snapshots allow the user to reload the trained model without re-training it, or to
+pick-up training from a particular saved checkpoint, in case the training was
+interrupted.
 
 **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding video, which allows the user to trace every frame back to its origin.
 
@@ -75,7 +87,11 @@ This set of arguments will create a project directory with the name **Name of th
 **videos:** Directory of video links or videos. When **copy\_videos** is set to ``False``, this directory contains symbolic links to the videos. If it is set to ``True`` then the videos will be copied to this directory. The default is ``False``. Additionally, if the user wants to add new videos to the project at any stage, the function **add\_new\_videos** can be used. This will update the list of videos in the project's configuration file. Note: you neither need to use this folder for videos, nor is it required for analyzing videos (they can be anywhere).
 
 ```python
-deeplabcut.add_new_videos('Full path of the project configuration file*', ['full path of video 4', 'full path of video 5'], copy_videos=True/False)
+deeplabcut.add_new_videos(
+    "Full path of the project configuration file*",
+    ["full path of video 4", "full path of video 5"],
+    copy_videos=True/False,
+)
 ```
 
 *Please note, *Full path of the project configuration file* will be referenced as ``config_path`` throughout this protocol.
@@ -101,7 +117,7 @@ deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
-**ATTENTIONt:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, body parts, and any unique labels. Note, we also highly recommend that you use **more bodypoints** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodypoints would be better than four. This will help the performance.
+**ATTENTION:** You need to edit the config.yaml file to **modify the following items** which specify the animal ID, bodyparts, and any unique labels. Note, we also highly recommend that you use **more bodyparts** that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodyparts would be better than four. This will help the performance.
 
 Modifying the `config.yaml` is crucial:
 
@@ -123,6 +139,7 @@ multianimalbodyparts:
 
 identity: True/False
 ```
+
 **Individuals:** are names of "individuals" in the annotation dataset. These should/can be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by `multianimalbodyparts`. For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you need to set individuals to the maximum number in your labeled-data set, .i.e., if there is (even just one frame) with 17 animals then the list should be `- indv1` to `- indv17`. Note, once trained if you have a video with more or less animals, that is fine - you can have more or less animals during video analysis!
 
 **Identity:** If you can tell the animals apart, i.e.,  one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as "indv1", etc). If you have this scenario, please set `identity: True` in your `config.yaml` file. If you have 4 black mice, and you truly cannot tell them apart, then leave this as `false`.
@@ -136,9 +153,17 @@ identity: True/False
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
 
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.
+
 ```python
-deeplabcut.extract_frames(config_path, mode='automatic/manual', algo='uniform/kmeans', userfeedback=False, crop=True/False)
+deeplabcut.extract_frames(
+    config_path,
+    mode='automatic/manual',
+    algo='uniform/kmeans',
+    userfeedback=False,
+    crop=True/False,
+)
 ```
+
 **CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
 inference time, or you might not have a large enough GPU for this.
 When running the function `extract_frames`, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
@@ -165,12 +190,20 @@ the numframes2extract in the config.yaml file.
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox. This can be launched by using:
+
 ```python
 deeplabcut.extract_frames(config_path, 'manual')
 ```
+
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.
 
+````{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.extract_frames.rst
+```
+````
 
 ### Label Frames:
 
@@ -178,19 +211,12 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 deeplabcut.label_frames(config_path)
 ```
 
-As of 2.2 there is a new multi-animal labeling GUI (as long as in your `config.yaml` says `multianimalproject: true` at the top, this will automatically launch).
-
-The toolbox provides a function **label_frames** which helps the user to easily label all the extracted frames using
-an interactive graphical user interface (GUI). The user should have already named the body parts to label (points of
-interest) in the project’s configuration file by providing a list. The following command invokes the labeling toolbox.
-
-The user needs to use the *Load Frames* button to select the directory which stores the extracted frames from one of
-the videos. Subsequently, the user can use one of the radio buttons (top right) to select a body part to label. **RIGHT** click to add the label. Left click to drag the label, if needed. If you label a part accidentally, you can use the middle button on your mouse to delete (or hit the delete key while you hover over the point)! If you cannot see a body part in the frame, skip over the label! Please see the ``HELP`` button for more user instructions. This auto-advances once you labeled the first body part. You can also advance to the next frame by clicking on the RIGHT arrow on your keyboard (and go to a previous frame with LEFT arrow).
-Each label will be plotted as a dot in a unique color.
-
-The user is free to move around the body part and once satisfied with its position, can select another radio button
-(in the top right) to switch to the respective body part (it otherwise auto-advances). The user can skip a body part if it is not visible. Once all the visible body parts are labeled, then the user can use ‘Next Frame’ to load the following frame. The user needs to save the labels after all the frames from one of the videos are labeled by clicking the save button at the bottom right. Saving the labels will create a labeled dataset for each video in a hierarchical data file format (HDF) in the
-subdirectory corresponding to the particular video in **labeled-data**. You can save at any intermediate step (even without closing the GUI, just hit save) and you return to labeling a dataset by reloading it!
+The toolbox provides a function **label_frames** which helps the user to easily label
+all the extracted frames using an interactive graphical user interface (GUI). The user
+should have already named the bodyparts to label (points of interest) in the 
+project’s configuration file by providing a list. The following command invokes the 
+napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](napari-gui) for 
+more information about the labelling workflow.
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
 to label the same location). In general, invisible or occluded points should not be labeled by the user, unless you want to teach the network to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
@@ -205,18 +231,29 @@ Note, we also highly recommend that you use more bodypoints that you might other
 **Example Labeling with maDeepLabCut:**
 - note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
 
+// FIXME(niels): updated image for napari-deeplabcut annotation GUI
+
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
+
+````{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.label_frames.rst
+```
+````
 
 ### Check Annotated Frames:
 
 Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
-‘check_labels’ to do so. It is used as follows:
+`check_labels` to do so. It is used as follows:
+
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
  ```
+
 **maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
 
 <p align="center">
@@ -225,13 +262,33 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
+````{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.check_labels.rst
+```
+````
 
 ### Create Training Dataset:
 
-At this point you also select your neural network type. Please see Lauer et al. 2021 for options. For **create_multianimaltraining_dataset** we already changed this such that by default you will use imgaug, ADAM optimization, our new DLCRNet, and batch training. We suggest these defaults at this time. Then run:
+At this point, you'll need to select your neural network type.
+
+For the **PyTorch engine**, please see [the PyTorch Model Architectures](
+dlc3-architectures) for options.
+
+For the **TensorFlow engine**, please see Lauer et al. 2021 for options. Multi-animal
+models will use `imgaug`, ADAM optimization, our new DLCRNet, and batch training. We
+suggest keeping these defaults at this time. At this step, the ImageNet pre-trained
+networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will
+see this downloading in the terminal, then you may not have permission to do so (
+something we have seen with some Windows users - see the **[
+WIKI troubleshooting for more help!](
+https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips)**).
+
+Then run:
 
 ```python
-deeplabcut.create_multianimaltraining_dataset(config_path)
+deeplabcut.create_training_dataset(config_path)
 ```
 
 - The set of arguments in the function will shuffle the combined labeled dataset and split it to create train and test
@@ -242,47 +299,33 @@ keeps track of how often the dataset was refined).
 - OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
 training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
 
-- Each iteration of the creation of a training dataset will create several files, which is used by the feature detectors,
-and a ``.pickle`` file that contains the meta information about the training dataset. This also creates two subdirectories
-within **dlc-models** called ``test`` and ``train``, and these each have a configuration file called pose_cfg.yaml.
-Specifically, the user can edit the **pose_cfg.yaml** within the **train** subdirectory before starting the training. These
-configuration files contain meta information with regard to the parameters of the feature detectors. Key parameters
-are listed in Box 2.
+- Each iteration of the creation of a training dataset will create several files, which
+is used by the feature detectors, and a ``.pickle`` file that contains the meta
+information about the training dataset. This also creates two subdirectories within
+**dlc-models-pytorch** (**dlc-models** for the TensorFlow engine) called ``test`` and
+``train``, and these each have a configuration file called pose_cfg.yaml. Specifically,
+the user can edit the **pytorch_config.yaml** (**pose_cfg.yaml** for TensorFlow engine)
+within the **train** subdirectory before starting the training. These configuration
+files contain meta information with regard to the parameters of the feature detectors.
+Key parameters are listed in Box 2.
 
-- At this step, the ImageNet pre-trained networks (i.e. ResNet-50) weights will be downloaded. If they do not download (you will see this downloading in the terminal, then you may not have permission to do so (something we have seen with some Windows users - see the **[WIKI troubleshooting for more help!](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips)**).
+**DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to
+use. Once you've called `create_training_dataset`, you can edit the 
+[**pytorch_config.yaml**](dlc3-pytorch-config) file that was created (or for the
+TensorFlow engine, the [**pose_cfg.yaml**](
+https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file).
 
-**OPTIONAL POINTS:**
+- PyTorch Engine: [Albumentations](https://albumentations.ai/docs/) is used for data
+augmentation. Look at the [**pytorch_config.yaml**](dlc3-pytorch-config) for more 
+information about image augmentation options.
+- TensorFlow Engine: The default augmentation works well for most tasks (as shown on
+www.deeplabcut.org), but there are many options, more data augmentation, intermediate
+supervision, etc. Only `imgaug` augmentation is available for multi-animal projects.
 
-With the data-driven skeleton selection introduced in 2.2rc1+, DLC networks are trained by default
-on complete skeletons (i.e., they learn all possible redundant connections), before being optimally pruned
-at model evaluation. Although this procedure is by far superior to manually defining a graph,
-we leave manually-defining a skeleton as an option for the advanced user:
-
-```python
-my_better_graph = [[0, 1], [1, 2], [2, 3]]  # These are indices in the list of multianimalbodyparts
-deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph=my_better_graph)
-```
-
-Alternatively, the `skeleton` defined in the `config.yaml` file can also be used:
-
-```python
-deeplabcut.create_multianimaltraining_dataset(config_path, paf_graph='config')
-```
-
-Importantly, if a user-defined graph is used it still is required to cover all multianimalbodyparts at least once.
-
-**DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to use. The default loaders work well for most all tasks (as shown on www.deeplabcut.org), but there are many options, more data augmentation, intermediate supervision, etc. Please look at the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file for a full list of parameters **you might want to change before running this step.** There are several data loaders that can be used. For example, you can use the default loader (introduced and described in the Nature Protocols paper), [TensorPack](https://github.com/tensorpack/tensorpack) for data augmentation (currently this is easiest on Linux only), or [imgaug](https://imgaug.readthedocs.io/en/latest/). We recommend `imgaug` (which is default now!). You can set this by passing:``` deeplabcut.create_training_dataset(config_path, augmenter_type='imgaug')  ```
-
-The differences of the loaders are as follows:
-- `default`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation) *will be renamed to `crop_scale` in a future release!*
-- `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported. You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training.
-- `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created less efficiently than in imgaug, does not allow batch size>1
-- `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
-
-Our recent [A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives](https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf), details the advantage of augmentation for a worked example (see Fig 7). TL;DR: use imgaug and use the symmetries of your data!
-
-
-Alternatively, you can set the loader (as well as other training parameters) in the **pose_cfg.yaml** file of the model that you want to train. Note, to get details on the options, look at the default file: [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml).
+[A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives](
+https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf), details the advantage of
+augmentation for a worked example (see Fig 8). TL;DR: use imgaug and use the symmetries
+of your data!
 
 Importantly, image cropping as previously done with `deeplabcut.cropimagesandlabels` in multi-animal projects
 is now part of the augmentation pipeline. In other words, image crops are no longer stored in labeled-data/..._cropped
@@ -292,69 +335,143 @@ In addition, one can specify a crop sampling strategy: crop centers can either b
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
 allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).
 
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_dataset.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_model_comparison.rst
+```
+````
 
 ### Train The Network:
 
 ```python
-deeplabcut.train_network(config_path, allow_growth=True)
+deeplabcut.train_network(config_path, shuffle=1)
 ```
 
-The set of arguments in the function starts training the network for the dataset created for one specific shuffle. Note that you can change the loader (imgaug/default/etc) as well as other training parameters in the **pose_cfg.yaml** file of the model that you want to train (before you start training).
+The set of arguments in the function starts training the network for the dataset created
+for one specific shuffle. Note that you can change training parameters in the 
+[**pytorch_config.yaml**](dlc3-pytorch-config) file (or **pose_cfg.yaml** for TensorFlow
+models) of the model that you want to train (before you start training).
+
+At user specified iterations during training checkpoints are stored in the subdirectory 
+*train* under the respective iteration & shuffle directory.
+
+````{admonition} Click to see more tips on training models with the PyTorch Engine
+:class: dropdown
 
 Example parameters that one can call:
+
 ```python
-deeplabcut.train_network(config_path, shuffle=1, trainingsetindex=0, gputouse=None, max_snapshots_to_keep=5, autotune=False, displayiters=100, saveiters=15000, maxiters=30000, allow_growth=True)
+deeplabcut.train_network(
+    config_path,
+    shuffle=1,
+    trainingsetindex=0,
+    device="cuda:0",
+    max_snapshots_to_keep=5,
+    displayiters=100,
+    save_epochs=5,
+    epochs=200,
+)
 ```
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each), but they get downloaded before you train. However, if not previously downloaded from the TensorFlow model weights, it will be downloaded and stored in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_Tensorflow*.
-At user specified iterations during training checkpoints are stored in the subdirectory *train* under the respective iteration directory.
+Pytorch models in DeepLabCut 3.0 are trained for a set number of epochs, instead of a
+maximum number of iterations (which is what was used for TensorFlow models). An epoch
+is a single pass through the training dataset, which means your model has seen each
+training image exactly once. So if you have 64 training images for your network, an
+epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2, 16 with
+batch size 4, etc.).
 
-If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
-the variable ``init_weights`` in the **pose_cfg.yaml** file under the *train* subdirectory (see Box 2).
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be 
+more than 100MB), but they get downloaded automatically before you train.
 
-**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations until the loss plateaus (typically around **500,000**) if you use batch size 1, and **50-100K** if you use batchsize 8 (the default).
+If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable ``resume_training_from`` in the [
+**pytorch_config.yaml**](
+dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
+section of the docs) under the *train* subdirectory.
 
-If you use **maDeepLabCut** the recommended training iterations is **20K-100K** (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce the batchsize for memory reasons then the number of iterations needs to be increased.
+**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus** 
+(depending on the dataset, model architecture and training hyper-parameters this happens
+after 100 to 250 epochs of training).
 
-The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows the user to alter how often the loss is displayed and how often the weights are stored.
+The variables ``display_iters`` and ``save_epochs`` in the [**pytorch_config.yaml**](
+dlc3-pytorch-config) file allows the user to alter how often the loss is displayed
+and how often the weights are stored. We suggest saving every 5 to 25 epochs.
+````
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only different and new output layers, but also new data augmentation, optimization, learning rates, and batch training defaults. Thus, please use a lower ``save_iters`` and ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until 50K-100K iterations. We recommend you look closely at the loss to not overfit on your data. The bonus, training time is much less!!!
+````{admonition} Tips on training models with the TensorFlow Engine 
+:class: dropdown
 
-**Parameters:**
+Example parameters that one can call:
+
+```python
+deeplabcut.train_network(
+    config_path,
+    shuffle=1,
+    trainingsetindex=0,
+    gputouse=None,
+    max_snapshots_to_keep=5,
+    autotune=False,
+    displayiters=100,
+    saveiters=15000,
+    maxiters=30000,
+    allow_growth=True,
+)
 ```
-config : string
-    Full path of the config.yaml file as a string.
 
-shuffle: int, optional
-    Integer value specifying the shuffle index to select for training. Default is set to 1
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are 
+around 100MB each), but they get downloaded before you train. However, if not previously
+downloaded from the TensorFlow model weights, it will be downloaded and stored in a
+subdirectory *pre-trained* under the subdirectory *models* in 
+*Pose_Estimation_Tensorflow*. At user specified iterations during training checkpoints
+are stored in the subdirectory *train* under the respective iteration directory.
 
-trainingsetindex: int, optional
-    Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
+file under the *train* subdirectory (see Box 2).
 
-gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None.
-See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations
+until the loss plateaus (typically around **500,000**) if you use batch size 1, and
+**50-100K** if you use batchsize 8 (the default).
 
-max_snapshots_to_keep: int, or None. Sets how many snapshots are kept, i.e. states of the trained network. For every saving iteration a snapshot is stored, however, only the last max_snapshots_to_keep many are kept! If you change this to None, then all are kept.
-See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
+If you use **maDeepLabCut** the recommended training iterations is **20K-100K** 
+(it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce
+ the batchsize for memory reasons then the number of iterations needs to be increased.
 
-autotune: property of TensorFlow, somehow faster if 'false' (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Default: False
+The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows
+the user to alter how often the loss is displayed and how often the weights are stored.
 
-displayiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
+**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only
+different and new output layers, but also new data augmentation, optimization, learning
+rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
+``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until
+50K-100K iterations. We recommend you look closely at the loss to not overfit on your
+data. The bonus, training time is much less!!!
+````
 
-saveiters: this variable is actually set in pose_config.yaml. However, you can overwrite it with this hack. Don't use this regularly, just if you are too lazy to dig out
-the pose_config.yaml file for the corresponding project. If None, the value from there is used, otherwise it is overwritten! Default: None
-
-maxiters: This sets how many iterations to train. This variable is set in pose_config.yaml. However, you can overwrite it with this. If None, the value from there is used, otherwise it is overwritten! Default: None
+````{admonition} Click the button to see API Docs for train_network
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.train_network.rst
 ```
+````
 
 ### Evaluate the Trained Network:
 
 Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
+
 ```python
 deeplabcut.evaluate_network(config_path, plotting=True)
 ```
-:movie_camera:[VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
+
+🎥 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
@@ -362,28 +479,22 @@ manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma 
 for all pairs and only likely pairs (>p-cutoff). This helps to exclude, for example, occluded body parts. One of the
 strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
 reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
-legs during 3D behavior in [Mathis et al, 2018]). The evaluation results are computed by typing:
+legs during 3D behavior in [Mathis et al, 2018]).
+
+````{admonition} Click the button to see API Docs for evaluate_network
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.evaluate_network.rst
+```
+````
 
 Setting ``plotting`` to True plots all the testing and training frames with the manual and predicted labels; these will
-be colored by body part type by default. They can alternatively be colored by individual by passing `plotting`=`individual`.
+be colored by body part type by default. They can alternatively be colored by individual by passing `plotting="individual"`.
 The user should visually check the labeled test (and training) images that are created in the ‘evaluation-results’ directory.
 Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
 and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
 many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).
-
-**Optional parameters:**
-```
-  Shuffles: list, optional -List of integers specifying the shuffle indices of the training dataset. The default is [1]
-
-  plotting: bool, optional -Plots the predictions on the train and test images. The default is `False`; if provided it must be either `True` or `False`
-
-  show_errors: bool, optional -Display train and test errors. The default is `True`
-
-  comparisonbodyparts: list of bodyparts, Default is all -The average error will be computed for those body parts only (Has to be a subset of the body parts).
-
-  gputouse: int, optional -Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-```
 
 The plots can be customized by editing the **config.yaml** file (i.e., the colormap, scale, marker size (dotsize), and
 transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
@@ -416,6 +527,7 @@ You should also plot the scoremaps, locref layers, and PAFs to assess performanc
 ```python
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
+
 you can drop "Indices" to run this on all training/testing images (this is very slow!)
 
 ### Evaluating your network on videos
@@ -428,12 +540,29 @@ you can drop "Indices" to run this on all training/testing images (this is very 
 Please run:
 
 ```python
-scorername = deeplabcut.analyze_videos(config_path,['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
-deeplabcut.create_video_with_all_detections(config_path, ['/fullpath/project/videos/testVideo.mp4'], videotype='.mp4')
+videos_to_analyze = ['/fullpath/project/videos/testVideo.mp4']
+scorername = deeplabcut.analyze_videos(config_path, videos_to_analyze, videotype='.mp4')
+deeplabcut.create_video_with_all_detections(config_path, videos_to_analyze, videotype='.mp4')
 ```
-Please note that you do **not** get the .h5/csv file you might be used to getting (this comes after tracking). You will get a `pickle` file that is used in `create_video_with_all_detections`.
-Another sanity check may be to examine the distributions of edge affinity costs using `deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions indicate that the model has learned strong links to group keypoints into distinct individuals — likely a necessary feature for the assembly stage (note that the amount of overlap will also depend on the amount of interactions between your animals in the daset).
-IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics look good, scoremaps look good, plotted evaluation images, and affinity distributions are far apart for most edges), then go forward!!!
+
+Please note that you do **not** get the .h5/csv file you might be used to getting (this
+comes after tracking). You will get a `pickle` file that is used in
+`create_video_with_all_detections`.
+
+For models predicting part-affinity fields (TensorFlow multi-animal models, and PyTorch
+models consisting of just a backbone name (e.g. `resnet_50`, `resnet_101`) use
+part-affinity fields. If you're unsure whether your PyTorch model has a one, check the   
+**pytorch_config.yaml** for a `DLCRNetHead`._), another sanity check may be to examine
+the distributions of edge affinity costs using 
+`deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions
+indicate that the model has learned strong links to group keypoints into distinct
+individuals — likely a necessary feature for the assembly stage (note that the amount of
+overlap will also depend on the amount of interactions between your animals in the
+dataset).
+
+IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics
+look good, scoremaps look good, plotted evaluation images, and affinity distributions
+are far apart for most edges), then go forward!!!
 
 If this does not look good, we recommend extracting and labeling more frames (even from more videos). Try to label close interactions of animals for best performance. Once you label more, you can create a new training set and train.
 
@@ -441,30 +570,53 @@ You can either:
 1. extract more frames manually from existing or new videos and label as when initially building the training data set, or
 2. let DeepLabCut find frames where keypoints were poorly detected and automatically extract those for you. All you need is
 to run:
+
 ```python
 deeplabcut.find_outliers_in_raw_data(config_path, pickle_file, video_file)
 ```
+
 where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
 
 
 ## Animal Assembly and Tracking across frames
 
-After pose estimation, now you perform assembly and tracking. *NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly metrics, so this no longer requires user input. The metrics, in case you do want to edit them, can be found in the `inference_cfg.yaml` file.
+After pose estimation, now you perform assembly and tracking.
+
+````{versionadded} v2.2.0
+*NEW* in 2.2 is a novel data-driven way to set the optimal skeleton and assembly
+metrics, so this no longer requires user input. The metrics, in case you do want to edit
+them, can be found in the `inference_cfg.yaml` file.
+````
 
 ### Optimized Animal Assembly + Video Analysis:
-- Please note that **novel videos DO NOT need to be added to the config.yaml file**. You can simply have a folder elsewhere on your computer and pass the video folder (then it will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the path to the **folder** or exact video(s) you wish to analyze:
+Please note that **novel videos DO NOT need to be added to the config.yaml file**. You
+can simply have a folder elsewhere on your computer and pass the video folder (then it
+will analyze all videos of the specified type (i.e. ``videotype='.mp4'``), or pass the
+path to the **folder** or exact video(s) you wish to analyze:
 
 ```python
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
+
 #### IF auto_track = True:
 
-- *NEW* in 2.2.0.3+: `deeplabcut.analyze_videos` has a new argument `auto_track=True`, chaining pose estimation, tracking, and stitching in a single function call with defaults we found to work well. Thus, you'll now get the `.h5` file you might be used to getting in standard DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and `stitch_tracklets` manually (see below), granting more control over the last steps of the workflow (ideal for advanced users).
+```{versionadded} v2.2.0.3
+A new argument `auto_track=True`, was added to `deeplabcut.analyze_videos` chaining pose
+estimation, tracking, and stitching in a single function call with defaults we found to
+work well. Thus, you'll now get the `.h5` file you might be used to getting in standard
+DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and
+`stitch_tracklets` manually (see below), granting more control over the last steps of
+the workflow (ideal for advanced users).
+```
 
 #### IF auto_track = False:
 
-   -  You can validate the tracking parameters. Namely, you can iteratively change the parameters, run `convert_detections2tracklets` then load them in the GUI (`refine_tracklets`) if you want to look at the performance. If you want to edit these, you will need to open the `inference_cfg.yaml` file (or click button in GUI). The options are:
+You can validate the tracking parameters. Namely, you can iteratively change the
+parameters, run `convert_detections2tracklets` then load them in the GUI 
+(`refine_tracklets`) if you want to look at the performance. If you want to edit these,
+you will need to open the `inference_cfg.yaml` file (or click button in GUI). The
+options are:
 
 ```python
 # Tracking:
@@ -503,8 +655,13 @@ from the final h5 file as was customary in single animal projects.
 **Next, tracklets are stitched to form complete tracks with:
 
 ```python
-deeplabcut.stitch_tracklets(config_path, ['videofile_path'], videotype='mp4',
-                            shuffle=1, trainingsetindex=0)
+deeplabcut.stitch_tracklets(
+    config_path,
+    ['videofile_path'],
+    videotype='mp4',
+    shuffle=1,
+    trainingsetindex=0,
+)
 ```
 
 Note that the base signature of the function is identical to `analyze_videos` and `convert_detections2tracklets`.
@@ -515,15 +672,19 @@ can be directly specified as follows:
 ```python
 deeplabcut.stitch_tracklets(..., n_tracks=n)
 ```
+
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
 ### Using Unsupervised Identity Tracking:
 
-In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals. Here, you can use the tracklets to learn the identity of animals to enhance your tracking performance. To use the code:
+In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals.
+Here, you can use the tracklets to learn the identity of animals to enhance your
+tracking performance. To use the code:
 
 ```python
 deeplabcut.transformer_reID(config, videos_to_analyze, n_tracks=None, videotype="mp4")
 ```
+
 Note you should pass the n_tracks (number of animals) you expect to see in the video.
 
 ### Refine Tracklets:
