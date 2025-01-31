@@ -11,14 +11,165 @@
 import os
 from datetime import datetime
 
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QBrush, QColor, QDesktopServices, QIcon, QPainter, QPen
+
 import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
+from deeplabcut.utils import auxiliaryfunctions
 
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QIcon
+
+class DynamicTextList(QtWidgets.QWidget):
+    """Dynamically add text entries"""
+
+    def __init__(self, label_text="bodyparts", parent=None):
+        super(DynamicTextList, self).__init__(parent)
+        self.label_text = label_text
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        # Set maximum width for the widget
+        self.setMaximumWidth(300)
+
+        # Add explanatory label
+        label = QtWidgets.QLabel(label_text)
+        self.layout.addWidget(label)
+
+        # Create scroll area and its widget
+        self.scroll = QtWidgets.QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scroll.setFrameShape(QtWidgets.QFrame.NoFrame)  # Remove frame border
+
+        # Create widget to hold the entries
+        self.entries_widget = QtWidgets.QWidget()
+        self.entries_layout = QtWidgets.QVBoxLayout(self.entries_widget)
+        self.entries_layout.setContentsMargins(0, 0, 0, 0)
+        self.entries_layout.setSpacing(5)  # Consistent spacing between entries
+        self.entries_layout.setAlignment(QtCore.Qt.AlignTop)  # Align entries to top
+
+        # Add stretch at the bottom to keep entries at top
+        self.entries_layout.addStretch()
+
+        self.scroll.setWidget(self.entries_widget)
+
+        # Set fixed height for 6 items
+        self.entry_height = 30  # Fixed height for each entry
+        self.padding = 10  # Extra padding
+        self.scroll.setFixedHeight(6 * self.entry_height + self.padding)
+
+        # Add scroll area to main layout
+        self.layout.addWidget(self.scroll)
+
+        self.entries = []
+        self.add_entry()
+
+    def add_entry(self):
+        # Create horizontal layout for index and entry
+        entry_layout = QtWidgets.QHBoxLayout()
+        entry_layout.setContentsMargins(0, 0, 0, 0)
+        entry_layout.setSpacing(5)  # Consistent spacing between index and entry
+
+        # Create container widget for the entry row
+        entry_widget = QtWidgets.QWidget()
+        entry_widget.setFixedHeight(self.entry_height)
+        entry_widget.setLayout(entry_layout)
+
+        # Add index label
+        index_label = QtWidgets.QLabel(str(len(self.entries) + 1) + ".")
+        index_label.setFixedWidth(20)  # Set fixed width for alignment
+        entry_layout.addWidget(index_label)
+
+        # Add text entry
+        entry = QtWidgets.QLineEdit()
+        entry.setFixedHeight(self.entry_height - 6)  # Slightly smaller than container
+        entry.textChanged.connect(self._on_text_changed)
+        entry.textEdited.connect(lambda text: self._check_for_spaces(entry, text))
+        self.entries.append((entry, index_label))  # Store both widgets
+        entry_layout.addWidget(entry)
+
+        # Insert the new entry before the stretch
+        self.entries_layout.insertWidget(len(self.entries) - 1, entry_widget)
+
+    def _check_for_spaces(self, entry, text):
+        if " " in text:
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText(
+                f"Spaces are not allowed in the {self.label_text} list. Use underscores "
+                f"instead."
+            )
+            msg.setWindowTitle("Warning")
+            msg.exec_()
+            entry.setText(entry.text().replace(" ", "_"))
+
+    def _on_text_changed(self):
+        # If the last entry has text, add a new empty entry
+        if self.entries[-1][0].text():
+            self.add_entry()
+
+        # Remove any empty entries except the last one
+        entries_to_remove = []
+        for i, (entry, _) in enumerate(self.entries[:-1]):
+            if not entry.text():
+                entries_to_remove.append(i)
+
+        for i in reversed(entries_to_remove):
+            entry_widget = self.entries[i][0].parent()
+            self.entries_layout.removeWidget(entry_widget)
+            entry_widget.deleteLater()
+            self.entries.pop(i)
+
+        self._update_indices()  # Update the indices after removal
+
+    def get_entries(self):
+        return [entry[0].text() for entry in self.entries if entry[0].text()]
+
+    def _update_indices(self):
+        for i, (entry, index_label) in enumerate(self.entries):
+            index_label.setText(str(i + 1) + ".")
+
+
+class Switch(QtWidgets.QPushButton):
+
+    def __init__(self, on_text="Yes", off_text="No", parent=None):
+        super().__init__(parent)
+        self.on_text = on_text
+        self.off_text = off_text
+        self.setCheckable(True)
+        self.setMinimumWidth(66)
+        self.setMinimumHeight(22)
+
+    def paintEvent(self, event):
+        label = self.on_text if self.isChecked() else self.off_text
+        bg_color = "#00ff00" if self.isChecked() else "#788D9C"
+
+        radius = 10
+        width = 32
+        center = self.rect().center()
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.translate(center)
+        painter.setBrush(QColor(0, 0, 0))
+
+        pen = QPen("#000000")
+        pen.setWidth(2)
+        painter.setPen(pen)
+
+        painter.drawRoundedRect(
+            QtCore.QRect(-width, -radius, 2 * width, 2 * radius), radius, radius
+        )
+        painter.setBrush(QBrush(bg_color))
+        sw_rect = QtCore.QRect(-radius, -radius, width + radius, 2 * radius)
+        if not self.isChecked():
+            sw_rect.moveLeft(-width)
+
+        painter.drawRoundedRect(sw_rect, radius, radius)
+        painter.drawText(sw_rect, QtCore.Qt.AlignCenter, label)
 
 
 class ProjectCreator(QtWidgets.QDialog):
@@ -33,6 +184,9 @@ class ProjectCreator(QtWidgets.QDialog):
         self.proj_default = ""
         self.exp_default = ""
         self.loc_default = parent.project_folder
+
+        self.bodypart_list = None
+        self.individuals_list = None
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.user_frame = self.lay_out_user_frame()
@@ -80,10 +234,53 @@ class ProjectCreator(QtWidgets.QDialog):
         grid.addWidget(self.loc_line, 2, 1)
         vbox.addLayout(grid)
 
-        self.madlc_box = QtWidgets.QCheckBox("Is it a multi-animal project?")
-        self.madlc_box.setChecked(False)
-        vbox.addWidget(self.madlc_box)
+        docs_link = (
+            "https://deeplabcut.github.io/DeepLabCut/docs/"
+            "UseOverviewGuide.html#what-scenario-do-you-have"
+        )
 
+        toggle_layout = QtWidgets.QHBoxLayout()
+        toggle_label = QtWidgets.QLabel(
+            "Are there multiple individuals (=animals) in your videos?"
+        )
+        self.madlc_toggle = Switch()
+        self.madlc_toggle.setChecked(False)
+
+        # Create help label
+        help_label = ClickableLabel("(Why does this matter?)", parent=self)
+        help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
+        help_label.setCursor(QtCore.Qt.PointingHandCursor)
+        help_label.signal.connect(
+            lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link))
+        )
+
+        toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addWidget(self.madlc_toggle, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addWidget(help_label, alignment=QtCore.Qt.AlignRight)
+        vbox.addLayout(toggle_layout)
+
+        # Create horizontal layout for the two lists
+        lists_layout = QtWidgets.QHBoxLayout()
+        lists_layout.setAlignment(
+            QtCore.Qt.AlignTop
+        )  # Align the entire layout to the top
+
+        # Create both DynamicTextList widgets as class attributes
+        self.bodypart_list = DynamicTextList(label_text="bodyparts", parent=self)
+        self.individuals_list = DynamicTextList(label_text="individuals", parent=self)
+        self.individuals_list.setVisible(
+            False
+        )  # Hide initially since toggle starts unchecked
+
+        # Connect toggle state to individuals list visibility
+        self.madlc_toggle.toggled.connect(self.individuals_list.setVisible)
+
+        # Add both lists to the horizontal layout with top alignment
+        lists_layout.addWidget(self.bodypart_list, alignment=QtCore.Qt.AlignTop)
+        lists_layout.addWidget(self.individuals_list, alignment=QtCore.Qt.AlignTop)
+
+        # Add the horizontal layout to the main vertical layout
+        vbox.addLayout(lists_layout)
         return user_frame
 
     def lay_out_video_frame(self):
@@ -165,7 +362,7 @@ class ProjectCreator(QtWidgets.QDialog):
                         self.video_frame.fancy_list._default_style
                     )
                 to_copy = self.copy_box.isChecked()
-                is_madlc = self.madlc_box.isChecked()
+                is_madlc = self.madlc_toggle.isChecked()
                 config = deeplabcut.create_new_project(
                     self.proj_default,
                     self.exp_default,
@@ -174,11 +371,28 @@ class ProjectCreator(QtWidgets.QDialog):
                     to_copy,
                     multianimal=is_madlc,
                 )
+
+                if self.bodypart_list is not None:
+                    bodypart_key = "bodyparts"
+                    updates = {}
+                    if is_madlc:
+                        bodypart_key = "multianimalbodyparts"
+                        if self.individuals_list is not None:
+                            individuals = self.individuals_list.get_entries()
+                            if len(individuals) > 0:
+                                updates["individuals"] = individuals
+
+                    bodyparts = self.bodypart_list.get_entries()
+                    if len(bodyparts) > 0:
+                        updates[bodypart_key] = bodyparts
+
+                    if len(updates) > 0:
+                        cfg: dict = auxiliaryfunctions.read_config(config)
+                        cfg.update(**updates)
+                        auxiliaryfunctions.write_config(config, cfg)
+
                 self.parent.load_config(config)
-                self.parent._update_project_state(
-                    config=config,
-                    loaded=True,
-                )
+                self.parent._update_project_state(config=config, loaded=True)
         except FileExistsError:
             print('Project "{}" already exists!'.format(self.proj_default))
             return
