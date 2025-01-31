@@ -14,6 +14,7 @@ import argparse
 import os
 from pathlib import Path
 from typing import List, Union
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -817,7 +818,7 @@ def evaluate_network(
                         cfg,
                         shuffle,
                         trainFraction,
-                        training_iterations,
+                        trainingsiterations=training_iterations,
                         modelprefix=modelprefix,
                     )
                     print(

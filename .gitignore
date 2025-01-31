@@ -18,6 +18,15 @@ examples/.DS_Store
 *.ckpt
 snapshot-*
 
+# Modelzoo checkpoints
+deeplabcut/modelzoo/checkpoints/
+
+# PyTorch backbone weights
+deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights/
+
+# Wandb files
+wandb/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -115,7 +124,10 @@ ENV/
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# IDEs configurations
 .vscode/*
+.idea/*
 
 # Rope project settings
 .ropeproject
