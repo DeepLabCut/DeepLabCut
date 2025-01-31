@@ -66,7 +66,7 @@ Developers Stable Release: very quick start (Python 3.10+ required)
   - [Install PyTorch](https://pytorch.org/get-started/locally/) (**select the desired
   CUDA version**): `pip install torch torchvision`
   - Then [install `pytables`](https://www.pytables.org/usersguide/installation.html): `conda install -c conda-forge pytables==3.8.0`
-  - Finally install `DeepLabCut`: `pip install deeplabcut`!
+  - Finally install `DeepLabCut`: `pip install "deeplabcut>=3.0"`!
 - To use TensorFlow models (up to v2.10 supported across platforms; up to v2.12 
 supported on Linux) `pip install "deeplabcut[gui,tf]"` that includes all functions plus
 GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
