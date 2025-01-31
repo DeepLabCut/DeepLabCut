@@ -237,13 +237,6 @@ Note, we also highly recommend that you use more bodypoints that you might other
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
 
-````{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.label_frames.rst
-```
-````
-
 ### Check Annotated Frames:
 
 Checking if the labels were created and stored correctly is beneficial for training, since labeling
