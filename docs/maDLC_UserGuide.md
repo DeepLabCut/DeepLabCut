@@ -363,7 +363,7 @@ models) of the model that you want to train (before you start training).
 At user specified iterations during training checkpoints are stored in the subdirectory 
 *train* under the respective iteration & shuffle directory.
 
-````{admonition} Click to see more tips on training models with the PyTorch Engine
+````{admonition} Tips on training models with the PyTorch Engine
 :class: dropdown
 
 Example parameters that one can call:
