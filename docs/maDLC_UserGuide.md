@@ -6,6 +6,13 @@ and it is here to support the scientific advances presented in [Lauer et al. 202
 
 Note, we strongly encourage you to use the [Project Manager GUI](project-manager-gui) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!
 
+````{versionadded} v3.0.0
+PyTorch is now available as a deep learning engine for pose estimation models, along 
+with new model architectures! For more information about moving from TensorFlow to
+PyTorch, check out [the PyTorch user guide](dlc3-user-guide). If you're just starting 
+out with DeepLabCut, we suggest you use the PyTorch backend.
+````
+
 ## How to think about using maDLC:
 
 You should think of maDLC being **four** parts.
