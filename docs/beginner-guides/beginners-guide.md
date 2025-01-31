@@ -38,13 +38,13 @@ Now, we are going to install the core dependencies. The way this works is that t
 
 `PyTorch` is the backend deep-learning language we wrote DLC3 in. To select the right version, head to the [“Install PyTorch”](https://pytorch.org/get-started/locally/) instructions in the official PyTorch Docs. Select your desired PyTorch build, operating system, select conda as your package manager and Python as the language. Select your compute platform (either a CUDA version or CPU only). Then, use the command to install the PyTorch package. Below are a few possible examples:
 
-- **GPU version of pytorch for CUDA 11.8**
+- **GPU version of pytorch for CUDA 12.4**
 ```
-conda install pytorch cudatoolkit=11.8 -c pytorch
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 ```
 - **CPU only version of pytorch, using the latest version**
 ```
-conda install pytorch cpuonly -c pytorch
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 ```
 
 **(2) Install DeepLabCut** 
@@ -61,7 +61,7 @@ pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=de
 ```
 - OR run for the **Stable release:**
 ```
-pip install "deeplabcut[gui,modelzoo,tf]"
+pip install "deeplabcut[gui,modelzoo,wandb]"
 ```
 - This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!
 
