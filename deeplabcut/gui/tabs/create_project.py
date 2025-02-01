@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -276,7 +276,9 @@ class ProjectCreator(QtWidgets.QDialog):
         # Connect 3d toggle to all other option visibility
         self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
         self.toggle_3d.toggled.connect(lambda yes: self.bodypart_list.setVisible(not yes))
-        self.toggle_3d.toggled.connect(lambda yes: self.individuals_list.setVisible(not yes))
+        self.toggle_3d.toggled.connect(
+            lambda yes: self.individuals_list.setVisible(not yes and self.madlc_toggle.isChecked())
+        )
 
         # Add both lists to the horizontal layout with top alignment
         lists_layout.addWidget(self.bodypart_list, alignment=QtCore.Qt.AlignTop)
@@ -294,6 +296,8 @@ class ProjectCreator(QtWidgets.QDialog):
         docs_link: str,
     ) -> QtWidgets.QWidget:
         toggle_layout = QtWidgets.QHBoxLayout()
+        toggle_layout.setContentsMargins(0, 0, 0, 0)
+
         toggle_label = QtWidgets.QLabel(question)
         help_label = ClickableLabel(help_text, parent=self)
         help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
