@@ -59,7 +59,7 @@ class DynamicTextList(QtWidgets.QWidget):
         # Set fixed height for 6 items
         self.entry_height = 30  # Fixed height for each entry
         self.padding = 10  # Extra padding
-        self.scroll.setFixedHeight(6 * self.entry_height + self.padding)
+        self.scroll.setFixedHeight(5 * self.entry_height + self.padding)
 
         # Add scroll area to main layout
         self.layout.addWidget(self.scroll)
@@ -70,7 +70,7 @@ class DynamicTextList(QtWidgets.QWidget):
     def add_entry(self):
         # Create horizontal layout for index and entry
         entry_layout = QtWidgets.QHBoxLayout()
-        entry_layout.setContentsMargins(0, 0, 0, 0)
+        entry_layout.setContentsMargins(0, 0, 10, 0)
         entry_layout.setSpacing(5)  # Consistent spacing between index and entry
 
         # Create container widget for the entry row
@@ -173,6 +173,8 @@ class Switch(QtWidgets.QPushButton):
 
 
 class ProjectCreator(QtWidgets.QDialog):
+    """Project creation dialog"""
+
     def __init__(self, parent):
         super(ProjectCreator, self).__init__(parent)
         self.parent = parent
@@ -187,6 +189,11 @@ class ProjectCreator(QtWidgets.QDialog):
 
         self.bodypart_list = None
         self.individuals_list = None
+
+        self.toggle_3d = Switch()
+        self.toggle_3d.setChecked(False)
+        self.madlc_toggle = Switch()
+        self.madlc_toggle.setChecked(False)
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.user_frame = self.lay_out_user_frame()
@@ -234,46 +241,42 @@ class ProjectCreator(QtWidgets.QDialog):
         grid.addWidget(self.loc_line, 2, 1)
         vbox.addLayout(grid)
 
-        docs_link = (
-            "https://deeplabcut.github.io/DeepLabCut/docs/"
-            "UseOverviewGuide.html#what-scenario-do-you-have"
+        widget_3d = self.build_toggle_widget(
+            switch=self.toggle_3d,
+            question="Do you want to create a 3D pose estimation project?",
+            help_text="(What is the difference?)",
+            docs_link=(
+                "https://deeplabcut.github.io/DeepLabCut/docs/Overviewof3D.html"
+            ),
         )
-
-        toggle_layout = QtWidgets.QHBoxLayout()
-        toggle_label = QtWidgets.QLabel(
-            "Are there multiple individuals (=animals) in your videos?"
+        madlc_widget = self.build_toggle_widget(
+            switch=self.madlc_toggle,
+            question="Are there multiple individuals (=animals) in your videos?",
+            help_text="(Why does this matter?)",
+            docs_link=(
+                "https://deeplabcut.github.io/DeepLabCut/docs/"
+                "UseOverviewGuide.html#what-scenario-do-you-have"
+            ),
         )
-        self.madlc_toggle = Switch()
-        self.madlc_toggle.setChecked(False)
-
-        # Create help label
-        help_label = ClickableLabel("(Why does this matter?)", parent=self)
-        help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
-        help_label.setCursor(QtCore.Qt.PointingHandCursor)
-        help_label.signal.connect(
-            lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link))
-        )
-
-        toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
-        toggle_layout.addWidget(self.madlc_toggle, alignment=QtCore.Qt.AlignLeft)
-        toggle_layout.addWidget(help_label, alignment=QtCore.Qt.AlignRight)
-        vbox.addLayout(toggle_layout)
+        vbox.addWidget(widget_3d, alignment=QtCore.Qt.AlignTop)
+        vbox.addWidget(madlc_widget, alignment=QtCore.Qt.AlignTop)
 
         # Create horizontal layout for the two lists
         lists_layout = QtWidgets.QHBoxLayout()
-        lists_layout.setAlignment(
-            QtCore.Qt.AlignTop
-        )  # Align the entire layout to the top
+        lists_layout.setAlignment(QtCore.Qt.AlignTop)
 
         # Create both DynamicTextList widgets as class attributes
         self.bodypart_list = DynamicTextList(label_text="bodyparts", parent=self)
         self.individuals_list = DynamicTextList(label_text="individuals", parent=self)
-        self.individuals_list.setVisible(
-            False
-        )  # Hide initially since toggle starts unchecked
+        self.individuals_list.setVisible(False)
 
         # Connect toggle state to individuals list visibility
         self.madlc_toggle.toggled.connect(self.individuals_list.setVisible)
+
+        # Connect 3d toggle to all other option visibility
+        self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: self.bodypart_list.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: self.individuals_list.setVisible(not yes))
 
         # Add both lists to the horizontal layout with top alignment
         lists_layout.addWidget(self.bodypart_list, alignment=QtCore.Qt.AlignTop)
@@ -282,15 +285,32 @@ class ProjectCreator(QtWidgets.QDialog):
         # Add the horizontal layout to the main vertical layout
         vbox.addLayout(lists_layout)
         return user_frame
+    
+    def build_toggle_widget(
+        self,
+        switch: Switch,
+        question: str,
+        help_text: str,
+        docs_link: str,
+    ) -> QtWidgets.QWidget:
+        toggle_layout = QtWidgets.QHBoxLayout()
+        toggle_label = QtWidgets.QLabel(question)
+        help_label = ClickableLabel(help_text, parent=self)
+        help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
+        help_label.setCursor(QtCore.Qt.PointingHandCursor)
+        help_label.signal.connect(
+            lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link))
+        )
+
+        toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addWidget(switch, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addWidget(help_label, alignment=QtCore.Qt.AlignRight)
+        toggle_widget = QtWidgets.QWidget()
+        toggle_widget.setLayout(toggle_layout)
+        return toggle_widget
 
     def lay_out_video_frame(self):
         video_frame = ItemSelectionFrame([], self)
-
-        self.cam_combo = QtWidgets.QComboBox(video_frame)
-        self.cam_combo.addItems(map(str, (1, 2)))
-        self.cam_combo.currentTextChanged.connect(self.check_num_cameras)
-        ncam_label = QtWidgets.QLabel("Number of cameras:")
-        ncam_label.setBuddy(self.cam_combo)
 
         self.copy_box = QtWidgets.QCheckBox("Copy videos to project folder")
         self.copy_box.setChecked(False)
@@ -300,16 +320,16 @@ class ProjectCreator(QtWidgets.QDialog):
         clear_button = QtWidgets.QPushButton("Clear")
         clear_button.clicked.connect(video_frame.fancy_list.clear)
 
-        layout1 = QtWidgets.QHBoxLayout()
-        layout1.addWidget(ncam_label)
-        layout1.addWidget(self.cam_combo)
-        layout2 = QtWidgets.QHBoxLayout()
-        layout2.addWidget(browse_button)
-        layout2.addWidget(clear_button)
-        video_frame.layout.insertLayout(0, layout1)
-        video_frame.layout.addLayout(layout2)
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(browse_button)
+        layout.addWidget(clear_button)
+        video_frame.layout.addLayout(layout)
         video_frame.layout.addWidget(self.copy_box)
 
+        self.toggle_3d.toggled.connect(lambda yes: self.copy_box.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: browse_button.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: clear_button.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: video_frame.setVisible(not yes))
         return video_frame
 
     def browse_videos(self):
@@ -342,13 +362,13 @@ class ProjectCreator(QtWidgets.QDialog):
         if empty:
             return
 
-        n_cameras = int(self.cam_combo.currentText())
+        create_3d = self.toggle_3d.isChecked()
         try:
-            if n_cameras > 1:
+            if create_3d:
                 _ = deeplabcut.create_new_project_3d(
                     self.proj_default,
                     self.exp_default,
-                    n_cameras,
+                    2,
                     self.loc_default,
                 )
             else:
@@ -397,7 +417,7 @@ class ProjectCreator(QtWidgets.QDialog):
             print('Project "{}" already exists!'.format(self.proj_default))
             return
 
-        msg = QtWidgets.QMessageBox(text=f"New project created")
+        msg = QtWidgets.QMessageBox(text="New project created")
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.exec_()
 
