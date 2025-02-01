@@ -18,6 +18,7 @@ import deeplabcut
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
+from deeplabcut.gui.tabs.docs import URL_3D, URL_USE_GUIDE_SCENARIO
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -244,19 +245,14 @@ class ProjectCreator(QtWidgets.QDialog):
         widget_3d = self.build_toggle_widget(
             switch=self.toggle_3d,
             question="Do you want to create a 3D pose estimation project?",
-            help_text="(What is the difference?)",
-            docs_link=(
-                "https://deeplabcut.github.io/DeepLabCut/docs/Overviewof3D.html"
-            ),
+            help_text="(What is needed for a 3D project?)",
+            docs_link=URL_3D,
         )
         madlc_widget = self.build_toggle_widget(
             switch=self.madlc_toggle,
-            question="Are there multiple individuals (=animals) in your videos?",
+            question="Are there multiple individuals in your videos?",
             help_text="(Why does this matter?)",
-            docs_link=(
-                "https://deeplabcut.github.io/DeepLabCut/docs/"
-                "UseOverviewGuide.html#what-scenario-do-you-have"
-            ),
+            docs_link=URL_USE_GUIDE_SCENARIO,
         )
         vbox.addWidget(widget_3d, alignment=QtCore.Qt.AlignTop)
         vbox.addWidget(madlc_widget, alignment=QtCore.Qt.AlignTop)
@@ -266,8 +262,14 @@ class ProjectCreator(QtWidgets.QDialog):
         lists_layout.setAlignment(QtCore.Qt.AlignTop)
 
         # Create both DynamicTextList widgets as class attributes
-        self.bodypart_list = DynamicTextList(label_text="bodyparts", parent=self)
-        self.individuals_list = DynamicTextList(label_text="individuals", parent=self)
+        self.bodypart_list = DynamicTextList(
+            label_text="bodyparts to track",
+            parent=self,
+        )
+        self.individuals_list = DynamicTextList(
+            label_text="individual names",
+            parent=self,
+        )
         self.individuals_list.setVisible(False)
 
         # Connect toggle state to individuals list visibility
