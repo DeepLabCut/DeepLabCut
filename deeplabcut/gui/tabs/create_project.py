@@ -275,9 +275,13 @@ class ProjectCreator(QtWidgets.QDialog):
 
         # Connect 3d toggle to all other option visibility
         self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
-        self.toggle_3d.toggled.connect(lambda yes: self.bodypart_list.setVisible(not yes))
         self.toggle_3d.toggled.connect(
-            lambda yes: self.individuals_list.setVisible(not yes and self.madlc_toggle.isChecked())
+            lambda yes: self.bodypart_list.setVisible(not yes)
+        )
+        self.toggle_3d.toggled.connect(
+            lambda yes: self.individuals_list.setVisible(
+                not yes and self.madlc_toggle.isChecked()
+            )
         )
 
         # Add both lists to the horizontal layout with top alignment
@@ -287,7 +291,7 @@ class ProjectCreator(QtWidgets.QDialog):
         # Add the horizontal layout to the main vertical layout
         vbox.addLayout(lists_layout)
         return user_frame
-    
+
     def build_toggle_widget(
         self,
         switch: Switch,
