@@ -152,6 +152,47 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
     return config
 
 
+def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = True) -> dict:
+    """Updates items in the configuration file using dot notation for nested keys
+
+    The configuration dict should only be composed of primitive Python types
+    (dict, list and values). This is the case when reading the file using
+    `read_config_as_dict`.
+
+    Args:
+        config: the configuration dict to update
+        updates: single-level dict with dot notation keys indicating nested paths
+            e.g. {"device": "cuda", "runner.gpus": [0,1]}
+        copy_original: whether to copy the original dict before updating it
+
+    Returns:
+        the updated dictionary
+    """
+    if copy_original:
+        config = copy.deepcopy(config)
+
+    for key, value in updates.items():
+        # Split key into parts by dots
+        parts = key.split(".")
+
+        # Handle non-nested case
+        if len(parts) == 1:
+            config[key] = copy.deepcopy(value)
+            continue
+
+        # Navigate to nested location
+        current = config
+        for part in parts[:-1]:
+            if part not in current:
+                current[part] = {}
+            current = current[part]
+
+        # Set the value at final location
+        current[parts[-1]] = copy.deepcopy(value)
+
+    return config
+
+
 def get_config_folder_path() -> Path:
     """Returns: the Path to the folder containing the "configs" for DeepLabCut 3.0"""
     dlc_parent_path = Path(auxiliaryfunctions.get_deeplabcut_path())
