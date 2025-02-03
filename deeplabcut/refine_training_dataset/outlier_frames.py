@@ -235,7 +235,7 @@ def extract_outlier_frames(
     outlieralgorithm: str, optional, default="jump".
         String specifying the algorithm used to detect the outliers.
 
-        * ``'Fitting'`` fits a Auto Regressive Integrated Moving Average model to the
+        * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to the
           data and computes the distance to the estimated data. Larger distances than
           epsilon are then potentially identified as outliers
         * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
