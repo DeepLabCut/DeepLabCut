@@ -294,7 +294,7 @@ runner:
     save_epochs: 25  # the interval between each snapshot save  
     save_optimizer_state: false  # whether the optimizer state should be saved with the model snapshots (very little reason to set to true)
 ```
-
+[comment]: <> (todo add gpus list)
 **Key metric**: Every time the model is evaluated on the test set, metrics are computed 
 to see how the model is performing. The key metric is used to determine whether the 
 current model is the "best" so far. If it is, the snapshot is saved as `...-best.pt`. 

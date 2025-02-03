@@ -39,20 +39,20 @@ Here are other excellent options for you to use that extend DeepLabCut:
 
 ### (1) Create a New 3D Project:
 
-Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code, and check out the Notebook [here](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb)!
+Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code, and check out the Notebook [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb)!
 
 
 You will run this function **one** time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.
 
 The function **create\_new\_project\_3d** creates a new project directory specifically for converting the 2D pose to 3D pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.
 
-Thus, this function requires the user to input the enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.
+Thus, this function requires the user to enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.
 
 To start a 3D project type the following in ipython:
 ```python
 deeplabcut.create_new_project_3d('ProjectName','NameofLabeler',num_cameras = 2)
 ```
-TIP 1: you can also pass ``working_directory=`Full path of the working directory'`` if you want to place this folder somewhere beside the current directory you are working in. If the optional argument ``working_directory`` is unspecified, the project directory is created in the current working directory.
+TIP 1: you can also pass ``working_directory="Full path of the working directory"`` if you want to place this folder somewhere beside the current directory you are working in. If the optional argument ``working_directory`` is unspecified, the project directory is created in the current working directory.
 
 TIP 2: you can also place ``config_path3d`` in front of ``deeplabcut.create_new_project_3d`` to create a variable that holds the path to the config.yaml file, i.e. ``config_path3d=deeplabcut.create_new_project_3d(...`` Or, set this variable for easy use. Please note that ``config_path3d='Full path of the 3D project configuration file'``.
 
@@ -79,7 +79,7 @@ Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 s
 </p>
 
 ### (2) Take and Process Camera Calibration Images:
-
+[comment]: <>(Stopped here. Isn't there repetition in the next paragraph? Also, write comment about corners and not squares)
  (**CRITICAL!**) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): https://markhedleyjones.com/projects/calibration-checkerboard-collection.
 - You must save the image pairs as .jpg files.
 - They should be named with the **camera-#** as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the first pair of images. Please note, this cannot be changed after the project is created.
