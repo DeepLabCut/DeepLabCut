@@ -62,7 +62,7 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config(self.model_cfg, updates)
+        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
         config.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
