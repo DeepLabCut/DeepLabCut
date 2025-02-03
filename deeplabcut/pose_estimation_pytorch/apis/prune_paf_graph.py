@@ -142,8 +142,7 @@ def benchmark_paf_graphs(
             print()
 
         # update the edges to keep in the PyTorch configuration file
-        head_update = dict(predictor=dict(edges_to_keep=best_edges))
-        loader.update_model_cfg(dict(model=dict(heads=dict(bodypart=head_update))))
+        loader.update_model_cfg({"model.heads.bodypart.predictor.edges_to_keep": best_edges})
 
         # update the edges indices
         test_config = loader.model_folder.parent / "test" / "pose_cfg.yaml"

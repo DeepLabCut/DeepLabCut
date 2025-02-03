@@ -343,8 +343,8 @@ def run(
     net_type: str,
     videos: list[str],
     device: str,
-    train_kwargs: dict,
     engine: Engine = Engine.PYTORCH,
+    pytorch_cfg_updates: dict | None = None,
     create_labeled_videos: bool = False,
 ) -> None:
     times = [time.time()]
@@ -362,7 +362,7 @@ def run(
         shuffle=shuffle_index,
         trainingsetindex=trainset_index,
         device=device,
-        **train_kwargs,
+        pytorch_cfg_updates=pytorch_cfg_updates,
     )
     times.append(time.time())
     log_step(f"Train time: {times[-1] - times[-2]} seconds")

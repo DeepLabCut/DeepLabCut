@@ -16,7 +16,7 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
     make_basic_project_config,
     make_pytorch_pose_config,
 )
-from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print, update_config
+from deeplabcut.pose_estimation_pytorch.config.utils import pretty_print, update_config, update_config_by_dotpath
 
 
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
@@ -393,6 +393,35 @@ def test_make_tokenpose_config(
 ])
 def test_update_config(data: dict):
     result = update_config(config=data["config"], updates=data["updates"])
+    print("\nResult")
+    pretty_print(result)
+    assert result == data["expected_result"]
+
+
+@pytest.mark.parametrize("data", [
+    {
+        "config": {"a": 0, "b": 0},
+        "updates": {"b": 1},
+        "expected_result": {"a": 0, "b": 1},
+    },
+    {
+        "config": {"a": 0, "b": {"i0": 1, "i1": 2}},
+        "updates": {"b": 1},
+        "expected_result": {"a": 0, "b": 1},
+    },
+    {
+        "config": {"a": 0, "b": {"i0": 1, "i1": 2}},
+        "updates": {"b.i0": [1, 2, 3]},
+        "expected_result": {"a": 0, "b": {"i0": [1, 2, 3], "i1": 2}},
+    },
+    {
+        "config": {"detector": {"batch_size": 1, "epochs": 10, "save_epochs": 5}},
+        "updates": {"batch_size": 1, "detector.batch_size": 8, "detector.save_epochs": 1},
+        "expected_result": {"batch_size": 1, "detector": {"batch_size": 8, "epochs": 10, "save_epochs": 1}},
+    },
+])
+def test_update_config_by_dotpath(data: dict):
+    result = update_config_by_dotpath(config=data["config"], updates=data["updates"])
     print("\nResult")
     pretty_print(result)
     assert result == data["expected_result"]

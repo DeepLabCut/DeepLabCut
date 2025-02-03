@@ -55,22 +55,16 @@ def main(
                     net_type=net_type,
                     videos=videos,
                     device=device,
-                    train_kwargs=dict(
-                        train_settings=dict(
-                            display_iters=50,
-                            epochs=epochs,
-                            batch_size=batch_size,
-                        ),
-                        runner=dict(
-                            device=device,
-                            snapshots=dict(
-                                save_epochs=save_epochs,
-                                max_snapshots=max_snapshots_to_keep,
-                            )
-                        ),
-                        logger=logger,
-                    ),
                     engine=engine,
+                    pytorch_cfg_updates={
+                        "train_settings.display_iters": 50,
+                        "train_settings.epochs": epochs,
+                        "train_settings.batch_size": batch_size,
+                        "runner.device": device,
+                        "runner.snapshots.save_epochs": save_epochs,
+                        "runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                        "logger": logger,
+                    },
                     create_labeled_videos=create_labeled_videos,
                 )
 
