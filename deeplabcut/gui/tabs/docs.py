@@ -8,8 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from dataclasses import dataclass
-
 BASE_URL = "https://deeplabcut.github.io/DeepLabCut/docs/"
 README = "https://deeplabcut.github.io/DeepLabCut/README.html"
 URL_3D = BASE_URL + "Overviewof3D.html"
