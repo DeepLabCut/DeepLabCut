@@ -133,7 +133,9 @@ def build_top_down_postprocessor(
         max_individuals: the maximum number of individuals in a single image
         num_bodyparts: the number of bodyparts output by the model
         num_unique_bodyparts: the number of unique_bodyparts output by the model
-        with_backbone_features:
+        with_backbone_features: When True, the backbone features are extracted from
+            the output and saved in a `features` key. The `PoseModel` must have its
+            `output_features` attribute set to True, or this will raise an Exception.
 
     Returns:
         A default top-down Postprocessor
