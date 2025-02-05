@@ -9,8 +9,8 @@ train:
     translation: 0
   covering: false
   crop_sampling:
-    width: 400
-    height: 400
+    width: 448
+    height: 448
     max_shift: 0.1
     method: hybrid
   gaussian_noise: 12.75

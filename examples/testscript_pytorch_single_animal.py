@@ -92,7 +92,7 @@ if __name__ == "__main__":
     }
     main(
         synthetic_data=True,
-        net_types=["resnet_50", "hrnet_w32"],
+        net_types=["cspnext_m", "resnet_50", "hrnet_w32"],
         batch_size=4,
         epochs=8,
         save_epochs=2,
