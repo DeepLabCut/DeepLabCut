@@ -55,7 +55,9 @@ def build_bottom_up_postprocessor(
         num_bodyparts: the number of bodyparts output by the model
         num_unique_bodyparts: the number of unique_bodyparts output by the model
         with_identity: whether the model has an identity head
-        with_backbone_features:
+        with_backbone_features: When True, the backbone features are extracted from
+            the output and saved in a `features` key. The `PoseModel` must have its
+            `output_features` attribute set to True, or this will raise an Exception.
 
     Returns:
         A default bottom-up Postprocessor
