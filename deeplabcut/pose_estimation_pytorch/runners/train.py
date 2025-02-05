@@ -487,7 +487,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         scores = metrics.compute_metrics(
             ground_truth=self._epoch_ground_truth["bodyparts"],
             predictions=self._epoch_predictions["bodyparts"],
-            single_animal=False,  # FIXME(niels): Get this value from the dataset
+            single_animal=True,
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
             unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             pcutoff=0.6,
