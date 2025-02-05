@@ -1,4 +1,5 @@
-""" Testscript for single animal PyTorch projects """
+"""Testscript for single animal PyTorch projects"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -26,7 +27,8 @@ def main(
     device: str = "cpu",
     logger: dict | None = None,
     synthetic_data_params: SyntheticProjectParameters = SyntheticProjectParameters(
-        multianimal=False, num_bodyparts=6,
+        multianimal=False,
+        num_bodyparts=6,
     ),
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,

@@ -86,7 +86,6 @@ def train_network(
     pose_threshold: float | None = 0.1,
     pytorch_cfg_updates: dict | None = None,
 ):
-
     """
     Trains the network with the labels in the training dataset.
 
@@ -1145,6 +1144,7 @@ def analyze_images(
 
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import analyze_images
+
         return analyze_images(
             config=config,
             images=images,
@@ -1253,6 +1253,7 @@ def analyze_time_lapse_frames(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_time_lapse_frames
+
         return analyze_time_lapse_frames(
             config,
             directory,
@@ -1265,6 +1266,7 @@ def analyze_time_lapse_frames(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import analyze_images
+
         return analyze_images(
             config=config,
             images=directory,

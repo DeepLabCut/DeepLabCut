@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Testscript for single animal PyTorch projects """
+"""Testscript for single animal PyTorch projects"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,7 +17,11 @@ import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
 
 from utils import (
-    cleanup, create_fake_project, log_step, run, SyntheticProjectParameters,
+    cleanup,
+    create_fake_project,
+    log_step,
+    run,
+    SyntheticProjectParameters,
 )
 
 

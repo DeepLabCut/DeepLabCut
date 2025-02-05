@@ -78,7 +78,12 @@ def benchmark_paf_graphs(
 
     gt_train = loader.ground_truth_keypoints("train")
     best_paf_edges, _ = get_n_best_paf_graphs(
-        model, gt_train, preprocessor, device, predictor.graph, n_graphs=10,
+        model,
+        gt_train,
+        preprocessor,
+        device,
+        predictor.graph,
+        n_graphs=10,
     )
 
     if verbose:
@@ -142,13 +147,13 @@ def benchmark_paf_graphs(
             print()
 
         # update the edges to keep in the PyTorch configuration file
-        loader.update_model_cfg({"model.heads.bodypart.predictor.edges_to_keep": best_edges})
+        loader.update_model_cfg(
+            {"model.heads.bodypart.predictor.edges_to_keep": best_edges}
+        )
 
         # update the edges indices
         test_config = loader.model_folder.parent / "test" / "pose_cfg.yaml"
-        auxiliaryfunctions.edit_config(
-            str(test_config), dict(paf_best=best_edges)
-        )
+        auxiliaryfunctions.edit_config(str(test_config), dict(paf_best=best_edges))
 
     return results
 

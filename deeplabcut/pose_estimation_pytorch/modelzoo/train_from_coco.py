@@ -59,7 +59,7 @@ def adaptation_train(
         "runner.snapshots.save_epochs": save_epochs or 1,
         "train_settings.batch_size": batch_size,
         "train_settings.epochs": epochs or 4,
-        }
+    }
 
     if eval_interval is not None:
         updates["runner.eval_interval"] = eval_interval
