@@ -3,7 +3,7 @@
 
 ## How to use the latest updates directly from GitHub
 
-We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
+We often update the master deeplabcut code base on GitHub, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
 
 ### Method 1:
 
@@ -288,6 +288,11 @@ Follow prompts!
 
 ## Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
 
+```{warning}
+DeepLabCut no longer uses `wxpython` for its GUI - if you're getting such an error, 
+you're likely installing an old version of DeepLabCut.
+```
+
 ```python
 ERROR: Command errored out with exit status 1: /home/mackenzie/anaconda3/envs/DLC-GPU/bin/python -u -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"'; __file__='"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-pzy9q5u2/install-record.txt --single-version-externally-managed --compile --install-headers /home/mackenzie/anaconda3/envs/DLC-GPU/include/python3.7m/wxpython Check the logs for full command output.
 
@@ -341,7 +346,7 @@ conda env create -f DEEPLABCUT.yaml
 (4) Finally, activate your environment and to launch DLC with the GUI
 
 ```bash
-conda activate DEEPLABCUT_M1
+conda activate DEEPLABCUT
 python -m deeplabcut
 ```
 
