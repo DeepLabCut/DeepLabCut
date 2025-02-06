@@ -164,8 +164,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         model_kwargs = context.pop("model_kwargs", {})
         for k, v in model_kwargs.items():
             curr_v = self._model_kwargs.get(k)
-            if curr_v is None:
+            if curr_v is None or len(curr_v) == 0:
                 curr_v = v
+            elif len(v) == 0:
+                continue
             elif isinstance(curr_v, np.ndarray):
                 curr_v = np.concatenate([curr_v, v], axis=0)
             elif isinstance(curr_v, torch.Tensor):

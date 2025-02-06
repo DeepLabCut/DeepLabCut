@@ -95,16 +95,27 @@ def predict(
                 image = Path(image)
             video_name, image_name = image.parent.name, image.name
             image_key = f"labeled-data/{video_name}/{image_name}"
-            image_conditions = np.stack(
-                [
-                    np.array(c["keypoints"]).reshape((-1, 3))
-                    for c in conditions
-                    if c["image_path"] == image_key
-                ]
-            )
+            # image_conditions = np.stack(
+            #     [
+            #         np.array(c["keypoints"]).reshape((-1, 3))
+            #         for c in conditions
+            #         if c["image_path"] == image_key
+            #     ]
+            # )
+            if image_key not in conditions:
+                return np.zeros((0, 0, 3))
+
+            image_conditions = np.array(conditions[image_key])
+            if len(image_conditions) == 0:
+                return np.zeros((0, 0, 3))
+
+            image_conditions[:, :, 2] = 1.0
+            if image_conditions.shape[1] == 7:
+                image_conditions = image_conditions[:, [0, 1, 2, 3, 6], :]
+
             return image_conditions
 
-        context = [{"cond_kpts": _get_condition[image]} for image in image_paths]
+        context = [{"cond_kpts": _get_condition(image)} for image in image_paths]
 
     images_with_context = image_paths
     if context is not None:
