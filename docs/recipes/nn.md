@@ -18,7 +18,7 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 ```
 
-### Using custom image augmentation
+## Using custom image augmentation
 
 Image augmentation is the process of artificially expanding the training set
 by applying various transformations to images (e.g., rotation or rescaling)
