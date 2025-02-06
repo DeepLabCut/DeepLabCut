@@ -89,6 +89,14 @@ def predict(
         import json
         with open(loader.model_cfg["data"]["inference"]["conditions"], "r") as f:
             conditions = json.load(f)
+            # {
+            #     "img0000.png": [  (num_conditions, num_bodyparts, 3)
+            #         [ # condition 1
+            #             [[x, y, score], [x, y, score], ... ]
+            #         ]
+            #     ],
+            #     "img0001.png": [...]
+            # }
 
         def _get_condition(image):
             if not isinstance(image, Path):
