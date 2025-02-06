@@ -13,13 +13,16 @@ import os
 from pathlib import Path
 
 import yaml
-
-import deeplabcut
-from deeplabcut.utils import auxiliaryfunctions
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
     MODELOPTIONS,
 )
+
+import deeplabcut
+from deeplabcut import Engine
+from deeplabcut.generate_training_dataset.metadata import TrainingDatasetMetadata, ShuffleMetadata, DataSplit
+from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
+from deeplabcut.utils import auxiliaryfunctions
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
@@ -300,6 +303,9 @@ def create_pretrained_project(
 
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
 
+        # create fake metadata to read TF Engine in scorer (temporary fix until Pytorch version is implemented)
+        _create_and_save_fake_metadata(cfg)
+
         video_dir = os.path.join(config["project_path"], "videos")
         if analyzevideo == True:
             print("Analyzing video...")
@@ -320,3 +326,28 @@ def create_pretrained_project(
 
     else:
         return "N/A", "N/A"
+
+def _create_and_save_fake_metadata(config_path: str | Path):
+    # First create the metadata object
+    metadata = TrainingDatasetMetadata.create(config_path)
+
+    # Create a new shuffle with TensorFlow engine
+    new_shuffle = ShuffleMetadata(
+        name="project_name-trainset95shuffle1",
+        # This will be overwritten with proper name
+        train_fraction=read_config_as_dict(config_path)["TrainingFraction"][0],
+        index=1,
+        engine=Engine.TF,
+        split=DataSplit(
+            train_indices=(0, 1, 2, 3, 4),  # Example indices
+            test_indices=(5,)  # Example indices
+        )
+    )
+
+    # Add the shuffle to metadata
+    metadata = metadata.add(new_shuffle)
+
+    # Save the metadata
+    metadata.save()
+
+    return metadata
