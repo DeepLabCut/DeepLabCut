@@ -85,7 +85,7 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 #### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
 
-````{Hint}
+````{admonition} DeepLabCut TensorFlow Support
 :class: dropdown
 As of June 2024 we have a PyTorch Engine backend and we will be depreciating the 
 TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you 
