@@ -59,6 +59,7 @@ def replace_default_values(
         ValueError: if there is a placeholder value who's "updated" value was not
             given to the method
     """
+
     def get_updated_value(variable: str) -> int | list[int]:
         var_parts = variable.strip().split(" ")
         var_name = var_parts[0]
@@ -152,6 +153,49 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
     return config
 
 
+def update_config_by_dotpath(
+    config: dict, updates: dict, copy_original: bool = True
+) -> dict:
+    """Updates items in the configuration file using dot notation for nested keys
+
+    The configuration dict should only be composed of primitive Python types
+    (dict, list and values). This is the case when reading the file using
+    `read_config_as_dict`.
+
+    Args:
+        config: the configuration dict to update
+        updates: single-level dict with dot notation keys indicating nested paths
+            e.g. {"device": "cuda", "runner.gpus": [0,1]}
+        copy_original: whether to copy the original dict before updating it
+
+    Returns:
+        the updated dictionary
+    """
+    if copy_original:
+        config = copy.deepcopy(config)
+
+    for key, value in updates.items():
+        # Split key into parts by dots
+        parts = key.split(".")
+
+        # Handle non-nested case
+        if len(parts) == 1:
+            config[key] = copy.deepcopy(value)
+            continue
+
+        # Navigate to nested location
+        current = config
+        for part in parts[:-1]:
+            if part not in current:
+                current[part] = {}
+            current = current[part]
+
+        # Set the value at final location
+        current[parts[-1]] = copy.deepcopy(value)
+
+    return config
+
+
 def get_config_folder_path() -> Path:
     """Returns: the Path to the folder containing the "configs" for DeepLabCut 3.0"""
     dlc_parent_path = Path(auxiliaryfunctions.get_deeplabcut_path())
@@ -202,7 +246,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
         The configuration file with pure Python classes
     """
     with open(config_path, "r") as f:
-        cfg = YAML(typ='safe', pure=True).load(f)
+        cfg = YAML(typ="safe", pure=True).load(f)
 
     return cfg
 

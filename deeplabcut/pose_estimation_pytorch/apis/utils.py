@@ -299,9 +299,7 @@ def list_videos_in_folder(
             else:
                 video_suffixes = [video_type]
 
-            suffixes = [
-                s if s.startswith(".") else "." + s for s in video_suffixes
-            ]
+            suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
             videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
             if shuffle:
                 random.shuffle(videos_in_dir)
@@ -366,15 +364,28 @@ def build_predictions_dataframe(
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.DataFrame:
     """
+    Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
+    includes properly formatted indices and column names for compatibility with
+    DeepLabCut workflows.
 
     Args:
-        scorer:
-        predictions
-        parameters:
-        image_name_to_index:
+        scorer: The name of the scorer used to generate the predictions.
+        predictions: A dictionary where each key is an image name and its value is
+            another dictionary. The inner dictionary contains prediction data for
+            "bodyparts" and optionally "unique_bodyparts". The "bodyparts" and
+            "unique_bodyparts" data arrays are expected to be 3-dimensional, containing
+            pose predictions in format (num_predicted_individuals, num_bodyparts, 3).
+        parameters: Dataset-specific parameters required for constructing DataFrame
+            columns.
+        image_name_to_index: A callable function that takes an image name and returns
+            a tuple representing the DataFrame index. If None, indices will be
+            generated without transformation.
 
     Returns:
-
+        A pandas DataFrame containing the processed prediction data for all provided
+        images. The DataFrame index corresponds to the image names or their
+        transformed values (if `image_name_to_index` is provided). The DataFrame
+        columns are constructed using the provided scorer and parameters.
     """
     image_names = []
     prediction_data = []
@@ -406,17 +417,19 @@ def build_bboxes_dict_for_dataframe(
 ) -> dict:
     """
     Creates a dictionary with bounding boxes from predictions.
-    The keys of the dictionary are the same as the index of the dataframe created by build_predictions_dataframe.
-    Therefore, the structures returned by build_predictions_dataframe and by build_bboxes_dict_for_dataframe
-    can be accessed with the same keys.
+
+    The keys of the dictionary are the same as the index of the dataframe created by
+    build_predictions_dataframe. Therefore, the structures returned by
+    build_predictions_dataframe and by build_bboxes_dict_for_dataframe can be accessed
+    with the same keys.
 
     Args:
         predictions: Dictionary containing the evaluation results
-        image_name_to_index, optional: a transform to apply on each image_name
+        image_name_to_index: a transform to apply on each image_name
 
     Returns:
-        Dictionary with sames keys as in the dataframe returned by build_predictions_dataframe,
-        and respective bounding boxes and scores, if any.
+        Dictionary with sames keys as in the dataframe returned by
+        build_predictions_dataframe, and respective bounding boxes and scores, if any.
     """
 
     image_names = []
@@ -561,7 +574,8 @@ def get_inference_runners(
                     max_individuals=max_individuals,
                 ),
                 load_weights_only=model_config["detector"]["runner"].get(
-                    "load_weights_only", None,
+                    "load_weights_only",
+                    None,
                 ),
             )
 
@@ -601,7 +615,9 @@ def get_detector_inference_runner(
     Returns:
         an inference runner for object detection
     """
-    if device == "mps":  # FIXME(niels): Cannot run detectors on MPS
+    if device is None:
+        device = resolve_device(model_config)
+    elif device == "mps":  # FIXME(niels): Cannot run detectors on MPS
         device = "cpu"
 
     if max_individuals is None:

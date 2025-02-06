@@ -76,7 +76,15 @@ def train_network(
     superanimal_name: str = "",
     superanimal_transfer_learning: bool = False,
     engine: Engine | None = None,
-    **torch_kwargs,
+    device: str | None = None,
+    snapshot_path: str | Path | None = None,
+    detector_path: str | Path | None = None,
+    batch_size: int | None = None,
+    detector_batch_size: int | None = None,
+    detector_epochs: int | None = None,
+    detector_save_epochs: int | None = None,
+    pose_threshold: float | None = 0.1,
+    pytorch_cfg_updates: dict | None = None,
 ):
     """
     Trains the network with the labels in the training dataset.
@@ -135,6 +143,7 @@ def train_network(
         Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
         TensorFlow engine). The number of epochs between each snapshot save. If
         None, the value will be read from the `pytorch_config.yaml` file.
+
     allow_growth: bool, optional, default=True.
         Only for the TensorFlow engine.
         For some smaller GPUs the memory issues happen. If ``True``, the memory
@@ -180,18 +189,38 @@ def train_network(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    torch_kwargs:
-        You can add any keyword arguments for the deeplabcut.pose_estimation_pytorch
-        train_network method here. These arguments are passed to the downstream method.
-        Some of the parameters that can be passed are
-            * ``device`` (the CUDA device to use for training)
-            * ``batch_size`` (the batch size to use while training)
-            * ``snapshot_path`` (the pose model snapshot to resume training from)
-            * ``detector_path`` (the detector model snapshot to resume training from)
+    device: str, optional, default = None.
+        Only for the PyTorch engine. The device to run the training on (e.g. "cuda:0")
 
-        When training a top-down model, these parameters are also available for the
-        detector, with the parameters ``detector_batch_size``, ``detector_epochs`` and
-        ``detector_save_epochs``.
+    snapshot_path: str or Path, optional, default = None.
+        Only for the PyTorch engine. The path to the pose model snapshot to resume training from.
+
+    detector_path: str or Path, optional, default = None.
+        Only for the PyTorch engine. The path to the detector model snapshot to resume training from.
+
+    batch_size: int, optional, default = None.
+        Only for the PyTorch engine. The batch size to use while training.
+
+    detector_batch_size: int, optional, default = None.
+        Only for the PyTorch engine. The batch size to use while training the detector.
+
+    detector_epochs: int, optional, default = None.
+        Only for the PyTorch engine. The number of epochs to train the detector for.
+
+    detector_save_epochs: int, optional, default = None.
+        Only for the PyTorch engine. The number of epochs between each detector snapshot save.
+
+    pose_threshold: float, optional, default = 0.1.
+        Only for the PyTorch engine. Used for memory-replay. Pseudo-predictions with confidence lower
+            than this threshold are discarded for memory-replay
+
+    pytorch_cfg_updates: dict, optional, default = None.
+        A dictionary of updates to the pytorch config. The keys are the dot-separated
+        paths to the values to update in the config.
+        For example, to update the gpus to run the training on, you can use:
+        ```
+        pytorch_cfg_updates={"runner.gpus": [0,1,2,3]}
+        ```
 
     Returns
     -------
@@ -255,20 +284,25 @@ def train_network(
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import train_network
 
-        _update_device(gputouse, torch_kwargs)
-        if "display_iters" not in torch_kwargs:
-            torch_kwargs["display_iters"] = displayiters
-
         return train_network(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             modelprefix=modelprefix,
-            max_snapshots_to_keep=max_snapshots_to_keep,
+            device=device,
+            snapshot_path=snapshot_path,
+            detector_path=detector_path,
             load_head_weights=keepdeconvweights,
+            batch_size=batch_size,
             epochs=epochs,
             save_epochs=save_epochs,
-            **torch_kwargs,
+            detector_batch_size=detector_batch_size,
+            detector_epochs=detector_epochs,
+            detector_save_epochs=detector_save_epochs,
+            display_iters=displayiters,
+            max_snapshots_to_keep=max_snapshots_to_keep,
+            pose_threshold=pose_threshold,
+            pytorch_cfg_updates=pytorch_cfg_updates,
         )
 
     raise NotImplementedError(f"This function is not implemented for {engine}")
@@ -1110,6 +1144,7 @@ def analyze_images(
 
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import analyze_images
+
         return analyze_images(
             config=config,
             images=images,
@@ -1218,6 +1253,7 @@ def analyze_time_lapse_frames(
 
     if engine == Engine.TF:
         from deeplabcut.pose_estimation_tensorflow import analyze_time_lapse_frames
+
         return analyze_time_lapse_frames(
             config,
             directory,
@@ -1230,6 +1266,7 @@ def analyze_time_lapse_frames(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch import analyze_images
+
         return analyze_images(
             config=config,
             images=directory,

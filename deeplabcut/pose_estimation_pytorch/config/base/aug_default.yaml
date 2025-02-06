@@ -5,17 +5,14 @@ train:
   affine:
     p: 0.5
     rotation: 30
-    scaling: [1.0, 1.0]
+    scaling: [0.5, 1.25]
     translation: 0
-  collate:
-    type: ResizeFromDataSizeCollate
-    min_scale: 0.4
-    max_scale: 1.0
-    min_short_side: 128
-    max_short_side: 1152
-    multiple_of: 32
-    to_square: false
   covering: false
+  crop_sampling:
+    width: 448
+    height: 448
+    max_shift: 0.1
+    method: hybrid
   gaussian_noise: 12.75
   hist_eq: false
   motion_blur: false
