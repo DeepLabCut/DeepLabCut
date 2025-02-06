@@ -46,7 +46,6 @@ parts:
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
-  - file: docs/recipes/MegaDetectorDLCLive
 - caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
   - file: docs/convert_maDLC
