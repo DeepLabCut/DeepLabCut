@@ -1,3 +1,4 @@
+(tf-training-tips-and-tricks)=
 # Model training tips & tricks
 
 ## Limiting a GPU's memory consumption
@@ -18,6 +19,7 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 ```
 
+(tf-custom-image-augmentation)=
 ## Using custom image augmentation
 
 Image augmentation is the process of artificially expanding the training set
@@ -64,6 +66,7 @@ An in-depth tutorial on image augmentation and training hyperparameters can be f
 
 The latest snapshot stored during training may not necessarily be the one that yields the highest performance. Therefore, you should analyze ALL snapshots, and select the best. Put 'all' in the snapshots section of the config.yaml to do this.
 
+(what-neural-network-should-i-use)=
 ## What neural network should I use? (Trade offs, speed performance, and considerations)
 
 ### With the release of even more network options, you now have to decide what to use! This additionally flexibility is hopefully helpful, but we want to give you some guidance on where to start.
