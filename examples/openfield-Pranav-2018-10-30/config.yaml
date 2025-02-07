@@ -7,9 +7,7 @@ identity:
 
 
 # Project path (change when moving around)
-project_path: 
-  /Users/niels/Documents/upamathis/repos/DeepLabCut/examples/openfield-Pranav-2018-10-30
-
+project_path: WILL BE AUTOMATICALLY UPDATED BY DEMO CODE
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
 engine: pytorch
@@ -17,8 +15,8 @@ engine: pytorch
 
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
-  /Users/niels/Documents/upamathis/repos/DeepLabCut/examples/openfield-Pranav-2018-10-30/videos/m4s1.mp4:
-    crop: 0, 640, 0, 480
+  WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
+
 bodyparts:
 - snout
 - leftear
