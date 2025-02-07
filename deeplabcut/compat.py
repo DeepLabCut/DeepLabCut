@@ -745,7 +745,6 @@ def analyze_videos(
         By default, the models are assumed to exist in the project folder.
 
     robust_nframes: bool, optional, default=False
-        Currently not supported by the PyTorch engine.
         Evaluate a video's number of frames in a robust manner.
         This option is slower (as the whole video is read frame-by-frame),
         but does not rely on metadata, hence its robustness against file corruption.
@@ -957,12 +956,80 @@ def create_tracking_dataset(
     batchsize: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
-    dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     modelprefix: str = "",
     robust_nframes: bool = False,
     n_triplets: int = 1000,
     engine: Engine | None = None,
-):
+) -> str:
+    """Creates a tracking dataset to train a ReID tracklet stitcher.
+
+    Parameters
+    ----------
+    config: str
+        Full path of the config.yaml file.
+
+    videos: list[str]
+        A list of strings containing the full paths to videos from which to create a
+        tracking dataset, or a path to the directory where all the videos with same
+        extension are stored.
+
+    track_method: str
+        Specifies the tracker used to generate the pose estimation data. Must be either
+        'box', 'skeleton', or 'ellipse'.
+
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed. If left unspecified,
+        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+
+    shuffle: int, optional, default=1
+        An integer specifying the shuffle index of the training dataset used for
+        training the network.
+
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+
+    gputouse: int or None, optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine use ``device``).
+        Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
+        GPU put ``None``. See:
+            https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    TFGPUinference: bool, optional, default=True
+        Only for the TensorFlow engine.
+        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining
+        boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
+        Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
+        Source: https://arxiv.org/abs/1909.11229
+
+    destfolder:
+        Specifies the destination folder for analysis data. If ``None``, the path of
+        the video is used. Note that for subsequent analysis this folder also needs to
+        be passed.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    robust_nframes: bool, optional, default=False
+        Evaluate a video's number of frames in a robust manner.
+        This option is slower (as the whole video is read frame-by-frame),
+        but does not rely on metadata, hence its robustness against file corruption.
+
+    n_triplets: int, default=1000
+        The number of triplets to extract for the dataset.
+
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
+    Returns
+    -------
+    DLCScorer: str
+        the scorer used to analyze the videos
+    """
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -982,12 +1049,26 @@ def create_tracking_dataset(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
-            save_as_csv=False,  # not used in method
             destfolder=destfolder,
             batchsize=batchsize,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
-            dynamic=dynamic,
+            modelprefix=modelprefix,
+            robust_nframes=robust_nframes,
+            n_triplets=n_triplets,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch.apis import create_tracking_dataset
+        return create_tracking_dataset(
+            config,
+            videos,
+            track_method,
+            videotype=videotype,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            destfolder=destfolder,
+            batch_size=batchsize,
+            cropping=cropping,
             modelprefix=modelprefix,
             robust_nframes=robust_nframes,
             n_triplets=n_triplets,

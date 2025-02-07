@@ -194,6 +194,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     bodyparts=image_predictions["bodyparts"],
                     unique_bodyparts=image_predictions.get("unique_bodyparts"),
                     identity_scores=image_predictions.get("identity_scores"),
+                    features=image_predictions.get("features"),
                 )
             else:
                 results.append(image_predictions)
