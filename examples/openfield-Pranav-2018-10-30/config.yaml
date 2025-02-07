@@ -16,7 +16,7 @@ engine: pytorch
 # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
   WILL BE AUTOMATICALLY UPDATED BY DEMO CODE:
-
+    crop: 0, 640, 0, 480
 bodyparts:
 - snout
 - leftear
