@@ -63,7 +63,7 @@ def train_network(
     shuffle: int = 1,
     trainingsetindex: int = 0,
     max_snapshots_to_keep: int | None = None,
-    displayiters: int | None = None,
+    display_iters: int | None = None,
     saveiters: int | None = None,
     maxiters: int | None = None,
     epochs: int | None = None,
@@ -108,7 +108,7 @@ def train_network(
         are kept.
         See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
-    displayiters: optional, default=None
+    display_iters: optional, default=None
         This variable is actually set in ``pose_config.yaml``. However, you can
         overwrite it with this hack. Don't use this regularly, just if you are too lazy
         to dig out the ``pose_config.yaml`` file for the corresponding project. If
@@ -270,7 +270,7 @@ def train_network(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             max_snapshots_to_keep=max_snapshots_to_keep,
-            displayiters=displayiters,
+            display_iters=display_iters,
             saveiters=saveiters,
             maxiters=maxiters,
             allow_growth=allow_growth,
@@ -299,7 +299,7 @@ def train_network(
             detector_batch_size=detector_batch_size,
             detector_epochs=detector_epochs,
             detector_save_epochs=detector_save_epochs,
-            display_iters=displayiters,
+            display_iters=display_iters,
             max_snapshots_to_keep=max_snapshots_to_keep,
             pose_threshold=pose_threshold,
             pytorch_cfg_updates=pytorch_cfg_updates,
