@@ -26,6 +26,7 @@ def compute_metrics(
     oks_bbox_margin: int = 0,
     oks_sigma: float = 0.1,
     per_keypoint_rmse: bool = False,
+    compute_detection_rmse: bool = True,
 ) -> dict:
     """Computes pose estimation performance metrics
 
@@ -72,6 +73,8 @@ def compute_metrics(
             computation.
         oks_sigma: The OKS sigma to use to compute pose.
         per_keypoint_rmse: Compute per-keypoint RMSE values.
+        compute_detection_rmse: Computes detection RMSE (without animal assembly) if the
+            predictions are from a multi-animal model.
 
     Returns:
         A dictionary containing keys "rmse", "rmse_cutoff", "mAP" and "mAR" mapping
@@ -120,7 +123,7 @@ def compute_metrics(
     )
     results = dict(**rmse_scores, **oks_scores)
 
-    if not single_animal:
+    if compute_detection_rmse and not single_animal:
         det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(
             data, pcutoff, data_unique=data_unique,
         )
