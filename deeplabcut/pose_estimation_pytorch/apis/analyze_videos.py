@@ -626,6 +626,11 @@ def _generate_assemblies_file(
         # reshape to (num_preds, num_bpts, 4)
         preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
         preds = preds.transpose((1, 0, 2))
+
+        # remove all-missing predictions
+        mask = ~np.all(preds < 0, axis=(1, 2))
+        preds = preds[mask]
+
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:
