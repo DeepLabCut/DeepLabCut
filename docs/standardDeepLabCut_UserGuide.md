@@ -497,10 +497,6 @@ until the loss plateaus (typically around **500,000**) if you use batch size 1. 
 want to batch train, we recommend using Adam,
 [see more here](tf-custom-image-augmentation).
 
-If you use **maDeepLabCut** the recommended training iterations is **20K-100K** 
-(it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce
- the batchsize for memory reasons then the number of iterations needs to be increased.
-
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows
 the user to alter how often the loss is displayed and how often the weights are stored.
 
