@@ -26,6 +26,7 @@ runner:  # configuring the runner used for training
 train_settings:  # generic training settings, such as batch size and maximum number of epochs
   ...
 logger:  # optional: the configuration for a logger if you want one
+resume_training_from:  # optional: restart the training at the specific checkpoint
 ```
 
 ## Sections
@@ -392,7 +393,6 @@ warmup epochs, and a second scheduler later. An example usage would be:
       - 5
 ```
 
-
 ### Train Settings
 
 The `train_settings` key contains parameters that are specific to training. For more 
@@ -498,6 +498,7 @@ detector:
     ...
   train_settings: # detector train settings (same keys as for the pose model)
     ...
+  resume_training_from: # optional: restart the training at the specific checkpoint
 ```
 
 Currently, the only detectors available are `FasterRCNN` and `SSDLite`. However, multiple variants of

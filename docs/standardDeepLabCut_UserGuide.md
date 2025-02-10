@@ -128,9 +128,7 @@ The `create_new_project` step writes the following parameters to the configurati
 *project\_path* as well as a list of videos *video\_sets*. The first three parameters should **not** be changed. The
 list of videos can be changed by adding new videos or manually removing videos.
 
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c40f4124d7a9c0b2ce651c1/1547760716298/Box1-01.png?format=1000w" width="90%">
-</p>
+![Box 1 - Single Animal Project Configuration File Glossary](images/box1-single.png)
 
 #### API Docs
 ````{admonition} Click the button to see API Docs
