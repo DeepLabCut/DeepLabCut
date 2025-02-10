@@ -329,8 +329,8 @@ and `augmenter_type` when you call the function.
 
 - Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained networks weights will be downloaded, as you
 select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We
-suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information.
-
+suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information (
+or the [this page on selecting models](what-neural-network-should-i-use) for the TensorFlow engine).
 
 ```{Hint}
 🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do
@@ -358,24 +358,49 @@ supervision, etc. Here are the available loaders:
   less efficiently than in imgaug, does not allow batch size>1
   - `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
 
-**MODEL COMPARISON:** You can also test several models by creating the same test/train split for different networks.
-You can easily do this in the Project Manager GUI, which also lets you compare PyTorch and TensorFlow models.
+**MODEL COMPARISON**: You can also test several models by creating the same train/test
+split for different networks.
+You can easily do this in the Project Manager GUI (by selecting the "Use an existing 
+data split" option), which also lets you compare PyTorch and TensorFlow models.
 
-Please also consult the [following page on selecting models](what-neural-network-should-i-use)
+````{versionadded} 3.0.0
+You can now create new shuffles using the same train/test split as 
+existing shuffles with `create_training_dataset_from_existing_split`. This allows you to
+compare model performance (between different architectures or when using different
+training hyper-parameters) as the shuffles were trained on the same data, and evaluated
+on the same test data!
 
-#### API Docs for deeplabcut.create_training_dataset
-````{admonition} Click the button to see API Docs
+Example usage - creating 3 new shuffles (with indices 10, 11 and 12) for a ResNet 50
+pose estimation model, using the same data split as was used for shuffle 0:
+
+```python
+deeplabcut.create_training_dataset_from_existing_split(
+    config_path,
+    from_shuffle=0,
+    shuffles=[10, 11, 12],
+    net_type="resnet_50",
+)
+```
+````
+
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset.rst
 ```
 ````
 
-#### API Docs for deeplabcut.create_training_model_comparison
-````{admonition} Click the button to see API Docs
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_model_comparison.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_dataset_from_existing_split.rst
 ```
 ````
 
