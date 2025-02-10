@@ -659,16 +659,15 @@ Please note that you do **not** get the .h5/csv file you might be used to gettin
 comes after tracking). You will get a `pickle` file that is used in
 `create_video_with_all_detections`.
 
-For models predicting part-affinity fields (TensorFlow multi-animal models, and PyTorch
-models consisting of just a backbone name (e.g. `resnet_50`, `resnet_101`) use
-part-affinity fields. If you're unsure whether your PyTorch model has a one, check the   
-**pytorch_config.yaml** for a `DLCRNetHead`._), another sanity check may be to examine
-the distributions of edge affinity costs using 
-`deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions
+For models predicting part-affinity fields, another sanity check may be to 
+examine the distributions of edge affinity costs using `deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions
 indicate that the model has learned strong links to group keypoints into distinct
 individuals — likely a necessary feature for the assembly stage (note that the amount of
 overlap will also depend on the amount of interactions between your animals in the
-dataset).
+dataset). All TensorFlow multi-animal models use part-affinity fields and PyTorch models
+consisting of just a backbone name (e.g. `resnet_50`, `resnet_101`) use part-affinity
+fields. If you're unsure whether your PyTorch model has a one, check 
+the **pytorch_config.yaml** for a `DLCRNetHead`.
 
 IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics
 look good, scoremaps look good, plotted evaluation images, and affinity distributions
