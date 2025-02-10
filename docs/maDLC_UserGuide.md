@@ -49,7 +49,7 @@ ipython
 import deeplabcut
 ```
 
-```{TIP:}
+```{TIP}
 for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
 ```
 
@@ -211,16 +211,22 @@ Therefore, manually selecting some frames is a good idea if interactions are not
 frequent in the video.
 ```
 
-However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
-provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
+However, picking frames is highly dependent on the data and the behavior being studied.
+Therefore, it is hard to provide all purpose code that extracts frames to create a good
+training dataset for every behavior and animal. If the user feels specific frames are
+lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox. This can be launched by using:
 
 ```python
 deeplabcut.extract_frames(config_path, 'manual')
 ```
 
-The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
-bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s). The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before reloading the set and then manually annotating them.
+// FIXME(niels) - add a napari frame extractor description.
+The user can use the *Load Video* button to load one of the videos in the project
+configuration file, use the scroll bar to navigate across the video and *Grab a Frame*. 
+The user can also look at the extracted frames and e.g. delete frames (from the
+directory) that are too similar before reloading the set and then manually annotating
+them.
 
 ````{admonition} Click the button to see API Docs
 :class: dropdown
@@ -242,15 +248,31 @@ project’s configuration file by providing a list. The following command invoke
 napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](napari-gui) for 
 more information about the labelling workflow.
 
-**CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
-to label the same location). In general, invisible or occluded points should not be labeled by the user, unless you want to teach the network to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
+**CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a
+wrist that is very large, try to label the same location). In general, invisible or
+occluded points should not be labeled by the user, unless you want to teach the network
+to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see
+a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
 
-OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
-labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. A box will pop up and ask the user if they wish to display all parts, or only add in the new labels. Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
+OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user 
+needs to append the new labels to the bodyparts in the config.yaml file. Thereafter, the
+user can call the function **label_frames**. A box will pop up and ask the user if they
+wish to display all parts, or only add in the new labels. Saving the labels after all
+the images are labelled will append the new labels to the existing labeled dataset.
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart the animals, you do not need to worry about the "ID" of each animal. For example: if you have a white and black mouse label the white mouse as animal 1, and black as animal 2 across all frames. If two black mice, then the ID label 1 or 2 can switch between frames - no need for you to try to identify them (but always label consistently within a frame). If you have 2 black mice but one always has an optical fiber (for example), then DO label them consistently as animal1 and animal_fiber (for example). The point of multi-animal DLC is to train models that can first group the correct bodyparts to individuals, then associate those points in a given video to a specific individual, which then also uses temporal information to link across the video frames.
+**maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart
+the animals, you do not need to worry about the "ID" of each animal. For example: if you
+have a white and black mouse label the white mouse as animal 1, and black as animal 2
+across all frames. If two black mice, then the ID label 1 or 2 can switch between 
+frames - no need for you to try to identify them (but always label consistently within a
+frame). If you have 2 black mice but one always has an optical fiber (for example), then
+DO label them consistently as animal1 and animal_fiber (for example). The point of 
+multi-animal DLC is to train models that can first group the correct bodyparts to
+individuals, then associate those points in a given video to a specific individual,
+which then also uses temporal information to link across the video frames.
 
-Note, we also highly recommend that you use more bodypoints that you might otherwise have (see the example below).
+Note, we also highly recommend that you use more bodyparts that you might otherwise have
+(see the example below).
 
 **Example Labeling with maDeepLabCut:**
 Note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be
@@ -355,6 +377,31 @@ In addition, one can specify a crop sampling strategy: crop centers can either b
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
 allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).
 
+**MODEL COMPARISON**: You can also test several models by creating the same train/test
+split for different networks.
+You can easily do this in the Project Manager GUI (by selecting the "Use an existing 
+data split" option), which also lets you compare PyTorch and TensorFlow models.
+
+````{versionadded} 3.0.0
+You can now create new shuffles using the same train/test split as 
+existing shuffles with `create_training_dataset_from_existing_split`. This allows you to
+compare model performance (between different architectures or when using different
+training hyper-parameters) as the shuffles were trained on the same data, and evaluated
+on the same test data!
+
+Example usage - creating 3 new shuffles (with indices 10, 11 and 12) for a ResNet 50
+pose estimation model, using the same data split as was used for shuffle 0:
+
+```python
+deeplabcut.create_training_dataset_from_existing_split(
+    config_path,
+    from_shuffle=0,
+    shuffles=[10, 11, 12],
+    net_type="resnet_50",
+)
+```
+````
+
 ````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
 :class: dropdown
 ```{eval-rst}
@@ -366,6 +413,13 @@ allows the use of batch processing even on small GPUs that could not otherwise a
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_model_comparison.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_training_dataset_from_existing_split.rst
 ```
 ````
 
@@ -485,28 +539,55 @@ data. The bonus, training time is much less!!!
 
 ### Evaluate the Trained Network:
 
-Here, for traditional projects you will get a pixel distance metric and you should inspect the individual frames:
+It is important to evaluate the performance of the trained network. This performance is 
+measured by computing two metrics:
+
+- **Average root mean square error** (RMSE) between the manual labels and the ones
+predicted by your trained DeepLabCut model. The RMSE is proportional to the mean average
+Euclidean error (MAE) between the manual labels and the ones predicted by DeepLabCut. 
+The MAE is displayed for all pairs and only likely pairs (>p-cutoff). This helps to
+exclude, for example, occluded body parts. One of the strengths of DeepLabCut is that
+due to the probabilistic output of the scoremap, it can, if sufficiently trained, also 
+reliably report if a body part is visible in a given frame. (see discussions of finger
+tips in reaching and the Drosophila legs during 3D behavior in [Mathis et al, 2018]).
+- **Mean Average Precision** (mAP) and **Mean Average Recall** (mAR) for the labels
+predicted by your trained DeepLabCut model. This metric describes the average precision
+of your model, based on a thoughtful definition of what a correct prediction is. It
+isn't as useful for single-animal models, as RMSE does a great job of evaluating your
+model in that case.
+
+```{admonition} A more detailed description of mAP and mAR
+:class: dropdown
+
+For multi-animal pose estimation, multiple predictions can be made for each image.
+We want to get some idea of the proportion of correct predictions among all predictions
+that are made.
+However, the notion of "correct prediction" for pose estimation is not straightforward:
+is a prediction correct if all predicted keypoints are within 5 pixels of the ground
+truth? Within 2 pixels of the ground truth? What if all pixels but one match the ground
+truth perfectly, but the wrong prediction is 50 pixels away? Mean average precision (
+and mean average recall) estimate the precision/recall of your models by setting 
+different "thresholds of correctness" and averaging results. How "correct" a
+prediction is can be evaluated through [object-keypoint similarity](
+https://cocodataset.org/#keypoints-eval).
+
+A good resource to get a deeper understanding of mAP is the [Stanford CS230 course](
+https://cs230.stanford.edu/section/8/#object-detection-iou-ap-and-map). While it 
+describes mAP for object detection (where bounding boxes are predicted instead of 
+keypoints), the same metric can be computed for pose estimation, where similarity 
+between predictions and ground truth is computed through [object-keypoint similarity](
+https://cocodataset.org/#keypoints-eval) instead of intersection-over-union (IoU). 
+```
+
+It's also important to visually inspect predictions on individual frames to assess the
+performance of your model. You can do this by setting `plotting=True` when you call
+`evaluate_network`. The evaluation results are computed by typing:
 
 ```python
-deeplabcut.evaluate_network(config_path, plotting=True)
+deeplabcut.evaluate_network(config_path, Shuffles=[1], plotting=True)
 ```
 
 🎥 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=bgfnz1wtlpo)
-
-It is important to evaluate the performance of the trained network. This performance is measured by computing
-the mean average Euclidean error (MAE; which is proportional to the average root mean square error) between the
-manual labels and the ones predicted by DeepLabCut. The MAE is saved as a comma separated file and displayed
-for all pairs and only likely pairs (>p-cutoff). This helps to exclude, for example, occluded body parts. One of the
-strengths of DeepLabCut is that due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
-reliably report if a body part is visible in a given frame. (see discussions of finger tips in reaching and the Drosophila
-legs during 3D behavior in [Mathis et al, 2018]).
-
-````{admonition} Click the button to see API Docs for evaluate_network
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.evaluate_network.rst
-```
-````
 
 Setting ``plotting`` to True plots all the testing and training frames with the manual and predicted labels; these will
 be colored by body part type by default. They can alternatively be colored by individual by passing `plotting="individual"`.
@@ -517,23 +598,32 @@ many factors (including the size of the tracked body parts, the labeling variabi
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).
 
 The plots can be customized by editing the **config.yaml** file (i.e., the colormap, scale, marker size (dotsize), and
-transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
+transparency of labels (alpha-value) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
-plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood > p-cutoff) and
+plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood > `pcutoff`) and
 ’x’ for (likelihood <= `pcutoff`).
 
-The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
-directory ‘evaluation-results’ in the project directory. The user can visually inspect if the distance between the labeled
-and the predicted body parts are acceptable. In the event of benchmarking with different shuffles of same training
-dataset, the user can provide multiple shuffle indices to evaluate the corresponding network. If the generalization is
-not sufficient, the user might want to:
+The evaluation results for each shuffle of the training dataset are stored in a unique
+subdirectory in a newly created directory ‘evaluation-results-pytorch’ (or 
+‘evaluation-results’ for TensorFlow models) in the project directory.
+The user can visually inspect if the distance between the labeled and the predicted body
+parts are acceptable. In the event of benchmarking with different shuffles of same training
+dataset, the user can provide multiple shuffle indices to evaluate the corresponding 
+network. If the generalization is not sufficient, the user might want to:
 
-• check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
-labeled accurately
+• check if the labels were imported correctly; i.e., invisible points are not labeled
+and the points of interest are labeled accurately
 
 • make sure that the loss has already converged
 
 • consider labeling additional images and make another iteration of the training data set
+
+````{admonition} Click the button to see API Docs for evaluate_network
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.evaluate_network.rst
+```
+````
 
 **maDeepLabCut: (or on normal projects!)**
 
@@ -548,7 +638,7 @@ You should also plot the scoremaps, locref layers, and PAFs to assess performanc
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 
-you can drop "Indices" to run this on all training/testing images (this is very slow!)
+You can drop "Indices" to run this on all training/testing images (this is very slow!)
 
 ### Evaluating your network on videos
 
