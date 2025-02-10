@@ -77,15 +77,18 @@ config_path = '/thefulloutputpath/config.yaml'
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
-**dlc-models** and **dlc-models-pytorch:** These directories contains the subdirectories
-*test* and *train*, each of which holds the meta information with regard to the
-parameters of the feature detectors in configuration files. The configuration files are
-YAML files, a common human-readable data serialization language. These files can be
-opened and edited with standard text editors. The subdirectory *train* will store
-checkpoints (called snapshots in PyTorch/TensorFlow) during training of the model. These
-snapshots allow the user to reload the trained model without re-training it, or to
-pick-up training from a particular saved checkpoint, in case the training was
-interrupted.
+**dlc-models** and **dlc-models-pytorch** have a similar structure: the first contains 
+files for the TensorFlow engine while the second contains files for the PyTorch engine.
+At the top level in these directories, there are
+directories referring to different iterations of labels refinement (see below): **iteration-0**, **iteration-1**, etc.
+The refinement iterations directories store shuffle directories, each shuffle directory stores model data related to a
+particular experiment: trained and tested on a particular training and testing sets, and with a particular model
+architecture. Each shuffle directory contains the subdirectories *test* and *train*, each of which holds the meta
+information with regard to the parameters of the feature detectors in configuration files. The configuration files are
+YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text
+editors. The subdirectory *train* will store checkpoints (called snapshots) during training of the model. These
+snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular
+saved checkpoint, in case the training was interrupted.
 
 **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding video, which allows the user to trace every frame back to its origin.
 
@@ -103,24 +106,34 @@ deeplabcut.add_new_videos(
 
 *Please note, *Full path of the project configuration file* will be referenced as ``config_path`` throughout this protocol.
 
-You can also use annotated data from singe-animal projects, by converting those files. There are docs for this: [convert single to multianimal annotation data](convert-maDLC)
+You can also use annotated data from single-animal projects, by converting those files.
+There are docs for this: [convert single to multianimal annotation data](convert-maDLC)
+
+![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
 ### Configure the Project:
 
-- open the **config.yaml** file (in a text editor (like atom, gedit, vim etc.)), which can be found in the subfolder created when you set your project name, to change parameters and identify label names! This is a crucial step.
+Next, open the **config.yaml** file, which was created during  **create\_new\_project**.
+You can edit this file in any text editor. Familiarize yourself with the meaning of the
+parameters (Box 1). You can edit various parameters, in particular you **must add the list of *individuals* and *bodyparts* (or points of interest)**.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
 
-Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
+You can also set the *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc. Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
 
 An easy way to programmatically edit the config file at any time is to use the function **edit\_config**, which takes the full path of the config file to edit and a dictionary of key–value pairs to overwrite.
 
-````python
-edits = {'colormap': 'summer',
-         'individuals': ['mickey', 'minnie', 'bianca'],
-         'skeleton': [['snout', 'tailbase'], ['snout', 'rightear']]}
+```python
+import deeplabcut
+
+config_path = "/path/to/project-dlc-2025-01-01/config.yaml"
+edits = {
+    "colormap": "summer",
+    "individuals": ["mickey", "minnie", "bianca"],
+    "skeleton": [["snout", "tailbase"], ["snout", "rightear"]]
+}
 deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
-````
+```
 
 Please DO NOT have spaces in the names of bodyparts, uniquebodyparts, individuals, etc.
 
