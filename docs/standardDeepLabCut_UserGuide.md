@@ -410,47 +410,109 @@ The function ‘train_network’ helps the user in training the network. It is u
 ```python
 deeplabcut.train_network(config_path)
 ```
-The function starts training the network for the dataset created for one specific shuffle, specified in the arguments.
-Note that you can change the loader (imgaug/default/etc) as well as other training parameters in
-the **pytorch_config.yaml** file (**pose_cfg.yaml** file for Tensorflow models) of the model that you want to train
-(before you start training).
+The set of arguments in the function starts training the network for the dataset created
+for one specific shuffle. Note that you can change training parameters in the 
+[**pytorch_config.yaml**](dlc3-pytorch-config) file (or **pose_cfg.yaml** for TensorFlow
+models) of the model that you want to train (before you start training).
+
+At user specified iterations during training checkpoints are stored in the subdirectory 
+*train* under the respective iteration & shuffle directory.
+
+````{admonition} Tips on training models with the PyTorch Engine
+:class: dropdown
 
 Example parameters that one can call:
+
 ```python
 deeplabcut.train_network(
     config_path,
     shuffle=1,
     trainingsetindex=0,
+    device="cuda:0",
     max_snapshots_to_keep=5,
     displayiters=100,
-    saveiters=15000,
-    maxiters=30000,
-    allow_growth=True,
-    gputouse=None,
-    autotune=False
+    save_epochs=5,
+    epochs=200,
 )
 ```
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they are around 100MB each),
-but they get downloaded before you train. However, if not previously downloaded, it will be downloaded and stored
-in a subdirectory *pre-trained* under the subdirectory *models* in *Pose_Estimation_PyTorch*
-(or *Pose_Estimation_Tensorflow*).
-A user-specified number of checkpoints are stored in the subdirectory *train* in the respective shuffle directory.
+Pytorch models in DeepLabCut 3.0 are trained for a set number of epochs, instead of a
+maximum number of iterations (which is what was used for TensorFlow models). An epoch
+is a single pass through the training dataset, which means your model has seen each
+training image exactly once. So if you have 64 training images for your network, an
+epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2, 16 with
+batch size 4, etc.).
 
-If the user wishes to restart the training at a specific checkpoint they can specify the full path of the checkpoint to
-the variable `resume_training_from` in the **pytorch_config.yaml** file (`init_weights` in the **pose_cfg.yaml**
-file for Tensorflow models) under the *train* subdirectory (see Box 2).
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be 
+more than 100MB), but they get downloaded automatically before you train.
 
-**CRITICAL POINT, For TensorFlow models:**  it is recommended to train the ResNets or MobileNets for thousands of
-iterations until the loss plateaus (typically around **500,000**) if you use batch size 1. If you want to batch train,
-we recommend using Adam, [see more here](tf-custom-image-augmentation).
+If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable ``resume_training_from`` in the [
+**pytorch_config.yaml**](
+dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
+section of the docs) under the *train* subdirectory.
 
-**CRITICAL POINT, For PyTorch models:** PyTorch uses "epochs" not iterations. Please see our dedicated documentation
-that explains how best to set the number of epochs [here](dlc3-user-guide).
-When in doubt, stick to the default! A bonus, training time is much less!
+**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus** 
+(depending on the dataset, model architecture and training hyper-parameters this happens
+after 100 to 250 epochs of training).
 
-#### API Docs
-````{admonition} Click the button to see API Docs
+The variables ``display_iters`` and ``save_epochs`` in the [**pytorch_config.yaml**](
+dlc3-pytorch-config) file allows the user to alter how often the loss is displayed
+and how often the weights are stored. We suggest saving every 5 to 25 epochs.
+````
+
+````{admonition} Tips on training models with the TensorFlow Engine 
+:class: dropdown
+
+Example parameters that one can call:
+
+```python
+deeplabcut.train_network(
+    config_path,
+    shuffle=1,
+    trainingsetindex=0,
+    gputouse=None,
+    max_snapshots_to_keep=5,
+    autotune=False,
+    displayiters=100,
+    saveiters=25000,
+    maxiters=300000,
+    allow_growth=True,
+)
+```
+
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are 
+around 100MB each), but they get downloaded before you train. However, if not previously
+downloaded from the TensorFlow model weights, it will be downloaded and stored in a
+subdirectory *pre-trained* under the subdirectory *models* in 
+*Pose_Estimation_Tensorflow*. At user specified iterations during training checkpoints
+are stored in the subdirectory *train* under the respective iteration directory.
+
+If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
+file under the *train* subdirectory (see Box 2).
+
+**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations
+until the loss plateaus (typically around **500,000**) if you use batch size 1. If you
+want to batch train, we recommend using Adam,
+[see more here](tf-custom-image-augmentation).
+
+If you use **maDeepLabCut** the recommended training iterations is **20K-100K** 
+(it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce
+ the batchsize for memory reasons then the number of iterations needs to be increased.
+
+The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows
+the user to alter how often the loss is displayed and how often the weights are stored.
+
+**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only
+different and new output layers, but also new data augmentation, optimization, learning
+rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
+``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until
+50K-100K iterations. We recommend you look closely at the loss to not overfit on your
+data. The bonus, training time is much less!!!
+````
+
+````{admonition} Click the button to see API Docs for train_network
 :class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.train_network.rst
