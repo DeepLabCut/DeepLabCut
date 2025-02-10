@@ -205,7 +205,11 @@ behaviors, and not extract the frames across the whole video. This can be achiev
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
 the numframes2extract in the config.yaml file.
 
- **For maDLC, be sure you have labeled frames with closely interacting animals!** Therefore, manually selecting some frames is a good idea if interactions are not highly frequent in the video.
+```{TIP}
+For maDLC,  **be sure you have labeled frames with closely interacting animals**! 
+Therefore, manually selecting some frames is a good idea if interactions are not highly
+frequent in the video.
+```
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
@@ -249,7 +253,10 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 Note, we also highly recommend that you use more bodypoints that you might otherwise have (see the example below).
 
 **Example Labeling with maDeepLabCut:**
-- note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly impossible to tell them apart visually). IF you can tell them apart, do label consistently!
+Note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be
+on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly
+impossible to tell them apart visually). IF you can tell them apart, do label
+consistently!
 
 // FIXME(niels): updated image for napari-deeplabcut annotation GUI
 
