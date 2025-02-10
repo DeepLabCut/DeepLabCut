@@ -9,7 +9,8 @@ Note, we strongly encourage you to use the [Project Manager GUI](project-manager
 ````{versionadded} 3.0.0
 PyTorch is now available as a deep learning engine for pose estimation models, along 
 with new model architectures! For more information about moving from TensorFlow to
-PyTorch, check out [the PyTorch user guide](dlc3-user-guide). If you're just starting 
+PyTorch (if you're already familiar with DeepLabCut & the TensorFlow engine), 
+check out [the PyTorch user guide](dlc3-user-guide). If you're just starting 
 out with DeepLabCut, we suggest you use the PyTorch backend.
 ````
 
