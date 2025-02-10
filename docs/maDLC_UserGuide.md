@@ -550,10 +550,10 @@ exclude, for example, occluded body parts. One of the strengths of DeepLabCut is
 due to the probabilistic output of the scoremap, it can, if sufficiently trained, also 
 reliably report if a body part is visible in a given frame. (see discussions of finger
 tips in reaching and the Drosophila legs during 3D behavior in [Mathis et al, 2018]).
-- **Mean Average Precision** (mAP) and **Mean Average Recall** (mAR) for the labels
-predicted by your trained DeepLabCut model. This metric describes the average precision
-of your model, based on a considered definition of what a correct prediction is. It
-isn't as useful for single-animal models, as RMSE does a great job of evaluating your
+- **Mean Average Precision** (mAP) and **Mean Average Recall** (mAR) for the individuals
+predicted by your trained DeepLabCut model. This metric describes the precision of your
+model, based on a considered definition of what a correct detection of an individual is.
+It isn't as useful for single-animal models, as RMSE does a great job of evaluating your
 model in that case.
 
 ```{admonition} A more detailed description of mAP and mAR
