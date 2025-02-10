@@ -189,6 +189,7 @@ def evaluate(
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,
         per_keypoint_rmse=per_keypoint_evaluation,
+        compute_detection_rmse=False,
     )
 
     if loader.model_cfg["metadata"]["with_identity"]:
