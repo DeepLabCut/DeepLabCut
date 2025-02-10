@@ -552,7 +552,7 @@ reliably report if a body part is visible in a given frame. (see discussions of 
 tips in reaching and the Drosophila legs during 3D behavior in [Mathis et al, 2018]).
 - **Mean Average Precision** (mAP) and **Mean Average Recall** (mAR) for the labels
 predicted by your trained DeepLabCut model. This metric describes the average precision
-of your model, based on a thoughtful definition of what a correct prediction is. It
+of your model, based on a considered definition of what a correct prediction is. It
 isn't as useful for single-animal models, as RMSE does a great job of evaluating your
 model in that case.
 
