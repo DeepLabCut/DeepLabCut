@@ -785,6 +785,29 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
+#### API Docs
+
+````{admonition} Click the button to see API Docs for analyze_videos
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.analyze_videos.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for convert_detections2tracklets
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.convert_detections2tracklets.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for stitch_tracklets
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.stitch_tracklets.rst
+```
+````
+
 ### Using Unsupervised Identity Tracking:
 
 In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals.
@@ -830,6 +853,13 @@ deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvide
 ```
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: ``deeplabcut.filterpredictions?``
 
+````{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.filterpredictions.rst
+```
+````
+
 ### Plotting Results:
 
 - **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to `0` to "see" the filled in parts.
@@ -849,6 +879,20 @@ Create videos:
 - **NOTE :bulb::mega::** You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!
 
 (more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
+
+````{admonition} Click the button to see API Docs for plot_trajectories
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.plot_trajectories.rst
+```
+````
+
+````{admonition} Click the button to see API Docs for create_labeled_video
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_labeled_video.rst
+```
+````
 
 ### HELP:
 
