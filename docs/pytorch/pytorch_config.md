@@ -293,6 +293,9 @@ runner:
     max_snapshots: 5  # the maximum number of snapshots to save (the "best" model does not count as one of them)
     save_epochs: 25  # the interval between each snapshot save  
     save_optimizer_state: false  # whether the optimizer state should be saved with the model snapshots (very little reason to set to true)
+  gpus: # GPUs to use to train the network
+  - 0
+  - 1
 ```
 
 **Key metric**: Every time the model is evaluated on the test set, metrics are computed 
