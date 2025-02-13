@@ -262,14 +262,18 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
+        batch_size = len(inputs)
         if self.dynamic is not None:
+            # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
 
         outputs = self.model(inputs.to(self.device))
         raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
-            self.dynamic.update(raw_predictions["bodypart"]["poses"])
+            raw_predictions["bodypart"]["poses"] = self.dynamic.update(
+                raw_predictions["bodypart"]["poses"]
+            )
 
         predictions = [
             {
@@ -279,7 +283,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
                 for head, head_outputs in raw_predictions.items()
             }
-            for b in range(len(inputs))
+            for b in range(batch_size)
         ]
         return predictions
 
