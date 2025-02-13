@@ -300,7 +300,9 @@ class TopDownDynamicCropper(DynamicCropper):
                 self.crop_history.append([])
             return self._crop_patches(image)
 
-        self.crop_history.append([self._crop])
+        if self.store_crops:
+            self.crop_history.append([self._crop])
+
         return self._crop_bounding_box(image, self._crop)
 
     def update(self, pose: torch.Tensor) -> torch.Tensor:
