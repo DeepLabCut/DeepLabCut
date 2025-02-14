@@ -89,9 +89,7 @@ For a deeper understanding and more resources for you to get started with Python
 
 🐭 pose tracking of single animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
 
-🐭🐭🐭 pose tracking of multiple animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_3miceDemo.ipynb)
-
-- See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
+See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
 # Why use DeepLabCut?
 
