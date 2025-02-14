@@ -54,7 +54,7 @@ import deeplabcut
 for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
 ```
 
-### Create a New Project:
+### (A) Create a New Project
 
 ```python
 deeplabcut.create_new_project(
@@ -112,7 +112,7 @@ There are docs for this: [convert single to multianimal annotation data](convert
 
 ![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
-### Configure the Project:
+### (B) Configure the Project
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**.
 You can edit this file in any text editor. Familiarize yourself with the meaning of the
@@ -169,7 +169,7 @@ identity: True/False
 
 **Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
-### Select Frames to Label:
+### (C) Select Frames to Label
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
 
@@ -236,7 +236,7 @@ them.
 ```
 ````
 
-### Label Frames:
+### (D) Label Frames
 
 ```python
 deeplabcut.label_frames(config_path)
@@ -287,7 +287,7 @@ consistently!
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
 </p>
 
-### Check Annotated Frames:
+### (E) Check Annotated Frames
 
 Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -312,7 +312,7 @@ For each video directory in labeled-data this function creates a subdirectory wi
 ```
 ````
 
-### Create Training Dataset:
+### (F) Create Training Dataset
 
 At this point, you'll need to select your neural network type.
 
@@ -424,7 +424,7 @@ deeplabcut.create_training_dataset_from_existing_split(
 ```
 ````
 
-### Train The Network:
+### (G) Train The Network
 
 ```python
 deeplabcut.train_network(config_path, shuffle=1)
@@ -538,7 +538,7 @@ data. The bonus, training time is much less!!!
 ```
 ````
 
-### Evaluate the Trained Network:
+### (H) Evaluate the Trained Network
 
 It is important to evaluate the performance of the trained network. This performance is 
 measured by computing two metrics:
@@ -641,7 +641,7 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 
 You can drop "Indices" to run this on all training/testing images (this is very slow!)
 
-### Evaluating your network on videos
+### (I) Analyze new Videos
 
 **-------------------- DECISION POINT -------------------**
 
@@ -689,7 +689,7 @@ where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
 
 
-## Animal Assembly and Tracking across frames
+### Animal Assembly and Tracking across frames
 
 After pose estimation, now you perform assembly and tracking.
 
@@ -843,7 +843,7 @@ Short demo:
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
 
-### Once you have analyzed video data (and refined your maDeepLabCut tracklets):
+### (J) Filter Pose Data
 
 Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
@@ -860,7 +860,7 @@ Note, this creates a file with the ending filtered.h5 that you can use for furth
 ```
 ````
 
-### Plotting Results:
+### (K) Plot Trajectories , (L) Create Labeled Videos
 
 - **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to `0` to "see" the filled in parts.
 

@@ -152,7 +152,7 @@ Please DO NOT have spaces in the names of bodyparts.
 **bodyparts:** are the bodyparts of each individual (in the above list).
 
 
- ### (C) Data Selection (extract frames)
+ ### (C) Select Frames to Label
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the
 behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
@@ -265,7 +265,7 @@ Delete key: delete label.
 ```
 ````
 
-###  (E) Check Annotated Frames
+### (E) Check Annotated Frames
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -288,7 +288,7 @@ around, and click save again.
 ````
 
 (create-training-dataset)=
-### (F) Create Training Dataset(s) and selection of your neural network
+### (F) Create Training Dataset
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but
 move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you
@@ -590,7 +590,7 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 ```
 ````
 
-### (I) Novel Video Analysis:
+### (I) Analyze new Videos
 
 The trained network can be used to analyze new videos. Novel/new videos **DO NOT have to be in the config file!**.
 You can analyze new videos anytime by simply using the following line of code:
@@ -654,7 +654,7 @@ dynamic: triple containing (state, detectiontreshold, margin)
     for the next frame (this is why the margin is important and should be set large enough
     given the movement of the animal).
 ```
-### (J) Filter pose data (RECOMMENDED!):
+### (J) Filter Pose Data
 
 You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
 ```python
@@ -702,7 +702,7 @@ deeplabcut.filterpredictions(
 ```
 ````
 
-### (K) Plot Trajectories:
+### (K) Plot Trajectories
 
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
@@ -731,7 +731,7 @@ body part detections across frames). Here are example plot outputs on a demo vid
 ```
 ````
 
-### (L) Create Labeled Videos:
+### (L) Create Labeled Videos
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher
