@@ -363,14 +363,15 @@ def compute_detection_rmse(
 
     if data_unique is not None:
         for image_gt, image_pred in data_unique:
-            assert len(image_gt) == len(image_pred) == 1, (
-                f"Unique GT an predictions must have length 1! Found {image_gt.shape}, "
+            assert len(image_gt) <= 1 and len(image_pred) <= 1, (
+                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, "
                 f"{image_pred.shape}."
             )
-            unique_gt, unique_pred = image_gt[0], image_pred[0]
-            for gt, pred in zip(unique_gt, unique_pred):
-                distances.append(np.linalg.norm(gt[:2] - pred[:2]))
-                scores.append(pred[2])
+            if len(image_gt) == 1 and len(image_pred) == 1:
+                unique_gt, unique_pred = image_gt[0], image_pred[0]
+                for gt, pred in zip(unique_gt, unique_pred):
+                    distances.append(np.linalg.norm(gt[:2] - pred[:2]))
+                    scores.append(pred[2])
 
     rmse, rmse_cutoff = float("nan"), float("nan")
     if len(distances) == 0:

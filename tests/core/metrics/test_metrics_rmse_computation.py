@@ -126,7 +126,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
 
 
 @pytest.mark.parametrize(
-    "gt, pred, result",
+    "gt, pred, data_unique, result",
     [
         (
             [  # ground truth pose
@@ -135,6 +135,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
             [  # predicted pose
                 [[12.0, 10.0, 0.9], [10.0, 10.0, 0.4], [10.0, 10.0, 0.9]],
             ],
+            None, # unique data
             (1, 1),  # error 2 on one, 0 on the other; only 2 valid GT
         ),
         (
@@ -146,6 +147,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[10.0, 10.0, 0.9], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
                 [[40.0, 40.0, 0.9], [20.0, 20.0, 0.4], [60.0, 60.0, 0.9]],
             ],
+            None, # unique data
             (0, 0),  # all pose perfect
         ),
         (
@@ -157,6 +159,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[12.0, 10.0, 0.9], [52.0, 50.0, 0.9], [32.0, 30.0, 0.9]],
                 [[42.0, 40.0, 0.9], [18.0, 20.0, 0.4], [62.0, 60.0, 0.9]],
             ],
+            None, # unique data
             (2, 2),  # pixel error of 2 on x-axis for all predictions
         ),
         (
@@ -168,6 +171,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[12.0, 10.0, 0.4], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
                 [[40.0, 40.0, 0.9], [22.0, 20.0, 0.4], [62.0, 60.0, 0.4]],
             ],
+            None, # unique data
             (1, 0),  # error of 2 on half, 0 on the other half (with good conf)
         ),
         (  # more ground truth than detections
@@ -180,26 +184,57 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
             ],
+            None, # unique data
             (0, 0),
         ),
         (  # more detections than GT
-            [  # predicted pose, no error
+            [  # ground truth pose
                 [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
             ],
-            [  # ground truth pose
+            [  # predicted pose, no error
                 [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
                 [[70.0, 70.0, 2], [80.0, 80.0, 2], [90.0, 90.0, 2]],
             ],
+            None, # unique data
             (0, 0),
+        ),
+        (
+                [  # ground truth pose
+                    [[10.0, 10.0, 2], [np.nan, np.nan, 0], [10.0, 10.0, 2]],
+                ],
+                [  # predicted pose
+                    [[12.0, 10.0, 0.9], [10.0, 10.0, 0.4], [10.0, 10.0, 0.9]],
+                ],
+                (  # unique data
+                        [[[20, 20, 2], [22, 23, 2]]],
+                        [[[20, 20, 0.8], [22, 23, 0.7]]]
+                ),
+                (0.5, 0.5),  # error 2 on one, 0 on the other; only 2 valid GT
+        ),
+        (
+                [  # ground truth pose
+                    [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
+                    [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
+                ],
+                [  # predicted pose, perfect detections but mis-assembled
+                    [[10.0, 10.0, 0.9], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
+                    [[40.0, 40.0, 0.9], [20.0, 20.0, 0.4], [60.0, 60.0, 0.9]],
+                ],
+                (  # unique data
+                        [], # missing ground truth for unique bodyparts
+                        [[[20, 20, 0.8], [22, 23, 0.7]]]
+                ),
+                (0, 0),  # all pose perfect
         ),
     ],
 )
-def test_detection_rmse(gt: list, pred: list, result: tuple[float, float]):
+def test_detection_rmse(gt: list, pred: list, data_unique:tuple[list, list]|None, result: tuple[float, float]):
     data = [(np.asarray(gt), np.asarray(pred))]
+    data_unique = [(np.asarray(data_unique[0]), np.asarray(data_unique[1]))] if data_unique else None
     expected_rmse, expected_rmse_cutoff = result
-    rmse, rmse_cutoff = compute_detection_rmse(data, pcutoff=0.6)
+    rmse, rmse_cutoff = compute_detection_rmse(data, pcutoff=0.6, data_unique=data_unique)
     assert_almost_equal(rmse, expected_rmse)
     assert_almost_equal(rmse_cutoff, expected_rmse_cutoff)
 
