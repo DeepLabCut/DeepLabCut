@@ -242,19 +242,22 @@ def video_inference_superanimal(
         not require too much training. However, you can make them higher if you see a
         substaintial gain in the training logs.
 
-    Examples (TensorFlow Engine)
+    Examples
     --------
 
-    >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
-    >>> superanimal_name = 'superanimal_topviewmouse_dlcrnet'
-    >>> videotype = 'mp4'
+    >>> from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+    >>> videos = ["/path/to/my/video.mp4"]
+    >>> superanimal_name = "superanimal_topviewmouse"
+    >>> videotype = "mp4"
     >>> scale_list = [200, 300, 400]
     >>> video_inference_superanimal(
-            video,
-            video_adapt = True,
+            videos,
             superanimal_name,
-            videotype = '.avi',
+            model_name="hrnet_w32",
+            detector_name="fasterrcnn_resnet50_fpn_v2",
             scale_list = scale_list,
+            videotype = videotype,
+            video_adapt = True,
         )
 
     Tips:

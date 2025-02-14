@@ -30,6 +30,9 @@ from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
     visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.apis.export import export_model
+from deeplabcut.pose_estimation_pytorch.apis.tracking_dataset import (
+    create_tracking_dataset,
+)
 from deeplabcut.pose_estimation_pytorch.apis.train import (
     train,
     train_network,

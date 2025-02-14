@@ -104,6 +104,7 @@ class ShelfWriter(ShelfManager):
         bodyparts: np.ndarray,
         unique_bodyparts: np.ndarray | None = None,
         identity_scores: np.ndarray | None = None,
+        **kwargs,
     ) -> None:
         """Adds the prediction for a frame to the shelf
 
@@ -123,12 +124,15 @@ class ShelfWriter(ShelfManager):
         scores = [bpt[:, 2:3] for bpt in bodyparts]
 
         # full pickle has bodyparts and unique bodyparts in same array
+        unique_bodyparts = kwargs.get("unique_bodyparts", None)
         if unique_bodyparts is not None:
             unique_bpts = unique_bodyparts.transpose((1, 0, 2))
             coordinates += [bpt[:, :2] for bpt in unique_bpts]
             scores += [bpt[:, 2:] for bpt in unique_bpts]
 
         output = dict(coordinates=(coordinates,), confidence=scores, costs=None)
+
+        identity_scores = kwargs.get("identity_scores", None)
         if identity_scores is not None:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)
             # to the original DLC full pickle format: (num_bpts, num_assem, num_ind)
@@ -174,3 +178,50 @@ class ShelfWriter(ShelfManager):
             "nframes": self._num_frames,
             "key_str_width": self._str_width,
         }
+
+
+class FeatureShelfWriter(ShelfWriter):
+    """Writes bodypart features to a shelf on-the-fly for ReID model training.
+
+    Args:
+        pose_cfg: The test pose config for the model.
+        filepath: The path where the data should be saved.
+        num_frames: The number of frames in the video. Used to set the number of
+            leading 0s in the keys of the dictionary. Default is 5 if the number of
+            frames is not given.
+
+    Attributes:
+        filepath: The path to the shelf.
+    """
+
+    def __init__(
+        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
+    ):
+        super().__init__(pose_cfg, filepath, num_frames)
+
+    def add_prediction(
+        self,
+        bodyparts: np.ndarray,
+        features: np.ndarray | None = None,
+        **kwargs,
+    ) -> None:
+        """Adds the prediction for a frame to the shelf
+
+        Args:
+            bodyparts: The predicted bodyparts.
+            features: The features for the bodyparts.
+        """
+        if not self._open:
+            raise ValueError(f"You must call open() before adding data!")
+
+        key = "frame" + str(self._frame_index).zfill(self._str_width)
+
+        # bodyparts to shape (num_assemblies, num_bpts, xy)
+        coordinates = bodyparts[:, :, :2]
+        if features is None:
+            raise ValueError(
+                "Backbone features must be given to the FeatureShelfWriter"
+            )
+
+        self._db[key] = dict(coordinates=coordinates, features=features)
+        self._frame_index += 1

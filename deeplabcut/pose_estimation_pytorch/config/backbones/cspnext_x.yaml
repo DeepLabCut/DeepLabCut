@@ -11,9 +11,9 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 0.0005
+      lr: 0.001
   scheduler:
     type: LRListScheduler
     params:
       lr_list: [ [ 1e-4 ], [ 1e-5 ] ]
-      milestones: [ 90, 190 ]
+      milestones: [ 90, 120 ]

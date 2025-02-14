@@ -320,7 +320,7 @@ def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
                 attributes=[
                     IntTrainAttribute(
                         label="Display iterations",
-                        fn_key="display_iters",
+                        fn_key="displayiters",
                         default=1_000,
                         min=1,
                         max=100_000,

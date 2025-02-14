@@ -58,6 +58,6 @@ def query_feature_by_coord_in_img_space(feature_dict, frame_id, ref_coord):
 
     diff = coordinates - ref_coord
     diff[np.where(np.logical_or(diff > 9000, diff < 0))] = np.nan
-    match_id = np.argmin(np.nanmean(diff, axis=(1, 2)))
-
+    masked_means = np.ma.masked_invalid(np.nanmean(diff, axis=(1, 2)))
+    match_id = np.argmin(masked_means)
     return features[match_id]

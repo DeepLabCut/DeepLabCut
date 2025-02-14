@@ -49,10 +49,10 @@ class SyntheticProjectParameters:
     frame_shape: tuple[int, int] = (480, 640)
 
     def bodyparts(self) -> list[str]:
-        return [i for i in string.ascii_lowercase[:self.num_bodyparts]]
+        return [i for i in string.ascii_lowercase[: self.num_bodyparts]]
 
     def unique(self) -> list[str]:
-        return [f"unique_{i}" for i in string.ascii_lowercase[:self.num_unique]]
+        return [f"unique_{i}" for i in string.ascii_lowercase[: self.num_unique]]
 
     def individuals(self) -> list[str]:
         return [f"animal_{i}" for i in range(self.num_individuals)]
@@ -76,9 +76,9 @@ def sample_pose_random(
         unique_pose = np.stack(
             [
                 gen.choice(img_w, size=(1, num_unique), replace=False),
-                gen.choice(img_h, size=(1, num_unique), replace=False)
+                gen.choice(img_h, size=(1, num_unique), replace=False),
             ],
-            axis=-1
+            axis=-1,
         )
         image_data = np.concatenate([image_data, unique_pose.reshape(-1)])
     return image_data
@@ -343,31 +343,37 @@ def run(
     net_type: str,
     videos: list[str],
     device: str,
-    train_kwargs: dict,
     engine: Engine = Engine.PYTORCH,
+    pytorch_cfg_updates: dict | None = None,
     create_labeled_videos: bool = False,
 ) -> None:
     times = [time.time()]
     log_step(f"Testing with net type {net_type}")
     log_step("Creating the training dataset")
-    deeplabcut.create_training_dataset(str(config_path), net_type=net_type, engine=engine)
+    deeplabcut.create_training_dataset(
+        str(config_path), net_type=net_type, engine=engine
+    )
     existing_shuffles = get_existing_shuffle_indices(
         config_path, train_fraction=train_fraction, engine=engine
     )
     shuffle_index = existing_shuffles[-1]
 
-    log_step(f"Starting training for train_frac {train_fraction}, shuffle {shuffle_index}")
+    log_step(
+        f"Starting training for train_frac {train_fraction}, shuffle {shuffle_index}"
+    )
     deeplabcut.train_network(
         config=str(config_path),
         shuffle=shuffle_index,
         trainingsetindex=trainset_index,
         device=device,
-        **train_kwargs,
+        pytorch_cfg_updates=pytorch_cfg_updates,
     )
     times.append(time.time())
     log_step(f"Train time: {times[-1] - times[-2]} seconds")
 
-    log_step(f"Starting evaluation for train_frac {train_fraction}, shuffle {shuffle_index}")
+    log_step(
+        f"Starting evaluation for train_frac {train_fraction}, shuffle {shuffle_index}"
+    )
     deeplabcut.evaluate_network(
         config=str(config_path),
         Shuffles=[shuffle_index],

@@ -1,5 +1,5 @@
 (dlc3-user-guide)=
-# DeepLabCut 3.0 - Pytorch User Guide
+# DeepLabCut 3.0 - PyTorch User Guide
 
 ## Using DeepLabCut 3.0
 
@@ -24,6 +24,7 @@ set `engine: tensorflow`.
 During the alpha phase, you can use the `yaml` we provide, or create a new `env`. 
 - If you are a beginner user, [please see these docs!](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html)
 - If you are an advanced user, here is a quick start. [“Install PyTorch”](https://pytorch.org/get-started/locally/), then:
+
 ```
 conda install -c conda-forge pytables==3.8.0
 pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
@@ -81,7 +82,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `evaluate_network`             |     🟢      |                                                                                                     |                                                     |
 | `return_evaluate_network_data` |     🔴      |                                                                                                     | `TFGPUinference`, `allow_growth`                    |
 | `analyze_videos`               |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
-| `create_tracking_dataset`      |     🔴      |                                                                                                     |                                                     |
+| `create_tracking_dataset`      |     🟢      |                                                                                                     |                                                     |
 | `analyze_time_lapse_frames`    |     🟢      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
 | `convert_detections2tracklets` |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
 | `extract_maps`                 |     🟢      |                                                                                                     |                                                     |

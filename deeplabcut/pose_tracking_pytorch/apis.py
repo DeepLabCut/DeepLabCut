@@ -11,30 +11,30 @@
 
 
 def transformer_reID(
-    config,
-    videos,
-    videotype="",
-    shuffle=1,
-    trainingsetindex=0,
-    track_method="ellipse",
-    n_tracks=None,
-    n_triplets=1000,
-    train_epochs=100,
-    train_frac=0.8,
-    modelprefix="",
-    destfolder=None,
+    config: str,
+    videos: list[str],
+    videotype: str = "",
+    shuffle: int = 1,
+    trainingsetindex: int = 0,
+    track_method: str = "ellipse",
+    n_tracks: int | None = None,
+    n_triplets: int = 1000,
+    train_epochs: int = 100,
+    train_frac: float = 0.8,
+    modelprefix: str = "",
+    destfolder: str = None,
 ):
     """
     Enables tracking with transformer.
 
     Substeps include:
+        - Mines triplets from tracklets in videos (from another tracker)
+        - These triplets are later used to tran a transformer with triplet loss
+        - The transformer derived appearance similarity is then used as a stitching loss
+            when tracklets are stitched during tracking.
 
-    - Mines triplets from tracklets in videos (from another tracker)
-    - These triplets are later used to tran a transformer with triplet loss
-    - The transformer derived appearance similarity is then used as a stitching loss when tracklets are
-    stitched during tracking.
-
-    Outputs: The tracklet file is saved in the same folder where the non-transformer tracklet file is stored.
+    Outputs: The tracklet file is saved in the same folder where the non-transformer
+    tracklet file is stored.
 
     Parameters
     ----------
@@ -42,11 +42,14 @@ def transformer_reID(
         Full path of the config.yaml file as a string.
 
     videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to
+        the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed.
+        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg',
+        'mkv') are kept.
 
     shuffle : int, optional
         which shuffle to use
@@ -74,8 +77,15 @@ def transformer_reID(
     --------
 
     Training model for one video based on ellipse-tracker derived tracklets
-    >>> deeplabcut.transformer_reID(path_config_file,[''/home/alex/video.mp4'],track_method="ellipse")
-
+    >>> config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
+    >>> videos = ['/home/alex/video.mp4']
+    >>> deeplabcut.transformer_reID(config, videos, shuffle=1, track_method="ellipse")
+    >>> deeplabcut.create_labeled_video(
+    >>>     config,
+    >>>     videos,
+    >>>     shuffle=1,
+    >>>     track_method="transformer",
+    >>> )
     --------
 
     """

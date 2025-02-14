@@ -50,6 +50,14 @@ class VideoIterator(VideoReader):
         if self._crop:
             self.set_bbox(*cropping)
 
+    def set_crop(self, cropping: list[int] | None = None) -> None:
+        """Sets the cropping parameters for the video."""
+        self._crop = cropping is not None
+        if self._crop:
+            self.set_bbox(*cropping)
+        else:
+            self.set_bbox(0, 1, 0, 1, relative=True)
+
     def get_context(self) -> list[dict[str, Any]] | None:
         if self._context is None:
             return None
@@ -157,6 +165,8 @@ def video_inference(
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
+    elif cropping is not None:
+        video.set_crop(cropping)
 
     n_frames = video.get_n_frames(robust=robust_nframes)
     vid_w, vid_h = video.dimensions
@@ -421,7 +431,7 @@ def analyze_videos(
         output_prefix = video.stem + dlc_scorer
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
-        video_iterator = VideoIterator(video)
+        video_iterator = VideoIterator(video, cropping=cropping)
 
         shelf_writer = None
         if use_shelve:
@@ -439,7 +449,6 @@ def analyze_videos(
                 video=video_iterator,
                 pose_runner=pose_runner,
                 detector_runner=detector_runner,
-                cropping=cropping,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
             )
@@ -617,6 +626,11 @@ def _generate_assemblies_file(
         # reshape to (num_preds, num_bpts, 4)
         preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
         preds = preds.transpose((1, 0, 2))
+
+        # remove all-missing predictions
+        mask = ~np.all(preds < 0, axis=(1, 2))
+        preds = preds[mask]
+
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:

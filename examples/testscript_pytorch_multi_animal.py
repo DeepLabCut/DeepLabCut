@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Testscript for single animal PyTorch projects """
+"""Testscript for single animal PyTorch projects"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,7 +17,11 @@ import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
 
 from utils import (
-    cleanup, create_fake_project, log_step, run, SyntheticProjectParameters,
+    cleanup,
+    create_fake_project,
+    log_step,
+    run,
+    SyntheticProjectParameters,
 )
 
 
@@ -57,35 +61,21 @@ def main(
                     net_type=net_type,
                     videos=[str(project_path / "videos" / "video.mp4")],
                     device=device,
-                    train_kwargs=dict(
-                        train_settings=dict(
-                            display_iters=50,
-                            epochs=epochs_,
-                            batch_size=batch_size,
-                        ),
-                        runner=dict(
-                            device=device,
-                            snapshots=dict(
-                                save_epochs=save_epochs,
-                                max_snapshots=max_snapshots_to_keep,
-                            )
-                        ),
-                        detector=dict(
-                            train_settings=dict(
-                                display_iters=1,
-                                epochs=detector_epochs,
-                                batch_size=detector_batch_size,
-                            ),
-                            runner=dict(
-                                snapshots=dict(
-                                    save_epochs=save_epochs,
-                                    max_snapshots=max_snapshots_to_keep,
-                                )
-                            )
-                        ),
-                        logger=logger,
-                    ),
                     engine=engine,
+                    pytorch_cfg_updates={
+                        "train_settings.display_iters": 50,
+                        "train_settings.epochs": epochs_,
+                        "train_settings.batch_size": batch_size,
+                        "runner.device": device,
+                        "runner.snapshots.save_epochs": save_epochs,
+                        "runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                        "detector.train_settings.display_iters": 1,
+                        "detector.train_settings.epochs": detector_epochs,
+                        "detector.train_settings.batch_size": detector_batch_size,
+                        "detector.runner.snapshots.save_epochs": save_epochs,
+                        "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                        "logger": logger,
+                    },
                     create_labeled_videos=create_labeled_videos,
                 )
             except Exception as err:

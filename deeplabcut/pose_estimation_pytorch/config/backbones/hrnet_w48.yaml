@@ -3,6 +3,10 @@ data:
     auto_padding: # Required for HRNet backbones
       pad_width_divisor: 32
       pad_height_divisor: 32
+  train:
+    auto_padding: # Required for HRNet backbones
+      pad_width_divisor: 32
+      pad_height_divisor: 32
 model:
   backbone:
     type: HRNet

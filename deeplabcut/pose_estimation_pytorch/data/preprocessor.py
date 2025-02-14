@@ -141,6 +141,8 @@ class LoadImage(Preprocessor):
         else:
             image_ = image
 
+        h, w = image_.shape[:2]
+        context["image_size"] = w, h
         return image_, context
 
 
@@ -347,4 +349,5 @@ class TopDownCrop(Preprocessor):
         else:
             images = np.stack(images, axis=0)
 
+        context["top_down_crop_size"] = self.output_size
         return images, context

@@ -218,6 +218,7 @@ def build_tracklets(
             _single[index] = np.asarray(single_detection)
         tracklets["single"].update(_single)
 
+    pcutoff = inference_cfg.get("pcutoff")
     if inference_cfg["topktoretain"] == 1:
         tracklets[0] = {}
         for index in tqdm(range(num_frames)):
@@ -225,7 +226,9 @@ def build_tracklets(
             if assemblies is None:
                 continue
 
-            tracklets[0][index] = np.asarray(assemblies[0].data)
+            assembly = np.asarray(assemblies[0].data)
+            assembly[assembly[..., 2] < pcutoff] = np.nan
+            tracklets[0][index] = assembly
     else:
         keep = set(multi_bpts).difference(ignore_bodyparts or [])
         keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
@@ -235,6 +238,13 @@ def build_tracklets(
                 continue
 
             animals = np.stack([a for a in assemblies])
+            animals[animals[..., 2] < pcutoff, :2] = np.nan
+            animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
+            if ~np.any(animal_mask):
+                continue
+
+            animals = animals[animal_mask]
+
             if identity_only:
                 # Optimal identity assignment based on soft voting
                 mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))

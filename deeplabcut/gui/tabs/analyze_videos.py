@@ -115,12 +115,6 @@ class AnalyzeVideos(DefaultTab):
 
         tmp_layout.addWidget(self.save_as_csv)
 
-        self.save_as_nwb = QtWidgets.QCheckBox("Save result(s) as nwb")
-        self.save_as_nwb.setCheckState(Qt.Unchecked)
-        self.save_as_nwb.stateChanged.connect(self.update_nwb_choice)
-
-        tmp_layout.addWidget(self.save_as_csv)
-
         # Filter predictions
         self.filter_predictions = QtWidgets.QCheckBox("Filter predictions")
         self.filter_predictions.setCheckState(Qt.Unchecked)
@@ -222,10 +216,6 @@ class AnalyzeVideos(DefaultTab):
     def update_csv_choice(self, state):
         s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
         self.root.logger.info(f"Save results as CSV {s}")
-
-    def update_nwb_choice(self, state):
-        s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
-        self.root.logger.info(f"Save results as NWB {s}")
 
     def update_filter_choice(self, state):
         s = "ENABLED" if Qt.CheckState(state) == Qt.Checked else "DISABLED"
@@ -331,7 +321,6 @@ class AnalyzeVideos(DefaultTab):
 
         videos = list(self.files)
         save_as_csv = self.save_as_csv.isChecked()
-        save_as_nwb = self.save_as_nwb.isChecked()
         filter_data = self.filter_predictions.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
         try:
@@ -379,13 +368,6 @@ class AnalyzeVideos(DefaultTab):
 
         if self.root.is_multianimal and save_as_csv:
             deeplabcut.analyze_videos_converth5_to_csv(
-                videos,
-                listofvideos=True,
-            )
-
-        if save_as_nwb:
-            deeplabcut.analyze_videos_converth5_to_nwb(
-                config,
                 videos,
                 listofvideos=True,
             )
