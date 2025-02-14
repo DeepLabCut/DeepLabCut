@@ -169,6 +169,7 @@ def convert_detections2tracklets(
     )
 
 
+# todo remove multi_bpts and use joints instead?
 def build_tracklets(
     assemblies_data: dict,
     track_method: str,
