@@ -13,7 +13,7 @@ import numpy as np
 import os
 import pickle
 import shelve
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.core import trackingutils
 from deeplabcut.refine_training_dataset.stitch import TrackletStitcher
 from pathlib import Path
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
@@ -33,8 +33,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
 
     feature_dict = shelve.open(feature_fname, protocol=pickle.DEFAULT_PROTOCOL)
 
-    nframes = len(feature_dict.keys())
-
+    nframes = max(len(feature_dict.keys()), 2)
     zfill_width = int(np.ceil(np.log10(nframes)))
 
     for triplet in triplets:

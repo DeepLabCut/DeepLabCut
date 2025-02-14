@@ -1,0 +1,21 @@
+colormode: RGB
+inference:
+  normalize_images: true
+  top_down_crop:
+    width: 256
+    height: 256
+train:
+  affine:
+    p: 0.5
+    rotation: 30
+    scaling: [1.0, 1.0]
+    translation: 0
+  collate: null
+  covering: false
+  gaussian_noise: 12.75
+  hist_eq: false
+  motion_blur: false
+  normalize_images: true
+  top_down_crop:
+    width: 256
+    height: 256

@@ -15,7 +15,7 @@ import pytest
 import shutil
 import urllib.request
 import zipfile
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from io import BytesIO
 from PIL import Image
 from tqdm import tqdm

@@ -24,7 +24,7 @@ from deeplabcut.gui.components import (
 )
 
 import deeplabcut
-from deeplabcut.pose_estimation_tensorflow.lib import trackingutils
+from deeplabcut.core import trackingutils
 from deeplabcut.utils.auxiliaryfunctions import GetScorerName
 
 

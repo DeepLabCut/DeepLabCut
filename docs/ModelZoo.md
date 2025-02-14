@@ -5,7 +5,9 @@
 
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
 
+
 Started in 2020, expanded in 2022 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the first proper [SuperAnimal Foundation Models]() published in 2024 🔥, the Model Zoo is four things:
+
 
 - (1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: [contrib.deeplabcut.org](https://contrib.deeplabcut.org/).
@@ -28,7 +30,9 @@ To provide the community with easy access to such high performance models across
 - Models are based on what they are trained on, for example `superanimal_quadruped_x` is trained on [SuperAnimal-Quadruped-80K](https://zenodo.org/records/10619173). Each model class is described below:
 
 
+
 ### SuperAnimal-Quadruped: 
+
 
 - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
 - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10619173)
@@ -45,7 +49,9 @@ To provide the community with easy access to such high performance models across
 ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
 
 
+
 ### SuperAnimal-TopViewMouse:
+
 
 -  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
 - [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
@@ -69,11 +75,14 @@ You can simply call the model and run video inference.
 To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the `deeplabcut.video_inference_superanimal` simply function set the `video_adapt` option to __True__. Be aware, that enabling this option will (minimally) extend the processing time. 
 
 ```python
-video_path = 'demo-video.mp4'
-superanimal_name = 'superanimal_quadruped_hrnetw32'
+import deeplabcut
+video_path = "demo-video.mp4"
+superanimal_name = "superanimal_quadruped"
 
 deeplabcut.video_inference_superanimal([video_path],
                                         superanimal_name,
+                                        model_name="hrnet_w32",
+                                        detector_name="fasterrcnn_resnet50_fpn_v2",
                                         video_adapt = False)
 ```
 
@@ -83,13 +92,19 @@ deeplabcut.video_inference_superanimal([video_path],
 In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the `scale_list`:
 
 ```python
-video_path = 'demo-video.mp4'
-superanimal_name = 'superanimal_quadruped_dlcrnet'
+import deeplabcut
+video_path = "demo-video.mp4"
+superanimal_name = "superanimal_quadruped"
 
 # The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.
 scale_list = range(200, 600, 50)
 
-deeplabcut.video_inference_superanimal([video_path], superanimal_name, scale_list=scale_list, video_adapt = False)
+deeplabcut.video_inference_superanimal([video_path],
+                                        superanimal_name,
+                                        model_name="hrnet_w32",
+                                        detector_name="fasterrcnn_resnet50_fpn_v2",
+                                        scale_list=scale_list,
+                                        video_adapt = False)
 ```
 
 #### Practical example: Using transfer learning with superanimal weights.
@@ -100,7 +115,9 @@ Specifically:
 * `superanimal_topviewmouse_x` uses 27 keypoints
 
 ```python
+
 superanimal_name = "superanimal_topviewmouse_hrnetw32"
+
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
 
 deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)

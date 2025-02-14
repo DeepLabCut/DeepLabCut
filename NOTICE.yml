@@ -5,7 +5,7 @@
     https://github.com/DeepLabCut/DeepLabCut
 
     Please see AUTHORS for contributors.
-    https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+    https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 
     Licensed under GNU Lesser General Public License v3.0
   include:
@@ -17,6 +17,7 @@
 
 # License for files adapted from DeeperCut by Eldar Insafutdinov
 # https://github.com/eldar/pose-tensorflow
+
 # Applies to most files in deeplabcut.pose_estimation_tensorflow
 - header: |
     DeepLabCut Toolbox (deeplabcut.org)
@@ -107,3 +108,8 @@
   include:
     - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py
     - deeplabcut/pose_tracking_pytorch/model/backones/vit_pytorch.py
+
+# PyTorch license 
+
+- header: |
+    See https://github.com/pytorch/pytorch/blob/main/LICENSE
