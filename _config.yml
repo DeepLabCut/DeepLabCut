@@ -5,7 +5,7 @@ only_build_toc_files: true
 
 sphinx:
   config:
-    autodoc_mock_imports: ["wx"]
+    autodoc_mock_imports: ["wx", "matplotlib", "qtpy", "PySide6", "napari", "shiboken6"]
     mermaid_output_format: raw
   extra_extensions:
     - numpydoc

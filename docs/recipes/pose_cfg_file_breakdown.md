@@ -1,5 +1,10 @@
 # The `pose_cfg.yaml` Guideline Handbook
 
+::::{warning}
+The following is specific to Tensorflow-based models. To read the equivalent explanations for Pytorch-based models,
+click [here](dlc3-pytorch-config)
+::::
+
 👋 Hello! Mabuhay! Hola! This recipe was written by the [2023 DLC AI Residents](https://www.deeplabcutairesidency.org/)!
 
 When you train, evaluate, and run inference with a neural network there are hyperparatmeters you must consider. While DLC attempts to set the "globally good for everyone" parameters, you might want to change them. Therefore, in this recipe we will review the pose config parameters related to neural network models' and the related data augmentation!

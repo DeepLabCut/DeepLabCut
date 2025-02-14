@@ -3,24 +3,24 @@
 
 ## How to use the latest updates directly from GitHub
 
-We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
+We often update the master deeplabcut code base on GitHub, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself. Here, we show you how to do this.
 
 ### Method 1:
 
-If you want to *use* the latest, you can use pip and add the specific tags, such as `tf` or `gui`, etc. by modifying and running: 
+If you want to *use* the latest, you can use pip and add the specific tags, such as `gui`, etc. by modifying and running: 
 ```
-pip install --upgrade 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf]'
+pip install --upgrade 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[gui]'
 ```
 
 which will download and update deeplabcut, and any dependencies that don't match the new version. If you want to force upgrade all of the dependencies to the latest available versions, too, then use the additional `--upgrade-strategy eager`, i.e.:
 
 ```
-pip install --upgrade --upgrade-strategy eager 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[tf,gui]'
+pip install --upgrade --upgrade-strategy eager 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[gui]'
 ```
 
 ### Method 2: 
 
-If you want to be able to *edi* the source code of DeepLabCut, i.e., maybe add a feature or fix a 🐛, then you need to "clone" the source code:
+If you want to be able to *edit* the source code of DeepLabCut, i.e., maybe add a feature or fix a 🐛, then you need to "clone" the source code:
 
 **Step 1:**
 
@@ -54,6 +54,10 @@ If you make changes, you can also then utilize our test scripts. Run the desired
 
 i.e., for example:
 ```
+# Testing with the PyTorch engine
+python testscript_pytorch_multi_animal.py
+
+# Testing with the TensorFlow engine
 python testscript_multianimal.py
 ```
 
@@ -243,6 +247,7 @@ Share images, automate workflows, and more with a free Docker ID:
 For more examples and ideas, visit:
  https://docs.docker.com/get-started/
 ```
+
 ### Next, Anaconda!
 
 Click here to get the ubuntu/linux package: https://www.anaconda.com/products/individual#linux
@@ -283,6 +288,11 @@ Follow prompts!
 
 ## Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
 
+```{warning}
+DeepLabCut no longer uses `wxpython` for its GUI - if you're getting such an error, 
+you're likely installing an old version of DeepLabCut.
+```
+
 ```python
 ERROR: Command errored out with exit status 1: /home/mackenzie/anaconda3/envs/DLC-GPU/bin/python -u -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"'; __file__='"'"'/tmp/pip-install-0jsmkrr1/wxpython_aeff462b2060421a9cf65df55f63a126/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-pzy9q5u2/install-record.txt --single-version-externally-managed --compile --install-headers /home/mackenzie/anaconda3/envs/DLC-GPU/include/python3.7m/wxpython Check the logs for full command output.
 
@@ -313,11 +323,11 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
-## DeepLabCut MacOS M1 and M2 chip installation environment instructions:
+## DeepLabCut MacOS M-chip installation environment instructions:
 
-This only assumes you have anaconda installed.
-
-Use the `DEEPLABCUT_M1.yaml` conda file if you have an Macbok with an M1 or M2 chip, and follow these steps:
+This only assumes you have anaconda installed. Use the `DEEPLABCUT_M1.yaml` conda file
+if you have a newer MacBook (with an M1, M2, M3, M4 chip or more later), and follow
+these steps:
 
 (1) git clone the deeplabcut cut repo:
 
@@ -330,17 +340,24 @@ git clone https://github.com/DeepLabCut/DeepLabCut.git
 (3) Then, run:
 
 ```bash
-conda env create -f DEEPLABCUT_M1.yaml
+conda env create -f DEEPLABCUT.yaml
 ```
 
 (4) Finally, activate your environment and to launch DLC with the GUI
 
 ```bash
-conda activate DEEPLABCUT_M1
+conda activate DEEPLABCUT
 python -m deeplabcut
 ```
 
-The GUI will open. Of course, you can also run DeepLabCut in headless mode. 
+The GUI will open. Of course, you can also run DeepLabCut in headless mode.
+
+If **you want to use the TensorFlow engine**, you'll need to install the `apple_mchips`
+extra with DeepLabCut. You can do so by running:
+
+```bash
+pip install deeplabcut[apple_mchips]
+```
 
 ## How to confirm that your GPU is being used by DeepLabCut
 
@@ -364,7 +381,8 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 (5) If you don't see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran `conda install cudnn -c conda-forge` after installing DeepLabCut.
 
-## How to install DeepLabCut for Intel and  AMD GPUs on Windows
+## How to install DeepLabCut for Intel and AMD GPUs on Windows for the TensorFlow engine
+
 If you are on Windows 10/11 and have a DirectX 12 compatible GPU from any vendor (AMD, Intel, or Nvidia), you utilise GPU acceleration for inference, with an installation that is consistent between devices. This method uses [Tensorflow-directml](https://github.com/microsoft/tensorflow-directml) which uses DirectML instead of Cuda for ML training and inference.
 
 To check the DirectX version of your installed GPU, type in dxdiag into windows search and select the run command. In system information, the bottom item of the list shows your DirectX version. In addition to this ensure your standard GPU drivers are up-to-date. Updating drivers by any official means (Nvidia Geforce experience, AMD radeon software, direct from the vendor website) is fine.

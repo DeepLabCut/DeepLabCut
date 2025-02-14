@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.pose_estimation_tensorflow.core.evaluate.evaluate_network
+.. autofunction:: deeplabcut.compat.evaluate_network

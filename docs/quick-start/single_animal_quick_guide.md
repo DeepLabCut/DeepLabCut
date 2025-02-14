@@ -4,17 +4,21 @@
 Open ipython in the terminal:
 ```
 ipython
+```
+
+Import DeepLabCut:
+```
 import deeplabcut
 ```
 
 Create a new project:
 ```
-deeplabcut.create_new_project(‘project_name’,‘experimenter’,[‘path of video 1’,‘path of video2’,..])
+deeplabcut.create_new_project("project_name", "experimenter", ["path of video 1", "path of video2", ..])
 ```
     
 Set a config_path variable for ease of use + go edit this file!:
 ```
-config_path = ‘yourdirectory/project_name/config.yaml’ 
+config_path = "yourdirectory/project_name/config.yaml"
 ```
         
 Extract frames:
@@ -49,20 +53,20 @@ deeplabcut.evaluate_network(config_path)
 
  Video analysis:
 ```
-deeplabcut.analyze_videos(config_path, [‘path of video 1’,‘path of video2’, ...])
+deeplabcut.analyze_videos(config_path, ["path of video 1", "path of video2", ..])
 ```
 
 Filter predictions [OPTIONAL]:
 ```
-deeplabcut.filterpredictions(config_path, [‘path of video 1’,‘path of video2’,..])
+deeplabcut.filterpredictions(config_path, ["path of video 1", "path of video2", ..])
 ```
 
 Plot results (trajectories):
 ```
-deeplabcut.plot_trajectories(config_path, [‘path of video 1’,‘path of video2’,..], filtered=True)
+deeplabcut.plot_trajectories(config_path, ["path of video 1", "path of video2", ..], filtered=True)
 ```
 
 Create a video:
 ```
-deeplabcut.create_labeled_video(config_path, [‘path of video 1’,‘path of video2’,..]filtered=True)
+deeplabcut.create_labeled_video(config_path, ["path of video 1", "path of video2", ..], filtered=True)
 ```

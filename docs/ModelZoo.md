@@ -6,13 +6,13 @@
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
 
 
-Started in 2020, expanded in 2022 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the first proper [SuperAnimal Foundation Models]() published in 2024 🔥, the Model Zoo is four things:
-
+Started in 2020, expanded in 2022 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the
+first proper [SuperAnimal Foundation Models](#about-the-superanimal-models) published in 2024 🔥, the Model Zoo is four things:
 
 - (1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: [contrib.deeplabcut.org](https://contrib.deeplabcut.org/).
 - (3) a no-install DeepLabCut that you can use on ♾[Google Colab](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb), 
-test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut) app!
+test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/DeepLabCutModelZoo-SuperAnimals) app!
 - (4) new methods to make SuperAnimal Foundation Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
 ## Quick Start:
@@ -35,13 +35,13 @@ To provide the community with easy access to such high performance models across
 
 
 - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
-- [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10619173)
-- [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
+- [Please see the full datasheet here](https://zenodo.org/records/10619173)
+- [More details on the models (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
 - We provide several models:
     - `superanimal_quadruped_hrnetw32` (pytorch engine)
         - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
     - `superanimal_quadruped_dlcrnet` (tensorflow engine)
-        - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
+        - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints, then groups them into individuals. This can be faster, but more error prone.
     - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
     - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
 
@@ -54,8 +54,8 @@ To provide the community with easy access to such high performance models across
 
 
 -  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
-- [PLEASE SEE THE FULL DATASHEET HERE](https://zenodo.org/records/10618947)
-- [MORE DETAILS ON THE MODELS (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
+- [Please see the full datasheet here](https://zenodo.org/records/10618947)
+- [More details on the models (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
 - We provide several models:
     - `superanimal_topviewmouse_hrnetw32` (pytorch engine)
         - `superanimal_topviewmouse_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
@@ -115,39 +115,56 @@ Specifically:
 * `superanimal_topviewmouse_x` uses 27 keypoints
 
 ```python
+import os
+import deeplabcut
+from deeplabcut.modelzoo import build_weight_init
 
-superanimal_name = "superanimal_topviewmouse_hrnetw32"
+superanimal_name = "superanimal_topviewmouse"
 
 config_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "config.yaml")
 
-deeplabcut.create_training_dataset(config_path, superanimal_name = superanimal_name)
+weight_init = build_weight_init(
+    cfg=config_path,
+    super_animal=superanimal_name,
+    model_name="hrnet_w32",
+    detector_name="fasterrcnn_resnet50_fpn_v2",
+    with_decoder=False,
+)
+
+deeplabcut.create_training_dataset(config_path, weight_init = weight_init)
 
 deeplabcut.train_network(config_path,
-                         maxiters=10,
+                         epochs=10,
                          superanimal_name = superanimal_name,
                          superanimal_transfer_learning = True)
 ```
 
-
-
-
 ### Potential failure modes for SuperAnimal Models and how to fix it.
 
-Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of `scale_list` in the API (details in the API docs). For `superanimal_quadruped`, we empirically observe that if your video is larger than 1500 pixels, it is better to pass `scale_list` in the range within 1000.
+Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test
+videos. To help find the proper resolution for our model, please try a range of `scale_list` in the API (details in the
+API docs). For `superanimal_quadruped`, we empirically observe that if your video is larger than 1500 pixels, it is
+better to pass `scale_list` in the range within 1000.
 
-Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). You can use our "video adaptation" model (released soon) to counter this.
+Pixel statistics domain shift: The brightness of your video might look very different from our training datasets.
+This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of
+the mice is unusual compared to our training dataset). You can use our "video adaptation" model to counter this.
 
 
 
 ### Our longer term perspective ...
 
-Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods. We will also continue to expand this project to new model/data classes. Please do get in touch is you have data or ideas: modelzoo@deeplabcut.org
+Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work
+decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us
+feedback! We are rapidly improving our models and adaptation methods. We will also continue to expand this project to
+new model/data classes. Please do get in touch is you have data or ideas: modelzoo@deeplabcut.org
 
 ## Publication:
 
-To see the first preprint on the work, click [here](https://arxiv.org/abs/2203.07436v1). 
+To see the first preprint on the work, click [here](https://arxiv.org/abs/2203.07436v1).
 
-Our first publication on this project is now published at Nature Communications:
+Our first [publication](https://www.nature.com/articles/s41467-024-48792-2) on this project is now published at Nature
+Communications:
 
 ```{hint}
 Here is the citation:

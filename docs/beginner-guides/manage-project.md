@@ -41,4 +41,4 @@ A **`Configuration Editor`** window will open, displaying all the configuration 
 
 - **Save the Configuration:** Once you're satisfied with the modifications, click **`Save`**. This will store your changes and return you to the main GUI window.
 
-## Next, head over the beginner guide for [Labeling your data](https://deeplabcut.github.io/DeepLabCut/docs/labelling)
+## Next, head over the beginner guide for [Labeling your data](labeling)

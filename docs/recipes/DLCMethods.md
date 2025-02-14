@@ -2,7 +2,13 @@
 
 **Pose estimation using DeepLabCut**
 
-For body part tracking we used DeepLabCut (version 2.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, etc.)*** with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.
+For body part tracking we used DeepLabCut (version 3.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we
+labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a
+X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75,
+MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, cspnext_s, dekr_w32, rtmpose_s, etc.)*** with default parameters* for X
+number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train:
+X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future
+analysis. This network was then used to analyze videos from similar experimental settings.
 
 *If any defaults were changed in *`pose_config.yaml`*, mention them.
 
@@ -43,4 +49,5 @@ If you use ResNets, consider citing Insafutdinov et al 2016 & He et al 2016. If 
 > 770–778 (2016). URL https://arxiv.org/abs/
 > 1512.03385.
 
-We also have the network graphic freely available on SciDraw.io if you'd like to use it! https://scidraw.io/drawing/290. If you use our DLC logo, please include the TM symbol, thank you!
+We also have the network graphic freely available on SciDraw.io if you'd like to use it! https://scidraw.io/drawing/290.
+If you use our DLC logo, please include the TM symbol, thank you!
