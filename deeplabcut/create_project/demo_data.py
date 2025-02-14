@@ -13,10 +13,15 @@ import os
 from pathlib import Path
 
 import deeplabcut
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 
-def load_demo_data(config, createtrainingset=True):
+def load_demo_data(
+    config: str,
+    createtrainingset: bool = True,
+    engine: Engine = Engine.PYTORCH,
+):
     """
     Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
     When loading, it sets paths correctly to run this project on your system
@@ -29,6 +34,9 @@ def load_demo_data(config, createtrainingset=True):
       createtrainingset : bool
           Boolean variable indicating if a training set shall be created.
 
+      engine: Engine
+          The Engine to create the training set for if a training set shall be created.
+
       Example
       --------
       >>> deeplabcut.load_demo_data('config.yaml')
@@ -40,7 +48,7 @@ def load_demo_data(config, createtrainingset=True):
     transform_data(config)
     if createtrainingset:
         print("Loaded, now creating training data...")
-        deeplabcut.create_training_dataset(config, num_shuffles=1)
+        deeplabcut.create_training_dataset(config, num_shuffles=1, engine=engine)
 
 
 def transform_data(config):
