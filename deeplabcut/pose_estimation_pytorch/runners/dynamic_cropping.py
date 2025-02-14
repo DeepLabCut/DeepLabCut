@@ -103,9 +103,6 @@ class DynamicCropper:
         the next frame. Scales the pose predicted in the cropped image back to the
         original image space and returns it.
 
-        This method modifies the pose tensor in-place; so pass a copy of the tensor if
-        you need to keep the original values.
-
         Args:
             pose: The pose that was predicted by the pose estimation model in the
                 cropped image coordinate space.
@@ -194,39 +191,68 @@ class DynamicCropper:
 
 
 class TopDownDynamicCropper(DynamicCropper):
-    """
-    Provides functionality for dynamic, top-down cropping of images to refine
-    input for further processing or pose estimation.
+    """Dynamic cropping for top-down models used on single animal videos.
 
-    The `TopDownDynamicCropper` class extends the base functionality of the
-    `DynamicCropper` class, implementing a dynamic image cropping mechanism
-    that adapts to the target region based on the calculated bounding box
-    or predefined patch sets. This dynamic cropping is particularly useful
-    for tasks such as object detection or pose estimation, where focusing
-    on relevant regions significantly improves accuracy. The cropping size
-    is determined dynamically using various parameters including min bounding
-    box size, patch size, overlap, and thresholds for keypoints. It integrates
-    the functionality to handle both patch-based cropping and bounding box-based
-    cropping approaches. The class also supports updating the cropping
-    parameters dynamically based on the predicted pose model output.
+    The `TopDownDynamicCropper` can be used instead of an object detector to analyze
+    videos **containing a single animal** with top-down models.
+
+    At frame 0, the full frame is split into (n, m) image patches, with a given overlap
+    between the patches. Patches are then
+        - Resized to the input size required by the model with a top-down crop.
+        - Stacked into a batch and given to the pose estimation model
+        - The output poses for each patch are post-processed: the patch containing the
+            highest average score prediction is selected as the patch containing the
+            individual, and the pose from that patch is selected as the predicted pose.
+
+    At frame n, one of two things can happen:
+        - If the individual was successfully detected at frame n - 1, a bounding box
+            is generated from the predicted pose and used as the bounding box for the
+            next frame.
+        - If the individual was not detected at frame n - 1, patches are cropped as in
+            frame 0 and the pose selected as in frame 0
+
+    An individual is considered to be successfully detected if:
+        - at least `min_hq_keypoints` keypoint have scores above the `threshold`
+
+    The bounding box is generated from the keypoints (either from all keypoints or only
+    the ones above the threshold) with a margin around the keypoints. If the bounding
+    box is smaller than a set minimum size, it is expanded to that size.
 
     Args:
-        top_down_crop_size:
+        top_down_crop_size: The (width, height) of to resize crops to.
+        patch_counts: The number of patches along the (width, height) of the images when
+            no crop is found.
+        patch_overlap: The amount of overlapping pixels between adjacent patches.
+        min_bbox_size: The minimum (width, height) for a detected bounding box. If the
+            bounding box computed from the keypoints is smaller than this value, it
+            will be expanded to these values.
+        threshold: The threshold score for bodyparts above which an individual is
+            considered to be detected.
+        margin: The margin to add around keypoints when generating bounding boxes.
+        min_hq_keypoints: The minimum number of keypoints above the threshold required
+            for the individual to be considered detected and a bounding box to be
+            computed from the pose.
+        bbox_from_hq: If True, only keypoints above the score threshold will be used
+            to compute the bounding boxes.
+        store_crops: Useful for debugging. When True, all crops are stored in the
+            `crop_history` attribute.
+        **kwargs: Key-word arguments passed to the DynamicCropper base class.
 
     Attributes:
-        min_bbox_size (tuple[int, int]): Minimum width and height for a bounding box.
-        min_hq_keypoints (int): Minimum number of high-quality keypoints required
-            to dynamically focus on a region.
-        bbox_from_hq (bool): Indicates whether the bounding box should be created
-            using only high-quality keypoints.
-        _patch_counts (tuple[int, int]): Number of patches to divide the image into
-            on each axis (row, column).
-        _patch_overlap (int): Number of overlapping pixels between adjacent patches.
-        _patches (list): List of precomputed patches for generating crops.
-        _patch_offsets (list): List of offsets corresponding to each patch crop.
-        _td_crop_size (tuple[int, int]): User-specified dimensions of the crop
-            (height, width).
-        _td_ratio (float): Aspect ratio of the target crop size (height/width).
+        min_bbox_size: tuple[int, int]. The minimum (width, height) for a detected
+            bounding box. If the bounding box computed from the keypoints is smaller
+            than this value, it will be expanded to these values.
+        min_hq_keypoints: int. The minimum number of keypoints above the threshold
+            required for the individual to be considered detected and a bounding box to
+            be computed from the pose.
+        bbox_from_hq: bool. If True, only keypoints above the score threshold will be
+            used to compute the bounding boxes.
+        store_crops: bool. Useful for debugging. When True, all crops are stored in the
+            `crop_history` attribute.
+        crop_history: list[list[tuple[int, int, int, int]]. Empty list if `store_crops`
+            is False. Every time `crop` is called, a list is appended to the
+            `crop_history` attribute. This list is empty if no crop was used for the
+            frame, otherwise a list containing a single (x, y, w, h) tuple is appended.
     """
 
     def __init__(
@@ -312,9 +338,6 @@ class TopDownDynamicCropper(DynamicCropper):
         the next frame. Scales the pose predicted in the cropped image back to the
         original image space and returns it.
 
-        This method modifies the pose tensor in-place; so pass a copy of the tensor if
-        you need to keep the original values.
-
         Args:
             pose: The pose that was predicted by the pose estimation model in the
                 cropped image coordinate space.
@@ -376,16 +399,19 @@ class TopDownDynamicCropper(DynamicCropper):
     def _prepare_bounding_box(
         self, x1: int, y1: int, x2: int, y2: int
     ) -> tuple[int, int, int, int]:
-        """
+        """Prepares the bounding box for cropping.
+
+        Adds a margin around the bounding box, then transforms it into the target aspect
+        ratio required for crops given as inputs to the model.
 
         Args:
-            x1:
-            y1:
-            x2:
-            y2:
+            x1: The x coordinate for the top-left corner of the bounding box.
+            y1: The y coordinate for the top-left corner of the bounding box.
+            x2: The x coordinate for the bottom-right corner of the bounding box.
+            y2: The y coordinate for the bottom-right corner of the bounding box.
 
         Returns:
-
+            The (x, y, w, h) coordinates for the prepared bounding box.
         """
         x1 -= self.margin
         x2 += self.margin
@@ -407,14 +433,14 @@ class TopDownDynamicCropper(DynamicCropper):
     def _crop_bounding_box(
         self, image: torch.Tensor, bbox: tuple[int, int, int, int],
     ) -> torch.Tensor:
-        """
+        """Applies a top-down crop to an image given a bounding box.
 
         Args:
-            image:
-            bbox:
+            image: The image to crop, of shape (1, C, H, W).
+            bbox: The bounding box to crop out of the image.
 
         Returns:
-
+            The cropped and resized image.
         """
         x1, y1, w, h = bbox
         out_w, out_h = self._td_crop_size
@@ -433,14 +459,14 @@ class TopDownDynamicCropper(DynamicCropper):
         return torch.cat(patches, dim=0)
 
     def _extract_best_patch(self, pose: torch.Tensor) -> torch.Tensor:
-        """Extracts the best pose prediction
+        """Extracts the best pose prediction from patches.
 
         Args:
             pose: The predicted pose, of shape (b, num_idv, num_kpt, 3). The number of
                 individuals must be 1.
 
         Returns:
-
+            The selected pose, of shape [1, N, K, 3]
         """
         # check that only 1 prediction was made in each image
         if pose.shape[1] != 1:
