@@ -71,8 +71,8 @@ CUDA version if you want to use a GPU**): `pip install torch torchvision`
 version with PyTorch)!
 
 To use the TensorFlow engine (requires Python 3.10; TF up to v2.10 supported on Windows,
-up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"` 
-(which includes all functions plus GUIs) or `pip install "deeplabcut[tf]"` (headless
+up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]>=3.0"` 
+(which includes all functions plus GUIs) or `pip install "deeplabcut[tf]>=3.0"` (headless
 version with PyTorch and TensorFlow).
 
 We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
