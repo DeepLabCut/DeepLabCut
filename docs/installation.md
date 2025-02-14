@@ -36,6 +36,10 @@ python -c "import torch; print(torch.cuda.is_available())"
 Why do we install [pytables](https://www.pytables.org/usersguide/installation.html) with
 `conda` and not `pip`? Because it requires some libraries that not all users will have
 installed, and conda will ensure that they are installed as well.
+
+If you're familiar with the command line and want TensorFlow support, look [below](
+deeplabcut-with-tf-install) for a fresh installation that has worked for us (on Linux)
+and makes it possible to use the GPU with both PyTorch and TensorFlow.
 ````
 
 ## CONDA: The installation process is as easy as this figure! -->
@@ -114,6 +118,7 @@ Be sure you are in the folder that has the `.yaml` file, then run:
 Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DEEPLABCUT) YourName-MacBook...``
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
+(deeplabcut-with-tf-install)=
 #### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
 
 ````{admonition} DeepLabCut TensorFlow Support
@@ -132,7 +137,7 @@ We have found that installing DeepLabCut with the following commands works well 
 Linux users to install PyTorch 2.3.1, TensorFlow 2.12, CUDA 11.8 and cuDNN 8 in a Conda
 environment:
 
-```script
+```bash
 conda create -n deeplabcut-with-tf "python=3.10"
 conda activate deeplabcut-with-tf
 
