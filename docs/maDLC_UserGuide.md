@@ -112,6 +112,14 @@ There are docs for this: [convert single to multianimal annotation data](convert
 
 ![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
+#### API Docs
+````{admonition} Click the button to see API Docs
+:class: dropdown
+```{eval-rst}
+.. include:: ./api/deeplabcut.create_new_project.rst
+```
+````
+
 ### (B) Configure the Project
 
 Next, open the **config.yaml** file, which was created during  **create\_new\_project**.
