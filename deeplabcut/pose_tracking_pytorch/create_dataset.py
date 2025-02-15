@@ -33,8 +33,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
 
     feature_dict = shelve.open(feature_fname, protocol=pickle.DEFAULT_PROTOCOL)
 
-    nframes = len(feature_dict.keys())
-
+    nframes = max(len(feature_dict.keys()), 2)
     zfill_width = int(np.ceil(np.log10(nframes)))
 
     for triplet in triplets:

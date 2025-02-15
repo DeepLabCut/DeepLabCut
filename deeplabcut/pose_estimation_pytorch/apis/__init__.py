@@ -12,6 +12,7 @@
 from deeplabcut.pose_estimation_pytorch.apis.analyze_images import (
     analyze_image_folder,
     analyze_images,
+    analyze_image_folder,
     superanimal_analyze_images,
 )
 from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
@@ -23,10 +24,15 @@ from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets imp
     convert_detections2tracklets,
 )
 from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
+    predict,
     evaluate,
     evaluate_network,
+    visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.apis.export import export_model
+from deeplabcut.pose_estimation_pytorch.apis.tracking_dataset import (
+    create_tracking_dataset,
+)
 from deeplabcut.pose_estimation_pytorch.apis.train import (
     train,
     train_network,
@@ -37,6 +43,12 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_pose_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.apis.visualization import (
+    create_labeled_images,
     extract_maps,
     extract_save_all_maps,
+)
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_predictions_dataframe,
+    get_detector_inference_runner,
+    get_pose_inference_runner,
 )

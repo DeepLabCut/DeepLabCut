@@ -79,7 +79,10 @@ def predict(
             context = bbox_predictions
         else:
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
-            context = [{"bboxes": ground_truth_bboxes[image]} for image in image_paths]
+            context = [
+                {"bboxes": ground_truth_bboxes[image]["bboxes"]}
+                for image in image_paths
+            ]
 
     images_with_context = image_paths
     if context is not None:
@@ -186,6 +189,7 @@ def evaluate(
         unique_bodypart_poses=unique_poses,
         unique_bodypart_gt=gt_unique_keypoints,
         per_keypoint_rmse=per_keypoint_evaluation,
+        compute_detection_rmse=False,
     )
 
     if loader.model_cfg["metadata"]["with_identity"]:

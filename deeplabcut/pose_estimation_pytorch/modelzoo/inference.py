@@ -108,7 +108,6 @@ def _video_inference_superanimal(
         detector_batch_size=detector_batch_size,
         detector_path=detector_snapshot_path,
     )
-    pose_task = Task(model_cfg.get("method", "BU"))
     results = {}
 
     if isinstance(video_paths, str):
@@ -138,7 +137,6 @@ def _video_inference_superanimal(
         video = VideoIterator(video_path, cropping=cropping)
         predictions = video_inference(
             video,
-            task=pose_task,
             pose_runner=pose_runner,
             detector_runner=detector_runner,
         )
