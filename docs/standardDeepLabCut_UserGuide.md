@@ -240,6 +240,18 @@ more information about the labelling workflow.
 deeplabcut.label_frames(config_path)
 ```
 
+[🎥 DEMO](https://youtu.be/hsA9IB5r73E)
+
+HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
+
+```
+Ctrl + C: Copy labels from previous frame.
+Keyboard arrows: advance frames.
+Delete key: delete label.
+```
+
+![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
+
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
 to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
 simply be skipped by not applying the label anywhere on the frame.
@@ -249,21 +261,8 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
-```
-Ctrl + C: Copy labels from previous frame.
-Keyboard arrows: advance frames.
-Delete key: delete label.
-```
-![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
-
-#### API Docs
-````{admonition} Click the button to see API Docs
-:class: dropdown
-```{eval-rst}
-.. include:: ./api/deeplabcut.label_frames.rst
-```
-````
+For more information, checkout the [napari-deeplabcut docs](napari-gui) for 
+more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
 

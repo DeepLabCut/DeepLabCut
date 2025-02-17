@@ -254,8 +254,19 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the 
 project’s configuration file by providing a list. The following command invokes the 
-napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](napari-gui) for 
-more information about the labelling workflow.
+napari-deeplabcut labelling GUI.
+
+[🎥 DEMO](https://youtu.be/hsA9IB5r73E)
+
+HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
+
+```
+Ctrl + C: Copy labels from previous frame.
+Keyboard arrows: advance frames.
+Delete key: delete label.
+```
+
+![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a
 wrist that is very large, try to label the same location). In general, invisible or
@@ -283,17 +294,8 @@ which then also uses temporal information to link across the video frames.
 Note, we also highly recommend that you use more bodyparts that you might otherwise have
 (see the example below).
 
-**Example Labeling with maDeepLabCut:**
-Note you should within an animal be consistent, i.e., all bodyparts on mouse1 should be
-on mouse1, but across frames "mouse1" can be any of the black mice (as here it is nearly
-impossible to tell them apart visually). IF you can tell them apart, do label
-consistently!
-
-// FIXME(niels): updated image for napari-deeplabcut annotation GUI
-
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588028248844-43RXXUNLE1VKJDKGGVFO/ke17ZwdGBToddI8pDm48kAxoZwLd0g_s-irkR9O2vUhZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxFjgZOWy5voI9x7QCcY8v6pdjAnJRY2VhSKj43SxhWXRPK8F08AQobuqKWFB6l9T0/labelingdemo.gif?format=750w" width="70%">
-</p>
+For more information, checkout the [napari-deeplabcut docs](napari-gui) for 
+more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
 

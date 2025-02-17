@@ -48,8 +48,7 @@ All accepted files (`config.yaml`, images, `.h5` data files) can be loaded eithe
 
 The easiest way to get started is to drop a folder (typically a folder from within a DeepLabCut's `labeled-data` directory), and, if labeling from scratch, drop the corresponding `config.yaml` to automatically add a `Points layer` and populate the dropdown menus.
 
-[🎥 DEMO
-](https://youtu.be/hsA9IB5r73E)
+[🎥 DEMO](https://youtu.be/hsA9IB5r73E)
 
 **Tools & shortcuts are:**
 
