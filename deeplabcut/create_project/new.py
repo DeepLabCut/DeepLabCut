@@ -19,13 +19,13 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def create_new_project(
-    project,
-    experimenter,
-    videos,
-    working_directory=None,
-    copy_videos=False,
-    videotype="",
-    multianimal=False,
+    project: str,
+    experimenter: str,
+    videos: list[str],
+    working_directory: str | None = None,
+    copy_videos: bool = False,
+    videotype: str = "",
+    multianimal: bool = False,
 ):
     r"""Create the necessary folders and files for a new project.
 

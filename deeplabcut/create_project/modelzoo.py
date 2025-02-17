@@ -99,17 +99,17 @@ def create_pretrained_human_project(
 
 
 def create_pretrained_project(
-    project,
-    experimenter,
-    videos,
-    model="full_human",
-    working_directory=None,
-    copy_videos=False,
-    videotype="",
-    analyzevideo=True,
-    filtered=True,
-    createlabeledvideo=True,
-    trainFraction=None,
+    project: str,
+    experimenter: str,
+    videos: list[str],
+    model: str ="full_human",
+    working_directory: str | None = None,
+    copy_videos: bool = False,
+    videotype: str = "",
+    analyzevideo: bool = True,
+    filtered: bool = True,
+    createlabeledvideo: bool = True,
+    trainFraction: float | None = None,
 ):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -131,7 +131,7 @@ def create_pretrained_project(
         Current option and default: 'full_human'  Creates a demo human project and analyzes a video with ResNet 101 weights pretrained on MPII Human Pose. This is from the DeeperCut paper
         by Insafutdinov et al. https://arxiv.org/abs/1605.03170 Please make sure to cite it too if you use this code!
 
-    videos : list
+    videos : list[string]
         A list of string containing the full paths of the videos to include in the project.
 
     working_directory : string, optional
@@ -144,7 +144,7 @@ def create_pretrained_project(
     analyzevideo " bool, optional
         If true, then the video is analyzed and a labeled video is created. If false, then only the project will be created and the weights downloaded. You can then access them
 
-    filtered: bool, default false
+    filtered: bool, default True
         Boolean variable indicating if filtered pose data output should be plotted rather than frame-by-frame predictions.
         Filtered version can be calculated with deeplabcut.filterpredictions
 
