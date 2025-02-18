@@ -43,12 +43,10 @@ get_mount_args() {
     echo "${args[@]}"
 }
 
-# FIXME(niels): update to match the naming convention we decide on
 get_container_name() {
     echo deeplabcut/deeplabcut:"${DLC_VERSION}"-"$1"-cuda"${CUDA_VERSION}"-cudnn9
 }
 
-# FIXME(niels): update to match the naming convention we decide on
 get_local_container_name() {
     echo deeplabcut-"${DLC_VERSION}"-"$1"-cuda"${CUDA_VERSION}"-cudnn9
 }

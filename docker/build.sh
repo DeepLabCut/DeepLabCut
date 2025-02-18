@@ -47,19 +47,16 @@ export -f run_test
 
 # Iterate through build matrix and perform actions
 iterate_build_matrix() {
-    ## TODO(stes): Consider adding legacy versions for CUDA
-    ## if there is demand from users:
-
-    #[add other dlc versions to build here]
+    # [add other dlc versions to build here]
     dlc_versions=(
         "3.0.0"
     )
 
-    #[add other cuda versions to build here]
+    # [add other cuda versions to build here]
     cuda_versions=(
-        "11.8"
-        "12.1"
-        "12.4"
+        "cuda11.8-cudnn9"
+        "cuda12.1-cudnn9"
+        "cuda12.4-cudnn9"
     )
 
     pytorch_versions=(
