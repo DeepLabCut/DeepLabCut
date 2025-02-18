@@ -560,7 +560,10 @@ def evaluate_snapshot(
         "Detector epochs (TD only)": (
             -1 if detector_snapshot is None else detector_snapshot.epochs
         ),
-        "pcutoff": pcutoff,
+        "pcutoff": (
+            ", ".join([str(v) for v in pcutoff])
+            if isinstance(pcutoff, list) else pcutoff
+        ),
     }
     for split in ["train", "test"]:
         results, predictions_for_split = evaluate(
