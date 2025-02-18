@@ -34,7 +34,7 @@
 [👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 
 
 
-![Vesion](https://img.shields.io/badge/python_version-3.10-purple)
+![Version](https://img.shields.io/badge/python_version-3.10-purple)
 [![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
 [![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
@@ -129,7 +129,7 @@ This is an actively developed package and we welcome community development and i
 
 ## References \& Citations:
 
-Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our sugestions for your Methods section!
+Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our suggestions for your Methods section!
 
 ## License:
 
