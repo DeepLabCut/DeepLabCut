@@ -383,28 +383,30 @@ def compute_detection_rmse(
 
     if data_unique is not None:
         for image_gt, image_pred in data_unique:
-            assert len(image_gt) == len(image_pred) == 1, (
-                f"Unique GT an predictions must have length 1! Found {image_gt.shape}, "
+            assert len(image_gt) <= 1 and len(image_pred) <= 1, (
+                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, "
                 f"{image_pred.shape}."
             )
-            unique_gt, unique_pred = image_gt[0], image_pred[0]
-            num_unique = unique_gt.shape[0]
-            unique_cutoffs = pcutoff
-            if not isinstance(pcutoff, float):
-                unique_cutoffs = pcutoff[-num_unique:]
 
-            for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
-                dist = np.linalg.norm(gt[:2] - pred[:2])
-                distances.append(dist)
+            if len(image_gt) == 1 and len(image_pred) == 1:
+                unique_gt, unique_pred = image_gt[0], image_pred[0]
+                num_unique = unique_gt.shape[0]
+                unique_cutoffs = pcutoff
+                if not isinstance(pcutoff, float):
+                    unique_cutoffs = pcutoff[-num_unique:]
 
-                score = pred[2]
-                if isinstance(pcutoff, float):
-                    bpt_pcutoff = unique_cutoffs
-                else:
-                    bpt_pcutoff = unique_cutoffs[bpt_index]
+                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
+                    dist = np.linalg.norm(gt[:2] - pred[:2])
+                    distances.append(dist)
 
-                if score >= bpt_pcutoff:
-                    distances_cutoff.append(dist)
+                    score = pred[2]
+                    if isinstance(pcutoff, float):
+                        bpt_pcutoff = unique_cutoffs
+                    else:
+                        bpt_pcutoff = unique_cutoffs[bpt_index]
+
+                    if score >= bpt_pcutoff:
+                        distances_cutoff.append(dist)
 
     rmse, rmse_cutoff = float("nan"), float("nan")
     if len(distances) == 0:
