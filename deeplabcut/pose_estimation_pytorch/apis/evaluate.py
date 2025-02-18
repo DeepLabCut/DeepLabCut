@@ -668,25 +668,6 @@ def evaluate_snapshot(
     return df_predictions
 
 
-def _validate_pcutoff(
-    bodyparts: list[str],
-    unique_bpts: list[str],
-    pcutoff: float | list[float],
-) -> None:
-    """Checks that the given `pcutoff` value has the correct number of elements"""
-    if isinstance(pcutoff, float):
-        return
-
-    total_bodyparts = len(bodyparts) + len(unique_bpts)
-    if len(pcutoff) != total_bodyparts:
-        raise ValueError(
-            "When passing the pcutoff as a list, the length of the list should be "
-            "equal to the number of bodyparts and the number of unique bpts. "
-            f"Found a list containing {len(pcutoff)} elements, but there are "
-            f"{total_bodyparts} total bodyparts, which are {bodyparts + unique_bpts}."
-        )
-
-
 def evaluate_network(
     config: str | Path,
     shuffles: Iterable[int] = (1,),
@@ -930,6 +911,25 @@ def save_rmse_per_bodypart(
     # Save scores file
     df_rmse_per_bodypart = pd.DataFrame(data, index=index)
     df_rmse_per_bodypart.to_csv(output_path)
+
+
+def _validate_pcutoff(
+    bodyparts: list[str],
+    unique_bpts: list[str],
+    pcutoff: float | list[float],
+) -> None:
+    """Checks that the given `pcutoff` value has the correct number of elements"""
+    if isinstance(pcutoff, float):
+        return
+
+    total_bodyparts = len(bodyparts) + len(unique_bpts)
+    if len(pcutoff) != total_bodyparts:
+        raise ValueError(
+            "When passing the pcutoff as a list, the length of the list should be "
+            "equal to the number of bodyparts and the number of unique bpts. "
+            f"Found a list containing {len(pcutoff)} elements, but there are "
+            f"{total_bodyparts} total bodyparts, which are {bodyparts + unique_bpts}."
+        )
 
 
 def _get_keypoints_to_use(

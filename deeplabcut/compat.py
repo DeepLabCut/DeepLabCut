@@ -386,6 +386,7 @@ def evaluate_network(
     modelprefix: str = "",
     per_keypoint_evaluation: bool = False,
     snapshots_to_evaluate: list[str] | None = None,
+    pcutoff: float | list[float] | dict[str, float] | None = None,
     engine: Engine | None = None,
     **torch_kwargs,
 ):
@@ -448,6 +449,16 @@ def evaluate_network(
 
     snapshots_to_evaluate: List[str], optional, default=None
         List of snapshot names to evaluate (e.g. ["snapshot-5000", "snapshot-7500"]).
+
+    pcutoff: float | list[float] | dict[str, float] | None, default=None
+        Only for the PyTorch engine. For the TensorFlow engine, please set the pcutoff
+        in the `config.yaml` file.
+        The cutoff to use for computing evaluation metrics. When `None` (default), the
+        cutoff will be loaded from the project config. If a list is provided, there
+        should be one value for each bodypart and one value for each unique bodypart
+        (if there are any). If a dict is provided, the keys should be bodyparts
+        mapping to pcutoff values for each bodypart. Bodyparts that are not defined
+        in the dict will have pcutoff set to 0.6.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -543,6 +554,7 @@ def evaluate_network(
             comparison_bodyparts=comparisonbodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
+            pcutoff=pcutoff,
             **torch_kwargs,
         )
 
