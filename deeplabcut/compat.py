@@ -501,6 +501,16 @@ def evaluate_network(
             plotting="individual",
         )
 
+    If you have a PyTorch model for which you want to set a different p-cutoff for
+    "left_ear" and "right_ear" bodyparts, and keep the one set in the project config
+    for other bodyparts:
+
+    >>> deeplabcut.evaluate_network(
+    >>>     "/analysis/project/reaching-task/config.yaml",
+    >>>     Shuffles=[0, 1],
+    >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
+    >>> )
+
     Note: This defaults to standard plotting for single-animal projects.
     """
     if engine is None:
