@@ -302,11 +302,23 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
-    @video_files.setter
-    def video_files(self, video_files):
-        self.files = set(video_files)
-        self.video_files_.emit(self.files)
-        self.logger.info(f"Videos selected to analyze:\n{self.files}")
+    def add_video_files(self, new_video_files):
+        """
+        Add new video files to the existing set of files. This method ensures no duplicates are added.
+        Emits a signal to notify about the updated set of files.
+        """
+        new_video_files = set(new_video_files)
+        self.files.update(new_video_files) # Add new items to the existing set
+        self.video_files_.emit(self.files) # Emit the updated set of files
+        self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
+
+    def clear_video_files(self):
+        """
+        Clear all video files from the existing set. Emits a signal to notify the change.
+        """
+        self.files.clear()  # Reset the set to be empty
+        self.video_files_.emit(self.files)  # Emit the empty set
+        self.logger.info("All video files have been cleared.")
 
     def window_set(self):
         self.setWindowTitle("DeepLabCut")
