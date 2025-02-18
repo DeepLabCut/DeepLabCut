@@ -226,6 +226,7 @@ def analyze_videos(
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
     n_tracks: int | None = None,
+    animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool | None = False,
     overwrite: bool = False,
@@ -301,6 +302,12 @@ def analyze_videos(
             individuals defined in the config.yaml. Another number can be passed if the
             number of animals in the video is different from the number of animals the
             model was trained on.
+        animal_names: If you want the names given to individuals in the labeled data
+            file, you can specify those names as a list here. If given and `n_tracks`
+            is None, `n_tracks` will be set to `len(animal_names)`. If `n_tracks` is not
+            None, then it must be equal to `len(animal_names)`. If it is not given, then
+            `animal_names` will be loaded from the `individuals` in the project
+            `config.yaml` file.
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
@@ -513,6 +520,7 @@ def analyze_videos(
                         shuffle,
                         trainingsetindex,
                         n_tracks=n_tracks,
+                        animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
                     )

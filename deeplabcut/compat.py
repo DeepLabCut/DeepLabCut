@@ -652,6 +652,7 @@ def analyze_videos(
     use_shelve: bool = False,
     auto_track: bool = True,
     n_tracks: int | None = None,
+    animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool = False,
     use_openvino: str | None = None,
@@ -789,6 +790,13 @@ def analyze_videos(
         animals in the video is different from the number of animals the model was
         trained on.
 
+    animal_names: list[str], optional
+        If you want the names given to individuals in the labeled data file, you can
+        specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
+        will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
+        equal to `len(animal_names)`. If it is not given, then `animal_names` will
+        be loaded from the `individuals` in the project config.yaml file.
+
     use_openvino: str, optional
         Only for the TensorFlow engine.
         Use "CPU" for inference if OpenVINO is available in the Python environment.
@@ -900,6 +908,7 @@ def analyze_videos(
             use_shelve=use_shelve,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             **kwargs,
@@ -934,6 +943,7 @@ def analyze_videos(
             robust_nframes=robust_nframes,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             overwrite=False,
