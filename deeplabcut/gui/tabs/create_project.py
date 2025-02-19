@@ -293,18 +293,16 @@ class ProjectCreator(QtWidgets.QDialog):
 
         # Create both DynamicTextList widgets as class attributes
         self.bodypart_list = DynamicTextList(
-            label_text="bodyparts to track",
-            parent=self,
+            label_text="Bodyparts to track", parent=self,
         )
+
         self.individuals_list = DynamicTextList(
-            label_text="individual names",
-            parent=self,
+            label_text="Individual names", parent=self,
         )
         self.individuals_list.setVisible(False)
 
         self.unique_bodyparts_list = DynamicTextList(
-            label_text="unique bodyparts to track",
-            parent=self,
+            label_text="Unique bodyparts to track", parent=self,
         )
         self.unique_bodyparts_list.setVisible(False)
 
@@ -374,7 +372,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.copy_box = QtWidgets.QCheckBox("Copy videos to project folder")
         self.copy_box.setChecked(False)
 
-        browse_button = QtWidgets.QPushButton("Browse folders")
+        browse_button = QtWidgets.QPushButton("Browse folders for videos")
         browse_button.clicked.connect(self.browse_videos)
         clear_button = QtWidgets.QPushButton("Clear")
         clear_button.clicked.connect(video_frame.fancy_list.clear)
@@ -501,15 +499,6 @@ class ProjectCreator(QtWidgets.QDialog):
             return
         self.loc_default = dirname
         self.update_project_location()
-
-    def check_num_cameras(self, value):
-        val = int(value)
-        for child in self.video_frame.children():
-            if child.isWidgetType() and not isinstance(child, QtWidgets.QComboBox):
-                if val > 1:
-                    child.setDisabled(True)
-                else:
-                    child.setDisabled(False)
 
     def update_project_name(self, text):
         self.proj_default = text
