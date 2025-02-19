@@ -321,11 +321,28 @@ class ProjectCreator(QtWidgets.QDialog):
         # Connect 3d toggle to all other option visibility
         self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
         self.toggle_3d.toggled.connect(
-            lambda yes: self.bodypart_list.setVisible(not yes)
+            lambda checked_3d: unique_widget.setVisible(
+                not checked_3d and self.madlc_toggle.isChecked()
+            )
         )
         self.toggle_3d.toggled.connect(
-            lambda yes: self.individuals_list.setVisible(
-                not yes and self.madlc_toggle.isChecked()
+            lambda checked_3d: identity_widget.setVisible(
+                not checked_3d and self.madlc_toggle.isChecked()
+            )
+        )
+        self.toggle_3d.toggled.connect(
+            lambda checked_3d: self.bodypart_list.setVisible(not checked_3d)
+        )
+        self.toggle_3d.toggled.connect(
+            lambda checked_3d: self.individuals_list.setVisible(
+                not checked_3d and self.madlc_toggle.isChecked()
+            )
+        )
+        self.toggle_3d.toggled.connect(
+            lambda checked_3d: self.unique_bodyparts_list.setVisible(
+                not checked_3d
+                and self.madlc_toggle.isChecked()
+                and self.unique_toggle.isChecked()
             )
         )
 
