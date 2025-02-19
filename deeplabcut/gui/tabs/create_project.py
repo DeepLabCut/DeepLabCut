@@ -18,7 +18,11 @@ import deeplabcut
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
-from deeplabcut.gui.tabs.docs import URL_3D, URL_USE_GUIDE_SCENARIO
+from deeplabcut.gui.tabs.docs import (
+    URL_3D,
+    URL_MA_CONFIGURE,
+    URL_USE_GUIDE_SCENARIO,
+)
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -136,12 +140,12 @@ class DynamicTextList(QtWidgets.QWidget):
 
 class Switch(QtWidgets.QPushButton):
 
-    def __init__(self, on_text="Yes", off_text="No", parent=None):
+    def __init__(self, on_text="Yes", off_text="No", width=80, parent=None):
         super().__init__(parent)
         self.on_text = on_text
         self.off_text = off_text
         self.setCheckable(True)
-        self.setMinimumWidth(66)
+        self.setFixedWidth(width)
         self.setMinimumHeight(22)
 
     def paintEvent(self, event):
@@ -190,11 +194,16 @@ class ProjectCreator(QtWidgets.QDialog):
 
         self.bodypart_list = None
         self.individuals_list = None
+        self.unique_bodyparts_list = None
 
         self.toggle_3d = Switch()
         self.toggle_3d.setChecked(False)
         self.madlc_toggle = Switch()
         self.madlc_toggle.setChecked(False)
+        self.unique_toggle = Switch()
+        self.unique_toggle.setChecked(False)
+        self.identity_toggle = Switch()
+        self.identity_toggle.setChecked(False)
 
         main_layout = QtWidgets.QVBoxLayout(self)
         self.user_frame = self.lay_out_user_frame()
@@ -254,8 +263,29 @@ class ProjectCreator(QtWidgets.QDialog):
             help_text="(Why does this matter?)",
             docs_link=URL_USE_GUIDE_SCENARIO,
         )
+
+        # Only visible when the maDLC widget is checked
+        unique_widget = self.build_toggle_widget(
+            switch=self.unique_toggle,
+            question="Do you have unique bodyparts in your video?",
+            help_text="(What are unique bodyparts?)",
+            docs_link=URL_MA_CONFIGURE,
+        )
+        unique_widget.setVisible(False)
+
+        # Labelling with identity
+        identity_widget = self.build_toggle_widget(
+            switch=self.identity_toggle,
+            question="Label with identity?",
+            help_text="(What is labeling with identity?)",
+            docs_link=URL_MA_CONFIGURE,
+        )
+        identity_widget.setVisible(False)
+
         vbox.addWidget(widget_3d, alignment=QtCore.Qt.AlignTop)
         vbox.addWidget(madlc_widget, alignment=QtCore.Qt.AlignTop)
+        vbox.addWidget(unique_widget, alignment=QtCore.Qt.AlignTop)
+        vbox.addWidget(identity_widget, alignment=QtCore.Qt.AlignTop)
 
         # Create horizontal layout for the two lists
         lists_layout = QtWidgets.QHBoxLayout()
@@ -272,8 +302,23 @@ class ProjectCreator(QtWidgets.QDialog):
         )
         self.individuals_list.setVisible(False)
 
-        # Connect toggle state to individuals list visibility
+        self.unique_bodyparts_list = DynamicTextList(
+            label_text="unique bodyparts to track",
+            parent=self,
+        )
+        self.unique_bodyparts_list.setVisible(False)
+
+        # Connect toggle state to individuals list visibility, unique, identity
         self.madlc_toggle.toggled.connect(self.individuals_list.setVisible)
+        self.madlc_toggle.toggled.connect(unique_widget.setVisible)
+        self.madlc_toggle.toggled.connect(identity_widget.setVisible)
+
+        # Connect the unique_toggle to the unique_bodyparts_list
+        self.unique_toggle.toggled.connect(
+            lambda yes: self.unique_bodyparts_list.setVisible(
+                yes and self.madlc_toggle.isChecked()
+            )
+        )
 
         # Connect 3d toggle to all other option visibility
         self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
@@ -289,6 +334,7 @@ class ProjectCreator(QtWidgets.QDialog):
         # Add both lists to the horizontal layout with top alignment
         lists_layout.addWidget(self.bodypart_list, alignment=QtCore.Qt.AlignTop)
         lists_layout.addWidget(self.individuals_list, alignment=QtCore.Qt.AlignTop)
+        lists_layout.addWidget(self.unique_bodyparts_list, alignment=QtCore.Qt.AlignTop)
 
         # Add the horizontal layout to the main vertical layout
         vbox.addLayout(lists_layout)
@@ -303,8 +349,10 @@ class ProjectCreator(QtWidgets.QDialog):
     ) -> QtWidgets.QWidget:
         toggle_layout = QtWidgets.QHBoxLayout()
         toggle_layout.setContentsMargins(0, 0, 0, 0)
+        toggle_layout.setSpacing(10)
 
         toggle_label = QtWidgets.QLabel(question)
+        toggle_label.setAlignment(QtCore.Qt.AlignLeft)
         help_label = ClickableLabel(help_text, parent=self)
         help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
         help_label.setCursor(QtCore.Qt.PointingHandCursor)
@@ -312,8 +360,9 @@ class ProjectCreator(QtWidgets.QDialog):
             lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link))
         )
 
-        toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
         toggle_layout.addWidget(switch, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
+        toggle_layout.addStretch()
         toggle_layout.addWidget(help_label, alignment=QtCore.Qt.AlignRight)
         toggle_widget = QtWidgets.QWidget()
         toggle_widget.setLayout(toggle_layout)
@@ -411,6 +460,17 @@ class ProjectCreator(QtWidgets.QDialog):
                             individuals = self.individuals_list.get_entries()
                             if len(individuals) > 0:
                                 updates["individuals"] = individuals
+
+                        if (
+                            self.unique_toggle.isChecked() and
+                            self.unique_bodyparts_list is not None
+                        ):
+                            unique_bodyparts = self.unique_bodyparts_list.get_entries()
+                            if len(unique_bodyparts) > 0:
+                                updates["uniquebodyparts"] = unique_bodyparts
+
+                        if self.identity_toggle.isChecked():
+                            updates["identity"] = True
 
                     bodyparts = self.bodypart_list.get_entries()
                     if len(bodyparts) > 0:
