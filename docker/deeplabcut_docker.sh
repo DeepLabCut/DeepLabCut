@@ -5,7 +5,7 @@
 #   $ ./deeplabcut-docker.sh [notebook|bash]
 
 DOCKER=${DOCKER:-docker}
-CUDA_VERSION=${CUDA_VERSION:-"12.4"}
+CUDA_VERSION=${CUDA_VERSION:-"cuda12.4-cudnn9"}
 DLC_VERSION=${DLC_VERSION:-"latest"}
 DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
