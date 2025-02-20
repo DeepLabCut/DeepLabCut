@@ -44,11 +44,11 @@ get_mount_args() {
 }
 
 get_container_name() {
-    echo deeplabcut/deeplabcut:"${DLC_VERSION}"-"$1"-cuda"${CUDA_VERSION}"-cudnn9
+    echo deeplabcut/deeplabcut:"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
 }
 
 get_local_container_name() {
-    echo deeplabcut-"${DLC_VERSION}"-"$1"-cuda"${CUDA_VERSION}"-cudnn9
+    echo deeplabcut-"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
 }
 
 ### Start of helper functions ###
