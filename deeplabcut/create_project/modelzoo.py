@@ -13,16 +13,24 @@ import os
 from pathlib import Path
 
 import yaml
+from dlclibrary import get_available_detectors
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
     MODELOPTIONS,
+    get_available_datasets,
+    get_available_models,
 )
 
 import deeplabcut
 from deeplabcut import Engine
 from deeplabcut.generate_training_dataset.metadata import TrainingDatasetMetadata, ShuffleMetadata, DataSplit
+from deeplabcut.modelzoo.utils import get_super_animal_project_cfg
 from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
+from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata, make_pytorch_test_config
+from deeplabcut.pose_estimation_pytorch.config.utils import write_config
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import MakeInference_yaml
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
@@ -111,6 +119,10 @@ def create_pretrained_project(
     createlabeledvideo: bool = True,
     trainFraction: float | None = None,
     engine: Engine = Engine.PYTORCH,
+    multi_animal: bool = False,
+    individuals: list[str] | None = None,
+    net_name: str | None = None,
+    detector_name: str | None = None,
 ):
     """
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -161,6 +173,24 @@ def create_pretrained_project(
     engine: Engine, default Engine.PYTORCH,
         engine on which the pretrained weights are based
 
+    multi_animal: bool = False,
+        Specifies if the project is single or multi-animal.
+        Implemented only for Pytorch-based models.
+
+    individuals: list[str] | None = None,
+        Only if multianimal is True.
+        Defines the names of the individuals.
+
+    net_name: str | None, default = None,
+        Valid only if using Pytorch engine.
+        Name of the pose model on which the superanimal dataset has been trained on.
+        If None - "hrnet_w32" will be used as default.
+
+    detector_name: str | None, default = None,
+        Valid only if using Pytorch engine.
+        Name of the detector model on which the superanimal dataset has been trained on.
+        If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
+
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
@@ -200,6 +230,10 @@ def create_pretrained_project(
             filtered=filtered,
             create_labeled_video=createlabeledvideo,
             train_fraction=trainFraction,
+            multi_animal=multi_animal,
+            individuals=individuals,
+            net_name=net_name,
+            detector_name=detector_name,
         )
 
     raise NotImplementedError(f"This function is not implemented for {engine}")
@@ -217,6 +251,10 @@ def create_pretrained_project_pytorch(
     filtered: bool = True,
     create_labeled_video: bool = True,
     train_fraction: float | None = None,
+    multi_animal: bool = False,
+    individuals: list[str] | None = None,
+    net_name: str | None = None,
+    detector_name: str | None = None,
 ):
     """
     Method used specifically for Pytorch-based ModelZoo models.
@@ -266,6 +304,23 @@ def create_pretrained_project_pytorch(
             Fraction that will be used in dlc-model/trainingset folder name.
             If None - default value (0.95) from new projects will be used.
 
+    multi_animal: bool = False,
+        Specifies if the project is single or multi-animal
+
+    individuals: list[str]|None = None,
+        Only if multianimal is True.
+        Defines the names of the individuals.
+
+    net_name: str | None, default = None,
+        Valid only if using Pytorch engine.
+        Name of the pose model on which the superanimal dataset has been trained on.
+        If None - "hrnet_w32" will be used as default.
+
+    detector_name: str | None, default = None,
+        Valid only if using Pytorch engine.
+        Name of the detector model on which the superanimal dataset has been trained on.
+        If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
+
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
@@ -278,7 +333,124 @@ def create_pretrained_project_pytorch(
     >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], r'C:\yourusername\analysis\project', copy_videos=True)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
-    pass
+    # Check arguments
+    if not dataset:
+        dataset = "superanimal_quadruped"
+
+    if not net_name:
+        net_name = "hrnet_w32"
+
+    # Currently, all Pytorch Superanimal models are Top-Down.
+    if not detector_name:
+        detector_name = "fasterrcnn_resnet50_fpn_v2"
+
+    if dataset not in get_available_datasets():
+        raise ValueError(f"Invalid dataset '{dataset}'. Available datasets are: {get_available_datasets()}")
+
+    if net_name not in get_available_models(dataset):
+        raise ValueError(f"Invalid net_name '{net_name}' for dataset {dataset}. The following net types are available: {get_available_models(dataset)}")
+
+    if detector_name not in get_available_detectors(dataset):
+        raise ValueError(f"Invalid detector_name '{detector_name}' for dataset {dataset}. The following detectors are available: {get_available_detectors(dataset)}")
+
+    # Create project
+    cfg_path = deeplabcut.create_new_project(
+        project=project,
+        experimenter=experimenter,
+        videos=videos,
+        working_directory=working_directory,
+        copy_videos=copy_videos,
+        videotype=video_type,
+        multianimal=multi_animal,
+        individuals=individuals,
+    )
+
+    # Edits to do to the project config
+    cfg_edits = {}
+    if train_fraction is not None:
+        cfg_edits["TrainingFraction"] = [train_fraction]
+    super_animal_project_cfg = get_super_animal_project_cfg(dataset)
+    super_animal_bodyparts = super_animal_project_cfg.get("bodyparts")
+    super_animal_skeleton = super_animal_project_cfg.get("skeleton")
+    cfg_edits["skeleton"] = super_animal_skeleton
+    if multi_animal:
+        cfg_edits["multianimalbodyparts"] = super_animal_bodyparts
+    else:
+        cfg_edits["bodyparts"] = super_animal_bodyparts
+    auxiliaryfunctions.edit_config(cfg_path, edits=cfg_edits)
+
+    # Create the shuffle train and test directories
+    config = read_config_as_dict(cfg_path)
+    shuffle_dir = Path(cfg_path).parent / auxiliaryfunctions.get_model_folder(trainFraction=config["TrainingFraction"][0], shuffle=1, cfg=config, engine=Engine.PYTORCH)
+    train_dir = shuffle_dir / "train"
+    test_dir = shuffle_dir / "test"
+    train_dir.mkdir(parents=True, exist_ok=True)
+    test_dir.mkdir(parents=True, exist_ok=True)
+
+    # Download the weights and put them into appropriate directory
+    print("Downloading weights...")
+    super_animal_detector_name = f"{dataset}_{detector_name}"
+    new_detector_name = "snapshot-detector-000.pt"
+    download_huggingface_model(
+        model_name=super_animal_detector_name,
+        target_dir=str(train_dir),
+        rename_mapping={f"{super_animal_detector_name}.pt": new_detector_name}
+    )
+    super_animal_model_name = f"{dataset}_{net_name}"
+    new_snapshot_name = "snapshot-000.pt"
+    download_huggingface_model(
+        model_name=super_animal_model_name,
+        target_dir=str(train_dir),
+        rename_mapping={f"{super_animal_model_name}.pt": new_snapshot_name}
+    )
+
+    # Create pytorch_config.yaml
+    train_cfg_path = train_dir / "pytorch_config.yaml"
+    pytorch_config = load_super_animal_config(
+        super_animal=dataset,
+        model_name=net_name,
+        detector_name=detector_name,
+    )
+    pytorch_config = add_metadata(config, pytorch_config, train_cfg_path)
+    pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
+    pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
+    write_config(train_cfg_path, pytorch_config)
+
+    # Create test pose_cfg.yaml
+    test_cfg_path = test_dir / "pose_cfg.yaml"
+    make_pytorch_test_config(model_config=pytorch_config, test_config_path=test_cfg_path, save=True)
+
+    # Create inference_cfg.yaml if needed
+    if multi_animal:
+        inference_cfg_path = test_dir / "inference_cfg.yaml"
+        _create_inference_config(inference_cfg_path, config)
+
+    # Create metadata.yaml with shuffle info in training-data directory
+    _create_training_datasets_metadata(config, shuffle_dir.name, Engine.PYTORCH)
+
+    # Process the videos
+    _process_videos(
+        cfg_path=cfg_path,
+        video_type=video_type,
+        analyze_video=analyze_video,
+        filtered=filtered,
+        create_labeled_video=create_labeled_video,
+    )
+    return cfg_path, str(train_cfg_path)
+
+
+def _create_inference_config(inference_cfg_path: str|Path, project_cfg: dict):
+    inf_updates = dict(
+        minimalnumberofconnections=int(len(project_cfg["multianimalbodyparts"]) / 2),
+        topktoretain=len(project_cfg["individuals"]),
+        withid=project_cfg.get("identity", False),
+    )
+    default_inf_path = Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
+    MakeInference_yaml(
+        inf_updates,
+        inference_cfg_path,
+        default_inf_path
+    )
 
 
 def create_pretrained_project_tensorflow(
