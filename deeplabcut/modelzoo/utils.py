@@ -56,7 +56,7 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
             f"are {', '.join(super_animal_projects.keys())}."
         )
 
-    return read_config(str(super_animal_projects[super_animal]))
+    return read_config_as_dict(super_animal_projects[super_animal])
 
 
 def get_super_animal_scorer(
