@@ -22,6 +22,10 @@ RUN python -m pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytor
 	huggingface_hub \
 	wandb
 
+# Make the folder containing the pretrained weights writeable
+RUN mkdir -p /opt/conda/lib/python3.11/site-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights && \
+    chmod a+rwx -R /opt/conda/lib/python3.11/site-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights
+
 ENV CUDA_VERSION=${CUDA_VERSION}
 ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}
 ENV PYTORCH_VERSION=${CUDA_VERSION}
