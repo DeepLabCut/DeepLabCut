@@ -293,7 +293,7 @@ def list_videos_in_folder(
     videos = []
     for path in video_paths:
         if path.is_dir():
-            if video_type is None:
+            if not video_type:
                 video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
             else:
                 video_suffixes = [video_type]
