@@ -4,9 +4,9 @@
 documentation contains its own user documentation on the provided docker images.**
 
 This repo contains build routines for the following official DeepLabCut docker images:
-- `deeplabcut/deeplabcut:$DLC_VERSION-base-$CUDA_VERSION`: Base image with cuDNN9 and DLC
-- `deeplabcut/deeplabcut:$DLC_VERSION-core-$CUDA_VERSION`: DLC in light mode
-- `deeplabcut/deeplabcut:$DLC_VERSION-jupyter-$CUDA_VERSION`: DLC with jupyter installed
+- `deeplabcut/deeplabcut:${DLC_VERSION}-base-cuda${CUDA_VERSION}-cudnn9`: Base image with DLC
+- `deeplabcut/deeplabcut:${DLC_VERSION}-core-cuda${CUDA_VERSION}-cudnn9`: DLC in light mode
+- `deeplabcut/deeplabcut:${DLC_VERSION}-jupyter-cuda${CUDA_VERSION}-cudnn9`: DLC with jupyter installed
 
 All images come with Python 3.11 installed.
 The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabcut
