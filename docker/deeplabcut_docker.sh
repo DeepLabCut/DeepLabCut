@@ -5,7 +5,8 @@
 #   $ ./deeplabcut-docker.sh [notebook|bash]
 
 DOCKER=${DOCKER:-docker}
-CUDA_VERSION=${CUDA_VERSION:-"cuda12.4-cudnn9"}
+CUDA_VERSION=${CUDA_VERSION:-"12.4"}
+CUDNN_VERSION=${CUDNN_VERSION:-"9"}
 DLC_VERSION=${DLC_VERSION:-"latest"}
 DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
@@ -44,11 +45,11 @@ get_mount_args() {
 }
 
 get_container_name() {
-    echo deeplabcut/deeplabcut:"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
+    echo "deeplabcut/deeplabcut:${DLC_VERSION}-$1-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}"
 }
 
 get_local_container_name() {
-    echo deeplabcut-"${DLC_VERSION}"-"$1"-"${CUDA_VERSION}"
+    echo "deeplabcut-${DLC_VERSION}-$1-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}"
 }
 
 ### Start of helper functions ###

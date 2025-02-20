@@ -54,10 +54,11 @@ iterate_build_matrix() {
 
     # [add other cuda versions to build here]
     cuda_versions=(
-        "cuda11.8-cudnn9"
-        "cuda12.1-cudnn9"
-        "cuda12.4-cudnn9"
+        "11.8"
+        "12.1"
+        "12.4"
     )
+    cudnn_version="9"
 
     pytorch_versions=(
         "2.5.1"
@@ -83,9 +84,10 @@ iterate_build_matrix() {
                     case "$mode" in
                     build)
                         echo \
-                            --build-arg=CUDA_VERSION=${cuda_version} \
-                            --build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
-                            --build-arg=PYTORCH_VERSION=${pytorch_version} \
+                            "--build-arg=CUDA_VERSION=${cuda_version}" \
+                            "--build-arg=CUDNN_VERSION=${cudnn_version}" \
+                            "--build-arg=DEEPLABCUT_VERSION=${deeplabcut_version}" \
+                            "--build-arg=PYTORCH_VERSION=${pytorch_version}" \
                             "--tag=${BASENAME}:$tag" \
                             -f "Dockerfile.${stage}" \.
                         # --no-cache \
