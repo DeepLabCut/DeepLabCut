@@ -74,15 +74,15 @@ def make_labeled_image(
     for scorerindex, loopscorer in enumerate(Scorers):
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
-                DataCombined[loopscorer][bp]["y"][imagenr]
-                + DataCombined[loopscorer][bp]["x"][imagenr]
+                DataCombined[loopscorer][bp]["y"].iloc[imagenr]
+                + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
             ):
                 y, x = (
-                    int(DataCombined[loopscorer][bp]["y"][imagenr]),
-                    int(DataCombined[loopscorer][bp]["x"][imagenr]),
+                    int(DataCombined[loopscorer][bp]["y"].iloc[imagenr]),
+                    int(DataCombined[loopscorer][bp]["x"].iloc[imagenr]),
                 )
                 if cfg["scorer"] not in loopscorer:
-                    p = DataCombined[loopscorer][bp]["likelihood"][imagenr]
+                    p = DataCombined[loopscorer][bp]["likelihood"].iloc[imagenr]
                     if p > pcutoff:
                         ax.plot(
                             x,
