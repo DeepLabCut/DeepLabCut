@@ -124,7 +124,7 @@ if __name__ == "__main__":
             videoname,
             "CollectedData_" + scorer + ".h5",
         ),
-        "df_with_missing",
+        key="df_with_missing",
         format="table",
         mode="w",
     )
@@ -285,7 +285,7 @@ if __name__ == "__main__":
             vname,
             "CollectedData_" + scorer + ".h5",
         ),
-        "df_with_missing",
+        key="df_with_missing",
     )
 
     print("MERGING")
