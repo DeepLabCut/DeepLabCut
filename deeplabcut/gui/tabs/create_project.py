@@ -149,8 +149,9 @@ class Switch(QtWidgets.QPushButton):
         self.setMinimumHeight(22)
 
     def paintEvent(self, event):
+        # Colors: https://qdarkstylesheet.readthedocs.io/en/latest/color_reference.html
         label = self.on_text if self.isChecked() else self.off_text
-        bg_color = "#00ff00" if self.isChecked() else "#788D9C"
+        bg_color = "#00ff00" if self.isChecked() else "#9DA9B5"
 
         radius = 10
         width = 32
@@ -159,9 +160,9 @@ class Switch(QtWidgets.QPushButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.translate(center)
-        painter.setBrush(QColor(0, 0, 0))
+        painter.setBrush(QColor(69, 83, 100))  # Lighter gray background
 
-        pen = QPen("#000000")
+        pen = QPen("#455364")
         pen.setWidth(2)
         painter.setPen(pen)
 
@@ -174,6 +175,10 @@ class Switch(QtWidgets.QPushButton):
             sw_rect.moveLeft(-width)
 
         painter.drawRoundedRect(sw_rect, radius, radius)
+
+        pen = QPen("#000000")
+        pen.setWidth(2)
+        painter.setPen(pen)
         painter.drawText(sw_rect, QtCore.Qt.AlignCenter, label)
 
 
