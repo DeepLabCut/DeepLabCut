@@ -298,16 +298,19 @@ class ProjectCreator(QtWidgets.QDialog):
 
         # Create both DynamicTextList widgets as class attributes
         self.bodypart_list = DynamicTextList(
-            label_text="Bodyparts to track", parent=self,
+            label_text="Bodyparts to track",
+            parent=self,
         )
 
         self.individuals_list = DynamicTextList(
-            label_text="Individual names", parent=self,
+            label_text="Individual names",
+            parent=self,
         )
         self.individuals_list.setVisible(False)
 
         self.unique_bodyparts_list = DynamicTextList(
-            label_text="Unique bodyparts to track", parent=self,
+            label_text="Unique bodyparts to track",
+            parent=self,
         )
         self.unique_bodyparts_list.setVisible(False)
 
@@ -482,8 +485,8 @@ class ProjectCreator(QtWidgets.QDialog):
                                 updates["individuals"] = individuals
 
                         if (
-                            self.unique_toggle.isChecked() and
-                            self.unique_bodyparts_list is not None
+                            self.unique_toggle.isChecked()
+                            and self.unique_bodyparts_list is not None
                         ):
                             unique_bodyparts = self.unique_bodyparts_list.get_entries()
                             if len(unique_bodyparts) > 0:
