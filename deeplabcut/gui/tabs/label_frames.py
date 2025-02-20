@@ -49,7 +49,7 @@ def label_frames(
     --------
     Opening the napari-deeplabcut annotation GUI without opening a specific folder of
     images to label. You then need to drag-and-drop your image folder into the GUI.
-    See the napari-deeplabcut docs linked above for more infomation about labelling in
+    See the napari-deeplabcut docs linked above for more information about labelling in
     napari-deeplabcut.
     >>> import deeplabcut
     >>> deeplabcut.label_frames()
