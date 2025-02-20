@@ -498,20 +498,13 @@ def create_pretrained_project_tensorflow(
 
         _create_training_datasets_metadata(config, modelfoldername.name, Engine.TF)
 
-        video_dir = os.path.join(config["project_path"], "videos")
-        if analyzevideo == True:
-            print("Analyzing video...")
-            deeplabcut.analyze_videos(cfg, [video_dir], videotype, save_as_csv=True)
-
-        if createlabeledvideo == True:
-            if filtered:
-                deeplabcut.filterpredictions(cfg, [video_dir], videotype)
-
-            print("Plotting results...")
-            deeplabcut.create_labeled_video(
-                cfg, [video_dir], videotype, draw_skeleton=True, filtered=filtered
-            )
-            deeplabcut.plot_trajectories(cfg, [video_dir], videotype, filtered=filtered)
+        _process_videos(
+            cfg_path=cfg,
+            video_type=videotype,
+            analyze_video=analyzevideo,
+            filtered=filtered,
+            create_labeled_video=createlabeledvideo,
+        )
 
         os.chdir(cwd)
         return cfg, path_train_config
@@ -539,3 +532,28 @@ def _create_training_datasets_metadata(config: dict, shuffle_dir_name: str, engi
     metadata.save()
 
     return metadata
+
+
+def _process_videos(
+    cfg_path: str | Path,
+    video_type: str = "",
+    analyze_video: bool = True,
+    filtered: bool = True,
+    create_labeled_video: bool = True,
+):
+    cfg_path = str(cfg_path)
+    video_dir = Path(cfg_path).parent / "videos"
+
+    if analyze_video:
+        print("Analyzing video...")
+        deeplabcut.analyze_videos(cfg_path, [video_dir], videotype=video_type, save_as_csv=True)
+
+    if create_labeled_video:
+        if filtered:
+            deeplabcut.filterpredictions(cfg_path, [video_dir], video_type)
+
+        print("Plotting results...")
+        deeplabcut.create_labeled_video(
+            cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered
+        )
+        deeplabcut.plot_trajectories(cfg_path, [video_dir], video_type, filtered=filtered)
