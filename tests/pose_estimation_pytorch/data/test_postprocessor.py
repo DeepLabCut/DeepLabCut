@@ -14,6 +14,7 @@ import pytest
 
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     PredictKeypointIdentities,
+    PrepareBackboneFeatures,
     RescaleAndOffset,
     TrimOutputs,
 )
@@ -218,3 +219,87 @@ def test_assign_id_scores(data):
         predictions["keypoint_identity"],
         expected_ids,
     )
+
+
+def test_prepare_backbone_features():
+    p = PrepareBackboneFeatures(top_down=False)
+
+    img_w, img_h = 256, 128
+    features = np.zeros((1, img_h, img_w))
+
+    features[0, 15, 10] = 1
+    features[0, 25, 20] = 2
+    features[0, 35, 30] = 3
+
+    pose = np.array([
+        [
+            [10.1, 15.1, 0.95],
+            [20.1, 25.1, 0.95],
+            [29.9, 34.9, 0.95],
+        ],
+    ])
+
+    predictions = [dict(backbone=dict(features=features), bodypart=dict(poses=pose))]
+    context = dict(image_size=(img_w, img_h))
+    predictions_out, context_out = p(predictions, context)
+
+    assert len(predictions_out) == 1
+    assert len(context_out) == 1
+    preds = predictions_out[0]
+
+    assert "backbone" in preds
+    assert "bodypart_features" in preds["backbone"]
+    bodypart_features = preds["backbone"]["bodypart_features"]
+    print(f"Bodypart features: {bodypart_features.shape}")
+    print(bodypart_features)
+    assert bodypart_features.shape == (1, 3, 1)
+    assert bodypart_features.reshape(-1).tolist() == [1, 2, 3]
+
+
+def test_prepare_top_down_backbone_features():
+    p = PrepareBackboneFeatures(top_down=True)
+
+    img_w, img_h = 256, 256
+
+    features = np.zeros((2, 1, img_h, img_w))
+    features[0, 0, 15, 10] = 1
+    features[0, 0, 25, 20] = 2
+    features[0, 0, 35, 30] = 3
+    features[1, 0, 95, 10] = 11
+    features[1, 0, 85, 20] = 12
+    features[1, 0, 75, 30] = 13
+
+    pose_idv0 = np.array([
+        [
+            [10.1, 15.1, 0.95],
+            [20.1, 25.1, 0.95],
+            [29.9, 34.9, 0.95],
+        ],
+    ])
+    pose_idv1 = np.array(
+        [
+            [
+                [10.1, 95.1, 0.95],
+                [20.1, 85.1, 0.95],
+                [29.9, 74.9, 0.95],
+            ],
+        ]
+    )
+
+    predictions = [
+        dict(backbone=dict(features=features[0]), bodypart=dict(poses=pose_idv0)),
+        dict(backbone=dict(features=features[1]), bodypart=dict(poses=pose_idv1)),
+    ]
+    context = dict(top_down_crop_size=(img_w, img_h))
+    predictions_out, context_out = p(predictions, context)
+
+    assert len(predictions_out) == 2
+    assert len(context_out) == 1
+    for preds, expected in zip(predictions_out, [[1, 2, 3], [11, 12, 13]]):
+        assert "backbone" in preds
+        assert "bodypart_features" in preds["backbone"]
+        bodypart_features = preds["backbone"]["bodypart_features"]
+        print(f"Bodypart features: {bodypart_features.shape}")
+        print(bodypart_features)
+        assert bodypart_features.shape == (1, 3, 1)
+        assert bodypart_features.reshape(-1).tolist() == expected

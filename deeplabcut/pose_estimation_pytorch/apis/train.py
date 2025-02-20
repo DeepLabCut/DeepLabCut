@@ -216,7 +216,7 @@ def train_network(
     display_iters: int | None = None,
     max_snapshots_to_keep: int | None = None,
     pose_threshold: float | None = 0.1,
-    **kwargs,
+    pytorch_cfg_updates: dict | None = None,
 ) -> None:
     """Trains a network for a project
 
@@ -252,8 +252,14 @@ def train_network(
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
         pose_threshold: Used for memory-replay. Pseudo-predictions with confidence lower
             than this threshold are discarded for memory-replay
-        **kwargs : could be any entry of the pytorch_config dictionary. Examples are
-            to see the full list see the pytorch_cfg.yaml file in your project folder
+        pytorch_cfg_updates: dict, optional, default = None.
+            A dictionary of updates to the pytorch config. The keys are the dot-separated
+            paths to the values to update in the config.
+            For example, to update the gpus to run the training on, you can use:
+            ```
+            pytorch_cfg_updates={"runner.gpus": [0,1,2,3]}
+            ```
+            To see the full list - check the pytorch_cfg.yaml file in your project folder
     """
     loader = DLCLoader(
         config=config,
@@ -314,7 +320,9 @@ def train_network(
         if display_iters is not None:
             detector_cfg["train_settings"]["display_iters"] = display_iters
 
-    loader.update_model_cfg(kwargs)
+    if pytorch_cfg_updates is not None:
+        loader.update_model_cfg(pytorch_cfg_updates)
+
     setup_file_logging(loader.model_folder / "train.txt")
 
     logging.info("Training with configuration:")

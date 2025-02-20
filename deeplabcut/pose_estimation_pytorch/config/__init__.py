@@ -19,5 +19,6 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     pretty_print,
     read_config_as_dict,
     update_config,
+    update_config_by_dotpath,
     write_config,
 )
