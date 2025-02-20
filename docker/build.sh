@@ -80,7 +80,7 @@ iterate_build_matrix() {
                 ${pytorch_versions[@]}; do
                 for stage in \
                     ${docker_types[@]}; do
-                    tag=${deeplabcut_version}-${stage}-${cuda_version}
+                    tag="${deeplabcut_version}-${stage}-cuda${cuda_version}-cudnn${cudnn_version}"
                     case "$mode" in
                     build)
                         echo \
