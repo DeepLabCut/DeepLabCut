@@ -496,8 +496,7 @@ def create_pretrained_project_tensorflow(
 
         MakeTest_pose_yaml(pose_cfg, keys2save, path_test_config)
 
-        # create fake metadata to read TF Engine in scorer (temporary fix until Pytorch version is implemented)
-        _create_and_save_fake_metadata(cfg)
+        _create_training_datasets_metadata(config, modelfoldername.name, Engine.TF)
 
         video_dir = os.path.join(config["project_path"], "videos")
         if analyzevideo == True:
@@ -520,21 +519,17 @@ def create_pretrained_project_tensorflow(
     else:
         return "N/A", "N/A"
 
-def _create_and_save_fake_metadata(config_path: str | Path):
+def _create_training_datasets_metadata(config: dict, shuffle_dir_name: str, engine: Engine):
     # First create the metadata object
-    metadata = TrainingDatasetMetadata.create(config_path)
+    metadata = TrainingDatasetMetadata.create(config)
 
     # Create a new shuffle with TensorFlow engine
     new_shuffle = ShuffleMetadata(
-        name="project_name-trainset95shuffle1",
-        # This will be overwritten with proper name
-        train_fraction=read_config_as_dict(config_path)["TrainingFraction"][0],
+        name=shuffle_dir_name,
+        train_fraction=config["TrainingFraction"][0],
         index=1,
-        engine=Engine.TF,
-        split=DataSplit(
-            train_indices=(0, 1, 2, 3, 4),  # Example indices
-            test_indices=(5,)  # Example indices
-        )
+        engine=engine,
+        split=DataSplit(train_indices=(),test_indices=())
     )
 
     # Add the shuffle to metadata
