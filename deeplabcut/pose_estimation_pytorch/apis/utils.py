@@ -19,8 +19,8 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,

@@ -23,14 +23,13 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 
 import deeplabcut
 from deeplabcut import Engine
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.generate_training_dataset.metadata import TrainingDatasetMetadata, ShuffleMetadata, DataSplit
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import MakeInference_yaml
 from deeplabcut.modelzoo.utils import get_super_animal_project_cfg
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata, make_pytorch_test_config
-from deeplabcut.pose_estimation_pytorch.config.utils import write_config
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.generate_training_dataset.trainingsetmanipulation import MakeInference_yaml
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 

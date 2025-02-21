@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import ListedColormap
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.conversion_table import ConversionTable
 from deeplabcut.utils.auxiliaryfunctions import (
     get_bodyparts,

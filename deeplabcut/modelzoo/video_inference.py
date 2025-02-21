@@ -18,8 +18,8 @@ from typing import Optional, Union
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_snapshot_folder_path,
