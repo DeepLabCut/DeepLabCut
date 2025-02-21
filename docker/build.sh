@@ -12,7 +12,7 @@ export DOCKERDIR=docker
 
 # Check if script is being run from the correct directory
 if [[ ! -d ./${DOCKERDIR} ]]; then
-    echo >&2 Run from repository root. Current pwd is
+    echo >&2 Run from root of the DeepLabCut repository (i.e. run docker/build.sh). Current pwd is
     pwd >&2
     exit 1
 fi
