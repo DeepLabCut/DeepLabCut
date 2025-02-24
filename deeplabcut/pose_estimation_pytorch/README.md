@@ -462,7 +462,7 @@ When `deeplabcut.pose_estimation_pytorch.apis.analyze_videos.video_inference` is
 with a top-down model, it is assumed that a detector snapshot is given as well to obtain
 bounding boxes with which to run pose estimation. It's possible that you've already 
 obtained bounding boxes for your video (with another object detector or through some 
-other means), and you want to re-use those bounding boxes instead of running an object
+other means), and you want to reuse those bounding boxes instead of running an object
 detector again.
 
 You can easily do so by writing a bit of custom code, as shown in the example below:
