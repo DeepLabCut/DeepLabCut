@@ -231,7 +231,7 @@ def video_inference_superanimal(
     )
 
     Tips:
-    * max_individuals: make sure you correclty give the number of individuals. Our
+    * max_individuals: make sure you correctly give the number of individuals. Our
         inference api will only give up to max_individuals number of predictions.
     * pseudo_threshold: the higher you set, the more aggressive you filter low
         confidence predictions during video adaptation.
