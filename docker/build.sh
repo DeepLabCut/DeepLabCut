@@ -12,7 +12,7 @@ export DOCKERDIR=docker
 
 # Check if script is being run from the correct directory
 if [[ ! -d ./${DOCKERDIR} ]]; then
-    echo >&2 Run from root of the DeepLabCut repository (i.e. run docker/build.sh). Current pwd is
+    echo >&2 "Run from root of the DeepLabCut repository (i.e. run docker/build.sh). Current pwd is"
     pwd >&2
     exit 1
 fi
@@ -47,9 +47,12 @@ export -f run_test
 
 # Iterate through build matrix and perform actions
 iterate_build_matrix() {
+    # Define latest DLC version
+    latest_dlc_version="3.0.0"
+
     # [add other dlc versions to build here]
     dlc_versions=(
-        "3.0.0"
+        "${latest_dlc_version}"
     )
 
     # [add other cuda versions to build here]
@@ -80,20 +83,34 @@ iterate_build_matrix() {
                 ${pytorch_versions[@]}; do
                 for stage in \
                     ${docker_types[@]}; do
-                    tag="${deeplabcut_version}-${stage}-cuda${cuda_version}-cudnn${cudnn_version}"
+                    tag_suffix="${stage}-cuda${cuda_version}-cudnn${cudnn_version}"
+                    version_tag="${deeplabcut_version}-${tag_suffix}"
+                    latest_tag="latest-${tag_suffix}"
                     case "$mode" in
                     build)
-                        echo \
-                            "--build-arg=CUDA_VERSION=${cuda_version}" \
-                            "--build-arg=CUDNN_VERSION=${cudnn_version}" \
-                            "--build-arg=DEEPLABCUT_VERSION=${deeplabcut_version}" \
-                            "--build-arg=PYTORCH_VERSION=${pytorch_version}" \
-                            "--tag=${BASENAME}:$tag" \
-                            -f "Dockerfile.${stage}" \.
-                        # --no-cache \
+                        build_args="--build-arg=CUDA_VERSION=${cuda_version} \
+                            --build-arg=CUDNN_VERSION=${cudnn_version} \
+                            --build-arg=DEEPLABCUT_VERSION=${deeplabcut_version} \
+                            --build-arg=PYTORCH_VERSION=${pytorch_version}"
+
+                        if [ "${deeplabcut_version}" = "${latest_dlc_version}" ]; then
+                            echo "${build_args} \
+                                --tag=${BASENAME}:${version_tag} \
+                                --tag=${BASENAME}:${latest_tag} \
+                                -f Dockerfile.${stage} \."
+                                # --no-cache \
+                        else
+                            echo "${build_args} \
+                                --tag=${BASENAME}:${version_tag} \
+                                -f Dockerfile.${stage} \."
+                                # --no-cache \
+                        fi
                         ;;
                     push | clean | test)
-                        echo ${BASENAME}:${tag}
+                        echo "${BASENAME}:${version_tag}"
+                        if [ "${deeplabcut_version}" = "${latest_dlc_version}" ]; then
+                            echo "${BASENAME}:${latest_tag}"
+                        fi
                         ;;
                     esac
                 done
