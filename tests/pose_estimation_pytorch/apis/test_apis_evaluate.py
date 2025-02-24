@@ -21,7 +21,7 @@ import deeplabcut.pose_estimation_pytorch.data as data
 PREDICT = Mock()
 
 
-@patch("deeplabcut.pose_estimation_pytorch.apis.evaluate.predict", PREDICT)
+@patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize("num_individuals", [1, 2, 5])
 @pytest.mark.parametrize(
     "bodyparts, error",
@@ -47,7 +47,7 @@ def test_evaluate_basic(
     np.testing.assert_almost_equal(results["rmse"], np.mean(error))
 
 
-@patch("deeplabcut.pose_estimation_pytorch.apis.evaluate.predict", PREDICT)
+@patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize("num_individuals", [1, 2, 5])
 @pytest.mark.parametrize(
     "bodyparts, error",
@@ -115,7 +115,7 @@ class CompTestConfig:
         return len(self.unique_bodyparts)
 
 
-@patch("deeplabcut.pose_estimation_pytorch.apis.evaluate.predict", PREDICT)
+@patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
     "cfg",
     [
@@ -195,7 +195,7 @@ class KeypointData:
         ).item()
 
 
-@patch("deeplabcut.pose_estimation_pytorch.apis.evaluate.predict", PREDICT)
+@patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
     "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7]],
 )
@@ -275,7 +275,7 @@ def test_evaluate_with_pcutoff(
         )
 
 
-@patch("deeplabcut.pose_estimation_pytorch.apis.evaluate.predict", PREDICT)
+@patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
     "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7, 0.4, 0.6]],
 )

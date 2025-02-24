@@ -374,7 +374,6 @@ pretrained weights, and either train them or run inference with them.
 from pathlib import Path
 
 import deeplabcut.pose_estimation_pytorch as dlc_torch
-from deeplabcut.pose_estimation_pytorch.apis.train import train
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
@@ -387,7 +386,7 @@ loader = dlc_torch.COCOLoader(
     train_json_filename=train_json_filename,
     test_json_filename=test_json_filename,
 )
-train(
+dlc_torch.train(
     loader=loader,
     run_config=loader.model_cfg,
     task=dlc_torch.Task(loader.model_cfg["method"]),

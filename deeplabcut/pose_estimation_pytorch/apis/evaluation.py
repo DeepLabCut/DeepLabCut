@@ -919,7 +919,7 @@ def _validate_pcutoff(
     pcutoff: float | list[float],
 ) -> None:
     """Checks that the given `pcutoff` value has the correct number of elements"""
-    if isinstance(pcutoff, float):
+    if isinstance(pcutoff, (int, float)):
         return
 
     total_bodyparts = len(bodyparts) + len(unique_bpts)

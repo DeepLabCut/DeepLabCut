@@ -275,7 +275,7 @@ def compute_rmse(
     error, support, cutoff_error, cutoff_support = 0, 0, 0, 0
     if pixel_errors is not None:
         bpt_cutoffs = pcutoff
-        if not isinstance(pcutoff, float):
+        if not isinstance(pcutoff, (int, float)):
             bpt_cutoffs = pcutoff[:pixel_errors.shape[1]]
 
         error, support, cutoff_error, cutoff_support = collect_pixel_errors(
@@ -290,7 +290,7 @@ def compute_rmse(
             unique_keypoint_scores = np.stack([m.keypoint_scores() for m in u_matches])
 
             bpt_cutoffs = pcutoff
-            if not isinstance(pcutoff, float):
+            if not isinstance(pcutoff, (int, float)):
                 bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1]:]
             u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
                 unique_pixel_errors, unique_keypoint_scores, bpt_cutoffs,
@@ -363,7 +363,7 @@ def compute_detection_rmse(
             if len(bpt_gt) == 0 or len(bpt_pred) == 0:
                 continue
 
-            if isinstance(pcutoff, float):
+            if isinstance(pcutoff, (int, float)):
                 bpt_pcutoff = pcutoff
             else:
                 bpt_pcutoff = pcutoff[bpt_index]
@@ -392,7 +392,7 @@ def compute_detection_rmse(
                 unique_gt, unique_pred = image_gt[0], image_pred[0]
                 num_unique = unique_gt.shape[0]
                 unique_cutoffs = pcutoff
-                if not isinstance(pcutoff, float):
+                if not isinstance(pcutoff, (int, float)):
                     unique_cutoffs = pcutoff[-num_unique:]
 
                 for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
@@ -400,7 +400,7 @@ def compute_detection_rmse(
                     distances.append(dist)
 
                     score = pred[2]
-                    if isinstance(pcutoff, float):
+                    if isinstance(pcutoff, (int, float)):
                         bpt_pcutoff = unique_cutoffs
                     else:
                         bpt_pcutoff = unique_cutoffs[bpt_index]

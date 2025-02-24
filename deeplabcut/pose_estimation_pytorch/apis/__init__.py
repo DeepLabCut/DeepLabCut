@@ -23,7 +23,7 @@ from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
 from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.apis.evaluate import (
+from deeplabcut.pose_estimation_pytorch.apis.evaluation import (
     predict,
     evaluate,
     evaluate_network,
@@ -33,7 +33,7 @@ from deeplabcut.pose_estimation_pytorch.apis.export import export_model
 from deeplabcut.pose_estimation_pytorch.apis.tracking_dataset import (
     create_tracking_dataset,
 )
-from deeplabcut.pose_estimation_pytorch.apis.train import (
+from deeplabcut.pose_estimation_pytorch.apis.training import (
     train,
     train_network,
 )
