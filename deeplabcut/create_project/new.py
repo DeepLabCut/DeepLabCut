@@ -26,7 +26,7 @@ def create_new_project(
     copy_videos: bool = False,
     videotype: str = "",
     multianimal: bool = False,
-    individuals: list[str]|None = None,
+    individuals: list[str] | None = None,
 ):
     r"""Create the necessary folders and files for a new project.
 
@@ -247,7 +247,11 @@ def create_new_project(
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
         cfg_file["identity"] = False
-        cfg_file["individuals"] = individuals if individuals else ["individual1", "individual2", "individual3"]
+        cfg_file["individuals"] = (
+            individuals
+            if individuals
+            else ["individual1", "individual2", "individual3"]
+        )
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
         cfg_file["bodyparts"] = "MULTI!"
