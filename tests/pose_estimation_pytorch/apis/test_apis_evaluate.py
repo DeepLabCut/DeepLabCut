@@ -277,7 +277,7 @@ def test_evaluate_with_pcutoff(
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7, 0.4, 0.6]],
+    "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7, 0.4, 0.6], [0.25, 0.43, 0.61, 0.46, 0.92]],
 )
 @pytest.mark.parametrize(
     "keypoints", [
@@ -297,6 +297,30 @@ def test_evaluate_with_pcutoff(
             KeypointData(img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2),
             KeypointData(img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7),
             KeypointData(img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9),
+        ],
+        [
+            KeypointData(img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7),
+            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5),
+            KeypointData(img=0, idv=0, bodypart="c", gt=(30, 36), pred=(30, 32), score=0.2),
+            KeypointData(img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7),
+            KeypointData(img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9),
+            KeypointData(img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7),
+            KeypointData(img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5),
+            KeypointData(img=1, idv=0, bodypart="c", gt=(17, 32), pred=(58, 20), score=0.2),
+            KeypointData(img=1, idv=-1, bodypart="u1", gt=(37, 4), pred=(3, 3), score=0.7),
+            KeypointData(img=1, idv=-1, bodypart="u2", gt=(12, 6), pred=(20, 22), score=0.9),
+        ],
+        [
+            KeypointData(img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7),
+            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5),
+            KeypointData(img=0, idv=-1, bodypart="u1", gt=(30, 36), pred=(30, 32), score=0.2),
+            KeypointData(img=0, idv=-1, bodypart="u2", gt=(2, 3), pred=(3, 3), score=0.7),
+            KeypointData(img=0, idv=-1, bodypart="u3", gt=(20, 20), pred=(20, 22), score=0.9),
+            KeypointData(img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7),
+            KeypointData(img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5),
+            KeypointData(img=1, idv=-1, bodypart="u1", gt=(17, 32), pred=(58, 20), score=0.2),
+            KeypointData(img=1, idv=-1, bodypart="u2", gt=(37, 4), pred=(3, 3), score=0.7),
+            KeypointData(img=1, idv=-1, bodypart="u3", gt=(12, 6), pred=(20, 22), score=0.9),
         ]
     ]
 )
@@ -327,9 +351,11 @@ def test_evaluate_with_pcutoff_and_unique_bodyparts(
         img = kpt.image()
         if kpt.idv == -1:
             idv, bpt = 0, unique_bodyparts.index(kpt.bodypart)
+            pcutoff_idx = bpt + len(bodyparts)  # offset by number of bodyparts
             gt_data, pred_data = gt_unique[img], pred_unique[img]
         else:
             idv, bpt = kpt.idv, bodyparts.index(kpt.bodypart)
+            pcutoff_idx = bpt
             gt_data, pred_data = gt[img], pred[img]
 
         gt_data[idv, bpt, :2] = kpt.gt
@@ -338,7 +364,7 @@ def test_evaluate_with_pcutoff_and_unique_bodyparts(
         pred_data[idv, bpt, 2] = kpt.score
 
         if isinstance(pcutoff, list):
-            bpt_cutoff = pcutoff[bpt]
+            bpt_cutoff = pcutoff[pcutoff_idx]
         else:
             bpt_cutoff = pcutoff
 
