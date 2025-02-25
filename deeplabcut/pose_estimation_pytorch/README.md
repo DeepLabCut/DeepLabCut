@@ -457,7 +457,7 @@ predictions = dlc_torch.video_inference(
 
 ### Running Top-Down Video Analysis with Existing Bounding Boxes
 
-When `deeplabcut.pose_estimation_pytorch.apis.analyze_videos.video_inference` is called
+When `deeplabcut.pose_estimation_pytorch.apis.videos.video_inference` is called
 with a top-down model, it is assumed that a detector snapshot is given as well to obtain
 bounding boxes with which to run pose estimation. It's possible that you've already 
 obtained bounding boxes for your video (with another object detector or through some 

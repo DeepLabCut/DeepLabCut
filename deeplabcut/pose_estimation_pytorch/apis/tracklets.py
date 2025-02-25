@@ -216,13 +216,6 @@ def convert_detections2tracklets(
                         continue
 
                     animals = np.stack([a for a in assemblies])
-                    animals[animals[..., 2] < pcutoff, :2] = np.nan
-                    animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
-                    if ~np.any(animal_mask):
-                        continue
-
-                    animals = animals[animal_mask]
-
                     if identity_only:
                         # Optimal identity assignment based on soft voting
                         mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
@@ -233,6 +226,12 @@ def convert_detections2tracklets(
                         inds = linear_sum_assignment(mat, maximize=True)
                         trackers = np.c_[inds][:, ::-1]
                     else:
+                        animals[animals[..., 2] < pcutoff, :2] = np.nan
+                        animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
+                        if ~np.any(animal_mask):
+                            continue
+                        animals = animals[animal_mask]
+
                         if track_method == "box":
                             xy = trackingutils.calc_bboxes_from_keypoints(
                                 animals[:, keep_inds], inference_cfg["boundingboxslack"]
