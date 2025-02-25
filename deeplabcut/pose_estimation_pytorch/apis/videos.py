@@ -23,11 +23,11 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
+import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
+from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, DynamicCropper
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets

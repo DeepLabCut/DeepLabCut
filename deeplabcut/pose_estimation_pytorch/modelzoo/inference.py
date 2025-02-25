@@ -16,7 +16,7 @@ from typing import Optional, Union
 import numpy as np
 
 from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
-from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import (
+from deeplabcut.pose_estimation_pytorch.apis.videos import (
     create_df_from_prediction,
     video_inference,
     VideoIterator,
@@ -25,7 +25,6 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
-from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.make_labeled_video import create_video
 
 
