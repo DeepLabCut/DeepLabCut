@@ -12,12 +12,12 @@
 import pytest
 
 import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.core.config import pretty_print
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
     make_basic_project_config,
     make_pytorch_pose_config,
 )
 from deeplabcut.pose_estimation_pytorch.config.utils import (
-    pretty_print,
     update_config,
     update_config_by_dotpath,
 )

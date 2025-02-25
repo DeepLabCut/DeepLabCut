@@ -411,6 +411,7 @@ API. We also use this API under the hood, in particular for the Model Zoo. Check
 example below:
 
 ```python
+from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
 
 import deeplabcut.pose_estimation_pytorch as dlc_torch
@@ -429,7 +430,7 @@ batch_size = 16
 detector_batch_size = 8
 
 # read model configuration
-model_cfg = dlc_torch.config.read_config_as_dict(pytorch_config_path)
+model_cfg = read_config_as_dict(pytorch_config_path)
 pose_task = dlc_torch.Task(model_cfg["method"])
 pose_runner = dlc_torch.get_pose_inference_runner(
     model_config=model_cfg,
@@ -467,6 +468,7 @@ detector again.
 You can easily do so by writing a bit of custom code, as shown in the example below:
 
 ```python
+from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
 
 import numpy as np
@@ -494,7 +496,7 @@ video.set_context(bounding_boxes)
 max_individuals = np.max([len(context["bboxes"]) for context in bounding_boxes])
 
 # run inference!
-model_cfg = dlc_torch.config.read_config_as_dict("/Users/Jayson/pytorch_config.yaml")
+model_cfg = read_config_as_dict("/Users/Jayson/pytorch_config.yaml")
 pose_runner = dlc_torch.get_pose_inference_runner(
     model_config=model_cfg,
     snapshot_path=Path("/Users/Jayson/model-snapshot.pt"),

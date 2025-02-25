@@ -131,14 +131,16 @@ def video_inference(
     Examples:
         Bottom-up video analysis:
         >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
         >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
         >>> video_predictions = pep.video_inference("video.mp4", runner)
         >>>
 
         Top-down video analysis:
         >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
         >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
         >>> d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
         >>> video_predictions = pep.video_inference("video.mp4", runner, d_runner)
@@ -147,6 +149,7 @@ def video_inference(
         Top-Down pose estimation with pre-computed bounding boxes:
         >>> import numpy as np
         >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
         >>>
         >>> video_iterator = pep.VideoIterator("video.mp4")
         >>> video_iterator.set_context([
@@ -158,7 +161,7 @@ def video_inference(
         >>>     },
         >>>     ...
         >>> ])
-        >>> model_cfg = pep.config.read_config_as_dict("pytorch_config.yaml")
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
         >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
         >>> video_predictions = pep.video_inference(video_iterator, runner)
         >>>

@@ -18,6 +18,10 @@ from ruamel.yaml import YAML
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.core.config import (
+    read_config_as_dict,
+    write_config,
+)
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
@@ -98,7 +102,7 @@ def make_super_animal_finetune_config(
         pose_config_path=pose_config_path,
     )
     if save:
-        config_utils.write_config(pose_config_path, pose_config, overwrite=True)
+        write_config(pose_config_path, pose_config, overwrite=True)
 
     return pose_config
 
@@ -128,7 +132,7 @@ def create_config_from_modelzoo(
         The generated pose configuration file.
     """
     # load the model configuration
-    model_cfg = config_utils.read_config_as_dict(
+    model_cfg = read_config_as_dict(
         get_super_animal_model_config_path(model_name)
     )
     if detector_name is None:
@@ -136,17 +140,17 @@ def create_config_from_modelzoo(
         # Use default bottom-up image augmentation if no detector is given (the collate
         # function might be needed).
         config_dir = config_utils.get_config_folder_path()
-        aug = config_utils.read_config_as_dict(config_dir / "base" / "aug_default.yaml")
+        aug = read_config_as_dict(config_dir / "base" / "aug_default.yaml")
         model_cfg["data"]["train"] = aug["train"]
     else:
         model_cfg["method"] = Task.TOP_DOWN.aliases[0].lower()
-        model_cfg["detector"] = config_utils.read_config_as_dict(
+        model_cfg["detector"] = read_config_as_dict(
             get_super_animal_model_config_path(detector_name)
         )
 
     # use SuperAnimal bodyparts
     if weight_init.memory_replay:
-        super_animal_project_config = config_utils.read_config_as_dict(
+        super_animal_project_config = read_config_as_dict(
             get_super_animal_project_config_path(super_animal)
         )
         converted_bodyparts = super_animal_project_config["bodyparts"]
