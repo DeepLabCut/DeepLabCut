@@ -154,7 +154,6 @@ def convert_detections2tracklets(
                 track_method=track_method,
                 inference_cfg=inference_cfg,
                 joints=data["metadata"]["all_joints_names"],
-                multi_bpts=cfg["multianimalbodyparts"],
                 scorer=metadata["data"]["Scorer"],
                 num_frames=data["metadata"]["nframes"],
                 ignore_bodyparts=ignore_bodyparts,
@@ -178,7 +177,6 @@ def build_tracklets(
     track_method: str,
     inference_cfg: dict,
     joints: list[str],
-    multi_bpts: list[str],
     scorer: str,
     num_frames: int,
     ignore_bodyparts: list[str]|None = None,
@@ -234,6 +232,7 @@ def build_tracklets(
             assembly[assembly[..., 2] < pcutoff] = np.nan
             tracklets[0][index] = assembly
     else:
+        multi_bpts = list(set(joints).difference(unique_bodyparts or []))
         keep = set(multi_bpts).difference(ignore_bodyparts or [])
         keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
         for index in tqdm(range(num_frames)):
