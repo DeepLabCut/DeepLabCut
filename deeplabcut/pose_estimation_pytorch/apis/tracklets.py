@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
+from scipy.special import softmax
 from tqdm import tqdm
 
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
@@ -70,7 +71,11 @@ def convert_detections2tracklets(
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
     rel_model_dir = auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
+        train_fraction,
+        shuffle,
+        cfg,
+        modelprefix=modelprefix,
+        engine=Engine.PYTORCH,
     )
     model_dir = Path(cfg["project_path"]) / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
@@ -226,10 +231,20 @@ def convert_detections2tracklets(
                     if identity_only:
                         # Optimal identity assignment based on soft voting
                         mat = np.zeros((len(animals), inference_cfg["topktoretain"]))
-                        for row, a in enumerate(animals):
-                            assembly = Assembly.from_array(a)
-                            for k, v in assembly.soft_identity.items():
-                                mat[row, k] = v
+                        for row, animal_pose in enumerate(animals):
+                            animal_pose = animal_pose[
+                                ~np.isnan(animal_pose).any(axis=1)
+                            ]
+                            unique_ids, idx = np.unique(
+                                animal_pose[:, 3], return_inverse=True
+                            )
+                            total_scores = np.bincount(idx, weights=animal_pose[:, 2])
+                            softmax_id_scores = softmax(total_scores)
+                            for pred_id, softmax_score in zip(
+                                unique_ids.astype(int), softmax_id_scores
+                            ):
+                                mat[row, pred_id] = softmax_score
+
                         inds = linear_sum_assignment(mat, maximize=True)
                         trackers = np.c_[inds][:, ::-1]
                     else:
