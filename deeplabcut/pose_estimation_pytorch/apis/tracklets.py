@@ -10,7 +10,6 @@
 #
 import os
 import pickle
-import re
 import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Union
