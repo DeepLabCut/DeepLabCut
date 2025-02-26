@@ -84,7 +84,8 @@ def select_cropping_area(config, videos=None):
 class ExtractFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super(ExtractFrames, self).__init__(root, parent, h1_description)
-
+        self.worker = None
+        self.thread = None
         self._set_page()
 
     def _set_page(self):
@@ -238,7 +239,8 @@ class ExtractFrames(DefaultTab):
             userfeedback=False,
             videos_list=self.video_selection_widget.files or None,
         )
-        self.worker, self.thread = move_to_separate_thread(func)
+
+        self.worker, self.thread = move_to_separate_thread(func, capture_outputs=True)
         self.worker.finished.connect(lambda: self.ok_button.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.finished.connect(self._show_success_message)
@@ -247,13 +249,37 @@ class ExtractFrames(DefaultTab):
         self.root._progress_bar.show()
 
     def _show_success_message(self):
+        message = "Failed to create worker: it is None"
+        root_message = "failed to extract frames: worker is None"
+        if self.worker is not None:
+            failed = self.worker.outputs
+            if failed is None:
+                # outputs are None during manual frame extraction
+                return
+
+            if len(failed) == 0:
+                message = (
+                    "Frame extraction failed. Please check your terminal output "
+                    "for more information."
+                )
+            elif all(failed):
+                message = "Frame extraction failed. Video files must be corrupted."
+            elif any(failed):
+                message = "Although most frames were extracted, some were invalid."
+                root_message = "failed to extract (some) frames"
+            else:
+                message = (
+                    "Frames were successfully extracted, for the videos of interest."
+                )
+                root_message = "successfully extracted frames"
+
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("Frames were successfully extracted, for the videos of interest.")
+        msg.setText(message)
         msg.setWindowTitle("Info")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
-        self.root.writer.write("Frames successfully extracted.")
+        self.root.writer.write(root_message)
 
     def _check_symlink(self, video_path: Union[str, Path]) -> Path:
         """Checks that a video is in the DeepLabCut 'videos' folder
