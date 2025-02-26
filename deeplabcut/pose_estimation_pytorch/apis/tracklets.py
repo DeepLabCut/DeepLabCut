@@ -216,7 +216,7 @@ def convert_detections2tracklets(
                         continue
 
                     animals = np.stack([a for a in assemblies])
-                    animals[animals[..., 2] < 0, :2] = np.nan
+                    animals[np.any(animals[..., :3] < 0, axis=-1), :2] = np.nan
                     animals[animals[..., 2] < pcutoff, :2] = np.nan
                     animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
                     if ~np.any(animal_mask):
