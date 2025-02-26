@@ -277,7 +277,15 @@ def test_evaluate_with_pcutoff(
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7, 0.4, 0.6], [0.25, 0.43, 0.61, 0.46, 0.92]],
+    "pcutoff", [
+        0.4,
+        0.6,
+        0.8,
+        [0.3, 0.5, 0.7, 0.4, 0.6],
+        [0.25, 0.43, 0.61, 0.46, 0.92],
+        [0.12, 0.15, 0.92, 0.97, 0.85],
+        [0.92, 0.97, 0.85, 0.12, 0.15],
+    ],
 )
 @pytest.mark.parametrize(
     "keypoints", [
