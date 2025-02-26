@@ -476,6 +476,7 @@ def extract_frames(
             "\nYou can now label the frames using the function 'label_frames' "
             "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
         )
+        return has_failed
 
     elif mode == "match":
         import cv2
