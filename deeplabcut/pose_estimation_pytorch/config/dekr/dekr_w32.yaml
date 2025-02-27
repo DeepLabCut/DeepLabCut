@@ -34,8 +34,10 @@ model:
         use_heatmap: false
         clip_scores: true
         num_animals: "num_individuals"
-        keypoint_score_type: combined
+        keypoint_score_type: center
         max_absorb_distance: 75
+        nms_threshold: 0.05
+        apply_pose_nms: true
       heatmap_config:
         channels:
         - 480
