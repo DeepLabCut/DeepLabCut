@@ -1931,6 +1931,7 @@ def export_model(
             iteration=iteration,
             overwrite=overwrite,
             wipe_paths=wipepaths,
+            without_detector=without_detector,
             modelprefix=modelprefix,
         )
 
