@@ -1439,6 +1439,8 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             output_name,
         ]
     )
+    # remove frames used for video creation
+    [os.remove(image) for image in os.listdir(destfolder) if ".png" in image]
 
 
 def create_video_from_pickled_tracks(
