@@ -435,7 +435,7 @@ def build_bboxes_dict_for_dataframe(
     bboxes_data = []
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
-        if "bboxes" in image_predictions:
+        if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
             bboxes_data.append(
                 (image_predictions["bboxes"], image_predictions["bbox_scores"])
             )
