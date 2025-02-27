@@ -377,6 +377,8 @@ class DEKRPredictor(BasePredictor):
 
         Args:
             poses: Pose proposals of shape (batch_size, num_people, num_joints, 3).
+                The poses for each element in the batch should be sorted by score (the
+                highest score prediction should be first).
 
         Returns:
             Pose proposals after non-maximum suppression.
