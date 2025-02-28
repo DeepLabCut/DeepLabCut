@@ -19,7 +19,7 @@
 #
 # install: conda env create -f DEEPLABCUT.yaml
 # update:  conda env update -f DEEPLABCUT.yaml
-name: DEEPLABCUT_TEST
+name: DEEPLABCUT
 channels:
   - conda-forge
   - defaults
