@@ -401,13 +401,14 @@ def extract_frames(
                         )
                 else:
                     print(
-                        "Please implement this method yourself and send us a pull request! Otherwise, choose 'uniform' or 'kmeans'."
-                    )
+                         "Please implement this method yourself and send us a pull "
+                         "request! Otherwise, choose 'uniform' or 'kmeans'."
+                     )
                     frames2pick = []
 
                 if not len(frames2pick):
                     print("Frame selection failed...")
-                    return
+                    return []
 
                 output_path = (
                     Path(config).parents[0] / "labeled-data" / Path(video).stem
@@ -464,7 +465,7 @@ def extract_frames(
 
         if all(has_failed):
             print("Frame extraction failed. Video files must be corrupted.")
-            return
+            return has_failed
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
@@ -475,6 +476,7 @@ def extract_frames(
             "\nYou can now label the frames using the function 'label_frames' "
             "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
         )
+        return has_failed
 
     elif mode == "match":
         import cv2
