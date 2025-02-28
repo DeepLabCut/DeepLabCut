@@ -45,7 +45,6 @@ from skimage.draw import disk, line_aa, set_color, rectangle_perimeter
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
-from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from deeplabcut.utils.video_processor import (
@@ -675,10 +674,9 @@ def create_labeled_video(
             shuffle,
             cfg,
             modelprefix,
-            engine=Engine.PYTORCH,
         )
         model_config_path = (
-            Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
+            Path(config).parent / model_folder / "train" /
         )
         if model_config_path.exists():
             model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
