@@ -23,8 +23,8 @@ conda install -c conda-forge pytables==3.8.0
 # for the exact command
 pip install torch torchvision 
 
-# install DeepLabCut
-pip install deeplabcut
+# install the latest version of DeepLabCut
+pip install --pre deeplabcut
 # or if you want to use the GUI
 pip install deeplabcut[gui]
 
@@ -155,7 +155,7 @@ pushd $(dirname $(python -c 'print(__import__("tensorflow").__file__)'))
 ln -svf ../nvidia/*/lib/*.so* .
 popd
 
-pip install deeplabcut
+pip install  --pre deeplabcut
 ```
 ````
 
