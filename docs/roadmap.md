@@ -2,7 +2,7 @@
 ## A development roadmap for DeepLabCut
 
 
-:loudspeaker: :hourglass_flowing_sand: :construction:
+📢 ⏳ 🚧
 
 **General Enhancements:**
 - [ ] DeepLabCut PyTorch & Model Zoo --> DLC 3.0 🔥
@@ -34,8 +34,8 @@
 - [X] DeepLabCut-live! published in eLife
 
 **DeepLabCut Model Zoo: a collection of pretrained models for plug-in-play DLC and community crowd-sourcing.**
-- [X] BETA release with 2.1.8b0: http://www.mousemotorlab.org/dlc-modelzoo
-- [X] full release with 2.1.8.1 http://www.mousemotorlab.org/dlc-modelzoo
+- [X] BETA release with 2.1.8b0: https://www.mackenziemathislab.org/deeplabcut
+- [X] full release with 2.1.8.1 https://www.mackenziemathislab.org/deeplabcut
 - [X] Manuscript forthcoming! --> see arXiv https://arxiv.org/abs/2203.07436
 - [X] new models added; horse, cheetah
 - [X] TopView_Mouse model

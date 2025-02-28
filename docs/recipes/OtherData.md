@@ -9,12 +9,12 @@ Some users may have annotation data in different formats, yet want to use the DL
 
 Here is a guide to do this via the ".csv" route: (the pandas array route is identical, just format the pandas array in the same way). 
 
-**Step 1**: create a project as describe in the user guide: https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md#create-a-new-project
+**Step 1**: create a project as describe in the user guide: https://github.com/DeepLabCut/DeepLabCut/blob/main/docs/UseOverviewGuide.md#create-a-new-project
 
 **Step 2**: edit the ``config.yaml`` file to include the body part names, please take care that spelling, spacing, and capitalization are IDENTICAL to the "labeled data body part names". 
 
-**Step 3**: Please inspect the excel formatted sheet (.csv) from our [demo project](https://github.com/AlexEMG/DeepLabCut/tree/master/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1)
-- i.e. this file: https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1/CollectedData_Mackenzie.csv
+**Step 3**: Please inspect the excel formatted sheet (.csv) from our [demo project](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1)
+- i.e. this file: https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1/CollectedData_Mackenzie.csv
 
 **Step 4**: Edit the .csv file such that it contains the X, Y pixel coordinates, the body part names, the scorer name as well as the relative path to the image: e.g. /labeled-data/somefolder/img017.jpg 
 Then make sure the scorer name, and body parts are the same in the config.yaml file. 

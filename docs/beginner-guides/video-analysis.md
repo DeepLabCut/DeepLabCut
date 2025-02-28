@@ -16,7 +16,7 @@ After training and evaluating your model, the next step is to apply it to your v
 
 - **Find Results in Your Project Folder:** After analysis, go to your project's video folder.
 - **Analysis Files:** Look also for a `.metapickle`, an `.h5`, and possibly a `.csv` file for detailed analysis data.
-- **Review the Plot Poses Subfolder:** This contains visual outputs of the video analysis.
+- **Review the "plot-poses" subfolder:** This contains visual outputs of the video analysis.
 
 ![Plot poses](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779600836-YOWM5T2MBY0JN1LB537B/plot-poses.png?format=500w)
 
