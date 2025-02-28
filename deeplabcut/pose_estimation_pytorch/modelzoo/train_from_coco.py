@@ -16,7 +16,7 @@ import copy
 from pathlib import Path
 
 from deeplabcut.pose_estimation_pytorch import COCOLoader, utils
-from deeplabcut.pose_estimation_pytorch.apis.train import train
+from deeplabcut.pose_estimation_pytorch.apis.training import train
 from deeplabcut.pose_estimation_pytorch.runners.logger import setup_file_logging
 from deeplabcut.pose_estimation_pytorch.task import Task
 

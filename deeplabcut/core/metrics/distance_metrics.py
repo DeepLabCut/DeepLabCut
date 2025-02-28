@@ -222,7 +222,7 @@ def match_predictions_for_rmse(
 def compute_rmse(
     data: list[tuple[np.ndarray, np.ndarray]],
     single_animal: bool,
-    pcutoff: float,
+    pcutoff: float | list[float],
     data_unique: list[tuple[np.ndarray, np.ndarray]] | None = None,
     per_keypoint_results: bool = False,
     oks_bbox_margin: float = 0.0,
@@ -245,7 +245,9 @@ def compute_rmse(
             num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
             the pose they are (x, y, confidence score).
         single_animal: Whether this is a single animal dataset.
-        pcutoff: The p-cutoff to use to compute RMSE.
+        pcutoff: The p-cutoff to use to compute RMSE. If a list, the cutoff for each
+            bodypart is set individually. The list must have length num_bodyparts +
+            num_unique_bodyparts.
         data_unique: Unique bodypart ground truth and predictions to include in RMSE
             computations, if there are any such bodyparts.
         per_keypoint_results: Whether to compute the RMSE for each individual keypoint.
@@ -272,8 +274,12 @@ def compute_rmse(
 
     error, support, cutoff_error, cutoff_support = 0, 0, 0, 0
     if pixel_errors is not None:
+        bpt_cutoffs = pcutoff
+        if not isinstance(pcutoff, (int, float)):
+            bpt_cutoffs = pcutoff[:pixel_errors.shape[1]]
+
         error, support, cutoff_error, cutoff_support = collect_pixel_errors(
-            pixel_errors, keypoint_scores, pcutoff,
+            pixel_errors, keypoint_scores, bpt_cutoffs,
         )
 
     unique_pixel_errors, unique_keypoint_scores = None, None
@@ -283,8 +289,11 @@ def compute_rmse(
             unique_pixel_errors = np.stack([m.pixel_errors() for m in u_matches])
             unique_keypoint_scores = np.stack([m.keypoint_scores() for m in u_matches])
 
+            bpt_cutoffs = pcutoff
+            if not isinstance(pcutoff, (int, float)):
+                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1]:]
             u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
-                unique_pixel_errors, unique_keypoint_scores, pcutoff,
+                unique_pixel_errors, unique_keypoint_scores, bpt_cutoffs,
             )
             error += u_error
             support += u_support
@@ -314,7 +323,7 @@ def compute_rmse(
 
 def compute_detection_rmse(
     data: list[tuple[np.ndarray, np.ndarray]],
-    pcutoff: float,
+    pcutoff: float | list[float],
     data_unique: list[tuple[np.ndarray, np.ndarray]] | None = None,
 ) -> tuple[float, float]:
     """Computes the detection RMSE for pose predictions.
@@ -331,7 +340,9 @@ def compute_detection_rmse(
             num_bpts, 3) and predicted_poses is an array of shape (num_predictions,
             num_bpts, 3). For the GT, the 3 coordinates are (x, y, visibility) while for
             the pose they are (x, y, confidence score).
-        pcutoff: The p-cutoff to use to compute RMSE.
+        pcutoff: The p-cutoff to use to compute RMSE. If a list, the cutoff for each
+            bodypart is set individually. The list must have length num_bodyparts +
+            num_unique_bodyparts.
         data_unique: Unique bodypart ground truth and predictions to include in RMSE
             computations, if there are any such bodyparts.
 
@@ -340,7 +351,7 @@ def compute_detection_rmse(
         score below the pcutoff.
     """
     distances = []
-    scores = []
+    distances_cutoff = []
     for image_gt, image_pred in data:
         image_gt = image_gt.transpose((1, 0, 2))  # to (num_bpts, num_gt_individuals, 3)
         image_pred = image_pred.transpose((1, 0, 2))  # to (num_bpts, num_pred, 3)
@@ -352,25 +363,50 @@ def compute_detection_rmse(
             if len(bpt_gt) == 0 or len(bpt_pred) == 0:
                 continue
 
+            if isinstance(pcutoff, (int, float)):
+                bpt_pcutoff = pcutoff
+            else:
+                bpt_pcutoff = pcutoff[bpt_index]
+
             # assignment of predicted bodyparts to ground truth
             neighbors = find_closest_neighbors(bpt_gt, bpt_pred, k=3)
             for gt_index, pred_index in enumerate(neighbors):
                 if pred_index != -1:
                     gt = bpt_gt[gt_index]
                     pred = bpt_pred[pred_index]
-                    distances.append(np.linalg.norm(gt[:2] - pred[:2]))
-                    scores.append(bpt_pred[pred_index, 2])
+                    dist = np.linalg.norm(gt[:2] - pred[:2])
+                    distances.append(dist)
+
+                    score = bpt_pred[pred_index, 2]
+                    if score >= bpt_pcutoff:
+                        distances_cutoff.append(dist)
 
     if data_unique is not None:
         for image_gt, image_pred in data_unique:
-            assert len(image_gt) == len(image_pred) == 1, (
-                f"Unique GT an predictions must have length 1! Found {image_gt.shape}, "
+            assert len(image_gt) <= 1 and len(image_pred) <= 1, (
+                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, "
                 f"{image_pred.shape}."
             )
-            unique_gt, unique_pred = image_gt[0], image_pred[0]
-            for gt, pred in zip(unique_gt, unique_pred):
-                distances.append(np.linalg.norm(gt[:2] - pred[:2]))
-                scores.append(pred[2])
+
+            if len(image_gt) == 1 and len(image_pred) == 1:
+                unique_gt, unique_pred = image_gt[0], image_pred[0]
+                num_unique = unique_gt.shape[0]
+                unique_cutoffs = pcutoff
+                if not isinstance(pcutoff, (int, float)):
+                    unique_cutoffs = pcutoff[-num_unique:]
+
+                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
+                    dist = np.linalg.norm(gt[:2] - pred[:2])
+                    distances.append(dist)
+
+                    score = pred[2]
+                    if isinstance(pcutoff, (int, float)):
+                        bpt_pcutoff = unique_cutoffs
+                    else:
+                        bpt_pcutoff = unique_cutoffs[bpt_index]
+
+                    if score >= bpt_pcutoff:
+                        distances_cutoff.append(dist)
 
     rmse, rmse_cutoff = float("nan"), float("nan")
     if len(distances) == 0:
@@ -380,10 +416,10 @@ def compute_detection_rmse(
     if np.any(~np.isnan(distances)):
         rmse = float(np.nanmean(distances).item())
 
-        keypoint_scores = np.stack(scores)
-        pixel_errors_cutoff = distances[keypoint_scores >= pcutoff]
-        if np.any(~np.isnan(pixel_errors_cutoff)):
-            rmse_cutoff = float(np.nanmean(pixel_errors_cutoff).item())
+        if len(distances_cutoff) > 0:
+            distances_cutoff = np.stack(distances_cutoff)
+            if np.any(~np.isnan(distances_cutoff)):
+                rmse_cutoff = float(np.nanmean(distances_cutoff).item())
 
     return rmse, rmse_cutoff
 

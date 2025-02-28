@@ -105,13 +105,16 @@ import deeplabcut
 deeplabcut.create_pretrained_project(
     "projectname",
     "experimenter",
-    ["/home/max/Downloads/bunnies1.mp4"],
+    [r"path_for_the_videos"],
     model="mouse_pupil_vclose",
-    working_directory="project_directory",
+    working_directory=r"project_directory",
     copy_videos=True,
+    videotype=".mp4 or .avi?",
     analyzevideo=True,
     filtered=True,
     createlabeledvideo=True,
+    trainFraction=None,
+    engine=deeplabcut.Engine.TF,
 )
 ```
 

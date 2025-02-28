@@ -11,8 +11,10 @@
 """
 Test script for super animal adaptation
 """
-import deeplabcut
 import os
+
+import deeplabcut
+from deeplabcut.modelzoo.weight_initialization import build_weight_init
 
 print(deeplabcut.__file__)
 if __name__ == "__main__":
@@ -20,12 +22,21 @@ if __name__ == "__main__":
     superanimal_name = "superanimal_topviewmouse"
     basepath = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(basepath, "openfield-Pranav-2018-10-30", "config.yaml")
+    model_name = "hrnet_w32"
+    detector_name = "fasterrcnn_resnet50_fpn_v2"
 
-    deeplabcut.create_training_dataset(config_path, superanimal_name=superanimal_name)
+    weight_init = build_weight_init(
+        cfg=config_path,
+        super_animal=superanimal_name,
+        model_name=model_name,
+        detector_name=detector_name,
+        with_decoder=False,
+    )
+    deeplabcut.create_training_dataset(config_path, weight_init=weight_init)
 
     deeplabcut.train_network(
         config_path,
-        maxiters=10,
+        epochs=1,
         superanimal_name=superanimal_name,
         superanimal_transfer_learning=True,
     )

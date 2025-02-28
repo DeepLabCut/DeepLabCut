@@ -18,8 +18,7 @@ from pathlib import Path
 import albumentations as A
 from torch.utils.data import DataLoader
 
-import deeplabcut.pose_estimation_pytorch.config as torch_config
-import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
+import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.data import (
@@ -326,7 +325,7 @@ def train_network(
     setup_file_logging(loader.model_folder / "train.txt")
 
     logging.info("Training with configuration:")
-    torch_config.pretty_print(loader.model_cfg, print_fn=logging.info)
+    config_utils.pretty_print(loader.model_cfg, print_fn=logging.info)
 
     # fix seed for reproducibility
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])

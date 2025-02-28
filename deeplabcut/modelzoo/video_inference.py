@@ -18,8 +18,8 @@ from typing import Optional, Union
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_snapshot_folder_path,
@@ -231,7 +231,7 @@ def video_inference_superanimal(
     )
 
     Tips:
-    * max_individuals: make sure you correclty give the number of individuals. Our
+    * max_individuals: make sure you correctly give the number of individuals. Our
         inference api will only give up to max_individuals number of predictions.
     * pseudo_threshold: the higher you set, the more aggressive you filter low
         confidence predictions during video adaptation.
