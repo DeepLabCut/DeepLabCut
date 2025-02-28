@@ -1,3 +1,4 @@
+(deeplabcut-live)=
 # DeepLabCut-Live!
 
 We provide two additional pip packages that allow you to record and stream camera data and run DeeplabCut models in real-time.

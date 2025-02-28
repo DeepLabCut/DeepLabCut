@@ -69,7 +69,17 @@ deeplabcut.create_multianimaltraining_dataset(
 ```
 
 **(7) Train the network**
+
 ```python
+# PyTorch Engine
+deeplabcut.train_network(
+    config_path,
+    device="cuda",
+    save_epochs=5,
+    epochs=200,
+)
+
+# TensorFlow Engine
 deeplabcut.train_network(
     config_path,
     saveiters=10000,

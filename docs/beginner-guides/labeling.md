@@ -1,3 +1,4 @@
+(labeling)=
 # Labeling GUI
 
 ## Selecting Frames to Label
@@ -45,7 +46,9 @@ Alright, you've got your extracted frames ready. Now comes the labeling!
 - **Navigate Through Frames:** Use the slider to go from one frame to the next after you're done labeling.
 - **Save Progress:** Remember to save your work as you go with **`Command and S`** (or **`Ctrl and S`** on Windows).
 
-> 💡 **Note:** For a detailed walkthrough on using the Napari labeling GUI, have a look at the [DeepLabCut Napari Guide](https://deeplabcut.github.io/DeepLabCut/docs/napari_GUI.html). Additionally, you can watch our instructional [YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
+> 💡 **Note:** For a detailed walkthrough on using the Napari labeling GUI, have a look at the
+[DeepLabCut Napari Guide](napari-gui). Additionally, you can watch our instructional
+[YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
 
 
 ### Completing the Set
