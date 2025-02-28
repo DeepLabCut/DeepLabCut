@@ -255,7 +255,7 @@ https://www.nvidia.com/download/index.aspx
 
 #### Notes:
 
-- **As of verion 3.0+ we moved to PyTorch. The Last supported vesion of TensorFlow is 
+- **As of verion 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is 
 2.10  (window users) and 2.12 for others (we have not tested beyond this).**
 - Please be mindful different versions of TensorFlow require different CUDA versions.
 - As the combination of TensorFlow and CUDA matters, we strongly encourage you to 
