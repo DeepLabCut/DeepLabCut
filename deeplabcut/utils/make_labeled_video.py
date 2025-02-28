@@ -675,7 +675,8 @@ def create_labeled_video(
             cfg,
             modelprefix,
         )
-        model_config_path = Path(config).parent / model_folder / "train" /
+        model_config_path = Path(config).parent / model_folder / "train"
+        
         if model_config_path.exists():
             model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
             if (
