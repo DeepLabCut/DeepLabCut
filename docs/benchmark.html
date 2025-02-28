@@ -470,25 +470,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.evaluate"><code class="docutils literal notranslate"><span class="pre">evaluate()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.FishBenchmark"><code class="docutils literal notranslate"><span class="pre">FishBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.MarmosetBenchmark"><code class="docutils literal notranslate"><span class="pre">MarmosetBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.ParentingMouseBenchmark"><code class="docutils literal notranslate"><span class="pre">ParentingMouseBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.TriMouseBenchmark"><code class="docutils literal notranslate"><span class="pre">TriMouseBenchmark</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-deeplabcut.benchmark.metrics">Metric calculation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.calc_map_from_obj"><code class="docutils literal notranslate"><span class="pre">calc_map_from_obj()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.calc_rmse_from_obj"><code class="docutils literal notranslate"><span class="pre">calc_rmse_from_obj()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.conv_obj_to_assemblies"><code class="docutils literal notranslate"><span class="pre">conv_obj_to_assemblies()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.load_test_images"><code class="docutils literal notranslate"><span class="pre">load_test_images()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#metric-calculation">Metric calculation</a></li>
 </ul>
             </nav>
         </div>
@@ -507,58 +491,6 @@ document.write(`
 <h2>High Level API<a class="headerlink" href="#high-level-api" title="Link to this heading">#</a></h2>
 <p>When implementing your own benchmarks, the most important functions are directly accessible
 under the <code class="docutils literal notranslate"><span class="pre">deeplabcut.benchmark</span></code> package.</p>
-<span class="target" id="module-deeplabcut.benchmark"></span><dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.evaluate">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_benchmarks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Container</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ResultCollection</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'return'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultCollection</span></span></span><a class="headerlink" href="#deeplabcut.benchmark.evaluate" title="Link to this definition">#</a></dt>
-<dd><p>Run evaluation for all benchmarks and methods.</p>
-<p>Note that in order for your custom benchmark to be included during
-evaluation, the following conditions need to be met:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>The benchmark subclassed one of the benchmark definitions in
-in <code class="docutils literal notranslate"><span class="pre">benchmark.benchmarks</span></code></p></li>
-<li><p>The benchmark is registered by applying the <code class="docutils literal notranslate"><span class="pre">&#64;benchmark.register</span></code>
-decorator to the class</p></li>
-<li><p>The benchmark was imported. This is done automatically for all
-benchmarks that are defined in submodules or subpackages of the
-<code class="docutils literal notranslate"><span class="pre">benchmark.submissions</span></code> module. For all other locations, make
-sure to manually import the packages <strong>before</strong> calling the
-<code class="docutils literal notranslate"><span class="pre">evaluate()</span></code> function.</p></li>
-</ul>
-</div></blockquote>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>include_benchmarks:</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">None</span></code>, run all benchmarks that were discovered. If a container
-is passed, only include methods that were defined on benchmarks with
-the specified names. E.g., <code class="docutils literal notranslate"><span class="pre">include_benchmarks</span> <span class="pre">=</span> <span class="pre">[&quot;trimouse&quot;]</span></code> would
-only evaluate methods of the trimouse benchmark dataset.</p>
-</dd>
-<dt>on_error:</dt><dd><p>see documentation in <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark.evaluate()</span></code></p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><p>A collection of all results, which can be printed or exported to
-<code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> or <code class="docutils literal notranslate"><span class="pre">json</span></code> file formats.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.register">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.benchmark.register" title="Link to this definition">#</a></dt>
-<dd><p>Add a benchmark to the list of evaluations to run.</p>
-<p>Apply this function as a decorator to a class. Note that the
-class needs to be a subclass of the <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark</span></code>
-base class.</p>
-<p>In most situations, it will be a subclass of one of the pre-defined
-benchmarks in <code class="docutils literal notranslate"><span class="pre">benchmark.benchmarks</span></code>.</p>
-<dl class="simple">
-<dt>Throws:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if the decorator is applied to a class that is
-not a subclass of <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark</span></code>.</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="available-benchmark-definitions">
 <h2>Available benchmark definitions<a class="headerlink" href="#available-benchmark-definitions" title="Link to this heading">#</a></h2>
@@ -566,180 +498,9 @@ not a subclass of <code class="docutils literal notranslate"><span class="pre">b
 of the available datasets. A benchmark submission should contain a result for at least one of these
 benchmarks. For an example of how to implement a benchmark submission, refer to the baselines in the
 <a class="reference external" href="https://github.com/DeepLabCut/benchmark/tree/main/benchmark/baselines">DeepLabCut benchmark repo</a>.</p>
-<p id="module-deeplabcut.benchmark.benchmarks">Definition for official DeepLabCut benchmark tasks.</p>
-<p>See benchmark.deeplabcut.org for a current leaderboard with models and metrics
-for each of these benchmarks. Submissions can be done by opening a PR in the
-benchmark reporistory:</p>
-<p><a class="github reference external" href="https://github.com/DeepLabCut/benchmark">DeepLabCut/benchmark</a></p>
-<dl class="py class">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.benchmarks.FishBenchmark">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.benchmarks.</span></span><span class="sig-name descname"><span class="pre">FishBenchmark</span></span><a class="headerlink" href="#deeplabcut.benchmark.benchmarks.FishBenchmark" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Benchmark</span></code></p>
-<p>Dataset with multiple fish, filmed from top-view</p>
-<p>Schools of inland silversides (Menidia beryllina, n=14 individuals per school) were recorded in the Lauder Lab at Harvard University while swimming at 15 speeds (0.5 to 8 BL/s, body length, at 0.5 BL/s intervals) in a flow tank with a total working section of 28 x 28 x 40 cm as described in previous work, at a constant temperature (18±1°C) and salinity (33 ppt), at a Reynolds number of approximately 10,000 (based on BL). Dorsal views of steady swimming across these speeds were recorded by high-speed video cameras (FASTCAM Mini AX50, Photron USA, San Diego, CA, USA) at 60-125 frames per second (feeding videos at 60 fps, swimming alone 125 fps). The dorsal view was recorded above the swim tunnel and a floating Plexiglas panel at the water surface prevented surface ripples from interfering with dorsal view videos. Five keypoints were labeled (tip, gill, peduncle, dorsal fin tip, caudal tip). 100 frames were labeled, making this a real-world sized laboratory dataset.</p>
-<p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.benchmarks.MarmosetBenchmark">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.benchmarks.</span></span><span class="sig-name descname"><span class="pre">MarmosetBenchmark</span></span><a class="headerlink" href="#deeplabcut.benchmark.benchmarks.MarmosetBenchmark" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Benchmark</span></code></p>
-<p>Dataset with two marmosets.</p>
-<p>All animal procedures are overseen by veterinary staff of the MIT and Broad Institute Department of Comparative Medicine, in compliance with the NIH guide for the care and use of laboratory animals and approved by the MIT and Broad Institute animal care and use committees. Video of common marmosets (Callithrix jacchus) was collected in the laboratory of Guoping Feng at MIT. Marmosets were recorded using Kinect V2 cameras (Microsoft) with a resolution of 1080p and frame rate of 30 Hz. After acquisition, images to be used for training the network were manually cropped to 1000 x 1000 pixels or smaller. The dataset is 7,600 labeled frames from 40 different marmosets collected from 3 different colonies (in different facilities). Each cage contains a pair of marmosets, where one marmoset had light blue dye applied to its tufts. One human annotator labeled the 15 marker points on each animal present in the frame (frames contained either 1 or 2 animals).</p>
-<p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.benchmarks.ParentingMouseBenchmark">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.benchmarks.</span></span><span class="sig-name descname"><span class="pre">ParentingMouseBenchmark</span></span><a class="headerlink" href="#deeplabcut.benchmark.benchmarks.ParentingMouseBenchmark" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Benchmark</span></code></p>
-<p>Datasets with three mice, one parenting, two pups.</p>
-<p>Parenting behavior is a pup directed behavior observed in adult mice involving complex motor actions directed towards the benefit of the offspring. These experiments were carried out in the laboratory of Catherine Dulac at Harvard University. The behavioral assay was performed in the homecage of singly housed adult female mice in dark/red light conditions. For these videos, the adult mice was monitored for several minutes in the cage followed by the introduction of pup (4 days old) in one corner of the cage. The behavior of the adult and pup was monitored for a duration of 15 minutes. Video was recorded at 30Hz using a Microsoft LifeCam camera (Part#: 6CH-00001) with a resolution of 1280 x 720 pixels or a Geovision camera (model no.: GV-BX4700-3V) also acquired at 30 frames per second at a resolution of 704 x 480 pixels. A human annotator labeled on the adult animal the same 12 body points as in the tri-mouse dataset, and five body points on the pup along its spine. Initially only the two ends were labeled, and intermediate points were added by interpolation and their positions was manually adjusted if necessary. All surgical and experimental procedures for mice were in accordance with the National Institutes of Health Guide for the Care and Use of Laboratory Animals and approved by the Harvard Institutional Animal Care and Use Committee. 542 frames were labeled, making this a real-world sized laboratory dataset.</p>
-<p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.benchmarks.TriMouseBenchmark">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.benchmarks.</span></span><span class="sig-name descname"><span class="pre">TriMouseBenchmark</span></span><a class="headerlink" href="#deeplabcut.benchmark.benchmarks.TriMouseBenchmark" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Benchmark</span></code></p>
-<p>Datasets with three mice with a top-view camera.</p>
-<p>Three wild-type (C57BL/6J) male mice ran on a paper spool following odor trails (Mathis et al 2018). These experiments were carried out in the laboratory of Venkatesh N. Murthy at Harvard University. Data were recorded at 30 Hz with 640 x 480 pixels resolution acquired with a Point Grey Firefly FMVU-03MTM-CS. One human annotator was instructed to localize the 12 keypoints (snout, left ear, right ear, shoulder, four spine points, tail base and three tail points). All surgical and experimental procedures for mice were in accordance with the National Institutes of Health Guide for the Care and Use of Laboratory Animals and approved by the Harvard Institutional Animal Care and Use Committee. 161 frames were labeled, making this a real-world sized laboratory dataset.</p>
-<p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
-</dd></dl>
-
 </section>
-<section id="module-deeplabcut.benchmark.metrics">
-<span id="metric-calculation"></span><h2>Metric calculation<a class="headerlink" href="#module-deeplabcut.benchmark.metrics" title="Link to this heading">#</a></h2>
-<p>Evaluation metrics for the DeepLabCut benchmark.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.metrics.calc_map_from_obj">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.metrics.</span></span><span class="sig-name descname"><span class="pre">calc_map_from_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_results_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h5_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oks_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetric_kpts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_kpts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.benchmark.metrics.calc_map_from_obj" title="Link to this definition">#</a></dt>
-<dd><p>Calculate mean average precision (mAP) based on predictions.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.metrics.calc_rmse_from_obj">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.metrics.</span></span><span class="sig-name descname"><span class="pre">calc_rmse_from_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_results_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h5_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_kpts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.benchmark.metrics.calc_rmse_from_obj" title="Link to this definition">#</a></dt>
-<dd><p>Calc prediction errors for submissions.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.metrics.conv_obj_to_assemblies">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.metrics.</span></span><span class="sig-name descname"><span class="pre">conv_obj_to_assemblies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_results_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keypoint_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.benchmark.metrics.conv_obj_to_assemblies" title="Link to this definition">#</a></dt>
-<dd><p>Convert predictions to deeplabcut assemblies.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.metrics.load_test_images">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.metrics.</span></span><span class="sig-name descname"><span class="pre">load_test_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h5file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deeplabcut.benchmark.metrics.load_test_images" title="Link to this definition">#</a></dt>
-<dd><p>Returns the names of the test images for the benchmark, in the order corresponding
-to the test indices.</p>
-</dd></dl>
-
+<section id="metric-calculation">
+<h2>Metric calculation<a class="headerlink" href="#metric-calculation" title="Link to this heading">#</a></h2>
 </section>
 </section>
 
@@ -807,25 +568,9 @@ to the test indices.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.evaluate"><code class="docutils literal notranslate"><span class="pre">evaluate()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.FishBenchmark"><code class="docutils literal notranslate"><span class="pre">FishBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.MarmosetBenchmark"><code class="docutils literal notranslate"><span class="pre">MarmosetBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.ParentingMouseBenchmark"><code class="docutils literal notranslate"><span class="pre">ParentingMouseBenchmark</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.TriMouseBenchmark"><code class="docutils literal notranslate"><span class="pre">TriMouseBenchmark</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-deeplabcut.benchmark.metrics">Metric calculation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.calc_map_from_obj"><code class="docutils literal notranslate"><span class="pre">calc_map_from_obj()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.calc_rmse_from_obj"><code class="docutils literal notranslate"><span class="pre">calc_rmse_from_obj()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.conv_obj_to_assemblies"><code class="docutils literal notranslate"><span class="pre">conv_obj_to_assemblies()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.metrics.load_test_images"><code class="docutils literal notranslate"><span class="pre">load_test_images()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#metric-calculation">Metric calculation</a></li>
 </ul>
   </nav></div>
 

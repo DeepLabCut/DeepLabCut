@@ -473,10 +473,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-project-manager-gui-recommended-for-beginners">DeepLabCut Project Manager GUI (recommended for beginners)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal-command-line-interface">DeepLabCut in the Terminal/Command line interface:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.create_project.new.create_new_project"><code class="docutils literal notranslate"><span class="pre">create_new_project()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-configure-the-project">(B) Configure the Project</a></li>
@@ -546,10 +543,7 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#l-create-labeled-videos">(L) Create Labeled Videos:</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.utils.make_labeled_video.create_labeled_video"><code class="docutils literal notranslate"><span class="pre">create_labeled_video()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-skeleton-features">Extract “Skeleton” Features:</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">API Docs</a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.post_processing.analyze_skeleton.analyzeskeleton"><code class="docutils literal notranslate"><span class="pre">analyzeskeleton()</span></code></a></li>
@@ -642,74 +636,6 @@ document.write(`
 <h4>API Docs<a class="headerlink" href="#api-docs" title="Link to this heading">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see API Docs</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.create_project.new.create_new_project">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.create_project.new.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_videos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multianimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.create_project.new.create_new_project" title="Link to this definition">#</a></dt>
-<dd><p>Create the necessary folders and files for a new project.</p>
-<p>Creating a new project involves creating the project directory, sub-directories and
-a basic configuration file. The configuration file is loaded with the default
-values. Change its parameters to your projects need.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>project</strong><span class="classifier">string</span></dt><dd><p>The name of the project.</p>
-</dd>
-<dt><strong>experimenter</strong><span class="classifier">string</span></dt><dd><p>The name of the experimenter.</p>
-</dd>
-<dt><strong>videos</strong><span class="classifier">list[str]</span></dt><dd><p>A list of strings representing the full paths of the videos to include in the
-project. If the strings represent a directory instead of a file, all videos of
-<code class="docutils literal notranslate"><span class="pre">videotype</span></code> will be imported.</p>
-</dd>
-<dt><strong>working_directory</strong><span class="classifier">string, optional</span></dt><dd><p>The directory where the project will be created. The default is the
-<code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">working</span> <span class="pre">directory</span></code>.</p>
-</dd>
-<dt><strong>copy_videos</strong><span class="classifier">bool, optional, Default: False.</span></dt><dd><p>If True, the videos are copied to the <code class="docutils literal notranslate"><span class="pre">videos</span></code> directory. If False, symlinks
-of the videos will be created in the <code class="docutils literal notranslate"><span class="pre">project/videos</span></code> directory; in the event
-of a failure to create symbolic links, videos will be moved instead.</p>
-</dd>
-<dt><strong>multianimal: bool, optional. Default: False.</strong></dt><dd><p>For creating a multi-animal project (introduced in DLC 2.2)</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>str</dt><dd><p>Path to the new project configuration file.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>Linux/MacOS:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-<span class="go">        project=&#39;reaching-task&#39;,</span>
-<span class="go">        experimenter=&#39;Linus&#39;,</span>
-<span class="go">        videos=[</span>
-<span class="go">            &#39;/data/videos/mouse1.avi&#39;,</span>
-<span class="go">            &#39;/data/videos/mouse2.avi&#39;,</span>
-<span class="go">            &#39;/data/videos/mouse3.avi&#39;</span>
-<span class="go">        ],</span>
-<span class="go">        working_directory=&#39;/analysis/project/&#39;,</span>
-<span class="go">    )</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-<span class="go">        project=&#39;reaching-task&#39;,</span>
-<span class="go">        experimenter=&#39;Linus&#39;,</span>
-<span class="go">        videos=[&#39;/data/videos&#39;],</span>
-<span class="go">        videotype=&#39;.mp4&#39;,</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Windows:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-<span class="go">        &#39;reaching-task&#39;,</span>
-<span class="go">        &#39;Bill&#39;,</span>
-<span class="go">        [r&#39;C:\yourusername\rig-95\Videos\reachingvideo1.avi&#39;],</span>
-<span class="go">        copy_videos=True,</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Users must format paths with either:  r’C:OR ‘C:\ &lt;- i.e. a double backslash )</p>
-</dd></dl>
-
 </div>
 </section>
 </section>
@@ -1968,156 +1894,6 @@ labels on top of the frame and creating a video. There are two modes to create v
 <h4>API Docs<a class="headerlink" href="#id8" title="Link to this heading">#</a></h4>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see API Docs</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.utils.make_labeled_video.create_labeled_video">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.utils.make_labeled_video.</span></span><span class="sig-name descname"><span class="pre">create_labeled_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">videotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainingsetindex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastmode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keypoints_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Frames2plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displayedbodyparts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displayedindividuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mp4v'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputframerate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destfolder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_skeleton</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trailpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displaycropped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bodypart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modelprefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">superanimal_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skeleton</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skeleton_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dotsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rainbow'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphavalue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_to_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.utils.make_labeled_video.create_labeled_video" title="Link to this definition">#</a></dt>
-<dd><p>Labels the bodyparts in a video.</p>
-<p>Make sure the video is already analyzed by the function
-<code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>config</strong><span class="classifier">string</span></dt><dd><p>Full path of the config.yaml file.</p>
-</dd>
-<dt><strong>videos</strong><span class="classifier">list[str]</span></dt><dd><p>A list of strings containing the full paths to videos for analysis or a path
-to the directory, where all the videos with same extension are stored.</p>
-</dd>
-<dt><strong>videotype: str, optional, default=””</strong></dt><dd><p>Checks for the extension of the video in case the input to the video is a
-directory. Only videos with this extension are analyzed.
-If left unspecified, videos with common extensions
-(‘avi’, ‘mp4’, ‘mov’, ‘mpeg’, ‘mkv’) are kept.</p>
-</dd>
-<dt><strong>shuffle</strong><span class="classifier">int, optional, default=1</span></dt><dd><p>Number of shuffles of training dataset.</p>
-</dd>
-<dt><strong>trainingsetindex: int, optional, default=0</strong></dt><dd><p>Integer specifying which TrainingsetFraction to use.
-Note that TrainingFraction is a list in config.yaml.</p>
-</dd>
-<dt><strong>filtered: bool, optional, default=False</strong></dt><dd><p>Boolean variable indicating if filtered output should be plotted rather than
-frame-by-frame predictions. Filtered version can be calculated with
-<code class="docutils literal notranslate"><span class="pre">deeplabcut.filterpredictions</span></code>.</p>
-</dd>
-<dt><strong>fastmode: bool, optional, default=True</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses openCV (much faster but less customization of video) instead
-of matplotlib if <code class="docutils literal notranslate"><span class="pre">False</span></code>. You can also “save_frames” individually or not in
-the matplotlib mode (if you set the “save_frames” variable accordingly).
-However, using matplotlib to create the frames it therefore allows much more
-flexible (one can set transparency of markers, crop, and easily customize).</p>
-</dd>
-<dt><strong>save_frames: bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, creates each frame individual and then combines into a video.
-Setting this to <code class="docutils literal notranslate"><span class="pre">True</span></code> is relatively slow as it stores all individual frames.</p>
-</dd>
-<dt><strong>keypoints_only: bool, optional, default=False</strong></dt><dd><p>By default, both video frames and keypoints are visible. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, only the
-keypoints are shown. These clips are an hommage to Johansson movies,
-see <a class="reference external" href="https://www.youtube.com/watch?v=1F5ICP9SYLU">https://www.youtube.com/watch?v=1F5ICP9SYLU</a> and of course his seminal
-paper: “Visual perception of biological motion and a model for its analysis”
-by Gunnar Johansson in Perception &amp; Psychophysics 1973.</p>
-</dd>
-<dt><strong>Frames2plot: List[int] or None, optional, default=None</strong></dt><dd><p>If not <code class="docutils literal notranslate"><span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">save_frames=True</span></code> then the frames corresponding to the
-index will be plotted. For example, <code class="docutils literal notranslate"><span class="pre">Frames2plot=[0,11]</span></code> will plot the first
-and the 12th frame.</p>
-</dd>
-<dt><strong>displayedbodyparts: list[str] or str, optional, default=”all”</strong></dt><dd><p>This selects the body parts that are plotted in the video. If <code class="docutils literal notranslate"><span class="pre">all</span></code>, then all
-body parts from config.yaml are used. If a list of strings that are a subset of
-the full list. E.g. [‘hand’,’Joystick’] for the demo
-Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts.</p>
-</dd>
-<dt><strong>displayedindividuals: list[str] or str, optional, default=”all”</strong></dt><dd><p>Individuals plotted in the video.
-By default, all individuals present in the config will be shown.</p>
-</dd>
-<dt><strong>codec: str, optional, default=”mp4v”</strong></dt><dd><p>Codec for labeled video. For available options, see
-<a class="reference external" href="http://www.fourcc.org/codecs.php">http://www.fourcc.org/codecs.php</a>. Note that this depends on your ffmpeg
-installation.</p>
-</dd>
-<dt><strong>outputframerate: int or None, optional, default=None</strong></dt><dd><p>Positive number, output frame rate for labeled video (only available for the
-mode with saving frames.) If <code class="docutils literal notranslate"><span class="pre">None</span></code>, which results in the original video
-rate.</p>
-</dd>
-<dt><strong>destfolder: string or None, optional, default=None</strong></dt><dd><p>Specifies the destination folder that was used for storing analysis data. If
-<code class="docutils literal notranslate"><span class="pre">None</span></code>, the path of the video file is used.</p>
-</dd>
-<dt><strong>draw_skeleton: bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> adds a line connecting the body parts making a skeleton on each
-frame. The body parts to be connected and the color of these connecting lines
-are specified in the config file.</p>
-</dd>
-<dt><strong>trailpoints: int, optional, default=0</strong></dt><dd><p>Number of previous frames whose body parts are plotted in a frame
-(for displaying history).</p>
-</dd>
-<dt><strong>displaycropped: bool, optional, default=False</strong></dt><dd><p>Specifies whether only cropped frame is displayed (with labels analyzed
-therein), or the original frame with the labels analyzed in the cropped subset.</p>
-</dd>
-<dt><strong>color_by</strong><span class="classifier">string, optional, default=’bodypart’</span></dt><dd><p>Coloring rule. By default, each bodypart is colored differently.
-If set to ‘individual’, points belonging to a single individual are colored the
-same.</p>
-</dd>
-<dt><strong>modelprefix: str, optional, default=””</strong></dt><dd><p>Directory containing the deeplabcut models to use when evaluating the network.
-By default, the models are assumed to exist in the project folder.</p>
-</dd>
-<dt><strong>init_weights: str,</strong></dt><dd><p>Checkpoint path to the super model</p>
-</dd>
-<dt><strong>track_method: string, optional, default=””</strong></dt><dd><p>Specifies the tracker used to generate the data.
-Empty by default (corresponding to a single animal project).
-For multiple animals, must be either ‘box’, ‘skeleton’, or ‘ellipse’ and will
-be taken from the config.yaml file if none is given.</p>
-</dd>
-<dt><strong>overwrite: bool, optional, default=False</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> overwrites existing labeled videos.</p>
-</dd>
-<dt><strong>confidence_to_alpha: Union[bool, Callable[[float], float], default=False</strong></dt><dd><p>If False, all keypoints will be plot with alpha=1. Otherwise, this can be
-defined as a function f: [0, 1] -&gt; [0, 1] such that the alpha value for a
-keypoint will be set as a function of its score: alpha = f(score). The default
-function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>results</strong><span class="classifier">list[bool]</span></dt><dd></dd>
-<dt><code class="docutils literal notranslate"><span class="pre">True</span></code> if the video is successfully created for each item in <code class="docutils literal notranslate"><span class="pre">videos</span></code>.</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>Create the labeled video for a single video</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        [&#39;/analysis/project/videos/reachingvideo1.avi&#39;],</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Create the labeled video for a single video and store the individual frames</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        [&#39;/analysis/project/videos/reachingvideo1.avi&#39;],</span>
-<span class="go">        fastmode=True,</span>
-<span class="go">        save_frames=True,</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Create the labeled video for multiple videos</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        [</span>
-<span class="go">            &#39;/analysis/project/videos/reachingvideo1.avi&#39;,</span>
-<span class="go">            &#39;/analysis/project/videos/reachingvideo2.avi&#39;,</span>
-<span class="go">        ],</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Create the labeled video for all the videos with an .avi extension in a directory.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        [&#39;/analysis/project/videos/&#39;],</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-<p>Create the labeled video for all the videos with an .mp4 extension in a directory.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;,</span>
-<span class="go">        [&#39;/analysis/project/videos/&#39;],</span>
-<span class="go">        videotype=&#39;mp4&#39;,</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
-</dd></dl>
-
 </div>
 </section>
 <section id="extract-skeleton-features">
@@ -2535,10 +2311,7 @@ could be useful (they are all optional).</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-project-manager-gui-recommended-for-beginners">DeepLabCut Project Manager GUI (recommended for beginners)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-in-the-terminal-command-line-interface">DeepLabCut in the Terminal/Command line interface:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.create_project.new.create_new_project"><code class="docutils literal notranslate"><span class="pre">create_new_project()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-configure-the-project">(B) Configure the Project</a></li>
@@ -2608,10 +2381,7 @@ could be useful (they are all optional).</p>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#l-create-labeled-videos">(L) Create Labeled Videos:</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.utils.make_labeled_video.create_labeled_video"><code class="docutils literal notranslate"><span class="pre">create_labeled_video()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-skeleton-features">Extract “Skeleton” Features:</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">API Docs</a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.post_processing.analyze_skeleton.analyzeskeleton"><code class="docutils literal notranslate"><span class="pre">analyzeskeleton()</span></code></a></li>
