@@ -161,7 +161,7 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matchi
 
 ##### Notes:
 
- - **As of verion 3.0+ we moved to PyTorch. The Last supported vesion of TensorFlow is 2.10  (window users) and 2.12 for others (we have not tested beyond this).**
+ - **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is 2.10  (window users) and 2.12 for others (we have not tested beyond this).**
  - Please be mindful different versions of TensorFlow require different CUDA versions.
  - As the combination of TensorFlow and CUDA matters, we strongly encourage you to **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
  - To check your GPU is working, in the terminal, run:

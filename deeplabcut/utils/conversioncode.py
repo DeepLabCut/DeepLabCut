@@ -161,7 +161,7 @@ def adapt_labeled_data_to_new_project(
             print("Bodyparts to add:", set(bodyparts) - set(old_bodyparts))
 
             # If a bodypart is missing, add it to the dataframe
-            for indx, bodypart in enumerate(bodyparts):
+            for index, bodypart in enumerate(bodyparts):
                 if bodypart not in old_bodyparts:
                     num_of_old_bodyparts += 1
                     for i, individual in enumerate(individuals):
@@ -190,12 +190,12 @@ def adapt_labeled_data_to_new_project(
                         )
                         # Insert the columns in the dataframe
                         df.insert(
-                            i * 2 * num_of_old_bodyparts + indx * 2 + 3,
+                            i * 2 * num_of_old_bodyparts + index * 2 + 3,
                             "insert_" + bodypart + "_x" + individual,
                             x_column,
                         )
                         df.insert(
-                            i * 2 * num_of_old_bodyparts + indx * 2 + 4,
+                            i * 2 * num_of_old_bodyparts + index * 2 + 4,
                             "insert" + bodypart + "_y" + individual,
                             y_column,
                         )
