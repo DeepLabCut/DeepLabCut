@@ -20,6 +20,7 @@ import os, subprocess, sys
 # install("tensorflow==1.13.1")
 
 import deeplabcut as dlc
+from deeplabcut.core.engine import Engine
 
 from pathlib import Path
 import pandas as pd
@@ -27,6 +28,8 @@ import numpy as np
 import platform
 
 print("Imported DLC!")
+
+engine = Engine.TF
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
 videoname = "reachingvideo1"
@@ -116,7 +119,7 @@ dlc.check_labels(path_config_file)
 
 print("CREATING TRAININGSET")
 dlc.create_training_dataset(
-    path_config_file, net_type=net_type, augmenter_type=augmenter_type
+    path_config_file, net_type=net_type, augmenter_type=augmenter_type, engine=engine,
 )
 
 posefile = os.path.join(

@@ -31,6 +31,8 @@ if __name__ == "__main__":
     deeplabcut.video_inference_superanimal(
         video,
         superanimal_name,
+        model_name="hrnet_w32",
+        detector_name="fasterrcnn_resnet50_fpn_v2",
         videotype=".avi",
         scale_list=scale_list,
     )
@@ -40,6 +42,8 @@ if __name__ == "__main__":
     deeplabcut.video_inference_superanimal(
         video,
         superanimal_name,
+        model_name="hrnet_w32",
+        detector_name="fasterrcnn_resnet50_fpn_v2",
         videotype=".avi",
         scale_list=scale_list,
     )

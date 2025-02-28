@@ -45,6 +45,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
     analyzevideo=True,
     createlabeledvideo=True,
     copy_videos=False,
+    engine=deeplabcut.Engine.TF,
 )  # must leave copy_videos=True
 
 

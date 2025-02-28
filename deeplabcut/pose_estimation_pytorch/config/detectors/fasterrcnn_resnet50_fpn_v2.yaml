@@ -1,0 +1,5 @@
+model:
+  type: FasterRCNN
+  freeze_bn_stats: true
+  freeze_bn_weights: false
+  variant: fasterrcnn_resnet50_fpn_v2

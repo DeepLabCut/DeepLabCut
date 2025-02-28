@@ -19,13 +19,14 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def create_new_project(
-    project,
-    experimenter,
-    videos,
-    working_directory=None,
-    copy_videos=False,
-    videotype="",
-    multianimal=False,
+    project: str,
+    experimenter: str,
+    videos: list[str],
+    working_directory: str | None = None,
+    copy_videos: bool = False,
+    videotype: str = "",
+    multianimal: bool = False,
+    individuals: list[str] | None = None,
 ):
     r"""Create the necessary folders and files for a new project.
 
@@ -57,6 +58,11 @@ def create_new_project(
 
     multianimal: bool, optional. Default: False.
         For creating a multi-animal project (introduced in DLC 2.2)
+
+    individuals: list[str]|None = None,
+        Relevant only if multianimal is True.
+        list of individuals to be used in the project configuration.
+        If None - defaults to ['individual1', 'individual2', 'individual3']
 
     Returns
     -------
@@ -143,7 +149,9 @@ def create_new_project(
         # Check if it is a folder
         if os.path.isdir(i):
             vids_in_dir = [
-                os.path.join(i, vp) for vp in os.listdir(i) if vp.endswith(videotype)
+                os.path.join(i, vp)
+                for vp in os.listdir(i)
+                if vp.lower().endswith(videotype)
             ]
             vids = vids + vids_in_dir
             if len(vids_in_dir) == 0:
@@ -239,7 +247,11 @@ def create_new_project(
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
         cfg_file["identity"] = False
-        cfg_file["individuals"] = ["individual1", "individual2", "individual3"]
+        cfg_file["individuals"] = (
+            individuals
+            if individuals
+            else ["individual1", "individual2", "individual3"]
+        )
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
         cfg_file["bodyparts"] = "MULTI!"
@@ -272,6 +284,7 @@ def create_new_project(
     cfg_file["TrainingFraction"] = [0.95]
     cfg_file["iteration"] = 0
     cfg_file["snapshotindex"] = -1
+    cfg_file["detector_snapshotindex"] = -1
     cfg_file["x1"] = 0
     cfg_file["x2"] = 640
     cfg_file["y1"] = 277
@@ -279,6 +292,7 @@ def create_new_project(
     cfg_file["batch_size"] = (
         8  # batch size during inference (video - analysis); see https://www.biorxiv.org/content/early/2018/10/30/457242
     )
+    cfg_file["detector_batch_size"] = 1
     cfg_file["corner2move2"] = (50, 50)
     cfg_file["move2corner"] = True
     cfg_file["skeleton_color"] = "black"

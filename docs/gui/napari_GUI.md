@@ -1,3 +1,4 @@
+(napari-gui)=
 # napari labeling GUI
 
 We replaced wxPython with PySide6 + as of version 2.3. Here is how to use the napari-aspects of the new GUI. It is available in napari-hub as a stand alone GUI as well as integrated into our main GUI, [please see docs here](https://deeplabcut.github.io/DeepLabCut/docs/PROJECT_GUI.html).
@@ -30,6 +31,7 @@ To install latest development version:
   `  pip install git+https://github.com/DeepLabCut/napari-deeplabcut.git `
 
 
+(napari-gui-usage)=
 ## Usage
 
 To use the full GUI, please run:
@@ -46,8 +48,7 @@ All accepted files (`config.yaml`, images, `.h5` data files) can be loaded eithe
 
 The easiest way to get started is to drop a folder (typically a folder from within a DeepLabCut's `labeled-data` directory), and, if labeling from scratch, drop the corresponding `config.yaml` to automatically add a `Points layer` and populate the dropdown menus.
 
-[🎥 DEMO
-](https://youtu.be/hsA9IB5r73E)
+[🎥 DEMO](https://youtu.be/hsA9IB5r73E)
 
 **Tools & shortcuts are:**
 

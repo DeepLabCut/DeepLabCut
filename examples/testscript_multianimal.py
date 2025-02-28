@@ -9,14 +9,17 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
-import deeplabcut
-import numpy as np
-import pandas as pd
 import pickle
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import VideoReader
 import random
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+import deeplabcut
+from deeplabcut.core.engine import Engine
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 
@@ -31,6 +34,7 @@ if __name__ == "__main__":
     SCORER = "dlc_team"
     NUM_FRAMES = 5
     TRAIN_SIZE = 0.8
+    ENGINE = Engine.TF
 
     # NET = "dlcr101_ms5"
     NET = "dlcrnet_ms5"
@@ -114,7 +118,7 @@ if __name__ == "__main__":
 
     print("Creating train dataset...")
     deeplabcut.create_multianimaltraining_dataset(
-        config_path, net_type=NET, crop_size=(200, 200)
+        config_path, net_type=NET, crop_size=(200, 200), engine=ENGINE,
     )
     print("Train dataset created.")
 
@@ -134,7 +138,7 @@ if __name__ == "__main__":
 
     print("Editing pose config...")
     model_folder = auxiliaryfunctions.get_model_folder(
-        TRAIN_SIZE, 1, cfg, cfg["project_path"]
+        TRAIN_SIZE, 1, cfg, engine=ENGINE, modelprefix=cfg["project_path"]
     )
     pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
@@ -291,7 +295,7 @@ if __name__ == "__main__":
     deeplabcut.merge_datasets(config_path)  # iteration + 1
 
     print("CREATING TRAININGSET updated training set")
-    deeplabcut.create_training_dataset(config_path, net_type=NET)
+    deeplabcut.create_training_dataset(config_path, net_type=NET, engine=ENGINE)
 
     print("Training network...")
     deeplabcut.train_network(config_path, maxiters=N_ITER)
@@ -330,6 +334,7 @@ if __name__ == "__main__":
         Shuffles=[4, 5],
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
+        engine=ENGINE,
     )
 
     print("ALL DONE!!! - default multianimal cases are functional.")
