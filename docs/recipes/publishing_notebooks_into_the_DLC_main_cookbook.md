@@ -133,7 +133,7 @@ This command installs DeepLabCut along with the dependencies required to build t
 
 14. **🎉PR Approval:🎉** Once your PR is approved, the maintainers will merge it into the main repository. Your notebook will then be a part of the DeepLabCut Jupyter book! Yay!
 
-Remember to always check the [DLC CONTRIBUTING guidelines](https://github.com/DeepLabCut/DeepLabCut/blob/main/CONTRIBUTING.md).
+Remember to always check the [DLC contributing guidelines](https://github.com/DeepLabCut/DeepLabCut/blob/main/CONTRIBUTING.md).
 
 
 ## Wrap-Up 🎉

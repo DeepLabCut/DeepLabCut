@@ -10,6 +10,7 @@ _build/*
 /examples/3D*
 /examples/m3*
 /examples/OUT
+/examples/pretrained*
 .local
 .DS_Store
 examples/.DS_Store

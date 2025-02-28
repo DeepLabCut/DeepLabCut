@@ -147,7 +147,7 @@ class SimCCGenerator(BaseGenerator):
         target_y = np.zeros((N, K, H), dtype=np.float32)
 
         for n, k in product(range(N), range(K)):
-            # skip unlabled keypoints
+            # skip unlabeled keypoints
             if keypoints_visible[n, k] < 0.5:
                 continue
 
@@ -204,7 +204,7 @@ class SimCCGenerator(BaseGenerator):
         y = np.arange(0, H, 1, dtype=np.float32)
 
         for n, k in product(range(N), range(K)):
-            # skip unlabled keypoints
+            # skip unlabeled keypoints
             if keypoints_visible[n, k] < 0.5:
                 continue
 

@@ -14,7 +14,9 @@ MegaDetector detects an animal and generates a bounding box around the animal. T
 
 ## DeepLabCut-Live
 
-DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight package for running DeeplabCut even if you don't need real-time. It's very useful to use in HPC or servers, or in Apps, as we do here. To read more, check out the [docs](https://deeplabcut.github.io/DeepLabCut/docs/deeplabcutlive.html).
+DeepLabCut-Live! is a real-time package for running DeepLabCut. However, you can also use it as a lighter-weight
+package for running DeeplabCut even if you don't need real-time. It's very useful to use in HPC or servers, or in Apps,
+as we do here. To read more, check out the [docs](deeplabcut-live).
 
 ### MegaDetector meets DeepLabCut
 

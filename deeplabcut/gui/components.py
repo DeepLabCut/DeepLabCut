@@ -122,7 +122,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         # Select videos
         self.select_video_button = QtWidgets.QPushButton("Select videos")
         self.select_video_button.setMaximumWidth(200)
-        self.select_video_button.clicked.connect(self.select_videos)
+        self.select_video_button.clicked.connect(self.update_videos)
         self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
@@ -158,7 +158,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.selected_videos_text.setText("")
             self.select_video_button.setText("Select videos")
 
-    def select_videos(self):
+    def update_videos(self):
         cwd = self.root.project_folder
 
         # Create a filter string with both lowercase and uppercase extensions
@@ -177,10 +177,10 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         if filenames[0]:
             # Qt returns a tuple (list of files, filetype)
-            self.root.video_files = [os.path.abspath(vid) for vid in filenames[0]]
+            self.root.add_video_files([os.path.abspath(vid) for vid in filenames[0]])
 
     def clear_selected_videos(self):
-        self.root.video_files = set()
+        self.root.clear_video_files()
         self.root.logger.info(f"Cleared selected videos")
 
 

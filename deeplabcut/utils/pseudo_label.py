@@ -402,7 +402,7 @@ def dlc3predictions_2_annotation_from_video(
     # skipping every 4 frames should speed up and not impact the performance
     predictions, image_paths = predictions[::10], image_paths[::10]
 
-    # because inference api does not return image path. I am assuming the predictions come in an oder from the video
+    # Since the inference API does not return the image path, I assume the predictions are provided in the same order as the frames in the video.
     assert len(image_paths) == len(
         predictions
     ), f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions: {len(predictions)}"

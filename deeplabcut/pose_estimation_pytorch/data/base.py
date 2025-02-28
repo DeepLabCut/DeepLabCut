@@ -16,6 +16,7 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
+import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
@@ -47,7 +48,7 @@ class Loader(ABC):
 
     def __init__(self, model_config_path: str | Path) -> None:
         self.model_config_path = Path(model_config_path)
-        self.model_cfg = config.read_config_as_dict(str(model_config_path))
+        self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
@@ -63,7 +64,7 @@ class Loader(ABC):
             updates: the items to update in the model configuration
         """
         self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
-        config.write_config(self.model_config_path, self.model_cfg)
+        config_utils.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:

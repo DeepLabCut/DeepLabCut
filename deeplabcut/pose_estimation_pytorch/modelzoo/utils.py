@@ -17,6 +17,7 @@ import torch
 from dlclibrary import download_huggingface_model
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -104,10 +105,10 @@ def load_super_animal_config(
         The model configuration for a SuperAnimal-pretrained model.
     """
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
-    project_config = config_utils.read_config_as_dict(project_cfg_path)
+    project_config = read_config_as_dict(project_cfg_path)
 
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
-    model_config = config_utils.read_config_as_dict(model_cfg_path)
+    model_config = read_config_as_dict(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
     model_config = update_config(model_config, max_individuals, device)
 
@@ -115,7 +116,7 @@ def load_super_animal_config(
         model_config["method"] = "BU"
     else:
         detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
-        detector_cfg = config_utils.read_config_as_dict(detector_cfg_path)
+        detector_cfg = read_config_as_dict(detector_cfg_path)
         model_config["method"] = "TD"
         model_config["detector"] = detector_cfg
     return model_config

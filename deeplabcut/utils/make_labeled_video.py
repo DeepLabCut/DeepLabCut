@@ -517,7 +517,7 @@ def create_labeled_video(
 
     displayedindividuals: list[str] or str, optional, default="all"
         Individuals plotted in the video.
-        By default, all individuals present in the config will be showed.
+        By default, all individuals present in the config will be shown.
 
     codec: str, optional, default="mp4v"
         Codec for labeled video. For available options, see
@@ -747,9 +747,6 @@ def create_labeled_video(
             )
         )
 
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
-        cfg, displayedindividuals
-    )
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
         if displayedbodyparts != "all":
@@ -778,7 +775,7 @@ def create_labeled_video(
         DLCscorerlegacy,
         track_method,
         cfg,
-        individuals,
+        displayedindividuals,
         color_by,
         bodyparts,
         codec,
@@ -903,8 +900,14 @@ def proc_video(
                 print("Labeled video already created. Skipping...")
                 return
 
-            if all(individuals):
-                df = df.loc(axis=1)[:, individuals]
+            if individuals != "all":
+                if isinstance(individuals, str):
+                    individuals = [individuals]
+
+                if all(individuals) and "individuals" in df.columns.names:
+                    mask = df.columns.get_level_values("individuals").isin(individuals)
+                    df = df.loc[:, mask]
+
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [
