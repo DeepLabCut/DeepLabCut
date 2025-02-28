@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
@@ -511,10 +509,19 @@ Note, some info is repeated here, and will be updated as systems and hardware ch
 <h3>Software:<a class="headerlink" href="#software" title="Link to this heading">#</a></h3>
 <p><strong>Operating System:</strong> Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.</p>
 <p><strong>Anaconda/Python3:</strong> Anaconda: a free and open source distribution of the Python programming language (download from <a class="reference external" href="https://www.anaconda.com/">https://www.anaconda.com/</a>). DeepLabCut is written in Python 3 (<a class="reference external" href="https://www.python.org/">https://www.python.org/</a>) and not compatible with Python 2.</p>
-<p><strong>TensorFlow</strong> You will need <a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a> (we used version 1.0 in the paper, later versions also work with the provided code (we tested <strong>TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5</strong>; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.</p>
-<p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: <a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.</p>
-<p>Docker: We highly recommend advaced users use the supplied <a class="reference external" href="https://github.com/MMathisLab/Docker4DeepLabCut2.0">Docker container</a>.
-NOTE: <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker/issues/43">this container does not work on windows hosts!</a></p>
+<p><strong>For the TensorFlow Engine:</strong> You will need <a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a>.
+We used version 1.0 in the paper, later versions also work with the provided code (we
+tested <strong>TensorFlow versions 1.0 to 1.15, and 2.0 to 2.12 (2.10 for Windows)</strong>; we
+recommend TF2.12 for MacOS/Ubuntu and 2.10 for Windows) for Python 3.10 with GPU
+support.</p>
+<p>To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see:
+<a class="reference external" href="https://www.biorxiv.org/content/early/2018/10/30/457242">Mathis &amp; Warren</a>). However, this is the preferred path if you want to test
+DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of
+a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for
+testing.</p>
+<p>Docker: We highly recommend advanced users use the supplied <a class="reference internal" href="../docker.html#docker-containers"><span class="std std-ref">Docker container</span></a>.</p>
+<p>NOTE: <a class="reference external" href="https://docs.docker.com/desktop/features/gpu/">Currently GPU support in Docker Desktop is only available on Windows with the
+WSL2 backend.</a></p>
 </section>
 </section>
 </section>

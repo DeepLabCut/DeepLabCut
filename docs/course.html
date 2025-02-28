@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -495,6 +493,11 @@ document.write(`
                   
   <section id="deeplabcut-self-paced-course">
 <h1>DeepLabCut Self-paced Course<a class="headerlink" href="#deeplabcut-self-paced-course" title="Link to this heading">#</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This course was designed for DLC 2.
+An updated version for DLC 3 is in the works.</p>
+</div>
 <p>Do you have video of animal behaviors? Step 1: Get Poses …</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 <p>This document is an outline of resources for a course for those wanting to learn to use <code class="docutils literal notranslate"><span class="pre">Python</span></code> and <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code>.
@@ -508,7 +511,7 @@ We expect it to take <em>roughly</em> 1-2 weeks to get through if you do it rigo
 <h1>Installation:<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
 <p>You need Python and DeepLabCut installed!</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/beginners-guide.html">See these “beginner docs” for help!</a></p></li>
+<li><p><a class="reference internal" href="beginner-guides/beginners-guide.html#beginners-guide"><span class="std std-ref">See these “beginner docs” for help!</span></a></p></li>
 <li><p><strong>WATCH:</strong> overview of conda:  <a class="reference external" href="https://www.youtube.com/watch?v=YJC6ldI3hWk">Python Tutorial: Anaconda - Installation and Using Conda</a></p></li>
 </ul>
 </section>
@@ -520,10 +523,9 @@ We expect it to take <em>roughly</em> 1-2 weeks to get through if you do it rigo
 <li><p><strong>Learning:</strong> Using the program terminal / cmd on your computer: <a class="reference external" href="https://www.youtube.com/watch?v=5XgBd6rjuDQ">Video Tutorial!</a></p></li>
 <li><p><strong>Learning:</strong> although minimal to no Python coding is required (i.e. you could use the DLC GUI to run the full program without it), here are some resources you may want to check out. <a class="reference external" href="https://swcarpentry.github.io/python-novice-inflammation/">Software Carpentry: Programming with Python</a></p></li>
 <li><p><strong>Learning:</strong> learning and teaching signal processing, and overview from Prof. Demba Ba <a class="reference external" href="https://www.youtube.com/watch?v=ywz-LLYwkQQ">talk at JupyterCon</a></p></li>
-<li><p><strong>Learning:</strong> Watch a talk from Alexander Mathis (a lead DeepLabCut developer) <a class="reference external" href="https://www.youtube.com/watch?v=ZjWPHM0sL4E">talk about DeepLabCut!</a></p></li>
 <li><p><strong>DEMO:</strong> Can I DEMO DEEPLABCUT (DLC) quickly?</p>
 <ul>
-<li><p>Yes: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb">you can click through this DEMO notebook</a></p></li>
+<li><p>Yes: <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb">you can click through this DEMO notebook</a></p></li>
 <li><p>AND follow along with me: <a class="reference external" href="https://www.youtube.com/watch?v=DRT-Cq2vdWs">Video Tutorial!</a></p></li>
 </ul>
 </li>
@@ -541,9 +543,9 @@ We expect it to take <em>roughly</em> 1-2 weeks to get through if you do it rigo
 <p><strong>What you need:</strong> any videos where you can see the animals/objects, etc.
 You can use our demo videos, grab some from the internet, or use whatever older data you have. Any camera, color/monochrome, etc will work. Find diverse videos, and label what you want to track well :)</p>
 <ul class="simple">
-<li><p>IF YOU ARE PART OF THE COURSE: you will be contributing to the DLC Model Zoo :smile:</p>
+<li><p>IF YOU ARE PART OF THE COURSE: you will be contributing to the DLC Model Zoo 😊</p>
 <ul>
-<li><p><strong>Slides:</strong> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/part1-labeling.pdf">Overview of starting new projects</a></p></li>
+<li><p><strong>Slides:</strong> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/main/part1-labeling.pdf">Overview of starting new projects</a></p></li>
 <li><p><strong>READ ME PLEASE:</strong> <a class="reference external" href="https://rdcu.be/4Rep">DeepLabCut, the science</a></p></li>
 <li><p><strong>READ ME PLEASE:</strong> <a class="reference external" href="https://rdcu.be/bHpHN">DeepLabCut, the user guide</a></p></li>
 <li><p><strong>WATCH:</strong> Video tutorial 1: <a class="reference external" href="https://www.youtube.com/watch?v=KcXogR-p5Ak">using the Project Manager GUI</a></p>
@@ -569,11 +571,11 @@ You can use our demo videos, grab some from the internet, or use whatever older 
 <section id="module-2-neural-networks">
 <h2><strong>Module 2: Neural Networks</strong><a class="headerlink" href="#module-2-neural-networks" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Slides:</strong> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/part2-network.pdf">Overview of creating training and test data, and training networks</a></p></li>
+<li><p><strong>Slides:</strong> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/main/part2-network.pdf">Overview of creating training and test data, and training networks</a></p></li>
 <li><p><strong>READ ME PLEASE:</strong> <a class="reference external" href="https://towardsdatascience.com/a-comprehensive-guide-to-convolutional-neural-networks-the-eli5-way-3bd2b1164a53">What are convolutional neural networks?</a></p></li>
 <li><p><strong>READ ME PLEASE:</strong> Here is a new paper from us describing challenges in robust pose estimation, why PRE-TRAINING really matters - which was our major scientific contribution to low-data input pose-estimation - and it describes new networks that are available to you. <a class="reference external" href="https://paperswithcode.com/paper/pretraining-boosts-out-of-domain-robustness">Pretraining boosts out-of-domain robustness for pose estimation</a></p>
 <ul>
-<li><p><strong>MORE DETAILS:</strong> ImageNet: check out the original paper and dataset: <a class="reference external" href="http://www.image-net.org/">http://www.image-net.org/</a> (link to <a class="reference external" href="http://www.image-net.org/papers/ImageNet_2010.ppt">ppt from Dr. Fei-Fei Li</a>)</p></li>
+<li><p><strong>MORE DETAILS:</strong> ImageNet: check out the original paper and dataset: <a class="reference external" href="http://www.image-net.org/">http://www.image-net.org/</a></p></li>
 </ul>
 </li>
 <li><p><strong>REVIEW PAPER:</strong> <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0896627320307170">A Primer on Motion Capture with Deep Learning: Principles, Pitfalls and Perspectives</a></p></li>
@@ -581,13 +583,13 @@ You can use our demo videos, grab some from the internet, or use whatever older 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1603101997909-7IEYAYZYE9C8AX6SK7GR/ke17ZwdGBToddI8pDm48kND1NDuHF9nqrgeclEdLoeR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0qN_-Z3B7EvygvPOPmeOryWYMQ3pkjXJ5SX4aMqPMuK4PimCRlyu3R6yKl-KltrlZA/networks.jpg?format=2500w" width="350" title="DLC" alt="review!" align="right" vspace = "50">
 <p>Before you create a training/test set, please read/watch:</p>
 <ul>
-<li><p><strong>More information:</strong> <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/wiki/What-neural-network-should-I-use%3F">Which types neural networks are available, and what should I use?</a></p></li>
+<li><p><strong>More information:</strong> <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/What-neural-network-should-I-use%3F-(Trade-offs,-speed-performance,-and-considerations)">Which types neural networks are available, and what should I use?</a></p></li>
 <li><p><strong>WATCH:</strong> Video tutorial 1: <a class="reference external" href="https://www.youtube.com/watch?v=WXCVr6xAcCA">How to test different networks in a controlled way</a></p>
 <ul>
 <li><p>Now, decide what model(s) you want to test.</p>
 <ul class="simple">
 <li><p>IF you want to train on your CPU, then run the step <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code>, in the GUI etc. on your own computer.</p></li>
-<li><p>IF you want to use GPUs on google colab, <a class="reference external" href="https://www.youtube.com/watch?v=qJGs8nxx80A"><strong>(1)</strong> watch this FIRST/follow along here!</a> <strong>(2)</strong> move your whole project folder to Google Drive, and then <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"><strong>use this notebook</strong></a></p></li>
+<li><p>IF you want to use GPUs on google colab, <a class="reference external" href="https://www.youtube.com/watch?v=qJGs8nxx80A"><strong>(1)</strong> watch this FIRST/follow along here!</a> <strong>(2)</strong> move your whole project folder to Google Drive, and then <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb"><strong>use this notebook</strong></a></p></li>
 </ul>
 <p><strong>MODULE 2 webinar</strong>: <a class="reference external" href="https://youtu.be/ILsuC4icBU0">https://youtu.be/ILsuC4icBU0</a></p>
 </li>

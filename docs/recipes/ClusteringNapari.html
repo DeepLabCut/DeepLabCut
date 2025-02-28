@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
@@ -474,7 +472,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#open-napari-and-the-deeplabcut-plugin">Open <code class="docutils literal notranslate"><span class="pre">napari</span></code> and the <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span> <span class="pre">plugin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering">Clustering</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-refine">Visualize &amp; refine</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-coming">What’s coming</a></li>
 </ul>
 </li>
 </ul>
@@ -490,64 +487,83 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="clustering-in-the-napari-deeplabcut-gui">
 <h1>Clustering in the napari-DeepLabCut GUI<a class="headerlink" href="#clustering-in-the-napari-deeplabcut-gui" title="Link to this heading">#</a></h1>
-<p>To increase model performance, one can find the errors in the user-defined label (or in output H5 files after video inference). You can correct the errors and add them back into the training dataset, a process called active learning.</p>
-<p>User errors can be detrimental to model performance, so beyond just <code class="docutils literal notranslate"><span class="pre">check_labels</span></code>, this tool allows you to find your mistakes. If you are curious about how errors affect performance, read the paper: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0896627320307170">A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives</a>.</p>
+<p>To increase model performance, one can find the errors in the user-defined label (or in output H5 files after video
+inference). You can correct the errors and add them back into the training dataset, a process called active learning.</p>
+<p>User errors can be detrimental to model performance, so beyond just <code class="docutils literal notranslate"><span class="pre">check_labels</span></code>, this tool allows you to find your
+mistakes. If you are curious about how errors affect performance, read the paper:
+<a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0896627320307170">A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives</a>.</p>
 <p><strong>TL;DR: your data quality matters!</strong></p>
-  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661886442646-A9JAWGH3JU3WTTTPMNCW/swaps.jpg?format=1000w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661886442646-A9JAWGH3JU3WTTTPMNCW/swaps.jpg?format=1000w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p><strong>Labeling Pitfalls: How Corruptions Affect Performance</strong>
-(A) Illustration of two types of labeling errors. Top is ground truth, middle is missing a label at the tailbase, and bottom is if the labeler swapped the ear identity (left to right, etc.). (B) Using a small training dataset of 106 frames, how do the corruptions in (A) affect the percent of correct keypoints (PCK) on the test set as the distance to ground truth increases from 0 pixels (perfect prediction) to 20 pixels (larger error)? The x axis denotes the difference in the ground truth to the predicted location (RMSE in pixels), whereas the y axis is the fraction of frames considered accurate (e.g., z80% of frames fall within 9 pixels, even on this small training dataset, for points that are not corrupted, whereas for swapped points this falls to z65%). The fraction of the dataset that is corrupted affects this value. Shown is when missing the tailbase label (top) or swapping the ears in 1%, 5%, 10%, and 20% of frames (of 106 labeled training images). Swapping versus missing labels has a more notable adverse effect on network performance.</p>
+(A) Illustration of two types of labeling errors. Top is ground truth, middle is missing a label at the tailbase, and
+bottom is if the labeler swapped the ear identity (left to right, etc.). (B) Using a small training dataset of 106
+frames, how do the corruptions in (A) affect the percent of correct keypoints (PCK) on the test set as the distance
+to ground truth increases from 0 pixels (perfect prediction) to 20 pixels (larger error)? The x axis denotes the
+difference in the ground truth to the predicted location (RMSE in pixels), whereas the y axis is the fraction of
+frames considered accurate (e.g., z80% of frames fall within 9 pixels, even on this small training dataset, for
+points that are not corrupted, whereas for swapped points this falls to z65%). The fraction of the dataset that is
+corrupted affects this value. Shown is when missing the tailbase label (top) or swapping the ears in 1%, 5%, 10%,
+and 20% of frames (of 106 labeled training images). Swapping versus missing labels has a more notable adverse effect
+on network performance.</p>
 </div>
-<p>The DeepLabCut toolbox supports <strong>active learning</strong> by extracting outlier frames be several methods and allowing the user to correct the frames, then retrain the model. See the <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a> for the detailed steps, or in the docs, <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#m-optional-active-learning-network-refinement-extract-outlier-frames">here</a>.</p>
-<p>To facilitate this process, here we propose a new way to detect ‘outlier frames’, which is planned to be released in ~Sept 2022. Your contributions and suggestions are welcomed, so test the <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/pull/38">PR</a> and give us feedback!</p>
-<p>This #cookbook recipe aims to show a usecase of <strong>clustering in napari</strong> and is contributed by 2022 DLC AI Resident <a class="reference external" href="https://twitter.com/Sabrineiitor">Sabrina Benas</a> 💜.</p>
+<p>The DeepLabCut toolbox supports <strong>active learning</strong> by extracting outlier frames be several methods and allowing the
+user to correct the frames, then retrain the model. See the
+<a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a> for the detailed steps, or in the docs,
+<a class="reference internal" href="../standardDeepLabCut_UserGuide.html#active-learning"><span class="std std-ref">here</span></a>.</p>
+<p>To facilitate this process, here we propose a new way to detect ‘outlier frames’.
+Your contributions and suggestions are welcomed, so test the
+<a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/pull/38">PR</a> and give us feedback!</p>
+<p>This #cookbook recipe aims to show a usecase of <strong>clustering in napari</strong> and is contributed by 2022 DLC AI Resident
+<a class="reference external" href="https://twitter.com/Sabrineiitor">Sabrina Benas</a> 💜.</p>
 <section id="detect-outliers-to-refine-labels">
 <h2>Detect Outliers to Refine Labels<a class="headerlink" href="#detect-outliers-to-refine-labels" title="Link to this heading">#</a></h2>
 <section id="open-napari-and-the-deeplabcut-plugin">
 <h3>Open <code class="docutils literal notranslate"><span class="pre">napari</span></code> and the <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span> <span class="pre">plugin</span></code><a class="headerlink" href="#open-napari-and-the-deeplabcut-plugin" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Then open your <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file. We used the Horse-30 dataset, presented in <a class="reference external" href="http://horse10.deeplabcut.org/">Mathis, Biasi et al. WACV 2022</a>, as our demo and development set. Here is an example of what it should look like:</p></li>
-</ul>
-  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885256863-M67UV06P8JHAR1243K1F/1.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<p>Then open your <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file. We used the Horse-30 dataset, presented in
+<a class="reference external" href="http://horse10.deeplabcut.org/">Mathis, Biasi et al. WACV 2022</a>, as our demo and development set. Here is an example of what it should look like:</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885256863-M67UV06P8JHAR1243K1F/1.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 </section>
 <section id="clustering">
 <h3>Clustering<a class="headerlink" href="#clustering" title="Link to this heading">#</a></h3>
-<ul>
-<li><p>Click on the button <code class="docutils literal notranslate"><span class="pre">cluster</span></code> and wait a few seconds until it displays a new layer with the cluster:</p>
+<p>Click on the button <code class="docutils literal notranslate"><span class="pre">cluster</span></code> and wait a few seconds until it displays a new layer with the cluster:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885257126-HRBHYJNJHE0TFH42L034/2.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
-</li>
-</ul>
 <p>You can click on a point and see the image on the right with the keypoints:</p>
-  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255947-G8PFQC41KDMV6JH75RSO/2_b.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255947-G8PFQC41KDMV6JH75RSO/2_b.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 </section>
 <section id="visualize-refine">
 <h3>Visualize &amp; refine<a class="headerlink" href="#visualize-refine" title="Link to this heading">#</a></h3>
-<p>If you decided to refine that frame (we moved the points to make outliers obvious), click <code class="docutils literal notranslate"><span class="pre">show</span> <span class="pre">img</span></code> and refine them using the plugin features and instructions:</p>
-  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255421-B9QEUDOJANXWYX4K649G/3.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
+<p>If you decided to refine that frame (we moved the points to make outliers obvious), click <code class="docutils literal notranslate"><span class="pre">show</span> <span class="pre">img</span></code> and refine them
+using the plugin features and instructions:</p>
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885255421-B9QEUDOJANXWYX4K649G/3.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 <div class="admonition attention">
 <p class="admonition-title">Attention</p>
 <p>When you’re done, you need to click <code class="docutils literal notranslate"><span class="pre">ctl-s</span></code> to save it.</p>
 </div>
-<ul class="simple">
-<li><p>You can go back to the cluster layer by clicking on <code class="docutils literal notranslate"><span class="pre">close</span> <span class="pre">img</span></code> and refine another image. Reminder, when you’re done editing you need to click <code class="docutils literal notranslate"><span class="pre">ctl-s</span></code> to save your work. And now you can take the updated <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> file, create and <strong>new training shuffle</strong>, and train the network! Read more about how to <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#f-create-training-dataset-s">create a training dataset</a>.</p></li>
-</ul>
+<p>You can go back to the cluster layer by clicking on <code class="docutils literal notranslate"><span class="pre">close</span> <span class="pre">img</span></code> and refine another image. Reminder, when you’re done
+editing you need to click <code class="docutils literal notranslate"><span class="pre">ctl-s</span></code> to save your work. And now you can take the updated <code class="docutils literal notranslate"><span class="pre">CollectedData</span></code> file, create
+and <strong>new training shuffle</strong>, and train the network! Read more about how to
+<a class="reference internal" href="../standardDeepLabCut_UserGuide.html#create-training-dataset"><span class="std std-ref">create a training dataset</span></a>.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>If you want to change the clustering method, you can modify the file <a class="reference external" href="https://github.com/DeepLabCutAIResidency/napari-deeplabcut/blob/cluster1/src/napari_deeplabcut/kmeans.py">kmeans.py</a></p>
+<p>If you want to change the clustering method, you can modify the file
+<a class="reference external" href="https://github.com/DeepLabCutAIResidency/napari-deeplabcut/blob/cluster1/src/napari_deeplabcut/kmeans.py">kmeans.py</a></p>
+</div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>You have to keep the way the file is opened (pandas dataframe) and the output has to be the cluster points, the points colors in the cluster colors and the frame names (in this order).</p>
+<p>You have to keep the way the file is opened (pandas dataframe) and the output has to be the cluster points, the points
+colors in the cluster colors and the frame names (in this order).</p>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+### What&#39;s coming
+
+- Right now we demo the feature with user-labels, which are always worth checking and correcting for the best models!
+- Next, we will support the machine-labeled.h5 files for full active learning support.
+
+Happy Hacking!
+</pre></div>
 </div>
-</section>
-<section id="what-s-coming">
-<h3>What’s coming<a class="headerlink" href="#what-s-coming" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Right now we demo the feature with user-labels, which are always worth checking and correcting for the best models!</p></li>
-<li><p>Next, we will support the machine-labeled.h5 files for full active learning support.</p></li>
-</ul>
-<p>Happy Hacking!</p>
 </section>
 </section>
 </section>
@@ -620,7 +636,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#open-napari-and-the-deeplabcut-plugin">Open <code class="docutils literal notranslate"><span class="pre">napari</span></code> and the <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span> <span class="pre">plugin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering">Clustering</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-refine">Visualize &amp; refine</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-coming">What’s coming</a></li>
 </ul>
 </li>
 </ul>

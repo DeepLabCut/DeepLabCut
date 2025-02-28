@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Input/output manipulations with DeepLabCut" href="io.html" />
-    <link rel="prev" title="How to convert a pre-2.2 project for use with DeepLabCut 2.2" href="../convert_maDLC.html" />
+    <link rel="prev" title="How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later" href="../convert_maDLC.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
@@ -492,11 +490,11 @@ document.write(`
 <h2>Using data labeled elsewhere:<a class="headerlink" href="#using-data-labeled-elsewhere" title="Link to this heading">#</a></h2>
 <p>Some users may have annotation data in different formats, yet want to use the DLC pipeline. In this case, you need to convert the data to our format. Simply, you can format your data in an excel sheet (.csv file) or pandas array (.h5 file).</p>
 <p>Here is a guide to do this via the “.csv” route: (the pandas array route is identical, just format the pandas array in the same way).</p>
-<p><strong>Step 1</strong>: create a project as describe in the user guide: <a class="github reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/docs/UseOverviewGuide.md#create-a-new-project">AlexEMG/DeepLabCut</a></p>
+<p><strong>Step 1</strong>: create a project as describe in the user guide: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/docs/UseOverviewGuide.md#create-a-new-project">DeepLabCut/DeepLabCut</a></p>
 <p><strong>Step 2</strong>: edit the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file to include the body part names, please take care that spelling, spacing, and capitalization are IDENTICAL to the “labeled data body part names”.</p>
-<p><strong>Step 3</strong>: Please inspect the excel formatted sheet (.csv) from our <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/tree/master/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1">demo project</a></p>
+<p><strong>Step 3</strong>: Please inspect the excel formatted sheet (.csv) from our <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1">demo project</a></p>
 <ul class="simple">
-<li><p>i.e. this file: <a class="github reference external" href="https://github.com/AlexEMG/DeepLabCut/blob/master/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1/CollectedData_Mackenzie.csv">AlexEMG/DeepLabCut</a></p></li>
+<li><p>i.e. this file: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/Reaching-Mackenzie-2018-08-30/labeled-data/reachingvideo1/CollectedData_Mackenzie.csv">DeepLabCut/DeepLabCut</a></p></li>
 </ul>
 <p><strong>Step 4</strong>: Edit the .csv file such that it contains the X, Y pixel coordinates, the body part names, the scorer name as well as the relative path to the image: e.g. /labeled-data/somefolder/img017.jpg
 Then make sure the scorer name, and body parts are the same in the config.yaml file.</p>
@@ -550,7 +548,7 @@ C://somefolder.avi if the folder is called somefolder. See demo config.yaml file
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">How to convert a pre-2.2 project for use with DeepLabCut 2.2</p>
+        <p class="prev-next-title">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</p>
       </div>
     </a>
     <a class="right-next"

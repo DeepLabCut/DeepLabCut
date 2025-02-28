@@ -23,10 +23,20 @@ The software is very robust to track data from any camera (cell phone cameras, g
 
 **Anaconda/Python3:** Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
 
+**For the TensorFlow Engine:** You will need [TensorFlow](https://www.tensorflow.org/).
+We used version 1.0 in the paper, later versions also work with the provided code (we
+tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.12 (2.10 for Windows)**; we
+recommend TF2.12 for MacOS/Ubuntu and 2.10 for Windows) for Python 3.10 with GPU
+support.
 
-**TensorFlow** You will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.5**; we recommend TF2.5 now) for Python 3.7, 3.8, or 3.9 with GPU support.
+To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: 
+[Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test
+DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of
+a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for
+testing.
 
-To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
+Docker: We highly recommend advanced users use the supplied [Docker container](
+docker-containers).
 
-Docker: We highly recommend advaced users use the supplied [Docker container](https://github.com/MMathisLab/Docker4DeepLabCut2.0).
-NOTE: [this container does not work on windows hosts!](https://github.com/NVIDIA/nvidia-docker/issues/43)
+NOTE: [Currently GPU support in Docker Desktop is only available on Windows with the 
+WSL2 backend.](https://docs.docker.com/desktop/features/gpu/)

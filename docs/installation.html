@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -521,6 +519,36 @@ document.write(`
 <li><p>We recommend for most users to use our supplied CONDA environment.</p></li>
 <li><p>Please note, you will get the best performance with using a GPU! Please see the section on <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support">GPU support</a> to install your GPU driver and CUDA.</p></li>
 </ul>
+<div class="dropdown admonition">
+<p class="admonition-title">Familiar with python packages and conda? Quick install here.</p>
+<p>This assumes you have <code class="docutils literal notranslate"><span class="pre">conda</span></code>/<code class="docutils literal notranslate"><span class="pre">mamba</span></code> installed and installs DeepLabCut in a fresh
+environment. If you have an NVIDIA GPU, install PyTorch according to <a class="reference external" href="https://pytorch.org/get-started/locally/">their instructions
+</a> (with your desired CUDA version) - you just
+need your GPU drivers installed.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>DEEPLABCUT<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT
+conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">pytables</span><span class="o">==</span><span class="m">3</span>.8.0
+
+<span class="c1"># install torch with your desired CUDA version (or CPU) - check their website </span>
+<span class="c1"># for the exact command</span>
+pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>
+
+<span class="c1"># install the latest version of DeepLabCut</span>
+pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>deeplabcut
+<span class="c1"># or if you want to use the GUI</span>
+pip<span class="w"> </span>install<span class="w"> </span>deeplabcut<span class="o">[</span>gui<span class="o">]</span>
+
+<span class="c1"># ONLY IF YOU HAVE A CUDA GPU - check that PyTorch can access your GPU; this</span>
+<span class="c1"># should print `True`</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.cuda.is_available())&quot;</span>
+</pre></div>
+</div>
+<p>Why do we install <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">pytables</a> with
+<code class="docutils literal notranslate"><span class="pre">conda</span></code> and not <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Because it requires some libraries that not all users will have
+installed, and conda will ensure that they are installed as well.</p>
+<p>If you’re familiar with the command line and want TensorFlow support, look <a class="reference internal" href="#deeplabcut-with-tf-install"><span class="std std-ref">below</span></a> for a fresh installation that has worked for us (on Linux)
+and makes it possible to use the GPU with both PyTorch and TensorFlow.</p>
+</div>
 <section id="conda-the-installation-process-is-as-easy-as-this-figure">
 <h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Link to this heading">#</a></h2>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
@@ -543,13 +571,14 @@ document.write(`
 <section id="step-1-install-python-via-anaconda">
 <h3>Step 1: Install Python via Anaconda<a class="headerlink" href="#step-1-install-python-via-anaconda" title="Link to this heading">#</a></h3>
 <section id="install-anaconda-or-use-miniconda3-for-macos-users-see-below">
-<h4>Install <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Link to this heading">#</a></h4>
+<h4>Install <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Link to this heading">#</a></h4>
 <ul class="simple">
 <li><p>Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> on your machine.</p></li>
 </ul>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>Download anaconda for your operating system: <a class="reference external" href="https://www.anaconda.com/distribution/">https://www.anaconda.com/distribution/</a>.</p>
+<p>Download anaconda for your operating system: <a class="reference external" href="https://www.anaconda.com/download/">anaconda.com/download/
+</a></p>
 </div>
 <ul class="simple">
 <li><p>IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), we recommend <strong>miniconda3,</strong> which operates with the same principles as anaconda. This is straight forward and explained in detail here: <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html">https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html</a>. But in short, open the program “terminal” and copy/paste and run the code that is supplied below.</p></li>
@@ -605,10 +634,40 @@ You can (on Windows) hold SHIFT and right-click &gt; Copy as path, or (on Mac) r
 <p>Now you should see (<code class="docutils literal notranslate"><span class="pre">nameofenv</span></code>) on the left of your terminal screen, i.e. <code class="docutils literal notranslate"><span class="pre">(DEEPLABCUT)</span> <span class="pre">YourName-MacBook...</span></code>
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p>
 <section id="notice-pytorch-and-tensorflow-support-within-deeplabcut">
-<h4>💡 Notice: PyTorch and TensorFlow Support within DeepLabCut<a class="headerlink" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut" title="Link to this heading">#</a></h4>
-<div class="dropdown admonition hint">
-<p class="admonition-title">Hint</p>
-<p>As of June 2024 we have a PyTorch Engine backend and we will be depreciating the TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you need to run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[tf]</span></code> in order to install the correct version of TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.</p>
+<span id="deeplabcut-with-tf-install"></span><h4>💡 Notice: PyTorch and TensorFlow Support within DeepLabCut<a class="headerlink" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut" title="Link to this heading">#</a></h4>
+<div class="dropdown admonition">
+<p class="admonition-title">DeepLabCut TensorFlow Support</p>
+<p>As of June 2024 we have a PyTorch Engine backend and we will be depreciating the
+TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you
+need to run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[tf]</span></code> in order to install the correct version of
+TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will
+not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.</p>
+<p>Installing TensorFlow and getting it to have access to the GPU can be a bit tricky.
+Check TensorFlow’s <a class="reference external" href="https://www.tensorflow.org/install/source#gpu">compatibility matrix</a>
+to know which version of CUDA and cuDNN you should install.</p>
+<p>We have found that installing DeepLabCut with the following commands works well for
+Linux users to install PyTorch 2.3.1, TensorFlow 2.12, CUDA 11.8 and cuDNN 8 in a Conda
+environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>deeplabcut-with-tf<span class="w"> </span><span class="s2">&quot;python=3.10&quot;</span>
+conda<span class="w"> </span>activate<span class="w"> </span>deeplabcut-with-tf
+
+<span class="c1"># Install the desired TensorFlow version, built for CUDA 11.8 and cuDNN 8</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;tensorflow==2.12&quot;</span><span class="w"> </span><span class="s2">&quot;tensorpack&gt;=0.11&quot;</span><span class="w"> </span><span class="s2">&quot;tf_slim&gt;=1.1.0&quot;</span>
+
+<span class="c1"># Install PyTorch with a version using CUDA 11.8 and cuDNN 8</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torch==2.3.1&quot;</span><span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+
+<span class="c1"># Create symbolic links to NVIDIA shared libraries for TensorFlow</span>
+<span class="c1">#   -&gt; as described in their installation docs:</span>
+<span class="c1">#      https://www.tensorflow.org/install/pip#step-by-step_instructions</span>
+
+<span class="nb">pushd</span><span class="w"> </span><span class="k">$(</span>dirname<span class="w"> </span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;print(__import__(&quot;tensorflow&quot;).__file__)&#39;</span><span class="k">))</span>
+ln<span class="w"> </span>-svf<span class="w"> </span>../nvidia/*/lib/*.so*<span class="w"> </span>.
+<span class="nb">popd</span>
+
+pip<span class="w"> </span>install<span class="w">  </span>--pre<span class="w"> </span>deeplabcut
+</pre></div>
+</div>
 </div>
 <p><strong>Great, that’s it! DeepLabCut is installed!</strong> 🎉💜</p>
 </section>
@@ -633,7 +692,7 @@ To git clone type: <code class="docutils literal notranslate"><span class="pre">
 <section id="pip">
 <h3>PIP:<a class="headerlink" href="#pip" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> (for GUI support w/tensorflow) or without the gui: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut'</span></code>.</p></li>
+<li><p>Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> (for GUI support w/PyTorch) or without the gui: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut'</span></code>.</p></li>
 <li><p>If you want to use the SuperAnimal models, then please use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,modelzoo]'</span></code>.</p></li>
 </ul>
 </section>
@@ -646,10 +705,24 @@ To git clone type: <code class="docutils literal notranslate"><span class="pre">
 </section>
 <section id="pro-tips">
 <h2>Pro Tips:<a class="headerlink" href="#pro-tips" title="Link to this heading">#</a></h2>
-<p>More <a class="reference internal" href="#installTips"><span class="xref myst">installation ProTips</span></a> are also available.</p>
-<p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once you are inside your env. If you want to use a specific release, then you need to specify the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==2.2</span></code>. Once installed, you can check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added nearly monthly.</p>
-<p>Here are some conda environment management tips: <a class="reference external" href="https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index">https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index</a></p>
-<p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided testscripts. This would mean you need to be up-to-date with the latest GitHub-based code though! Please see <a class="reference internal" href="#installTips"><span class="xref myst">here</span></a> on how to get the latest GitHub code, and how to test your installation by following this video: <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
+<p>More <a class="reference internal" href="recipes/installTips.html#installation-tips"><span class="std std-ref">installation ProTips</span></a> are also available.</p>
+<p>If you ever want to update your DLC, just run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">deeplabcut</span></code> once
+you are inside your env. If you want to use a specific release, then you need to specify
+the version you want, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut==3.0</span></code>. Once installed, you can
+check the version by running <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">deeplabcut</span></code> <code class="docutils literal notranslate"><span class="pre">deeplabcut.__version__</span></code>. Don’t be
+afraid to update, DLC is backwards compatible with your 2.0+ projects and performance
+continues to get better and new features are added nearly monthly.</p>
+<p><strong>All of the data you labelled in version 2.X is also compatible with version 3+ and the
+PyTorch engine</strong>! There is no change in the workflow or the way labels are handled: the
+big changes happen under-the-hood! If you’ve been working with DeepLabCut 2.X and want
+to learn more about moving to the PyTorch engine, checkout our docs on <a class="reference internal" href="pytorch/user_guide.html#dlc3-user-guide"><span class="std std-ref">moving from
+TensorFlow to PyTorch</span></a></p>
+<p>Here are some conda environment management tips: <a class="reference external" href="https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index">kapeli.com: Conda Cheat Sheet</a></p>
+<p><strong>Pro Tip:</strong> If you want to modify code and then test it, you can use our provided
+testscripts. This would mean you need to be up-to-date with the latest GitHub-based code
+though! Please see <a class="reference internal" href="recipes/installTips.html#installation-tips"><span class="std std-ref">here</span></a> on how to get the latest GitHub code, and
+how to test your installation by following this video:
+<a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">https://www.youtube.com/watch?v=IOWtKn3l33s</a>.</p>
 </section>
 <section id="creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc">
 <h2>Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)<a class="headerlink" href="#creating-your-own-customized-conda-env-recommended-route-for-linux-ubuntu-centos-mint-etc" title="Link to this heading">#</a></h2>
@@ -657,7 +730,9 @@ To git clone type: <code class="docutils literal notranslate"><span class="pre">
 <p>Some users might want to create their own customize env. -  Here is an example.</p>
 <p>In the terminal type:</p>
 <p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">DLC</span> <span class="pre">python=3.10</span></code></p>
-<p><strong>Current version:</strong> The only thing you then need to add to the env is deeplabcut (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> which has a napari based GUI.</p>
+<p><strong>Current version:</strong> The only thing you then need to add to the env is deeplabcut (
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut</span></code>) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui]'</span></code> which has a napari based
+GUI.</p>
 </section>
 <section id="gpu-support">
 <h2><strong>GPU Support:</strong><a class="headerlink" href="#gpu-support" title="Link to this heading">#</a></h2>
@@ -668,28 +743,41 @@ To git clone type: <code class="docutils literal notranslate"><span class="pre">
 </ul>
 <section id="the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged">
 <h3>The most common “new user” hurdle is installing and using your GPU, so don’t get discouraged!<a class="headerlink" href="#the-most-common-new-user-hurdle-is-installing-and-using-your-gpu-so-don-t-get-discouraged" title="Link to this heading">#</a></h3>
-<p><strong>CRITICAL:</strong> If you have a GPU, you should FIRST <strong>install the NVIDIA CUDA package and an appropriate driver for your specific GPU</strong>, then you can use the supplied conda file. Please follow the instructions found here <a class="reference external" href="https://www.tensorflow.org/install/gpu">https://www.tensorflow.org/install/gpu</a>, and more tips below, to install the correct version of CUDA and your graphic card driver. The order of operations matters.</p>
+<p><strong>CRITICAL:</strong> If you have a GPU, you should FIRST <strong>install an appropriate driver for
+your specific GPU</strong>, then you can use the supplied conda file. You’ll need an NVIDIA GPU
+which is compatible with CUDA. To see a list of CUDA-enabled NVIDIA GPUs, please <a class="reference external" href="https://developer.nvidia.com/cuda-gpus">see
+their website</a>.</p>
 <ul class="simple">
-<li><p>Here we provide notes on how to install and check your GPU use with TensorFlow (which is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do not need to independently install tensorflow.</p></li>
+<li><p>Here we provide notes on how to install and check your GPU use with TensorFlow (which
+is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do
+not need to independently install tensorflow.</p></li>
 </ul>
-<p><strong>FIRST</strong>, install a driver for your GPU. Find DRIVER HERE: <a class="reference external" href="https://www.nvidia.com/download/index.aspx">https://www.nvidia.com/download/index.aspx</a></p>
+<p><strong>FIRST</strong>, install a driver for your GPU. Find DRIVER HERE:
+<a class="reference external" href="https://www.nvidia.com/download/index.aspx">https://www.nvidia.com/download/index.aspx</a></p>
 <ul class="simple">
-<li><p>check which driver is installed by typing this into the terminal: <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>.</p></li>
+<li><p>Check which driver is installed by typing this into the terminal: <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>.</p></li>
 </ul>
 <p><strong>SECOND</strong>, install CUDA: <a class="reference external" href="https://developer.nvidia.com/">https://developer.nvidia.com/</a> (Note that cuDNN, <a class="reference external" href="https://developer.nvidia.com/cudnn">https://developer.nvidia.com/cudnn</a>, is supplied inside the anaconda environment files, so you don’t need to install it again).</p>
 <p><strong>THIRD:</strong> Follow the steps above to get the <code class="docutils literal notranslate"><span class="pre">DEEPLABCUT</span></code> conda file and install it!</p>
 <section id="notes">
 <h4>Notes:<a class="headerlink" href="#notes" title="Link to this heading">#</a></h4>
 <ul class="simple">
-<li><p><strong>As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is 2.10  (window users) and 2.12 for others (we have not tested beyond this).</strong></p></li>
+<li><p><strong>As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is
+2.10  (window users) and 2.12 for others (we have not tested beyond this).</strong></p></li>
 <li><p>Please be mindful different versions of TensorFlow require different CUDA versions.</p></li>
-<li><p>As the combination of TensorFlow and CUDA matters, we strongly encourage you to <strong>check your driver/cuDNN/CUDA/TensorFlow versions</strong> <a class="reference external" href="https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690">on this StackOverflow post</a>.</p></li>
+<li><p>As the combination of TensorFlow and CUDA matters, we strongly encourage you to
+<strong>check your driver/cuDNN/CUDA/TensorFlow versions</strong> <a class="reference external" href="https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690">on this StackOverflow post</a>.</p></li>
 <li><p>To check your GPU is working, in the terminal, run:</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">nvcc</span> <span class="pre">-V</span></code> to check your installed version(s).</p>
 <ul class="simple">
-<li><p>The best practice is to then run the supplied <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code> (this is inside the examples folder you acquired when you git cloned the repo). Here is more information/a short <a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">video on running the testscript</a>.</p></li>
-<li><p>Additionally, if you want to use the bleeding edge, with yout git clone you also get the latest code. While inside the main DeepLabCut folder, you can run <code class="docutils literal notranslate"><span class="pre">./reinstall.sh</span></code> to be sure it’s installed (more here: <a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/How-to-use-the-latest-GitHub-code">DeepLabCut/DeepLabCut</a>)</p></li>
+<li><p>The best practice is to then run the supplied <code class="docutils literal notranslate"><span class="pre">testscript_pytorch_single_animal.py</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code> for the TensorFlow engine); this is inside the examples folder you
+acquired when you git cloned the repo. Here is more information/a short
+<a class="reference external" href="https://www.youtube.com/watch?v=IOWtKn3l33s">video on running the testscript</a>.</p></li>
+<li><p>Additionally, if you want to use the bleeding edge, with yout git clone you also get
+the latest code. While inside the main DeepLabCut folder, you can run <code class="docutils literal notranslate"><span class="pre">./reinstall.sh</span></code>
+to be sure it’s installed (more <a class="reference internal" href="recipes/installTips.html#installation-tips"><span class="std std-ref">here</span></a>)</p></li>
 <li><p>You can test that your GPU is being properly engaged with these additional <a class="reference external" href="https://www.tensorflow.org/programmers_guide/using_gpu">tips</a>.</p></li>
 <li><p>Ubuntu users might find this <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#installation-on-ubuntu-20-04-lts">installation guide</a> for a fresh ubuntu install useful as well.</p></li>
 </ul>
@@ -758,7 +846,6 @@ Here are some additional resources users have found helpful (posted without endo
 </ul>
 </li>
 </ul>
-<p>Return to <a class="reference internal" href="#readme"><span class="xref myst">readme</span></a>.</p>
 </section>
 </section>
 

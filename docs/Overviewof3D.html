@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -496,11 +494,18 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="d-deeplabcut">
 <span id="d-overview"></span><h1>3D DeepLabCut<a class="headerlink" href="#d-deeplabcut" title="Link to this heading">#</a></h1>
-<p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer optimization methods, please see our work that was published at <a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
+<p>In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer
+optimization methods, please see our work that was published at
+<a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">ICRA 2021 on strong baseline 3D models (and a 3D dataset)</a>. In the
+link you will find how we optimize 6+ camera DLC output data for cheetahs (and see more below).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 <section id="attention-our-code-base-in-this-repo-assumes-you">
 <h2><strong>ATTENTION: Our code base in this repo assumes you:</strong><a class="headerlink" href="#attention-our-code-base-in-this-repo-assumes-you" title="Link to this heading">#</a></h2>
-<p>A. You have 2D videos and a DeepLabCut network to analyze them as described in the <a class="reference internal" href="UseOverviewGuide.html#overview"><span class="std std-ref">main documentation</span></a>. This can be with multiple separate networks for each camera (less recommended), or one network trained on all views - recommended! (See <a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">Nath*, Mathis* et al., 2019</a>). We also support multi-animal 3D with this code (please see <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>).</p>
+<p>A. You have 2D videos and a DeepLabCut network to analyze them as described in the
+<a class="reference internal" href="UseOverviewGuide.html#overview"><span class="std std-ref">main documentation</span></a>. This can be with multiple
+separate networks for each camera (less recommended), or one network trained on all views - recommended! (See
+<a class="reference external" href="https://www.biorxiv.org/content/10.1101/476531v1">Nath*, Mathis* et al., 2019</a>). We also support multi-animal 3D with this code (please see
+<a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>).</p>
 <p>B. You are using 2 cameras, in a <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223">stereo configuration</a>, for 3D*.</p>
 <p>C. You have calibration images taken (see details below!).</p>
 <section id="if-you-need-more-than-2-camera-support">
@@ -508,9 +513,13 @@ document.write(`
 <p>Here are other excellent options for you to use that extend DeepLabCut:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
 <ul class="simple">
-<li><p><strong><a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">AcinoSet</a></strong>; <strong>n</strong>-camera support with triangulation, extended Kalman filtering, and trajectory optimization code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to work directly with DeepLabCut (but currently tailored to cheetah’s, thus some coding skills are required at this time).</p></li>
-<li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut that provides &gt;3 camera support and is built to work directly with DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
-<li><p><strong>Argus, easywand or DLTdv</strong> w/DeepLabCut see <a class="github reference external" href="https://github.com/haliaetus13/DLCconverterDLT">haliaetus13/DLCconverterDLT</a>; this can be used with the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
+<li><p><strong><a class="reference external" href="https://github.com/African-Robotics-Unit/AcinoSet">AcinoSet</a></strong>; <strong>n</strong>-camera support with triangulation, extended Kalman filtering, and trajectory optimization
+code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to
+work directly with DeepLabCut (but currently tailored to cheetah’s, thus some coding skills are required at this time).</p></li>
+<li><p><strong><a class="reference external" href="https://anipose.readthedocs.io/en/latest/">anipose.org</a></strong>; a wrapper for 3D deeplabcut that provides &gt;3 camera support and is built to work directly with
+DeepLabCut. You can <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">anipose</span></code> into your DLC conda environment.</p></li>
+<li><p><strong>Argus, easywand or DLTdv</strong> w/DeepLabCut see <a class="github reference external" href="https://github.com/haliaetus13/DLCconverterDLT">haliaetus13/DLCconverterDLT</a>; this can be used with
+the the highly popular Argus or DLTdv tools for wand calibration.</p></li>
 </ul>
 </section>
 </section>
@@ -525,110 +534,172 @@ document.write(`
 </p>
 <section id="create-a-new-3d-project">
 <h3>(1) Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Link to this heading">#</a></h3>
-<p>Watch a <a class="reference external" href="https://youtu.be/Eh6oIGE4dwI">DEMO VIDEO</a> on how to use this code, and check out the Notebook <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb">here</a>!</p>
-<p>You will run this function <strong>one</strong> time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.</p>
-<p>The function <strong>create_new_project_3d</strong> creates a new project directory specifically for converting the 2D pose to 3D pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
-<p>Thus, this function requires the user to input the enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.</p>
+<p>Watch a <a class="reference external" href="https://youtu.be/Eh6oIGE4dwI">DEMO VIDEO</a> on how to use this code, and check out the Notebook <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb">here</a>!</p>
+<p>You will run this function <strong>one</strong> time per project; a project is defined as a given set of cameras and calibration
+images. You can always analyze new videos within this project.</p>
+<p>The function <strong>create_new_project_3d</strong> creates a new project directory specifically for converting the 2D pose to 3D
+pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the
+project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
+<p>Thus, this function requires the user to enter the name of the project, the name of the experimenter and number of
+cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras
+in a future version.</p>
 <p>To start a 3D project type the following in ipython:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="s1">&#39;ProjectName&#39;</span><span class="p">,</span><span class="s1">&#39;NameofLabeler&#39;</span><span class="p">,</span><span class="n">num_cameras</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="s2">&quot;ProjectName&quot;</span><span class="p">,</span> <span class="s2">&quot;NameofLabeler&quot;</span><span class="p">,</span> <span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>TIP 1: you can also pass <code class="docutils literal notranslate"><span class="pre">working_directory=`Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">working</span> <span class="pre">directory'</span></code> if you want to place this folder somewhere beside the current directory you are working in. If the optional argument <code class="docutils literal notranslate"><span class="pre">working_directory</span></code> is unspecified, the project directory is created in the current working directory.</p>
-<p>TIP 2: you can also place <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> in front of <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project_3d</span></code> to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path3d=deeplabcut.create_new_project_3d(...</span></code> Or, set this variable for easy use. Please note that <code class="docutils literal notranslate"><span class="pre">config_path3d='Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">3D</span> <span class="pre">project</span> <span class="pre">configuration</span> <span class="pre">file'</span></code>.</p>
-<p>This function will create a project directory with the name <strong>Name of the project+name of the experimenter+date of creation of the project+3d</strong> in the <strong>Working directory</strong>. The project directory will have subdirectories: <strong>calibration_images</strong>, <strong>camera_matrix</strong>, <strong>corners</strong>, and <strong>undistortion</strong>.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects.</p>
+<p>TIP 1: you can also pass <code class="docutils literal notranslate"><span class="pre">working_directory=&quot;Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">working</span> <span class="pre">directory&quot;</span></code> if you want to place this folder
+somewhere beside the current directory you are working in. If the optional argument <code class="docutils literal notranslate"><span class="pre">working_directory</span></code> is unspecified,
+the project directory is created in the current working directory.</p>
+<p>TIP 2: you can also place <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> in front of <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project_3d</span></code> to create a variable that holds
+the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path3d=deeplabcut.create_new_project_3d(...</span></code> Or, set this variable for
+easy use. Please note that <code class="docutils literal notranslate"><span class="pre">config_path3d='Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">3D</span> <span class="pre">project</span> <span class="pre">configuration</span> <span class="pre">file'</span></code>.</p>
+<p>This function will create a project directory with the name <strong>Name of the project+name of the experimenter+date of
+creation of the project+3d</strong> in the <strong>Working directory</strong>. The project directory will have subdirectories:
+<strong>calibration_images</strong>, <strong>camera_matrix</strong>, <strong>corners</strong>, and <strong>undistortion</strong>.  All the outputs generated during the
+course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in
+separation from other projects.</p>
 <p>The purpose of the subdirectories is as follows:</p>
-<p><strong>calibration_images:</strong> This directory will contain a set of calibration images acquired from the two cameras. A calibration image can be acquired using a printed checkerboard and its pair wise images are taken from both the cameras to consider as a set of calibration images. These pair of images are saved as <code class="docutils literal notranslate"><span class="pre">.jpg</span></code> with camera names as the prefix. e.g. <code class="docutils literal notranslate"><span class="pre">camera-1-01.jpg</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2-01.jpg</span></code> for the first pair of images. While taking the images:</p>
-<ul class="simple">
-<li><p>Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
-<li><p>Cover several distances, and within each distance, cover all parts of the image view (all corners and center).
-Use a chessboard as big as possible, ideally a chessboard with of at least 8x6 squares.</p></li>
-<li><p>Aim for taking at least 70 pair of images as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>
-</ul>
-<p><strong>camera_matrix:</strong> This directory will store the parameter for both the cameras as a pickle file. Specifically, these pickle files contain the intrinsic and extrinsic camera parameters. While the intrinsic parameters represent a transformation from 3-D camera’s coordinates into the image coordinates, the extrinsic parameters represent a rigid transformation from world coordinate system to the 3-D camera’s coordinate system.</p>
-<p><strong>corners:</strong>  As a part of camera calibration, the checkerboard pattern is detected in the calibration images and these patterns will be stored in this directory. Each row of the checkerboard grid is marked with a unique color.</p>
-<p><strong>undistortion:</strong> In order to check for calibration, the calibration images and the corresponding corner points are undistorted. These undistorted images are overlaid with undistorted points and will be stored in this directory.</p>
+<p><strong>calibration_images:</strong> This directory will contain a set of calibration images acquired from the two cameras. A
+calibration image can be acquired using a printed checkerboard and its pair wise images are taken from both the cameras
+to consider as a set of calibration images.</p>
+<p><strong>camera_matrix:</strong> This directory will store the parameter for both the cameras as a pickle file. Specifically, these
+pickle files contain the intrinsic and extrinsic camera parameters. While the intrinsic parameters represent a
+transformation from 3-D camera’s coordinates into the image coordinates, the extrinsic parameters represent a rigid
+transformation from world coordinate system to the 3-D camera’s coordinate system.</p>
+<p><strong>corners:</strong>  As a part of camera calibration, the checkerboard pattern is detected in the calibration images and these
+patterns will be stored in this directory. Each row of the checkerboard grid is marked with a unique color.</p>
+<p><strong>undistortion:</strong> In order to check for calibration, the calibration images and the corresponding corner points are
+undistorted. These undistorted images are overlaid with undistorted points and will be stored in this directory.</p>
 <p>Here is an overview of the calibration and triangulation workflow that follows:</p>
- <p align="center">
+<p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559751031211-IOTHQDAEEFP939AD8L8Q/ke17ZwdGBToddI8pDm48kCpBvlJgRextwO-RLKSiThBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIMRcHFn6kFHmdB2CIEK_nkzQWBtRKl1IphR3INrGSAiA/3dworkflow.png?format=1000w" width="55%">
 </p>
 </section>
 <section id="take-and-process-camera-calibration-images">
 <h3>(2) Take and Process Camera Calibration Images:<a class="headerlink" href="#take-and-process-camera-calibration-images" title="Link to this heading">#</a></h3>
-<p>(<strong>CRITICAL!</strong>) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount it on a flat, hard surface!): <a class="reference external" href="https://markhedleyjones.com/projects/calibration-checkerboard-collection">https://markhedleyjones.com/projects/calibration-checkerboard-collection</a>.</p>
+<p>(<strong>CRITICAL!</strong>) You must take images of a checkerboard to calibrate your images. Here are example boards you could
+print and use (mount it on a flat, hard surface!):
+<a class="reference external" href="https://markhedleyjones.com/projects/calibration-checkerboard-collection">https://markhedleyjones.com/projects/calibration-checkerboard-collection</a>.</p>
 <ul class="simple">
 <li><p>You must save the image pairs as .jpg files.</p></li>
-<li><p>They should be named with the <strong>camera-#</strong> as the prefix, i.e. <strong>camera-1-01.jpg</strong> and <strong>camera-2-01.jpg</strong> for the first pair of images. Please note, this cannot be changed after the project is created.</p></li>
+<li><p>They should be named with the <strong>camera-#</strong> as the prefix, i.e. <strong>camera-1-01.jpg</strong> and <strong>camera-2-01.jpg</strong> for the
+first pair of images. Please note, this cannot be changed after the project is created.</p></li>
 </ul>
-<p><strong>TIP:</strong> If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you can use this command inside your conda environment (but outside of ipython!) to convert the video to <strong>.jpg</strong> frames (this will take the first 20 frames (set with <code class="docutils literal notranslate"><span class="pre">-vframes</span></code>) and name them camera-1-001.jpg, etc; edit appropriately):</p>
+<p><strong>TIP:</strong> If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you
+can use this command inside your conda environment (but outside of ipython!) to convert the video to <strong>.jpg</strong> frames
+(this will take the first 20 frames (set with <code class="docutils literal notranslate"><span class="pre">-vframes</span></code>) and name them camera-1-001.jpg, etc; edit appropriately):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ffmpeg</span> <span class="o">-</span><span class="n">i</span> <span class="n">videoname</span><span class="o">.</span><span class="n">mp4</span> <span class="o">-</span><span class="n">vframes</span> <span class="mi">20</span> <span class="n">camera</span><span class="o">-</span><span class="mi">1</span><span class="o">-%</span><span class="mi">03</span><span class="n">d</span><span class="o">.</span><span class="n">jpg</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>While taking the images:</p>
 <ul>
-<li><p>Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
+<li><p>Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the
+checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
 <li><p>Cover several distances, and within each distance, cover all parts of the image view (all corners and center).</p></li>
 <li><p>Use a checkerboard as big as possible, ideally with at least 8x6 squares.</p></li>
-<li><p>Aim for taking at least 30-70 pair of images, as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>
-<li><p>You can take the images as a series of .jpg images, or a video where you post-hoc pair sync’d frames (see tip above).</p></li>
+<li><p>Aim for taking at least 30-70 pair of images, as after corner detection, some of the images might need to be
+discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>
+<li><p>You can take the images as a series of .jpg images, or a video where you post-hoc pair sync’d frames (see tip
+above).</p></li>
 </ul>
 </li>
 </ul>
-<p>The camera calibration is an <strong>iterative process</strong>, where the user needs to select a set of calibration images where the grid pattern is correctly detected. The function:<code class="docutils literal notranslate"><span class="pre">deeplabcut.calibrate_cameras(config_path)</span></code>
-extracts the grid pattern from the calibration images and store them under the <code class="docutils literal notranslate"><span class="pre">corners</span></code> directory. The grid pattern could be 8x8 or 5x5 etc. We use a pattern of the 8x6 grid to find the internal corners of the checkerboard.</p>
-<p>In some cases, it may happen that the corners are not detected correctly or the order of corners detected in the camera-1 image and camera-2 image is incorrect. You need to remove these pair of images from the <strong>calibration_images</strong> folder as they will reduce the calibration accuracy.</p>
+<p>The camera calibration is an <strong>iterative process</strong>, where the user needs to select a set of calibration images where the
+grid pattern is correctly detected. The function <code class="docutils literal notranslate"><span class="pre">deeplabcut.calibrate_cameras(config_path)</span></code>
+extracts the grid pattern from the calibration images and store them under the <code class="docutils literal notranslate"><span class="pre">corners</span></code> directory. The grid pattern
+could be 8x8 or 5x5 etc. We use a pattern of the 8x6 grid to find the internal corners of the checkerboard.</p>
+<p>In some cases, it may happen that the corners are not detected correctly or the order of corners detected in the
+camera-1 image and camera-2 image is incorrect. You need to remove these pair of images from the <strong>calibration_images</strong>
+folder as they will reduce the calibration accuracy.</p>
 <p>To begin, please place your images into the <strong>calibration_images</strong> directory.</p>
-<p>(<strong>CRITICAL!</strong>) Edit the <strong>config.yaml</strong> file to set the camera names; note that once this is set, <strong>do not change the names!</strong></p>
+<p>(<strong>CRITICAL!</strong>) Edit the <strong>config.yaml</strong> file to set the camera names; note that once this is set, <strong>do not change the
+names!</strong></p>
 <p>Then, run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>NOTE: you need to specify how many rows (<code class="docutils literal notranslate"><span class="pre">cbrow</span></code>) and columns (<code class="docutils literal notranslate"><span class="pre">cbcol</span></code>) your checkerboard has. Also, first set the variable <code class="docutils literal notranslate"><span class="pre">calibrate</span></code> to <strong>False</strong>, so you can remove any faulty images. You need to visually inspect the output to check for the detected corners and select those pair of images where the corners are correctly detected. Please note, If the scaling parameter <code class="docutils literal notranslate"><span class="pre">alpha=0</span></code>, it returns undistorted image with minimum unwanted pixels. So it may even remove some pixels at image corners. If <code class="docutils literal notranslate"><span class="pre">alpha=1</span></code>, all pixels are retained with some extra black images.</p>
+<p>NOTE: you need to specify how many rows (<code class="docutils literal notranslate"><span class="pre">cbrow</span></code>) and columns (<code class="docutils literal notranslate"><span class="pre">cbcol</span></code>) your checkerboard has (beware, we count
+edges between squares and not squares themselves, so for a 8 x 8 squares checkerboard set <code class="docutils literal notranslate"><span class="pre">cbrow=7</span></code> and <code class="docutils literal notranslate"><span class="pre">cbcol=7</span></code>).
+Also, first set the variable <code class="docutils literal notranslate"><span class="pre">calibrate</span></code> to <strong>False</strong>, so you can remove any faulty images. You need to visually
+inspect the output to check for the detected corners and select those pair of images where the corners are correctly
+detected. Please note, If the scaling parameter <code class="docutils literal notranslate"><span class="pre">alpha=0</span></code>, it returns undistorted image with minimum unwanted pixels.
+So it may even remove some pixels at image corners. If <code class="docutils literal notranslate"><span class="pre">alpha=1</span></code>, all pixels are retained with some extra black images.</p>
 <p>Here is what they might look like:</p>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776966423-RATM6ZQT8JXHYAN768F6/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/right02_corner.jpg?format=500w" height="220">
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776952829-KRHFX74CDO3BPIY9E9U0/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/left02_corner.jpg?format=500w" height="220">
 </p>
-<p>Once all the set of images are selected (namely, delete from the folder any bad pairs!) where the corners and their orders are detected correctly, then the two cameras can be calibrated using:</p>
+<p>Once all the set of images has been selected (namely, delete from the folder any bad pairs!) where the corners and their
+orders are detected correctly, then the two cameras can be calibrated using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This computes the intrinsic and extrinsic parameters for each camera. A re-projection error is also computed using the intrinsic and extrinsic parameters which provide an estimate of how good the parameters are. The transformation between the two cameras are estimated and the cameras are stereo calibrated. Furthermore, the above function brings both the camera image plane to the same plane by computing the stereo rectification. These parameters are stored as a pickle file named as <code class="docutils literal notranslate"><span class="pre">stereo_params.pickle</span></code> under the directory <code class="docutils literal notranslate"><span class="pre">camera_matrix</span></code>.</p>
-<p>Once you have run this for the project, you do not need to do so again (unless you want to re-calibrate your cameras); be advised, if you do re-calibrate, you may want to clearly mark which videos are analyzed with “old” vs. “new” calibration images.</p>
+<p>This computes the intrinsic and extrinsic parameters for each camera. A re-projection error is also computed using the
+intrinsic and extrinsic parameters which provide an estimate of how good the parameters are. The transformation between
+the two cameras is estimated and the cameras are stereo calibrated. Furthermore, the above function brings both the
+camera image plane to the same plane by computing the stereo rectification. These parameters are stored as a pickle file
+named as <code class="docutils literal notranslate"><span class="pre">stereo_params.pickle</span></code> under the directory <code class="docutils literal notranslate"><span class="pre">camera_matrix</span></code>.</p>
+<p>Once you have run this for the project, you do not need to do so again (unless you want to re-calibrate your cameras);
+be advised, if you do re-calibrate, you may want to clearly mark which videos are analyzed with “old” vs. “new”
+calibration images.</p>
 </section>
 <section id="check-for-undistortion">
 <h3>(3) Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Link to this heading">#</a></h3>
-<p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:</p>
+<p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the
+corner points using camera matrices and project these undistorted points on the undistorted images to check if they
+align correctly. This can be done in deeplabcut as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Each calibration image is undistorted and saved under the directory <code class="docutils literal notranslate"><span class="pre">undistortion</span></code>. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calibration and this step)!</p>
+<p>Each calibration image is undistorted and saved under the directory <code class="docutils literal notranslate"><span class="pre">undistortion</span></code>. A plot with a pair of undistorted
+camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the
+undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any
+undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the
+calibration and this step)!</p>
 </section>
 <section id="triangulation-take-your-2d-to-3d">
 <h3>(4) Triangulation –&gt; Take your 2D to 3D!<a class="headerlink" href="#triangulation-take-your-2d-to-3d" title="Link to this heading">#</a></h3>
-<p>If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!</p>
-<p>(<strong>CRITICAL!</strong>) Name the video files in such a way that the file name <strong>contains the name of the cameras</strong> as specified in the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code>. e.g. if the cameras as named as <code class="docutils literal notranslate"><span class="pre">camera-1</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2</span></code> (or <code class="docutils literal notranslate"><span class="pre">cam-1</span></code>, <code class="docutils literal notranslate"><span class="pre">cam-2</span></code> etc.) then the video filename must contain this naming, i.e. this could be named as <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2.avi</span></code> or could be <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1-date.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2-date.avi</span></code>.</p>
+<p>If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D
+DeepLabCut coordinates!</p>
+<p>(<strong>CRITICAL!</strong>) Name the video files in such a way that the file name <strong>contains the name of the cameras</strong> as specified
+in the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code>. e.g. if the cameras as named as <code class="docutils literal notranslate"><span class="pre">camera-1</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2</span></code> (or <code class="docutils literal notranslate"><span class="pre">cam-1</span></code>, <code class="docutils literal notranslate"><span class="pre">cam-2</span></code> etc.) then the
+video filename must contain this naming, i.e. this could be named as <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1.avi</span></code> and
+<code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2.avi</span></code> or could be <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1-date.avi</span></code> and
+<code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2-date.avi</span></code>.</p>
 <ul class="simple">
 <li><p><strong>Note</strong> that to correctly pair the videos, the file names otherwise need to be the same!</p></li>
 <li><p>If helpful, <a class="reference external" href="https://github.com/AdaptiveMotorControlLab/Camera_Control">here is the software we use to record videos</a>.</p></li>
-<li><p><strong>Note</strong> that the videos do not need to be the same pixel size, but be sure they are similar in size to the calibration images (and they must be the same cameras used for calibration).</p></li>
 </ul>
-<p>(<strong>CRITICAL!</strong>) You must also edit the <strong>3D project config.yaml</strong> file to denote which DeepLabCut projects have the information for the 2D views.</p>
+<p>(<strong>CRITICAL!</strong>) You must also edit the <strong>3D project config.yaml</strong> file to denote which DeepLabCut projects have the
+information for the 2D views.</p>
 <ul class="simple">
-<li><p>Of critical importance is that you need to input the <strong>same</strong> body part names as in the config.yaml file of the 2D project.</p></li>
-<li><p>You must set the snapshot to use inside the 2D config file (default is -1, namely the last training snapshot of the network).</p></li>
+<li><p>Of critical importance is that you need to input the <strong>same</strong> body part names as in the config.yaml file of the 2D
+project.</p></li>
+<li><p>You must set the snapshot to use inside the 2D config file (default is -1, namely the last training snapshot of the
+network).</p></li>
 <li><p>You need to set a “scorer 3D” name; this will point to the project file and be set in future 3D output file names.</p></li>
-<li><p>You should define a “skeleton” here as well (note, this is not rigid, it just connects the points in the plotting step). Not every point needs to be “skeletonized”, i.e. these points can be a subset of the full body parts list. The other points will just be plotted into the 3D space. Here is how the config.yaml looks with some example inputs:</p></li>
+<li><p>You should define a “skeleton” here as well (note, this is not rigid, it just connects the points in the plotting
+step). Not every point needs to be “skeletonized”, i.e. these points can be a subset of the full body parts list. The
+other points will just be plotted into the 3D space. Here is how the config.yaml looks with some example inputs:</p></li>
 </ul>
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559756808766-2G6FG91S2I4ZX2SSP6QF/ke17ZwdGBToddI8pDm48kEULogWWASOhGi36VEr2SOlZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIoI8wFyxyzDq4NO_A5fg6hgZUWi6FxVv9SjR8GkGxb-wKMshLAGzx4R3EDFOm1kBS/config3d.jpg?format=1000w" width="95%">
 </p>
-<p>(<strong>CRITICAL!</strong>) This step will also run the equivalent of <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> (in 2D) for you and then apply a median filter to the 2D data (<code class="docutils literal notranslate"><span class="pre">filterpredictions=True</span></code> is by default)! If you already ran the 2D analysis and there is a filtered output file, it will take this by default (otherwise it will take your unfiltered 2D analysis files)!</p>
-<p>Next, pass the <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> and now the video folder path, which is the path to the <strong>folder</strong> where all the videos from two cameras are stored. The triangulation can be done in deeplabcut by typing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="s1">&#39;/yourcomputer/fullpath/videofolder&#39;</span><span class="p">,</span> <span class="n">filterpredictions</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+<p>(<strong>CRITICAL!</strong>) This step will also run the equivalent of <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> (in 2D) for you and then apply a median
+filter to the 2D data (<code class="docutils literal notranslate"><span class="pre">filterpredictions=True</span></code>)! If you already ran the 2D analysis and there is a filtered output
+file, it will take this by default (otherwise it will take your unfiltered 2D analysis files)!</p>
+<p>Next, pass the <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> and now the video folder path, which is the path to the <strong>folder</strong> where all the videos
+from two cameras are stored. The triangulation can be done in deeplabcut by typing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span>
+  <span class="n">config_path3d</span><span class="p">,</span>
+  <span class="s2">&quot;/yourcomputer/fullpath/videofolder&quot;</span><span class="p">,</span>
+  <span class="n">filterpredictions</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>NOTE: Windows users, you must input paths as: <code class="docutils literal notranslate"><span class="pre">r`C:\Users\computername\videofolder'</span> </code> or <code class="docutils literal notranslate"><span class="pre">C:\\Users\\computername\\videofolder'</span></code>.</p>
+<p>NOTE: Windows users, you must input paths as: <code class="docutils literal notranslate"><span class="pre">r`C:\Users\computername\videofolder'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">C:\\Users\\computername\\videofolder'</span></code>.</p>
 <p><strong>TIP:</strong> Here are all the parameters you can pass:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Parameters</span>
 <span class="o">----------</span>
@@ -656,25 +727,47 @@ extracts the grid pattern from the calibration images and store them under the <
 
 <span class="n">save_as_csv</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">optional</span>
     <span class="n">Saves</span> <span class="n">the</span> <span class="n">predictions</span> <span class="ow">in</span> <span class="n">a</span> <span class="o">.</span><span class="n">csv</span> <span class="n">file</span><span class="o">.</span> <span class="n">The</span> <span class="n">default</span> <span class="ow">is</span> <span class="err">``</span><span class="kc">False</span><span class="err">``</span><span class="p">;</span> <span class="k">if</span> <span class="n">provided</span> <span class="n">it</span> <span class="n">must</span> <span class="n">be</span> <span class="n">either</span> <span class="err">``</span><span class="kc">True</span><span class="err">``</span> <span class="ow">or</span> <span class="err">``</span><span class="kc">False</span><span class="err">``</span>
+
+<span class="n">track_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span>
+    <span class="n">Method</span> <span class="n">used</span> <span class="k">for</span> <span class="n">tracking</span><span class="p">:</span> <span class="s2">&quot;box&quot;</span> <span class="ow">or</span> <span class="s2">&quot;ellipse&quot;</span>
 </pre></div>
 </div>
-<p>The <strong>triangulated file</strong> is now saved under the same directory where the video files reside (or the destination folder you set)! This can be used for future analysis. This step can be run at anytime as you collect new videos, and easily added to your automated analysis pipeline, i.e. such as <strong>replacing</strong> <code class="docutils literal notranslate"><span class="pre">deeplabcut.triangulate(config_path3d,</span> <span class="pre">video_path)</span></code> with <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> (as if it’s not analyzed in 2D already, this function will take care of it ;):</p>
+<p>The <strong>triangulated file</strong> is now saved under the same directory where the video files reside (or the destination folder
+you set)! This can be used for future analysis. This step can be run at anytime as you collect new videos, and easily
+added to your automated analysis pipeline, i.e. such as <strong>replacing</strong>
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.triangulate(config_path3d,</span> <span class="pre">video_path)</span></code> with <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> (as if it’s not analyzed in 2D
+already, this function will take care of it ;):</p>
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=1000w width="65%">
  </p>
 </section>
 <section id="visualize-your-3d-deeplabcut-videos">
 <h3>(5) Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Link to this heading">#</a></h3>
-<p>In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config file, the <strong>path of the triangulated file folder</strong>, and specify the start and end frame indices to create a 3D labeled video. Note that the <code class="docutils literal notranslate"><span class="pre">triangulated_file_folder</span></code> is where the newly created file that ends with <code class="docutils literal notranslate"><span class="pre">yourDLC_3D_scorername.h5</span></code> is located. This can be done using:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;triangulated_file_folder&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<p>In order to visualize both the 2D videos with tracked points plut the pose in 3D, the user can create a 3D video for
+certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the config
+file, the <strong>path of the triangulated file folder</strong>, and specify the start and end frame indices to create a 3D labeled
+video. Note that the <code class="docutils literal notranslate"><span class="pre">triangulated_file_folder</span></code> is where the newly created file that ends with
+<code class="docutils literal notranslate"><span class="pre">yourDLC_3D_scorername.h5</span></code> is located. This can be done using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span>
+  <span class="n">config_path</span><span class="p">,</span>
+  <span class="p">[</span><span class="s2">&quot;triangulated_file_folder&quot;</span><span class="p">],</span>
+  <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+  <span class="n">end</span><span class="o">=</span><span class="mi">250</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>TIP:</strong> (see more parameters below) You can set how the axis of the 3D plot on the far right looks by changing the variables <code class="docutils literal notranslate"><span class="pre">xlim</span></code>, <code class="docutils literal notranslate"><span class="pre">ylim</span></code>, <code class="docutils literal notranslate"><span class="pre">zlim</span></code> and <code class="docutils literal notranslate"><span class="pre">view</span></code>. Your checkerboard_3d.png image which was created above will show you the axis ranges. Here is an example:</p>
+<p><strong>TIP:</strong> (see more parameters below) You can set how the axis of the 3D plot on the far right looks by changing the
+variables <code class="docutils literal notranslate"><span class="pre">xlim</span></code>, <code class="docutils literal notranslate"><span class="pre">ylim</span></code>, <code class="docutils literal notranslate"><span class="pre">zlim</span></code> and <code class="docutils literal notranslate"><span class="pre">view</span></code>. Your checkerboard_3d.png image which was created above will show you the
+axis ranges. Here is an example:</p>
  <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559864026106-B6XQHUDUA8VB6F0FNVBA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/checkerboard_3d.png?format=750w" width="45%">
 </p>
-<p><code class="docutils literal notranslate"><span class="pre">View</span></code> is used to set the elevation and azimuth of the axes (defaults are [113, 270], and you should play around to find the view-point you like!). Also note that the video is created from a set of .png files in a “temp” directory, so as soon as you run this command you can open the first image, and if you don’t like the view, hit <code class="docutils literal notranslate"><span class="pre">CNTRL+C</span></code> to stop, edit the values, and start again!</p>
-<p><strong>Other optional parameters include:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">View</span></code> is used to set the elevation and azimuth of the axes (defaults are [113, 270], and you should play around to find
+the view-point you like!). Also note that the video is created from a set of .png files in a “temp” directory, so as
+soon as you run this command you can open the first image, and if you don’t like the view, hit <code class="docutils literal notranslate"><span class="pre">CNTRL+C</span></code> to stop, edit
+the values, and start again!</p>
+<p><strong>Other optional parameters include:</strong>
+here</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">videofolder</span><span class="p">:</span> <span class="n">string</span>
     <span class="n">Full</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">folder</span> <span class="n">where</span> <span class="n">the</span> <span class="n">videos</span> <span class="n">are</span> <span class="n">stored</span><span class="o">.</span> <span class="n">Use</span> <span class="n">this</span> <span class="k">if</span> <span class="n">the</span> <span class="n">vidoes</span> <span class="n">are</span> <span class="n">stored</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">different</span> <span class="n">location</span> <span class="n">other</span> <span class="n">than</span> <span class="n">where</span> <span class="n">the</span> <span class="n">triangulation</span> <span class="n">files</span> <span class="n">are</span> <span class="n">stored</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span> <span class="ow">is</span> <span class="err">``</span><span class="kc">None</span><span class="err">``</span> <span class="ow">and</span> <span class="n">therefore</span> <span class="n">looks</span> <span class="k">for</span> <span class="n">video</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">the</span> <span class="n">triangulation</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">stored</span><span class="o">.</span>
 
@@ -696,12 +789,29 @@ extracts the grid pattern from the calibration images and store them under the <
 
 <span class="n">zlim</span><span class="p">:</span> <span class="nb">list</span>
     <span class="n">A</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">integers</span> <span class="n">specifying</span> <span class="n">the</span> <span class="n">limits</span> <span class="k">for</span> <span class="n">zaxis</span> <span class="n">of</span> <span class="mi">3</span><span class="n">d</span> <span class="n">view</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span> <span class="n">it</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">],</span> <span class="n">where</span> <span class="n">the</span> <span class="n">z</span> <span class="n">limit</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">by</span> <span class="n">taking</span> <span class="n">the</span> <span class="n">minimum</span> <span class="ow">and</span> <span class="n">maximum</span> <span class="n">value</span> <span class="n">of</span> <span class="n">the</span> <span class="n">z</span> <span class="n">coordinates</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">bodyparts</span><span class="o">.</span>
+
+<span class="n">draw_skeleton</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">If</span> <span class="kc">True</span> <span class="n">adds</span> <span class="n">a</span> <span class="n">line</span> <span class="n">connecting</span> <span class="n">the</span> <span class="n">body</span> <span class="n">parts</span> <span class="n">making</span> <span class="n">a</span> <span class="n">skeleton</span> <span class="n">on</span> <span class="n">on</span> <span class="n">each</span> <span class="n">frame</span><span class="o">.</span> <span class="n">The</span> <span class="n">body</span> <span class="n">parts</span> <span class="n">to</span> <span class="n">be</span> <span class="n">connected</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">color</span> <span class="n">of</span> <span class="n">these</span> <span class="n">connecting</span> <span class="n">lines</span> <span class="n">are</span> <span class="n">specified</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">config</span> <span class="n">file</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
+
+<span class="n">color_by</span> <span class="p">:</span> <span class="n">string</span><span class="p">,</span> <span class="n">optional</span> <span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;bodypart&#39;</span><span class="p">)</span>
+    <span class="n">Coloring</span> <span class="n">rule</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span><span class="p">,</span> <span class="n">each</span> <span class="n">bodypart</span> <span class="ow">is</span> <span class="n">colored</span> <span class="n">differently</span><span class="o">.</span>
+    <span class="n">If</span> <span class="nb">set</span> <span class="n">to</span> <span class="s1">&#39;individual&#39;</span><span class="p">,</span> <span class="n">points</span> <span class="n">belonging</span> <span class="n">to</span> <span class="n">a</span> <span class="n">single</span> <span class="n">individual</span> <span class="n">are</span> <span class="n">colored</span> <span class="n">the</span> <span class="n">same</span><span class="o">.</span>
+
+<span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">Size</span> <span class="n">of</span> <span class="n">the</span> <span class="n">figure</span>
+
+<span class="n">fps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">30</span>
+    <span class="n">Frames</span> <span class="n">per</span> <span class="n">second</span>
+
+<span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">300</span>
+    <span class="n">Dots</span> <span class="n">per</span> <span class="n">inch</span> <span class="p">(</span><span class="n">resplution</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="if-you-use-this-code">
 <h3>If you use this code:<a class="headerlink" href="#if-you-use-this-code" title="Link to this heading">#</a></h3>
-<p>We kindly ask that you cite <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a> <strong>&amp;</strong> <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath*, Mathis*, et al., 2019</a>. If you use 3D multi-animal: <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
+<p>We kindly ask that you cite <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a> <strong>&amp;</strong> <a class="reference external" href="https://doi.org/10.1038/s41596-019-0176-0">Nath*, Mathis*, et al., 2019</a>. If you use 3D
+multi-animal: <a class="reference external" href="https://doi.org/10.1038/s41592-022-01443-0">Lauer et al. 2022</a>.</p>
 </section>
 </section>
 </section>

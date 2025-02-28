@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
@@ -475,7 +473,13 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-write-a-dlc-methods-section">
 <h1>How to write a DLC Methods Section<a class="headerlink" href="#how-to-write-a-dlc-methods-section" title="Link to this heading">#</a></h1>
 <p><strong>Pose estimation using DeepLabCut</strong></p>
-<p>For body part tracking we used DeepLabCut (version 2.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, etc.)*** with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.</p>
+<p>For body part tracking we used DeepLabCut (version 3.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we
+labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a
+X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75,
+MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, cspnext_s, dekr_w32, rtmpose_s, etc.)*** with default parameters* for X
+number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train:
+X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future
+analysis. This network was then used to analyze videos from similar experimental settings.</p>
 <p>*If any defaults were changed in <em><code class="docutils literal notranslate"><span class="pre">pose_config.yaml</span></code></em>, mention them.</p>
 <p>i.e. common things one might change:</p>
 <ul class="simple">
@@ -521,7 +525,8 @@ IEEE conference on computer vision and pattern recognition,
 770–778 (2016). URL <a class="reference external" href="https://arxiv.org/abs/">https://arxiv.org/abs/</a>
 1512.03385.</p>
 </div></blockquote>
-<p>We also have the network graphic freely available on <a class="reference external" href="http://SciDraw.io">SciDraw.io</a> if you’d like to use it! <a class="reference external" href="https://scidraw.io/drawing/290">https://scidraw.io/drawing/290</a>. If you use our DLC logo, please include the TM symbol, thank you!</p>
+<p>We also have the network graphic freely available on <a class="reference external" href="http://SciDraw.io">SciDraw.io</a> if you’d like to use it! <a class="reference external" href="https://scidraw.io/drawing/290">https://scidraw.io/drawing/290</a>.
+If you use our DLC logo, please include the TM symbol, thank you!</p>
 </section>
 
     <script type="text/x-thebe-config">

@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -502,12 +500,13 @@ document.write(`
 <p><img alt="image" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/8957c690-4f27-4430-8581-4161fd58d052/68747470733a2f2f696d616765732e73717561726573706163652d63646e2e636f6d2f636f6e74656e742f76312f3537663664353163396637343536366635356563663237312f313631363439323337333730302d50474f41433732494f4236415545343756544a582f6b6531375a77644742546f646449.png?format=450w" /></p>
 <section id="home-page">
 <h2>🏠 <a class="reference external" href="http://modelzoo.deeplabcut.org/">Home page</a><a class="headerlink" href="#home-page" title="Link to this heading">#</a></h2>
-<p>Started in 2020, expanded in 2022 with PhD student <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">Shaokai Ye et al.</a>, and the first proper <a class="reference internal" href="#"><span class="xref myst">SuperAnimal Foundation Models</span></a> published in 2024 🔥, the Model Zoo is four things:</p>
+<p>Started in 2020, expanded in 2022 with PhD student <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">Shaokai Ye et al.</a>, and the
+first proper <a class="reference internal" href="#about-the-superanimal-models"><span class="xref myst">SuperAnimal Foundation Models</span></a> published in 2024 🔥, the Model Zoo is four things:</p>
 <ul class="simple">
 <li><p>(1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.</p></li>
 <li><p>(2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: <a class="reference external" href="https://contrib.deeplabcut.org/">contrib.deeplabcut.org</a>.</p></li>
 <li><p>(3) a no-install DeepLabCut that you can use on ♾<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb">Google Colab</a>,
-test our models in 🕸<a class="reference external" href="https://contrib.deeplabcut.org/">the browser</a>, or on our 🤗<a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/MegaDetector_DeepLabCut">HuggingFace</a> app!</p></li>
+test our models in 🕸<a class="reference external" href="https://contrib.deeplabcut.org/">the browser</a>, or on our 🤗<a class="reference external" href="https://huggingface.co/spaces/DeepLabCut/DeepLabCutModelZoo-SuperAnimals">HuggingFace</a> app!</p></li>
 <li><p>(4) new methods to make SuperAnimal Foundation Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!</p></li>
 </ul>
 </section>
@@ -531,8 +530,8 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <h3>SuperAnimal-Quadruped:<a class="headerlink" href="#superanimal-quadruped" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_x</span></code> models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal (“side view”), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a “video adaptation” feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!</p></li>
-<li><p><a class="reference external" href="https://zenodo.org/records/10619173">PLEASE SEE THE FULL DATASHEET HERE</a></p></li>
-<li><p><a class="reference external" href="https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped">MORE DETAILS ON THE MODELS (detector, pose estimators)</a></p></li>
+<li><p><a class="reference external" href="https://zenodo.org/records/10619173">Please see the full datasheet here</a></p></li>
+<li><p><a class="reference external" href="https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped">More details on the models (detector, pose estimators)</a></p></li>
 <li><p>We provide several models:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_hrnetw32</span></code> (pytorch engine)</p>
@@ -542,7 +541,7 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_dlcrnet</span></code> (tensorflow engine)</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_dlcrnet</span></code> is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_dlcrnet</span></code> is a bottom-up model that predicts all keypoints, then groups them into individuals. This can be faster, but more error prone.</p></li>
 </ul>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code> -&gt; This is the same as <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_dlcrnet</span></code>, this was the old naming and being depreciated.</p></li>
@@ -557,8 +556,8 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <h3>SuperAnimal-TopViewMouse:<a class="headerlink" href="#superanimal-topviewmouse" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse_x</span></code> aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.</p></li>
-<li><p><a class="reference external" href="https://zenodo.org/records/10618947">PLEASE SEE THE FULL DATASHEET HERE</a></p></li>
-<li><p><a class="reference external" href="https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse">MORE DETAILS ON THE MODELS (detector, pose estimators)</a></p></li>
+<li><p><a class="reference external" href="https://zenodo.org/records/10618947">Please see the full datasheet here</a></p></li>
+<li><p><a class="reference external" href="https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse">More details on the models (detector, pose estimators)</a></p></li>
 <li><p>We provide several models:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse_hrnetw32</span></code> (pytorch engine)</p>
@@ -582,11 +581,14 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <h4>Practical example: Using SuperAnimal models for inference without training.<a class="headerlink" href="#practical-example-using-superanimal-models-for-inference-without-training" title="Link to this heading">#</a></h4>
 <p>You can simply call the model and run video inference.</p>
 <p>To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.video_inference_superanimal</span></code> simply function set the <code class="docutils literal notranslate"><span class="pre">video_adapt</span></code> option to <strong>True</strong>. Be aware, that enabling this option will (minimally) extend the processing time.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;demo-video.mp4&#39;</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s1">&#39;superanimal_quadruped_hrnetw32&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span>
                                         <span class="n">superanimal_name</span><span class="p">,</span>
+                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
+                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
                                         <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -594,13 +596,19 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <section id="practical-example-using-superanimal-model-bottom-up-considering-video-animal-size">
 <h4>Practical example: Using SuperAnimal model bottom up, considering video/animal size.<a class="headerlink" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size" title="Link to this heading">#</a></h4>
 <p>In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the <code class="docutils literal notranslate"><span class="pre">scale_list</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;demo-video.mp4&#39;</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s1">&#39;superanimal_quadruped_dlcrnet&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
 
 <span class="c1"># The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.</span>
 <span class="n">scale_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span> <span class="n">superanimal_name</span><span class="p">,</span> <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">,</span> <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span>
+                                        <span class="n">superanimal_name</span><span class="p">,</span>
+                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
+                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+                                        <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">,</span>
+                                        <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -612,13 +620,26 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_x</span></code> uses 39 keypoints and,</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse_x</span></code> uses 27 keypoints</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse_hrnetw32&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_weight_init</span>
+
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>
+
 <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;openfield-Pranav-2018-10-30&quot;</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">superanimal_name</span> <span class="o">=</span> <span class="n">superanimal_name</span><span class="p">)</span>
+<span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
+    <span class="n">cfg</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
+    <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+    <span class="n">with_decoder</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">weight_init</span> <span class="o">=</span> <span class="n">weight_init</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span>
-                         <span class="n">maxiters</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                         <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                          <span class="n">superanimal_name</span> <span class="o">=</span> <span class="n">superanimal_name</span><span class="p">,</span>
                          <span class="n">superanimal_transfer_learning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -627,18 +648,27 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 </section>
 <section id="potential-failure-modes-for-superanimal-models-and-how-to-fix-it">
 <h3>Potential failure modes for SuperAnimal Models and how to fix it.<a class="headerlink" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it" title="Link to this heading">#</a></h3>
-<p>Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test videos. To help find the proper resolution for our model, please try a range of <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the API (details in the API docs). For <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code>, we empirically observe that if your video is larger than 1500 pixels, it is better to pass <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the range within 1000.</p>
-<p>Pixel statistics domain shift: The brightness of your video might look very different from our training datasets. This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of the mice is unusual compared to our training dataset). You can use our “video adaptation” model (released soon) to counter this.</p>
+<p>Spatial domain shift: typical DNN models suffer from the spatial resolution shift between training datasets and test
+videos. To help find the proper resolution for our model, please try a range of <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the API (details in the
+API docs). For <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped</span></code>, we empirically observe that if your video is larger than 1500 pixels, it is
+better to pass <code class="docutils literal notranslate"><span class="pre">scale_list</span></code> in the range within 1000.</p>
+<p>Pixel statistics domain shift: The brightness of your video might look very different from our training datasets.
+This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of
+the mice is unusual compared to our training dataset). You can use our “video adaptation” model to counter this.</p>
 </section>
 <section id="our-longer-term-perspective">
 <h3>Our longer term perspective …<a class="headerlink" href="#our-longer-term-perspective" title="Link to this heading">#</a></h3>
-<p>Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us feedback! We are rapidly improving our models and adaptation methods. We will also continue to expand this project to new model/data classes. Please do get in touch is you have data or ideas: <a class="reference external" href="mailto:modelzoo&#37;&#52;&#48;deeplabcut&#46;org">modelzoo<span>&#64;</span>deeplabcut<span>&#46;</span>org</a></p>
+<p>Via DeepLabCut Model Zoo, we aim to provide plug and play models that do not need any labeling and will just work
+decently on novel videos. If the predictions are not great enough due to failure modes described below, please give us
+feedback! We are rapidly improving our models and adaptation methods. We will also continue to expand this project to
+new model/data classes. Please do get in touch is you have data or ideas: <a class="reference external" href="mailto:modelzoo&#37;&#52;&#48;deeplabcut&#46;org">modelzoo<span>&#64;</span>deeplabcut<span>&#46;</span>org</a></p>
 </section>
 </section>
 <section id="publication">
 <h2>Publication:<a class="headerlink" href="#publication" title="Link to this heading">#</a></h2>
 <p>To see the first preprint on the work, click <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">here</a>.</p>
-<p>Our first publication on this project is now published at Nature Communications:</p>
+<p>Our first <a class="reference external" href="https://www.nature.com/articles/s41467-024-48792-2">publication</a> on this project is now published at Nature
+Communications:</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p>Here is the citation:

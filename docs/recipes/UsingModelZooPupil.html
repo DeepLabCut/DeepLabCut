@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/recipes/UsingModelZooPupil';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="💚 MegaDetector+DeepLabCut 💜" href="MegaDetectorDLCLive.html" />
+    <link rel="next" title="How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later" href="../convert_maDLC.html" />
     <link rel="prev" title="The DeepLabCut Model Zoo!" href="../ModelZoo.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">Model training tips &amp; tricks</a></li>
@@ -489,14 +487,22 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="using-modelzoo-models-on-your-own-datasets">
 <h1>Using ModelZoo models on your own datasets<a class="headerlink" href="#using-modelzoo-models-on-your-own-datasets" title="Link to this heading">#</a></h1>
-<p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been an important tool to study animal behavior precisely.
-<p>Beside providing an open source toolbox for researchers to develop customized deep neural networks for markerless pose estimation, we at DeepLabCut also aim to build robust, generalizable models. Part of this effort is via the <a class="reference external" href="http://www.mackenziemathislab.org/dlc-modelzoo">DeeplabCut ModelZoo</a>.</p>
-<p>The Zoo hosts user-contributed and #teamDLC developed models that are trained on specific animals and scenarios. You can analyze your videos directly with these models without training. The models have strong zero-shot performance on unseen out-of-domain data which can be further improved via pseudo-labeling. Please check the first <a class="reference external" href="https://arxiv.org/abs/2203.07436v1">ModelZoo manuscript</a> for further details.</p>
-<p>This recipe aims to show a usecase of the <strong>mouse_pupil_vclose</strong> and is contributed by 2022 DLC AI Resident <a class="reference external" href="https://github.com/neslihanedes">Neslihan Wittek</a> 💜.</p>
+<p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been
+an important tool to study animal behavior precisely.
+<p>Beside providing an open source toolbox for researchers to develop customized deep neural networks for markerless pose
+estimation, we at DeepLabCut also aim to build robust, generalizable models. Part of this effort is via the
+<a class="reference external" href="http://modelzoo.deeplabcut.org/">DeeplabCut ModelZoo</a>.</p>
+<p>The Zoo hosts user-contributed and DLC-team developed models that are trained on specific animals and scenarios. You can
+analyze your videos directly with these models without training. The models have strong zero-shot performance on unseen
+out-of-domain data which can be further improved via pseudo-labeling. Please check the first
+<a class="reference external" href="https://arxiv.org/abs/2203.07436v1">ModelZoo manuscript</a> for further details.</p>
+<p>This recipe aims to show a usecase of the <strong>mouse_pupil_vclose</strong> and is contributed by 2022 DLC AI Resident
+<a class="reference external" href="https://github.com/neslihanedes">Neslihan Wittek</a> 💜.</p>
 <section id="mouse-pupil-vclose-model">
 <h2><code class="docutils literal notranslate"><span class="pre">mouse_pupil_vclose</span></code> model<a class="headerlink" href="#mouse-pupil-vclose-model" title="Link to this heading">#</a></h2>
 <p>This model was contributed by Jim McBurney-Lin at University of California Riverside, USA.
-The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at EPFL.</p>
+The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at
+EPFL.</p>
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
   <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618750-97KC2HW8HH6VOJHLMO46/pupil_two.png?format=300w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 <div class="pst-scrollable-table-container"><table class="table">
@@ -542,18 +548,32 @@ The model was trained on images of C57/B6J mice eyes, and also then augmented wi
 </tbody>
 </table>
 </div>
-<p>Since we would like to evaluate the models performance on out-of-domain data, we will analyze pigeon pupils. For more discussions and work on so-called out-of-domain data, see <a class="reference external" href="http://www.mackenziemathislab.org/horse10">Mathis, Biasi 2020</a>.</p>
+<p>Since we would like to evaluate the models performance on out-of-domain data, we will analyze pigeon pupils. For more
+discussions and work on so-called out-of-domain data, see
+<a class="reference external" href="https://paperswithcode.com/dataset/horse-10">Mathis, Biasi 2020</a>.</p>
 </section>
 <section id="pigeon-pupil">
 <h2>Pigeon Pupil<a class="headerlink" href="#pigeon-pupil" title="Link to this heading">#</a></h2>
-<p>The eye pupil admits and regulates the amount of light entering the retina in order to enable image perception. Beside this curicial role, the pupil also reflects the state of the brain. The systemic behavior of the pupil has not been vastly studied in birds, although researchers from <a href="https://www.sciencedirect.com/science/article/pii/S0960982221013166?via%3Dihub" target="_blank">Max Planck Institute for Ornithology in Seewiesen</a> have shed light on pupil behaviors in pigeons.</p>
-<p>The pupils of male pigeons get smaller during courtship behavior. This is in contrast to mammals, for which the pupil size dilates in response to an increase in arousal. In addition, the pupil size of pigeons dilates during non-REM sleep, while they rapidly constrict during REM sleep. Examining these differences and the reason behind them, might be helpful to understand the pupillary behavior in general.</p>
-<p>In light of these findings, we wanted to show whether the <strong>mouse_pupil_vclose</strong> model give us an accurate tracking performance for the pigeon pupil as well.</p>
+<p>The eye pupil admits and regulates the amount of light entering the retina in order to enable image perception. Beside
+this curicial role, the pupil also reflects the state of the brain. The systemic behavior of the pupil has not been
+vastly studied in birds, although researchers from
+<a href="https://www.sciencedirect.com/science/article/pii/S0960982221013166?via%3Dihub" target="_blank">Max Planck Institute for Ornithology in Seewiesen</a>
+have shed light on pupil behaviors in pigeons.</p>
+<p>The pupils of male pigeons get smaller during courtship behavior. This is in contrast to mammals, for which the pupil
+size dilates in response to an increase in arousal. In addition, the pupil size of pigeons dilates during non-REM sleep,
+while they rapidly constrict during REM sleep. Examining these differences and the reason behind them, might be helpful
+to understand the pupillary behavior in general.</p>
+<p>In light of these findings, we wanted to show whether the <strong>mouse_pupil_vclose</strong> model give us an accurate tracking
+performance for the pigeon pupil as well.</p>
 <section id="jupyter-google-colab-notebook">
 <h3>Jupyter &amp; Google Colab Notebook<a class="headerlink" href="#jupyter-google-colab-notebook" title="Link to this heading">#</a></h3>
-<p>DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need for local installation of DeepLabCut!</p>
-<p>Since we are interested in the accuracy of the <strong>mouse_pupil_vclose</strong> on pigeon pupil data, we will use a video which consists of 7 recordings of pigeon pupils.</p>
-<p>Check <a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb" target="_blank">ModelZoo Colab page</a> and a video tutorial on how to use the ModelZoo on Google Colab.</p>
+<p>DeepLabCut provides a Google Colab Notebook to analyze your video with a pretrained networks from the ModelZoo. No need
+for local installation of DeepLabCut!</p>
+<p>Since we are interested in the accuracy of the <strong>mouse_pupil_vclose</strong> on pigeon pupil data, we will use a video which
+consists of 7 recordings of pigeon pupils.</p>
+<p>Check the
+<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DLC_ModelZoo.ipynb">ModelZoo Colab page</a>
+and a video tutorial on how to use the ModelZoo on Google Colab.</p>
 <div align="center">
   <a href="https://www.youtube.com/watch?v=twHBa1ZvXM8" target= "_blank"><img src="http://img.youtube.com/vi/twHBa1ZvXM8/0.jpg" alt="IMAGE ALT TEXT"></a>
 </div>
@@ -569,27 +589,31 @@ files.download(&quot;/content/file.zip&quot;)
 </section>
 <section id="analyze-videos-at-your-local-machine">
 <h3>Analyze Videos at Your Local Machine<a class="headerlink" href="#analyze-videos-at-your-local-machine" title="Link to this heading">#</a></h3>
-<p>DeepLabCut host models from the <a href='http://www.mackenziemathislab.org/dlc-modelzoo' target="_blank">DeepLabCut ModelZoo Project</a>.</p>
+<p>DeepLabCut host models from the <a class="reference external" href="http://modelzoo.deeplabcut.org/">DeepLabCut ModelZoo Project</a>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">create_pretrained_project</span></code> function will create a new project directory with the necessary sub-directories and a basic configuration file.
 It will also initialize your project with a pre-trained model from the DeepLabCut ModelZoo.</p>
 <p>The rest of the code should be run within your DeepLabCut environment.
-Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="_blank">here</a> for the instructions for the DeepLabCut installation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
-</pre></div>
-</div>
+Check <a class="reference internal" href="../installation.html#how-to-install"><span class="std std-ref">here</span></a> for the instructions for the DeepLabCut installation.</p>
 <p>To initialize a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_pretrained_project</span><span class="p">(</span>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method is currently implemented for Tensorflow only, Pytorch compatibility is coming soon.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_pretrained_project</span><span class="p">(</span>
     <span class="s2">&quot;projectname&quot;</span><span class="p">,</span>
     <span class="s2">&quot;experimenter&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="sa">r</span><span class="s2">&quot;path_for_the_videos&quot;</span><span class="p">],</span>
-    <span class="n">model</span><span class="o">=</span> <span class="s2">&quot;mouse_pupil_vclose&quot;</span><span class="p">,</span>
-    <span class="n">working_directory</span><span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;project_directory&quot;</span><span class="p">,</span>
-    <span class="n">copy_videos</span><span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">videotype</span><span class="o">=</span> <span class="s2">&quot;.mp4 or .avi?&quot;</span><span class="p">,</span>
-    <span class="n">analyzevideo</span><span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">filtered</span><span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">createlabeledvideo</span><span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">trainFraction</span><span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;mouse_pupil_vclose&quot;</span><span class="p">,</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;project_directory&quot;</span><span class="p">,</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;.mp4 or .avi?&quot;</span><span class="p">,</span>
+    <span class="n">analyzevideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">createlabeledvideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">trainFraction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">TF</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -599,7 +623,9 @@ Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="
 </div>
 <p>Excitingly, 6 out of the 7 pigeon pupils were tracked nicely:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/44858d34-dca7-4bb5-a6e5-cd8078b50bec/Screen+Shot+2022-08-25+at+5.39.33+PM.png?format=1500w" width="500" title="DLC" alt="DLC" align="center" vspace = "50">
-<p>When we further evaluate the model accuracy by checking the likelihood of tracked points, we see that the tracking is low confidience when the pigeons close their eyelid (which is of course expected, and can be leveraged to measure blinking 👁).</p>
+<p>When we further evaluate the model accuracy by checking the likelihood of tracked points, we see that the tracking is
+low confidience when the pigeons close their eyelid (which is of course expected, and can be leveraged to measure
+blinking 👁).</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439615047-OVOOMU1Z5NJIWJ1HHNFD/likelihood.png?format=500w" width="600" title="DLC" alt="6 pigeion eyes tracked with deeplabcut" align="center" vspace = "50">
 <p>But you also might encounter larger problems than small tracking glitches:</p>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618037-4GNTZD476MJMQX19N0Z4/pigeon_7.png?format=500w" width="250" title="DLC" alt="1eye" align="center" vspace = "5">
@@ -607,27 +633,41 @@ Check <a href='https://deeplabcut.github.io/DeepLabCut/docs/intro.html' target="
 Be sure that you set the number of frames to label in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file of your project folder.
 The more problems you encounter, the higher the number of frames you might want to label.
 You should also add the path of the video(s) into the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, or run the following command to add the videos to your project:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/pathofvideos/pigeon.mp4&#39;</span><span class="p">],</span> <span class="n">copy_videos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extract_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span>
+    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">],</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">coords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">extract_frames</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_outlier_frames</span></code> function will check for outliers and ask your feedback on whether to extract these outliers frames.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;/pathofvideos/pigeon.mp4&#39;</span><span class="p">],</span> <span class="n">automatic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
+    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span>
+    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">],</span>
+    <span class="n">automatic</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">deeplabcut.refine_labels</span></code> function starts the GUI which allows you to refine the outlier frames manually.
 You should load the outlier frames directory and corresponding <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file from the previous model.
 It will ask you to define the <code class="docutils literal notranslate"><span class="pre">likelihood</span></code> threshold: labels under the threshold should be refined at this stage.</p>
 <p>After refining, you should combine these data with your previous model’s data set and create a new training data set.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">)</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">)</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Before starting the training of your model, there is one last step left: editing the <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> parameter in your <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file.
 Go to your project and check the latest snapshot (e.g., <code class="docutils literal notranslate"><span class="pre">snapshot-610000</span></code>) of your model in <code class="docutils literal notranslate"><span class="pre">dlc-models/train</span></code> directory.
 Edit the value of the <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> key in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file and start to re-train your model!</p>
 <p><code class="docutils literal notranslate"><span class="pre">init_weights:</span> <span class="pre">pathofyourproject\dlc-models\iteration-0\DLCFeb31-trainset95shuffle1\train\snapshot-610000</span></code></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="s1">&#39;/pathofproject/config.yaml&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">saveiters</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">saveiters</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition hint">
@@ -681,11 +721,11 @@ Edit the value of the <code class="docutils literal notranslate"><span class="pr
       </div>
     </a>
     <a class="right-next"
-       href="MegaDetectorDLCLive.html"
+       href="../convert_maDLC.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">💚 MegaDetector+DeepLabCut 💜</p>
+        <p class="prev-next-title">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -498,7 +496,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="labeling-gui">
-<h1>Labeling GUI<a class="headerlink" href="#labeling-gui" title="Link to this heading">#</a></h1>
+<span id="labeling"></span><h1>Labeling GUI<a class="headerlink" href="#labeling-gui" title="Link to this heading">#</a></h1>
 <section id="selecting-frames-to-label">
 <h2>Selecting Frames to Label<a class="headerlink" href="#selecting-frames-to-label" title="Link to this heading">#</a></h2>
 <p>In DeepLabCut, choosing the right frames for labeling is a key step. The trick is always to select the MOST DIVERSE data you can that your model will see. That means good lighting, bad lighting, anything you want to throw at it. So, first, pick a range of diverse videos! Then, we will help you pick frames. You’ve got two easy ways to do this:</p>
@@ -554,7 +552,9 @@ document.write(`
 <li><p><strong>Save Progress:</strong> Remember to save your work as you go with <strong><code class="docutils literal notranslate"><span class="pre">Command</span> <span class="pre">and</span> <span class="pre">S</span></code></strong> (or <strong><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">and</span> <span class="pre">S</span></code></strong> on Windows).</p></li>
 </ul>
 <blockquote>
-<div><p>💡 <strong>Note:</strong> For a detailed walkthrough on using the Napari labeling GUI, have a look at the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/napari_GUI.html">DeepLabCut Napari Guide</a>. Additionally, you can watch our instructional <a class="reference external" href="https://www.youtube.com/watch?v=hsA9IB5r73E">YouTube video</a> for more insights and tips.</p>
+<div><p>💡 <strong>Note:</strong> For a detailed walkthrough on using the Napari labeling GUI, have a look at the
+<a class="reference internal" href="../gui/napari_GUI.html#napari-gui"><span class="std std-ref">DeepLabCut Napari Guide</span></a>. Additionally, you can watch our instructional
+<a class="reference external" href="https://www.youtube.com/watch?v=hsA9IB5r73E">YouTube video</a> for more insights and tips.</p>
 </div></blockquote>
 </section>
 <section id="completing-the-set">

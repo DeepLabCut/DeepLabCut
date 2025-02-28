@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to convert a pre-2.2 project for use with DeepLabCut 2.2 &#8212; DeepLabCut</title>
+    <title>How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later &#8212; DeepLabCut</title>
   
   
   
@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="How to use data labeled outside of DeepLabCut" href="recipes/OtherData.html" />
-    <link rel="prev" title="💚 MegaDetector+DeepLabCut 💜" href="recipes/MegaDetectorDLCLive.html" />
+    <link rel="prev" title="Using ModelZoo models on your own datasets" href="recipes/UsingModelZooPupil.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -458,7 +456,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>How to convert a pre-2.2 project for use with DeepLabCut 2.2</h1>
+    <h1>How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -472,17 +470,20 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="how-to-convert-a-pre-2-2-project-for-use-with-deeplabcut-2-2">
-<span id="convert-madlc"></span><h1>How to convert a pre-2.2 project for use with DeepLabCut 2.2<a class="headerlink" href="#how-to-convert-a-pre-2-2-project-for-use-with-deeplabcut-2-2" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="how-to-convert-a-pre-2-2-project-for-use-with-deeplabcut-2-2-or-later">
+<span id="convert-madlc"></span><h1>How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later<a class="headerlink" href="#how-to-convert-a-pre-2-2-project-for-use-with-deeplabcut-2-2-or-later" title="Link to this heading">#</a></h1>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC" alt="DLC!" align="right" vspace = "50">
-<p>If you have a pre-2.2 project (<code class="docutils literal notranslate"><span class="pre">labeled-data</span></code>) with a <strong>single animal</strong> that you want to use with a multianimal project in DLC 2.2, i.e. use your older data to now train the new multi-task deep neural network, here is what you need to do.</p>
+<p>If you have a pre-2.2 project (<code class="docutils literal notranslate"><span class="pre">labeled-data</span></code>) with a <strong>single animal</strong> that you want to use with a multianimal project
+in DLC 2.2 or later, i.e. use your older data to now train the new multi-task deep neural network, here is what you
+need to do.</p>
 <p>(1) We recommend you make a back-up of your project folder.</p>
 <p>(2) Open your <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file (in any text editor, or python IDE such as PyCharm, Spyder, VScode, atom, etc).</p>
 <p align="center">
 <img src= https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1587946828128-VQQRJYYF4I5Q4TK4R7NF/ke17ZwdGBToddI8pDm48kDUwYPb5NcTX7SbsUW3p69pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz5alHTAeHWMjsyxt20uNzeb3sgcN8_6mzgExgMZEG-xs3TaY24DmEIA6oEFne2xjs/Screen+Shot+2020-04-23+at+10.32.53+PM.png?format=750w width="80%">
  </p>
 <ul class="simple">
-<li><p>After <code class="docutils literal notranslate"><span class="pre">task,</span> <span class="pre">scorer,</span> <span class="pre">date,</span> <span class="pre">project_path</span></code> please add the following (i.e. in the image above, you would start adding below line 6) Note, the ordering isn’t important but useful to keep consistent with the template:</p></li>
+<li><p>After <code class="docutils literal notranslate"><span class="pre">task,</span> <span class="pre">scorer,</span> <span class="pre">date,</span> <span class="pre">project_path</span></code> please add the following (i.e. in the image above, you would start adding
+below line 6) Note, the ordering isn’t important but useful to keep consistent with the template:</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">multianimalproject</span><span class="p">:</span> <span class="n">true</span>
 <span class="n">individuals</span><span class="p">:</span>
@@ -499,8 +500,11 @@ document.write(`
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;uniquebodyparts:</span> <span class="pre">[]</span></code> can stay blank, unless you have other items labeled you want to estimate (consider these as similar to bodyparts in pre-2.2); i.e. corners of a box, etc. All unique bodyparts should not be connected to the multianimal bodyparts in the skeleton you will eventually make. But see “advanced option” below.</p></li>
-<li><p>Please move your “bodyparts:” to “multianimalbodyparts:” (bodypart names must stay the same!) These are the parts that will always be interconnected fully!</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;uniquebodyparts:</span> <span class="pre">[]</span></code> can stay blank, unless you have other items labeled you want to estimate (consider these as
+similar to bodyparts in pre-2.2); i.e. corners of a box, etc. All unique bodyparts should not be connected to the
+multianimal bodyparts in the skeleton you will eventually make. See “advanced option” below.</p></li>
+<li><p>Please move your “bodyparts:” to “multianimalbodyparts:” (bodypart names must stay the same!) These are the parts
+that will always be interconnected fully!</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">multianimalbodyparts</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">snout</span>
@@ -514,16 +518,21 @@ document.write(`
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert2_maDLC</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">userfeedback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now you will see that your data within <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> are converted to a new format, and the single animal format was saved for you under a new file named <code class="docutils literal notranslate"><span class="pre">CollectedData_</span> <span class="pre">...singleanimal.h5</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code> as a back-up!</p>
-<p>(4) We strongly recommend to first run check_labels and verify that the conversion was as expected before creating a multianimal training dataset. For instance, you can load this project <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> in the Project Manager GUI and check labels then create a multi-animal training set with</p>
+<p>Now you will see that your data within <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> are converted to a new format, and the single animal format was
+saved for you under a new file named <code class="docutils literal notranslate"><span class="pre">CollectedData_</span> <span class="pre">...singleanimal.h5</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code> as a back-up!</p>
+<p>(4) We strongly recommend to first run check_labels and verify that the conversion was as expected before creating a
+multianimal training dataset. For instance, you can load this project <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> in the Project Manager GUI and
+check labels then create a multi-animal training set with</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>to begin training.</p>
-<p><strong>Advanced option:</strong> You can also assign former <code class="docutils literal notranslate"><span class="pre">bodyparts</span></code> to either <code class="docutils literal notranslate"><span class="pre">uniquebodyparts</span></code> or <code class="docutils literal notranslate"><span class="pre">multianimalbodyparts</span></code> (you can even leave some unassigned, which means they will be dropped in the conversion).</p>
+<p><strong>Advanced option:</strong> You can also assign former <code class="docutils literal notranslate"><span class="pre">bodyparts</span></code> to either <code class="docutils literal notranslate"><span class="pre">uniquebodyparts</span></code> or <code class="docutils literal notranslate"><span class="pre">multianimalbodyparts</span></code>
+(you can even leave some unassigned, which means they will be dropped in the conversion).</p>
 <p>Example: Imagine you had a project with the moon and a rocket with two parts labeled:
 <code class="docutils literal notranslate"><span class="pre">bodyparts:</span> <span class="pre">[moon,</span> <span class="pre">rocket_tip,rocket_bottom]</span></code></p>
-<p>Now you want to use this former project (labeled-data) and work on a new dataset (videos) with one moon but multiple (3) rockets. Then convert it as follows:</p>
+<p>Now you want to use this former project (labeled-data) and work on a new dataset (videos) with one moon but multiple
+(3) rockets. Then convert it as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">individuals</span><span class="p">:</span> <span class="p">[</span><span class="n">rocket1</span><span class="p">,</span> <span class="n">rocket2</span><span class="p">,</span> <span class="n">rocket3</span><span class="p">]</span>
 <span class="n">uniquebodyparts</span><span class="p">:</span> <span class="p">[</span><span class="n">moon</span><span class="p">]</span>
 <span class="n">multianimalbodyparts</span><span class="p">:</span> <span class="p">[</span><span class="n">rocket_tip</span><span class="p">,</span><span class="n">rocket_bottom</span><span class="p">]</span>
@@ -570,12 +579,12 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="recipes/MegaDetectorDLCLive.html"
+       href="recipes/UsingModelZooPupil.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">💚 MegaDetector+DeepLabCut 💜</p>
+        <p class="prev-next-title">Using ModelZoo models on your own datasets</p>
       </div>
     </a>
     <a class="right-next"

@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -471,7 +469,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-neural-networks">Backbones (neural networks)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-networks-architectures">Neural Networks Architectures</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
@@ -498,25 +496,33 @@ document.write(`
 <span class="nb">print</span><span class="p">(</span><span class="n">available_models</span><span class="p">())</span>
 </pre></div>
 </div>
+<p>You can see a list of supported object detection architectures/variants by using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch</span><span class="w"> </span><span class="kn">import</span> <span class="n">available_detectors</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">available_detectors</span><span class="p">())</span>
+</pre></div>
+</div>
 </section>
-<section id="backbones-neural-networks">
-<h2>Backbones (neural networks)<a class="headerlink" href="#backbones-neural-networks" title="Link to this heading">#</a></h2>
-<p>Several  backbones are currently implemented in DeepLabCut PyTorch (more will come, and you can add more easily in our new model registry).</p>
+<section id="neural-networks-architectures">
+<h2>Neural Networks Architectures<a class="headerlink" href="#neural-networks-architectures" title="Link to this heading">#</a></h2>
+<p>Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
+and you can add more easily in our new model registry).</p>
 <p><strong>ResNets</strong></p>
 <ul class="simple">
 <li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html">He, Kaiming, et al. “Deep residual learning for image recognition.” Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.</a> and [Insafutdinov, Eldar et al. “DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model”. European Conference on Computer Vision (ECCV) 2016.]</p></li>
-<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet_101</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_resnet_101</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_resnet_50</span></code></p></li>
+<li><p>Current bottom-up variants are <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet_101</span></code></p></li>
+<li><p>Current top-down variants are <code class="docutils literal notranslate"><span class="pre">top_down_resnet_101</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_resnet_50</span></code></p></li>
 </ul>
 <p><strong>HRNet</strong></p>
 <ul class="simple">
 <li><p>Adapted from <a class="reference external" href="https://arxiv.org/abs/1908.07919">Wang, Jingdong, et al. “Deep high-resolution representation learning for visual recognition.” IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.</a></p></li>
-<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w48</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w48</span></code></p></li>
+<li><p>Current variants are <code class="docutils literal notranslate"><span class="pre">hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w48</span></code>,</p></li>
+<li><p>Current top-down variants are <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">top_down_hrnet_w48</span></code></p></li>
 <li><p>Slower but typically more powerful than ResNets</p></li>
 </ul>
 <p><strong>DEKR</strong></p>
 <ul class="simple">
 <li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf">Geng, Zigang et al. “Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression.” Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.</a></p></li>
-<li><p>This model uses HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints</p></li>
+<li><p>This model is a bottom-up model using HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints</p></li>
 <li><p>Current variants that are implemented (from smallest to largest): <code class="docutils literal notranslate"><span class="pre">dekr_w18</span></code>, <code class="docutils literal notranslate"><span class="pre">dekr_w32</span></code>, <code class="docutils literal notranslate"><span class="pre">dekr_w48</span></code></p></li>
 <li><p>Note, this is a powerful multi-animal model but very heavy (slow)</p></li>
 </ul>
@@ -532,6 +538,12 @@ document.write(`
 <li><p>From <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer, Zhou, et al. “Multi-animal pose estimation, identification and tracking with DeepLabCut.” Nature Methods 19.4 (2022): 496-504.</a></p></li>
 <li><p>This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals</p></li>
 <li><p>Variants: <code class="docutils literal notranslate"><span class="pre">dlcrnet_stride16_ms5</span></code>, <code class="docutils literal notranslate"><span class="pre">dlcrnet_stride32_ms5</span></code></p></li>
+</ul>
+<p><strong>RTMPose</strong></p>
+<ul class="simple">
+<li><p>From <a class="reference external" href="https://arxiv.org/abs/2303.07399">Jiang, Tao et al. “RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose”</a></p></li>
+<li><p>Top-down pose estimation model using a fast CSPNeXt backbone with a SimCC-style head</p></li>
+<li><p>Variants: <code class="docutils literal notranslate"><span class="pre">rtmpose_s</span></code>, <code class="docutils literal notranslate"><span class="pre">rtmpose_m</span></code>, <code class="docutils literal notranslate"><span class="pre">rtmpose_x</span></code></p></li>
 </ul>
 <p><strong>AnimalTokenPose</strong></p>
 <ul class="simple">
@@ -567,8 +579,9 @@ localization (through an object detector), followed by pose estimation (for each
 individual). As localization of individuals is handled by the detector, this simplifies
 the pose task to single-animal pose estimation!</p>
 <p>Hence any single-animal model can be transformed into a top-down, multi-animal model. To
-do so, simply prefix <code class="docutils literal notranslate"><span class="pre">top_down</span></code> to your single-animal model name. Currently only a
-single FasterRCNN variant is available as a detector. Other variants will be added soon!</p>
+do so, simply prefix <code class="docutils literal notranslate"><span class="pre">top_down</span></code> to your single-animal model name. Currently, the
+following detectors are available: <code class="docutils literal notranslate"><span class="pre">ssdlite</span></code>, <code class="docutils literal notranslate"><span class="pre">fasterrcnn_mobilenet_v3_large_fpn</span></code>,
+<code class="docutils literal notranslate"><span class="pre">fasterrcnn_resnet50_fpn_v2</span></code>. Other variants will be added soon!</p>
 <p>The pose model for top-down nets is simply the backbone followed by a single convolution
 for pose estimation. It’s also possible to add deconvolutional layers to top-down model
 heads.</p>
@@ -642,7 +655,7 @@ heads.</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-neural-networks">Backbones (neural networks)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-networks-architectures">Neural Networks Architectures</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>

@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="DeepLabCut 3.0 - PyTorch Model Architectures" href="architectures.html" />
-    <link rel="prev" title="DeepLabCut 3.0 - Pytorch User Guide" href="user_guide.html" />
+    <link rel="prev" title="DeepLabCut 3.0 - PyTorch User Guide" href="user_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -472,7 +470,10 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sections">Sections</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#singleton-parameters">Singleton Parameters</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dealing-with-variable-image-sizes">Dealing with Variable Image Sizes</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model">Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
@@ -520,6 +521,7 @@ of the file is as follows:</p>
 <span class="nt">train_settings</span><span class="p">:</span><span class="w">  </span><span class="c1"># generic training settings, such as batch size and maximum number of epochs</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">logger</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: the configuration for a logger if you want one</span>
+<span class="nt">resume_training_from</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: restart the training at the specific checkpoint</span>
 </pre></div>
 </div>
 <section id="sections">
@@ -553,57 +555,19 @@ or inference</p></li>
 <span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
 <span class="w">  </span><span class="nt">train</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">affine</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+<span class="w">      </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
 <span class="w">      </span><span class="nt">rotation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
-<span class="w">      </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
-<span class="w">    </span><span class="nt">collate</span><span class="p">:</span><span class="w">  </span><span class="c1"># rescales the images when putting them in a batch</span>
-<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResizeFromDataSizeCollate</span>
-<span class="w">      </span><span class="nt">min_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span>
-<span class="w">      </span><span class="nt">max_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
-<span class="w">      </span><span class="nt">min_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span>
-<span class="w">      </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span>
-<span class="w">      </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
-<span class="w">      </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">scaling</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.25</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">    </span><span class="nt">covering</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">crop_sampling</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">   </span><span class="c1"># if your images are very small or very large, you may need to edit!</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">  </span><span class="c1"># see below for more information about crop_sampling! </span>
+<span class="w">      </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span>
 <span class="w">    </span><span class="nt">gaussian_noise</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12.75</span>
-<span class="w">    </span><span class="nt">hist_eq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">motion_blur</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
-</pre></div>
-</div>
-<p>One of the most important elements is the <code class="docutils literal notranslate"><span class="pre">collate</span></code> configuration. If all images in your
-dataset have the same size, then it doesn’t necessarily need to be added (but might
-still be beneficial). But if you have images of different sizes, then you’ll need to
-define a way of “combining” these images into a single tensor of shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">3,</span> <span class="pre">H,</span> <span class="pre">W)</span></code>.
-The default way to do this is to use the <code class="docutils literal notranslate"><span class="pre">ResizeFromDataSizeCollate</span></code> collate function
-(other collate functions are defined in
-<code class="docutils literal notranslate"><span class="pre">deeplabcut/pose_estimation_pytorch/data/collate.py</span></code>). For each batch to collate, this
-implementation:</p>
-<ol class="arabic simple">
-<li><p>Selects the target width &amp; height all images will be resized to by getting the size
-of the first image in the batch, and multiplying it by a scale sampled uniformly at
-random from <code class="docutils literal notranslate"><span class="pre">(min_scale,</span> <span class="pre">max_scale)</span></code>.</p></li>
-<li><p>Resizes all images in the batch (while preserving their aspect ratio) such that they
-are the smallest size such that the target size fits entirely in the image.</p></li>
-<li><p>Crops each resulting image into the target size with a random crop.</p></li>
-</ol>
-<p><strong>Collate</strong>: Defines how images are collated into batches.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">collate</span><span class="p">:</span><span class="w">  </span><span class="c1"># rescales the images when putting them in a batch</span>
-<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResizeFromDataSizeCollate</span><span class="w">  </span><span class="c1"># You can also use `ResizeFromListCollate`</span>
-<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">  </span><span class="c1"># the maximum shift, in pixels, to add to the random crop (this means</span>
-<span class="w">    </span><span class="c1"># there can be a slight border around the image)</span>
-<span class="w">  </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span><span class="w">  </span><span class="c1">#  the maximum size of the long edge of the image when resized. If the</span>
-<span class="w">    </span><span class="c1"># longest side will be greater than this value, resizes such that the longest side </span>
-<span class="w">    </span><span class="c1"># is this size, and the shortest side is smaller than the desired size. This is </span>
-<span class="w">    </span><span class="c1"># useful to keep some information from images with extreme aspect ratios.</span>
-<span class="w">  </span><span class="nt">min_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># the minimum scale to resize the image with</span>
-<span class="w">  </span><span class="nt">max_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">  </span><span class="c1"># the maximum scale to resize the image with</span>
-<span class="w">  </span><span class="nt">min_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># the minimum size of the target short side</span>
-<span class="w">  </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span><span class="w">  </span><span class="c1"># the maximum size of the target short side</span>
-<span class="w">  </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># pads the target height, width such that they are multiples of 32</span>
-<span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the </span>
-<span class="w">    </span><span class="c1"># short side of the first image will be used to sample a &quot;side&quot;, and the images will</span>
-<span class="w">    </span><span class="c1"># be cropped in squares</span>
 </pre></div>
 </div>
 <p>The following transformations are available for the <code class="docutils literal notranslate"><span class="pre">train</span></code> and <code class="docutils literal notranslate"><span class="pre">inference</span></code> keys.</p>
@@ -648,11 +612,17 @@ the noise will be set as 12.75).</p>
 </div>
 <p><strong>Horizontal Flips</strong>: This flips the image horizontally around the y-axis. As the
 resulting image is mirrored, it does not preserve labels (the left hand would become the
-right hand, and vice-versa). This augmentation should not be used for pose models if you
-have symmetric keypoints! However, it is safe to use it to train detectors.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># if float &gt; 0, the probability of applying a horizontal flip</span>
-<span class="c1"># if true, applies a horizontal flip with probability 0.5</span>
-<span class="nt">hflip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool, float</span>
+right hand, and vice versa). This augmentation should not be used for pose models if you
+have symmetric keypoints! However, it is safe to use it to train detectors. If you want
+to use horizontal flips with symmetric keypoints, you need to specify them through the
+<code class="docutils literal notranslate"><span class="pre">symmetries</span></code> parameter!</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># augmentation for object detectors or when no symmetric (left/right) keypoints exist: </span>
+<span class="nt">hflip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="c1"># augmentation if your bodyparts are [snout, eye_L, eye_R, ear_L, ear_R]</span>
+<span class="nt">hflip</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span><span class="w">  </span><span class="c1"># apply a horizontal flip with 50% probability</span>
+<span class="w">  </span><span class="nt">symmetries</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">],</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">]]</span><span class="w">  </span><span class="c1"># the indices of symmetric keypoints</span>
 </pre></div>
 </div>
 <p><strong>Histogram Equalization</strong>: Applies histogram equalization with probability 50%.</p>
@@ -663,8 +633,79 @@ have symmetric keypoints! However, it is safe to use it to train detectors.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">motion_blur</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: whether to apply motion blur</span>
 </pre></div>
 </div>
-<p><strong>Normalization</strong></p>
+<p><strong>Normalization</strong>: This should always be set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># normalizes images</span>
+</pre></div>
+</div>
+<section id="dealing-with-variable-image-sizes">
+<h4>Dealing with Variable Image Sizes<a class="headerlink" href="#dealing-with-variable-image-sizes" title="Link to this heading">#</a></h4>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When training with batch size 1 (or if all images in your dataset have the same size),
+you don’t need to worry about any of this! However, you can still use <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code>
+which may help your model generalize.</p>
+</div>
+<p>When training with a batch size greater than 1, all images in a batch <strong>must</strong> have the
+same size. PyTorch <strong>collates</strong> all images into one tensor of shape <code class="docutils literal notranslate"><span class="pre">[b,</span> <span class="pre">c,</span> <span class="pre">h,</span> <span class="pre">w]</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">b</span></code> is the batch size, <code class="docutils literal notranslate"><span class="pre">c</span></code> the number of channels in the image, <code class="docutils literal notranslate"><span class="pre">h</span></code> and <code class="docutils literal notranslate"><span class="pre">w</span></code> the
+height and width of images in the batches. There are a few different ways to ensure that
+all images in a batch have the same size:</p>
+<ol class="arabic simple">
+<li><p><strong>Crop sampling</strong>. This is the default behavior for the PyTorch engine in DeepLabCut.
+A part of each image (of a fixed size) is cropped and given to the model to train. See
+below for more information.</p></li>
+<li><p><strong>A custom collate function</strong>. Collate functions define a way that images of different
+sizes can be combined into one tensor. This involves resizing and padding images to the
+same size and aspect ratio. Available collate functions are defined in
+<code class="docutils literal notranslate"><span class="pre">deeplabcut/pose_estimation_pytorch/data/collate.py</span></code>.</p></li>
+<li><p><strong>Resizing all images</strong>. All images can simply be resized to the same size. This
+usually doesn’t lead to the best performance.</p></li>
+</ol>
+<p><strong>Resizing - Crop Sampling</strong>: An alternative way to ensure all images have the same size
+is through cropping. The <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code> crops images down to a maximum width and
+height, with options to sample the center of the crop according to the positions of the
+keypoints. The methods to sample the center of the crop are as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uniform</span></code>: randomly over the image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">keypoints</span></code>: randomly over the annotated keypoints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>: weighing preferentially dense regions of keypoints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hybrid</span></code>: alternating randomly between <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code></p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">crop_sampling</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
+<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
+<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># float: maximum allowed shift of the cropping center position as a fraction of the crop size.</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;) </span>
+</pre></div>
+</div>
+<p><strong>Collate</strong>: Defines how images are collated into batches. The default way collate
+function to use is <code class="docutils literal notranslate"><span class="pre">ResizeFromDataSizeCollate</span></code> (other collate functions are defined in
+<code class="docutils literal notranslate"><span class="pre">deeplabcut/pose_estimation_pytorch/data/collate.py</span></code>). For each batch to collate, this
+implementation:</p>
+<ol class="arabic simple">
+<li><p>Selects the target width &amp; height all images will be resized to by getting the size
+of the first image in the batch, and multiplying it by a scale sampled uniformly at
+random from <code class="docutils literal notranslate"><span class="pre">(min_scale,</span> <span class="pre">max_scale)</span></code>.</p></li>
+<li><p>Resizes all images in the batch (while preserving their aspect ratio) such that they
+are the smallest size such that the target size fits entirely in the image.</p></li>
+<li><p>Crops each resulting image into the target size with a random crop.</p></li>
+</ol>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">collate</span><span class="p">:</span><span class="w">  </span><span class="c1"># rescales the images when putting them in a batch</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResizeFromDataSizeCollate</span><span class="w">  </span><span class="c1"># You can also use `ResizeFromListCollate`</span>
+<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">  </span><span class="c1"># the maximum shift, in pixels, to add to the random crop (this means</span>
+<span class="w">    </span><span class="c1"># there can be a slight border around the image)</span>
+<span class="w">  </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span><span class="w">  </span><span class="c1">#  the maximum size of the long edge of the image when resized. If the</span>
+<span class="w">    </span><span class="c1"># longest side will be greater than this value, resizes such that the longest side </span>
+<span class="w">    </span><span class="c1"># is this size, and the shortest side is smaller than the desired size. This is </span>
+<span class="w">    </span><span class="c1"># useful to keep some information from images with extreme aspect ratios.</span>
+<span class="w">  </span><span class="nt">min_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># the minimum scale to resize the image with</span>
+<span class="w">  </span><span class="nt">max_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">  </span><span class="c1"># the maximum scale to resize the image with</span>
+<span class="w">  </span><span class="nt">min_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># the minimum size of the target short side</span>
+<span class="w">  </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span><span class="w">  </span><span class="c1"># the maximum size of the target short side</span>
+<span class="w">  </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># pads the target height, width such that they are multiples of 32</span>
+<span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the </span>
+<span class="w">    </span><span class="c1"># short side of the first image will be used to sample a &quot;side&quot;, and the images will</span>
+<span class="w">    </span><span class="c1"># be cropped in squares</span>
 </pre></div>
 </div>
 <p><strong>Resizing</strong>: Resizes the images while preserving the aspect ratio (first resizes to the
@@ -672,20 +713,10 @@ maximum possible size, then adds padding for the missing pixels).</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">resize</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span><span class="w"> </span><span class="c1"># int: the height to which all images will be resized</span>
 <span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">480</span><span class="w"> </span><span class="c1"># int: the width to which all images will be resized</span>
-<span class="w">  </span><span class="nt">keep_ratio</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: the </span>
+<span class="w">  </span><span class="nt">keep_ratio</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: whether the aspect ratio should be preserved when resizing</span>
 </pre></div>
 </div>
-<p><strong>Resizing - Crop Sampling</strong>: An alternative way to ensure all images have the same size
-is through cropping. The <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code> crops images down to a maximum width and
-height, with options to sample the center of the crop according to the positions of the
-keypoints.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">crop_sampling</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
-<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
-<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># float: maximum allowed shift of the cropping center position as a fraction of the crop size.</span>
-<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: how to sample the center of crops (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;) </span>
-</pre></div>
-</div>
+</section>
 </section>
 <section id="model">
 <h3>Model<a class="headerlink" href="#model" title="Link to this heading">#</a></h3>
@@ -754,6 +785,9 @@ models <strong>it is not recommended to change the optimizer or scheduler</stron
 <span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the &quot;best&quot; model does not count as one of them)</span>
 <span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save  </span>
 <span class="w">    </span><span class="nt">save_optimizer_state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># whether the optimizer state should be saved with the model snapshots (very little reason to set to true)</span>
+<span class="w">  </span><span class="nt">gpus</span><span class="p">:</span><span class="w"> </span><span class="c1"># GPUs to use to train the network</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 <p><strong>Key metric</strong>: Every time the model is evaluated on the test set, metrics are computed
@@ -802,6 +836,39 @@ milestone to the corresponding values in <code class="docutils literal notransla
 <span class="w">    </span><span class="nt">params</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">step_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 <span class="w">      </span><span class="nt">gamma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+</pre></div>
+</div>
+<p>You can also use schedulers that use other schedulers as parameters, such as a
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html"><code class="docutils literal notranslate"><span class="pre">ChainedScheduler</span></code></a>
+or a <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html"><code class="docutils literal notranslate"><span class="pre">SequentialLR</span></code></a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SequentialLR</span></code> can be particularly useful, such as to use a first scheduler for some
+warmup epochs, and a second scheduler later. An example usage would be:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1"># Multiply the learning rate by `factor` for the first `total_iters` epochs</span>
+<span class="w">  </span><span class="c1"># After 5 epochs, start decaying the learning rate by `gamma` every `step_size` epochs</span>
+<span class="w">  </span><span class="c1"># If the initial learning rate is set to 1, the learning rates will be:</span>
+<span class="w">  </span><span class="c1">#   epoch 0: 0.01  - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 1: 0.01  - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 2: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 3: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 4: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 5: 1.0   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 6: 1.0   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 7: 0.1   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 8: 0.1   - using StepLR</span>
+<span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SequentialLR</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">schedulers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConstantLR</span>
+<span class="w">        </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
+<span class="w">          </span><span class="nt">total_iters</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StepLR</span>
+<span class="w">        </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">step_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">          </span><span class="nt">gamma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="w">      </span><span class="nt">milestones</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 </section>
@@ -899,6 +966,7 @@ trained. All information relating to the detector is placed under the <code clas
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">  </span><span class="nt">train_settings</span><span class="p">:</span><span class="w"> </span><span class="c1"># detector train settings (same keys as for the pose model)</span>
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">resume_training_from</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional: restart the training at the specific checkpoint</span>
 </pre></div>
 </div>
 <p>Currently, the only detectors available are <code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code> and <code class="docutils literal notranslate"><span class="pre">SSDLite</span></code>. However, multiple variants of
@@ -997,7 +1065,7 @@ loaded from the state dictionary, and your edits might not be kept!</p>
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">DeepLabCut 3.0 - Pytorch User Guide</p>
+        <p class="prev-next-title">DeepLabCut 3.0 - PyTorch User Guide</p>
       </div>
     </a>
     <a class="right-next"
@@ -1027,7 +1095,10 @@ loaded from the state dictionary, and your edits might not be kept!</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sections">Sections</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#singleton-parameters">Singleton Parameters</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dealing-with-variable-image-sizes">Dealing with Variable Image Sizes</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model">Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>

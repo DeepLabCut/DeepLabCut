@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>DeepLabCut 3.0 - Pytorch User Guide &#8212; DeepLabCut</title>
+    <title>DeepLabCut 3.0 - PyTorch User Guide &#8212; DeepLabCut</title>
   
   
   
@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -460,7 +458,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>DeepLabCut 3.0 - Pytorch User Guide</h1>
+    <h1>DeepLabCut 3.0 - PyTorch User Guide</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -496,41 +494,31 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-3-0-pytorch-user-guide">
-<span id="dlc3-user-guide"></span><h1>DeepLabCut 3.0 - Pytorch User Guide<a class="headerlink" href="#deeplabcut-3-0-pytorch-user-guide" title="Link to this heading">#</a></h1>
+<span id="dlc3-user-guide"></span><h1>DeepLabCut 3.0 - PyTorch User Guide<a class="headerlink" href="#deeplabcut-3-0-pytorch-user-guide" title="Link to this heading">#</a></h1>
 <section id="using-deeplabcut-3-0">
 <h2>Using DeepLabCut 3.0<a class="headerlink" href="#using-deeplabcut-3-0" title="Link to this heading">#</a></h2>
 <p><strong>DeepLabCut 3.0 keeps the same high-level API that you know, but has a full new PyTorch backend.
-Moreover, it is a rewrite that more developer friendly, more powerful, and built for modern deep
+Moreover, it is a rewrite that is more developer friendly, more powerful, and built for modern deep
 learning-based computer vision applications.</strong></p>
-<p><strong>NOTE</strong>🔥: We suggest that if you’re just starting with DeepLabCut you start with the PyTorch backend.
-You will easily know which “engine” you are using by looking at the main <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, or top right corner in the GUI.
-If you have DeepLabCut projects in TensorFlow, we’ve got you covered too: you can seamlessly switch to train your already labeled data
-by simply switching the engine (and thereby also compare performance). In short, expect a boost 🔥.</p>
-<p>In short, PyTorch models can be trained in any DeepLabCut project. If you have a project already made,  simply add a new key to your
-project <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file specifying <code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">pytorch</span></code>. Then any new training dataset
-that will be created will be a PyTorch model (see
-<a class="reference internal" href="#Creating-Shuffles-and-Model-Configuration"><span class="xref myst">Creating Shuffles and Model Configuration</span></a>)
-to learn more about training PyTorch models. To train Tensorflow models again, you can
-set <code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">tensorflow</span></code>.</p>
+<p><strong>NOTE</strong>🔥: We suggest that if you’re just starting with DeepLabCut you start with the
+PyTorch backend. You will easily know which “engine” you are using by looking at the
+main <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, or top right corner in the GUI. If you have DeepLabCut projects
+in TensorFlow, we’ve got you covered too: you can seamlessly switch to train your
+already labeled data by simply switching the engine (and thereby also compare
+performance). In short, expect a boost 🔥.</p>
+<p>In short, PyTorch models can be trained in any DeepLabCut project. If you have a project
+already made,  simply add a new key to your project <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file specifying
+<code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">pytorch</span></code>. Then any new training dataset that will be created will be a PyTorch
+model (see <a class="reference internal" href="#Creating-Shuffles-and-Model-Configuration"><span class="xref myst">Creating Shuffles and Model Configuration</span></a>) to learn more about training PyTorch
+models. To train Tensorflow models again, you can set <code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">tensorflow</span></code>.</p>
 <section id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h3>
-<p>During the alpha phase, you can use the <code class="docutils literal notranslate"><span class="pre">yaml</span></code> we provide, or create a new <code class="docutils literal notranslate"><span class="pre">env</span></code>.</p>
-<ul class="simple">
-<li><p>If you are a beginner user, <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html">please see these docs!</a></p></li>
-<li><p>If you are an advanced user, here is a quick start. <a class="reference external" href="https://pytorch.org/get-started/locally/">“Install PyTorch”</a>, then:</p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pytables</span><span class="o">==</span><span class="mf">3.8.0</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">/</span><span class="n">DeepLabCut</span><span class="o">.</span><span class="n">git</span><span class="nd">@pytorch_dlc</span><span class="c1">#egg=deeplabcut[gui,modelzoo,wandb]</span>
-</pre></div>
-</div>
+<p>To see the DeepLabCut 3.0 installation guide, check the <a class="reference internal" href="../installation.html#how-to-install"><span class="std std-ref">installation docs</span></a>.</p>
 </section>
 <section id="using-the-gui">
 <h3>Using the GUI<a class="headerlink" href="#using-the-gui" title="Link to this heading">#</a></h3>
-<p>You can use the GUI to train DeepLabCut projects. However, you cannot switch between
-PyTorch and Tensorflow models while using the GUI. If you have set your engine to
-<code class="docutils literal notranslate"><span class="pre">pytorch</span></code>, then the GUI will only offer the creation of PyTorch shuffles.</p>
-<p>You can create <code class="docutils literal notranslate"><span class="pre">tensorflow</span></code> shuffles and train them again by setting the
-<code class="docutils literal notranslate"><span class="pre">engine:</span> <span class="pre">tensorflow</span></code> in the top right corner of the GUI.</p>
+<p>You can use the GUI to train DeepLabCut projects. You can switch between the PyTorch
+and TensorFlow engine through the drop-down menu in the top right corner.</p>
 </section>
 </section>
 <section id="major-changes">
@@ -578,7 +566,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.</p>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train_network</span></code></p></td>
 <td class="text-center"><p>🟢</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">keepdeconvweights</span></code></p></td>
+<td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">maxiters</span></code>, <code class="docutils literal notranslate"><span class="pre">saveiters</span></code>, <code class="docutils literal notranslate"><span class="pre">allow_growth</span></code>, <code class="docutils literal notranslate"><span class="pre">autotune</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">return_train_network_path</span></code></p></td>
@@ -588,7 +576,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code></p></td>
 <td class="text-center"><p>🟢</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">comparisonbodyparts</span></code>, <code class="docutils literal notranslate"><span class="pre">rescale</span></code>, <code class="docutils literal notranslate"><span class="pre">per_keypoint_evaluation</span></code></p></td>
+<td><p></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">return_evaluate_network_data</span></code></p></td>
@@ -597,22 +585,22 @@ parameters are not valid for the DLC 3.0 PyTorch API.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">TFGPUinference</span></code>, <code class="docutils literal notranslate"><span class="pre">allow_growth</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code></p></td>
-<td class="text-center"><p>🟢</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">in_random_order</span></code>, <code class="docutils literal notranslate"><span class="pre">dynamic</span></code>, <code class="docutils literal notranslate"><span class="pre">n_tracks</span></code>, <code class="docutils literal notranslate"><span class="pre">calibrate</span></code></p></td>
+<td class="text-center"><p>🟠</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">greedy</span></code>, <code class="docutils literal notranslate"><span class="pre">calibrate</span></code>, <code class="docutils literal notranslate"><span class="pre">window_size</span></code></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">create_tracking_dataset</span></code></p></td>
-<td class="text-center"><p>🔴</p></td>
+<td class="text-center"><p>🟢</p></td>
 <td><p></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">analyze_time_lapse_frames</span></code></p></td>
-<td class="text-center"><p>🟠</p></td>
+<td class="text-center"><p>🟢</p></td>
 <td><p>the name has changed to  <code class="docutils literal notranslate"><span class="pre">analyze_images</span></code> to better reflect what it actually does (no video needed)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">convert_detections2tracklets</span></code></p></td>
-<td class="text-center"><p>🟢</p></td>
+<td class="text-center"><p>🟠</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">greedy</span></code>, <code class="docutils literal notranslate"><span class="pre">calibrate</span></code>, <code class="docutils literal notranslate"><span class="pre">window_size</span></code></p></td>
 <td><p></p></td>
 </tr>

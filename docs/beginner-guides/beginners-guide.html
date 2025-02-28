@@ -209,7 +209,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - Pytorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
 </ul>
@@ -238,12 +238,10 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/MegaDetectorDLCLive.html">💚 MegaDetector+DeepLabCut 💜</a></li>
-
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
@@ -498,7 +496,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="using-deeplabcut">
-<h1>Using DeepLabCut<a class="headerlink" href="#using-deeplabcut" title="Link to this heading">#</a></h1>
+<span id="beginners-guide"></span><h1>Using DeepLabCut<a class="headerlink" href="#using-deeplabcut" title="Link to this heading">#</a></h1>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 <p>This guide, and related pages, are meant as a very-new-to-python beginner guide to DeepLabCut. After you are comfortable with this material we recommend then jumping into the more detailed User Guides!</p>
 <ul class="simple">
@@ -534,15 +532,15 @@ document.write(`
 <p><strong>(1) Install PyTorch</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">PyTorch</span></code> is the backend deep-learning language we wrote DLC3 in. To select the right version, head to the <a class="reference external" href="https://pytorch.org/get-started/locally/">“Install PyTorch”</a> instructions in the official PyTorch Docs. Select your desired PyTorch build, operating system, select conda as your package manager and Python as the language. Select your compute platform (either a CUDA version or CPU only). Then, use the command to install the PyTorch package. Below are a few possible examples:</p>
 <ul class="simple">
-<li><p><strong>GPU version of pytorch for CUDA 11.8</strong></p></li>
+<li><p><strong>GPU version of pytorch for CUDA 12.4</strong></p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">11.8</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu124</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><strong>CPU only version of pytorch, using the latest version</strong></p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cpuonly</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cpu</span>
 </pre></div>
 </div>
 <p><strong>(2) Install DeepLabCut</strong></p>
@@ -559,7 +557,7 @@ document.write(`
 <ul class="simple">
 <li><p>OR run for the <strong>Stable release:</strong></p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[gui,modelzoo,tf]&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[gui,modelzoo,wandb]&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
