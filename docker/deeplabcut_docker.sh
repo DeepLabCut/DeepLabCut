@@ -7,7 +7,7 @@
 DOCKER=${DOCKER:-docker}
 CUDA_VERSION=${CUDA_VERSION:-"12.4"}
 CUDNN_VERSION=${CUDNN_VERSION:-"9"}
-DLC_VERSION=${DLC_VERSION:-"latest"}
+DLC_VERSION=${DLC_VERSION:-"3.0.0"}
 DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
 # Check if the current users has privileges to start
