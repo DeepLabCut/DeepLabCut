@@ -36,6 +36,8 @@ model:
         num_animals: "num_individuals"
         keypoint_score_type: combined
         max_absorb_distance: 75
+        nms_threshold: 0.05
+        apply_pose_nms: true
       heatmap_config:
         channels:
         - 720
