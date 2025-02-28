@@ -20,7 +20,7 @@ runner:
     save_epochs: 25
     save_optimizer_state: false
 train_settings:
-  batch_size: 1
+  batch_size: 8
   dataloader_workers: 0
   dataloader_pin_memory: false
   display_iters: 500
