@@ -290,11 +290,15 @@ class TrainingDatasetMetadata:
             cfg = config
 
         trainset_path = TrainingDatasetMetadata.path(cfg).parent
-        shuffle_docs = [
-            f
-            for f in trainset_path.iterdir()
-            if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
-        ]
+        if trainset_path.exists():
+            shuffle_docs = [
+                f
+                for f in trainset_path.iterdir()
+                if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
+            ]
+        else:
+            trainset_path.mkdir(parents=True)
+            shuffle_docs = []
 
         prefix = cfg["Task"] + cfg["date"]
         shuffles = []

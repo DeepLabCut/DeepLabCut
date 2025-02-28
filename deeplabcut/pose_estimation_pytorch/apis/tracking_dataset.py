@@ -19,9 +19,9 @@ import deeplabcut.pose_estimation_pytorch.data.postprocessor as postprocessing
 import deeplabcut.pose_estimation_pytorch.models as models
 import deeplabcut.pose_estimation_pytorch.runners as runners
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
+from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import VideoIterator
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
 
 

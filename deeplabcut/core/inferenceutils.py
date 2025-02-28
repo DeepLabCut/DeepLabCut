@@ -955,7 +955,7 @@ def calc_object_keypoint_similarity(
         return np.nan
 
     true = xy_true[visible_gt]
-    scale_squared = np.product(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
+    scale_squared = np.prod(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
     if np.isclose(scale_squared, 0):
         return np.nan
 

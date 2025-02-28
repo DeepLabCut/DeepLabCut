@@ -60,7 +60,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
         out_indices: The branch indices to output. If a tuple of integers, the outputs
             are returned as a list of tensors. If a single integer, a tensor is returned
             containing the configured index.
-        channel_attention: Add chanel attention to all stages
+        channel_attention: Add channel attention to all stages
         norm_layer: The type of normalization layer to use.
         activation_fn: The type of activation function to use.
         **kwargs: BaseBackbone kwargs.

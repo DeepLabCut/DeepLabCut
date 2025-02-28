@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
+import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.apis.visualization as visualization
-import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
