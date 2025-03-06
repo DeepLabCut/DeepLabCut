@@ -12,174 +12,18 @@ import os
 from datetime import datetime
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QBrush, QColor, QDesktopServices, QIcon, QPainter, QPen
+from PySide6.QtGui import QDesktopServices, QIcon
 
 import deeplabcut
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
-from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 from deeplabcut.gui.tabs.docs import (
     URL_3D,
     URL_MA_CONFIGURE,
     URL_USE_GUIDE_SCENARIO,
 )
+from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame, Switch, DynamicTextList
 from deeplabcut.utils import auxiliaryfunctions
-
-
-class DynamicTextList(QtWidgets.QWidget):
-    """Dynamically add text entries"""
-
-    def __init__(self, label_text="bodyparts", parent=None):
-        super(DynamicTextList, self).__init__(parent)
-        self.label_text = label_text
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        # Set maximum width for the widget
-        self.setMaximumWidth(300)
-
-        # Add explanatory label
-        label = QtWidgets.QLabel(label_text)
-        self.layout.addWidget(label)
-
-        # Create scroll area and its widget
-        self.scroll = QtWidgets.QScrollArea()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.scroll.setFrameShape(QtWidgets.QFrame.NoFrame)  # Remove frame border
-
-        # Create widget to hold the entries
-        self.entries_widget = QtWidgets.QWidget()
-        self.entries_layout = QtWidgets.QVBoxLayout(self.entries_widget)
-        self.entries_layout.setContentsMargins(0, 0, 0, 0)
-        self.entries_layout.setSpacing(5)  # Consistent spacing between entries
-        self.entries_layout.setAlignment(QtCore.Qt.AlignTop)  # Align entries to top
-
-        # Add stretch at the bottom to keep entries at top
-        self.entries_layout.addStretch()
-
-        self.scroll.setWidget(self.entries_widget)
-
-        # Set fixed height for 6 items
-        self.entry_height = 30  # Fixed height for each entry
-        self.padding = 10  # Extra padding
-        self.scroll.setFixedHeight(5 * self.entry_height + self.padding)
-
-        # Add scroll area to main layout
-        self.layout.addWidget(self.scroll)
-
-        self.entries = []
-        self.add_entry()
-
-    def add_entry(self):
-        # Create horizontal layout for index and entry
-        entry_layout = QtWidgets.QHBoxLayout()
-        entry_layout.setContentsMargins(0, 0, 10, 0)
-        entry_layout.setSpacing(5)  # Consistent spacing between index and entry
-
-        # Create container widget for the entry row
-        entry_widget = QtWidgets.QWidget()
-        entry_widget.setFixedHeight(self.entry_height)
-        entry_widget.setLayout(entry_layout)
-
-        # Add index label
-        index_label = QtWidgets.QLabel(str(len(self.entries) + 1) + ".")
-        index_label.setFixedWidth(20)  # Set fixed width for alignment
-        entry_layout.addWidget(index_label)
-
-        # Add text entry
-        entry = QtWidgets.QLineEdit()
-        entry.setFixedHeight(self.entry_height - 6)  # Slightly smaller than container
-        entry.textChanged.connect(self._on_text_changed)
-        entry.textEdited.connect(lambda text: self._check_for_spaces(entry, text))
-        self.entries.append((entry, index_label))  # Store both widgets
-        entry_layout.addWidget(entry)
-
-        # Insert the new entry before the stretch
-        self.entries_layout.insertWidget(len(self.entries) - 1, entry_widget)
-
-    def _check_for_spaces(self, entry, text):
-        if " " in text:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText(
-                f"Spaces are not allowed in the {self.label_text} list. Use underscores "
-                f"instead."
-            )
-            msg.setWindowTitle("Warning")
-            msg.exec_()
-            entry.setText(entry.text().replace(" ", "_"))
-
-    def _on_text_changed(self):
-        # If the last entry has text, add a new empty entry
-        if self.entries[-1][0].text():
-            self.add_entry()
-
-        # Remove any empty entries except the last one
-        entries_to_remove = []
-        for i, (entry, _) in enumerate(self.entries[:-1]):
-            if not entry.text():
-                entries_to_remove.append(i)
-
-        for i in reversed(entries_to_remove):
-            entry_widget = self.entries[i][0].parent()
-            self.entries_layout.removeWidget(entry_widget)
-            entry_widget.deleteLater()
-            self.entries.pop(i)
-
-        self._update_indices()  # Update the indices after removal
-
-    def get_entries(self):
-        return [entry[0].text() for entry in self.entries if entry[0].text()]
-
-    def _update_indices(self):
-        for i, (entry, index_label) in enumerate(self.entries):
-            index_label.setText(str(i + 1) + ".")
-
-
-class Switch(QtWidgets.QPushButton):
-
-    def __init__(self, on_text="Yes", off_text="No", width=80, parent=None):
-        super().__init__(parent)
-        self.on_text = on_text
-        self.off_text = off_text
-        self.setCheckable(True)
-        self.setFixedWidth(width)
-        self.setMinimumHeight(22)
-
-    def paintEvent(self, event):
-        # Colors: https://qdarkstylesheet.readthedocs.io/en/latest/color_reference.html
-        label = self.on_text if self.isChecked() else self.off_text
-        bg_color = "#00ff00" if self.isChecked() else "#9DA9B5"
-
-        radius = 10
-        width = 32
-        center = self.rect().center()
-
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.translate(center)
-        painter.setBrush(QColor(69, 83, 100))  # Lighter gray background
-
-        pen = QPen("#455364")
-        pen.setWidth(2)
-        painter.setPen(pen)
-
-        painter.drawRoundedRect(
-            QtCore.QRect(-width, -radius, 2 * width, 2 * radius), radius, radius
-        )
-        painter.setBrush(QBrush(bg_color))
-        sw_rect = QtCore.QRect(-radius, -radius, width + radius, 2 * radius)
-        if not self.isChecked():
-            sw_rect.moveLeft(-width)
-
-        painter.drawRoundedRect(sw_rect, radius, radius)
-
-        pen = QPen("#000000")
-        pen.setWidth(2)
-        painter.setPen(pen)
-        painter.drawText(sw_rect, QtCore.Qt.AlignCenter, label)
 
 
 class ProjectCreator(QtWidgets.QDialog):
