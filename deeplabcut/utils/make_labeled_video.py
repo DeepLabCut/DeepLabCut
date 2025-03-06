@@ -90,6 +90,7 @@ def CreateVideo(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: tuple | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
     bpts = Dataframe.columns.get_level_values("bodyparts")
@@ -156,7 +157,8 @@ def CreateVideo(
         C = colorclass.to_rgba(np.linspace(0, 1, nindividuals))
     colors = (C[:, :3] * 255).astype(np.uint8)
 
-    bboxes_color = (0, 0, 0)
+    if bboxes_color is None:
+        bboxes_color = (255, 0, 0)
 
     with np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
@@ -256,6 +258,7 @@ def CreateVideoSlow(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: str | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video"""
 
@@ -314,7 +317,8 @@ def CreateVideoSlow(
     else:
         colors = visualization.get_cmap(nbodyparts, name=colormap)
 
-    bounding_boxes_color = "k"
+    if bboxes_color is None:
+        bboxes_color = "red"
 
     nframes_digits = int(np.ceil(np.log10(nframes)))
     if nframes_digits > 9:
@@ -361,7 +365,7 @@ def CreateVideoSlow(
                             bbox_width,
                             bbox_height,
                             linewidth=1,
-                            edgecolor=bounding_boxes_color,
+                            edgecolor=bboxes_color,
                             facecolor="none",
                         )
                         ax.add_patch(rectangle)
@@ -513,7 +517,7 @@ def create_labeled_video(
 
     displayedindividuals: list[str] or str, optional, default="all"
         Individuals plotted in the video.
-        By default, all individuals present in the config will be showed.
+        By default, all individuals present in the config will be shown.
 
     codec: str, optional, default="mp4v"
         Codec for labeled video. For available options, see
@@ -743,9 +747,6 @@ def create_labeled_video(
             )
         )
 
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
-        cfg, displayedindividuals
-    )
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
         if displayedbodyparts != "all":
@@ -774,7 +775,7 @@ def create_labeled_video(
         DLCscorerlegacy,
         track_method,
         cfg,
-        individuals,
+        displayedindividuals,
         color_by,
         bodyparts,
         codec,
@@ -902,8 +903,14 @@ def proc_video(
                 print("Labeled video already created. Skipping...")
                 return
 
-            if all(individuals):
-                df = df.loc(axis=1)[:, individuals]
+            if individuals != "all":
+                if isinstance(individuals, str):
+                    individuals = [individuals]
+
+                if all(individuals) and "individuals" in df.columns.names:
+                    mask = df.columns.get_level_values("individuals").isin(individuals)
+                    df = df.loc[:, mask]
+
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [
@@ -912,14 +919,23 @@ def proc_video(
                 if bp in bodyparts
             ]
 
-            frames_dict = {
-                int(key.replace("frame", "")): value
-                for key, value in full_data.items()
-                if key.startswith("frame") and key[5:].isdigit()
-            }
-            bboxes_list = None
-            if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
-                bboxes_list = [frames_dict[key] for key in sorted(frames_dict.keys())]
+            # The full data file is not created for single-animal TensorFlow models
+            try:
+                full_data = auxiliaryfunctions.load_video_full_data(
+                    destfolder, vname, DLCscorer
+                )
+                frames_dict = {
+                    int(key.replace("frame", "")): value
+                    for key, value in full_data.items()
+                    if key.startswith("frame") and key[5:].isdigit()
+                }
+                bboxes_list = None
+                if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
+                    bboxes_list = [
+                        frames_dict[key] for key in sorted(frames_dict.keys())
+                    ]
+            except FileNotFoundError:
+                bboxes_list = None
 
             if keypoints_only:
                 # Mask rather than drop unwanted bodyparts to ensure consistent coloring
@@ -1029,6 +1045,7 @@ def create_video(
     plot_bboxes=True,
     bboxes_list=None,
     bboxes_pcutoff=0.6,
+    bboxes_color: tuple | None = None,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -1086,6 +1103,7 @@ def create_video(
         plot_bboxes=plot_bboxes,
         bboxes_list=bboxes_list,
         bboxes_pcutoff=bboxes_pcutoff,
+        bboxes_color=bboxes_color,
     )
 
 
@@ -1306,7 +1324,7 @@ def create_video_with_all_detections(
                 .get("model", {})
                 .get("box_score_thresh", 0.6)
             )
-            bboxes_color = (0, 0, 0)
+            bboxes_color = (255, 0, 0)
 
             for n in trange(clip.nframes):
                 frame = clip.load_frame()
@@ -1402,7 +1420,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             im.set_data(frame[:, X1:X2])
             for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
-                    x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
+                    x, y, p = tracks[trackid][imname][:,:3].reshape((-1, 3)).T
                     markers[n].set_data(x[p > pcutoff], y[p > pcutoff])
                 else:
                     markers[n].set_data([], [])
@@ -1424,6 +1442,9 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             output_name,
         ]
     )
+
+    # remove frames used for video creation
+    [os.remove(image) for image in os.listdir(destfolder) if ".png" in image]
 
 
 def create_video_from_pickled_tracks(

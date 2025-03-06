@@ -10,7 +10,6 @@
 #
 import os
 import pickle
-import re
 import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -18,6 +17,7 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
+from scipy.special import softmax
 from tqdm import tqdm
 
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
@@ -42,9 +42,9 @@ def convert_detections2tracklets(
     ignore_bodyparts: Optional[List[str]] = None,
     inferencecfg: Optional[dict] = None,
     modelprefix="",
-    greedy=False,  # TODO: Unused, remove
-    calibrate=False,  # TODO: Unused, remove
-    window_size=0,  # TODO: Unused, remove
+    greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
+    calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
+    window_size: int = 0,  # TODO(niels): implement window size selection for assembly during video analysis
     identity_only=False,
     track_method="",
 ):
@@ -70,7 +70,11 @@ def convert_detections2tracklets(
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
     rel_model_dir = auxiliaryfunctions.get_model_folder(
-        train_fraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.PYTORCH,
+        train_fraction,
+        shuffle,
+        cfg,
+        modelprefix=modelprefix,
+        engine=Engine.PYTORCH,
     )
     model_dir = Path(cfg["project_path"]) / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
@@ -101,7 +105,6 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
     )
 
-    # TODO: deal with lists of strings
     videos = list_videos_in_folder(videos, videotype)
     if len(videos) == 0:
         print(f"No videos were found in {videos}")
@@ -197,6 +200,7 @@ def convert_detections2tracklets(
                     _single[index] = np.asarray(single_detection)
                 tracklets["single"].update(_single)
 
+            pcutoff = inference_cfg.get("pcutoff")
             if inference_cfg["topktoretain"] == 1:
                 tracklets[0] = {}
                 for index in tqdm(range(num_frames)):
@@ -204,7 +208,9 @@ def convert_detections2tracklets(
                     if assemblies is None:
                         continue
 
-                    tracklets[0][index] = np.asarray(assemblies[0].data)
+                    assembly = np.asarray(assemblies[0].data)
+                    assembly[assembly[..., 2] < pcutoff] = np.nan
+                    tracklets[0][index] = assembly
             else:
                 keep = set(multi_bpts).difference(ignore_bodyparts or [])
                 keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
@@ -214,13 +220,30 @@ def convert_detections2tracklets(
                         continue
 
                     animals = np.stack([a for a in assemblies])
+                    animals[np.any(animals[..., :3] < 0, axis=-1), :2] = np.nan
+                    animals[animals[..., 2] < pcutoff, :2] = np.nan
+                    animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
+                    if ~np.any(animal_mask):
+                        continue
+                    animals = animals[animal_mask]
+
                     if identity_only:
                         # Optimal identity assignment based on soft voting
-                        mat = np.zeros((len(assemblies), inference_cfg["topktoretain"]))
-                        for row, a in enumerate(assemblies):
-                            assembly = Assembly.from_array(a)
-                            for k, v in assembly.soft_identity.items():
-                                mat[row, k] = v
+                        mat = np.zeros((len(animals), inference_cfg["topktoretain"]))
+                        for row, animal_pose in enumerate(animals):
+                            animal_pose = animal_pose[
+                                ~np.isnan(animal_pose).any(axis=1)
+                            ]
+                            unique_ids, idx = np.unique(
+                                animal_pose[:, 3], return_inverse=True
+                            )
+                            total_scores = np.bincount(idx, weights=animal_pose[:, 2])
+                            softmax_id_scores = softmax(total_scores)
+                            for pred_id, softmax_score in zip(
+                                unique_ids.astype(int), softmax_id_scores
+                            ):
+                                mat[row, pred_id] = softmax_score
+
                         inds = linear_sum_assignment(mat, maximize=True)
                         trackers = np.c_[inds][:, ::-1]
                     else:

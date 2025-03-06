@@ -13,10 +13,8 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
-from typing import Callable
 
-from ruamel.yaml import YAML
-
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -59,6 +57,7 @@ def replace_default_values(
         ValueError: if there is a placeholder value who's "updated" value was not
             given to the method
     """
+
     def get_updated_value(variable: str) -> int | list[int]:
         var_parts = variable.strip().split(" ")
         var_name = var_parts[0]
@@ -142,9 +141,56 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
 
     for k, v in updates.items():
         if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            config[k] = update_config(config[k], v, copy_original=False)
+            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+                # if changing the optimizer or scheduler type, update all values
+                config[k] = v
+            else:
+                config[k] = update_config(config[k], v, copy_original=False)
         else:
             config[k] = copy.deepcopy(v)
+    return config
+
+
+def update_config_by_dotpath(
+    config: dict, updates: dict, copy_original: bool = True
+) -> dict:
+    """Updates items in the configuration file using dot notation for nested keys
+
+    The configuration dict should only be composed of primitive Python types
+    (dict, list and values). This is the case when reading the file using
+    `read_config_as_dict`.
+
+    Args:
+        config: the configuration dict to update
+        updates: single-level dict with dot notation keys indicating nested paths
+            e.g. {"device": "cuda", "runner.gpus": [0,1]}
+        copy_original: whether to copy the original dict before updating it
+
+    Returns:
+        the updated dictionary
+    """
+    if copy_original:
+        config = copy.deepcopy(config)
+
+    for key, value in updates.items():
+        # Split key into parts by dots
+        parts = key.split(".")
+
+        # Handle non-nested case
+        if len(parts) == 1:
+            config[key] = copy.deepcopy(value)
+            continue
+
+        # Navigate to nested location
+        current = config
+        for part in parts[:-1]:
+            if part not in current:
+                current[part] = {}
+            current = current[part]
+
+        # Set the value at final location
+        current[parts[-1]] = copy.deepcopy(value)
+
     return config
 
 
@@ -187,63 +233,6 @@ def load_detectors(configs_dir: Path) -> list[str]:
     detector_dir = configs_dir / "detectors"
     detectors = [p.stem for p in detector_dir.iterdir() if p.suffix == ".yaml"]
     return detectors
-
-
-def read_config_as_dict(config_path: str | Path) -> dict:
-    """
-    Args:
-        config_path: the path to the configuration file to load
-
-    Returns:
-        The configuration file with pure Python classes
-    """
-    with open(config_path, "r") as f:
-        cfg = YAML(typ='safe', pure=True).load(f)
-
-    return cfg
-
-
-def write_config(config_path: str | Path, config: dict, overwrite: bool = True) -> None:
-    """Writes a pose configuration file to disk
-
-    Args:
-        config_path: the path where the config should be saved
-        config: the config to save
-        overwrite: whether to overwrite the file if it already exists
-
-    Raises:
-        FileExistsError if overwrite=True and the file already exists
-    """
-    if not overwrite and Path(config_path).exists():
-        raise FileExistsError(
-            f"Cannot write to {config_path} - set overwrite=True to force"
-        )
-
-    with open(config_path, "w") as file:
-        YAML().dump(config, file)
-
-
-def pretty_print(
-    config: dict,
-    indent: int = 0,
-    print_fn: Callable[[str], None] | None = None,
-) -> None:
-    """Prints a model configuration in a pretty and readable way
-
-    Args:
-        config: the config to print
-        indent: the base indent on all keys
-        print_fn: custom function to call (simply calls ``print`` if None)
-    """
-    if print_fn is None:
-        print_fn = print
-
-    for k, v in config.items():
-        if isinstance(v, dict):
-            print_fn(f"{indent * ' '}{k}:")
-            pretty_print(v, indent + 2, print_fn=print_fn)
-        else:
-            print_fn(f"{indent * ' '}{k}: {v}")
 
 
 def available_models() -> list[str]:

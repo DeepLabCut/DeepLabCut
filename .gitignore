@@ -10,6 +10,7 @@ _build/*
 /examples/3D*
 /examples/m3*
 /examples/OUT
+/examples/pretrained*
 .local
 .DS_Store
 examples/.DS_Store
@@ -20,6 +21,9 @@ snapshot-*
 
 # Modelzoo checkpoints
 deeplabcut/modelzoo/checkpoints/
+
+# PyTorch backbone weights
+deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights/
 
 # Wandb files
 wandb/

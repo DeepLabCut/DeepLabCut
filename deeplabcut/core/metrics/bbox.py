@@ -154,6 +154,6 @@ def _get_metric(
     if len(s[s > -1]) == 0:
         mean_s = -1
     else:
-        mean_s = 100 * np.mean(s[s > -1])
+        mean_s = 100 * np.mean(s[s > -1]).item()
 
     return f"{metric_name}@{thresh}", mean_s

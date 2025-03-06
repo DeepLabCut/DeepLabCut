@@ -271,6 +271,7 @@ def analyze_videos(
     use_shelve=False,
     auto_track=True,
     n_tracks=None,
+    animal_names=None,
     calibrate=False,
     identity_only=False,
     use_openvino="CPU" if is_openvino_available else None,
@@ -396,6 +397,13 @@ def analyze_videos(
         defined in the config.yaml. Another number can be passed if the number of
         animals in the video is different from the number of animals the model was
         trained on.
+
+    animal_names: list[str], optional
+        If you want the names given to individuals in the labeled data file, you can
+        specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
+        will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
+        equal to `len(animal_names)`. If it is not given, then `animal_names` will
+        be loaded from the `individuals` in the project config.yaml file.
 
     use_openvino: str, optional
         Use "CPU" for inference if OpenVINO is available in the Python environment.
@@ -630,6 +638,7 @@ def analyze_videos(
                         trainingsetindex,
                         destfolder=destfolder,
                         n_tracks=n_tracks,
+                        animal_names=animal_names,
                         modelprefix=modelprefix,
                         save_as_csv=save_as_csv,
                     )

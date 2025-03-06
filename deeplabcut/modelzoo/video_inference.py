@@ -18,8 +18,8 @@ from typing import Optional, Union
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_snapshot_folder_path,
@@ -231,7 +231,7 @@ def video_inference_superanimal(
     )
 
     Tips:
-    * max_individuals: make sure you correclty give the number of individuals. Our
+    * max_individuals: make sure you correctly give the number of individuals. Our
         inference api will only give up to max_individuals number of predictions.
     * pseudo_threshold: the higher you set, the more aggressive you filter low
         confidence predictions during video adaptation.
@@ -242,19 +242,22 @@ def video_inference_superanimal(
         not require too much training. However, you can make them higher if you see a
         substaintial gain in the training logs.
 
-    Examples (TensorFlow Engine)
+    Examples
     --------
 
-    >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
-    >>> superanimal_name = 'superanimal_topviewmouse_dlcrnet'
-    >>> videotype = 'mp4'
+    >>> from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+    >>> videos = ["/path/to/my/video.mp4"]
+    >>> superanimal_name = "superanimal_topviewmouse"
+    >>> videotype = "mp4"
     >>> scale_list = [200, 300, 400]
     >>> video_inference_superanimal(
-            video,
-            video_adapt = True,
+            videos,
             superanimal_name,
-            videotype = '.avi',
+            model_name="hrnet_w32",
+            detector_name="fasterrcnn_resnet50_fpn_v2",
             scale_list = scale_list,
+            videotype = videotype,
+            video_adapt = True,
         )
 
     Tips:

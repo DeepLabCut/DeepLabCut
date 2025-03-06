@@ -143,7 +143,7 @@ class HeatmapPredictor(BasePredictor):
 
         batch_size, num_joints = x.shape
 
-        dz = torch.zeros((batch_size, 1, num_joints, 3)).to(x.device)
+        dz = torch.zeros((batch_size, 1, num_joints, 3), device=heatmap.device)
         for b in range(batch_size):
             for j in range(num_joints):
                 dz[b, 0, j, 2] = heatmap[b, y[b, j], x[b, j], j]
@@ -155,7 +155,7 @@ class HeatmapPredictor(BasePredictor):
         x = x * scale_factors[1] + 0.5 * scale_factors[1] + dz[:, :, :, 0]
         y = y * scale_factors[0] + 0.5 * scale_factors[0] + dz[:, :, :, 1]
 
-        pose = torch.empty((batch_size, 1, num_joints, 3))
+        pose = torch.zeros((batch_size, 1, num_joints, 3), device=heatmap.device)
         pose[:, :, :, 0] = x
         pose[:, :, :, 1] = y
         pose[:, :, :, 2] = dz[:, :, :, 2]

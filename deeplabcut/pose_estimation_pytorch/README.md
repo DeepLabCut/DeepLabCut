@@ -64,20 +64,17 @@ disk.
 ```python
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.config import (
-    make_pytorch_pose_config,
-    write_config,
-)
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
 project_cfg = { "Task": "mice", ... }  # the configuration for your DLC project
 pose_config_path = Path("/path/to/my/config/pytorch_cfg.yaml")
-model_cfg = make_pytorch_pose_config(
+model_cfg = dlc_torch.config.make_pytorch_pose_config(
     project_config=project_cfg,
     pose_config_path=pose_config_path,
     net_type="hrnet_w32",
     top_down=True,
+    save=True,
 )
-write_config(pose_config_path, model_cfg)
 ```
 
 #### Adding Models
@@ -238,9 +235,9 @@ dataset creation and test/train splitting. The `DLCLoader` class is used to load
 labeled data for a specific shuffle.
 
 ```python3
-from deeplabcut.pose_estimation_pytorch.data import DLCLoader
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
-loader = DLCLoader(
+loader = dlc_torch.DLCLoader(
     config="/path/to/my/project/config.yaml",
     trainset_index=0,
     shuffle=1,
@@ -265,26 +262,22 @@ images and keypoints to a tensor dataset for training and evaluation. You can ge
 an instance of training/test dataset with your `DLCLoader`:
 
 ```python3
-from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
-    DLCLoader,
-)
-from deeplabcut.pose_estimation_pytorch.task import Task
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
-loader = DLCLoader(
+loader = dlc_torch.DLCLoader(
     config="/path/to/my/project/config.yaml",
     trainset_index=0,
     shuffle=1,
 )
 train_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
-    task=Task.BOTTOM_UP,
+    task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
-    task=Task.BOTTOM_UP,
+    task=loader.pose_task,
 )
 ```
 
@@ -321,15 +314,7 @@ configuration file (as described in [#model_configuration_files]).
 ```python3
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.config import (
-    make_pytorch_pose_config,
-    write_config,
-)
-from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
-    COCOLoader,
-)
-from deeplabcut.pose_estimation_pytorch.task import Task
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
@@ -337,45 +322,42 @@ train_json_filename = "train.json"
 test_json_filename = "test.json"
 
 # Parse information about the project
-train_dict = COCOLoader.load_json(project_root, filename=train_json_filename)
-max_num_individuals, bodyparts = COCOLoader.get_project_parameters(train_dict)
+train_dict = dlc_torch.COCOLoader.load_json(project_root, filename=train_json_filename)
+max_num_individuals, bodyparts = dlc_torch.COCOLoader.get_project_parameters(train_dict)
 
 # Generate a configuration file for your PyTorch model
 # In this case, it's for a Top-Down HRNet_w32
 experiment_path = project_root / "experiments" / "hrnet_w32"
 model_cfg_path = experiment_path / "train" / "pytorch_cfg.yaml"
-model_cfg = make_pytorch_pose_config(
-    project_config={
-        "project_path": str(project_root.resolve()),
-        "multianimalproject": max_num_individuals > 1,
-        "bodyparts": bodyparts,
-        "multianimalbodyparts": bodyparts,
-        "uniquebodyparts": [],
-        "individuals": [f"idv{i}" for i in range(max_num_individuals)],
-    },
+model_cfg = dlc_torch.config.make_pytorch_pose_config(
+    project_config=dlc_torch.config.make_basic_project_config(
+        dataset_path=str(project_root.resolve()),
+        bodyparts=bodyparts,
+        max_individuals=max_num_individuals,
+        multi_animal=True,
+    ),
     pose_config_path=experiment_path,
     net_type="hrnet_w32",
     top_down=True,
+    save=True,
 )
-write_config(config_path=model_cfg_path, config=model_cfg)
-task = Task(model_cfg["method"])
 
 # Create the loader for the COCO dataset
-loader = COCOLoader(
+loader = dlc_torch.COCOLoader(
     project_root=project_root,
     model_config_path="/path/to/my/project/experiments/pytorch_config.yaml",
     train_json_filename=train_json_filename,
     test_json_filename=test_json_filename,
 )
 train_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
     mode="train",
-    task=task,
+    task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
     mode="test",
-    task=task,
+    task=loader.pose_task,
 )
 ```
 
@@ -391,25 +373,23 @@ pretrained weights, and either train them or run inference with them.
 ```python
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.apis.train import train
-from deeplabcut.pose_estimation_pytorch.data import COCOLoader
-from deeplabcut.pose_estimation_pytorch.task import Task
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
 train_json_filename = "train.json"
 test_json_filename = "test.json"
 
-loader = COCOLoader(
+loader = dlc_torch.COCOLoader(
     project_root=project_root,
     model_config_path="/path/to/my/project/experiments/pytorch_config.yaml",
     train_json_filename=train_json_filename,
     test_json_filename=test_json_filename,
 )
-train(
+dlc_torch.train(
     loader=loader,
     run_config=loader.model_cfg,
-    task=Task(loader.model_cfg["method"]),
+    task=dlc_torch.Task(loader.model_cfg["method"]),
     device="cuda:2",
     logger_config=dict(
         type="WandbLogger",
@@ -422,17 +402,19 @@ train(
 
 ### Running Video Analysis outside a DeepLabCut Project
 
-DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your data. The usage of this API assumes the existance of a DLC project (with `config.yaml` file, etc.).
+DeepLabCut provides high-level APIs (via the GUI or the python package) to analyze your
+data. The usage of this API assumes the existence of a DLC project (with `config.yaml`
+file, etc.).
 
-Sometimes it might be more convenient to just run a model on your data via a low-level API. We also use this API under the hood, in particular for the Model Zoo. Check out the example below:
+Sometimes it might be more convenient to just run a model on your data via a low-level
+API. We also use this API under the hood, in particular for the Model Zoo. Check out the
+example below:
 
 ```python
+from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
 
-from deeplabcut.pose_estimation_pytorch.apis.analyze_videos import video_inference
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
-from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+import deeplabcut.pose_estimation_pytorch as dlc_torch
 
 train_dir = Path("/Users/Jaylen/my-dlc-models/train")
 pytorch_config_path = train_dir / "pytorch_config.yaml"
@@ -449,30 +431,80 @@ detector_batch_size = 8
 
 # read model configuration
 model_cfg = read_config_as_dict(pytorch_config_path)
-bodyparts = model_cfg["metadata"]["bodyparts"]
-unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
-with_identity = model_cfg["metadata"].get("with_identity", False)
-
-pose_task = Task(model_cfg["method"])
-pose_runner, detector_runner = get_inference_runners(
+pose_task = dlc_torch.Task(model_cfg["method"])
+pose_runner = dlc_torch.get_pose_inference_runner(
     model_config=model_cfg,
     snapshot_path=snapshot_path,
     max_individuals=max_num_animals,
-    num_bodyparts=len(bodyparts),
-    num_unique_bodyparts=len(unique_bodyparts),
     batch_size=batch_size,
-    with_identity=with_identity,
-    transform=None,
-    detector_batch_size=detector_batch_size,
-    detector_path=detector_snapshot_path,
-    detector_transform=None,
 )
 
-predictions = video_inference(
+detector_runner = None
+if pose_task == dlc_torch.Task.TOP_DOWN:
+    detector_runner = dlc_torch.get_detector_inference_runner(
+        model_config=model_cfg,
+        snapshot_path=detector_snapshot_path,
+        max_individuals=max_num_animals,
+        batch_size=detector_batch_size,
+    )
+
+predictions = dlc_torch.video_inference(
     video=video_path,
-    task=pose_task,
     pose_runner=pose_runner,
     detector_runner=detector_runner,
-    with_identity=False,
 )
+```
+
+
+### Running Top-Down Video Analysis with Existing Bounding Boxes
+
+When `deeplabcut.pose_estimation_pytorch.apis.videos.video_inference` is called
+with a top-down model, it is assumed that a detector snapshot is given as well to obtain
+bounding boxes with which to run pose estimation. It's possible that you've already 
+obtained bounding boxes for your video (with another object detector or through some 
+other means), and you want to reuse those bounding boxes instead of running an object
+detector again.
+
+You can easily do so by writing a bit of custom code, as shown in the example below:
+
+```python
+from deeplabcut.core.config import read_config_as_dict
+from pathlib import Path
+
+import numpy as np
+import deeplabcut.pose_estimation_pytorch as dlc_torch
+from tqdm import tqdm
+
+# create an iterator for your video
+video = dlc_torch.VideoIterator("/Users/Jayson/my-cool-video.mp4")
+
+# dummy bboxes - you can load yours from a file or in another way
+#  the bboxes should be in `xywh` format, i.e. (x_top_left, y_top_left, width, height)
+bounding_boxes = [
+    dict(  # frame 0 bounding boxes
+        bboxes=np.array([[12, 37, 120, 78]]),
+    ),
+    dict(  # frame 1 bounding boxes
+        bboxes=np.array([[17, 45, 128, 73], [532, 34, 117, 87]]),
+    ),
+    # ...
+    dict(  # frame N bboxes -> must be equal to the number of frames in the video!
+        bboxes=np.array([[17, 45, 128, 73], [532, 34, 117, 87]]),
+    ),
+]
+video.set_context(bounding_boxes)
+max_individuals = np.max([len(context["bboxes"]) for context in bounding_boxes])
+
+# run inference!
+model_cfg = read_config_as_dict("/Users/Jayson/pytorch_config.yaml")
+pose_runner = dlc_torch.get_pose_inference_runner(
+    model_config=model_cfg,
+    snapshot_path=Path("/Users/Jayson/model-snapshot.pt"),
+    max_individuals=max_individuals,
+    batch_size=32,
+)
+
+# your predictions will be a list, containing the predictions made for each frame
+#  as a dict (with keys for "bodyparts" but also "bboxes")!
+predictions = pose_runner.inference(images=tqdm(video))
 ```

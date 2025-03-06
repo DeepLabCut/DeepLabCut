@@ -16,6 +16,7 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
+import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
@@ -47,7 +48,7 @@ class Loader(ABC):
 
     def __init__(self, model_config_path: str | Path) -> None:
         self.model_config_path = Path(model_config_path)
-        self.model_cfg = config.read_config_as_dict(str(model_config_path))
+        self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
@@ -62,8 +63,8 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config(self.model_cfg, updates)
-        config.write_config(self.model_config_path, self.model_cfg)
+        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
+        config_utils.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
@@ -149,7 +150,7 @@ class Loader(ABC):
 
         return ground_truth_dict
 
-    def ground_truth_bboxes(self, mode: str = "train") -> dict[str, np.ndarray]:
+    def ground_truth_bboxes(self, mode: str = "train") -> dict[str, dict]:
         """Creates a dictionary containing the ground truth bounding boxes
 
         Args:
@@ -158,7 +159,14 @@ class Loader(ABC):
         Returns:
             A dict mapping image paths to the ground truth annotations for the mode in
             the format:
-                {'image': bboxes with shape (num_individuals, xywh)}
+                {
+                    'path/to/image000.png': {
+                        "width": (int) the width of the image, in pixels
+                        "height": (int) the height of the image, in pixels
+                        "bboxes": (np.ndarray) bboxes with shape (num_individuals, xywh)
+                    },
+                    'path/to/image000.png': {...},
+                }
         """
         if mode not in self._loaded_data:
             self._loaded_data[mode] = self.load_data(mode)
@@ -176,7 +184,12 @@ class Loader(ABC):
                 bboxes = np.zeros((0, 4))
             else:
                 bboxes = _compute_crop_bounds(np.stack(bboxes, axis=0), img_shape)
-            ground_truth_dict[image_path] = bboxes
+
+            ground_truth_dict[image_path] = dict(
+                width=image["width"],
+                height=image["height"],
+                bboxes=bboxes,
+            )
 
         return ground_truth_dict
 

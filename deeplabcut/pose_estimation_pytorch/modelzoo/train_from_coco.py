@@ -16,7 +16,7 @@ import copy
 from pathlib import Path
 
 from deeplabcut.pose_estimation_pytorch import COCOLoader, utils
-from deeplabcut.pose_estimation_pytorch.apis.train import train
+from deeplabcut.pose_estimation_pytorch.apis.training import train
 from deeplabcut.pose_estimation_pytorch.runners.logger import setup_file_logging
 from deeplabcut.pose_estimation_pytorch.task import Task
 
@@ -48,28 +48,21 @@ def adaptation_train(
 
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
-    updates = dict(
-        detector=dict(
-            model=dict(freeze_bn_stats=True),
-            runner=dict(snapshots=dict(max_snapshots=5, save_epochs=1)),
-            train_settings=dict(batch_size=detector_batch_size, epochs=4),
-        ),
-        model=dict(backbone=dict(freeze_bn_stats=True)),
-        runner=dict(snapshots=dict(max_snapshots=5, save_epochs=1)),
-        train_settings=dict(batch_size=batch_size, epochs=4),
-    )
-
-    if epochs is not None:
-        updates["train_settings"]["epochs"] = epochs
-    if save_epochs is not None:
-        updates["runner"]["snapshots"]["save_epochs"] = save_epochs
-    if detector_epochs is not None:
-        updates["detector"]["train_settings"]["epochs"] = detector_epochs
-    if detector_save_epochs is not None:
-        updates["detector"]["runner"]["snapshots"]["save_epochs"] = detector_save_epochs
+    updates = {
+        "detector.model.freeze_bn_stats": True,
+        "detector.runner.snapshots.max_snapshots": 5,
+        "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
+        "detector.train_settings.batch_size": detector_batch_size,
+        "detector.train_settings.epochs": detector_epochs or 4,
+        "model.backbone.freeze_bn_stats": True,
+        "runner.snapshots.max_snapshots": 5,
+        "runner.snapshots.save_epochs": save_epochs or 1,
+        "train_settings.batch_size": batch_size,
+        "train_settings.epochs": epochs or 4,
+    }
 
     if eval_interval is not None:
-        updates["runner"]["eval_interval"] = eval_interval
+        updates["runner.eval_interval"] = eval_interval
 
     loader.update_model_cfg(updates)
 

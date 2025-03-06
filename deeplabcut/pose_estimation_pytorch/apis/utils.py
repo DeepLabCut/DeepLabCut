@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
 from typing import Callable
 
@@ -18,8 +19,8 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -38,6 +39,7 @@ from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     DetectorInferenceRunner,
+    DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
 )
@@ -270,34 +272,42 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str], video_type: str | None
+    data_path: str | list[str],
+    video_type: str | None,
+    shuffle: bool = False,
 ) -> list[Path]:
     """
-    TODO
+    Args:
+        data_path: Path or list of paths to folders containing videos
+        video_type: The type of video to filter for
+        shuffle: If the paths point to directories, whether to shuffle the order of
+            videos in the directory.
+
+    Returns:
+        The paths of videos to analyze.
     """
     if not isinstance(data_path, list):
         data_path = [data_path]
     video_paths = [Path(p) for p in data_path]
 
     videos = []
-    for video_path in video_paths:
-        if video_path.is_dir():
-            if video_type is None:
+    for path in video_paths:
+        if path.is_dir():
+            if not video_type:
                 video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
             else:
                 video_suffixes = [video_type]
 
-            video_suffixes = [
-                s if s.startswith(".") else "." + s for s in video_suffixes
-            ]
-            videos += [
-                file for file in video_path.iterdir() if file.suffix in video_suffixes
-            ]
+            suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
+            videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
+            if shuffle:
+                random.shuffle(videos_in_dir)
+            videos += videos_in_dir
         else:
             assert (
-                video_path.exists()
-            ), f"Could not find the video: {video_path}. Check access rights."
-            videos.append(video_path)
+                path.exists()
+            ), f"Could not find the video: {path}. Check access rights."
+            videos.append(path)
 
     return videos
 
@@ -353,15 +363,28 @@ def build_predictions_dataframe(
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.DataFrame:
     """
+    Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
+    includes properly formatted indices and column names for compatibility with
+    DeepLabCut workflows.
 
     Args:
-        scorer:
-        predictions
-        parameters:
-        image_name_to_index:
+        scorer: The name of the scorer used to generate the predictions.
+        predictions: A dictionary where each key is an image name and its value is
+            another dictionary. The inner dictionary contains prediction data for
+            "bodyparts" and optionally "unique_bodyparts". The "bodyparts" and
+            "unique_bodyparts" data arrays are expected to be 3-dimensional, containing
+            pose predictions in format (num_predicted_individuals, num_bodyparts, 3).
+        parameters: Dataset-specific parameters required for constructing DataFrame
+            columns.
+        image_name_to_index: A callable function that takes an image name and returns
+            a tuple representing the DataFrame index. If None, indices will be
+            generated without transformation.
 
     Returns:
-
+        A pandas DataFrame containing the processed prediction data for all provided
+        images. The DataFrame index corresponds to the image names or their
+        transformed values (if `image_name_to_index` is provided). The DataFrame
+        columns are constructed using the provided scorer and parameters.
     """
     image_names = []
     prediction_data = []
@@ -393,24 +416,26 @@ def build_bboxes_dict_for_dataframe(
 ) -> dict:
     """
     Creates a dictionary with bounding boxes from predictions.
-    The keys of the dictionary are the same as the index of the dataframe created by build_predictions_dataframe.
-    Therefore, the structures returned by build_predictions_dataframe and by build_bboxes_dict_for_dataframe
-    can be accessed with the same keys.
+
+    The keys of the dictionary are the same as the index of the dataframe created by
+    build_predictions_dataframe. Therefore, the structures returned by
+    build_predictions_dataframe and by build_bboxes_dict_for_dataframe can be accessed
+    with the same keys.
 
     Args:
         predictions: Dictionary containing the evaluation results
-        image_name_to_index, optional: a transform to apply on each image_name
+        image_name_to_index: a transform to apply on each image_name
 
     Returns:
-        Dictionary with sames keys as in the dataframe returned by build_predictions_dataframe,
-        and respective bounding boxes and scores, if any.
+        Dictionary with sames keys as in the dataframe returned by
+        build_predictions_dataframe, and respective bounding boxes and scores, if any.
     """
 
     image_names = []
     bboxes_data = []
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
-        if "bboxes" in image_predictions:
+        if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
             bboxes_data.append(
                 (image_predictions["bboxes"], image_predictions["bbox_scores"])
             )
@@ -423,9 +448,9 @@ def build_bboxes_dict_for_dataframe(
 def get_inference_runners(
     model_config: dict,
     snapshot_path: str | Path,
-    max_individuals: int,
-    num_bodyparts: int,
-    num_unique_bodyparts: int,
+    max_individuals: int | None = None,
+    num_bodyparts: int | None = None,
+    num_unique_bodyparts: int | None = None,
     batch_size: int = 1,
     device: str | None = None,
     with_identity: bool = False,
@@ -433,15 +458,19 @@ def get_inference_runners(
     detector_batch_size: int = 1,
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
     Args:
         model_config: the pytorch configuration file
         snapshot_path: the path of the snapshot from which to load the weights
-        max_individuals: the maximum number of individuals per image
-        num_bodyparts: the number of bodyparts predicted by the model
-        num_unique_bodyparts: the number of unique_bodyparts predicted by the model
+        max_individuals: the maximum number of individuals per image (if None, uses the
+            individuals defined in the model_config metadata)
+        num_bodyparts: the number of bodyparts predicted by the model (if None, uses the
+            bodyparts defined in the model_config metadata)
+        num_unique_bodyparts: the number of unique_bodyparts predicted by the model (if
+            None, uses the unique bodyparts defined in the model_config metadata)
         batch_size: the batch size to use for the pose model.
         with_identity: whether the pose model has an identity head
         device: if defined, overwrites the device selection from the model config
@@ -452,11 +481,22 @@ def get_inference_runners(
             for top-down models (if a detector runner is needed)
         detector_transform: the transform for object detection. if None, uses the
             transform defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         a runner for pose estimation
         a runner for detection, if detector_path is not None
     """
+    if max_individuals is None:
+        max_individuals = len(model_config["metadata"]["individuals"])
+    if num_bodyparts is None:
+        num_bodyparts = len(model_config["metadata"]["bodyparts"])
+    if num_unique_bodyparts is None:
+        num_unique_bodyparts = len(model_config["metadata"]["unique_bodyparts"])
+
     pose_task = Task(model_config["method"])
     if device is None:
         device = resolve_device(model_config)
@@ -482,10 +522,15 @@ def get_inference_runners(
         if device == "mps":
             detector_device = "cpu"
 
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+        margin = crop_cfg.get("margin", 0)
+
         pose_preprocessor = build_top_down_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,
-            cropped_image_size=(256, 256),
+            top_down_crop_size=(width, height),
+            top_down_crop_margin=margin,
         )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
@@ -516,6 +561,10 @@ def get_inference_runners(
                 postprocessor=build_detector_postprocessor(
                     max_individuals=max_individuals,
                 ),
+                load_weights_only=model_config["detector"]["runner"].get(
+                    "load_weights_only",
+                    None,
+                ),
             )
 
     pose_runner = build_inference_runner(
@@ -526,6 +575,8 @@ def get_inference_runners(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
+        load_weights_only=model_config["runner"].get("load_weights_only", None),
     )
     return pose_runner, detector_runner
 
@@ -552,7 +603,9 @@ def get_detector_inference_runner(
     Returns:
         an inference runner for object detection
     """
-    if device == "mps":  # FIXME(niels): Cannot run detectors on MPS
+    if device is None:
+        device = resolve_device(model_config)
+    elif device == "mps":  # FIXME(niels): Cannot run detectors on MPS
         device = "cpu"
 
     if max_individuals is None:
@@ -575,6 +628,7 @@ def get_detector_inference_runner(
         batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
+        load_weights_only=det_cfg["runner"].get("load_weights_only", None),
     )
 
     if not isinstance(runner, DetectorInferenceRunner):
@@ -590,6 +644,7 @@ def get_pose_inference_runner(
     device: str | None = None,
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
+    dynamic: DynamicCropper | None = None,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -601,6 +656,10 @@ def get_pose_inference_runner(
         device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
 
     Returns:
         an inference runner for pose estimation
@@ -631,10 +690,15 @@ def get_pose_inference_runner(
             with_identity=with_identity,
         )
     else:
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
+        margin = crop_cfg.get("margin", 0)
+
         pose_preprocessor = build_top_down_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,
-            cropped_image_size=(256, 256),
+            top_down_crop_size=(width, height),
+            top_down_crop_margin=margin,
         )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
@@ -650,6 +714,8 @@ def get_pose_inference_runner(
         batch_size=batch_size,
         preprocessor=pose_preprocessor,
         postprocessor=pose_postprocessor,
+        dynamic=dynamic,
+        load_weights_only=model_config["runner"].get("load_weights_only", None),
     )
     if not isinstance(runner, PoseInferenceRunner):
         raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")

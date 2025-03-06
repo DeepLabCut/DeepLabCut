@@ -18,8 +18,7 @@ from pathlib import Path
 import albumentations as A
 from torch.utils.data import DataLoader
 
-import deeplabcut.pose_estimation_pytorch.config as torch_config
-import deeplabcut.pose_estimation_pytorch.modelzoo.utils as modelzoo_utils
+import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.data import (
@@ -53,6 +52,7 @@ def train(
     transform: A.BaseCompose | None = None,
     inference_transform: A.BaseCompose | None = None,
     max_snapshots_to_keep: int | None = None,
+    load_head_weights: bool = True,
 ) -> None:
     """Builds a model from a configuration and fits it to a dataset
 
@@ -69,6 +69,8 @@ def train(
         inference_transform: if defined, overwrites the inference transform defined in
             the model config
         max_snapshots_to_keep: the maximum number of snapshots to store for each model
+        load_head_weights: When `snapshot_path` is not None and a pose model is being
+            trained, whether to load the head weights from the saved snapshot.
     """
     weight_init = None
     pretrained = True
@@ -123,6 +125,7 @@ def train(
         device=device,
         gpus=gpus,
         snapshot_path=snapshot_path,
+        load_head_weights=load_head_weights,
         logger=logger,
     )
 
@@ -202,6 +205,7 @@ def train_network(
     device: str | None = None,
     snapshot_path: str | Path | None = None,
     detector_path: str | Path | None = None,
+    load_head_weights: bool = True,
     batch_size: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
@@ -211,7 +215,7 @@ def train_network(
     display_iters: int | None = None,
     max_snapshots_to_keep: int | None = None,
     pose_threshold: float | None = 0.1,
-    **kwargs,
+    pytorch_cfg_updates: dict | None = None,
 ) -> None:
     """Trains a network for a project
 
@@ -226,6 +230,12 @@ def train_network(
         snapshot_path: if resuming training, the snapshot from which to resume
         detector_path: if resuming training of a top-down model, used to specify the
             detector snapshot from which to resume
+        load_head_weights: if resuming training of a pose estimation model (either
+            through the `snapshot_path` attribute or the `resume_training_from` key in
+            the `pytorch_config.yaml` file), setting this to True also loads the weights
+            for the model head (equivalent to the `keepdeconvweights` for  TensorFlow
+            models). Note that if you change the number of bodyparts, you need to set
+            this to false for re-training.
         batch_size: overrides the batch size to train with
         epochs: overrides the maximum number of epochs to train the model for
         save_epochs: overrides the number of epochs between each snapshot save
@@ -241,8 +251,14 @@ def train_network(
         max_snapshots_to_keep: the maximum number of snapshots to save for each model
         pose_threshold: Used for memory-replay. Pseudo-predictions with confidence lower
             than this threshold are discarded for memory-replay
-        **kwargs : could be any entry of the pytorch_config dictionary. Examples are
-            to see the full list see the pytorch_cfg.yaml file in your project folder
+        pytorch_cfg_updates: dict, optional, default = None.
+            A dictionary of updates to the pytorch config. The keys are the dot-separated
+            paths to the values to update in the config.
+            For example, to update the gpus to run the training on, you can use:
+            ```
+            pytorch_cfg_updates={"runner.gpus": [0,1,2,3]}
+            ```
+            To see the full list - check the pytorch_cfg.yaml file in your project folder
     """
     loader = DLCLoader(
         config=config,
@@ -303,11 +319,13 @@ def train_network(
         if display_iters is not None:
             detector_cfg["train_settings"]["display_iters"] = display_iters
 
-    loader.update_model_cfg(kwargs)
+    if pytorch_cfg_updates is not None:
+        loader.update_model_cfg(pytorch_cfg_updates)
+
     setup_file_logging(loader.model_folder / "train.txt")
 
     logging.info("Training with configuration:")
-    torch_config.pretty_print(loader.model_cfg, print_fn=logging.info)
+    config_utils.pretty_print(loader.model_cfg, print_fn=logging.info)
 
     # fix seed for reproducibility
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
@@ -347,6 +365,7 @@ def train_network(
             logger_config=loader.model_cfg.get("logger"),
             snapshot_path=snapshot_path,
             max_snapshots_to_keep=max_snapshots_to_keep,
+            load_head_weights=load_head_weights,
         )
 
     destroy_file_logging()

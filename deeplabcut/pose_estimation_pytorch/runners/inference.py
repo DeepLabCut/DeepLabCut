@@ -24,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
+from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
@@ -41,14 +42,23 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         snapshot_path: str | Path | None = None,
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
+        load_weights_only: bool | None = None,
     ):
         """
         Args:
-            model: the model to run actions on
-            device: the device to use (e.g. {'cpu', 'cuda:0', 'mps'})
-            snapshot_path: if defined, the path of a snapshot from which to load pretrained weights
-            preprocessor: the preprocessor to use on images before inference
-            postprocessor: the postprocessor to use on images after inference
+            model: The model to run actions on
+            device: The device to use (e.g. {'cpu', 'cuda:0', 'mps'})
+            snapshot_path: If defined, the path of a snapshot from which to load
+                pretrained weights
+            preprocessor: The preprocessor to use on images before inference
+            postprocessor: The postprocessor to use on images after inference
+            load_weights_only: Value for the torch.load() `weights_only` parameter.
+                If False, the python pickle module is used implicitly, which is known to
+                    be insecure. Only set to False if you're loading data that you trust
+                    (e.g. snapshots that you created). For more information, see:
+                        https://pytorch.org/docs/stable/generated/torch.load.html
+                If None, the default value is used:
+                    `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -59,7 +69,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.postprocessor = postprocessor
 
         if self.snapshot_path is not None and self.snapshot_path != "":
-            self.load_snapshot(self.snapshot_path, self.device, self.model)
+            self.load_snapshot(
+                self.snapshot_path,
+                self.device,
+                self.model,
+                weights_only=load_weights_only,
+            )
 
         self._batch: torch.Tensor | None = None
         self._contexts: list[dict] = []
@@ -80,8 +95,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     @torch.no_grad()
     def inference(
         self,
-        images: Iterable[str | Path | np.ndarray]
-        | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]],
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
@@ -123,7 +140,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return results
 
     def _prepare_inputs(
-        self, data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
+        self,
+        data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
         """
         Prepares inputs for an image and adds them to the data ready to be processed
@@ -176,6 +194,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     bodyparts=image_predictions["bodyparts"],
                     unique_bodyparts=image_predictions.get("unique_bodyparts"),
                     identity_scores=image_predictions.get("identity_scores"),
+                    features=image_predictions.get("features"),
                 )
             else:
                 results.append(image_predictions)
@@ -191,14 +210,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         Processes a batch. There must be inputs waiting to be processed before this is
         called, otherwise this method will raise an error.
         """
-        batch = self._batch[:self.batch_size]
+        batch = self._batch[: self.batch_size]
         self._predictions += self.predict(batch)
 
         # remove processed inputs from batch
         if len(self._batch) <= self.batch_size:
             self._batch = None
         else:
-            self._batch = self._batch[self.batch_size:]
+            self._batch = self._batch[self.batch_size :]
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
@@ -208,8 +227,25 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 class PoseInferenceRunner(InferenceRunner[PoseModel]):
     """Runner for pose estimation inference"""
 
-    def __init__(self, model: PoseModel, **kwargs):
+    def __init__(
+        self,
+        model: PoseModel,
+        dynamic: DynamicCropper | None = None,
+        **kwargs,
+    ):
         super().__init__(model, **kwargs)
+        self.dynamic = dynamic
+        if dynamic is not None:
+            print(
+                f"Inference runner using dynamic cropping: {self.dynamic}.\n"
+                "Note that dynamic cropping should only be used to analyze videos with "
+                "bottom-up pose estimation models."
+            )
+            if self.batch_size != 1:
+                raise ValueError(
+                    "Dynamic cropping can only be used with batch size 1. Please set "
+                    "your batch size to 1."
+                )
 
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
@@ -226,8 +262,15 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
+        if self.dynamic is not None:
+            inputs = self.dynamic.crop(inputs)
+
         outputs = self.model(inputs.to(self.device))
         raw_predictions = self.model.get_predictions(outputs)
+
+        if self.dynamic is not None:
+            self.dynamic.update(raw_predictions["bodypart"]["poses"])
+
         predictions = [
             {
                 head: {
@@ -270,14 +313,8 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         predictions = [
             {
                 "detection": {
-                    "bboxes": item["boxes"]
-                    .cpu()
-                    .numpy()
-                    .reshape(-1, 4),
-                    "scores": item["scores"]
-                    .cpu()
-                    .numpy()
-                    .reshape(-1),
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "scores": item["scores"].cpu().numpy().reshape(-1),
                 }
             }
             for item in raw_predictions
@@ -293,6 +330,8 @@ def build_inference_runner(
     batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
+    dynamic: DynamicCropper | None = None,
+    load_weights_only: bool | None = None,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -305,9 +344,20 @@ def build_inference_runner(
         batch_size: the batch size to use to run inference
         preprocessor: the preprocessor to use on images before inference
         postprocessor: the postprocessor to use on images after inference
+        dynamic: The DynamicCropper used for video inference, or None if dynamic
+            cropping should not be used. Only for bottom-up pose estimation models.
+            Should only be used when creating inference runners for video pose
+            estimation with batch size 1.
+        load_weights_only: Value for the torch.load() `weights_only` parameter.
+            If False, the python pickle module is used implicitly, which is known to
+            be insecure. Only set to False if you're loading data that you trust (e.g.
+            snapshots that you created). For more information, see:
+                https://pytorch.org/docs/stable/generated/torch.load.html
+            If None, the default value is used:
+                `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
 
     Returns:
-        the inference runner
+        The inference runner.
     """
     kwargs = dict(
         model=model,
@@ -316,8 +366,22 @@ def build_inference_runner(
         batch_size=batch_size,
         preprocessor=preprocessor,
         postprocessor=postprocessor,
+        load_weights_only=load_weights_only,
     )
     if task == Task.DETECT:
+        if dynamic is not None:
+            raise ValueError(
+                f"The DynamicCropper can only be used for pose estimation; not object "
+                f"detection. Please turn off dynamic cropping."
+            )
         return DetectorInferenceRunner(**kwargs)
 
-    return PoseInferenceRunner(**kwargs)
+    if task != Task.BOTTOM_UP:
+        if dynamic is not None:
+            print(
+                "Turning off dynamic cropping. It should only be used for bottom-up "
+                f"pose estimation models, but you are using a {task} model."
+            )
+        dynamic = None
+
+    return PoseInferenceRunner(dynamic=dynamic, **kwargs)

@@ -22,20 +22,13 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+import deeplabcut.pose_estimation_pytorch.apis.utils as utils
+import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.apis.convert_detections_to_tracklets import (
+from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_model_snapshots,
-    get_inference_runners,
-    get_scorer_name,
-    get_scorer_uid,
-    list_videos_in_folder,
-    parse_snapshot_index_for_analysis,
-)
-import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
-from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, DynamicCropper
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, VideoReader
@@ -56,6 +49,14 @@ class VideoIterator(VideoReader):
         self._crop = cropping is not None
         if self._crop:
             self.set_bbox(*cropping)
+
+    def set_crop(self, cropping: list[int] | None = None) -> None:
+        """Sets the cropping parameters for the video."""
+        self._crop = cropping is not None
+        if self._crop:
+            self.set_bbox(*cropping)
+        else:
+            self.set_bbox(0, 1, 0, 1, relative=True)
 
     def get_context(self) -> list[dict[str, Any]] | None:
         if self._context is None:
@@ -95,7 +96,6 @@ class VideoIterator(VideoReader):
 
 def video_inference(
     video: str | Path | VideoIterator,
-    task: Task,
     pose_runner: InferenceRunner,
     detector_runner: InferenceRunner | None = None,
     cropping: list[int] | None = None,
@@ -106,10 +106,11 @@ def video_inference(
 
     Args:
         video: The video to analyze
-        task: The pose task to run (bottom-up or top-down)
         pose_runner: The pose runner to run inference with
-        detector_runner: When ``task==Task.TOP_DOWN``, the detector runner to obtain
-            bounding boxes for the video.
+        detector_runner: When the pose model is a top-down model, a detector runner can
+            be given to obtain bounding boxes for the video. If the pose model is a
+            top-down model and no detector_runner is given, the bounding boxes must
+            already be set in the VideoIterator (see examples).
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
@@ -126,9 +127,49 @@ def video_inference(
         Predictions for each frame in the video. If a shelf_manager is given, this list
         will be empty and the predictions will exclusively be stored in the file written
         by the shelf.
+
+    Examples:
+        Bottom-up video analysis:
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> video_predictions = pep.video_inference("video.mp4", runner)
+        >>>
+
+        Top-down video analysis:
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
+        >>> video_predictions = pep.video_inference("video.mp4", runner, d_runner)
+        >>>
+
+        Top-Down pose estimation with pre-computed bounding boxes:
+        >>> import numpy as np
+        >>> import deeplabcut.pose_estimation_pytorch as pep
+        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>>
+        >>> video_iterator = pep.VideoIterator("video.mp4")
+        >>> video_iterator.set_context([
+        >>>     { # frame 1 context
+        >>>         "bboxes": np.array([[12, 17, 4, 5]]),  # format (x0, y0, w, h)
+        >>>     },
+        >>>     { # frame 1 context
+        >>>         "bboxes": np.array([[12, 17, 4, 5], [18, 92, 54, 32]]),
+        >>>     },
+        >>>     ...
+        >>> ])
+        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
+        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+        >>> video_predictions = pep.video_inference(video_iterator, runner)
+        >>>
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
+    elif cropping is not None:
+        video.set_crop(cropping)
 
     n_frames = video.get_n_frames(robust=robust_nframes)
     vid_w, vid_h = video.dimensions
@@ -141,21 +182,15 @@ def video_inference(
         f"  resolution:             w={vid_w}, h={vid_h}\n"
     )
 
-    if task == Task.TOP_DOWN:
-        # Get bounding boxes for context
-        if detector_runner is None:
-            raise ValueError("Must use a detector for top-down video analysis")
-
+    if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
         bbox_predictions = detector_runner.inference(images=tqdm(video))
-        print(bbox_predictions[0].keys())
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
-    
-    
+
     predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
     if shelf_writer is not None:
         shelf_writer.close()
@@ -180,27 +215,28 @@ def analyze_videos(
     shuffle: int = 1,
     trainingsetindex: int = 0,
     save_as_csv: bool = False,
+    in_random_order: bool = False,
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
     destfolder: str | None = None,
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
+    dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     modelprefix: str = "",
     use_shelve: bool = False,
     robust_nframes: bool = False,
     transform: A.Compose | None = None,
     auto_track: bool | None = True,
+    n_tracks: int | None = None,
+    animal_names: list[str] | None = None,
+    calibrate: bool = False,
     identity_only: bool | None = False,
     overwrite: bool = False,
     cropping: list[int] | None = None,
     save_as_df: bool = False,
 ) -> str:
     """Makes prediction based on a trained network.
-
-    # TODO:
-        - other options missing options such as calibrate
-        - pass detector path or detector runner
 
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshot_index').
@@ -218,6 +254,8 @@ def analyze_videos(
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
         save_as_csv: For multi-animal projects and when `auto_track=True`, passed
             along to the `stitch_tracklets` method to save tracks as CSV.
+        in_random_order: Whether or not to analyze videos in a random order. This is
+            only relevant when specifying a video directory in `videos`.
         device: the device to use for video analysis
         destfolder: specifies the destination folder for analysis data. If ``None``,
             the path of the video is used. Note that for subsequent analysis this
@@ -232,6 +270,16 @@ def analyze_videos(
             the snapshot index is loaded from the project configuration.
         detector_snapshot_index: (only for top-down models) index of the detector
             snapshot to use, used in the same way as ``snapshot_index``
+        dynamic: (state, detection threshold, margin) triplet. If the state is true,
+            then dynamic cropping will be performed. That means that if an object is
+            detected (i.e. any body part > detection threshold), then object boundaries
+            are computed according to the smallest/largest x position and
+            smallest/largest y position of all body parts. This  window is expanded by
+            the margin and from then on only the posture within this crop is analyzed
+            (until the object is lost, i.e. < detection threshold). The current position
+            is utilized for updating the crop window for the next frame (this is why the
+            margin is important and should be set large enough given the movement of the
+            animal).
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
@@ -253,6 +301,16 @@ def analyze_videos(
 
             If ``False``, one must run ``convert_detections2tracklets`` and
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file.
+        n_tracks: Number of tracks to reconstruct. By default, taken as the number of
+            individuals defined in the config.yaml. Another number can be passed if the
+            number of animals in the video is different from the number of animals the
+            model was trained on.
+        animal_names: If you want the names given to individuals in the labeled data
+            file, you can specify those names as a list here. If given and `n_tracks`
+            is None, `n_tracks` will be set to `len(animal_names)`. If `n_tracks` is not
+            None, then it must be equal to `len(animal_names)`. If it is not given, then
+            `animal_names` will be loaded from the `individuals` in the project
+            `config.yaml` file.
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
@@ -292,11 +350,8 @@ def analyze_videos(
     pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
-    snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
-        cfg,
-        model_cfg,
-        snapshot_index,
-        detector_snapshot_index,
+    snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
+        cfg, model_cfg, snapshot_index, detector_snapshot_index,
     )
 
     if cropping is None and cfg.get("cropping", False):
@@ -307,7 +362,6 @@ def analyze_videos(
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
-    with_identity = model_cfg["metadata"]["with_identity"]
     max_num_animals = len(individuals)
 
     if device is not None:
@@ -325,8 +379,26 @@ def analyze_videos(
             )
             use_shelve = False
 
-    snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
+    dynamic = DynamicCropper.build(*dynamic)
+    if pose_task != Task.BOTTOM_UP and dynamic is not None:
+        print(
+            "Turning off dynamic cropping. It should only be used for bottom-up "
+            f"pose estimation models, but you are using a top-down model."
+        )
+        dynamic = None
+
+    snapshot = utils.get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
+    pose_runner = utils.get_pose_inference_runner(
+        model_config=model_cfg,
+        snapshot_path=snapshot.path,
+        max_individuals=max_num_animals,
+        batch_size=batch_size,
+        transform=transform,
+        dynamic=dynamic,
+    )
+    detector_runner = None
+
     detector_path, detector_snapshot = None, None
     if pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
@@ -339,35 +411,27 @@ def analyze_videos(
         if detector_batch_size is None:
             detector_batch_size = cfg.get("detector_batch_size", 1)
 
-        detector_snapshot = get_model_snapshots(
+        detector_snapshot = utils.get_model_snapshots(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
-        detector_path = detector_snapshot.path
-        print(f"  -> Using detector {detector_path}")
+        print(f"  -> Using detector {detector_snapshot.path}")
+        detector_runner = utils.get_detector_inference_runner(
+            model_config=model_cfg,
+            snapshot_path=detector_snapshot.path,
+            max_individuals=max_num_animals,
+            batch_size=detector_batch_size,
+        )
 
-    dlc_scorer = get_scorer_name(
+    dlc_scorer = utils.get_scorer_name(
         cfg,
         shuffle,
         train_fraction,
-        snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
+        snapshot_uid=utils.get_scorer_uid(snapshot, detector_snapshot),
         modelprefix=modelprefix,
-    )
-    pose_runner, detector_runner = get_inference_runners(
-        model_config=model_cfg,
-        snapshot_path=snapshot.path,
-        max_individuals=max_num_animals,
-        num_bodyparts=len(bodyparts),
-        num_unique_bodyparts=len(unique_bodyparts),
-        batch_size=batch_size,
-        with_identity=with_identity,
-        transform=transform,
-        detector_batch_size=detector_batch_size,
-        detector_path=detector_path,
-        detector_transform=None,
     )
 
     # Reading video and init variables
-    videos = list_videos_in_folder(videos, videotype)
+    videos = utils.list_videos_in_folder(videos, videotype, shuffle=in_random_order)
     for video in videos:
         if destfolder is None:
             output_path = video.parent
@@ -377,7 +441,7 @@ def analyze_videos(
         output_prefix = video.stem + dlc_scorer
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
-        video_iterator = VideoIterator(video)
+        video_iterator = VideoIterator(video, cropping=cropping)
 
         shelf_writer = None
         if use_shelve:
@@ -394,9 +458,7 @@ def analyze_videos(
             predictions = video_inference(
                 video=video_iterator,
                 pose_runner=pose_runner,
-                task=pose_task,
                 detector_runner=detector_runner,
-                cropping=cropping,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
             )
@@ -460,6 +522,8 @@ def analyze_videos(
                         videotype,
                         shuffle,
                         trainingsetindex,
+                        n_tracks=n_tracks,
+                        animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
                     )
@@ -573,6 +637,11 @@ def _generate_assemblies_file(
         # reshape to (num_preds, num_bpts, 4)
         preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
         preds = preds.transpose((1, 0, 2))
+
+        # remove all-missing predictions
+        mask = ~np.all(preds < 0, axis=(1, 2))
+        preds = preds[mask]
+
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:
