@@ -47,7 +47,9 @@ from deeplabcut.utils.visualization import (
     plot_evaluation_results,
     save_labeled_frame,
 )
-
+import matplotlib.pyplot as plt
+from typing import Optional, Union, List, Tuple, Dict
+import logging
 
 def predict(
     pose_runner: InferenceRunner,
@@ -454,7 +456,6 @@ def plot_gt_and_predictions(
     )
     erase_artists(ax)
     plt.close()
-
 
 
 def visualize_predictions_PFM(
