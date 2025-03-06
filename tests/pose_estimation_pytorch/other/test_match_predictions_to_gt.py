@@ -80,11 +80,11 @@ def test_invalid_oks(animals_and_keypoints_invalid: tuple) -> None:
         animals_and_keypoints_invalid   (tuple): containing predicted keypoints (pred_kpts), ground truth keypoints (gt_kpts)
                 and individual names (indv_names)
     """
-    pred_kpts, gt_kpts, indv_names = animals_and_keypoints_invalid
+    pred_kpts, gt_kpts, _ = animals_and_keypoints_invalid
 
     with pytest.raises(ValueError):
         deeplabcut_torch_match_predictions_gt.oks_match_prediction_to_gt(
-            pred_kpts, gt_kpts, indv_names
+            pred_kpts, gt_kpts
         )
 
 

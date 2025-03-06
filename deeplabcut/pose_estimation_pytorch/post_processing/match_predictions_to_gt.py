@@ -96,8 +96,8 @@ def rmse_match_prediction_to_gt(
     return np.array(col_ind)
 
 
-def oks_match_prediction_to_gt(
-    pred_kpts: np.array, gt_kpts: np.array, individual_names: list
+def oks_match_prediction_to_gt( # here
+    pred_kpts: np.array, gt_kpts: np.array
 ) -> np.array:
     """Summary:
     Hungarian algorithm predicted individuals to ground truth ones, using object keypoint similarity (oks).
@@ -112,7 +112,6 @@ def oks_match_prediction_to_gt(
         gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if with center), 2):
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
-        individual_names: names of individuals
 
     Returns:
         col_ind: Array of the individual indexes for prediction.
@@ -121,12 +120,25 @@ def oks_match_prediction_to_gt(
         input:
             pred_kpts = np.array(...)
             gt_kpts = np.array(...)
-            individual_names = [...]
         output:
             col_ind = np.array([...])
     """
 
+    num_animals, _, _ = pred_kpts.shape
+
+    oks_matrix = compute_oks_matrix(pred_kpts, gt_kpts)
+
+    row_ind, col_ind = linear_sum_assignment(oks_matrix, maximize=True)
+    # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
+    col_ind = extend_col_ind(col_ind, num_animals)
+
+    return col_ind
+
+
+def compute_oks_matrix(pred_kpts: np.array, gt_kpts: np.array) -> np.array:
+    # todo docstring
     num_animals, num_keypoints, _ = pred_kpts.shape
+
     if num_keypoints + 1 == gt_kpts.shape[1]:
         gt_kpts_without_ctr = gt_kpts[:, :-1, :].copy()
     elif num_keypoints == gt_kpts.shape[1]:
@@ -158,12 +170,7 @@ def oks_match_prediction_to_gt(
                 margin=0,
                 symmetric_kpts=None,  # TODO take into account symmetric keypoints
             )
-
-    row_ind, col_ind = linear_sum_assignment(oks_matrix, maximize=True)
-    # if animals are missing in the frame, the predictions corresponding to nothing are not shuffled
-    col_ind = extend_col_ind(col_ind, num_animals)
-
-    return col_ind
+    return oks_matrix
 
 
 def extend_col_ind(col_ind: np.array, num_animals: int) -> np.array:
