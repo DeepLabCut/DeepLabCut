@@ -94,10 +94,12 @@ class CreateTrainingDataset(DefaultTab):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def _generate_layout_attributes(self, layout):
+    def _generate_layout_attributes(self, layout): # here
         layout.setColumnMinimumWidth(3, 300)
 
+        # SHUFFLE-related stuff:
         # Shuffle
+        # todo add link to docs "What is a shuffle?"
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
@@ -113,19 +115,29 @@ class CreateTrainingDataset(DefaultTab):
             lambda s: self.root.logger.info(f"Overwrite: {s}")
         )
 
+        # todo add link to docs "What is a train-test split?"
         # Use same data split as another shuffle
         self.data_split_selection = DataSplitSelector(self.root, self)
 
         self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
         self.view_shuffles_button.clicked.connect(self.view_shuffles)
 
+        # WEIGHTINIT-related stuff:
         # Dataset choices
+        # todo show/hide depending on engine (already kind of implemented)
+        # todo add link to docs "What is Super-Animal?"
+        # todo add yes-no switch "Use SuperAnimal initial weights?"
+        # todo add spinner "which super-animal model?", visibility depending on SA switch
         self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
         self.weight_init_selector = WeightInitializationSelector(self.root)
         self.update_weight_init_methods(self.root.engine)
         self.root.engine_change.connect(self.update_weight_init_methods)
 
         # Neural Network
+        # todo show/hide depending on Engine
+        # todo add link to docs "What is the difference between Top-Down and Bottom-up approaches?"
+        # todo add switch Top-Down / Bottom-up
+        # todo add link to docs "What architecture should I choose?"
         nnet_label = QtWidgets.QLabel("Network architecture")
         self.net_choice = QtWidgets.QComboBox()
         self.net_choice.setMinimumWidth(200)
@@ -134,6 +146,7 @@ class CreateTrainingDataset(DefaultTab):
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
         # Update Net types when selected weight init changes
+        # todo rework once weight inits is more clear
         self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.update_nets(None)
         )
@@ -141,6 +154,7 @@ class CreateTrainingDataset(DefaultTab):
             lambda _: self.set_edit_table_visibility()
         )
 
+        # todo correct detector choice display (present but not always present when needed)
         # Detector selection for top-down models
         self.detector_label = QtWidgets.QLabel("Detector architecture")
         self.detector_choice = QtWidgets.QComboBox()
@@ -152,13 +166,19 @@ class CreateTrainingDataset(DefaultTab):
         self.net_choice.currentTextChanged.connect(
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
+        # todo if single-animal: detector or top-down cropping
 
+        # AUGMENTATION-related stuff
         # Augmentation method
+        # todo add link to docs "What are the different Augmentation methods?"
+        # todo hide if pytorch
         augmentation_label = QtWidgets.QLabel("Augmentation method")
         self.aug_choice = QtWidgets.QComboBox()
         self.update_aug_methods(self.root.engine)
         self.root.engine_change.connect(self.update_aug_methods)
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
+        # Switches
+        # self.test_switch = Switch(on_text="Top-Down", off_text="Bottom-Up", on_bg_color="#99FFFF", off_bg_color="#FF99FF", )
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
@@ -178,6 +198,7 @@ class CreateTrainingDataset(DefaultTab):
 
         layout.addWidget(augmentation_label, 4, 0)
         layout.addWidget(self.aug_choice, 4, 1)
+        # layout.addWidget(self.test_switch, 5, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
