@@ -35,18 +35,32 @@ class SimCCPredictor(BasePredictor):
 
     Args:
         simcc_split_ratio: The split ratio of pixels, as described in SimCC.
+        apply_softmax: Whether to apply softmax on the scores.
+        normalize_outputs: Whether to normalize the outputs before predicting maximums.
     """
 
-    def __init__(self, simcc_split_ratio: float = 2.0) -> None:
+    def __init__(
+        self,
+        simcc_split_ratio: float = 2.0,
+        apply_softmax: bool = False,
+        normalize_outputs: bool = False,
+    ) -> None:
         super().__init__()
         self.simcc_split_ratio = simcc_split_ratio
+        self.apply_softmax = apply_softmax
+        self.normalize_outputs = normalize_outputs
 
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
-        simcc_x = outputs["x"].detach().cpu().numpy()
-        simcc_y = outputs["y"].detach().cpu().numpy()
-        keypoints, scores = get_simcc_maximum(simcc_x, simcc_y)
+        x, y = outputs["x"].detach(), outputs["y"].detach()
+        if self.normalize_outputs:
+            x = get_simcc_normalized(x)
+            y = get_simcc_normalized(y)
+
+        keypoints, scores = get_simcc_maximum(
+            x.cpu().numpy(), y.cpu().numpy(), self.apply_softmax
+        )
 
         if keypoints.ndim == 2:
             keypoints = keypoints[None, :]
@@ -122,3 +136,28 @@ def get_simcc_maximum(
         vals = vals.reshape(N, K)
 
     return locs, vals
+
+
+def get_simcc_normalized(pred: torch.Tensor) -> torch.Tensor:
+    """Normalize the predicted SimCC.
+
+    See:
+    github.com/open-mmlab/mmpose/blob/main/mmpose/codecs/utils/post_processing.py#L12
+
+    Args:
+        pred: The predicted output.
+
+    Returns:
+        The normalized output.
+    """
+    b, k, _ = pred.shape
+    pred = pred.clamp(min=0)
+
+    # Compute the binary mask
+    mask = (pred.amax(dim=-1) > 1).reshape(b, k, 1)
+
+    # Normalize the tensor using the maximum value
+    norm = (pred / pred.amax(dim=-1).reshape(b, k, 1))
+
+    # return the normalized tensor
+    return torch.where(mask, norm, pred)
