@@ -386,6 +386,7 @@ def evaluate_network(
     modelprefix: str = "",
     per_keypoint_evaluation: bool = False,
     snapshots_to_evaluate: list[str] | None = None,
+    pcutoff: float | list[float] | dict[str, float] | None = None,
     engine: Engine | None = None,
     **torch_kwargs,
 ):
@@ -449,6 +450,16 @@ def evaluate_network(
     snapshots_to_evaluate: List[str], optional, default=None
         List of snapshot names to evaluate (e.g. ["snapshot-5000", "snapshot-7500"]).
 
+    pcutoff: float | list[float] | dict[str, float] | None, default=None
+        Only for the PyTorch engine. For the TensorFlow engine, please set the pcutoff
+        in the `config.yaml` file.
+        The cutoff to use for computing evaluation metrics. When `None` (default), the
+        cutoff will be loaded from the project config. If a list is provided, there
+        should be one value for each bodypart and one value for each unique bodypart
+        (if there are any). If a dict is provided, the keys should be bodyparts
+        mapping to pcutoff values for each bodypart. Bodyparts that are not defined
+        in the dict will have pcutoff set to 0.6.
+
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
         overwrite this by passing the engine as an argument, but this should generally
@@ -489,6 +500,16 @@ def evaluate_network(
             Shuffles=[1],
             plotting="individual",
         )
+
+    If you have a PyTorch model for which you want to set a different p-cutoff for
+    "left_ear" and "right_ear" bodyparts, and keep the one set in the project config
+    for other bodyparts:
+
+    >>> deeplabcut.evaluate_network(
+    >>>     "/analysis/project/reaching-task/config.yaml",
+    >>>     Shuffles=[0, 1],
+    >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
+    >>> )
 
     Note: This defaults to standard plotting for single-animal projects.
     """
@@ -543,6 +564,7 @@ def evaluate_network(
             comparison_bodyparts=comparisonbodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
+            pcutoff=pcutoff,
             **torch_kwargs,
         )
 
@@ -652,6 +674,7 @@ def analyze_videos(
     use_shelve: bool = False,
     auto_track: bool = True,
     n_tracks: int | None = None,
+    animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool = False,
     use_openvino: str | None = None,
@@ -789,6 +812,13 @@ def analyze_videos(
         animals in the video is different from the number of animals the model was
         trained on.
 
+    animal_names: list[str], optional
+        If you want the names given to individuals in the labeled data file, you can
+        specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
+        will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
+        equal to `len(animal_names)`. If it is not given, then `animal_names` will
+        be loaded from the `individuals` in the project config.yaml file.
+
     use_openvino: str, optional
         Only for the TensorFlow engine.
         Use "CPU" for inference if OpenVINO is available in the Python environment.
@@ -900,6 +930,7 @@ def analyze_videos(
             use_shelve=use_shelve,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             **kwargs,
@@ -934,6 +965,7 @@ def analyze_videos(
             robust_nframes=robust_nframes,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             overwrite=False,
@@ -1807,6 +1839,7 @@ def export_model(
     overwrite: bool = False,
     make_tar: bool = True,
     wipepaths: bool = False,
+    without_detector: bool = False,
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> None:
@@ -1849,6 +1882,9 @@ def export_model(
 
     wipepaths : bool, optional
         Removes the actual path of your project and the init_weights from pose_cfg.
+
+    without_detector: bool, optional
+        PyTorch engine only. Exports top-down models without the detector.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1895,6 +1931,7 @@ def export_model(
             iteration=iteration,
             overwrite=overwrite,
             wipe_paths=wipepaths,
+            without_detector=without_detector,
             modelprefix=modelprefix,
         )
 

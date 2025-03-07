@@ -47,7 +47,7 @@ def pytorch_config_paths() -> list[str]:
 
 setuptools.setup(
     name="deeplabcut",
-    version="3.0.0rc6",
+    version="3.0.0rc7",
     author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -139,7 +139,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     entry_points="""[console_scripts]
-            dlc=dlc:main""",
+            dlc=deeplabcut.__main__:main""",
 )
 
 # https://www.python.org/dev/peps/pep-0440/#compatible-release

@@ -40,7 +40,9 @@ After training, it's time to see how well your model performs.
 
 ### Understanding the Evaluation Results
 
-- **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance metrics. This file is stored in the **`evaluate network`** folder within your project.
+- **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance 
+metrics. This file is stored in the **`evaluation-results`** (for TensorFlow models) or the
+**`evaluation-results-pytorch`** (for PyTorch models) folder within your project.
 
 
 ![Combined Evaluation Results in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779617667-0RLTM9DVRALN9YIKSHJZ/combined-evaluation-results.png?format=750w))

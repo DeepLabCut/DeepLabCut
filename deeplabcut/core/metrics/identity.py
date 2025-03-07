@@ -67,6 +67,12 @@ def compute_identity_scores(
             # assign ground truth keypoints to the closest prediction, so the ID score
             # is the closest possible to the ID score computed with "ground truth"
             indices_gt = np.flatnonzero(np.all(~np.isnan(bpt_gt), axis=1))
+
+            # Remove NaN predictions from the bodypart predictions
+            indices_pred = np.all(np.isfinite(bpt_pred), axis=1)
+            bpt_pred = bpt_pred[indices_pred]
+            bpt_id_scores = bpt_id_scores[indices_pred]
+
             neighbors = find_closest_neighbors(bpt_gt[indices_gt], bpt_pred, k=3)
             found = neighbors != -1
             indices = np.flatnonzero(all_bpts == bpt)

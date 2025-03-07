@@ -517,7 +517,7 @@ def create_labeled_video(
 
     displayedindividuals: list[str] or str, optional, default="all"
         Individuals plotted in the video.
-        By default, all individuals present in the config will be showed.
+        By default, all individuals present in the config will be shown.
 
     codec: str, optional, default="mp4v"
         Codec for labeled video. For available options, see
@@ -747,9 +747,6 @@ def create_labeled_video(
             )
         )
 
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
-        cfg, displayedindividuals
-    )
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
         if displayedbodyparts != "all":
@@ -778,7 +775,7 @@ def create_labeled_video(
         DLCscorerlegacy,
         track_method,
         cfg,
-        individuals,
+        displayedindividuals,
         color_by,
         bodyparts,
         codec,
@@ -903,8 +900,14 @@ def proc_video(
                 print("Labeled video already created. Skipping...")
                 return
 
-            if all(individuals):
-                df = df.loc(axis=1)[:, individuals]
+            if individuals != "all":
+                if isinstance(individuals, str):
+                    individuals = [individuals]
+
+                if all(individuals) and "individuals" in df.columns.names:
+                    mask = df.columns.get_level_values("individuals").isin(individuals)
+                    df = df.loc[:, mask]
+
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [
@@ -1414,7 +1417,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             im.set_data(frame[:, X1:X2])
             for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
-                    x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
+                    x, y, p = tracks[trackid][imname][:,:3].reshape((-1, 3)).T
                     markers[n].set_data(x[p > pcutoff], y[p > pcutoff])
                 else:
                     markers[n].set_data([], [])
@@ -1436,6 +1439,9 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             output_name,
         ]
     )
+
+    # remove frames used for video creation
+    [os.remove(image) for image in os.listdir(destfolder) if ".png" in image]
 
 
 def create_video_from_pickled_tracks(

@@ -1,6 +1,6 @@
 (governance-model)=
 # Governance Model of DeepLabCut
-(adapted from https://napari.org/docs/_sources/developers/GOVERNANCE.md.txt)
+(adapted from https://napari.org/stable/community/governance.html)
 
 ## Abstract
 
@@ -30,7 +30,7 @@ project in concrete ways, such as:
   [GitHub pull request](https://github.com/DeepLabCut/DeepLabCut/pulls);
 - reporting issues on our
   [GitHub issues page](https://github.com/DeepLabCut/DeepLabCut/issues);
-- proposing a change to the documentation (http://docs.deeplabcut.org) via a
+- proposing a change to the [documentation](https://deeplabcut.github.io/DeepLabCut/README.html) via a
   GitHub pull request;
 - discussing the design of the `DeepLabCut` or its tutorials on in existing
   [issues](https://github.com/DeepLabCut/DeepLabCut/issues) and
@@ -43,7 +43,7 @@ among other possibilities. Any community member can become a contributor, and
 all are encouraged to do so. By contributing to the project, community members
 can directly help to shape its future.
 
-Contributors are encouraged to read the [contributing guide](https://github.com/DeepLabCut/DeepLabCut/CONTRIBUTING.md).
+Contributors are encouraged to read the [contributing guide](https://github.com/DeepLabCut/DeepLabCut/blob/main/CONTRIBUTING.md).
 
 ### Core developers
 
