@@ -258,11 +258,11 @@ class TopDownDynamicCropper(DynamicCropper):
     def __init__(
         self,
         top_down_crop_size: tuple[int, int],
-        patch_counts: tuple[int, int],
-        patch_overlap: int,
-        min_bbox_size: tuple[int, int],
-        threshold: float,
-        margin: int,
+        patch_counts: tuple[int, int] = (3, 2),
+        patch_overlap: int = 50,
+        min_bbox_size: tuple[int, int] = (50, 50),
+        threshold: float = 0.6,
+        margin: int = 25,
         min_hq_keypoints: int = 2,
         bbox_from_hq: bool = False,
         store_crops: bool = False,
@@ -282,14 +282,6 @@ class TopDownDynamicCropper(DynamicCropper):
 
         self.crop_history = []
         self.store_crops = store_crops
-
-    def patch_counts(self) -> tuple[int, int]:
-        """Returns: the number of patches created for an image."""
-        return self._patch_counts
-
-    def num_patches(self) -> int:
-        """Returns: the total number of patches created for an image."""
-        return self._patch_counts[0] * self._patch_counts[1]
 
     def crop(self, image: torch.Tensor) -> torch.Tensor:
         """Crops an input image according to the dynamic cropping parameters.
@@ -395,6 +387,14 @@ class TopDownDynamicCropper(DynamicCropper):
             self._crop = self._prepare_bounding_box(x0, y0, x1, y1)
 
         return pose
+
+    def patch_counts(self) -> tuple[int, int]:
+        """Returns: the number of patches created for an image."""
+        return self._patch_counts
+
+    def num_patches(self) -> int:
+        """Returns: the total number of patches created for an image."""
+        return self._patch_counts[0] * self._patch_counts[1]
 
     def _prepare_bounding_box(
         self, x1: int, y1: int, x2: int, y2: int
