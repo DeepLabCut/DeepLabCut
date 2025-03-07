@@ -22,7 +22,7 @@ from deeplabcut.gui.tabs.docs import (
     URL_MA_CONFIGURE,
     URL_USE_GUIDE_SCENARIO,
 )
-from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame, Switch, DynamicTextList
+from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame, YesNoSwitch, DynamicTextList
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -45,13 +45,13 @@ class ProjectCreator(QtWidgets.QDialog):
         self.individuals_list = None
         self.unique_bodyparts_list = None
 
-        self.toggle_3d = Switch()
+        self.toggle_3d = YesNoSwitch()
         self.toggle_3d.setChecked(False)
-        self.madlc_toggle = Switch()
+        self.madlc_toggle = YesNoSwitch()
         self.madlc_toggle.setChecked(False)
-        self.unique_toggle = Switch()
+        self.unique_toggle = YesNoSwitch()
         self.unique_toggle.setChecked(False)
-        self.identity_toggle = Switch()
+        self.identity_toggle = YesNoSwitch()
         self.identity_toggle.setChecked(False)
 
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -209,7 +209,7 @@ class ProjectCreator(QtWidgets.QDialog):
 
     def build_toggle_widget(
         self,
-        switch: Switch,
+        switch: YesNoSwitch,
         question: str,
         help_text: str,
         docs_link: str,

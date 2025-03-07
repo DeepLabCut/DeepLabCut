@@ -805,21 +805,42 @@ class DynamicTextList(QtWidgets.QWidget):
 
 class Switch(QtWidgets.QPushButton):
 
-    def __init__(self, on_text="Yes", off_text="No", width=80, parent=None):
+    def __init__(
+            self,
+            on_text: str,
+            off_text: str,
+            on_bg_color: str = "#00FF00",
+            off_bg_color: str = "#9DA9B5",
+            widget_width: int|None = None,
+            toggle_width: int|None = None,
+            parent: QtWidgets.QWidget|None = None,
+    ):
         super().__init__(parent)
         self.on_text = on_text
         self.off_text = off_text
+        self.on_bg_color = on_bg_color
+        self.off_bg_color = off_bg_color
+
+        padding = 6  # Extra padding around text
+        font_metrics = self.fontMetrics()
+        text_width = max(
+            font_metrics.horizontalAdvance(on_text),
+            font_metrics.horizontalAdvance(off_text)
+        ) + 2 * padding
+        self.toggle_width = toggle_width if toggle_width is not None and toggle_width >= text_width else text_width
+
         self.setCheckable(True)
-        self.setFixedWidth(width)
+        self.setFixedWidth(
+            widget_width if widget_width is not None and widget_width >= 2*self.toggle_width else 2*self.toggle_width
+        )
         self.setMinimumHeight(22)
 
     def paintEvent(self, event):
         # Colors: https://qdarkstylesheet.readthedocs.io/en/latest/color_reference.html
         label = self.on_text if self.isChecked() else self.off_text
-        bg_color = "#00ff00" if self.isChecked() else "#9DA9B5"
+        bg_color = self.on_bg_color if self.isChecked() else self.off_bg_color
 
         radius = 10
-        width = 32
         center = self.rect().center()
 
         painter = QPainter(self)
@@ -832,12 +853,12 @@ class Switch(QtWidgets.QPushButton):
         painter.setPen(pen)
 
         painter.drawRoundedRect(
-            QtCore.QRect(-width, -radius, 2 * width, 2 * radius), radius, radius
+            QtCore.QRect(-self.toggle_width, -radius, 2 * self.toggle_width, 2 * radius), radius, radius
         )
         painter.setBrush(QBrush(bg_color))
-        sw_rect = QtCore.QRect(-radius, -radius, width + radius, 2 * radius)
+        sw_rect = QtCore.QRect(-radius, -radius, self.toggle_width + radius, 2 * radius)
         if not self.isChecked():
-            sw_rect.moveLeft(-width)
+            sw_rect.moveLeft(-self.toggle_width)
 
         painter.drawRoundedRect(sw_rect, radius, radius)
 
@@ -845,3 +866,17 @@ class Switch(QtWidgets.QPushButton):
         pen.setWidth(2)
         painter.setPen(pen)
         painter.drawText(sw_rect, QtCore.Qt.AlignCenter, label)
+
+
+class YesNoSwitch(Switch):
+
+    def __init__(self, on_text="Yes", off_text="No", width=80, parent=None):
+        super().__init__(
+            on_text=on_text,
+            off_text=off_text,
+            on_bg_color="#00FF00",
+            off_bg_color="#9DA9B5",
+            widget_width=width,
+            toggle_width=32,
+            parent=parent
+        )
