@@ -28,7 +28,11 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, DynamicCropper, TopDownDynamicCropper
+from deeplabcut.pose_estimation_pytorch.runners import (
+    DynamicCropper,
+    InferenceRunner,
+    TopDownDynamicCropper,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, VideoReader
@@ -379,7 +383,10 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+        cfg,
+        model_cfg,
+        snapshot_index,
+        detector_snapshot_index,
     )
 
     if cropping is None and cfg.get("cropping", False):
