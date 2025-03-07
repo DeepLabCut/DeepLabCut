@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -24,14 +24,14 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
-from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
-from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.utils.auxiliaryfunctions import (
@@ -62,10 +62,6 @@ class CreateTrainingDataset(DefaultTab):
 
         self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
-
-        self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
-        self.view_shuffles_button.clicked.connect(self.view_shuffles)
-        self.main_layout.addWidget(self.view_shuffles_button, alignment=Qt.AlignLeft)
 
         self.help_button = QtWidgets.QPushButton("Help")
         self.help_button.clicked.connect(self.show_help_dialog)
@@ -105,18 +101,29 @@ class CreateTrainingDataset(DefaultTab):
         shuffle_label = QtWidgets.QLabel("Shuffle")
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
+        # Overwrite selection
+        self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
+        self.overwrite.setChecked(False)
+        self.overwrite.setToolTip(
+            "When checked, creating a new shuffle with an index that already exists "
+            "will overwrite the existing index. Be careful with this option as you "
+            "might lose data."
+        )
+        self.overwrite.stateChanged.connect(
+            lambda s: self.root.logger.info(f"Overwrite: {s}")
+        )
+
+        # Use same data split as another shuffle
+        self.data_split_selection = DataSplitSelector(self.root, self)
+
+        self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
+        self.view_shuffles_button.clicked.connect(self.view_shuffles)
+
         # Dataset choices
         self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
         self.weight_init_selector = WeightInitializationSelector(self.root)
         self.update_weight_init_methods(self.root.engine)
         self.root.engine_change.connect(self.update_weight_init_methods)
-
-        # Augmentation method
-        augmentation_label = QtWidgets.QLabel("Augmentation method")
-        self.aug_choice = QtWidgets.QComboBox()
-        self.update_aug_methods(self.root.engine)
-        self.root.engine_change.connect(self.update_aug_methods)
-        self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         # Neural Network
         nnet_label = QtWidgets.QLabel("Network architecture")
@@ -146,36 +153,31 @@ class CreateTrainingDataset(DefaultTab):
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
 
-        # Overwrite selection
-        self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
-        self.overwrite.setChecked(False)
-        self.overwrite.setToolTip(
-            "When checked, creating a new shuffle with an index that already exists "
-            "will overwrite the existing index. Be careful with this option as you "
-            "might lose data."
-        )
-        self.overwrite.stateChanged.connect(
-            lambda s: self.root.logger.info(f"Overwrite: {s}")
-        )
-
-        # Use same data split as another shuffle
-        self.data_split_selection = DataSplitSelector(self.root, self)
+        # Augmentation method
+        augmentation_label = QtWidgets.QLabel("Augmentation method")
+        self.aug_choice = QtWidgets.QComboBox()
+        self.update_aug_methods(self.root.engine)
+        self.root.engine_change.connect(self.update_aug_methods)
+        self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
         layout.addWidget(shuffle_label, 0, 0)
         layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(self.weight_init_label, 0, 2)
-        layout.addWidget(self.weight_init_selector, 0, 3)
+        layout.addWidget(self.overwrite, 0, 2)
 
-        layout.addWidget(nnet_label, 1, 0)
-        layout.addWidget(self.net_choice, 1, 1)
-        layout.addWidget(augmentation_label, 1, 2)
-        layout.addWidget(self.aug_choice, 1, 3)
+        layout.addWidget(self.data_split_selection, 1, 1)
+        layout.addWidget(self.view_shuffles_button, 1, 2)
 
-        layout.addWidget(self.detector_label, 2, 0)
-        layout.addWidget(self.detector_choice, 2, 1)
+        layout.addWidget(self.weight_init_label, 2, 0)
+        layout.addWidget(self.weight_init_selector, 2, 1)
 
-        layout.addWidget(self.overwrite, 3, 0)
-        layout.addWidget(self.data_split_selection, 4, 0)
+        layout.addWidget(nnet_label, 3, 0)
+        layout.addWidget(self.net_choice, 3, 1)
+
+        layout.addWidget(self.detector_label, 3, 2)
+        layout.addWidget(self.detector_choice, 3, 3)
+
+        layout.addWidget(augmentation_label, 4, 0)
+        layout.addWidget(self.aug_choice, 4, 1)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
