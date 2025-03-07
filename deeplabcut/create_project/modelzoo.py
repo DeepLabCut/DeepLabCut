@@ -22,8 +22,8 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 import deeplabcut
-from deeplabcut import Engine
 from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     TrainingDatasetMetadata,
     ShuffleMetadata,
