@@ -610,11 +610,11 @@ class DynamicSkeleton:
         self.keypoints = [
             "forehead",
             "head",
-            "L_E",
-            "R_E",
+            "L_Eye",
+            "R_Eye",
             "nose",
-            "L_ear",
-            "R_ear",
+            "L_Ear",
+            "R_Ear",
             "mouth_front_top",
             "mouth_front_bottom",
             "mouth_B_L",
@@ -647,6 +647,7 @@ class DynamicSkeleton:
             "end_tail"
         ]
         self.parent_mapping = {
+            # body part
             'head': "neck",
             'neck': None, # root
             'L_Shoulder': 'neck',    # Left Shoulder
@@ -670,6 +671,12 @@ class DynamicSkeleton:
             'M_tail': 'root_tail',
             'M_end_tail': 'M_tail',
             'end_tail': 'M_end_tail',
+            # mouse part
+            'L_Ear': 'L_Eye',
+            'R_Ear': 'R_Eye',
+            'L_Eye' : 'nose',
+            'R_Eye' : 'nose',
+            'nose' : None,
         }
         
         confidence_dict = {}
@@ -1056,7 +1063,7 @@ def plot_gt_and_predictions_PFM(
                         # plot the skeleton is the skeleton is not None
                         connection_pairs = []
 
-                        # dynamic_skeleton = skeleton.copy()
+                        dynamic_skeleton = skeleton.copy()
                         # dynamic_skeleton = get_dynamic_skeleton(dynamic_skeleton, pred_bodyparts[idx_individual], p_cutoff)
                         
                         dynamic_skeleton = DynamicSkeleton(pred_bodyparts[idx_individual], p_cutoff).get_dynamic_skeleton()
