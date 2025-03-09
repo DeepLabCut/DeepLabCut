@@ -885,8 +885,6 @@ def plot_gt_and_predictions_PFM(
             )
             ax.add_patch(rect)
 
-    # Track existing text positions to avoid overlap
-    existing_text_positions = []
     scale_factor = min(w, h) / 1000  # Normalize scale factor based on image size
 
         
@@ -949,9 +947,9 @@ def plot_gt_and_predictions_PFM(
                             x_text = min(max(0, x_text), w - 100)
                             y_text = min(max(0, y_text), h - 10)
                             
-                            while any(abs(x_text - ex) < 50 * scale_factor and abs(y_text - ey) < 20 * scale_factor 
-                                    for ex, ey in existing_text_positions):
-                                y_text += 20 * scale_factor
+                            while any(abs(x_text - existing_x) < 50 * scale_factor and abs(y_text - existing_y) < 30 * scale_factor 
+                                    for existing_x, existing_y in existing_text_positions):
+                                y_text += 5 * scale_factor
                                 if y_text > h - 10:
                                     y_text = y_kp
                                     x_text += 50 * scale_factor
@@ -996,6 +994,9 @@ def plot_gt_and_predictions_PFM(
             plt.close(fig_ind)
     
     # Original combined plot
+    # Track existing text positions to avoid overlap
+    existing_text_positions = []
+    
     for idx_individual in range(num_pred):
         for idx_keypoint in range(num_keypoints):
             if pred_bodyparts is not None and keypoint_vis_mask[idx_keypoint]:
@@ -1028,12 +1029,13 @@ def plot_gt_and_predictions_PFM(
                         y_text = min(max(0, y_text), h - 10)
                         
                         # Avoid overlapping with existing text
-                        while any(abs(x_text - ex) < 50 * scale_factor and abs(y_text - ey) < 20 * scale_factor 
-                                for ex, ey in existing_text_positions):
-                            y_text += 20 * scale_factor
-                            if y_text > h - 10:  # If we run out of vertical space
-                                y_text = pred_bodyparts[idx_individual, idx_keypoint, 1]  # Reset to original y
-                                x_text += 50 * scale_factor  # Move text horizontally instead
+                        while any(abs(x_text - existing_x) <= 15 * scale_factor and abs(y_text - existing_y) <= 15 * scale_factor 
+                                for existing_x, existing_y in existing_text_positions):
+                            y_text += 7.5 * scale_factor
+                            x_text += 4 * scale_factor
+                            # if y_text > h - 10:  # If we run out of vertical space
+                            #     y_text = pred_bodyparts[idx_individual, idx_keypoint, 1]  # Reset to original y
+                            #     x_text += 50 * scale_factor  # Move text horizontally instead
                         
                         # Record this position
                         existing_text_positions.append((x_text, y_text))
